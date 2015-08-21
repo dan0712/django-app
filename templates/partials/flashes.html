@@ -1,0 +1,9 @@
+{% if messages %}
+    <ul class="flashes">
+        {% for message in messages %}
+            <li class="alert alert-dismissable alert-alert">{{ message }}
+                <button type="button" class="close-btn mpicon close-ko" data-dismiss="alert" aria-hidden="true"></button>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
