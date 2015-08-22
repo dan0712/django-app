@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+    
+    <title>Powered by Betterment</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=1100" />
+    <link rel="icon" type="image/vnd.microsoft.icon" href="{{ STATIC_URL }}images/favicon.ico">
+
+    <!--[if lte IE 8]>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/json2/20150503/json2.min.js"></script>
+    <![endif]-->
+
+    <!-- Do not add any more styles here, this is the output of compiling all styles together -->
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/client/app.css">
+
+
+</head>
+
+<body class="advised-user">
+    <div id="fb-root"></div>
+
+    <div class="session-banner performer">
+        <h1>Performer</h1>
+    </div>
+
+    <div class="session-banner advisor">
+        <h1>You are logged in as your client</h1>
+    </div>
+
+    <header>
+        <div class="header-wrapper">
+            <div id="header-logo"></div>
+            <div id="subnav"></div>
+            <div id="popover-region"></div>
+        </div>
+    </header>
+
+    <nav id="tabBar">
+
+    </nav>
+
+    <div class="clearfix" style="position: relative;">
+        <div id="flyoverRegion"></div>
+
+        <div id="flash-placeholder"></div>
+        <div class="ribbon-drawer"></div>
+        <div id="secondaryContent">
+            <div id="bankAccountBanner"></div>
+            <div id="trustDocumentsBanner"></div>
+            <div id="jointAccountInviteBanner"></div>
+            <div id="retirementPlanBanner"></div>
+            <div id="relinkBankBanner"></div>
+            <div id="depositAfterSignupBanner"></div>
+        </div>
+
+        <section id="mainContent">
+            <div class="initial-loader">
+                <svg class="svg-circle-spinner" viewBox="0 0 70 70">
+                    <circle cx="35" cy="35" r="20" stroke-width="2.5" class="loading-spinner"></circle>
+                </svg>
+                <div class="speedometer-for-ie"></div>
+            </div>
+        </section>
+
+        <section id="unboundedContent"></section>
+        <section id="railsContent"></section>
+
+        <div class="page-loader"></div>
+    </div>
+    <section id="footerLinks"></section>
+    <footer class="fine-print">
+        <section class="disclosure clearfix">
+            <div class="powered-by">Powered by</div>
+            <figure class="logo"></figure>
+            <figcaption>&copy; Betterment LLC</figcaption>
+            <div class="security solo">
+                <a target="_blank" href="https://www.mcafeesecure.com/RatingVerify?ref=www.betterment.com">
+                <img src="https://images.scanalert.com/meter/www.betterment.com/65.gif" alt="McAfee SECURE" width="65" height="37" />
+                </a>
+            </div>
+            <p class="pad">When you initiate transactions in your Betterment account you agree to Betterment's <a target="_blank" href="https://www.betterment.com/legal" alt="Terms" title="Terms">Terms &amp; Conditions</a>.</p>
+            <p><strong>This website is operated and maintained by Betterment LLC, an SEC Registered Investment Advisor.</strong></p>
+            <p>Brokerage services provided to clients of Betterment LLC by <a href="http://www.bettermentsecurities.com/" target="_blank">Betterment Securities</a>, an SEC registered broker-dealer and member <a href="http://www.finra.org/" target="_blank">FINRA</a>/<a href="http://www.sipc.org/" target="_blank">SIPC</a>.</p>
+            <p class="pad">Investments: Not FDIC Insured &bull; No Bank Guarantee &bull; May Lose Value. Investing in securities involves risks, and there is always the potential of losing money when you invest in securities. Before investing, consider your investment objectives and Betterment's charges and expenses. Past performance does not guarantee future results, and the likelihood of investment outcomes are hypothetical in nature. See full disclosures for more information. Not an offer, solicitation of an offer, or advice to buy or sell securities in jurisdictions where Betterment is not registered. <a href="http://www.xignite.com" title="Market Data by Xignite" target="_blank">Market Data</a> by Xignite.</p>
+            <p>Betterment, the Betterment Speedometer, and <a href="/logos/fred_illustrations.jpg" target="_blank">Fred illustrations</a> are trademarks of Betterment Holdings, Inc.</p>
+        </section>
+    </footer>
+
+    <div id="pixels">
+    </div>
+
+    <div class="dummy-modal-container"></div>
+    <div class="modals-region"></div>
+    <div class="feed-container"></div>
+
+    <div id="remoteModal" class="modal modal-new">
+    </div>
+
+
+    <script type="text/template" id="defaultConfirmationModal">
+        <div class="modal-panel">
+            <div>
+                <h1>Are you sure?</h1>
+                <div class="modal-body message"></div>
+                <div class="modal-buttons">
+                    <button class="ok" data-dismiss="modal">OK</button>
+                    <button class="cancel" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        window.BMTVersion = '1';
+    </script>
+
+            <script src="{{ STATIC_URL }}js/client/app.js"></script>
+    
+                <script>window.dataLayer = [];</script>
+    
+    </body>
+</html>

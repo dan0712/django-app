@@ -1,0 +1,159 @@
+{
+  "visitorKey": "ORPETEVZL0WQUWYE5VM6PSSAYDXH4656",
+  "experiences": [
+    {
+      "id": "51367822",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "time_weighted_returns",
+      "experimentName": "new_returns"
+    },
+    {
+      "id": "51367823",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "adroll_segment1",
+      "experimentName": "adroll_retargeting_new"
+    },
+    {
+      "id": "51367824",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "notifications_on",
+      "experimentName": "notifications_toggle"
+    },
+    {
+      "id": "51367825",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "joint_accounts_on",
+      "experimentName": "joint_accounts"
+    },
+    {
+      "id": "51367826",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "hnw_consultation_off",
+      "experimentName": "hnw_consultation"
+    },
+    {
+      "id": "51367827",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "retirement_plan_on",
+      "experimentName": "retirement_plan_toggle"
+    },
+    {
+      "id": "51367828",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "negative_returns_tooltip_off",
+      "experimentName": "negative_returns_tooltip_toggle"
+    },
+    {
+      "id": "51367829",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "transaction_memos_enabled",
+      "experimentName": "transaction_memos_toggle"
+    },
+    {
+      "id": "51367830",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "smart_deposits_setup_enabled",
+      "experimentName": "smart_deposits_setup"
+    },
+    {
+      "id": "51367831",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "mobile_segmentation_off_b_v2",
+      "experimentName": "mobile_segmentation_v2"
+    },
+    {
+      "id": "51367832",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "ios_has_new_transfer_tab",
+      "experimentName": "ios_transfer_tab"
+    },
+    {
+      "id": "51367833",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "show_bank_balance_advice",
+      "experimentName": "smart_deposit_max_bank_balance_advice"
+    },
+    {
+      "id": "51367834",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "smart_deposit_ios_setup_enabled",
+      "experimentName": "smart_deposit_ios_setup"
+    },
+    {
+      "id": "51367835",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "smart_deposit_ios_max_amount_button_disabled",
+      "experimentName": "smart_deposit_ios_max_amount_button"
+    },
+    {
+      "id": "51367836",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "smart_deposit_android_setup_enabled",
+      "experimentName": "smart_deposit_android_setup"
+    },
+    {
+      "id": "51367837",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "smart_deposit_android_max_amount_button_disabled",
+      "experimentName": "smart_deposit_android_max_amount_button"
+    },
+    {
+      "id": "51367838",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "show_smart_deposit_video",
+      "experimentName": "smart_deposit_video_teaser"
+    },
+    {
+      "id": "51367839",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "instant_deposit_off",
+      "experimentName": "instant_deposit"
+    },
+    {
+      "id": "51367840",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "hp_seg_input_v1_controlb",
+      "experimentName": "hp_seg_input_v1"
+    },
+    {
+      "id": "51367841",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "email_verification_treatment",
+      "experimentName": "email_verification_prompt"
+    },
+    {
+      "id": "51367842",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "banklink_only_b",
+      "experimentName": "welcome_banner"
+    },
+    {
+      "id": "-1",
+      "completedDate": false,
+      "conversionDate": false,
+      "variationName": "responsive_signup_treatment",
+      "experimentName": "responsive_signup"
+    }
+  ]
+}

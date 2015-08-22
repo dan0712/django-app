@@ -1,0 +1,507 @@
+{
+  "holidays": [
+    "20150525000000",
+    "20140901000000",
+    "20160325000000",
+    "20150907000000",
+    "20161124000000",
+    "20151225000000",
+    "20161111000000",
+    "20150703000000",
+    "20151126000000",
+    "20150101000000",
+    "20160530000000",
+    "20141013000000",
+    "20150216000000",
+    "20141127000000",
+    "20151111000000",
+    "20160704000000",
+    "20161010000000",
+    "20141111000000",
+    "20150403000000",
+    "20151012000000",
+    "20161226000000",
+    "20160905000000",
+    "20150704000000",
+    "20160101000000",
+    "20160118000000",
+    "20160215000000",
+    "20150119000000",
+    "20141225000000"
+  ],
+  "taxDay": "20150415000000",
+  "goalTypes": {
+    "RETIREMENT": {
+      "label": "Retirement",
+      "defaultTerm": "68"
+    },
+    "EDUCATION": {
+      "label": "Education",
+      "defaultTerm": "15"
+    },
+    "PURCHASE": {
+      "label": "Major Purchase",
+      "defaultTerm": "4"
+    },
+    "WEDDING": {
+      "label": "Wedding",
+      "defaultTerm": "2"
+    },
+    "BABY_KIDS": {
+      "label": "Baby \/ Kids",
+      "defaultTerm": "2"
+    },
+    "OTHER": {
+      "label": "Other",
+      "defaultTerm": "10"
+    },
+    "EMERGENCY": {
+      "label": "Safety Net",
+      "defaultTerm": "3"
+    },
+    "BUILD_WEALTH": {
+      "label": "Build Wealth",
+      "defaultTerm": "20"
+    },
+    "HOUSE": {
+      "label": "House",
+      "defaultTerm": "4"
+    }
+  },
+  "transferTypes": {
+    "0": "account to bank",
+    "1": "account to account",
+    "2": "bank to account"
+  },
+  "maritalStatuses": {
+    "JOINTLY": "Married Filing Jointly",
+    "SEPARATELY": "Married Filing Separately (lived with spouse)",
+    "SEPARATELY_APART": "Married Filing Separately (didn't live with spouse)",
+    "SINGLE": "Single",
+    "HEAD_OF_HOUSEHOLD": "Head of Household",
+    "WIDOW": "Qualifying Widow(er)"
+  },
+  "iPhoneTemplates": {
+    "inviteHeader": "Plus - for each friend who joins, you both get 30 days free.",
+    "inviteLegal": "The offer is valid only for new individual accounts with Betterment. Please send invites only to people you know personally who will be glad to get them. Betterment will send one invite and up to two reminders to each friend you invite: (1) in your name; and\/or (2) with your name. The reminders may be different from the original invite and can be canceled by emailing support@betterment.com. To qualify for the bonus, referred friends must make an initial deposit  within 90 days of signup and not withdraw that initial deposit for 90 days.\n\nYour participation in the Betterment Refer a Friend Program is subject to the following terms and agreements:  Through the Betterment Refer a Friend Program you will invite friends to sign-up for a Betterment account by sending them an invitation via the Betterment interface, and your efforts in soliciting clients to Betterment will be limited to this activity. For each \"Qualifying New Account\" Betterment will waive its fees applicable to your Betterment account for a period of 30 days, and Betterment will also waive its fees applicable to your Betterment referee friend's account for a period of 30 days, both such periods as determined by Betterment. For every third \"Qualifying New Account\" Betterment will waive its fees applicable to your Betterment account for a period of 30 days plus 1 year, and Betterment will also waive its fees applicable to your Betterment referee friend's account for a period of 30 days, both such periods as determined by Betterment. For avoidance of doubt, Betterment will waive its fees applicable to your Betterment account for a period of 30 days for each \"Qualifying New Account\" and for an additional 1 year for the third \"Qualifying New account\" for a sum total of 90 days and 1 year for the three \"Qualifying New Accounts\". A \"Qualifying New Account\" is a new individual Betterment account opened by your Betterment referee friend using the special designated link from your invitation, which your referee friend funds with an initial deposit  and does not withdraw that initial deposit for 90 days. Betterment is not responsible for incorrect entry or other failure on the part of your referees to meet standards of a Qualifying Referral. This promotion is not valid with any other offers and is non-transferrable. Offer available to U.S. Residents only. Betterment reserves the right to terminate this offer at any time, to limit the amount of account bonuses you are eligible to receive, and to refuse or recover any promotion award if Betterment determines that it was obtained under wrongful or fraudulent circumstances, that inaccurate or incomplete information was provided in opening the account, or that any terms of the Betterment Account Agreements have been violated.  In referring friends to open a Betterment account you are offering investment advice on behalf of Betterment and under the supervision and control of Betterment. You agree that your participation in the Betterment Referral Program will conform to the terms contained herein as well as the provisions of the Investment Advisers Act of 1940, 15 U.S.C. \u00ac\u00df 80b-1, and the rules thereunder."
+  },
+  "contributionTypes": {
+    "2015": {
+      "label": "2015 Tax Year Contribution",
+      "regularLimit": 5500,
+      "catchupLimit": 6500,
+      "sepLimit": 53000,
+      "rothLimitPhaseouts": {
+        "WIDOW": [
+          183000,
+          193000
+        ],
+        "JOINTLY": [
+          183000,
+          193000
+        ],
+        "HEAD_OF_HOUSEHOLD": [
+          116000,
+          131000
+        ],
+        "SINGLE": [
+          116000,
+          131000
+        ],
+        "SEPARATELY_APART": [
+          116000,
+          131000
+        ],
+        "SEPARATELY": [
+          0,
+          10000
+        ]
+      }
+    },
+    "ROLL": {
+      "label": "IRA Rollover"
+    }
+  },
+  "distributionTypes": [
+    {
+      "value": "NORM",
+      "label": "Normal Distribution"
+    },
+    {
+      "value": "EARL",
+      "label": "Early Distribution (under age 59 1\/2)"
+    },
+    {
+      "value": "DISA",
+      "label": "Disability Distribution"
+    },
+    {
+      "value": "BENE",
+      "label": "Beneficiary distribution due to death"
+    },
+    {
+      "value": "2015",
+      "label": "Removal of Excess 2015 Contributions"
+    }
+  ],
+  "beneficiaryRelationships": {
+    "SPOUSE": "Spouse",
+    "FRIEND": "Family member\/friend",
+    "ESTATE": "My estate",
+    "ENTITY": "Legal entity (e.g., charity)"
+  },
+  "sourceTypes": {
+    "TRADITIONAL_IRA": {
+      "value": "TraditionalIRA",
+      "label": "Traditional IRA",
+      "accountTypes": [
+        "TRADITIONAL_IRA"
+      ],
+      "supportsMatching": false,
+      "isQualified": false
+    },
+    "ROTH_IRA": {
+      "value": "RothIRA",
+      "label": "Roth IRA",
+      "accountTypes": [
+        "ROTH_IRA"
+      ],
+      "supportsMatching": false,
+      "isQualified": false
+    },
+    "SEP_IRA": {
+      "value": "SepIRA",
+      "label": "SEP IRA",
+      "accountTypes": [
+        "TRADITIONAL_IRA",
+        "SEP_IRA"
+      ],
+      "supportsMatching": false,
+      "isQualified": false
+    },
+    "SIMPLE_IRA": {
+      "value": "SimpleIRA",
+      "label": "SIMPLE IRA",
+      "accountTypes": [
+        "TRADITIONAL_IRA"
+      ],
+      "supportsMatching": false,
+      "isQualified": false
+    },
+    "FOUR_OH_ONE_K": {
+      "value": "401K",
+      "label": "401(k)",
+      "supportsMatching": true,
+      "isQualified": true
+    },
+    "PENSION_PLAN": {
+      "value": "PensionPlan",
+      "label": "Pension Plan",
+      "supportsMatching": false,
+      "isQualified": true
+    },
+    "PROFIT_SHARING": {
+      "value": "ProfitSharing",
+      "label": "Profit Sharing",
+      "supportsMatching": false,
+      "isQualified": true
+    },
+    "FOUR_OH_THREE_B": {
+      "value": "403B",
+      "label": "403(b)",
+      "supportsMatching": true,
+      "isQualified": true
+    },
+    "FOUR_OH_ONE_A": {
+      "value": "401A",
+      "label": "401(a)",
+      "supportsMatching": false,
+      "isQualified": true
+    },
+    "FOUR_FIFTY_SEVEN_B": {
+      "value": "457B",
+      "label": "457(b)",
+      "supportsMatching": true,
+      "isQualified": true
+    },
+    "THRIFT_SAVINGS_PLAN": {
+      "value": "ThriftSavingsPlan",
+      "label": "Thrift Savings Plan",
+      "supportsMatching": false,
+      "isQualified": true
+    }
+  },
+  "fundTypes": {
+    "TRADITIONAL": "TRADITIONAL",
+    "ROTH": "ROTH"
+  },
+  "rolloverProviders": {
+    "CAPITAL_ONE_360": {
+      "displayName": "Capital One 360",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18664642699",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Capital One 360\nIRA Servicing\nP.O. Box 60\nSt. Cloud, MN 56302"
+    },
+    "CAPITAL_ONE_SHAREBUILDER": {
+      "displayName": "Capital One Sharebuilder",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 0,
+      "address": "Capital One ShareBuilder\nP.O. Box 4249\nSeattle, WA 98194"
+    },
+    "CHARLES_SCHWAB": {
+      "displayName": "Charles Schwab",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18778243727",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Mailing address is specific to your location.\nSee http:\/\/www.schwab.com\/public\/schwab\/client_home\/contact_us"
+    },
+    "CHARLES_SCHWAB_INSTITUTIONAL": {
+      "displayName": "Charles Schwab Institutional",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18778243727",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Mailing address is specific to your location.\nSee http:\/\/www.schwab.com\/public\/schwab\/client_home\/contact_us"
+    },
+    "CHASE": {
+      "displayName": "Chase",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 0,
+      "address": "For CDs, cash accounts, or if your Chase statements orignate from San Antonio:\nChase Retirement Services\n4900 Memorial Highway\n3rd Floor\nTampa, FL 33630-7536\n\nFor brokerage accounts or if your Chase statements originate from Chicago:\nJPMCC\n500 Stanton Christiana Road, DE3-4790\nNewark, DE 19713"
+    },
+    "ETRADE": {
+      "displayName": "E*Trade",
+      "signable": true,
+      "faxable": true,
+      "faxNumber": "18666500003",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "E*TRADE Securities LLC\nP.O. Box 484\nJersey City, NJ 07303-0484"
+    },
+    "FIDELITY": {
+      "displayName": "Fidelity",
+      "signable": true,
+      "faxable": true,
+      "faxNumber": "18772364162",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Fidelity Investments\nATTN: TOA Deliveries\nP.O. Box 770001\nCincinnati, OH 45277-0022\n"
+    },
+    "MERRILL_LYNCH": {
+      "displayName": "Merrill Lynch",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 20000,
+      "address": "Use the branch office address on your statement under \"your financial advisor\"."
+    },
+    "MERRILL_EDGE": {
+      "displayName": "Merrill Edge",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 20000,
+      "address": "Use the branch office address on your statement under \"your financial advisor\"."
+    },
+    "MORGAN_STANLEY": {
+      "displayName": "Morgan Stanley",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 0,
+      "address": "Morgan Stanley\nATTN: Rollover Dept\n1 New York Plaza 39th Floor\nNew York, NY 10004"
+    },
+    "NATIONAL_FINANCIAL_SERVICES": {
+      "displayName": "National Financial Services",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18772364162",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "National Financial Services\nP.O. Box 770001\nCincinnati, OH 45277"
+    },
+    "PERSHING": {
+      "displayName": "Pershing",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 250000,
+      "address": "Pershing\nNon-ACAT Department\n1 Pershing Plaza 7th Floor\nJersey City, NJ 07399"
+    },
+    "PRINCIPAL_FINANCIAL_GROUP": {
+      "displayName": "Principal Financial Group",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Principal Financial Group\nP.O. Box 9394\nDes Moines, IA 50306"
+    },
+    "SCOTTRADE": {
+      "displayName": "Scottrade",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 0,
+      "address": "Scottrade, Inc.\nACATS Transfers\nP.O. Box 31759\nSt. Louis, MO 63131-0759"
+    },
+    "TD_AMERITRADE": {
+      "displayName": "TD Ameritrade",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18664686268",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "TD Ameritrade\nP.O. Box 2209\nOmaha, NE 68103-2209"
+    },
+    "TD_AMERITRADE_INSTITUTIONAL": {
+      "displayName": "TD Ameritrade Institutional",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 0,
+      "address": "TD Ameritrade Institutional\n5010 Water RidgeVista Dr.\nSan Diego, CA 92121"
+    },
+    "TRADE_KING": {
+      "displayName": "Trade King",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18666990563",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Trade King\nP.O. Box 49050\nCharlotte, NC 28277-3432"
+    },
+    "USAA": {
+      "displayName": "USAA",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18002928177",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "USAA\nATTN: IMCO\nP.O. Box 659453\nSan Antonio TX 78265-9825"
+    },
+    "VANGUARD": {
+      "displayName": "Vanguard",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Vanguard\nP.O. Box 1110\nValley Forge, PA 19482-1110"
+    },
+    "WELLS_FARGO_BANK": {
+      "displayName": "Wells Fargo Bank",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "18004330738",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "Wells Fargo Bank\nIRA Processing\nP.O. Box 5110\nSioux Falls, SD 57117-5110"
+    },
+    "WELLS_FARGO_ADVISORS": {
+      "displayName": "Wells Fargo Advisors",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": "17044278372",
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": "First Clearing Mail\nCode H0004014\n1 North Jefferson Ave\nSt. Louis, MO 63103"
+    },
+    "OTHER": {
+      "displayName": "Other",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": null
+    },
+    "UNKNOWN": {
+      "displayName": "Unknown",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": false,
+      "medallionSignatureMinimum": 0,
+      "address": null
+    },
+    "AMERICAN_FUNDS": {
+      "displayName": "American Funds",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 125000,
+      "address": "American Funds\nP.O. Box 2560\nNorfolk, VA 23501"
+    },
+    "AMERIPRISE": {
+      "displayName": "Ameriprise",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 50000,
+      "address": "Ameriprise Financial Services\n70100 Ameriprise Financial Center\nMinneapolis, MN 55474"
+    },
+    "T_ROWE_PRICE": {
+      "displayName": "T. Rowe Price",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 100000,
+      "address": "T. Rowe Price Account Services\nP.O. Box 17150\nBaltimore, MD 21297-1300"
+    },
+    "WEALTHFRONT": {
+      "displayName": "Wealthfront",
+      "signable": false,
+      "faxable": false,
+      "faxNumber": null,
+      "medallionSignatureRequired": true,
+      "medallionSignatureMinimum": 0,
+      "address": "Apex Clearing C\/O: Broadridge Workflow Solutions\nP.O. Box 1348\nBrentwood, NY 11717"
+    }
+  },
+  "closedAccountGroupState": "CLOSED",
+  "userStates": [
+    "GHOST",
+    "GUEST",
+    "FULL"
+  ],
+  "visitorCookieKey": "visitorKey",
+  "defaultPortfolioSetID": "18",
+  "defaultIraPortfolioSetID": "17",
+  "environment": "demo",
+  "logentriesToken": "fb9d7a34-f6eb-41a0-9230-0deb1546c31e",
+  "tlhMinimumBalance": 50000,
+  "webHost": "https:\/\/demo.betterment.com",
+  "appHost": "https:\/\/demos.betterment.com",
+  "onboardingHost": "https:\/\/onboarding-demo.betterment.qa",
+  "notificationsHost": "https:\/\/notifications-demo.betterment.com",
+  "supportedMobileClients": {
+    "IOS": {
+      "version": "3.1"
+    },
+    "ANDROID": {
+      "version": "10"
+    }
+  }
+}

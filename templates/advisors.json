@@ -1,0 +1,17 @@
+{
+  "workPhone": "12121111111",
+  "email": "demo@example.org",
+  "id": 394,
+  "name": "John Smith",
+  "firstName": "John",
+  "lastName": "Smith",
+  "token": "qwerty",
+  "firmId": 202,
+  "firmName": "First Road Advisors",
+  "firmSlug": "first-road-advisors",
+  "firmLogoUrl": "https:\/\/demo-app.bettermentinstitutional.com\/firms\/1-firm\/logo?style=large",
+  "firmKnockedOutLogoUrl": "https:\/\/demo-app.bettermentinstitutional.com\/firms\/1-firm\/knocked_out_logo?style=large",
+  "firmFormAdvPart2Url": null,
+  "firmClientAgreementUrl": "https:\/\/demo-app.bettermentinstitutional.com\/client_agreements\/DoihTZ7nfNU\/document",
+  "firmClientAgreementToken": "DoihTZ7nfNU"
+}

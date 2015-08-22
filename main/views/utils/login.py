@@ -40,13 +40,15 @@ def create_login(user_class, user_class_name):
         redirect_to = request.POST.get(redirect_field_name,
                                        request.GET.get(redirect_field_name, ''))
 
-        username = request.POST.get("username", '')
+        if request.method == "POST":
 
-        try:
-            user = User.objects.get(username=username)
-        except ObjectDoesNotExist:
-            user = None
-            messages.error(request, INVALID_CREDENTIALS)
+            username = request.POST.get("username", '')
+
+            try:
+                user = User.objects.get(username=username)
+            except ObjectDoesNotExist:
+                user = None
+                messages.error(request, INVALID_CREDENTIALS)
 
         if request.method == "POST" and (user is not None):
             form = authentication_form(request, data=request.POST)

@@ -10,6 +10,7 @@ from django.contrib.auth import views
 __all__ = ["AdvisorView", "ClientView", "AdminView"]
 
 
+
 def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='advisor:login'):
     """
     Decorator for views that checks that the user is logged in and is an advisor

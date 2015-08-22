@@ -1,6 +1,3 @@
-/**
- * Created by cristian on 20/08/15.
- */
 if (function(t, e) {
         "object" == typeof module && "object" == typeof module.exports ? module.exports = t.document ? e(t, !0) : function(t) {
             if (!t.document) throw new Error("jQuery requires a window with a document");

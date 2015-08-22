@@ -1,0 +1,332 @@
+[
+  {
+    "assetClass": {
+      "assetClass": "DEVELOPED_MARKETS_STOCKS",
+      "investmentType": "STOCKS",
+      "displayName": "Developed Markets",
+      "superAssetClass": "EQUITY_EU"
+    },
+    "tickers": [
+      {
+        "id": 10,
+        "symbol": "VEA",
+        "displayName": "Vanguard FTSE Developed Markets",
+        "description": "Developed Markets",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=0936&FundIntExt=INT",
+        "unitPrice": 38.15,
+        "primary": true
+      },
+      {
+        "id": 39,
+        "symbol": "SCHF",
+        "displayName": "Schwab International Equity ETF",
+        "description": "Developed Markets",
+        "ordering": 1,
+        "url": "http:\/\/www.schwab.com\/public\/csim\/home\/products\/exchange_traded_funds\/summary.html?symbol=SCHF",
+        "unitPrice": 29.12,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "MUNICIPAL_BONDS",
+      "investmentType": "BONDS",
+      "displayName": "Municipal Bonds",
+      "superAssetClass": "FIXED_INCOME_US"
+    },
+    "tickers": [
+      {
+        "id": 22,
+        "symbol": "MUB",
+        "displayName": "iShares National AMT-Free Muni Bond ETF",
+        "description": "National Municipal Bonds",
+        "ordering": 0,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/MUB.htm",
+        "unitPrice": 108.99,
+        "primary": true
+      },
+      {
+        "id": 28,
+        "symbol": "TFI",
+        "displayName": "SPDR Nuveen Barclays Municipal Bond ETF",
+        "description": "US Municipal Bonds",
+        "ordering": 1,
+        "url": "https:\/\/www.spdrs.com\/product\/fund.seam?ticker=TFI",
+        "unitPrice": 23.96,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "US_SMALL_CAP_VALUE_STOCKS",
+      "investmentType": "STOCKS",
+      "displayName": "US Small-Cap Value",
+      "superAssetClass": "EQUITY_US"
+    },
+    "tickers": [
+      {
+        "id": 37,
+        "symbol": "VBR",
+        "displayName": "Vanguard Small-Cap Value ETF",
+        "description": "US Small-Cap Value",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=0937&FundIntExt=INT",
+        "unitPrice": 103.43,
+        "primary": true
+      },
+      {
+        "id": 7,
+        "symbol": "IWN",
+        "displayName": "iShares Russell 2000 Value ETF",
+        "description": "US Small-Cap Value",
+        "ordering": 1,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/IWN.htm",
+        "unitPrice": 94.81,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "EMERGING_MARKETS_BONDS",
+      "investmentType": "BONDS",
+      "displayName": "Emerging Markets Bonds",
+      "superAssetClass": "FIXED_INCOME_EM"
+    },
+    "tickers": [
+      {
+        "id": 18,
+        "symbol": "VWOB",
+        "displayName": "Vanguard Emerging Markets Government Bond ETF",
+        "description": "Emerging Markets Bonds",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=3820&FundIntExt=INT",
+        "unitPrice": 75.28,
+        "primary": true
+      },
+      {
+        "id": 29,
+        "symbol": "EMB",
+        "displayName": "iShares Emerging Markets USD Bond ETF",
+        "description": "Emerging Markets Bonds",
+        "ordering": 1,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/EMB.htm",
+        "unitPrice": 107.6,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "INTERNATIONAL_BONDS",
+      "investmentType": "BONDS",
+      "displayName": "International Bonds",
+      "superAssetClass": "FIXED_INCOME_EU"
+    },
+    "tickers": [
+      {
+        "id": 19,
+        "symbol": "BNDX",
+        "displayName": "Vanguard Total International Bond ETF",
+        "description": "International Bonds",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=3711&FundIntExt=INT",
+        "unitPrice": 53.1,
+        "primary": true
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "EMERGING_MARKETS_STOCKS",
+      "investmentType": "STOCKS",
+      "displayName": "Emerging Markets",
+      "superAssetClass": "EQUITY_EM"
+    },
+    "tickers": [
+      {
+        "id": 11,
+        "symbol": "VWO",
+        "displayName": "Vanguard FTSE Emerging Markets",
+        "description": "Emerging Markets",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=0964&FundIntExt=INT",
+        "unitPrice": 34.98,
+        "primary": true
+      },
+      {
+        "id": 42,
+        "symbol": "IEMG",
+        "displayName": "iShares Core MSCI Emerging Markets ETF",
+        "description": "Emerging Markets",
+        "ordering": 1,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/IEMG.htm",
+        "unitPrice": 41,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "INFLATION_PROTECTED_BONDS",
+      "investmentType": "BONDS",
+      "displayName": "Inflation-Protected Bonds",
+      "superAssetClass": "FIXED_INCOME_US"
+    },
+    "tickers": [
+      {
+        "id": 20,
+        "symbol": "VTIP",
+        "displayName": "Vanguard Short-Term Inflation-Protected Securities ETF",
+        "description": "Inflation-Protected Bonds",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=3365&FundIntExt=INT",
+        "unitPrice": 48.28,
+        "primary": true
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "SHORT_TERM_TREASURIES",
+      "investmentType": "BONDS",
+      "displayName": "Short-Term Treasuries",
+      "superAssetClass": "FIXED_INCOME_US"
+    },
+    "tickers": [
+      {
+        "id": 13,
+        "symbol": "SHV",
+        "displayName": "iShares Short-Term Treasury Bond ETF",
+        "description": "Short-Term Treasuries",
+        "ordering": 0,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/SHV.htm",
+        "unitPrice": 110.27,
+        "primary": true
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "US_LARGE_CAP_VALUE_STOCKS",
+      "investmentType": "STOCKS",
+      "displayName": "US Large-Cap Value",
+      "superAssetClass": "EQUITY_US"
+    },
+    "tickers": [
+      {
+        "id": 33,
+        "symbol": "VTV",
+        "displayName": "Vanguard Value ETF",
+        "description": "US Large-Cap Value",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=0966&FundIntExt=INT",
+        "unitPrice": 82,
+        "primary": true
+      },
+      {
+        "id": 4,
+        "symbol": "IVE",
+        "displayName": "iShares S&P 500 Value ETF",
+        "description": "US Large-Cap Value",
+        "ordering": 1,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/IVE.htm",
+        "unitPrice": 89.98,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "US_CORPORATE_BONDS",
+      "investmentType": "BONDS",
+      "displayName": "US Corporate Bonds",
+      "superAssetClass": "FIXED_INCOME_US"
+    },
+    "tickers": [
+      {
+        "id": 21,
+        "symbol": "LQD",
+        "displayName": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
+        "description": "US Corporate Bonds",
+        "ordering": 0,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/LQD.htm",
+        "unitPrice": 116.02,
+        "primary": true
+      },
+      {
+        "id": 26,
+        "symbol": "VCIT",
+        "displayName": "Vanguard Intermediate-Term Corporate Bond ETF",
+        "description": "US Corporate Bonds",
+        "ordering": 1,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=3146&FundIntExt=INT",
+        "unitPrice": 84.84,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "US_TOTAL_MARKET_STOCKS",
+      "investmentType": "STOCKS",
+      "displayName": "US Total Stock Market",
+      "superAssetClass": "EQUITY_US"
+    },
+    "tickers": [
+      {
+        "id": 2,
+        "symbol": "VTI",
+        "displayName": "Vanguard Total Stock Market ETF",
+        "description": "US Total Stock Market",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=0970&FundIntExt=INT",
+        "unitPrice": 105.41,
+        "primary": true
+      },
+      {
+        "id": 31,
+        "symbol": "SCHB",
+        "displayName": "Schwab U.S. Broad Market ETF",
+        "description": "US Total Stock Market",
+        "ordering": 1,
+        "url": "http:\/\/www.schwab.com\/public\/csim\/home\/products\/exchange_traded_funds\/summary.html?symbol=SCHB",
+        "unitPrice": 49.57,
+        "primary": false
+      }
+    ]
+  },
+  {
+    "assetClass": {
+      "assetClass": "US_MID_CAP_VALUE_STOCKS",
+      "investmentType": "STOCKS",
+      "displayName": "US Mid-Cap Value",
+      "superAssetClass": "EQUITY_US"
+    },
+    "tickers": [
+      {
+        "id": 35,
+        "symbol": "VOE",
+        "displayName": "Vanguard Mid-Cap Value ETF",
+        "description": "US Mid-Cap Value",
+        "ordering": 0,
+        "url": "https:\/\/personal.vanguard.com\/us\/funds\/snapshot?FundId=0935&FundIntExt=INT",
+        "unitPrice": 90.29,
+        "primary": true
+      },
+      {
+        "id": 6,
+        "symbol": "IWS",
+        "displayName": "iShares Russell Midcap Value ETF",
+        "description": "US Mid-Cap Value",
+        "ordering": 1,
+        "url": "http:\/\/us.ishares.com\/product_info\/fund\/overview\/IWS.htm",
+        "unitPrice": 71.87,
+        "primary": false
+      }
+    ]
+  }
+]

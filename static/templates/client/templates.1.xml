@@ -1,0 +1,3558 @@
+<?xml version="1.0" encoding="UTF-8"?><templates><template name="components/advice/templates/adviceGraph"><![CDATA[
+<div class="projection-graph">
+<div class="hover-tooltip ui-tooltip qtip ui-tooltip-default ui-tooltip-rounded ui-tooltip-pos-rc ui-tooltip-focus">
+<h2></h2>
+</div>
+</div>
+
+<div class="left projection-legend">
+<div class="clearfix">
+<div class="key">
+<div class="line avg"></div>
+<div>Average market performance</div>
+</div>
+<div class="key">
+<div class="line poor"></div>
+<div>Poor market performance</div>
+</div>
+<div class="key">
+<div class="line deposit"></div>
+<div>Auto deposit and one&#8209;time&nbsp;deposit</div>
+</div>
+</div>
+<div class="key disclaimer">
+Nominal values (not inflation adjusted)
+</div>
+</div>
+
+]]></template><template name="components/portfolio/templates/donut"><![CDATA[
+<section class="breakdown" style="width: <%- breakdownWidth() %>px; height: <%- breakdownHeight() %>px;">
+<svg class="donut" style="width: <%- donutWidth() %>px; height: <%- donutHeight() %>px;"></svg>
+<svg class="aggregate" style="width: <%- donutWidth() %>px; height: <%- donutHeight() %>px;"></svg>
+
+<div class="hole-text">
+<div class="stocks">
+<span class="allocation"></span>
+<p>Stocks</p>
+</div>
+<div class="bonds">
+<span class="allocation"></span>
+<p>Bonds</p>
+</div>
+</div>
+</section>
+
+]]></template><template name="advice/adviceAccount"><![CDATA[
+<%
+var a = self.model;
+%>
+<div class="goal-name">
+<% if (!self.model.isNew()) { %>
+<% if (self.options.showDelete && showDeleteAccount()) { %>
+<span class="left blue-x"></span>
+<% } else { %>
+<span class="left status <%= self.goalStatus()['class'] %>"></span>
+<% } %>
+<% } %>
+
+<input class="left" type="text" name="name" maxlength="64" />
+<span class="left name"><%- name() %></span>
+
+<% if (BMT.user.not('demo') && !self.model.isIRA()) { %>
+<span class="left white-pen"></span>
+<% } %>
+
+<div class="right chevron-right"></div>
+</div>
+<div class="goal-contents">
+
+<div class="row clearfix">
+<span class="left type-tooltip">
+<span class="dotted-underline"><%= goalTypeLabel() %></span>
+<span class="help-content">
+We use Goal Type to determine our recommended allocation.
+</span>
+</span>
+
+<% if (showChange()) { %>
+<button class="right silver change-goal">Change</button>
+<% } %>
+</div>
+
+<% if (showGoalAmount()) { %>
+<div class="row">
+<div class="clearfix">
+<span class="left">Target</span>
+<span class="right goal-amount">
+<span class="right blue-pen"></span>
+<input type="text" name="goalAmount" class="left" maxlength="13" money-input />
+<span class="name right">
+<%= goalAmount() %>
+</span>
+</span>
+</div>
+</div>
+
+<% } %>
+</div>
+
+]]></template><template name="advice/allocationRecommendation"><![CDATA[
+<div class="clearfix">
+<div class="controls-title left">allocation</div>
+<div class="current-value right">
+<input type="text" integer-input /> % Stocks
+</div>
+<div class="existing-value right">
+<%= stockAllocation() %> Stocks
+</div>
+</div>
+
+<div>
+<div class="allocation-slider"></div>
+<a class="reset-x-icon reset right" data-help-content="Reset"></a>
+</div>
+<div class="slider-labels clearfix">
+<div class="left">Bonds</div>
+<div class="right">Stocks</div>
+</div>
+<% if (showTaxImpactButton()) { %>
+<button class="small secondary light-blue show-tax-impact" data-track-event="ElementClicked" data-track-location="Advice" data-track-name="TaxImpact">Estimate tax impact</button>
+<% } %>
+
+<div class="clearfix info-tip advice-box">
+<div class="text">
+<div class="advice-label">Risk</div>
+<div class="advice-value">
+<span class="risk-level"></span>
+<div class="risk-help help-icon">
+This is the relative risk level of your target allocation considering your time
+horizon of <span class="remaining-term"><%= remainingGoalTerm() %></span> years.
+You can adjust this risk level by updating your time horizon or target allocation.
+</div>
+</div>
+</div>
+</div>
+
+]]></template><template name="advice/autoTransactionRecommendation"><![CDATA[
+<div class="controls-title">
+<% if (canAutoWithdraw()) { %>
+Monthly <%= autoTransactionTypeSelector() %>
+<% } else { %>
+Monthly Auto Deposit
+<% } %>
+</div>
+
+<div class="input-area">
+$ <input type="text" name="monthlyAmount" class="monetary" money-input />
+<a class="reset-x-icon reset" data-help-content="Reset"></a>
+</div>
+<div class="current-value">
+<%= currentValueText() %>
+</div>
+
+<div class="advice-box clearfix info-tip">
+<div class="arrow top"></div>
+<div class="text">
+<div class="advice-label">
+<span class="deposit-label">
+Recommended
+</span>
+
+<span class="withdrawal-label dotted-underline">
+Safe withdrawal amount
+<span class="help-content">
+"Monthly Safe Withdrawal" assumes you update your withdrawal
+amount and allocation at least annually using our recommendations.
+If you follow this advice annually, we estimate that your chance of
+outliving your portfolio is 1%.
+<br>
+<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1482070-about-our-%22monthly-safe-withdrawal%22-advice">Learn More &gt;</a>
+</span>
+</span>
+</div>
+<div class="advice-value"></div>
+</div>
+</div>
+
+]]></template><template name="advice/batchSettingsModal"><![CDATA[
+<h1>Confirm Changes</h1>
+
+<% if (showAllocation()) { %>
+<div class="advisor-warning advised-user-only">
+<h2>Have you talked to your advisor?</h2>
+<p>
+Changing your allocation may have an impact on your financial plan.<br/>Please speak to your advisor before making this change.
+</p>
+<div class="advisor-info">
+<span><%= advisorName() %></span> | <span><%= advisorPhoneNumber() %></span> | <span><a href="<%= advisorEmail() %>"><%= advisorEmail() %></a></span>
+</div>
+</div>
+<% } %>
+
+<ul class="settings-list">
+<% if (showAllocation()) { %>
+<% if (allocationChangedAndIsInvalid()) { %>
+<div class="clearfix warning info-tip active">
+<div class="arrow bottom"></div>
+<div class="text">
+<span class="heading green">You&#39;ve already made one allocation change today.</span>
+You can make this allocation change starting tomorrow.
+</div>
+</div>
+<% } %>
+<li class="clearfix allocation section" data-section="allocation">
+<div class="section-block"></div>
+<div class="status">
+<input type="checkbox" <%= account().get('canChangeAllocation') ? 'checked' : '' %> />
+</div>
+<div class="attribute">
+<div class="name">Allocation</div>
+<div class="value"><%= pct(allocationChange().get('allocation')) %> stocks</div>
+<% if (!isIRA()) { %>
+<button class="small light-blue secondary show-tax-impact" data-track-event="ElementClicked" data-track-location="SetAllModal" data-track-name="TaxImpact">Tax Impact</button>
+<% } %>
+</div>
+<div class="detail">
+<p><a href="<%= brochure_url('/transactions/#day-trading') %>" target="_blank">Federal Regulations</a>
+permit <span style="font-weight:900">only one</span> allocation change per day. When you change your Allocation, you are giving Betterment instructions to
+<a href="<%= brochure_url('/transactions/') %>" target="_blank">trade on your behalf</a>.</p>
+<p>Allocation changes fully rebalance your account.  Any sales will be optimized to reduce taxes, but
+this may result in short-term gains taxes that were otherwise avoided during prior rebalances.</p>
+</div>
+<ul class="errors"></ul>
+</li>
+<% } %>
+
+<% if (showAutomaticTransactionSection()) { %>
+<li class="clearfix automatic-transaction section" data-section="automatic-transaction">
+<div class="section-block"></div>
+<% if (needsBuilderPlanWarning()) { %>
+<div class="clearfix warning info-tip active">
+<div class="arrow bottom"></div>
+<div class="text">
+<div class="heading green">Are you sure you want to automatically deposit only <%= automaticDepositSummaryText() %>?</div>
+<p>
+To qualify for the Builder plan you must automatically deposit at least a combined $100/month
+across your goals, otherwise you will be moved to the Better plan and will be charged $3/month.
+You can change your plan at any time from your Account Settings screen.
+</p>
+</div>
+</div>
+<% } else if (isInheritedIRA()) { %>
+<div class="clearfix warning info-tip active">
+<div class="arrow bottom"></div>
+<div class="text">
+<div class="heading green">
+Making deposits or rollovers into your Inherited IRA will trigger tax consequences that you most
+likely want to avoid.
+</div>
+<p>
+For more details see the rules in <a target="_blank" href="http://www.irs.gov/uac/About-Publication-590">IRS Publication 590</a> under Inherited IRAs.
+Contact <a href="mailto:support@betterment.com">support@betterment.com</a> if you have any questions.
+</p>
+</div>
+</div>
+<% } %>
+
+<div class="status">
+<input type="checkbox" checked="checked" />
+</div>
+<div class="attribute">
+<div class="name"><%= automaticDeposit() ? 'Auto deposit' : 'Auto withdrawal' %></div>
+<div class="value"><%= money(automaticTransaction().monthlyAmount()) %></div>
+</div>
+<div class="detail">
+<form action="#" method="POST">
+<section class="top">
+<div class="amount-line">
+<label>
+1. <%= automaticDeposit() ? 'Deposit' : 'Withdrawal' %>
+<div class="help-icon" id="amountHelp">
+The amount entered will be automatically <%= automaticDeposit() ? 'deposited' : 'withdrawn' %> into this goal at the frequency you select, starting on the day you select.
+</div>
+</label>
+
+<div class="left amount">
+<input type="number" name="amount" value="<%= money(automaticTransaction().periodicAmount()) %>"/>
+</div>
+</div>
+
+<% if (automaticDeposit() && showMaximizeIRA()) {%>
+<div class="maximize-contributions">
+<input class="left" id ="optimizeIRACheck" type="checkbox" />
+<span class="left">Maximize IRA contributions for <%= new Date().getFullYear() %></span>
+</div>
+<%}%>
+</section>
+
+<section class="clearfix">
+<label class="bold-text left frequency">
+2. Select frequency
+</label>
+
+<div class="left frequency-selector-wrapper">
+<%= frequency_selector(account().isIRA()) %>
+</div>
+</section>
+<section class="middle clearfix">
+<label class="instructions left choose-date">3. Choose a day</label>
+<div class="start-date-fields two-fields">
+<span class="left start-date first"></span>
+<span class="left start-date second"></span>
+</div>
+<div class="right calendar">
+<div id="dateSelector" class="dateSelector"></div>
+<div class="inner-triangle"></div>
+<div class="outer-triangle"></div>
+</div>
+</section>
+<% if(account().isIRA() && automaticWithdrawal()) { %>
+<section class="middle clearfix distribution-type">
+<label class="bold-text left frequency">
+Distribution Type
+</label>
+
+<div class="left frequency-selector-wrapper">
+<%= build_distribution_selector() %>
+</div>
+</section>
+<% } %>
+<% if(automaticWithdrawal()) { %>
+<section class="middle clearfix distribution-type">
+<span class="bold-text left">
+Please allow 4-5 business days for transfers to complete.
+</span>
+</section>
+<% } %>
+</form>
+</div>
+<ul class="errors"></ul>
+</li>
+<% } %>
+
+<% if (showOneTimeDeposit()) { %>
+<% if (blockOneTimeDeposit()) { %>
+<div class="message info-tip active clearfix">
+<div class="arrow bottom"></div>
+<div class="text">
+<p>
+<% if (pendingTrustBlocker()) { %>
+Your trust account is still pending approval. At this time, we cannot process deposits into your trust account. Please contact trusts@betterment.com or <%= supportPhoneNumber() %>.
+<% } else if (wireInstructionsBlocker()) { %>
+<span class="green heading">Deposits greater than <%= money(maxACHAmount()) %> must be wired directly from your bank.
+Wire instructions will appear on the next screen.</span>
+<% } else if (linkBankAccountBlocker()) { %>
+To deposit money, you&#39;ll need to link your bank
+account first. Go to the <a href="#transfer" class="transfer-link">Transfer tab &gt;</a>
+<% } else if (confirmBankAccountBlocker()) { %>
+To deposit money, you&#39;ll need to confirm your bank
+account first. Go to the <a href="#transfer" class="transfer-link">Transfer tab &gt;</a>
+<% } else if (oneTimeAmountBlocker()) { %>
+<%= oneTimeValidationMessage() %>
+<% } %>
+</p>
+</div>
+</div>
+<% } %>
+<li class="clearfix one-time-deposit section" data-section="one-time-deposit">
+<div class="section-block"></div>
+<% if (showBonusWarning()) { %>
+<div class="clearfix warning info-tip active">
+<div class="arrow bottom"></div>
+<div class="text">
+<span class="heading green">
+Are you sure you want to authorize a deposit of <%= money(oneTimeDepositAmount()) %> from your <%= bankAccountName() %> account to your account at Betterment?
+</span>
+It looks like you signed up using a <%= isReferralBonus() ? 'referral link from a friend' : 'promotional link' %>. In order for you to get your
+signup bonus of <%= signupBonusPrize() %>, you must make an initial deposit of <%= money(minimumInitialDepositForBonus()) %> or more on this screen.
+</div>
+</div>
+<% } %>
+<div class="status">
+<input type="checkbox" checked="<%= blockOneTimeDeposit() ? '' : 'checked' %>" />
+</div>
+<div class="attribute">
+<div class="name">One-time deposit</div>
+<div class="value"><%= money(oneTimeDeposit().num('amount')) %></div>
+</div>
+<div class="detail">
+<p>To: <span class="multi-ag-only"><%= accountGroupName() %> - </span> <%= goalName() %></p>
+<% if (bankAccountName()) { %>
+<p>From: <%= bankAccountName() %></p>
+<% } %>
+
+<% if (account().isIRA()) { %>
+<div class="contribution-type-selection clearfix ">
+<div class="left ira-heading" id="contributionHelp">
+<span class="dotted-underline">Contribution Type</span>
+<div class="help-content">
+<h2>Tax Year Contributions:</h2>
+Each tax year you are generally allowed to contribute a combined $5,500 to your IRAs if you are younger than 50, and $6,500 if you are 50 and older (use our tool to help figure out your Roth limit). You may continue contributing money toward a tax year until you file your taxes for that year.
+<br/><br/>
+<h2>IRA Rollover:</h2>
+Choose this option if the money you are depositing is rolling over from another IRA. If you deposit your money within 60 days of receiving it from your former provider, there should not be any tax consequences or penalties.
+<br/><br/>
+For more information, check out IRS Publication 590.
+</div>
+</div>
+<div class="ira-fields">
+<%= contributionTypeSelector() %>
+</div>
+</div>
+<% } %>
+</div>
+<ul class="errors"></ul>
+</li>
+<% } %>
+
+<% if (showTerm()) { %>
+<li class="clearfix goal-term section" data-section="goal-term">
+<div class="section-block"></div>
+<div class="status">
+<input type="checkbox" checked="checked" />
+</div>
+<div class="attribute">
+<div class="name"><%= term_label() %></div>
+<div class="value"><%= shouldShowTermAsAge() ? goalCompleteAge() : term() %> years</div>
+</div>
+<div class="detail">
+<% if (isRetireeWithRetirementGoal()) { %>
+You want to plan until you are <%= goalCompleteAge() %> years old.
+<% } else if (account().isRetirementGoalDisplayedAsAge()) { %>
+You want to retire when you are <%= goalCompleteAge() %> years old.
+<% } else if (account().isEmergency()) { %>
+You want your safety net funded in <%= term() %> years.
+<% } else if (account().isBuildWealth()) { %>
+You want your money to grow for at least <%= term() %> years.
+<% } else { %>
+You may need this money in <%= term() %> years.
+<% } %>
+</div>
+<ul class="errors"></ul>
+</li>
+<% } %>
+</ul>
+
+<div class="modal-buttons">
+<button class="ok"><%= numberOfProposedChanges() === 1 ? 'Confirm Change' : 'Confirm All Changes' %></button>
+<button class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="advice/depositRecommendation"><![CDATA[
+<div class="controls-title">One-Time Deposit</div>
+
+$ <input type="text" name="amount" money-input />
+<a class="reset-x-icon reset" data-help-content="Reset"></a>
+
+<div class="help-note"><%= pending() %></div>
+
+<div class="advice-box clearfix info-tip">
+<div class="arrow top"></div>
+<div class="text">
+<div class="advice-label">Recommended</div>
+<div class="advice-value"></div>
+</div>
+</div>
+
+]]></template><template name="advice/goalComplete"><![CDATA[
+<%= build_high_fade({
+title: 'Your "' + _.escape(self.model.get('name')) + '" goal has been set up',
+className: 'positive',
+iconText: '%',
+subHeader: is_rollover() ? 'Check your email for rollover instructions' : null
+}) %>
+
+<p class="highlight">
+
+<% if (self.model.isBuildWealth()) { %>
+<%- build_wealth_text() %>
+<% } else { %>
+<%= goal_verb_and_time() %> we calculate that a portfolio of <%= allocation_breakdown() %> will maximize your money&#39;s potential growth and reduce potential losses.
+<% } %>
+</p>
+
+<div class="portfolio-donut left">
+<p class="title">Your Portfolio</p>
+
+<div class="portfolio-donut-region"></div>
+</div>
+
+<div class="portfolio-deets right">
+<ul class="tidbits">
+<% if (is_retiree_with_retirement_goal()) { %>
+<li>
+<span class="title">Status</span>
+<br />
+<span class="value">Retired</span>
+</li>
+
+<li>
+<span class="title">Current age</span>
+<br />
+<span class="value"><%= user_age() %> years old</span>
+</li>
+
+<li>
+<span class="title">Plan-to age</span><span class="help-icon plan-to-help">The age you want to plan until is based on your longevity, and used to give you better advice. If you'd like to select a different age based on your health or family history, you can adjust this later on the Portfolio or Advice tab.</span>
+<br />
+<span class="value"><%= self.model.goalAge() %> years old</span>
+</li>
+<% } else { %>
+<% if (show_target_amount()) { %>
+<li>
+<span class="title">Target</span>
+<br />
+<span class="value"><%= money(self.model.num('goalAmount'), 0) %></span>
+</li>
+<% } %>
+
+<% if (show_term()) { %>
+<li>
+<span class="title">Time</span>
+<br />
+<span class="value"><%= term() %></span>
+</li>
+<% } %>
+<% } %>
+</ul>
+
+<ul class="under-the-hood">
+<li class="title">
+What&#39;s happening under the hood:
+</li>
+<li>
+Our <a href="<%= brochure_url('experts') %>" target="_blank">team of experts</a> have done all the research so you don&#39;t have to.
+</li>
+<li>
+We&#39;ve customized a diversified portfolio of <a href="<%= brochure_url('portfolio') %>" target="_blank">exchange traded funds</a> (ETFs).
+</li>
+<li>
+We rebalance your portfolio to minimize risk and maximize expected returns.
+</li>
+<% if (is_retiree_with_retirement_goal()) { %>
+<li>
+This portfolio is built to grow from both dividends and capital appreciation.
+</li>
+<% } else { %>
+<li>
+We reinvest your dividends to increase expected returns.
+</li>
+<% } %>
+<li>
+All for one low cost that covers everything, including trading and advice.
+</li>
+</ul>
+</div>
+
+
+<div class="clearfix"></div>
+
+<div class="modal-buttons">
+<% if (is_retiree_with_retirement_goal()) { %>
+<button class="see-advice blue">See Advice</button>
+<% } else { %>
+<button class="exit blue">OK</button>
+<% } %>
+</div>
+
+]]></template><template name="advice/narrative"><![CDATA[
+<div class="heading">
+<% if (self.model.isNew()) { %>
+Tell us about your goal<%= self.model.isBuildWealth() ? '' : ' so we can give you advice' %>
+<% } else { %>
+Goal settings
+<% } %>
+</div>
+<div class="narrative-container">
+<div class="narrative-outline">
+<div class="narrative-help">
+<span class="help-text">
+Why we ask this
+<div class="help-content">
+We ask for information about your goal so we can give you the best advice about how to make your goal a reality. <a href="<%= why_we_ask_link() %>" target="_blank">Learn more about the calculations &gt;</a>
+</div>
+</span>
+</div>
+<div class="narrative-inside">
+<div class="madlib">
+<%= full_madlib() %>
+</div>
+<div class="next-step">
+<div class="vertical-align">
+<% if (self.model.isNew() && !self.model.isBuildWealth()) { %>
+<span class="next-step-text">
+On the next screen, we&#39;ll give you advice on how to achieve your goal.
+</span>
+<% } %>
+<% if (!self.model.isNew()) { %>
+<button id="cancel" class="right silver cancel">Cancel</button>
+<% } %>
+<button class="right blue ok" data-disabled="view:disable_button < view.goalAmount view.goalCompletionDate view.currentAge">
+<%= self.model.isNew() ? 'Next' : 'Update' %>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+]]></template><template name="advice/questions"><![CDATA[
+<li>
+<h6>planning tools</h6>
+<div>
+<span class="article-icon"></span>
+<span class="question">Why goal-based investing?</span>
+</div>
+<div class="content">
+Betterment is customizable to the way you think about your money through "goals." Using goals, your portfolio can be segmented into a spectrum of goal-specific risk and return targets. In addition to customized allocations for each goal, if you have a specific target amount in mind, Betterment&#39;s advice engine will recommend savings and time horizon changes to achieve the target. For customers in retirement, goals allow the flexibility to take regular withdrawals or to continue to build wealth with time-horizon based buckets at different risk levels.
+</div>
+</li>
+<li>
+<h6>financial advice</h6>
+<div>
+<span class="article-icon"></span>
+<span class="question">Why this stock allocation?</span>
+</div>
+<div class="content">
+Betterment&#39;s systematic portfolio advice engine considers age, time horizon, and investment goal type to formulate tailored advice on both asset allocation and required savings or withdrawal rate. This process provides ongoing dynamic allocation advice for each investment goal through time. Based on our research, the allocation advice glide path gradually decreases the allocation to stocks over time.  Additionally, each goal can be customized based on your goal-specific risk tolerance (conservative, moderate or aggressive).
+<a href="<%= brochure_url('resources/inside-betterment/investment-advice/') %>" target="_blank">Learn more &gt;</a>
+</div>
+</li>
+<li>
+<h6>planning tools</h6>
+<div>
+<span class="article-icon"></span>
+<span class="question">About our projections</span>
+</div>
+<div class="content">
+Betterment&#39;s projections work in concert with the advice engine to show the range of possible future investment values that illustrate the impact of different contribution and withdrawal choices, investment time horizons, and portfolio allocations. Performance projections are derived from the goal&#39;s specific expected return and volatility assumptions. Savings projections estimate required monthly contributions assuming a 60% likelihood of the portfolio reaching its goal target. Suggested withdrawal advice assumes a 99% chance of the portfolio lasting throughout the time horizon.
+<a href="<%= brochure_url('/advice-projection-methodology/') %>" target="_blank">Learn more &gt;</a>
+</div>
+</li>
+
+]]></template><template name="advisors/advisorDetails"><![CDATA[
+<div class="advisor-name">
+<h3>
+Your advisor: <strong><%- advisorName() %> </strong>
+</h3>
+<div class="speech-bubble expand-advisor-details"></div>
+</div>
+<div class="more-advisor-details">
+<table>
+<tr>
+<td><div class="phone-black advisor-icon"></div></td>
+<td><%- advisorPhoneNumber() %></td>
+</tr>
+<tr>
+<td><div class="mail-black advisor-icon"></div></td>
+<td><a href="mailto:<%- advisorEmail() %>"><%- advisorEmail() %></a></td>
+</tr>
+</table>
+</div>
+
+]]></template><template name="common/addGoal"><![CDATA[
+<h1><%= header() %></h1>
+<div class="modal-body-wrapper">
+<h2 class="left">
+<%= subheader() %>
+<span class="help-icon choose">We ask you to choose a goal type to frame your investing and allow us to give more tailored advice. You can always change your goal type or add more goals later.</span>
+</h2>
+</div>
+<ul class="card-lists">
+<!-- card lists will go here -->
+
+<li class="next-step investing highlight">
+<div class="settings-row account-type-row">
+<p class="left">Account type</p>
+<%= accountTypeSelector() %>
+</div>
+<div class="settings-row goal-name-row">
+<p class="left">Personalize your goal by naming it (required)</p>
+
+<%= build_validated_input({ type: 'text', name: 'name' }, { 'class': 'left'}) %>
+</div>
+</li>
+</ul>
+
+<div class="next-step terms">
+<div class="terms-of-service"></div>
+</div>
+
+<div class="modal-buttons clearfix">
+<button class="blue ok" disabled="disabled">
+<%= model() ? 'Set' : 'Add' %> Goal
+</button>
+
+<% if (!hideExit()) { %>
+<button class="back cancel">Cancel</button>
+<% } %>
+</div>
+
+]]></template><template name="common/addGoal/addGoalCard"><![CDATA[
+<span class="green_flag"></span>
+<span class="blue-check"></span>
+
+<span class="title">
+<%= cardTitle %>
+
+<div class="help-content">
+<%= getTooltip() %>
+</div>
+</span>
+
+<% if (overlay) { %>
+<div class="tax">
+<%= overlay %>
+</div>
+<% } %>
+
+]]></template><template name="common/alert"><![CDATA[
+
+<%if (typeof title !== 'undefined') {%>
+<h1 <%= build_attributes(obj.titleAttrs) %>><%= title %></h1>
+<%}%>
+
+<%if (typeof icon !== 'undefined') {%>
+<div class="modal-<%= icon %>"></div>
+<%}%>
+
+<div class="modal-body-wrapper"
+style="width: <%= self.model.has('width') ? self.model.num('width') : '365' %>px;">
+<%if (typeof body !== 'undefined') {%>
+<% obj.bodyAttrs['class'] = 'modal-body ' + (obj.bodyAttrs['class'] || '' ); %>
+<div <%= build_attributes(obj.bodyAttrs) %>>
+<%= _.isFunction(body) ? body.call(self.templateHelpers) : body %>
+</div>
+<%}%>
+<div>
+
+<div class="modal-buttons">
+<%if (typeof buttons !== 'undefined') {%>
+<% _.each(buttons, function(b) { %>
+<%= build_button(b) %>
+<% }); %>
+<%} else {%>
+<%= build_button({id: 'ok', title: 'OK'}) %>
+<%}%>
+</div>
+
+]]></template><template name="common/confirmWithdrawAll"><![CDATA[
+<h1>Withdraw Everything From Your Account?</h1>
+
+<div class="modal-body">
+
+<% if (isLowBalance()) { %>
+<p>
+Since your balance is below the minimum transfer requirement of
+<strong><%- money(lowBalanceThreshold()) %></strong>, any
+withdrawals must be for your full available balance.
+</p>
+<% } else { %>
+<p>
+<strong><%- money(self.model.get('amount')) %></strong> is greater than
+<strong><%- withdrawalThreshold() %></strong> of your available
+balance.
+</p>
+<% } %>
+
+<p>To withdraw exact dollar amounts you need a small buffer of funds in your
+account in case market prices change after shares are determined. If you
+withdraw beyond this buffer we must sell all of your shares, which may result
+in slightly more or less money than you requested.</p>
+
+<p>Even if you withdraw everything, your account will remain open, and there will be
+no maintenance fees.</p>
+
+<% if (isRollover()) { %>
+<p>Indirect rollovers must be completed within 60 days. See IRS Publication 590 for more details.</p>
+<% } %>
+
+<p>Please allow 4-5 business days for transfers to complete.</p>
+
+<% if (!isIRA()) { %>
+<div class="info-tip">
+<div class="arrow"></div>
+<div class="icon">
+<div class="lightbulb-tip-icon"></div>
+</div>
+<div class="text">
+Your withdrawal causes sales of securities, which may result in taxes.
+<a href="#" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="WithdrawalConfirmModal" data-track-name="TaxImpact">See the tax impact &gt;</a>
+</div>
+</div>
+<% } %>
+</div>
+
+<div class="modal-buttons">
+<button class="ok">Withdraw Everything</button>
+<button class="cancel">Request Different Amount</button>
+</div>
+
+]]></template><template name="common/confirmWithdrawal"><![CDATA[
+<h1>Please Confirm Withdrawal</h1>
+
+<div class="modal-body">
+<% if (isRollover()) { %>
+<p>Per IRS rules, an indirect rollover is not allowed if you have already done an indirect rollover involving any of your IRAs in the preceding 1-year period. Indirect rollovers must be completed within 60 days of this withdrawal. See <a target="_blank" href="http://www.irs.gov/pub/irs-drop/a-14-15.pdf">IRS One-Per-Year Limit Announcement</a> for more details.</p>
+<p class="rollover-withdraw-agreement">
+<input type="checkbox" name="rollover-withdraw-agreement" /> I understand the indirect rollover rules above.
+</p>
+<hr/>
+<% } %>
+
+<ul>
+<li>
+Withdrawal amount: <strong><%- money(self.model.get('amount')) %></strong>
+<% if (!isIRA()) { %>
+<button class="show-tax-impact" data-track-event="ElementClicked" data-track-location="WithdrawalConfirmModal" data-track-name="TaxImpact">See tax impact</button>
+<% } %>
+</li>
+<li>From: <strong><%- goalName() %></strong></li>
+<li>To: <strong><%- bankAccountName() %></strong></li>
+</ul>
+
+<p class="time-estimate">Please allow 4-5 business days for transfers to complete.</p>
+</div>
+<div class="modal-buttons">
+<button class="ok" <% if (isRollover()) { %>disabled="disabled"<% } %>>Withdraw</button>
+<button class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="common/iraConversion/conversionAmount"><![CDATA[
+<h1>IRA Conversion - Amount</h1>
+<div class="wizard-body">
+Enter the amount you would like to convert to your Roth IRA. The maximum amount may be smaller than your current IRA balance if you previously recharacterized any amount.
+<br /><br />
+<% if (self.model.is('rmd')) { %>
+RMD taken: <%= money(self.model.remainingRMD()) %>
+<br />
+<% } %>
+Amount available for conversion: <%= money(self.model.availableAmount()) %>
+</div>
+
+<form action="#" method="POST">
+<div class="clearfix">
+<label class="left">Conversion amount:</label>
+<span class="help-icon right amountHelp">
+Choose &quot;Convert All&quot; to convert the total available amount. To convert an exact amount, you need a small buffer in case of changing market prices. If the amount entered is within 98% of your IRA balance, we must convert all and the amount will vary slightly from what you entered.
+</span>
+<div class="right">
+<div>
+<span>$</span>
+<input type="number" name="amount" value="<%= self.model.num('amount') ? self.model.num('amount').toFixed(2) : '' %>" />
+</div>
+<div class="help-note">
+<input class="left convert-all" type="checkbox" /> Convert all
+</div>
+</div>
+</div>
+</form>
+
+<%= build_wizard_controls({
+back: back(),
+buttons: [{ id: 'next',   title: 'Next' },
+{ id: 'cancel', title: 'Cancel', attributes:{'class': 'cancel'} }],
+count: count()
+}) %>
+
+]]></template><template name="common/iraConversion/createRothIRA"><![CDATA[
+<h1>IRA Conversion - Set up a new Roth IRA</h1>
+<div class="wizard-body">
+In order to convert your Traditional IRA, you must have a Roth IRA with Betterment to move the funds to. Creating one is easy, just check the boxes below. We will use the same retirement age and allocation as your current IRA.
+</div>
+
+<form class="ira-checkboxes" action="#" method="POST">
+<div class="terms-of-service"></div>
+</form>
+
+<%= build_wizard_controls({
+buttons: [{ id: 'next',   title: 'Next' },
+{ id: 'cancel', title: 'Cancel', attributes: {'class': 'cancel'} }],
+count: count()
+}) %>
+
+]]></template><template name="common/iraConversion/remainingRMD"><![CDATA[
+<h1>IRA Conversion - Required Minimum Distribution (RMD)</h1>
+<div class="wizard-body">
+You are required to take a distribution of <%= money(remainingRMD()) %> from your IRA in <%= new Date().getFullYear() %>. This distribution must be taken prior to IRA conversion. However, according to RMD rules, you may take the distribution from any IRA, including those not held at Betterment.
+</div>
+
+<form action="#" method="POST">
+<div>
+<input type="radio" name="rmd" value="true" <%= !self.model.has('rmd') || self.model.is('rmd') ? 'checked="checked"' : '' %> />
+Transfer <%= money(remainingRMD()) %> RMD to my linked account now
+</div>
+<div>
+<input type="radio" name="rmd" value="false" <%= self.model.has('rmd') && self.model.not('rmd') ? 'checked="checked"' : '' %> />
+I will handle my RMD outside of Betterment
+</div>
+</form>
+
+<%= build_wizard_controls({
+back: back(),
+buttons: [{ id: 'next',   title: 'Next' },
+{ id: 'cancel', title: 'Cancel', attributes: {'class': 'cancel'} }],
+count: count()
+}) %>
+
+]]></template><template name="common/iraConversion/taxImplications"><![CDATA[
+<h1>IRA Conversion - Tax Implications</h1>
+
+<div class="wizard-body">
+<p>
+A conversion to a Roth IRA is a taxable distribution. Taxes will be due on any converted amounts that were originally deducted from your income. Betterment does not withhold taxes since the associated 10% early withdrawal penalty may adversely affect the benefits of conversion. You are required to pay any taxes due, including any penalties if taxes are not paid on time, from funds outside of your IRA.
+</p>
+
+<div class="example-box">
+<p class="bold-text">IRA Conversion tax example:</p>
+<p>If you convert $10,000, are in the 28% Federal tax bracket, and your state bracket is 5%:</p>
+
+<p class="example">$10,000 * (28% + 5%) = $3,300 taxes will be due.</p>
+
+<p>Betterment is not a tax advisor. Consult a tax advisor to understand your specific situation.</p>
+</div>
+
+<form action="#" method="POST">
+<% if (self.model.get('parentUser').get('state') == 'MI') { %>
+<p><span class="bold-text">Michigan Residents:</span> Form MI W4-P is required. Please download, print, check box 1, sign, and email to us at support@betterment.com.</p>
+<div>
+<input type="checkbox" name="michigan" /> I agree to not have state tax withheld (required)
+</div>
+<% } %>
+</form>
+</div>
+
+<%= build_wizard_controls({
+back: true,
+buttons: [{ id: 'submit',   title: 'Convert IRA' },
+{ id: 'cancel', title: 'Cancel', attributes:{'class': 'cancel'} }],
+count: count()
+}) %>
+
+]]></template><template name="common/iraDepositConfirmationAlert"><![CDATA[
+
+<%if (typeof title !== 'undefined') {%>
+<h1 <%= build_attributes(obj.titleAttrs) %>><%= title %></h1>
+<%}%>
+
+<%if (typeof icon !== 'undefined') {%>
+<div class="modal-<%= icon %>"></div>
+<%}%>
+
+<div class="modal-body-wrapper"
+style="width: <%= self.model.has('width') ? self.model.num('width') : '365' %>px;">
+<div class="modal-body">
+<div>Deposit amount:  <%= depositAmount() %>
+<div id="iraContributionHelp">
+(<span class="dotted-underline remaining"></span>)
+<span class="help-content">
+<p class="type-specific-limit-info">
+<p>
+IRA Contributions are limited by tax year, and the limits apply across all
+IRA accounts you own at all brokers.  These calculations are for Betterment
+IRAs only.
+</p>
+<% if (account().isRothIRA()) { %>
+<p>
+Roth IRAs may have additional limits based on income.  Use our Roth IRA
+Limits Calculator to determine if you may be limited.
+</p>
+<% } %>
+<p>For details about your contributions and limits, go to the Transfer Tab.</p>
+</p>
+</span>
+</div>
+</div>
+<p>To: <%= account().get('name')  %> </p>
+<p>From: <%= BMT.user.get('bankAccount').get('description') %></p>
+<div class="contribution-type-selection clearfix ">
+<div class="left ira-heading" id="contributionHelp">
+<span class="dotted-underline bold-text">Contribution Type</span>
+<div class="help-content">
+<h2>Tax Year Contributions:</h2>
+Each tax year you are generally allowed to contribute a combined $5,500 to your IRAs if you are younger than 50, and $6,500 if you are 50 and older (use our tool to help figure out your Roth limit). You may continue contributing money toward a tax year until you file your taxes for that year.
+<br/><br/>
+<h2>IRA Rollover:</h2>
+Choose this option if the money you are depositing is rolling over from another IRA. If you deposit your money within 60 days of receiving it from your former provider, there should not be any tax consequences or penalties.
+<br/><br/>
+For more information, check out IRS Publication 590.
+</div>
+</div>
+<div class="ira-fields">
+<%= contributionsSelector() %>
+</div>
+</div>
+<div class="note" style="display: none;"></div>
+</div>
+</div>
+
+<div class="modal-buttons">
+<%if (typeof buttons !== 'undefined') {%>
+<% _.each(buttons, function(b) { %>
+<%= build_button(b) %>
+<% }); %>
+<%} else {%>
+<%= build_button({id: 'ok', title: 'OK'}) %>
+<%}%>
+</div>
+
+]]></template><template name="common/iraRecharacterization"><![CDATA[
+<h1>Undo Roth Conversion (Recharacterize)</h1>
+
+<div class="modal-body">
+Choose the Roth conversion and amount to recharacterize back to your Betterment Traditional IRA.
+</div>
+
+<div class="clearfix">
+<h2 class="left">IRA Conversion Transactions:</h2>
+<span class="left help-icon" id="recharacterizationHelp">
+Only IRA conversions eligible for recharacterization are shown. Recharacterization must be done by the due date of your tax return following the year of conversion. You can only recharacterize one conversion at a time.
+</span>
+</div>
+
+<section class="clearfix">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Date</th>
+<th>Type</th>
+<th>Converted Amount</th>
+</tr>
+</thead>
+
+<tbody>
+<% _.each(self.model.eligibleConversions(), function(ec, i) { %>
+<tr id="conversion<%= i %>" class="<%= i%2 == 0 ? 'even' : 'odd' %>">
+<td>&#x25B6;</td>
+<td class="bg"><%= render_date(ec.date) %></td>
+<td class="bg">Conversion</td>
+<td class="bg"><%= money(ec.amount) %></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+
+<h2>Amount to Recharacterize:</h2>
+<form action="#" method="POST">
+<input type="radio" name="type" value="full" />
+<label>All</label>
+
+<input type="radio" name="type" value="partial" />
+<label>Partial</label>
+
+$<input type="number" name="amount" readonly="readonly" />
+</form>
+</section>
+
+<section class="calcs">
+<div class="earnings">
+<span class="left">Earnings on converted amount:</span>
+<span class="right">
+<span data-text="view:_netIncome < .amount | money"></span>
+</span>
+</div>
+
+<h2 class="clearfix">
+<span class="left">Final Recharacterized Amount:</span>
+<span class="right" data-text="view:_totalAmount < .amount | money"></span>
+</h2>
+</section>
+
+<div class="modal-body">
+<p>
+Note: Per IRS rules, earnings or losses since conversion will be transfered back to your Traditional IRA with the original amount.
+</p>
+
+<% if (!has_traditional_ira()) { %>
+<p>
+* Your Traditional IRA will be re-opened.
+<a target="_blank" href="<%= brochure_url('customeragreement') %>">
+See Terms
+</a>
+</p>
+<% } %>
+</div>
+
+<div class="modal-buttons">
+<button id="ok">Recharacterize IRA</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="common/subnav/userLinks"><![CDATA[
+
+<a class="header-button show-notifications">
+<div class="unread-bubble"></div>
+<div class="feed-preview">
+<div class="arrow" />
+<img class="preview-icon" />
+<div class="content">
+<div class="preview-title"></div>
+<div class="preview-body"></div>
+</div>
+</div>
+</a>
+
+<a class="header-button user-welcome">
+<span class="single-ag-only">Welcome, <span class="user-first-name"><%= getFirstName() %></span></span>
+<span class="multi-ag-only account-group-name"><%= getAccountGroupName() %></span>
+</a>
+
+<div class="user-menu">
+<div class="account-balance">
+<p class="single-ag-only">Total Balance</p>
+<p class="multi-ag-only account-group-name"><%= getAccountGroupName() %></p>
+<p class="balance"><%= getUserBalance() %></p>
+</div>
+
+<div class="multi-ag-only account-groups-display">
+</div>
+
+<% if (hasJointAccountsFeature()) { %>
+<a class="add-a-joint-account">
+<div class="title">Open a Joint Account</div>
+</a>
+<% } %>
+
+<a href="#trust-signup" class="add-a-trust">
+<div class="title">Add a Trust</div>
+</a>
+
+<div class="user-links clearfix">
+<a href="#profile" class="profile">Account</a>
+<div class="unadvised-user-only"><a href="#invite" class="invite">Invite</a></div>
+<a href="#" id="logoutLink" class="last">Log Out</a>
+</div>
+</div>
+
+]]></template><template name="common/support"><![CDATA[
+<h1><span class="advised-user-only">Technical </span>Support &amp; Feedback</h1>
+<div class="support-feedback">
+<div class="contact-info clearfix">
+<div class="left">
+<div class="clearfix">
+<span class="left icon">
+<span class="bubble-icon"></span>
+</span>
+<div class="left">
+<h2>Frequently Asked Questions</h2>
+<ul>
+<li>
+<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1012004" data-track-event="ElementClicked" data-track-location="Support" data-track-name="FAQTop1">
+How can I delete or edit goals?
+</a>
+</li>
+
+<li>
+<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1152537" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="FAQTop2">
+How can I rollover my employee-sponsored retirement plan?
+</a>
+</li>
+
+<li>
+<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1148713" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="FAQTop3">
+How do I rollover my IRA?
+</a>
+</li>
+<li>
+<a target="_blank" class="view-more-link" href="http://support.betterment.com" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="ViewAll">
+View more &#62;
+</a>
+</li>
+
+</ul>
+</div>
+</div>
+</div>
+<div class="left phone-and-email">
+<div class="clearfix" style="margin-bottom: 20px;">
+<span class="left icon">
+<span class="phone-icon"></span>
+</span>
+
+<div class="left phone-hours">
+<h2><%= supportPhoneNumber() %></h2>
+<span>Mon - Fri: 9:00am - 8:00pm ET</span>
+<span>Sat - Sun: 11:00am - 6:00pm ET</span>
+</div>
+</div>
+
+<div class="clearfix">
+<span class="left icon">
+<span class="mail-icon"></span>
+</span>
+
+<div class="left contact-email">
+<h2><a target="_blank" href="mailto:support@betterment.com">support@betterment.com</a></h2>
+</div>
+</div>
+</div>
+</div>
+
+<div class="send-message">
+<h2>Send us a message</h2>
+<form method="POST" class="contact-form" action="#">
+<section class="to-field">
+<label>To</label>
+<span>Betterment Support &lt;support@betterment.com&gt;</span>
+</section>
+<section class="from-field">
+<label>From</label>
+<% if (useUserName()) { %>
+<span><%= from %></span>
+<% } else { %>
+<span>
+<input type="text" name="from"/>
+</span>
+<% } %>
+
+
+</section>
+<section>
+<textarea name="message"></textarea>
+</section>
+</form>
+</div>
+
+<div class="modal-buttons">
+<button id="ok">Submit</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+</div>
+
+]]></template><template name="common/verifyAccountBanner"><![CDATA[
+<div class="banner-wrapper">
+<div class="banner link-checking-account-banner">
+<div class="image icon-circle-checking-verify"></div>
+<div class="explanation">
+<p class="trust-ag-only">Verify your trust&#39;s checking account to start funding<%= bonusText() %>.</p>
+<p class="non-trust-ag-only">Verify your checking account to start funding your investments<%= bonusText() %>.</p>
+<button class="left secondary banner-button trust-ag-only">Verify trust&#39;s account link</button>
+<button class="left secondary banner-button non-trust-ag-only">Verify my account link</button>
+</div>
+<div class="banner-close" data-dismiss="banner"></div>
+</div>
+</div>
+
+]]></template><template name="common/welcome"><![CDATA[
+
+<div class="white header">
+<p class="welcome">
+<span class="char1">W</span>
+<span class="char2">e</span>
+<span class="char3">l</span>
+<span class="char4">c</span>
+<span class="char5">o</span>
+<span class="char6">m</span>
+<span class="char7">e</span>
+</p>
+<h2 class="get-started">Let&#39;s get started</h2>
+<p class="name"><%= userFirstName() %></p>
+</div>
+<div class="inner clearfix">
+<div class="feature">
+<div class="fade-in check-financial"></div>
+<h2>Link your bank account today</h2>
+<p>Once linked, you can transfer funds into and out of your account whenever you need, even automatically.</p>
+</div>
+<div class="feature unadvised-user-only">
+<div class="fade-in delay-1 icon welcome-goal-retirement"></div>
+<div class="fade-in delay-2 icon welcome-goal-build-wealth"></div>
+<div class="fade-in delay-3 icon welcome-goal-safety"></div>
+<div class="fade-in delay-4 icon welcome-goal-house"></div>
+<h2>Create multiple investment goals</h2>
+<p>and strategically layer your investments to easily fine-tune your overall portfolio.</p>
+</div>
+<div class="feature advised-user-only">
+<div class="advisor-logo-container">
+<img class="fade-in advisor-logo" src="<%= advisorLogoUrl() %>" />
+</div>
+<h2>Talk to your advisor</h2>
+<p>Your advisor, <%- advisorName() %>, can help you configure your account and provide expert financial advice.</p>
+</div>
+</div>
+<div class="white footer">
+<p class="unadvised-user-only">We're so confident you'll love it, your first 30 days are on us. Why wait?</p>
+<button>Get started</button>
+</div>
+
+
+]]></template><template name="common/welcomeRetiree"><![CDATA[
+
+<h1>Welcome to Betterment</h1>
+
+<p>Steps to get started.</p>
+<ol>
+<li>
+<div>
+<h2>Link your bank account</h2>
+<p>Your securely linked account allows you to deposit and withdraw funds to Betterment.</p>
+</div>
+</li>
+<li>
+<div>
+<h2>Add an initial deposit</h2>
+<p>
+Your deposits are invested on the next business day, and you can immediately start benefitting from our advice. Your first 30 days are free. After that you get the best value if you deposit <%- money(bestMinimumBalance(), 0) %> or more.<br>
+<a href="https://www.betterment.com/pricing/">Learn more about our fees ></a>
+</p>
+</div>
+</li>
+<li>
+<div>
+<h2>Understand your portfolio</h2>
+<p>
+Based on what you told us, our initial recommendation for your first investment goal is <%= allocationText() %>. You can see the ETFs and how your portfolio might grow on the Portfolio tab.
+</p>
+</div>
+</li>
+<li>
+<div>
+<h2>Get personalized advice</h2>
+<p>
+Once your account is funded, use the Advice tab to set up your investment goals and customize your asset allocation and income plan.
+</p>
+</div>
+</li>
+</ol>
+
+<button>Get started</button>
+
+
+]]></template><template name="invite/invite"><![CDATA[
+
+<div id="inviteLinkAreaRegion" class="clearfix"></div>
+
+<div class="card">
+<div class="panel header">
+<h1>Track Your Invites</h1>
+</div>
+
+<div class="transaction-table" style="display:block;">
+<div class="table-header">
+<div class="email-column header">Email</div>
+<div class="status-column header longer-column">
+Status
+<span class="help-icon" id="statusHelp">
+<h2 stlye="font-size: 18px; margin-bottom: 15px;">
+Get your friends to sign up and fund their accounts so you both get credit.
+</h2>
+
+<h2>Invited:</h2>
+An invitation email has been sent
+
+<h2>Signed up:</h2>
+Your friend has opened an account
+
+<h2>Funded:</h2>
+Your friend has deposited the minimum required for the promotion.
+Your bonus will be applied the next business day.
+
+<h2>Expired:</h2>
+Your friend didn&#39;t sign up before the expiration date.
+</span>
+</div>
+<div class="updated-column header longer-column">Updated</div>
+<div class="resend-column header longer-column">Resend Invite</div>
+</div>
+<div class="table-contents" id="tableContents">
+<div style="margin:120px 0 0;text-align:center">
+<img src="assets/img/loading.gif">
+</div>
+</div>
+</div>
+</div>
+
+<div class="fine-print">
+<strong>Terms and Conditions</strong>
+<p>
+The offer is valid only for new individual accounts with Betterment. Please send invites only to people you know personally who will be glad to get them. Betterment will send one invite and up to two reminders to each friend you invite: (1) in your name; and/or (2) with your name. The reminders may be different from the original invite and can be canceled by emailing support@betterment.com. To qualify for the bonus, referred friends must make an initial deposit
+<% if (hasMinimumDeposit()) { %>
+of at least <%= minimumDeposit() %>
+<% } %>
+within <%= expirationDays() %> days of signup and not withdraw that initial deposit for <%= expirationDays() %> days.
+</p>
+<p>
+Your participation in the Betterment Refer a Friend Program is subject to the following terms and agreements: Through the Betterment Refer a Friend Program you will invite friends to sign-up for a Betterment account by sending them an invitation via the Betterment interface, and your efforts in soliciting clients to Betterment will be limited to this activity.
+For each "Qualifying New Account"
+<% if (isTimePrize()) { %>
+Betterment will waive its fees applicable to your Betterment account for a period of <%= senderPrizeAmount() %> days, and Betterment will also waive its fees applicable to your Betterment referee friend&#39;s account for a period of <%= receiverPrizeAmount() %> days, both such periods as determined by Betterment. For every third "Qualifying New Account" Betterment will waive its fees applicable to your Betterment account for a period of <%= senderPrizeAmount() %> days plus 1 year, and Betterment will also waive its fees applicable to your Betterment referee friend&#39;s account for a period of <%= receiverPrizeAmount() %> days, both such periods as determined by Betterment. For avoidance of doubt, Betterment will waive its fees applicable to your Betterment account for a period of <%= senderPrizeAmount() %> days for each "Qualifying New Account" and for an additional 1 year for the third "Qualifying New account" for a sum total of <%= 3 * senderPrizeAmount() %> days and 1 year for the three "Qualifying New Accounts".
+<% } else { %>
+you will receive a <%= senderPrize() %> bonus to your Betterment account, and your Betterment referee friend will receive a <%= receiverPrize() %> bonus to his/her Betterment account. For every third "Qualifying New Account" you will receive a <%= senderPrize() %> bonus to your Betterment account and Betterment will also waive its fees applicable to your Betterment account for a period of 1 year, and your Betterment referee friend will receive a <%= receiverPrize() %> bonus to his/her Betterment account. For avoidance of doubt, you will receive a <%= senderPrize() %> bonus to your Betterment account for each "Qualifying New Account" and Betterment will also waive its fees applicable to your Betterment account for a period of 1 year for the third "Qualifying New Account", for a sum total of $<%= 3 * senderPrizeAmount() %> and 1 year of Betterment waiving its fees applicable to your Betterment account for every three "Qualifying New Accounts".
+<% } %>
+A "Qualifying New Account" is a new individual Betterment account opened by your Betterment referee friend using the special designated link from your invitation, which your referee friend funds with an initial deposit
+<% if (hasMinimumDeposit()) { %>
+of at least <%= minimumDeposit() %>
+<% } %>
+and does not withdraw that initial deposit for <%= expirationDays() %> days.
+Betterment is not responsible for incorrect entry or other failure on the part of your referees to meet standards of a Qualifying Referral. This promotion is not valid with any other offers and is non-transferrable. Offer available to U.S. Residents only.
+Betterment reserves the right to terminate this offer at any time, to limit the amount of account bonuses you are eligible to receive, and to refuse or recover any promotion award if Betterment determines that it was obtained under wrongful or fraudulent circumstances, that inaccurate or incomplete information was provided in opening the account, or that any terms of the Betterment Account Agreements have been violated.
+In referring friends to open a Betterment account you are offering investment advice on behalf of Betterment and under the supervision and control of Betterment.
+You agree to limit the investment advice you offer to the referral web page and email provided by Betterment.
+You agree that your participation in the Betterment Referral Program will conform to the terms contained herein as well as the provisions of the Investment Advisers Act of 1940, 15 U.S.C. ¬ß 80b-1, and the rules thereunder.
+</p>
+</div>
+
+]]></template><template name="invite/meteredInviteLinkArea"><![CDATA[
+<div class="circle-meter">
+<span id="circle-1" class="circle unfilled-blue-background"><span class="circle-gift-icon"></span></span>
+<span id="line-2" class="line unfilled-blue-background"></span>
+<span id="circle-2" class="circle unfilled-blue-background"><span class="circle-gift-icon"></span></span>
+<span id="line-3" class="line unfilled-blue-background"></span>
+<span id="circle-3" class="circle unfilled-blue-background"><span class="circle-gift-icon"></span></span>
+</div>
+
+<h1 id="referralHeader">Give Betterment to 3 friends and earn <strong>1 year free</strong></h1>
+<h2 id="referralSubheader">Plus &mdash; for each friend who joins, <%= extraHeaderText() %></h2>
+<form id="emailInvite" action="#" method="POST">
+
+<div class="input-field">
+<input type="text" class="email" name="email" placeholder="Enter email" data-tiploc-my="left center" data-tiploc-at="right center" />
+</div>
+
+<button id="emailInviteButton">
+Send invite
+</button>
+</form>
+
+<div class="divider-line"></div>
+<p class="share">Copy and share your personal referral link</p>
+<p class="personal-link"><%= linkDisplayName() %></p>
+
+]]></template><template name="invite/sentInvite"><![CDATA[
+<div class="invite-row">
+<div class="data email">
+<div class="inner">
+<%= typeof email === 'undefined' || email == ''
+? ''
+: email
+%>
+</div>
+</div>
+<div class="data status longer-column">
+<div class="inner <%= statusClass() %>">
+<%= typeof status === 'undefined' || status == ''
+? ''
+: status
+%>
+</div>
+</div>
+<div class="data updated longer-column">
+<div class="inner">
+<%= typeof lastUpdated === 'undefined' || lastUpdated == ''
+? ''
+: lastUpdated
+%>
+</div>
+</div>
+<div class="data resend longer-column">
+<div class="inner">
+<% if(obj.canResend === true) { %>
+<button class="resend">Resend</button>
+<% } %>
+</div>
+</div>
+<div style="clear:both"></div>
+</div>
+
+]]></template><template name="performance/performanceBalancesSelector"><![CDATA[
+<h2 class="section-header left">Select a goal</h2>
+<ul class="goals-list toggle-views">
+<% _.each(BMT.accounts().filter(function(account) {
+return account.get('currentBalance') > 0;
+}), function(a) { %>
+<li>
+<a class="chart-type toggle-row" href="#" data-account="<%= a.get('id') %>">
+<%= a.get('name') %>
+</a>
+</li>
+<% }); %>
+<li class="special-toggle">
+<span class="legend-icon"></span>
+Contributions
+<a class="toggle-legend" href="#"><% if(show_contributions()) {%> Hide <% } else { %> Show <% } %></a>
+</li>
+<li class="goals-note">
+Note: Goals without balances are not shown
+</li>
+</ul>
+
+]]></template><template name="performance/performanceReturnsSelector"><![CDATA[
+<% comparison_accounts(true).forEach(function(a) {%>
+<h2 class="section-header left"><%= a.label %></h2>
+<ul class="goals-list toggle-views">
+<% a.children.forEach(function(c) { %>
+<li>
+<em class="chart-type <%= c.color %>">
+<%= c.label %>
+</em>
+<a class="remove" href="#" data-id="<%= c.value %>">Remove</a>
+</li>
+<% }); %>
+</ul>
+<% }); %>
+
+<%= build_comparison_selector() %>
+
+<div class="selector-helper">
+
+<p class="max-comparisons" style="display:none;">
+Maximum of 6 comparisons allowed. Remove some comparisons in order to add new ones.
+</p>
+
+<p>Note: Goals without balances are not shown</p>
+</p>
+
+
+]]></template><template name="portfolio/assetClassItem"><![CDATA[
+<div class="row-container asset-class-position">
+<div class="cell asset-class-name">
+<span class="arrow">&rsaquo;</span>
+<%- assetClass.displayName %>: <span class="tickers-preview"><%= tickerSymbolsWithCommas() %></span>
+</div>
+<div class="cell current-weight allocation"><%= currentWeight() %></div>
+<div class="cell weight-graph aggregate help-text <%= isStock() ? 'stock' : 'bond' %>">
+<div class="help-content">
+<% if (isInTransition()) { %>
+<div class="short-term-gains"><strong>Short-term gain avoidance</strong></div>
+<% } %>
+<div class="drift-amount <%= isStock() ? 'drift-stock' : 'drift-bond' %>" style="white-space:nowrap;">
+<span class="bold-text"><%= driftAmount() %></span> Drift
+</div>
+<div class="info"><span class="bold-text"><%= targetWeight() %></span> Target Weight</div>
+<div class="info"><span class="bold-text"><%= currentWeight() %></span> Current Weight</div>
+</div>
+<div class="graph-bar current-weight-bar" style="background-color: <%= color() %>"></div>
+<div class="graph-bar drift-bar"></div>
+<div class="graph-bar target-bar"></div>
+<div class="graph-bar drift-amount"><%= driftAmount() %></div>
+</div>
+<div class="cell current-value"><%= money(totalValue) %></div>
+</div>
+<div class="position-details">
+<% tickerPositions().forEach(function(tickerPosition) { %>
+<div class="row-container ticker-position" data-ticker="<%- tickerPosition.ticker.symbol %>">
+<a class="cell ticker-name" href="<%= tickerPosition.ticker.url %>" target="_blank">
+<span class="popout-icon"></span>
+<%- tickerPosition.ticker.symbol %>: <%- tickerPosition.ticker.displayName %>
+</a>
+<div class="cell current-weight shares"><%= decimal(tickerPosition.position.shares) %> shares</div>
+<div class="cell weight-graph">
+<div class="graph-bar shares-bar" style="background-color: <%= color() %>"></div>
+</div>
+<div class="cell current-value"><%= money(tickerPosition.position.value) %></div>
+</div>
+<% }); %>
+
+<div class="why-these">
+<div class="row-container">
+<span class="arrow">&rsaquo;</span>
+<span class="why-header">
+why this asset class and these etfs
+</span>
+</div>
+<div class="why-details">
+<div class="left column">
+<div class="why-explanation">
+<%- explanation().assetClassExplanation %>
+</div>
+</div>
+
+<div class="left column">
+<div class="why-explanation">
+<%- explanation().tickersExplanation %>
+</div>
+</div>
+</div>
+</div>
+
+<div class="collapse-circle"></div>
+</div>
+
+]]></template><template name="portfolio/positionsTable"><![CDATA[
+<div class="positions-table">
+<div class="row-container table-head">
+<div class="cell asset-class-name">Holdings</div>
+<div class="cell current-weight">
+Current Weight
+<div class="weight-help help-icon">
+This table shows how much you currently hold in each asset class. Expand the asset classes for more detail and see the exact ETFs and shares you own.
+</div>
+</div>
+<div class="cell current-value">Current Value</div>
+</div>
+<div class="positions-list">
+
+</div>
+<div class="row-container table-footer">
+<div class="cell asset-class-name">Total</div>
+<div class="cell current-weight">100%</div>
+<div class="cell current-value"><%= money(totalBalance()) %></div>
+</div>
+</div>
+
+]]></template><template name="portfolio/questions"><![CDATA[
+<li>
+<h6>investing strategy</h6>
+<div>
+<span class="article-icon"></span>
+<span class="question">Why this Portfolio?</span>
+</div>
+<div class="content">
+Betterment constructs globally diversified strategic asset allocation portfolios appropriate for an investor&#39;s goals and time horizon. Each portfolio is selected as the result of a systematic portfolio optimization process that simultaneously balances forecasts for long-run expected returns for each asset class against both historical and forward-looking downside behavior for the portfolio as a whole.
+<br/><br/>
+In forecasting expected returns, we utilize the Black-Litterman Global Portfolio Optimization model to appropriately marry market expectations extracted from historical performance and current price levels with Betterment&#39;s views on long-run asset class behavior and correlations. Our advice is based on expected returns as well as downside risk and uncertainty as measured by historical episodes of underperformance and simulated stress tests of the asset performance. The result is a portfolio that provides an optimal blend of asset class exposures across different economic regions, investment styles and security types to deliver the best possible risk-adjusted returns for every level of risk.
+<br/><br/>
+The long-term performance of a portfolio can be negatively impacted by interest rates and inflation. Our fully
+<a href="<%= brochure_url('resources/investment-strategy/portfolio-management/diversification-alpha-performance-portfolio-investing/') %>" target="_blank">diversified</a> <a href="<%= brochure_url('resources/investment-strategy/portfolio-management/portfolio-diversification/') %>" target="_blank">global portfolio</a> helps smooth out the impact of these factors since different areas of the world experience them at different times and with varying severity. Our portfolio also avoids a common behavioral error of investors called <a href="<%= brochure_url('resources/investment-strategy/home-bias-sweet-home-bias/') %>" target="_blank">home-bias</a>, or the tendency to own companies from the country you live in.
+<br/><br/>
+To see the Betterment portfolio&#39;s efficient frontier compared to less robust alternatives, <a href="<%= brochure_url('resources/investment-strategy/portfolio-management/portfolio-optimization/') %>" target="_blank">read more about our portfolio optimization.</a>
+</div>
+</li>
+<li>
+<h6>investing strategy</h6>
+<div>
+<span class="article-icon"></span>
+<span class="question">Why these ETFs?</span>
+</div>
+<div class="content">
+Betterment exclusively uses open-ended index tracking ETFs rather than mutual or closed-end funds due to their low manager risk, low embedded costs and natural tax efficiencies. These structural advantages along with the maturation and growth of the global ETF market over the last two decades has led to liquid investments covering different asset classes, markets, styles, and geographies. As a result, we can source investment vehicles from a market of portfolio components which are versatile, extremely liquid, and easily substitutable. However, not all ETFs are exactly alike and the difference between an optimal and a suboptimal selection can have non-trivial effects on long-term performance of a portfolio.
+<br/><br/>
+Excellent security selection requires a thorough process which maximizes the risk-adjusted, after-tax, after-cost return for our customers&#39; portfolios. Betterment&#39;s approach is to aggregate these frictions into a single variable we call total annual cost of ownership. The four key metrics that comprise this measure are:
+<br/><br/>
+<ol style="list-style-type: decimal; margin-left: 17px;">
+<li>
+Expense ratio: The annual cost paid by shareholders of the ETF to the fund administrator, often incurred through reduced dividends passing through from underlying holdings to ETF investors.
+</li>
+<li>
+Liquidity (bid-ask spread): The small price difference between the buying price and selling price inherent to all traded securities. More liquid securities will carry a tighter spread. Note that the bid-ask spread is only paid when you trade, and so should be scaled by annual portfolio turnover.
+</li>
+<li>
+Tracking error: The degree to which a specific security does not precisely replicate its intended underlying index. While not an outright cost as with the other criteria discussed, tracking error (especially high values) has the ability to introduce noise in the long-term returns of the overall portfolio, and reduce the effectiveness of portfolio optimization.
+</li>
+<li>
+Potential market impact: The degree to which ownership and trading activity across the Betterment platform could come to dominate ETF assets managed, daily traded volumes, and the security&#39;s natural market efficiency.
+</li>
+</ol>
+<br/>
+For standard portfolios, this analysis yields a spectrum of the most cost-effective ETFs for our strategic asset allocation portfolio. For portfolios with active tax strategies (like tax loss harvesting), this process is leveraged to also select a spectrum of secondary securities which serve as close proxies to the primary securities without violating IRS rules for wash sales.
+</div>
+</li>
+<li>
+<h6>investing strategy</h6>
+<div>
+<span class="article-icon"></span>
+<span class="question">Tax Efficiency</span>
+</div>
+<div class="content">
+Betterment portfolios and the systems that manage them are constructed from the ground up to be maximally tax efficient. This begins with security selection, where we use index tracking ETFs instead of mutual funds. Unlike actively managed funds, index tracking funds have significantly lower turnover resulting in materially lower incidences of capital gains being passed on to investors. In addition, the legal and administrative structure of most ETFs differs from mutual funds in the way that investors are insulated from each other rather than pooled together. As a result, ETF investors are only responsible for their own tax consequences rather than sharing in the collective tax burden through distributions. The end result of just holding ETFs is a portfolio with lower capital gains burden which is also entirely immune to mutual fund style administrator-driven distribution.
+<br/><br/>
+In addition, Betterment portfolios extract further efficiencies from asset class selection that varies by account tax status. For taxable accounts, Betterment portfolios employ municipal bonds as a major US bond component to lower investor tax burden. Municipal bonds are federally tax-exempt, and may be tax-exempt at the state level. Tax-deferred accounts do not benefit from the tax-exempt status of municipal bonds, so we use a diverse set of high-quality US bonds instead.
+<br/><br/>
+The tax impact of Betterment portfolios is also made more efficient through a number of automated day-to-day management features:
+<br/><br/>
+<ul style="list-style-type: disc; margin-left: 17px;">
+<li>
+Cash-flows are used to reduce the portfolio drift, which reduces future taxable rebalances.  For example, a deposit from a dividend or automatic transfer will always buy the most underweight asset classes first.  Similarly, a withdrawal will sell the most overweight assets first.
+</li>
+<li>
+Tax lot selection is optimized to reduce taxes.  Lots with losses are always sold before lots with gains.  Short term losses are preferred over long term losses, and long term gains are prefered over short term gains.  Additionally, lots with the highest cost basis, and therefore the lowest embedded potential tax burden, are sold first.
+</li>
+<li>
+Rebalancing transactions and portfolio updates are tax aware, and always avoid short-term gains which are typically taxed at the highest rates.
+</li>
+<li>
+Tax-loss harvesting is employed to actively take advantage of portfolio losses to offset other gains and ordinary income on your tax return.
+</li>
+</ul>
+</div>
+</li>
+
+]]></template><template name="portfolio/rebalancing"><![CDATA[
+<div class="rebalancing-title">
+Rebalancing
+<span class="rebalancing-status right"><%= rebalancingEnabled() ? 'on': 'off' %></span>
+</div>
+
+<% if (isDriftNormal()) { %>
+<p>Your portfolio drifts due to normal price fluctuations.
+<%= rebalancingEnabled() ? 'We' : 'When on, we' %> rebalance if it reaches 3%.</p>
+<% } else { %>
+<% if (isPortfolioTransitioning()) { %>
+<div class="transition-notice">
+Portfolio is in transition.
+<div class="transition-help help-icon">
+Your portfolio is transitioning to new asset classes. Rebalancing will automatically complete this transition when short-term gains taxes become losses or long-term gains.
+</div>
+</div>
+<% } %>
+
+<p><%= rebalancingEnabled() ? 'Our' : 'When on, our' %> algorithm automatically rebalances and avoids taking short-term gains to save you taxes.
+<a href="http://support.betterment.com/customer/portal/articles/987453" target="_blank">Learn more &gt;</a></p>
+<% } %>
+
+<% if (showDriftGraph()) { %>
+<div class="clearfix drift-status-row">
+<div class="drift-label">
+drift
+<div class="help-icon drift-help">
+<% if (isDriftHigh()) { %>
+Higher drift may occur due to our tax avoidance algorithm. Rebalancing will occur automatically when short-term gains become losses or long-term gains.
+<% } else { %>
+Drift of your portfolio is the total amount that your current weight differs from your target
+weight for each asset class in this goal.  Drift from your target allocation occurs with
+normal market movements and transactions that avoid short-term capital gains.
+<% } %>
+</div>
+</div>
+<div class="drift-status" style="color: <%= driftStatus().color %>">
+<%= driftStatus().label %>
+</div>
+</div>
+<div class="clearfix">
+<div class="drift-amount">
+<%= pct(drift(), 1) %>
+</div>
+<div class="track">
+<div class="drift-bar"></div>
+</div>
+</div>
+<% } %>
+
+<% if (showRebalanceTip()) { %>
+<div class="info-tip clearfix">
+<div class="icon">
+<div class="lightbulb-tip-icon"></div>
+</div>
+<div class="text">
+Make a deposit of <a href="#transfer?depositAmount=<%- rebalanceAmount() %>" class="rebalance-amount"><%= money(rebalanceAmount()) %></a> to reduce drift and taxes from rebalances.
+</div>
+</div>
+<% } %>
+
+]]></template><template name="profile/changeBankAccount"><![CDATA[
+<h1>Edit Bank Account</h1>
+<figure id="checkImage" class="half-routing"></figure>
+<form method="POST" action="#" class="account-info clearfix">
+<label class="left">Account</label>
+<section class="left account-numbers clearfix">
+<div class="left" style="margin-right: 15px;">
+<label class="note">routing number</label>
+<input type="text" maxlength="9" name="routingNumber" value="<%= typeof routingNumber == 'undefined' ? '' : routingNumber %>" />
+</div>
+<div class="left">
+<label class="note">account number</label>
+<input type="text" maxlength="17" name="accountNumber" value="<%= typeof accountNumber == 'undefined' ? '' : accountNumber %>" />
+</div>
+<div id="accountNumbersHelp" class="help-icon right" style="float:right;margin:13px 0 0">
+Routing number and Account number can be found at the bottom of your checks.
+</div>
+</section>
+
+</form>
+
+<div id="securityQuestion">
+</div>
+
+<div class="modal-buttons">
+<button id="ok">Save changes</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="profile/closeAccount"><![CDATA[
+<h1>Permanently Close Your Account?</h1>
+<div class="modal-warning"></div>
+<div class="modal-body">
+<p>
+Closing your account is a big deal. If you think you might use Betterment again in the future, you should not close your account and just withdraw the money you need instead. Since there is no minimum balance and we do not charge account maintenance fees, you can keep your account open with no balance without penalty.
+</p>
+<p class="held-funds-info">
+</p>
+</div>
+<div class="clearfix"></div>
+<form method="POST" action="#" class="whyClosing">
+<section class="clearfix">
+<label class="left">Why are you closing your account?</label>
+<%= build_dropdown_menu({
+'Need money for a purchase': "Need money for a purchase",
+'Need money for emergency': "Need money for emergency",
+'Product not what I expected': "Product not what I expected",
+'Low/unpredictable returns': "Low/unpredictable returns",
+'Product was too confusing': "Product was too confusing",
+'Other': "Other",
+}, {name: 'whyClosing', 'class': 'why-closing-selector'}) %>
+
+<div class="whyClosingReason">
+<section class="line-item">
+<label>Reason</label>
+<input type="text" id="otherReason" name="otherReason" class="long" value="" maxLength="200" />
+</section>
+</div>
+</section>
+</form>
+
+<div id="securityQuestion">
+</div>
+
+<div class="modal-buttons">
+<button id="ok">Close account forever</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="profile/profile"><![CDATA[
+<h1 class="tab-header">Your Information</h1>
+
+<div class="panel card body">
+<div class="clearfix top-section">
+<div class="left left-section">
+<h1>Profile</h1>
+<div id="contactInfo" class="form-wrapper">
+</div>
+</div>
+
+<div class="right right-section">
+<h1>Employment and Income</h1>
+<div id="personal" class="form-wrapper">
+</div>
+</div>
+</div>
+</div>
+
+<h1 class="tab-header multi-ag-only"><%= name %> Account Settings</h1>
+
+<div class="panel card body secondary">
+<div class="clearfix">
+<div class="left left-section">
+<h1>Account Administration</h1>
+<div id="accountAdministration" class="stacked-items">
+</div>
+</div>
+
+<div class="right right-section conditional-section beneficiaries">
+<div class="joint-ag-only">
+<div id="joint-account-holder">
+</div>
+</div>
+
+<div class="non-trust-ag-only">
+<h1>Beneficiaries</h1>
+<div id="beneficiaries" class="stacked-items">
+</div>
+</div>
+
+<div class="trust-ag-only">
+<h1>Trust Information</h1>
+<div id="trustInformation" class="stacked-items">
+</div>
+<div class="support-info">
+To amend a trust or add or remove a trustee, please contact our support team at <%= customerSupportNumber() %> or <a href="mailto:support@betterment.com">support@betterment.com</a>.
+</div>
+</div>
+</div>
+</div>
+</div>
+
+]]></template><template name="profile/securityQuestion"><![CDATA[
+<%= optionalHeader() %>
+<h2 class="modal-body"><%= body %></h2>
+<div class="clearfix"></div>
+<form method="POST" action="#" autocomplete="off">
+<section class="line-item">
+<label>Question</label>
+<input type="hidden" class="question-number" value="<%= securityQuestionNumber %>" />
+<%= securityQuestion %>
+</section>
+<section class="line-item">
+<label>Answer</label>
+<input type="text" class="security-answer" autocomplete="off" <%= autofocus() %> />
+</section>
+
+<% if (notInline()) {%>
+<div class="modal-buttons">
+<button id="ok">Confirm Changes</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+<%}%>
+</form>
+
+]]></template><template name="profile/trustInformation"><![CDATA[
+<ul class="no-change">
+<li>
+<label>Legal Name</label>
+<span class="item-content" title="<%- legal_name() %>"><%- legal_name() %></span>
+<div class="clearfix"></div>
+</li>
+
+<li>
+<label>Trust Nickname</label>
+<span class="item-content" title="<%- nickname() %>"><%- nickname() %></span>
+<div class="clearfix"></div>
+</li>
+
+<li>
+<label>Address 1</label>
+<span class="item-content" title="<%- address1() %>"><%- address1() %></span>
+<div class="clearfix"></div>
+</li>
+
+<li>
+<label>Address 2</label>
+<span class="item-content" title="<%- address2() %>"><%= address2() %></span>
+<div class="clearfix"></div>
+</li>
+
+<li>
+<label>City/State</label>
+<span class="item-content" title="<%- city_state() %>"><%= city_state() %></span>
+<div class="clearfix"></div>
+</li>
+<li class="trust-document-upload">
+<label>Documents</label>
+<span class="item-content"><%= document_upload_prefix() %>Uploaded</span>
+<button id="trust-information-upload-documents" class="left blue">Upload</button>
+<div class="clearfix"></div>
+</li>
+</ul>
+
+]]></template><template name="signup/basicContact"><![CDATA[
+<div class="section-header">
+<span class="left blue-circle"><%=self.getDisplayPosition()%></span>
+<h3 class="left">Information to establish your account</h3>
+</div>
+
+<section data-validation-model="User">
+
+<div class="guest-form">
+<div class="input-line" data-required="true" data-group="name">
+<label>Name</label>
+<span class="input-area">
+<input class="white" type="text" name="firstName" placeholder="First" tabindex="1" />
+<input class="white" type="text" name="middleName" placeholder="M" tabindex="20" maxlength="1" />
+<input class="white" type="text" name="lastName" placeholder="Last" tabindex="30" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true" data-strategy="default remote" data-remote="/user">
+<label>Email</label>
+<span class="input-area">
+<input class="white" type="text" name="userName" tabindex="40" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<% if (BMT.user.isNew()) { %>
+<div class="input-line" data-required="true">
+<label>Password</label>
+<span class="input-area">
+<input class="white" type="password" name="password" tabindex="50" />
+<div class="conversation-text"></div>
+</span>
+</div>
+<% } %>
+</div>
+
+<div class="input-line" data-required="true" data-group="dateOfBirth">
+<label>Date of birth</label>
+<span class="input-area">
+<input type="text" class="white dob" name="dobMonth" maxlength="2" placeholder="MM" tabindex="60" />
+<input type="text" class="white dob" name="dobDate" maxlength="2" placeholder="DD" tabindex="70" />
+<input type="text" class="white dob" name="dobYear" maxlength="4" placeholder="YYYY" tabindex="80" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Gender</label>
+<span class="input-area suppress-live-validation-messages">
+<span class="radio-area">
+<input type="radio" name="gender" value="m" tabindex="90" <% if (attr('gender') == 'm') { %>checked="checked"<% } %> />
+<p>Male</p>
+</span>
+
+<span class="radio-area">
+<input type="radio" name="gender" value="f" tabindex="100" <% if (attr('gender') == 'f') { %>checked="checked"<% } %> />
+<p>Female</p>
+</span>
+
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Address line 1</label>
+<span class="input-area">
+<input class="white" type="text" name="address1" placeholder="Street address" tabindex="110" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line">
+<label>Address line 2</label>
+<span class="input-area">
+<input class="white" type="text" name="address2" placeholder="Apartment, Suite, Unit, Floor (optional)" tabindex="120" />
+</span>
+</div>
+
+<div class="input-line" data-required="true" data-group="cityAndState">
+<label>City</label>
+<span class="input-area city-state">
+<input class="white" type="text" name="city" tabindex="130" />
+
+<p>State</p>
+<%= state_select({ tabindex: 140 }) %>
+
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Zip</label>
+<span class="input-area">
+<input class="white" type="text" name="zip" maxlength="5" tabindex="150" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Phone number</label>
+<span class="input-area">
+<input class="white" type="text" name="phone" maxlength="14" tabindex="160" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+</section>
+
+]]></template><template name="signup/employment"><![CDATA[
+<div class="section-header">
+<span class="left blue-circle"><%=self.getDisplayPosition()%></span>
+<h3 class="left">Employment and financial background</h3>
+<p class="section-details">We are required by the SEC to ask for your employment and financial background,
+and your answers allow us to give you better advice. The more accurate information we have, the better
+advice we can give you.</p>
+</div>
+
+<section data-validation-model="User">
+
+<div class="input-line employment-status" data-required="true">
+<label>Employment status</label>
+<span class="input-area">
+<%= employment_status({ tabindex: 210 }) %>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line occupation" data-validation-model="Employment">
+<label>Occupation</label>
+<span class="input-area">
+<input type="text" class="white" name="occupation" tabindex="220" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line employer" data-validation-model="Employment">
+<label>Employer</label>
+<span class="input-area">
+<input type="text" class="white" name="employer" tabindex="230" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line annual-income" data-required="true">
+<label>Income</label>
+<span class="input-area">
+$ <input type="text" class="white" value="0" name="annualIncome" tabindex="240" />
+<div class="annual-income-slider"></div>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line net-worth" data-required="true">
+<label>Net worth</label>
+<span class="input-area">
+$ <input type="text" class="white" value="0" name="netWorth" tabindex="250" />
+<div class="net-worth-slider"></div>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+</section>
+
+]]></template><template name="signup/goal"><![CDATA[
+<div class="section-header">
+<span class="left blue-circle"><%= self.getDisplayPosition() %></span>
+<h3 class="left">Information to create your first goal</h3>
+<p class="section-details">We ask you to choose a goal type so we can give you more tailored advice.
+You can change your goal type or add more goals later. <a class="trust-info-tip" data-help-content="Create a goal first, then you'll be able to add a trust after you log in. <a href='<%= brochure_url('trust-accounts') %>' target='_blank'>Learn more &gt;</a>">Interested in a trust?</a></p>
+</div>
+
+<section data-validation-model="custom">
+<div class="input-line account-and-goal-type" data-required="true" data-group="accountAndGoalType">
+<div class="goal-type clearfix">
+<label>Goal type</label>
+<span class="input-area">
+<%= goal_type({ tabindex: 270 }) %>
+</span>
+</div>
+<div class="account-type clearfix">
+<label>Account type</label>
+<span class="input-area">
+<%= account_type({ tabindex: 271 }) %>
+</span>
+</div>
+<div class="conversation-text"></div>
+</div>
+
+<div class="input-line term">
+<label>Years until goal</label>
+<span class="input-area">
+<input type="text" class="white" name="goalCompletionDate" tabindex="280" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="allocation-info" style="display: none;">
+Based on what you&#39;ve told us about yourself and this goal, we recommend a portfolio of <span class="allocation-stocks"></span>% stocks and <span class="allocation-bonds"></span>% bonds. You can change this after signup.
+</div>
+</section>
+
+<!-- this HR should be in this template because this section is optional -->
+<hr />
+
+]]></template><template name="signup/identityVerification"><![CDATA[
+<div class="section-header">
+<span class="left blue-circle"><%=self.getDisplayPosition()%></span>
+<h3 class="left">Identity verification</h3>
+<p class="section-details">We use your SSN to verify your identity and protect against fraud.</p>
+</div>
+
+<section data-validation-model="User">
+
+<div class="input-line" data-required="true">
+<label>Social Security <span class="security-icon"></span></label>
+<span class="input-area">
+<input class="white" type="text" name="ssn" placeholder="" tabindex="170" />
+<div class="fake-ssn"></div>
+<p class="indent"><a target="_blank" href="<%= brochure_url('security') %>">Bank-Level Security ></a></p>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+</section>
+
+]]></template><template name="signup/regulatory"><![CDATA[
+<div class="section-header">
+<span class="left blue-circle"><%=self.getDisplayPosition()%></span>
+<h3 class="left">Regulatory questions</h3>
+<p class="section-details">We are required by law to ask about the following rare situations. Most users
+will answer <span class="strong">No</span>:</p>
+</div>
+
+<ul class="questions">
+<li class="clearfix">
+<p>You are employed by or associated with a broker dealer.</p>
+<div class="answer">
+<input type="radio" name="associatedToBrokerDealer" id="assBDyes" value="true" tabindex="290" />
+<label for="assBDyes">Yes</label>
+<input type="radio" name="associatedToBrokerDealer" id="assBDno" value="false" tabindex="300" checked="checked" />
+<label for="assBDno">No</label>
+
+<div class="help-icon right" id="assBDhelp">
+<div class="help-content">
+If you are associated with a broker dealer you will need to provide written approval
+from the organization&#39;s compliance officer.
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="clearfix">
+<p>You are a 10% shareholder, director, or policy maker of a publicly traded company.</p>
+<div class="answer">
+<input type="radio" name="tenPercentInsider" id="tenPIyes" value="true" tabindex="310" />
+<label for="tenPIyes">Yes</label>
+<input type="radio" name="tenPercentInsider" id="tenPIno" value="false" tabindex="320" checked="checked" />
+<label for="tenPIno">No</label>
+
+<div class="help-icon right" id="tenPIhelp">
+<div class="help-content">
+This information is required for regulatory purposes. If you are an affiliated
+person, you will need to provide confirmation that your compliance officer is aware
+of your account. In addition, Betterment may be required to send a duplicate copy
+of your statements to your compliance officer.
+</div>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="clearfix">
+<p>You have been notified by the IRS that you are currently subject to backup withholding.</p>
+<div class="answer">
+<input type="radio" name="subjectToBackupWithholding" id="backupyes" value="true" tabindex="330" />
+<label for="backupyes">Yes</label>
+<input type="radio" name="subjectToBackupWithholding" id="backupno" value="false" tabindex="340" checked="checked" />
+<label for="backupno">No</label>
+
+<div class="help-icon right" id="backuphelp">
+<div class="help-content">
+Most people are NOT subject to backup withholding. Backup withholding is 28% tax
+which is withheld from any taxable activity, such as the posting of a dividend or
+the sale of securities.<br /><br />
+
+IMPORTANT: If you have been notified by the IRS concerning your backup withholding
+status, you must state so when opening a Betterment account. Also, please be aware
+that Betterment cannot provide any advice concerning tax matters, all tax questions
+should be directed to a tax advisor or the IRS.
+</div>
+</div>
+</div>
+</div>
+<div class="cannot-say-yes conversation-text">
+<span class="bad">You cannot open an account because you are subject to backup withholding.</span>
+</div>
+</li>
+</ul>
+
+<div class="regulatory-error conversation-text">
+<span class="bad">These questions are required for regulatory reasons.</span>
+</div>
+
+<hr />
+
+<div class="unadvised-user-only">
+<div class="input-line how-heard">
+<label>How did you hear about us?</label>
+<span class="input-area">
+<%= how_heard({ tabindex: 350 }) %>
+</span>
+</div>
+
+<div class="how-heard-error conversation-text">
+<span class="bad">Please tell us how you heard about us.</span>
+</div>
+
+<hr />
+</div>
+
+<div class="tos-area"></div>
+
+
+]]></template><template name="signup/security"><![CDATA[
+<div class="section-header">
+<span class="left blue-circle"><%=self.getDisplayPosition()%></span>
+<h3 class="left">Security</h3>
+<p class="section-details">We ask for security questions to protect your account.</p>
+</div>
+
+<section data-validation-model="custom">
+
+<div class="input-line" data-required="true">
+<label>Security question 1</label>
+<span class="input-area">
+<%= question_one({ tabindex: 180 }) %>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Answer</label>
+<span class="input-area">
+<input type="text" class="white" name="securityAnswer1" tabindex="190" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Security question 2</label>
+<span class="input-area">
+<%= question_two({ tabindex: 200 }) %>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Answer</label>
+<span class="input-area">
+<input type="text" class="white" name="securityAnswer2" tabindex="205" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+</section>
+
+]]></template><template name="signup/signup"><![CDATA[
+
+<h1 class="tab-header" id="signupWelcomeHeader">Sign up for a personal account</h1>
+
+<div class="left">
+
+<div class="panel card" id="welcomeBackPanel">
+<div class="x-close"></div>
+<h2>You’re almost there!</h2>
+<p>We just need a bit more information to sign you up for a full account.</p>
+
+<p class="unadvised-user-only">Give it a go - it’s free for the first 30 days.</p>
+</div>
+
+<div class="uncaught-errors panel">
+<p>Oops! Looks like some things were missing:</p>
+<ul></ul>
+</div>
+
+<div class="panel card body big-form">
+<div class="clearfix">
+<h2>Tell us about yourself</h2>
+<p class="right header-detail">All required and confidential</p>
+</div>
+
+<div>
+<!-- SECTION 1 - basic contact info -->
+<form id="basicContact"></form>
+
+<hr />
+
+<!-- SECTION 2 - identity verification -->
+<form id="identityVerification"></form>
+
+<hr />
+
+<!-- SECTION 3 - security questions -->
+<form id="security"></form>
+
+<hr />
+
+<!-- SECTION 4 - income/net worth -->
+<form id="employment"></form>
+
+<hr />
+
+<!-- SECTION 5 - goal details -->
+<form id="goalDetails"></form>
+
+<!-- divider is in the goalDetails template because the goal details section is optional -->
+
+<!-- SECTION 6 - regulatory questions/agreements -->
+<form id="regulatory"></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="panel card body big-form identity-correction-form" style="display: none;">
+<div class="clearfix">
+<h2 class="form-header">Please verify the following and submit again.</h2>
+</div>
+
+<!-- SECTION 7 - identity correction -->
+<form id="identityCorrection"></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="right-rail">
+
+<div class="benefits-pane">
+</div>
+
+<div class="panel card body post-account-signup unadvised-user-only">
+<h4>After signing up for a personal account you can:</h4>
+<ul>
+<li>Set up a <a href="<%= supportUrl('customer/portal/articles/1827645-how-can-i-open-a-joint-account-') %>" target="_blank">Joint Account</a></li>
+<li>Create a <a href="<%= supportUrl('customer/portal/articles/1570520-how-do-i-open-a-trust-account-with-betterment-') %>" target="_blank">Trust Account</a></li>
+<li>Roll over your <a href="<%= supportUrl('customer/portal/articles/1801145-how-do-i-transfer-my-ira-to-betterment-') %>" target="_blank">401(k) or IRA</a></li>
+</ul>
+</div>
+
+<div class="panel card body free-trial unadvised-user-only">
+<h4>Free trial period</h4>
+<p>Then we&#39;ll put you on the best plan, based on your balance.</p>
+<p><a target="_blank" href="<%= brochure_url('pricing') %>">See Pricing Plans</a> &gt;</p>
+</div>
+
+<div class="panel card body support unadvised-user-only">
+<h5>Support</h5>
+<h4>Questions? Talk to us.</h4>
+<div class="contact-person">
+<div class="face brandon-straight"></div>
+<p>
+Talk to one of our product specialists, like Brandon.
+</p>
+<div class="clearfix"></div>
+</div>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">1-888-428-9482</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:support@betterment.com">support@betterment.com</a></span>
+</li>
+<li>
+<span class="icon"><span class="bubble-icon"></span></span>
+<span class="text open-live-chat">Live Chat</span>
+</li>
+</ul>
+</div>
+
+<div class="panel card body support advised-user-only">
+<h4>Financial advice</h4>
+<p>For financial questions and advice, contact your advisor, <%= advisor_name() %>.</p>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text advisor-phone"><%= advisor_phone() %></span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:<%= advisor_email() %>">Email</a></span>
+</li>
+</ul>
+
+<hr />
+
+<h4>Technical support</h4>
+<p>For technical questions, contact one of our support specialists.</p>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">1-888-400-1571</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:support@betterment.com">Email Support</a></span>
+</li>
+<li>
+<span class="icon"><span class="bubble-icon"></span></span>
+<span class="text open-live-chat">Live Chat</span>
+</li>
+</ul>
+</div>
+
+<div class="panel card body security">
+<h4 class="advised-user-only">Security & Privacy</h4>
+<h5 class="unadvised-user-only">Security & Privacy</h5>
+<h4 class="unadvised-user-only">Betterment&#39;s Promise</h4>
+<div class="promise">
+<div class="icon unadvised-user-only betterment-lock-icon"></div>
+<div class="icon advised-user-only unbranded-lock-icon"></div>
+<p>
+We promise to ensure the utmost security and privacy when it comes to your account.
+</p>
+<div class="clearfix"></div>
+</div>
+<ul>
+<li>
+<span class="icon"><span class="security-lock-icon"></span></span>
+<span class="text"><a target="_blank" href="<%= brochure_url('security') %>">Bank Level Security</a> &gt;</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="fraud-icon"></span></span>
+<span class="text"><a target="_blank" href="<%= brochure_url('security') %>">Fraud Protection</a> &gt;</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="money-bag-icon"></span></span>
+<span class="text"><a target="_blank" href="<%= brochure_url('security') %>">Up to $500,000<br>Account Protection</a> &gt;</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="ssl-icon"></span></span>
+<span class="text"><a target="_blank" href="<%= brochure_url('security') %>">Strongest Available Browser Encryption</a> &gt;</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon small"><span class="privacy-icon"></span></span>
+<span class="text small"><a target="_blank" href="<%= brochure_url('security') %>">Paramount Privacy Protection</a> &gt;</span>
+<div class="clearfix"></div>
+</li>
+</ul>
+</div>
+</div>
+
+]]></template><template name="summary/account"><![CDATA[
+
+<% _.each(['front', 'back'], function(side) {%>
+<div class="panel card <%= side %> clearfix">
+
+<div class="left">
+<%= build_open_close_button({
+'class': side+'-toggle',
+'data-sticky': 'true'
+}, {
+state: side == 'front' ? 'open' : 'close'
+}) %>
+
+<% if (BMT.accounts().size() > 1) { %>
+<div class="drag-grip"></div>
+<% } %>
+</div>
+
+<div class="<%= side %>-region"></div>
+
+<div class="account-settings-region <%= side %>"></div>
+</div>
+<%})%>
+
+
+]]></template><template name="summary/accountSelectorDeposit"><![CDATA[
+<form action="#" method="POST">
+
+<% if (hasNetWorthVariation()) { %>
+<section class="header net-worth">
+<h2>Suggested deposit</h2>
+<p>Typical amount for customers with a similar profile</p>
+<button class="secondary light-blue">
+<%= money(netWorthSuggestion(), 0) %>
+</button>
+</section>
+<% } else if (hasPricingPlanVariation()) { %>
+<section class="header pricing-plan">
+<div class="lightbulb-tip-icon"></div>
+<p><%= pricingPlanMessage() %></p>
+</section>
+<% } %>
+
+<section>
+<div class="section-title">Deposit</div>
+<div class="input-card">
+<span class="dollar-sign">$</span><input class="input monetary" money-input name="amount" type="text" value="<%= presetAmount() %>"/>
+</div>
+</section>
+<section class="clearfix">
+<div class="section-title">To your goal</div>
+<%= accountSelector() %>
+</section>
+<% if (account().isIRA()) { %>
+<section class="contribution-type">
+<div class="section-title">Contribution Type</div>
+<%= contributionSelect() %>
+</section>
+<% } %>
+<button class="flat green" id="transferButton">Deposit</button>
+</form>
+
+]]></template><template name="summary/accountSummary"><![CDATA[
+<div class="management">
+<h1 class="tab-header">
+<span><%- accountGroupName() %> Overview</span>
+</h1>
+
+<div class="right controls">
+<div class="left deposit-menu">
+<button class="deposit-button flat green">Deposit <span class="down-caret">&#9660;</span></button>
+<div class="deposit"></div>
+</div>
+
+<% if (showRolloverButton()) { %>
+<button class="left flat blue" id="gotoRollover">Rollover</button>
+<% } %>
+<button class="left flat blue" id="addGoal"><%- addGoalText() %></button>
+</div>
+</div>
+
+<div id="overview">
+</div>
+
+<div id="accounts">
+</div>
+
+]]></template><template name="summary/backPanel"><![CDATA[
+<div class="left-side">
+<% var status = goalStatus(); %>
+<table>
+<tr class="no-rule">
+<th class="goal-name">
+<input class="left" type="text" name="name" maxlength="64" />
+<div class="name-text"><%- name %></div>
+<% if (self.options.parent.showRetirementPlanButton()) { %>
+<button class="small secondary light-blue goto-retirement-plan"><%= self.options.parent.retirementPlanButtonText() %></button>
+<% } %>
+</th>
+<th class="right balance">
+<h3 class="caps-label">
+<span style="font-weight: normal">Current Balance</span>
+</h3>
+<% if (shouldShowDepositButton()) { %>
+<button class="flat secondary green small make-deposit">Deposit</button>
+<% } %>
+<% if (self.model.getTotalPendingDeposits() !== 0.0) { %>
+<span class="pending-deposits pending-deposits-icon">
+<div class="help-content">Your current balance includes a pending deposit of <strong class="bold-text"><%= money(self.model.getTotalPendingDeposits()) %></strong>.</div>
+</span>
+<% } %>
+<%= money(self.model.getCurrentBalance(true)) %>
+</th>
+</tr>
+<tr>
+<td style="padding-top:0">
+<div class="account-status-region"></div>
+</td>
+<th style="font-weight: normal;" class="goal-amount">
+<% if (showTarget()) { %>
+<input type="number" name="goalAmount" />
+<span class="goal-amount-label"><h3 class="caps-label">Target</h3> <span class="bold-text"><h1 class="balance"><%= money(goalAmount) %></span></span></span>
+<span class="blue-pen"></span>
+<% } %>
+</th>
+</tr>
+</table>
+
+<div id="accountReturnRegion"></div>
+
+<div class="transaction-status-region"></div>
+
+<ul class="auto-transactions"></ul>
+</div>
+
+<div class="right-side">
+<div class="allocation">
+<div class="bonds">
+<div>Bonds</div>
+<div class="pct"><%= pct(1 - allocation) %></div>
+</div>
+
+<div id="backSpeedometerRegion" class="speedometer-region"></div>
+
+<div class="stocks">
+<div>Stocks</div>
+<div class="pct"><%= pct(allocation) %></div>
+</div>
+</div>
+
+<table>
+<tr class="header">
+<td>
+<span>Basket</span>
+</td>
+<td>
+<span>Balance</span>
+</td>
+</tr>
+
+<tr>
+<td>Bonds</td>
+<td><%= money(bondBalance) %></td>
+</tr>
+
+<tr>
+<td>Stocks</td>
+<td><%= money(stockBalance) %></td>
+</tr>
+</table>
+
+<a href="#" data-track-event="ElementClicked" data-track-location="Summary" data-track-name="ChangeAlloc" class="bold-text left change-allocation">Change allocation</a>
+
+<a href="#" data-track-event="ElementClicked" data-track-location="Summary" data-track-name="SeeAllocDetails" class="bold-text right portfolio-details">Portfolio details</a>
+</div>
+
+]]></template><template name="summary/deleteAccount"><![CDATA[
+<h1>Delete <%= ira() ? 'IRA' : 'Goal' %></h1>
+
+<% // set variable for readability
+var hasBalance = self.model.num('currentBalance') > 0 %>
+
+<div class="modal-body">
+<p>
+Are you sure you want to delete your <%= name + (ira() ? '' : ' goal') %>?
+</p>
+</div>
+
+<% if (hasBalance) { %>
+<div class="clearfix transfer-all<% if (!ira()) { %> not-ira<% } %>">
+<label class="left">Transfer money to</label>
+<div class="right">
+<%= account_selector() %>
+<% if (!ira()) {%>
+<div class="info-tip clearfix">
+<div class="arrow top"></div>
+<div class="icon">
+<div class="lightbulb-tip-icon"></div>
+</div>
+<div class="text">
+Transfers may cause a sale of securities, which may result in taxes. <a href="" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="GoalTransferModal" data-track-name="TaxImpact">See the tax impact &gt;</a>
+</div>
+</div>
+<%}%>
+</div>
+</div>
+<% } %>
+
+<% if (ira() && hasBalance) {%>
+<div class="clearfix">
+<label class="left">Distribution type</label>
+<div class="right">
+<%= distributionSelector() %>
+
+<div class="help-icon" id="distributionHelp">
+<h2>Which distribution type should I choose?</h2>
+<p>
+<span class="bold-text">Normal:</span>
+You are age 59 1/2 or older.
+</p>
+<p>
+<span class="bold-text">Early:</span>
+You are under age 59 1/2 (The IRS may assess a 10% early distribution penalty depending on your situation).
+</p>
+<p>
+<span class="bold-text">Removal of Excess Contribution:</span>
+If you&#39;ve over-contributed to a tax year and you want to remove excess contributions and earnings to avoid penalty.
+</p>
+<p>
+<span class="bold-text">Disability:</span>
+Someone from our Retirement Team will request a copy of a physician&#39;s statement or letter from the Social Security office confirming your disability.
+</p>
+<p>
+<span class="bold-text">Beneficiary Due to Death:</span>
+Someone from our Retirement Team will request a certified copy of the death certificate for the account owner.
+</p>
+</div>
+</div>
+</div>
+<%}%>
+
+<% if (ira()) { %>
+<p class="rollover-copy" style="display: none">
+Indirect rollovers must be completed within 60 days. See IRS Publication 590 for more details.
+</p>
+<% } %>
+
+<div class="modal-buttons">
+<button id="ok">Delete <%= ira() ? 'IRA' : 'goal' %></button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="summary/transferFunds"><![CDATA[
+<h1>Transfer Funds</h1>
+<section class="transfer-amount">
+<form action="#" method="POST">
+<label class="left">Transfer</label>
+<div class="right">
+$<input type="number" name="amount"/>
+</div>
+<div class="right info-tip clearfix">
+<div class="arrow top"></div>
+<div class="icon">
+<div class="lightbulb-tip-icon"></div>
+</div>
+<div class="text">
+Transfers may cause a sale of securities, which may result in taxes. <a href="" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="GoalTransferModal" data-track-name="TaxImpact">See the tax impact &gt;</a>
+</div>
+</div>
+</form>
+</section>
+
+<section>
+<label class="left">From</label>
+<div class="right">
+<%= build_dropdown_menu(self.fromAccounts, {'class': 'from'}) %>
+</div>
+</section>
+
+<section>
+<div class="right help-note help-text" id="availableHelp">
+(<span data-text="from.availableBalanceForWithdrawal | money"></span> available)
+<div class="help-content">
+Your available balance may be different than your current balance because it accounts for pending withdrawals, conditional bonuses, and prorated fees.
+</div>
+</div>
+</section>
+
+<section>
+<label class="left">To</label>
+<div class="right">
+<%= build_dropdown_menu(self.toAccounts, {'class': 'to'}) %>
+</div>
+</section>
+
+<div class="modal-buttons">
+<button id="ok">Transfer</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="taxLossHarvesting/introRibbon"><![CDATA[
+<div class="inner clearfix">
+<h1>Get started with <span class="blue">Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>
+<div class="clearfix content">
+<div class="left white-box explanation">
+<h3>Tax Loss Harvesting+ can add an estimated <span class="bold-text">0.77%</span> in after-tax returns</h3>
+<div class="check-list">
+<div><span class="dark-blue-check icon"></span> Automatically harvest losses to reduce your taxes</div>
+<div><span class="dark-blue-check icon"></span> Maintain your portfolio&#39;s risk and expected returns</div>
+<div><span class="dark-blue-check icon"></span> Available for <span class="bold-text">no additional fee.</span></div>
+</div>
+</div>
+<div class="right details">
+<div class="white-box short blog open-video">
+<span class="small-box-title">Video</span>
+<div class="right tlh-video-thumbnail"></div>
+<div class="text">How it works</div>
+</div>
+<div class="white-box video">
+<span class="small-box-title">Blog</span>
+<a target="_blank" class="text open-blog" href="<%= brochure_url('resources/inside-betterment/product-news/introducing-tax-loss-harvesting/') %>">
+Introducing Tax Loss Harvesting+
+</a>
+</div>
+<div class="white-box short white-paper">
+<span class="small-box-title">White paper</span>
+<a class="text open-whitepaper" target="_blank" href="<%= brochure_url('resources/research/tax-loss-harvesting-white-paper/') %>">
+Tax Loss Harvesting+
+</a>
+</div>
+</div>
+<div class="help-links">
+<a target="_blank" href="<%= supportUrl('customer/portal/topics/670337-tax-loss-harvesting/articles') %>">FAQs</a> &nbsp;|&nbsp; <a target="_blank" href="<%= brochure_url('resources/research/tax-loss-harvesting-white-paper/#alpha') %>">About this estimate</a>
+</div>
+</div>
+<div class="actions">
+<% if (isEnabled()) { %>
+<button class="confirm">Close</button>
+<% } else { %>
+<button class="confirm">Check eligibility</button>
+<button class="silver cancel white-hover">Not right now</button>
+<% } %>
+</div>
+</div>
+
+]]></template><template name="tooltips/timeWeightedReturns"><![CDATA[
+<div class="<%= typeof tooltipClass === 'undefined' ? 'returns-help' : tooltipClass %> help-icon">
+The time-weighted return is the return of the Betterment portfolio over the selected time. This is the time-weighted return excluding the impact of your own cashflows and transfers.
+
+<% if (periodReturn > 0 && periodEarned < 0) { %>
+It can sometimes be positive even with negative earnings.
+<% } else if (periodReturn < 0 && periodEarned > 0) { %>
+It can sometimes be negative even with positive earnings.
+<% } %>
+
+If you are comparing returns to other investments you hold, you should use this return. <a href="<%- brochure_url('resources/investment-strategy/portfolio-management/betterment-calculate-investment-returns/') %>" target="_blank">Read more&nbsp;&gt;</a>
+</div>
+
+]]></template><template name="transfer/automaticDepositSettings"><![CDATA[
+<% if (account().isIRA()) { %>
+<div class="modal-body clearfix">
+<%= bodyText() %>
+</div>
+<%}%>
+
+<form action="#" method="POST">
+
+<section class="top">
+<% if (multiAccount()) {%>
+<div class="goal-line">
+<label>To your goal</label>
+<div class="left goal"><%= build_goal_list() %></div>
+</div>
+<%}%>
+
+<div class="amount-line">
+<label>
+1. <%= portfolioFlow() ? 'Confirm ':'' %>Deposit
+<div class="help-icon" id="amountHelp">
+The amount entered will be automatically deposited into this goal at the frequency you select, starting on the day you select.
+</div>
+</label>
+
+<div class="left amount">
+<input type="number" name="amount" />
+</div>
+
+<% if (recommended()) {%>
+<div class="help-text left" id="recommendedHelp">
+Why this amount?
+<div class="help-content">
+<% if(adviceFlow()) {%>
+Based on what you&#39;ve told us, we recommend investing
+<%= money(recommended()) %>
+regularly in order to reach your goal.
+
+<%} else if (account().isIRA() && !account().isSepIRA()) {%>
+<p>We recommend investing <%= money(recommended()) %>
+every month to reach your maximum annual IRA contribution by the end of the year.</p>
+<p>Note that we assume this is your only IRA to perform this calculation.</p>
+
+<%} else if (verificationFlow() || self.model.isNew()) {%>
+Based on your annual income, we recommend <%= money(recommended()) %> regularly.
+<%}%>
+</div>
+</div>
+<%}%>
+
+</div>
+
+<% if (showMaximizeIRA()) {%>
+<div class="maximize-contributions">
+<input class="left" id ="optimizeIRACheck" type="checkbox" />
+<span class="left">Maximize IRA contributions for <%= new Date().getFullYear() %></span>
+</div>
+<%}%>
+</section>
+
+<section class="clearfix">
+<label class="bold-text left frequency">
+2. Select frequency
+</label>
+
+<div class="left frequency-selector-wrapper">
+<%= frequency_selector(account().isIRA()) %>
+</div>
+</section>
+<section class="middle clearfix date">
+<label class="instructions left choose-date">3. Choose a day</label>
+<div class="start-date-fields two-fields">
+<span class="left start-date first"></span>
+<span class="left start-date second"></span>
+</div>
+<div class="right calendar">
+<div id="dateSelector" class="dateSelector"></div>
+<div class="inner-triangle"></div>
+<div class="outer-triangle"></div>
+</div>
+</section>
+
+</form>
+<div class="clearfix"></div>
+
+<div class="modal-body summary">
+</div>
+
+<div class="actions">
+<button id="ok">Set Auto Deposit</button>
+<button id="cancel" class="cancel">
+<%= verificationFlow() ? 'Not Now' : 'Close' %>
+</button>
+</div>
+
+]]></template><template name="transfer/automaticTransactionSettingsModal"><![CDATA[
+<h1>
+Auto <%= transactionType() %> Settings <%= verificationFlow() ? '(optional)' : '' %>
+
+<% if (enabledOnInitialize()) { %>
+<div class="toggle-switch active" id="toggleHelp" data-help-content="You can turn off your current auto <%= transactionType().toLowerCase() %> plan by toggling this switch.">
+<div class="switch enabled">
+<div class="handle"></div>
+<div class="off">OFF</div>
+<div class="on">ON</div>
+</div>
+</div>
+<% } %>
+</h1>
+
+<div class="settings-region"></div>
+
+]]></template><template name="transfer/automaticWithdrawalSettings"><![CDATA[
+
+<form action="#" method="POST">
+
+<section class="top">
+<div class="amount-line">
+<label>
+1. <%= portfolioFlow() ? 'Confirm ':'' %>Withdraw
+<div class="help-icon" id="amountHelp">
+The amount entered will be automatically withdrawn from this goal to your
+linked account at the frequency you select, starting on the day you select.
+</div>
+</label>
+
+<div class="left amount">
+<input type="number" name="amount" />
+</div>
+
+<% if (recommended()) {%>
+<div class="help-text left" id="recommendedHelp">
+Why this amount?
+<div class="help-content">
+<% if(adviceFlow()) {%>
+Based on what you&#39;ve told us, we recommend investing
+<%= money(recommended()) %>
+regularly in order to reach your goal.
+
+<%} else if (account().isIRA()) {%>
+<p>We recommend investing <%= money(recommended()) %>
+every month to reach your maximum annual IRA contribution by the end of the year.</p>
+<p>Note that we assume this is your only IRA to perform this calculation.</p>
+
+<%} else if (verificationFlow() || self.model.isNew()) {%>
+Based on your annual income, we recommend <%= money(recommended()) %> regularly.
+<%}%>
+</div>
+</div>
+<%}%>
+</div>
+</section>
+
+<section class="clearfix">
+<label class="bold-text left frequency">
+2. Select frequency
+</label>
+
+<div class="left frequency-selector-wrapper">
+<%= frequency_selector(account().isIRA()) %>
+</div>
+</section>
+
+<section class="clearfix <%= !account().isIRA() ? 'middle' : '' %>">
+<label class="instructions left choose-date">3. Choose a day</label>
+<div class="start-date-fields two-fields">
+<span class="left start-date first"></span>
+<span class="left start-date second"></span>
+</div>
+<div class="right calendar">
+<div id="dateSelector" class="dateSelector"></div>
+<div class="inner-triangle"></div>
+<div class="outer-triangle"></div>
+</div>
+</section>
+
+<% if(account().isIRA()) { %>
+<section class="middle clearfix">
+<label class="bold-text left frequency">
+Distribution Type
+</label>
+
+<div class="left frequency-selector-wrapper">
+<%= build_distribution_selector() %>
+</div>
+</section>
+<% } %>
+
+<div class="modal-body summary clearfix">
+</div>
+
+<div class="clearfix"></div>
+
+<% if (willIncurDistributionPenalty()) { %>
+<div class="info-tip clearfix distribution-penalty">
+<div class="arrow"></div>
+<div class="icon">
+<div class="lightbulb-tip-icon"></div>
+</div>
+<div class="text">
+Since you are younger than 59 1/2, penalties may apply to your withdrawals. See <a target="_blank" href="http://www.irs.gov/uac/About-Publication-590">IRS Pub 590</a> for exceptions.
+</div>
+</div>
+<% } %>
+</form>
+
+<div class="actions">
+<button id="ok">Set Auto Withdrawal</button>
+<button id="cancel" class="cancel">
+<%= verificationFlow() ? 'Not Now' : 'Close' %>
+</button>
+</div>
+
+]]></template><template name="transfer/bankVerificationInfo"><![CDATA[
+<div class="panel card body link-checking-account-verify-info">
+<h3>Verify your checking account link</h3>
+<div class="instructions">
+<ul>
+<li class="clearfix">
+<p>We will post two deposits under $1.00 to your checking account <span class="bold-text"><%= _.isUndefined(obj.expectedVerificationDepositDate) ? '' : 'on '+formatDepositDate()  %></span> and immediately withdraw them. When you receive the deposits, please come back and tell us those amounts to verify your account.</p>
+</li>
+</ul>
+<div>
+<p>You will receive a reminder to verify the amounts from <a href="mailto:support@betterment.com">support@betterment.com</a>.</p>
+</div>
+<div>
+<button class="orange">Back to Summary</button>
+<button class="silver">Ready to verify</button>
+</div>
+</div>
+<div class="worksheet">
+<div class="right-up-arrow"></div>
+<div class="check-statement"></div>
+<div class="check-annotation">Here&#39;s an example of what you will see in your checking account.</div>
+</div>
+</div>
+
+]]></template><template name="transfer/iraInfoTips"><![CDATA[
+<div class="info-tip ira-info clearfix">
+<div class="icon">
+<div class="lightbulb-tip-icon"></div>
+</div>
+<div class="text">
+<%= infoTipContent() %>
+</div>
+</div>
+
+]]></template><template name="transfer/manualNetIncome"><![CDATA[
+<h1>Withdraw Excess Contributions</h1>
+
+<div class="modal-body">
+Per IRS rules, excess IRA contribution withdrawals must include the net income (gain or loss) since the contribution was made. Any income is taxable in the year of the original contribution. IRS Publication 590a details the net income calculation in Worksheet 1-4. Since you have chosen to calculate the net income yourself, please enter the amounts from the worksheet below:
+</div>
+
+<form action="#" method="POST">
+<section>
+<label class="left">Excess IRA Contribution for <%= taxYear() %> (line 1):</label>
+<span class="right">
+$<input type="number" name="amount" />
+</span>
+</section>
+<section class="bottom-bevel">
+<label class="left">Net income attributable to the contribution (line 6):</label>
+<span class="right">
+$<input type="number" name="delta" />
+</span>
+</section>
+
+<h2 class="clearfix">
+<span class="left">Total Withdrawal Amount:</span>
+<span class="right total-amount" data-text="view:_totalAmount < .amount | money"></span>
+</h2>
+<p>
+</form>
+
+<div class="modal-body">
+Note: Only the total withdrawal amount will be reported to the IRS. You must report the earnings on your tax return per the rules in IRS Publication 590.
+</div>
+
+<div class="modal-buttons">
+<button id="ok">Transfer</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="transfer/rothLimit"><![CDATA[
+<h1>Determine <%= self.options.taxYear %> Roth Contribution Limits</h1>
+<div class="modal-body">
+<p>
+Roth IRA contributions are limited based on your income for the year. Use this quick calculator to estimate the Roth limit we will use on your account.
+</p>
+<p>
+This calculator is only an estimate; please consult a tax professional to make sure you are getting the most from your retirement.
+</p>
+</div>
+<div class="clearfix"></div>
+
+<form action="#" method="POST">
+<section>
+<label class="left">Tax filing status</label>
+
+<div class="help-icon right" id="maritalHelp">
+Your tax filing status and income affect the amount you can contribute to your Roth IRA. The phaseout ranges vary by year,
+and are covered in IRS Publication 590.
+</div>
+
+<%= maritalStatusDropdown() %>
+</section>
+
+<section>
+<label class="left">Modified adjusted gross income</label>
+
+<div class="help-icon right" id="incomeHelp">
+Modified Adjusted Gross Income (MAGI) is used by the IRA to determine if a taxpayer is eligible to use certain
+deductions, credits or retirement plans. Generally, your MAGI is your Adjusted Gross Income from the last line
+of Page 1 of your Form 1040, plus any tax-exempt income you may have.
+</div>
+
+<div class="right">
+$<input type="number" name="adjustedGrossIncome" value="<%= agi() %>" />
+</div>
+</section>
+
+<section>
+<label class="left">Your estimated contribution limit</label>
+<label class="right" id="estimate"></label>
+</section>
+</form>
+
+<div class="modal-buttons">
+<button id="yes">Use Estimated Limit</button>
+<button id="no" class="cancel">Cancel</button>
+</div>
+
+]]></template><template name="transfer/wireInstructions"><![CDATA[
+<h1>Wire transfer instructions</h1>
+
+<% if (isIRADeposit()) { %>
+<p>
+<% if (hasAmount()) { %>
+<strong><%- requestedAmount() %></strong> is over the IRA rollover limit of <%- maxACHAmount() %>.
+To roll over this amount into your <%- goalName() %>, you can wire the money directly from your bank using the instructions below.
+<% } else { %>
+We have included the wire instructions below for your <%- goalName() %> goal. In order to process the deposit you will need to provide these instructions to your bank.
+<% } %>
+We will not accept tax year contributions made via wire transfers.
+</p>
+<% } else { %>
+<p>
+<% if (hasAmount()) { %>
+<strong><%- requestedAmount() %></strong> is over the daily electronic transfer limit of <%- maxACHAmount() %>.
+To deposit this amount into your <%- goalName() %> goal, you can wire the money directly from your bank using the instructions below.
+<% } else { %>
+We have included the wire instructions below for your <%- goalName() %> goal. In order to process the deposit you will need to provide these instructions to your bank.
+<% } %>
+</p>
+<% } %>
+
+<div class="instructions">
+<h2>Wire instructions</h2>
+
+<dl>
+<dt>Wire funds to:</dt>
+<dd><%- bankName() %></dd>
+
+<dt>Routing number:</dt>
+<dd><%- routingNumber() %></dd>
+
+<dt>For credit to:</dt>
+<dd><%- forCreditName() %></dd>
+
+<dt>Account number:</dt>
+<dd><%- accountNumber() %></dd>
+
+<dt>Amount:</dt>
+<dd><%- requestedAmount() %></dd>
+
+<dt>Memo/additional info:</dt>
+<dd><%- accountUserName() %>, <%- goalName() %></dd>
+
+<dt>Receiving bank address:</dt>
+<dd><%- bankAddress1() %><br/><%- bankAddress2() %></dd>
+</dl>
+</div>
+
+<% /* commented out until wires become automated
+<p>
+Wires received in good order before 3:30PM ET on business days will be invested that same day.
+Wires received after 3:30PM ET or on weekends will be invested the following business day.
+</p>
+*/ %>
+
+<p>
+Please note, we do not charge you a fee for incoming wires, but your bank may charge you
+a fee for sending a wire transfer.
+</p>
+
+<div class="modal-buttons">
+<button class="email-instructions">Email Me Instructions</button>
+<button class="cancel">Close</button>
+</div>
+
+]]></template><template name="transfer/withdraw"><![CDATA[
+<form class="clearfix" action="#" method="POST">
+
+<div class="amount-line">
+<div class="clearfix">
+<div class="title">
+<span class="bold-text dotted-underline" id="withdrawHelp">
+Withdraw
+<span class="help-content">
+Transfer money from your Betterment goal to your linked checking account. A withdrawal takes 4-5 business days to appear in your linked account if you submit your request before 3:30 PM ET.
+</span>
+</span>
+<span>
+from your <%- account().get('name') %> goal.
+</span>
+</div>
+
+<% if (account().isIRA()) { %>
+<div class="clearfix contribution-type-selection">
+<div class="left ira-heading"  id="distributionHelp">
+<span class="dotted-underline">Distribution Type</span>
+<div class="help-content" >
+<span class="bold-text">Normal:</span>
+You are age 59 1/2 or older.
+<br/><br/>
+
+<span class="bold-text">Early:</span>
+You are younger than 59 1/2 (The IRS may assess a 10% early distribution penalty).
+<br/><br/>
+
+<span class="bold-text">Removal of Excess Contribution:</span><br>
+You contributed too much for the given tax year and need to remove contributions.
+<br/><br/>
+
+<span class="bold-text">Disability:</span>
+You meet the definition of disabled in IRS Publication 590.
+<br/><br/>
+
+<span class="bold-text">Beneficiary Due to Death:</span>
+You are the beneficiary of the inherited IRA or are distributing to the estate of the deceased.<br/>
+</div>
+</div>
+<div class="ira-fields distribution-fields">
+<%= build_distribution_selector() %>
+</div>
+<div class="ira-fields excess-checkbox note">
+<div>
+<input type="checkbox" checked="checked" name="netIncome" />
+<span id="excessContributionHelp" class="dotted-underline">
+Automatically calculate earnings.
+<span class="help-content">
+<p>
+Per IRS Publication 590, excess IRA contribution withdrawals must include the
+earnings (gain or loss) since the contribution was made. Check this box if
+you would like us to perform the earnings calculation for you, and enter
+exact amount of excess contributions in the Withdraw box. You&#39;ll be able
+to confirm the actual amount when you click Withdraw.
+</p>
+<p>
+If you choose to do the earnings calculation yourself, use the Worksheet in
+IRS Pub 590 for excess contributions.  Enter the amount from Worksheet Line 1
+in the box below and click Withdraw.  You will then enter the earnings
+calculated on Line 6 of the Worksheet.
+</p>
+</span>
+</span>
+</div>
+</div>
+</div>
+<%}%>
+
+<div class="left withdraw-amount-box">
+$<input type="text" name="amount" data-validation-model="withdrawal" data-tiploc-my="bottom left" money-input data-tiploc-at="top left"/>
+</div>
+
+<button id="transferButton" class="left blue withdraw-amount-box">Withdraw</button>
+<button class="left silver show-tax-impact" data-track-event="ElementClicked" data-track-location="Transfer" data-track-name="TaxImpact">Estimate Tax Impact</button>
+</div>
+<div class="help-note withdraw-amount-box" id="availableHelp">
+(<span class="help-text"><span data-text="view:_availableBalance < .netIncome | money"></span> available</span>)
+<div class="help-content"></div>
+</div>
+<div class="info-tip ira-info clearfix withdraw-indirect-ira-info">
+<div class="text">
+To transfer your IRA out of Betterment, the receiving institution is required to send us Direct Transfer paperwork. Please contact your new provider for details.
+Your new provider will need your Betterment account number, which is simply the email address you use to log in.
+</div>
+</div>
+<section id="transferWithdrawalSafetyTip" class="info-tip clearfix hide">
+<div class="arrow"></div>
+<div class="icon"><div class="lightbulb-tip-icon"></div></div>
+<div class="text">
+Scared of the market? Use our cash-equivalent option instead of withdrawing by setting your allocation to 100% bonds.<br/>
+<button class="showWithdrawalAlternative blue">Show me</button>
+</div>
+</section>
+</div>
+</form>
+
+]]></template><template name="transfer/withdrawalAlternative"><![CDATA[
+<h1>Cash-equivalent allocation change</h1>
+
+<div class="allocation-change-content">
+<section class="slider-box clearfix">
+<div class="slider-note">
+<span class="left bonds"></span>
+<span class="right stocks"></span>
+</div>
+<div class="allocation-slider">
+</div>
+<div class="slider-note">
+<span class="left">Bonds</span>
+<span class="right">Stocks</span>
+</div>
+</section>
+
+<div class="portfolio-donut-region">
+</div>
+</div>
+
+<p class="description first-description">
+With this change, your goal will be invested in 100% Short-term Treasuries (<a href="http://us.ishares.com/product_info/fund/overview/SHV.htm" target="_blank">SHV</a>), a cash-equivalent with very little market risk.
+</p>
+<p class="description">
+Our Advice: Stay Put. Market timing <a href="<%= brochure_url('resources/investment-strategy/behavioral-finance-investing-strategy/betterments-quest-behavior-gap-zero/') %>" target="_blank">reduces returns</a> by about 1.6%.
+</p>
+
+<div class="modal-buttons">
+<button class="cancel-allocation blue">Nevermind, stay put</button>
+<button class="cancel change-allocation silver">Change allocation</button>
+</div>
+
+<div class="modal-tertiary-option description">
+Or, <a href="#advice">try a different allocation &gt;</a>
+</div>
+
+]]></template><template name="trust/documentUploadModal"><![CDATA[
+<h1>Upload Trust Documents</h1>
+<div class="modal-body">
+<% if(!canUpload) { %>
+<div>
+Please email electronic copies of the <strong> title page</strong> and <strong>signature pages</strong> of your trust agreement to <a href="mailto:trusts@betterment.com">trusts@betterment.com</a>. We do not need a copy of the entire agreement.
+</div>
+<% } else { %>
+<div>
+Please upload and submit electronic copies of the <strong> title page</strong> and <strong>signature pages</strong> of your trust agreement. We do not need a copy of the entire agreement.
+</div>
+<% } %>
+<div class="trust-upload-error trust-upload-error-size">
+Sorry, this file is over our <%= uploadLimit %>MB size limit.  Please upload individual pages or contact <a href="mailto:trusts@betterment.com">trusts@betterment.com</a> for further assistance.
+</div>
+<div class="trust-upload-error trust-upload-error-duplicate">
+It appears that we already have a copy of this file.  If you feel that you have reached this message in error, please contact <a href="mailto:trusts@betterment.com">trusts@betterment.com</a> for further assistance.
+</div>
+</div>
+
+<% if(canUpload) { %>
+<div class="clearfix"></div>
+
+<div class="trust-documents-zone">
+<div class="dropzone-previews"></div>
+
+<div class="choose-file">
+<span>Choose Files<%= dragDrop %></span>
+<span class="input-hider right">
+<button class="silver secondary">Choose file</button>
+<input type="file" name="file" multiple="multiple" />
+</span>
+</div>
+</div>
+
+<p class="security-notice">
+Your documents are always encrypted and stored securely to protect your information.
+</p>
+
+<div class="modal-buttons">
+<button class="blue ok">Submit</button>
+<button id="cancel" class="cancel">Cancel</button>
+</div>
+<% } else { %>
+<div class="modal-buttons">
+<button class="blue ok">Ok</button>
+</div>
+<% } %>
+
+]]></template><template name="trust/trustSignup"><![CDATA[
+
+<div class="clearfix">
+<h1 class="tab-header">Add a Trust</h1>
+</div>
+
+<form class="panel card body big-form">
+<div class="big-form-inner">
+<article>
+<div class="section-header">
+<span class="left blue-circle">1</span>
+<h3 class="left">Trust information</h3>
+</div>
+
+<section>
+<div class="input-line" data-field="domestic">
+<label class="domestic-label">Is this trust a U.S. domestic trust?</label>
+<span class="input-area">
+<span class="radio-area">
+<input type="radio" name="domestic" value="true" />
+<p>Yes</p>
+</span>
+
+<span class="radio-area">
+<input type="radio" name="domestic" value="false" />
+<p>No</p>
+</span>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="legalName">
+<label>Trust legal name</label>
+<span class="input-area">
+<input class="white" type="text" name="legalName" placeholder="Trust Legal Name" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="nickname">
+<label>Trust nickname</label>
+<span class="input-area">
+<input class="white" type="text" name="nickname" maxlength="25" placeholder="Johnny's Trust" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="establishedDate" data-group="establishedDate">
+<label>Date of establishment</label>
+<span class="input-area">
+<input type="text" class="white dob month" name="establishedDate[month]" maxlength="2" placeholder="MM" />
+<input type="text" class="white dob day" name="establishedDate[day]" maxlength="2" placeholder="DD" />
+<input type="text" class="white dob year" name="establishedDate[year]" maxlength="4" placeholder="YYYY" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="stateOfOrganization">
+<label>State of organization</label>
+<span class="input-area">
+<%= stateSelect({ name: 'stateOfOrganization', style: 'margin: 0;' }) %>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="typeOfTin">
+<label>Type of TIN</label>
+<span class="input-area">
+<select name="typeOfTin">
+<option value="">-</option>
+<option value="TIN">EIN</option>
+<option value="SSN">SSN</option>
+</select>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="tinOrSsn">
+<label>EIN or SSN <span class="security-icon"></span></label>
+<span class="input-area">
+<input class="white" type="text" name="tinOrSsn" placeholder="123-45-6789" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line" data-field="address">
+<label>Address</label>
+<span class="input-area">
+<input class="white" type="text" name="address" placeholder="123 Some Street" />
+<div class="conversation-text"></div>
+</span>
+</div>
+
+<div class="input-line">
+<label>City</label>
+<span class="input-area city-state">
+<p data-field="city">
+<input class="white" type="text" placeholder="City" name="city" />
+</p>
+
+<p data-field="state">
+<p>State</p>
+<%= stateSelect({ name: 'state' }) %>
+</p>
+<div class="conversation-text"></div>
+</span>
+</div>
+
+
+<div class="input-line" data-field="zip">
+<label>Zip</label>
+<span class="input-area">
+<input class="white" type="text" name="zip" maxlength="5" placeholder="10001" />
+<div class="conversation-text"></div>
+</span>
+</div>
+</section>
+</article>
+
+<hr />
+
+<p class="terms">Since you are adding a trust, we need you to agree to the trust terms below.</p>
+
+<div class="tos-area input-line" data-field="userAgreement">
+<div class="terms-of-service"></div>
+</div>
+
+<div class="buttons" style="clear:both;">
+<button class="ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</form>
+
+]]></template></templates>

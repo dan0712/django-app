@@ -1,0 +1,2402 @@
+[
+  {
+    "maturity": 1,
+    "rate": 0.0094
+  },
+  {
+    "maturity": 2,
+    "rate": 0.0252
+  },
+  {
+    "maturity": 3,
+    "rate": 0.054
+  },
+  {
+    "maturity": 4,
+    "rate": 0.0938
+  },
+  {
+    "maturity": 5,
+    "rate": 0.1429
+  },
+  {
+    "maturity": 6,
+    "rate": 0.1998
+  },
+  {
+    "maturity": 7,
+    "rate": 0.2632
+  },
+  {
+    "maturity": 8,
+    "rate": 0.3318
+  },
+  {
+    "maturity": 9,
+    "rate": 0.4047
+  },
+  {
+    "maturity": 10,
+    "rate": 0.4808
+  },
+  {
+    "maturity": 11,
+    "rate": 0.5593
+  },
+  {
+    "maturity": 12,
+    "rate": 0.6396
+  },
+  {
+    "maturity": 13,
+    "rate": 0.7209
+  },
+  {
+    "maturity": 14,
+    "rate": 0.8028
+  },
+  {
+    "maturity": 15,
+    "rate": 0.8847
+  },
+  {
+    "maturity": 16,
+    "rate": 0.9662
+  },
+  {
+    "maturity": 17,
+    "rate": 1.047
+  },
+  {
+    "maturity": 18,
+    "rate": 1.1267
+  },
+  {
+    "maturity": 19,
+    "rate": 1.2051
+  },
+  {
+    "maturity": 20,
+    "rate": 1.282
+  },
+  {
+    "maturity": 21,
+    "rate": 1.3572
+  },
+  {
+    "maturity": 22,
+    "rate": 1.4305
+  },
+  {
+    "maturity": 23,
+    "rate": 1.5019
+  },
+  {
+    "maturity": 24,
+    "rate": 1.5712
+  },
+  {
+    "maturity": 25,
+    "rate": 1.6384
+  },
+  {
+    "maturity": 26,
+    "rate": 1.7034
+  },
+  {
+    "maturity": 27,
+    "rate": 1.7662
+  },
+  {
+    "maturity": 28,
+    "rate": 1.8268
+  },
+  {
+    "maturity": 29,
+    "rate": 1.8852
+  },
+  {
+    "maturity": 30,
+    "rate": 1.9414
+  },
+  {
+    "maturity": 31,
+    "rate": 1.9954
+  },
+  {
+    "maturity": 32,
+    "rate": 2.0473
+  },
+  {
+    "maturity": 33,
+    "rate": 2.097
+  },
+  {
+    "maturity": 34,
+    "rate": 2.1447
+  },
+  {
+    "maturity": 35,
+    "rate": 2.1903
+  },
+  {
+    "maturity": 36,
+    "rate": 2.234
+  },
+  {
+    "maturity": 37,
+    "rate": 2.2757
+  },
+  {
+    "maturity": 38,
+    "rate": 2.3156
+  },
+  {
+    "maturity": 39,
+    "rate": 2.3536
+  },
+  {
+    "maturity": 40,
+    "rate": 2.39
+  },
+  {
+    "maturity": 41,
+    "rate": 2.4246
+  },
+  {
+    "maturity": 42,
+    "rate": 2.4576
+  },
+  {
+    "maturity": 43,
+    "rate": 2.4891
+  },
+  {
+    "maturity": 44,
+    "rate": 2.5191
+  },
+  {
+    "maturity": 45,
+    "rate": 2.5476
+  },
+  {
+    "maturity": 46,
+    "rate": 2.5748
+  },
+  {
+    "maturity": 47,
+    "rate": 2.6006
+  },
+  {
+    "maturity": 48,
+    "rate": 2.6252
+  },
+  {
+    "maturity": 49,
+    "rate": 2.6486
+  },
+  {
+    "maturity": 50,
+    "rate": 2.6708
+  },
+  {
+    "maturity": 51,
+    "rate": 2.692
+  },
+  {
+    "maturity": 52,
+    "rate": 2.7121
+  },
+  {
+    "maturity": 53,
+    "rate": 2.7313
+  },
+  {
+    "maturity": 54,
+    "rate": 2.7495
+  },
+  {
+    "maturity": 55,
+    "rate": 2.7668
+  },
+  {
+    "maturity": 56,
+    "rate": 2.7833
+  },
+  {
+    "maturity": 57,
+    "rate": 2.799
+  },
+  {
+    "maturity": 58,
+    "rate": 2.8139
+  },
+  {
+    "maturity": 59,
+    "rate": 2.8281
+  },
+  {
+    "maturity": 60,
+    "rate": 2.8417
+  },
+  {
+    "maturity": 61,
+    "rate": 2.8546
+  },
+  {
+    "maturity": 62,
+    "rate": 2.8669
+  },
+  {
+    "maturity": 63,
+    "rate": 2.8786
+  },
+  {
+    "maturity": 64,
+    "rate": 2.8898
+  },
+  {
+    "maturity": 65,
+    "rate": 2.9005
+  },
+  {
+    "maturity": 66,
+    "rate": 2.9107
+  },
+  {
+    "maturity": 67,
+    "rate": 2.9205
+  },
+  {
+    "maturity": 68,
+    "rate": 2.9299
+  },
+  {
+    "maturity": 69,
+    "rate": 2.9388
+  },
+  {
+    "maturity": 70,
+    "rate": 2.9475
+  },
+  {
+    "maturity": 71,
+    "rate": 2.9557
+  },
+  {
+    "maturity": 72,
+    "rate": 2.9636
+  },
+  {
+    "maturity": 73,
+    "rate": 2.9713
+  },
+  {
+    "maturity": 74,
+    "rate": 2.9786
+  },
+  {
+    "maturity": 75,
+    "rate": 2.9857
+  },
+  {
+    "maturity": 76,
+    "rate": 2.9925
+  },
+  {
+    "maturity": 77,
+    "rate": 2.9991
+  },
+  {
+    "maturity": 78,
+    "rate": 3
+  },
+  {
+    "maturity": 79,
+    "rate": 3
+  },
+  {
+    "maturity": 80,
+    "rate": 3
+  },
+  {
+    "maturity": 81,
+    "rate": 3
+  },
+  {
+    "maturity": 82,
+    "rate": 3
+  },
+  {
+    "maturity": 83,
+    "rate": 3
+  },
+  {
+    "maturity": 84,
+    "rate": 3
+  },
+  {
+    "maturity": 85,
+    "rate": 3
+  },
+  {
+    "maturity": 86,
+    "rate": 3
+  },
+  {
+    "maturity": 87,
+    "rate": 3
+  },
+  {
+    "maturity": 88,
+    "rate": 3
+  },
+  {
+    "maturity": 89,
+    "rate": 3
+  },
+  {
+    "maturity": 90,
+    "rate": 3
+  },
+  {
+    "maturity": 91,
+    "rate": 3
+  },
+  {
+    "maturity": 92,
+    "rate": 3
+  },
+  {
+    "maturity": 93,
+    "rate": 3
+  },
+  {
+    "maturity": 94,
+    "rate": 3
+  },
+  {
+    "maturity": 95,
+    "rate": 3
+  },
+  {
+    "maturity": 96,
+    "rate": 3
+  },
+  {
+    "maturity": 97,
+    "rate": 3
+  },
+  {
+    "maturity": 98,
+    "rate": 3
+  },
+  {
+    "maturity": 99,
+    "rate": 3
+  },
+  {
+    "maturity": 100,
+    "rate": 3
+  },
+  {
+    "maturity": 101,
+    "rate": 3
+  },
+  {
+    "maturity": 102,
+    "rate": 3
+  },
+  {
+    "maturity": 103,
+    "rate": 3
+  },
+  {
+    "maturity": 104,
+    "rate": 3
+  },
+  {
+    "maturity": 105,
+    "rate": 3
+  },
+  {
+    "maturity": 106,
+    "rate": 3
+  },
+  {
+    "maturity": 107,
+    "rate": 3
+  },
+  {
+    "maturity": 108,
+    "rate": 3
+  },
+  {
+    "maturity": 109,
+    "rate": 3
+  },
+  {
+    "maturity": 110,
+    "rate": 3
+  },
+  {
+    "maturity": 111,
+    "rate": 3
+  },
+  {
+    "maturity": 112,
+    "rate": 3
+  },
+  {
+    "maturity": 113,
+    "rate": 3
+  },
+  {
+    "maturity": 114,
+    "rate": 3
+  },
+  {
+    "maturity": 115,
+    "rate": 3
+  },
+  {
+    "maturity": 116,
+    "rate": 3
+  },
+  {
+    "maturity": 117,
+    "rate": 3
+  },
+  {
+    "maturity": 118,
+    "rate": 3
+  },
+  {
+    "maturity": 119,
+    "rate": 3
+  },
+  {
+    "maturity": 120,
+    "rate": 3
+  },
+  {
+    "maturity": 121,
+    "rate": 3
+  },
+  {
+    "maturity": 122,
+    "rate": 3
+  },
+  {
+    "maturity": 123,
+    "rate": 3
+  },
+  {
+    "maturity": 124,
+    "rate": 3
+  },
+  {
+    "maturity": 125,
+    "rate": 3
+  },
+  {
+    "maturity": 126,
+    "rate": 3
+  },
+  {
+    "maturity": 127,
+    "rate": 3
+  },
+  {
+    "maturity": 128,
+    "rate": 3
+  },
+  {
+    "maturity": 129,
+    "rate": 3
+  },
+  {
+    "maturity": 130,
+    "rate": 3
+  },
+  {
+    "maturity": 131,
+    "rate": 3
+  },
+  {
+    "maturity": 132,
+    "rate": 3
+  },
+  {
+    "maturity": 133,
+    "rate": 3
+  },
+  {
+    "maturity": 134,
+    "rate": 3
+  },
+  {
+    "maturity": 135,
+    "rate": 3
+  },
+  {
+    "maturity": 136,
+    "rate": 3
+  },
+  {
+    "maturity": 137,
+    "rate": 3
+  },
+  {
+    "maturity": 138,
+    "rate": 3
+  },
+  {
+    "maturity": 139,
+    "rate": 3
+  },
+  {
+    "maturity": 140,
+    "rate": 3
+  },
+  {
+    "maturity": 141,
+    "rate": 3
+  },
+  {
+    "maturity": 142,
+    "rate": 3
+  },
+  {
+    "maturity": 143,
+    "rate": 3
+  },
+  {
+    "maturity": 144,
+    "rate": 3
+  },
+  {
+    "maturity": 145,
+    "rate": 3
+  },
+  {
+    "maturity": 146,
+    "rate": 3
+  },
+  {
+    "maturity": 147,
+    "rate": 3
+  },
+  {
+    "maturity": 148,
+    "rate": 3
+  },
+  {
+    "maturity": 149,
+    "rate": 3
+  },
+  {
+    "maturity": 150,
+    "rate": 3
+  },
+  {
+    "maturity": 151,
+    "rate": 3
+  },
+  {
+    "maturity": 152,
+    "rate": 3
+  },
+  {
+    "maturity": 153,
+    "rate": 3
+  },
+  {
+    "maturity": 154,
+    "rate": 3
+  },
+  {
+    "maturity": 155,
+    "rate": 3
+  },
+  {
+    "maturity": 156,
+    "rate": 3
+  },
+  {
+    "maturity": 157,
+    "rate": 3
+  },
+  {
+    "maturity": 158,
+    "rate": 3
+  },
+  {
+    "maturity": 159,
+    "rate": 3
+  },
+  {
+    "maturity": 160,
+    "rate": 3
+  },
+  {
+    "maturity": 161,
+    "rate": 3
+  },
+  {
+    "maturity": 162,
+    "rate": 3
+  },
+  {
+    "maturity": 163,
+    "rate": 3
+  },
+  {
+    "maturity": 164,
+    "rate": 3
+  },
+  {
+    "maturity": 165,
+    "rate": 3
+  },
+  {
+    "maturity": 166,
+    "rate": 3
+  },
+  {
+    "maturity": 167,
+    "rate": 3
+  },
+  {
+    "maturity": 168,
+    "rate": 3
+  },
+  {
+    "maturity": 169,
+    "rate": 3
+  },
+  {
+    "maturity": 170,
+    "rate": 3
+  },
+  {
+    "maturity": 171,
+    "rate": 3
+  },
+  {
+    "maturity": 172,
+    "rate": 3
+  },
+  {
+    "maturity": 173,
+    "rate": 3
+  },
+  {
+    "maturity": 174,
+    "rate": 3
+  },
+  {
+    "maturity": 175,
+    "rate": 3
+  },
+  {
+    "maturity": 176,
+    "rate": 3
+  },
+  {
+    "maturity": 177,
+    "rate": 3
+  },
+  {
+    "maturity": 178,
+    "rate": 3
+  },
+  {
+    "maturity": 179,
+    "rate": 3
+  },
+  {
+    "maturity": 180,
+    "rate": 3
+  },
+  {
+    "maturity": 181,
+    "rate": 3
+  },
+  {
+    "maturity": 182,
+    "rate": 3
+  },
+  {
+    "maturity": 183,
+    "rate": 3
+  },
+  {
+    "maturity": 184,
+    "rate": 3
+  },
+  {
+    "maturity": 185,
+    "rate": 3
+  },
+  {
+    "maturity": 186,
+    "rate": 3
+  },
+  {
+    "maturity": 187,
+    "rate": 3
+  },
+  {
+    "maturity": 188,
+    "rate": 3
+  },
+  {
+    "maturity": 189,
+    "rate": 3
+  },
+  {
+    "maturity": 190,
+    "rate": 3
+  },
+  {
+    "maturity": 191,
+    "rate": 3
+  },
+  {
+    "maturity": 192,
+    "rate": 3
+  },
+  {
+    "maturity": 193,
+    "rate": 3
+  },
+  {
+    "maturity": 194,
+    "rate": 3
+  },
+  {
+    "maturity": 195,
+    "rate": 3
+  },
+  {
+    "maturity": 196,
+    "rate": 3
+  },
+  {
+    "maturity": 197,
+    "rate": 3
+  },
+  {
+    "maturity": 198,
+    "rate": 3
+  },
+  {
+    "maturity": 199,
+    "rate": 3
+  },
+  {
+    "maturity": 200,
+    "rate": 3
+  },
+  {
+    "maturity": 201,
+    "rate": 3
+  },
+  {
+    "maturity": 202,
+    "rate": 3
+  },
+  {
+    "maturity": 203,
+    "rate": 3
+  },
+  {
+    "maturity": 204,
+    "rate": 3
+  },
+  {
+    "maturity": 205,
+    "rate": 3
+  },
+  {
+    "maturity": 206,
+    "rate": 3
+  },
+  {
+    "maturity": 207,
+    "rate": 3
+  },
+  {
+    "maturity": 208,
+    "rate": 3
+  },
+  {
+    "maturity": 209,
+    "rate": 3
+  },
+  {
+    "maturity": 210,
+    "rate": 3
+  },
+  {
+    "maturity": 211,
+    "rate": 3
+  },
+  {
+    "maturity": 212,
+    "rate": 3
+  },
+  {
+    "maturity": 213,
+    "rate": 3
+  },
+  {
+    "maturity": 214,
+    "rate": 3
+  },
+  {
+    "maturity": 215,
+    "rate": 3
+  },
+  {
+    "maturity": 216,
+    "rate": 3
+  },
+  {
+    "maturity": 217,
+    "rate": 3
+  },
+  {
+    "maturity": 218,
+    "rate": 3
+  },
+  {
+    "maturity": 219,
+    "rate": 3
+  },
+  {
+    "maturity": 220,
+    "rate": 3
+  },
+  {
+    "maturity": 221,
+    "rate": 3
+  },
+  {
+    "maturity": 222,
+    "rate": 3
+  },
+  {
+    "maturity": 223,
+    "rate": 3
+  },
+  {
+    "maturity": 224,
+    "rate": 3
+  },
+  {
+    "maturity": 225,
+    "rate": 3
+  },
+  {
+    "maturity": 226,
+    "rate": 3
+  },
+  {
+    "maturity": 227,
+    "rate": 3
+  },
+  {
+    "maturity": 228,
+    "rate": 3
+  },
+  {
+    "maturity": 229,
+    "rate": 3
+  },
+  {
+    "maturity": 230,
+    "rate": 3
+  },
+  {
+    "maturity": 231,
+    "rate": 3
+  },
+  {
+    "maturity": 232,
+    "rate": 3
+  },
+  {
+    "maturity": 233,
+    "rate": 3
+  },
+  {
+    "maturity": 234,
+    "rate": 3
+  },
+  {
+    "maturity": 235,
+    "rate": 3
+  },
+  {
+    "maturity": 236,
+    "rate": 3
+  },
+  {
+    "maturity": 237,
+    "rate": 3
+  },
+  {
+    "maturity": 238,
+    "rate": 3
+  },
+  {
+    "maturity": 239,
+    "rate": 3
+  },
+  {
+    "maturity": 240,
+    "rate": 3
+  },
+  {
+    "maturity": 241,
+    "rate": 3
+  },
+  {
+    "maturity": 242,
+    "rate": 3
+  },
+  {
+    "maturity": 243,
+    "rate": 3
+  },
+  {
+    "maturity": 244,
+    "rate": 3
+  },
+  {
+    "maturity": 245,
+    "rate": 3
+  },
+  {
+    "maturity": 246,
+    "rate": 3
+  },
+  {
+    "maturity": 247,
+    "rate": 3
+  },
+  {
+    "maturity": 248,
+    "rate": 3
+  },
+  {
+    "maturity": 249,
+    "rate": 3
+  },
+  {
+    "maturity": 250,
+    "rate": 3
+  },
+  {
+    "maturity": 251,
+    "rate": 3
+  },
+  {
+    "maturity": 252,
+    "rate": 3
+  },
+  {
+    "maturity": 253,
+    "rate": 3
+  },
+  {
+    "maturity": 254,
+    "rate": 3
+  },
+  {
+    "maturity": 255,
+    "rate": 3
+  },
+  {
+    "maturity": 256,
+    "rate": 3
+  },
+  {
+    "maturity": 257,
+    "rate": 3
+  },
+  {
+    "maturity": 258,
+    "rate": 3
+  },
+  {
+    "maturity": 259,
+    "rate": 3
+  },
+  {
+    "maturity": 260,
+    "rate": 3
+  },
+  {
+    "maturity": 261,
+    "rate": 3
+  },
+  {
+    "maturity": 262,
+    "rate": 3
+  },
+  {
+    "maturity": 263,
+    "rate": 3
+  },
+  {
+    "maturity": 264,
+    "rate": 3
+  },
+  {
+    "maturity": 265,
+    "rate": 3
+  },
+  {
+    "maturity": 266,
+    "rate": 3
+  },
+  {
+    "maturity": 267,
+    "rate": 3
+  },
+  {
+    "maturity": 268,
+    "rate": 3
+  },
+  {
+    "maturity": 269,
+    "rate": 3
+  },
+  {
+    "maturity": 270,
+    "rate": 3
+  },
+  {
+    "maturity": 271,
+    "rate": 3
+  },
+  {
+    "maturity": 272,
+    "rate": 3
+  },
+  {
+    "maturity": 273,
+    "rate": 3
+  },
+  {
+    "maturity": 274,
+    "rate": 3
+  },
+  {
+    "maturity": 275,
+    "rate": 3
+  },
+  {
+    "maturity": 276,
+    "rate": 3
+  },
+  {
+    "maturity": 277,
+    "rate": 3
+  },
+  {
+    "maturity": 278,
+    "rate": 3
+  },
+  {
+    "maturity": 279,
+    "rate": 3
+  },
+  {
+    "maturity": 280,
+    "rate": 3
+  },
+  {
+    "maturity": 281,
+    "rate": 3
+  },
+  {
+    "maturity": 282,
+    "rate": 3
+  },
+  {
+    "maturity": 283,
+    "rate": 3
+  },
+  {
+    "maturity": 284,
+    "rate": 3
+  },
+  {
+    "maturity": 285,
+    "rate": 3
+  },
+  {
+    "maturity": 286,
+    "rate": 3
+  },
+  {
+    "maturity": 287,
+    "rate": 3
+  },
+  {
+    "maturity": 288,
+    "rate": 3
+  },
+  {
+    "maturity": 289,
+    "rate": 3
+  },
+  {
+    "maturity": 290,
+    "rate": 3
+  },
+  {
+    "maturity": 291,
+    "rate": 3
+  },
+  {
+    "maturity": 292,
+    "rate": 3
+  },
+  {
+    "maturity": 293,
+    "rate": 3
+  },
+  {
+    "maturity": 294,
+    "rate": 3
+  },
+  {
+    "maturity": 295,
+    "rate": 3
+  },
+  {
+    "maturity": 296,
+    "rate": 3
+  },
+  {
+    "maturity": 297,
+    "rate": 3
+  },
+  {
+    "maturity": 298,
+    "rate": 3
+  },
+  {
+    "maturity": 299,
+    "rate": 3
+  },
+  {
+    "maturity": 300,
+    "rate": 3
+  },
+  {
+    "maturity": 301,
+    "rate": 3
+  },
+  {
+    "maturity": 302,
+    "rate": 3
+  },
+  {
+    "maturity": 303,
+    "rate": 3
+  },
+  {
+    "maturity": 304,
+    "rate": 3
+  },
+  {
+    "maturity": 305,
+    "rate": 3
+  },
+  {
+    "maturity": 306,
+    "rate": 3
+  },
+  {
+    "maturity": 307,
+    "rate": 3
+  },
+  {
+    "maturity": 308,
+    "rate": 3
+  },
+  {
+    "maturity": 309,
+    "rate": 3
+  },
+  {
+    "maturity": 310,
+    "rate": 3
+  },
+  {
+    "maturity": 311,
+    "rate": 3
+  },
+  {
+    "maturity": 312,
+    "rate": 3
+  },
+  {
+    "maturity": 313,
+    "rate": 3
+  },
+  {
+    "maturity": 314,
+    "rate": 3
+  },
+  {
+    "maturity": 315,
+    "rate": 3
+  },
+  {
+    "maturity": 316,
+    "rate": 3
+  },
+  {
+    "maturity": 317,
+    "rate": 3
+  },
+  {
+    "maturity": 318,
+    "rate": 3
+  },
+  {
+    "maturity": 319,
+    "rate": 3
+  },
+  {
+    "maturity": 320,
+    "rate": 3
+  },
+  {
+    "maturity": 321,
+    "rate": 3
+  },
+  {
+    "maturity": 322,
+    "rate": 3
+  },
+  {
+    "maturity": 323,
+    "rate": 3
+  },
+  {
+    "maturity": 324,
+    "rate": 3
+  },
+  {
+    "maturity": 325,
+    "rate": 3
+  },
+  {
+    "maturity": 326,
+    "rate": 3
+  },
+  {
+    "maturity": 327,
+    "rate": 3
+  },
+  {
+    "maturity": 328,
+    "rate": 3
+  },
+  {
+    "maturity": 329,
+    "rate": 3
+  },
+  {
+    "maturity": 330,
+    "rate": 3
+  },
+  {
+    "maturity": 331,
+    "rate": 3
+  },
+  {
+    "maturity": 332,
+    "rate": 3
+  },
+  {
+    "maturity": 333,
+    "rate": 3
+  },
+  {
+    "maturity": 334,
+    "rate": 3
+  },
+  {
+    "maturity": 335,
+    "rate": 3
+  },
+  {
+    "maturity": 336,
+    "rate": 3
+  },
+  {
+    "maturity": 337,
+    "rate": 3
+  },
+  {
+    "maturity": 338,
+    "rate": 3
+  },
+  {
+    "maturity": 339,
+    "rate": 3
+  },
+  {
+    "maturity": 340,
+    "rate": 3
+  },
+  {
+    "maturity": 341,
+    "rate": 3
+  },
+  {
+    "maturity": 342,
+    "rate": 3
+  },
+  {
+    "maturity": 343,
+    "rate": 3
+  },
+  {
+    "maturity": 344,
+    "rate": 3
+  },
+  {
+    "maturity": 345,
+    "rate": 3
+  },
+  {
+    "maturity": 346,
+    "rate": 3
+  },
+  {
+    "maturity": 347,
+    "rate": 3
+  },
+  {
+    "maturity": 348,
+    "rate": 3
+  },
+  {
+    "maturity": 349,
+    "rate": 3
+  },
+  {
+    "maturity": 350,
+    "rate": 3
+  },
+  {
+    "maturity": 351,
+    "rate": 3
+  },
+  {
+    "maturity": 352,
+    "rate": 3
+  },
+  {
+    "maturity": 353,
+    "rate": 3
+  },
+  {
+    "maturity": 354,
+    "rate": 3
+  },
+  {
+    "maturity": 355,
+    "rate": 3
+  },
+  {
+    "maturity": 356,
+    "rate": 3
+  },
+  {
+    "maturity": 357,
+    "rate": 3
+  },
+  {
+    "maturity": 358,
+    "rate": 3
+  },
+  {
+    "maturity": 359,
+    "rate": 3
+  },
+  {
+    "maturity": 360,
+    "rate": 3
+  },
+  {
+    "maturity": 361,
+    "rate": 3
+  },
+  {
+    "maturity": 362,
+    "rate": 3
+  },
+  {
+    "maturity": 363,
+    "rate": 3
+  },
+  {
+    "maturity": 364,
+    "rate": 3
+  },
+  {
+    "maturity": 365,
+    "rate": 3
+  },
+  {
+    "maturity": 366,
+    "rate": 3
+  },
+  {
+    "maturity": 367,
+    "rate": 3
+  },
+  {
+    "maturity": 368,
+    "rate": 3
+  },
+  {
+    "maturity": 369,
+    "rate": 3
+  },
+  {
+    "maturity": 370,
+    "rate": 3
+  },
+  {
+    "maturity": 371,
+    "rate": 3
+  },
+  {
+    "maturity": 372,
+    "rate": 3
+  },
+  {
+    "maturity": 373,
+    "rate": 3
+  },
+  {
+    "maturity": 374,
+    "rate": 3
+  },
+  {
+    "maturity": 375,
+    "rate": 3
+  },
+  {
+    "maturity": 376,
+    "rate": 3
+  },
+  {
+    "maturity": 377,
+    "rate": 3
+  },
+  {
+    "maturity": 378,
+    "rate": 3
+  },
+  {
+    "maturity": 379,
+    "rate": 3
+  },
+  {
+    "maturity": 380,
+    "rate": 3
+  },
+  {
+    "maturity": 381,
+    "rate": 3
+  },
+  {
+    "maturity": 382,
+    "rate": 3
+  },
+  {
+    "maturity": 383,
+    "rate": 3
+  },
+  {
+    "maturity": 384,
+    "rate": 3
+  },
+  {
+    "maturity": 385,
+    "rate": 3
+  },
+  {
+    "maturity": 386,
+    "rate": 3
+  },
+  {
+    "maturity": 387,
+    "rate": 3
+  },
+  {
+    "maturity": 388,
+    "rate": 3
+  },
+  {
+    "maturity": 389,
+    "rate": 3
+  },
+  {
+    "maturity": 390,
+    "rate": 3
+  },
+  {
+    "maturity": 391,
+    "rate": 3
+  },
+  {
+    "maturity": 392,
+    "rate": 3
+  },
+  {
+    "maturity": 393,
+    "rate": 3
+  },
+  {
+    "maturity": 394,
+    "rate": 3
+  },
+  {
+    "maturity": 395,
+    "rate": 3
+  },
+  {
+    "maturity": 396,
+    "rate": 3
+  },
+  {
+    "maturity": 397,
+    "rate": 3
+  },
+  {
+    "maturity": 398,
+    "rate": 3
+  },
+  {
+    "maturity": 399,
+    "rate": 3
+  },
+  {
+    "maturity": 400,
+    "rate": 3
+  },
+  {
+    "maturity": 401,
+    "rate": 3
+  },
+  {
+    "maturity": 402,
+    "rate": 3
+  },
+  {
+    "maturity": 403,
+    "rate": 3
+  },
+  {
+    "maturity": 404,
+    "rate": 3
+  },
+  {
+    "maturity": 405,
+    "rate": 3
+  },
+  {
+    "maturity": 406,
+    "rate": 3
+  },
+  {
+    "maturity": 407,
+    "rate": 3
+  },
+  {
+    "maturity": 408,
+    "rate": 3
+  },
+  {
+    "maturity": 409,
+    "rate": 3
+  },
+  {
+    "maturity": 410,
+    "rate": 3
+  },
+  {
+    "maturity": 411,
+    "rate": 3
+  },
+  {
+    "maturity": 412,
+    "rate": 3
+  },
+  {
+    "maturity": 413,
+    "rate": 3
+  },
+  {
+    "maturity": 414,
+    "rate": 3
+  },
+  {
+    "maturity": 415,
+    "rate": 3
+  },
+  {
+    "maturity": 416,
+    "rate": 3
+  },
+  {
+    "maturity": 417,
+    "rate": 3
+  },
+  {
+    "maturity": 418,
+    "rate": 3
+  },
+  {
+    "maturity": 419,
+    "rate": 3
+  },
+  {
+    "maturity": 420,
+    "rate": 3
+  },
+  {
+    "maturity": 421,
+    "rate": 3
+  },
+  {
+    "maturity": 422,
+    "rate": 3
+  },
+  {
+    "maturity": 423,
+    "rate": 3
+  },
+  {
+    "maturity": 424,
+    "rate": 3
+  },
+  {
+    "maturity": 425,
+    "rate": 3
+  },
+  {
+    "maturity": 426,
+    "rate": 3
+  },
+  {
+    "maturity": 427,
+    "rate": 3
+  },
+  {
+    "maturity": 428,
+    "rate": 3
+  },
+  {
+    "maturity": 429,
+    "rate": 3
+  },
+  {
+    "maturity": 430,
+    "rate": 3
+  },
+  {
+    "maturity": 431,
+    "rate": 3
+  },
+  {
+    "maturity": 432,
+    "rate": 3
+  },
+  {
+    "maturity": 433,
+    "rate": 3
+  },
+  {
+    "maturity": 434,
+    "rate": 3
+  },
+  {
+    "maturity": 435,
+    "rate": 3
+  },
+  {
+    "maturity": 436,
+    "rate": 3
+  },
+  {
+    "maturity": 437,
+    "rate": 3
+  },
+  {
+    "maturity": 438,
+    "rate": 3
+  },
+  {
+    "maturity": 439,
+    "rate": 3
+  },
+  {
+    "maturity": 440,
+    "rate": 3
+  },
+  {
+    "maturity": 441,
+    "rate": 3
+  },
+  {
+    "maturity": 442,
+    "rate": 3
+  },
+  {
+    "maturity": 443,
+    "rate": 3
+  },
+  {
+    "maturity": 444,
+    "rate": 3
+  },
+  {
+    "maturity": 445,
+    "rate": 3
+  },
+  {
+    "maturity": 446,
+    "rate": 3
+  },
+  {
+    "maturity": 447,
+    "rate": 3
+  },
+  {
+    "maturity": 448,
+    "rate": 3
+  },
+  {
+    "maturity": 449,
+    "rate": 3
+  },
+  {
+    "maturity": 450,
+    "rate": 3
+  },
+  {
+    "maturity": 451,
+    "rate": 3
+  },
+  {
+    "maturity": 452,
+    "rate": 3
+  },
+  {
+    "maturity": 453,
+    "rate": 3
+  },
+  {
+    "maturity": 454,
+    "rate": 3
+  },
+  {
+    "maturity": 455,
+    "rate": 3
+  },
+  {
+    "maturity": 456,
+    "rate": 3
+  },
+  {
+    "maturity": 457,
+    "rate": 3
+  },
+  {
+    "maturity": 458,
+    "rate": 3
+  },
+  {
+    "maturity": 459,
+    "rate": 3
+  },
+  {
+    "maturity": 460,
+    "rate": 3
+  },
+  {
+    "maturity": 461,
+    "rate": 3
+  },
+  {
+    "maturity": 462,
+    "rate": 3
+  },
+  {
+    "maturity": 463,
+    "rate": 3
+  },
+  {
+    "maturity": 464,
+    "rate": 3
+  },
+  {
+    "maturity": 465,
+    "rate": 3
+  },
+  {
+    "maturity": 466,
+    "rate": 3
+  },
+  {
+    "maturity": 467,
+    "rate": 3
+  },
+  {
+    "maturity": 468,
+    "rate": 3
+  },
+  {
+    "maturity": 469,
+    "rate": 3
+  },
+  {
+    "maturity": 470,
+    "rate": 3
+  },
+  {
+    "maturity": 471,
+    "rate": 3
+  },
+  {
+    "maturity": 472,
+    "rate": 3
+  },
+  {
+    "maturity": 473,
+    "rate": 3
+  },
+  {
+    "maturity": 474,
+    "rate": 3
+  },
+  {
+    "maturity": 475,
+    "rate": 3
+  },
+  {
+    "maturity": 476,
+    "rate": 3
+  },
+  {
+    "maturity": 477,
+    "rate": 3
+  },
+  {
+    "maturity": 478,
+    "rate": 3
+  },
+  {
+    "maturity": 479,
+    "rate": 3
+  },
+  {
+    "maturity": 480,
+    "rate": 3
+  },
+  {
+    "maturity": 481,
+    "rate": 3
+  },
+  {
+    "maturity": 482,
+    "rate": 3
+  },
+  {
+    "maturity": 483,
+    "rate": 3
+  },
+  {
+    "maturity": 484,
+    "rate": 3
+  },
+  {
+    "maturity": 485,
+    "rate": 3
+  },
+  {
+    "maturity": 486,
+    "rate": 3
+  },
+  {
+    "maturity": 487,
+    "rate": 3
+  },
+  {
+    "maturity": 488,
+    "rate": 3
+  },
+  {
+    "maturity": 489,
+    "rate": 3
+  },
+  {
+    "maturity": 490,
+    "rate": 3
+  },
+  {
+    "maturity": 491,
+    "rate": 3
+  },
+  {
+    "maturity": 492,
+    "rate": 3
+  },
+  {
+    "maturity": 493,
+    "rate": 3
+  },
+  {
+    "maturity": 494,
+    "rate": 3
+  },
+  {
+    "maturity": 495,
+    "rate": 3
+  },
+  {
+    "maturity": 496,
+    "rate": 3
+  },
+  {
+    "maturity": 497,
+    "rate": 3
+  },
+  {
+    "maturity": 498,
+    "rate": 3
+  },
+  {
+    "maturity": 499,
+    "rate": 3
+  },
+  {
+    "maturity": 500,
+    "rate": 3
+  },
+  {
+    "maturity": 501,
+    "rate": 3
+  },
+  {
+    "maturity": 502,
+    "rate": 3
+  },
+  {
+    "maturity": 503,
+    "rate": 3
+  },
+  {
+    "maturity": 504,
+    "rate": 3
+  },
+  {
+    "maturity": 505,
+    "rate": 3
+  },
+  {
+    "maturity": 506,
+    "rate": 3
+  },
+  {
+    "maturity": 507,
+    "rate": 3
+  },
+  {
+    "maturity": 508,
+    "rate": 3
+  },
+  {
+    "maturity": 509,
+    "rate": 3
+  },
+  {
+    "maturity": 510,
+    "rate": 3
+  },
+  {
+    "maturity": 511,
+    "rate": 3
+  },
+  {
+    "maturity": 512,
+    "rate": 3
+  },
+  {
+    "maturity": 513,
+    "rate": 3
+  },
+  {
+    "maturity": 514,
+    "rate": 3
+  },
+  {
+    "maturity": 515,
+    "rate": 3
+  },
+  {
+    "maturity": 516,
+    "rate": 3
+  },
+  {
+    "maturity": 517,
+    "rate": 3
+  },
+  {
+    "maturity": 518,
+    "rate": 3
+  },
+  {
+    "maturity": 519,
+    "rate": 3
+  },
+  {
+    "maturity": 520,
+    "rate": 3
+  },
+  {
+    "maturity": 521,
+    "rate": 3
+  },
+  {
+    "maturity": 522,
+    "rate": 3
+  },
+  {
+    "maturity": 523,
+    "rate": 3
+  },
+  {
+    "maturity": 524,
+    "rate": 3
+  },
+  {
+    "maturity": 525,
+    "rate": 3
+  },
+  {
+    "maturity": 526,
+    "rate": 3
+  },
+  {
+    "maturity": 527,
+    "rate": 3
+  },
+  {
+    "maturity": 528,
+    "rate": 3
+  },
+  {
+    "maturity": 529,
+    "rate": 3
+  },
+  {
+    "maturity": 530,
+    "rate": 3
+  },
+  {
+    "maturity": 531,
+    "rate": 3
+  },
+  {
+    "maturity": 532,
+    "rate": 3
+  },
+  {
+    "maturity": 533,
+    "rate": 3
+  },
+  {
+    "maturity": 534,
+    "rate": 3
+  },
+  {
+    "maturity": 535,
+    "rate": 3
+  },
+  {
+    "maturity": 536,
+    "rate": 3
+  },
+  {
+    "maturity": 537,
+    "rate": 3
+  },
+  {
+    "maturity": 538,
+    "rate": 3
+  },
+  {
+    "maturity": 539,
+    "rate": 3
+  },
+  {
+    "maturity": 540,
+    "rate": 3
+  },
+  {
+    "maturity": 541,
+    "rate": 3
+  },
+  {
+    "maturity": 542,
+    "rate": 3
+  },
+  {
+    "maturity": 543,
+    "rate": 3
+  },
+  {
+    "maturity": 544,
+    "rate": 3
+  },
+  {
+    "maturity": 545,
+    "rate": 3
+  },
+  {
+    "maturity": 546,
+    "rate": 3
+  },
+  {
+    "maturity": 547,
+    "rate": 3
+  },
+  {
+    "maturity": 548,
+    "rate": 3
+  },
+  {
+    "maturity": 549,
+    "rate": 3
+  },
+  {
+    "maturity": 550,
+    "rate": 3
+  },
+  {
+    "maturity": 551,
+    "rate": 3
+  },
+  {
+    "maturity": 552,
+    "rate": 3
+  },
+  {
+    "maturity": 553,
+    "rate": 3
+  },
+  {
+    "maturity": 554,
+    "rate": 3
+  },
+  {
+    "maturity": 555,
+    "rate": 3
+  },
+  {
+    "maturity": 556,
+    "rate": 3
+  },
+  {
+    "maturity": 557,
+    "rate": 3
+  },
+  {
+    "maturity": 558,
+    "rate": 3
+  },
+  {
+    "maturity": 559,
+    "rate": 3
+  },
+  {
+    "maturity": 560,
+    "rate": 3
+  },
+  {
+    "maturity": 561,
+    "rate": 3
+  },
+  {
+    "maturity": 562,
+    "rate": 3
+  },
+  {
+    "maturity": 563,
+    "rate": 3
+  },
+  {
+    "maturity": 564,
+    "rate": 3
+  },
+  {
+    "maturity": 565,
+    "rate": 3
+  },
+  {
+    "maturity": 566,
+    "rate": 3
+  },
+  {
+    "maturity": 567,
+    "rate": 3
+  },
+  {
+    "maturity": 568,
+    "rate": 3
+  },
+  {
+    "maturity": 569,
+    "rate": 3
+  },
+  {
+    "maturity": 570,
+    "rate": 3
+  },
+  {
+    "maturity": 571,
+    "rate": 3
+  },
+  {
+    "maturity": 572,
+    "rate": 3
+  },
+  {
+    "maturity": 573,
+    "rate": 3
+  },
+  {
+    "maturity": 574,
+    "rate": 3
+  },
+  {
+    "maturity": 575,
+    "rate": 3
+  },
+  {
+    "maturity": 576,
+    "rate": 3
+  },
+  {
+    "maturity": 577,
+    "rate": 3
+  },
+  {
+    "maturity": 578,
+    "rate": 3
+  },
+  {
+    "maturity": 579,
+    "rate": 3
+  },
+  {
+    "maturity": 580,
+    "rate": 3
+  },
+  {
+    "maturity": 581,
+    "rate": 3
+  },
+  {
+    "maturity": 582,
+    "rate": 3
+  },
+  {
+    "maturity": 583,
+    "rate": 3
+  },
+  {
+    "maturity": 584,
+    "rate": 3
+  },
+  {
+    "maturity": 585,
+    "rate": 3
+  },
+  {
+    "maturity": 586,
+    "rate": 3
+  },
+  {
+    "maturity": 587,
+    "rate": 3
+  },
+  {
+    "maturity": 588,
+    "rate": 3
+  },
+  {
+    "maturity": 589,
+    "rate": 3
+  },
+  {
+    "maturity": 590,
+    "rate": 3
+  },
+  {
+    "maturity": 591,
+    "rate": 3
+  },
+  {
+    "maturity": 592,
+    "rate": 3
+  },
+  {
+    "maturity": 593,
+    "rate": 3
+  },
+  {
+    "maturity": 594,
+    "rate": 3
+  },
+  {
+    "maturity": 595,
+    "rate": 3
+  },
+  {
+    "maturity": 596,
+    "rate": 3
+  },
+  {
+    "maturity": 597,
+    "rate": 3
+  },
+  {
+    "maturity": 598,
+    "rate": 3
+  },
+  {
+    "maturity": 599,
+    "rate": 3
+  },
+  {
+    "maturity": 600,
+    "rate": 3
+  }
+]
