@@ -12377,7 +12377,7 @@ var requirejs, require, define;
             },
             getBaseDomain: r,
             getBaseSupportUrl: function() {
-                return "http://support.betasmartz.com"
+                return "http://support.betaSmartz.com"
             },
             getNotificationsUrl: function() {
                 return e.getInstance().get("notificationsHost")
@@ -12450,8 +12450,8 @@ var requirejs, require, define;
         };
         return n
     }), define("components/common/scripts/viewHelpers/customerSupport", ["underscore"], function(e) {
-        var t = "support@betasmartz.com",
-            n = "support@betasmartz.com",
+        var t = "support@betaSmartz.com",
+            n = "support@betaSmartz.com",
             r = "1800-888-8888",
             i = "1800-888-8888",
             s = "1800-888-8888";
@@ -44345,7 +44345,7 @@ var requirejs, require, define;
             }
         };
         return e.View.extend({
-            template: "#allocation/adviceAccount",
+            template: "#advice/adviceAccount",
             tagName: "li",
             className: "adviceAccount",
             options: {
@@ -56990,7 +56990,7 @@ var requirejs, require, define;
             }
 
             function c(e, t) {
-                return '\n            <li>\n                <a href="#overview">Overview</a>\n            </li>\n\n   <li>\n                <a href="#portfolio">Portfolio</a>\n            </li>\n\n <li>\n                <a href="#allocation">Allocation</a>\n            </li>\n\n   <li>\n                <a href="#performance">Performance</a>\n            </li>\n\n        <li>\n                <a href="#transfer">Transfer</a>\n            </li>\n               '
+                return '\n            <li>\n                <a href="#summary">Overview</a>\n            </li>\n\n   <li>\n                <a href="#portfolio">Portfolio</a>\n            </li>\n\n <li>\n                <a href="#advice">Allocation</a>\n            </li>\n\n   <li>\n                <a href="#performance">Performance</a>\n            </li>\n\n        <li>\n                <a href="#transfer">Transfer</a>\n            </li>\n               '
             }
 
             function h(e, t) {
@@ -57043,7 +57043,7 @@ var requirejs, require, define;
                 fn: f.program(5, h, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n    </div>\n\n    <div class="advisor-details advised-user-only"></div>\n</div>\n\n<ul class="back-to-summary">\n    <li>\n        <a href="#overview">\n            <span class="back-icon">&#8250;</span>\n            Back to Summary\n        </a>\n    </li>\n</ul>\n', s
+            return s += '\n    </div>\n\n    <div class="advisor-details advised-user-only"></div>\n</div>\n\n<ul class="back-to-summary">\n    <li>\n        <a href="#summary">\n            <span class="back-icon">&#8250;</span>\n            Back to Summary\n        </a>\n    </li>\n</ul>\n', s
         });
         return t.registerPartial("views/common/tabBar", n), n
     }), define("views/advisors/advisorDetailsView", ["jquery", "underscore", "common/betterment.views", "viewHelpers/phoneNumberFormatter"], function(e, t, n, r) {
@@ -58168,7 +58168,7 @@ var requirejs, require, define;
             template: t,
             templateHelpers: {
                 headerLogoUrl: function() {
-                    return BMT.hasLoggedInUser() ? "#overview" : n.get() ? !1 : r.brochureHost()
+                    return BMT.hasLoggedInUser() ? "#summary" : n.get() ? !1 : r.brochureHost()
                 }
             },
             onShow: function() {
