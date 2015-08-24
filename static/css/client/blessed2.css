@@ -3,7 +3,7 @@
     top: 49px;
     right: 0;
     font-size: 1.1em;
-    color: #3381d0;
+    color: #A3C745;
     opacity: 0
 }
 .input-percent.active .symbol,
@@ -18,7 +18,7 @@
     display: block;
     box-sizing: border-box;
     padding-top: 38px;
-    border-bottom: 1px solid #3381d0
+    border-bottom: 1px solid #A3C745
 }
 .input-select:after {
     content: "â€";
@@ -29,7 +29,7 @@
     font-style: normal!important;
     font-weight: 400!important;
     line-height: .8;
-    color: #3381d0;
+    color: #A3C745;
     position: absolute;
     bottom: 0;
     right: 0;
@@ -67,7 +67,7 @@
     height: 38px;
     line-height: 40px;
     font-size: 1.1em;
-    color: #3381d0;
+    color: #A3C745;
     z-index: 2;
     cursor: pointer;
     text-align: left
@@ -79,11 +79,11 @@
     width: 100%;
     max-height: 300px;
     overflow-y: auto;
-    border: 1px solid #3381d0;
+    border: 1px solid #A3C745;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px;
-    color: #3381d0;
+    color: #A3C745;
     background-color: #fff;
     font-size: 1.1em;
     padding: 10px;
@@ -99,7 +99,7 @@
     cursor: pointer
 }
 .input-select .select-options li:hover {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff
 }
 .input-select.open .placeholder {
@@ -149,7 +149,7 @@
     }
 }
 .input-radio label.regular {
-    color: #3381d0;
+    color: #A3C745;
     float: left;
     -moz-transform: translateY(50%);
     -ms-transform: translateY(50%);
@@ -190,8 +190,8 @@
     -moz-border-radius: 50%;
     -webkit-border-radius: 50%;
     border-radius: 50%;
-    border: 1px solid #3381d0;
-    color: #3381d0
+    border: 1px solid #A3C745;
+    color: #A3C745
 }
 .input-radio .radio-options li .radio-button span {
     position: absolute;
@@ -206,12 +206,12 @@
     display: none
 }
 .input-radio .radio-options li.selected .radio-button {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff
 }
 .input-radio .radio-options li label {
     float: left;
-    color: #3381d0;
+    color: #A3C745;
     margin-left: .4em;
     font-size: 1.15em;
     -moz-transform: translateY(50%);
@@ -235,14 +235,14 @@
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
-    border: 1px solid #3381d0;
+    border: 1px solid #A3C745;
     margin-right: .8em
 }
 .input-check .check-box input {
     display: none
 }
 .input-check .check-box.selected {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff
 }
 .input-check .check-box.selected:before {
@@ -325,7 +325,7 @@
     right: -48px;
     border-radius: 50%;
     opacity: .8;
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 300;
     opacity: 1
 }
@@ -412,7 +412,7 @@
     padding: 0 35px;
     margin: -35px 0 27px -35px;
     width: 100%;
-    color: #3381d0;
+    color: #A3C745;
     font-size: 20px;
     border-bottom: 1px solid #bbb;
     -moz-box-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, .25);
@@ -800,7 +800,7 @@
 .modal-panel .pricing-plan table.plan-table tr td h3 {
     margin: 15px 0;
     font-size: 21px;
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 500
 }
 .modal-panel .pricing-plan table.plan-table tr td h3 {
@@ -824,7 +824,7 @@
     margin-bottom: 35px
 }
 .modal-panel .pricing-plan table.plan-table tr td .feature {
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .pricing-plan table.plan-table tr td .dotted-underline {
     padding: 0;
@@ -1271,7 +1271,7 @@
     margin: 12px 0 10px -9px;
     font-size: 14px;
     width: 250px;
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .support-feedback .contact-info>div.left .clearfix ul li,
 .modal-panel .support-feedback #secondaryContent .retirement-plan-banner .explanation .contact-info>div.text .clearfix ul li,
@@ -1318,7 +1318,7 @@
 .modal-panel .support-feedback .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .contact-info>div.text .clearfix ul li a,
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .modal-panel .support-feedback .contact-info>div.text .clearfix ul li a {
     line-height: 1.2;
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .support-feedback .contact-info>div.left .clearfix .phone-hours span,
 .modal-panel .support-feedback #secondaryContent .retirement-plan-banner .explanation .contact-info>div.text .clearfix .phone-hours span,
@@ -1456,7 +1456,7 @@
 #secondaryContent .manual-link-confirmation-banner .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row .error .modal-panel .support-feedback .contact-info>div.text .clearfix .contact-email a:hover,
 .modal-panel .support-feedback .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .contact-info>div.text .clearfix .contact-email a:hover,
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .modal-panel .support-feedback .contact-info>div.text .clearfix .contact-email a:hover {
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .support-feedback .send-message h2,
 .modal-panel .support-feedback .send-message .pricing-plan table.plan-table tr td h3,
@@ -1700,7 +1700,7 @@
     height: 35px
 }
 .modal-panel .tax-forms .tax-form-list a {
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .tax-forms .tax-form-list .icons {
     width: 70px
@@ -1744,7 +1744,7 @@
     font-size: 13px
 }
 .modal-panel .tax-forms .form-type article a {
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .tax-forms .form-type article p {
     font-size: 14px;
@@ -1967,7 +1967,7 @@
     width: 37px;
     font-size: 13px;
     line-height: 13px;
-    background: #3381d0;
+    background: #A3C745;
     color: #fff;
     padding: 4px 15px 0 0;
     text-align: right;
@@ -2025,7 +2025,7 @@
 .modal-panel .batch-settings-modal .advisor-warning h2,
 .modal-panel .batch-settings-modal .advisor-warning .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .batch-settings-modal .advisor-warning h3 {
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 500;
     margin: 0;
     padding-bottom: 14px
@@ -2107,7 +2107,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
     font-weight: 700
 }
 .modal-panel .batch-settings-modal .settings-list>li .attribute .name {
-    color: #3381d0;
+    color: #A3C745;
     margin: 0 0 8px;
     font-size: 12px
 }
@@ -2582,7 +2582,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 .modal-panel .welcome-view .inner .feature h2,
 .modal-panel .welcome-view .inner .feature .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .welcome-view .inner .feature h3 {
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .welcome-view .inner .feature p {
     font-size: 14px;
@@ -2700,8 +2700,8 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 }
 .modal-panel .welcome-view ol li:before {
     content: counter(listCounter);
-    border: 1px solid #3381d0;
-    color: #3381d0;
+    border: 1px solid #A3C745;
+    color: #A3C745;
     font-size: 14px;
     font-weight: 700;
     width: 30px;
@@ -2718,7 +2718,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 .modal-panel .welcome-view ol h2,
 .modal-panel .welcome-view ol .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .welcome-view ol h3 {
-    color: #3381d0;
+    color: #A3C745;
     margin: 10px 0 5px
 }
 .modal-panel .welcome-view .advisor-logo {
@@ -2877,7 +2877,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 .modal-panel .wire-instructions .instructions dd {
     float: left;
     width: 60%;
-    color: #3381d0;
+    color: #A3C745;
     padding-bottom: 10px
 }
 .modal-panel .transaction-memo .upper {
@@ -2938,7 +2938,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 .modal-panel .transaction-memo .lower .question input {
     width: 370px;
     padding: 0 14px;
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .transaction-memo .lower .question input::-webkit-input-placeholder {
     color: #7db9e8
@@ -3356,7 +3356,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 .ui-tooltip .summary .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .ui-tooltip .summary h3 {
     font-weight: 700;
-    color: #3381d0;
+    color: #A3C745;
     margin: 0 0 10px
 }
 .ui-tooltip .summary div.body {
@@ -3616,7 +3616,7 @@ header .header-wrapper #subnav .header-button {
     cursor: pointer
 }
 header .header-wrapper #subnav .header-button:hover {
-    border: 1px solid #3381d0
+    border: 1px solid #A3C745
 }
 header .header-wrapper #subnav .header-button.show-notifications {
     padding: 4px 15px;
@@ -3778,7 +3778,7 @@ header .header-wrapper #subnav .user-menu .accountGroup {
 }
 header .header-wrapper #subnav .user-menu .accountGroup:hover,
 header .header-wrapper #subnav .user-menu .accountGroup.selected {
-    color: #3381d0
+    color: #A3C745
 }
 header .header-wrapper #subnav .user-menu .accountGroup .group-title {
     overflow: hidden;
@@ -3818,7 +3818,7 @@ header .header-wrapper #subnav .user-menu .add-a-trust:hover,
 header .header-wrapper #subnav .user-menu .add-a-trust.selected,
 header .header-wrapper #subnav .user-menu .add-a-joint-account:hover,
 header .header-wrapper #subnav .user-menu .add-a-joint-account.selected {
-    color: #3381d0
+    color: #A3C745
 }
 header .header-wrapper #subnav .user-menu .add-a-trust .title,
 header .header-wrapper #subnav .user-menu .add-a-joint-account .title {
@@ -3881,7 +3881,7 @@ header .header-wrapper #subnav .user-menu .user-links a.last {
 }
 header .header-wrapper #subnav .user-menu .user-links a:hover,
 header .header-wrapper #subnav .user-menu .user-links a.selected {
-    color: #3381d0
+    color: #A3C745
 }
 header .header-wrapper #subnav .user-menu .user-links a:active {
     color: #fff;
@@ -4060,7 +4060,7 @@ div.ghost-form button.close-link {
     color: #0d3866
 }
 div.ghost-form button.close-link:hover {
-    color: #3381d0
+    color: #A3C745
 }
 div.ghost-form .pane.benefits-pane {
     padding-left: 50px
@@ -4074,7 +4074,7 @@ div.ghost-form .pane.benefits-pane .map-icon {
     height: 190px
 }
 div.ghost-form .pane.benefits-pane h3 {
-    color: #3381d0;
+    color: #A3C745;
     font-size: 60px;
     text-align: center;
     line-height: 1em;
@@ -4314,7 +4314,7 @@ div.ghost-form .pane.benefits-pane h4 {
 }
 .question-boxes li:hover h6,
 .question-boxes li:hover .question {
-    color: #3381d0
+    color: #A3C745
 }
 .question-boxes li:hover .article-icon {
     width: 10px;
@@ -4356,7 +4356,7 @@ div.ghost-form .pane.benefits-pane h4 {
     color: #686868
 }
 .ribbon-drawer .drawer-ribbon-region .inner a {
-    color: #3381d0
+    color: #A3C745
 }
 .ribbon-drawer .drawer-ribbon-region .inner h1,
 .ribbon-drawer .drawer-ribbon-region .inner #summary .panel th,
@@ -4749,7 +4749,7 @@ div.ghost-form .pane.benefits-pane h4 {
 .wizard-buttons .ribbon-drawer .drawer-ribbon-region .inner h3#next,
 .ribbon-drawer .drawer-ribbon-region .inner .wizard-buttons h3#submit,
 .wizard-buttons .ribbon-drawer .drawer-ribbon-region .inner h3#submit {
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 400
 }
 .ribbon-drawer .drawer-ribbon-region .inner h1 .green,
@@ -4860,7 +4860,7 @@ div.ghost-form .pane.benefits-pane h4 {
 .ribbon-drawer .drawer-ribbon-region .inner .white-box h3 .light-blue,
 .ribbon-drawer .drawer-ribbon-region .inner .white-box h3 .withdrawal-confirmation button.show-tax-impact,
 .withdrawal-confirmation .ribbon-drawer .drawer-ribbon-region .inner .white-box h3 button.show-tax-impact {
-    color: #3381d0
+    color: #A3C745
 }
 .ribbon-drawer .drawer-ribbon-region .inner .white-box p {
     line-height: 1.25;
@@ -4990,7 +4990,7 @@ div.ghost-form .pane.benefits-pane h4 {
     margin-bottom: 30px
 }
 #tlhRibbon .tlh-ribbon .inner .content .success-messages .success-detail .checkbox-headline {
-    color: #3381d0;
+    color: #A3C745;
     font-size: 16px
 }
 #tlhRibbon .tlh-ribbon .inner .content .success-messages .success-detail .checkbox-headline .icon {
@@ -5034,7 +5034,7 @@ div.ghost-form .pane.benefits-pane h4 {
     filter: alpha(Opacity=50);
     opacity: .5;
     background-image: none;
-    background-color: #3381d0;
+    background-color: #A3C745;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     box-shadow: none;
@@ -5056,7 +5056,7 @@ div.ghost-form .pane.benefits-pane h4 {
     margin-right: 2px
 }
 #tlhRibbon .tlh-ribbon .inner .actions .back:hover {
-    color: #3381d0;
+    color: #A3C745;
     text-decoration: none
 }
 #tlhRibbon .tlh-ribbon .inner .actions .back:hover .icon {
@@ -5175,17 +5175,17 @@ div.ghost-form .pane.benefits-pane h4 {
     display: block;
     padding: 8px;
     margin: 0 25px;
-    border: 1px solid #3381d0;
+    border: 1px solid #A3C745;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
     text-align: center;
-    color: #3381d0
+    color: #A3C745
 }
 #tlhRibbon .tlh-ribbon.tlh-consent .inner .white-box .dont-know .learn-more:hover {
     text-decoration: none;
-    color: #3381d0;
-    border: 1px solid #3381d0
+    color: #A3C745;
+    border: 1px solid #A3C745
 }
 #tlhRibbon .tlh-ribbon.tlh-consent .inner .white-box .dont-know p {
     padding-bottom: 12px
@@ -5421,9 +5421,9 @@ div.ghost-form .pane.benefits-pane h4 {
 }
 .link-bank-account .content-region .deposit-group .deposits li {
     line-height: 20px;
-    color: #3381d0;
+    color: #A3C745;
     display: inline-block;
-    border: 1px solid #3381d0;
+    border: 1px solid #A3C745;
     width: 29%;
     height: 30px;
     border-radius: 30px;
@@ -5438,7 +5438,7 @@ div.ghost-form .pane.benefits-pane h4 {
     }
 }
 .link-bank-account .content-region .deposit-group .deposits li.selected {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff
 }
 .link-bank-account .content-region .deposit-group .deposits li:hover {
@@ -5502,7 +5502,7 @@ div.ghost-form .pane.benefits-pane h4 {
     color: #fff;
     border-radius: 50%;
     text-align: center;
-    background-color: #3381d0
+    background-color: #A3C745
 }
 .link-bank-account .choose-bank .banks .bank:hover {
     filter: alpha(Opacity=70);
@@ -5637,7 +5637,7 @@ div.ghost-form .pane.benefits-pane h4 {
 }
 #jointAccountSignup .progress-nav .item.completed,
 #jointAccountSignup .progress-nav .item.active {
-    color: #3381d0
+    color: #A3C745
 }
 #jointAccountSignup .signup-step {
     -moz-border-radius: 3px;
@@ -6218,10 +6218,10 @@ html.responsive body .panel.logged-out {
 .modal-panel .tax-impact .impact-data .impact-data-region .estimated-taxes h3 {
     font-size: 3.1em;
     font-weight: 300;
-    color: #3381d0
+    color: #A3C745
 }
 .modal-panel .tax-impact .impact-data .impact-data-region .estimated-taxes h3 .estimated-taxes-label {
-    color: #3381d0;
+    color: #A3C745;
     text-align: left;
     line-height: 1.3;
     font-weight: 300;
@@ -6546,7 +6546,7 @@ html.responsive body .panel.logged-out {
 .rollover-form .explanation-copy,
 .rollover-request .explanation-copy {
     font-size: 22px;
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 700;
     margin: 0 0 10px;
     line-height: 1.5
@@ -6617,16 +6617,16 @@ html.responsive body .panel.logged-out {
     line-height: .8;
     position: absolute;
     left: -42px;
-    color: #3381d0
+    color: #A3C745
 }
 .rollover-preview .instructions ul li strong {
     font-size: 20px;
-    color: #3381d0
+    color: #A3C745
 }
 .rollover-preview .instructions ul li a {
     display: block;
     margin-top: 4px;
-    color: #3381d0
+    color: #A3C745
 }
 .rollover-preview .instructions .buttons {
     margin-left: 15px
@@ -6635,10 +6635,10 @@ html.responsive body .panel.logged-out {
     vertical-align: 2px;
     cursor: pointer;
     padding: 9px 15px 10px;
-    border: 1px solid #3381d0;
+    border: 1px solid #A3C745;
     text-decoration: none;
     border-radius: 3px;
-    color: #3381d0;
+    color: #A3C745;
     letter-spacing: .25px;
     font-size: 14px
 }
@@ -6753,7 +6753,7 @@ html.responsive body .panel.logged-out {
     border-left-color: rgba(51, 129, 208, .6)
 }
 .ui-tooltip.retirement-plan-graph-tooltip.current .poor {
-    border-left-color: #3381d0
+    border-left-color: #A3C745
 }
 .ui-tooltip.retirement-plan-graph-tooltip.recommended .average {
     border-left-color: rgba(69, 160, 24, .6)
@@ -6836,7 +6836,7 @@ html.responsive body .panel.logged-out {
 #summary .panel .retirement-plan .summary .how-we-calculated th {
     font-size: 24px;
     font-weight: 300;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan .summary .how-we-calculated p {
     margin: 0 0 20px;
@@ -6845,7 +6845,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan .summary .savings-required a,
 .retirement-plan .summary .savings-not-required a {
-    border-bottom: 1px dotted #3381d0
+    border-bottom: 1px dotted #A3C745
 }
 .retirement-plan .summary .savings-required a:hover,
 .retirement-plan .summary .savings-not-required a:hover {
@@ -6853,7 +6853,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan .summary .savings-required a.highlight-blue:hover,
 .retirement-plan .summary .savings-not-required a.highlight-blue:hover {
-    border-bottom: 1px solid #3381d0
+    border-bottom: 1px solid #A3C745
 }
 .retirement-plan nav {
     -moz-box-shadow: none;
@@ -6934,7 +6934,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan nav .edit-assumptions-container:hover:after,
 .retirement-plan nav .edit-assumptions-container.active .edit-assumptions,
 .retirement-plan nav .edit-assumptions-container.active:after {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan nav .edit-assumptions-container:hover:after {
     opacity: 1;
@@ -6995,7 +6995,7 @@ html.responsive body .panel.logged-out {
     color: #45a018
 }
 .retirement-plan .highlight-blue {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan .lower button {
     margin-bottom: 30px
@@ -7258,7 +7258,7 @@ html.responsive body .panel.logged-out {
 #secondaryContent .manual-link-confirmation-banner .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row .error .retirement-planning-projection .text .current-savings:hover .yearly-savings,
 .retirement-planning-projection .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .text .current-savings:hover .yearly-savings,
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .retirement-planning-projection .text .current-savings:hover .yearly-savings {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-planning-projection .left .savings-slider-container,
 .retirement-planning-projection #secondaryContent .retirement-plan-banner .explanation .text .savings-slider-container,
@@ -7481,7 +7481,7 @@ html.responsive body .panel.logged-out {
 .retirement-planning-projection .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .text .savings-slider-container .labels .current,
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .retirement-planning-projection .text .savings-slider-container .labels .current {
     float: left;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-planning-projection .left .savings-slider-container .labels .recommended,
 .retirement-planning-projection #secondaryContent .retirement-plan-banner .explanation .text .savings-slider-container .labels .recommended,
@@ -7594,13 +7594,13 @@ html.responsive body .panel.logged-out {
     z-index: 1
 }
 .retirement-planning-projection .graph-container .current-savings .poor-bar {
-    background-color: #3381d0
+    background-color: #A3C745
 }
 .retirement-planning-projection .graph-container .current-savings .average-bar {
     background-color: rgba(51, 129, 208, .6)
 }
 .retirement-planning-projection .graph-container .current-savings .average-amount {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-planning-projection .graph-container .recommended-savings {
     position: absolute;
@@ -7656,7 +7656,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-planning-projection .inline-editable[display]:after {
     margin-left: 2px;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-planning-projection .inline-editable[editable] {
     display: none
@@ -7665,9 +7665,9 @@ html.responsive body .panel.logged-out {
     outline: 0;
     border: 0;
     padding: 0;
-    border-bottom: 1px solid #3381d0;
+    border-bottom: 1px solid #A3C745;
     width: 50px;
-    box-shadow: 0 3px 16px -9px #3381d0;
+    box-shadow: 0 3px 16px -9px #A3C745;
     font-size: 20px;
     line-height: 1.0;
     height: 22px
@@ -7922,7 +7922,7 @@ html.responsive body .panel.logged-out {
 #secondaryContent .manual-link-confirmation-banner .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row .error .retirement-planning-how-to-save .text .actions-link,
 .retirement-planning-how-to-save .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .text .actions-link,
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .retirement-planning-how-to-save .text .actions-link {
-    color: #3381d0;
+    color: #A3C745;
     cursor: pointer
 }
 .retirement-planning-how-to-save .left .actions-link:hover,
@@ -8172,14 +8172,14 @@ html.responsive body .panel.logged-out {
 }
 .edit-assumptions-region .assumptions a:hover {
     text-decoration: none;
-    color: #3381d0
+    color: #A3C745
 }
 .edit-assumptions-region .assumptions a:hover:after {
     padding-right: 5px;
     opacity: 1
 }
 .edit-assumptions-region .assumptions a.active {
-    color: #3381d0
+    color: #A3C745
 }
 .edit-assumptions-region .assumptions a.active:after {
     padding-right: 5px;
@@ -8202,7 +8202,7 @@ html.responsive body .panel.logged-out {
 .edit-assumptions-region .assumption-container h2,
 .edit-assumptions-region .assumption-container .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .edit-assumptions-region .assumption-container h3 {
-    color: #3381d0;
+    color: #A3C745;
     margin: 0 0 15px;
     font-size: 20px;
     font-weight: 300
@@ -8227,7 +8227,7 @@ html.responsive body .panel.logged-out {
     top: 5px
 }
 .edit-assumptions-region .assumption-container .read-more a {
-    color: #3381d0;
+    color: #A3C745;
     cursor: pointer
 }
 .edit-assumptions-region .assumption-container .read-more a:after {
@@ -8299,10 +8299,10 @@ html.responsive body .panel.logged-out {
     text-decoration: none
 }
 .edit-assumptions-region .assumption-container .assumption-slider .section.income a.social-security-selection.active {
-    color: #3381d0
+    color: #A3C745
 }
 .edit-assumptions-region .assumption-container .assumption-slider .section.income a.social-security-selection.active .percentile {
-    border: 1px solid #3381d0
+    border: 1px solid #A3C745
 }
 .edit-assumptions-region .assumption-container .assumption-slider .section.income a.social-security-selection .percentile {
     border: 1px solid #aaa;
@@ -8324,7 +8324,7 @@ html.responsive body .panel.logged-out {
     padding: 0 0 40px
 }
 .retirement-plan-setup .bright-blue {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-setup strong {
     font-weight: 900
@@ -8379,7 +8379,7 @@ html.responsive body .panel.logged-out {
     position: relative;
     width: 30px;
     height: 30px;
-    background: #3381d0;
+    background: #A3C745;
     border: 1px solid #ddd;
     float: left
 }
@@ -8392,7 +8392,7 @@ html.responsive body .panel.logged-out {
     padding: 8px
 }
 .retirement-plan-setup .content .bubble-button .button-label.loud {
-    color: #3381d0;
+    color: #A3C745;
     text-transform: uppercase;
     font-size: 14px;
     padding: 9px
@@ -8412,7 +8412,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan-setup .content .inline-editable[display]:after {
     margin-left: 2px;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-setup .content .inline-editable[editable] {
     display: none
@@ -8422,9 +8422,9 @@ html.responsive body .panel.logged-out {
     border: 0;
     padding: 0;
     margin-top: -2px;
-    border-bottom: 1px solid #3381d0;
+    border-bottom: 1px solid #A3C745;
     width: 50px;
-    box-shadow: 0 3px 16px -9px #3381d0
+    box-shadow: 0 3px 16px -9px #A3C745
 }
 .retirement-plan-setup .content .bubbles {
     width: 35%;
@@ -8451,7 +8451,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan-setup .content .bubbles .bubble .bubble-container .background {
     width: 100%;
     height: 100%;
-    background: #3381d0;
+    background: #A3C745;
     opacity: .8;
     position: absolute
 }
@@ -8512,7 +8512,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan-setup .content .questions .question h1,
 .retirement-plan-setup .content .questions .question #summary .panel th,
 #summary .panel .retirement-plan-setup .content .questions .question th {
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 500;
     font-size: 24px;
     line-height: 1.3
@@ -8583,7 +8583,7 @@ html.responsive body .panel.logged-out {
     margin-top: 25px;
     padding-top: 10px;
     border-top: 1px solid #e6e6e6;
-    color: #3381d0;
+    color: #A3C745;
     font-size: 18px;
     font-weight: 500
 }
@@ -8632,7 +8632,7 @@ html.responsive body .panel.logged-out {
     text-align: center;
     font-size: 11px;
     background-color: #fff;
-    color: #3381d0;
+    color: #A3C745;
     cursor: pointer
 }
 .retirement-plan-setup .content .retirement-age-step .retired-toggler .choice-wrapper .choice.not-retired {
@@ -8654,7 +8654,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan-setup .content .retirement-age-step .retired-toggler.expanded .choice.active,
 .retirement-plan-setup .content .retirement-age-step .retired-toggler .choice:hover {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff
 }
 .retirement-plan-setup .content .retirement-age-step .age-input {
@@ -8708,10 +8708,10 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan-setup .content .accounts-step .accounts .list-header {
     text-transform: uppercase;
-    color: #3381d0;
+    color: #A3C745;
     font-size: 13px;
     padding: 10px 0;
-    border-bottom: 1px solid #3381d0;
+    border-bottom: 1px solid #A3C745;
     margin-bottom: 10px
 }
 .retirement-plan-setup .content .accounts-step .accounts .list-header-row {
@@ -8736,7 +8736,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan-setup .content .accounts-step .accounts .list-header-row div:hover {
     cursor: default;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-setup .content .accounts-step .accounts .accounts-list .account-row {
     *zoom: 1;
@@ -8821,7 +8821,7 @@ html.responsive body .panel.logged-out {
     -webkit-border-radius: 50%;
     border-radius: 50%;
     border: 0 solid #000;
-    background: #3381d0;
+    background: #A3C745;
     width: 26px;
     height: 26px
 }
@@ -8830,7 +8830,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .add-external-account .button-label {
     padding: 7px;
-    color: #3381d0;
+    color: #A3C745;
     font-size: 13px
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .add-external-account:hover .button-icon {
@@ -8860,7 +8860,7 @@ html.responsive body .panel.logged-out {
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .account-row .col:hover span:after {
     margin-left: 2px;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts button.dropdown-toggle {
     min-height: 28px;
@@ -8916,7 +8916,7 @@ html.responsive body .panel.logged-out {
     margin-top: 25px;
     padding-top: 10px;
     border-top: 1px solid #e6e6e6;
-    color: #3381d0;
+    color: #A3C745;
     font-size: 18px;
     font-weight: 500
 }
@@ -8991,7 +8991,7 @@ html.responsive body .panel.logged-out {
     clear: both
 }
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .header:hover {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .header .calculator-label {
     float: left;
@@ -9036,7 +9036,7 @@ html.responsive body .panel.logged-out {
     clear: both
 }
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row .row-header:hover {
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row.annual-income .row-header:hover {
     color: inherit;
@@ -9102,9 +9102,9 @@ html.responsive body .panel.logged-out {
     display: inline-block
 }
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row .inline-editable {
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 700;
-    border-bottom: 1px solid #3381d0;
+    border-bottom: 1px solid #A3C745;
     padding: 2px
 }
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .summary {
@@ -9205,7 +9205,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan-splash #summary .panel th,
 #summary .panel .retirement-plan-splash th,
 .retirement-plan-splash h3 {
-    color: #3381d0;
+    color: #A3C745;
     font-weight: 500
 }
 .retirement-plan-splash h1,
@@ -9300,7 +9300,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan-splash .question:before {
     float: left;
     margin-right: 20px;
-    color: #3381d0
+    color: #A3C745
 }
 .retirement-plan-splash .question div {
     margin-top: 3px;
@@ -9322,7 +9322,7 @@ html.responsive body .panel.logged-out {
     height: 57%;
     position: relative;
     color: #fff;
-    background-color: #3381d0;
+    background-color: #A3C745;
     filter: alpha(Opacity=80);
     opacity: .8;
     -moz-transition: all .3s ease-in-out;
@@ -9429,7 +9429,7 @@ html.responsive body .panel.logged-out {
     display: inline-block
 }
 #secondaryContent .smart-deposits-banner.banner-view {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff
 }
 #secondaryContent .smart-deposits-banner.banner-view .banner-wrapper .banner .bubble {
@@ -9967,7 +9967,7 @@ html.responsive body .panel.logged-out {
     margin: 40px auto 0
 }
 .panel.logged-out .tab-header {
-    color: #3381d0;
+    color: #A3C745;
     padding: 0;
     text-align: center;
     margin-bottom: 40px;
@@ -10078,7 +10078,7 @@ html.responsive body .panel.logged-out {
 }
 #signup #welcomeBackPanel,
 #trust-signup #welcomeBackPanel {
-    background-color: #3381d0;
+    background-color: #A3C745;
     color: #fff;
     display: none;
     margin-bottom: 15px;
@@ -10087,7 +10087,7 @@ html.responsive body .panel.logged-out {
 }
 #signup #welcomeBackPanel .x-close,
 #trust-signup #welcomeBackPanel .x-close {
-    background-color: #3381d0;
+    background-color: #A3C745;
     position: absolute;
     right: 10px;
     top: 10px

@@ -7439,7 +7439,7 @@ div.ghost-form .pane.benefits-pane h4,
     -moz-border-radius:50%;
     -webkit-border-radius:50%;
     border-radius:50%;
-    background:#3381d0;
+    background:#45a018;
     overflow:hidden;
     color:#fff;
     width:20em;
@@ -7447,7 +7447,7 @@ div.ghost-form .pane.benefits-pane h4,
 }
 .ui-tooltip-default {
     background:#fff;
-    color:#0d3866;
+    color:#4D642D;
     width:auto!important;
     font-size:12px
 }
@@ -7457,7 +7457,7 @@ div.ghost-form .pane.benefits-pane h4,
 .ui-tooltip-default h2,
 .ui-tooltip-default .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .ui-tooltip-default h3 {
-    color:#0d3866;
+    color:#4D642D;
     font-size:15px;
     margin:7px 0 3px
 }
@@ -7553,7 +7553,7 @@ div.ghost-form .pane.benefits-pane h4,
     -moz-border-radius:0;
     -webkit-border-radius:0;
     border-radius:0;
-    background:#3381d0
+    background:#45a018
 }
 .ui-slider .slider-markers-container {
     position:absolute;
@@ -7582,7 +7582,7 @@ div.ghost-form .pane.benefits-pane h4,
 }
 .slider-tooltip.allocation-tooltip .tooltip-inner {
     padding:3px;
-    color:#0d3866;
+    color:#4D642D;
     font-size:12px
 }
 .ui-corner-all,
@@ -7721,11 +7721,11 @@ only screen and (min-resolution: 1.5dppx) {
 @-moz-keyframes colors {
     0%,
     100% {
-        stroke:#0d3866
+        stroke:#4D642D
     }
     25%,
     75% {
-        stroke:#3381d0
+        stroke:#45a018
     }
     50% {
         stroke:#7db9e8
@@ -7734,11 +7734,11 @@ only screen and (min-resolution: 1.5dppx) {
 @-webkit-keyframes colors {
     0%,
     100% {
-        stroke:#0d3866
+        stroke:#4D642D
     }
     25%,
     75% {
-        stroke:#3381d0
+        stroke:#45a018
     }
     50% {
         stroke:#7db9e8
@@ -7747,11 +7747,11 @@ only screen and (min-resolution: 1.5dppx) {
 @keyframes colors {
     0%,
     100% {
-        stroke:#0d3866
+        stroke:#4D642D
     }
     25%,
     75% {
-        stroke:#3381d0
+        stroke:#45a018
     }
     50% {
         stroke:#7db9e8
@@ -7931,8 +7931,8 @@ only screen and (min-resolution: 1.5dppx) {
     text-align:center
 }
 .collapse-circle:hover {
-    border-color:#3381d0;
-    color:#3381d0
+    border-color:#45a018;
+    color:#45a018
 }
 .collapse-circle:before {
     content:'\20AC';
@@ -7996,11 +7996,11 @@ only screen and (min-resolution: 1.5dppx) {
     color:#035d0e
 }
 .table-header {
-    border-bottom:1px solid #3381d0;
+    border-bottom:1px solid #45a018;
     background:#fff
 }
 .table-header .header {
-    color:#3381d0;
+    color:#45a018;
     font-size:14px;
     font-weight:700;
     float:left;
@@ -8036,7 +8036,7 @@ h1.tab-header,
     line-height:30px;
     padding:25px 0;
     font-size:21px;
-    color:#0d3866
+    color:#4D642D
 }
 h2,
 .modal-panel .pricing-plan table.plan-table tr td h3 {
@@ -8046,16 +8046,16 @@ h2,
 }
 .btn-group .dropdown-menu li>a:hover,
 .ira-recharacterization section table tbody tr.selected td.bg {
-    background:#0d3866
+    background:#4D642D
 }
 .btn-group .dropdown-submenu:hover>a,
 .btn-group .dropdown-submenu:focus>a {
-    background:#3381d0
+    background:#45a018
 }
 button,
 a.button,
 input[type=submit] {
-    background:#3381d0;
+    background:#A3C745;
     border:0;
     letter-spacing:.25px;
     color:#fff;
@@ -8087,7 +8087,7 @@ a.button:hover,
 a.button.hover,
 input[type=submit]:hover,
 input[type=submit].hover {
-    background:#5093d7;
+    background:#bce550;
     text-decoration:none
 }
 button.cancel:not(.silver):not(button[disabled]):not(button[disabled]:active):not(a.button[disabled]):not(a.button[disabled]:active):not(input[type=submit][disabled]):not(input[type=submit][disabled]:active),
@@ -8474,8 +8474,8 @@ input[type=submit].hover[disabled],
 .wizard-buttons input[type=submit].hover#resend,
 .wizard-buttons input[type=submit].hover.back,
 .wizard-buttons input[type=submit].hover.cancel {
-    color:#3381d0;
-    border-color:#3381d0
+    color:#45a018;
+    border-color:#45a018
 }
 button.silver:active:not(.no-hover),
 button[disabled]:active:not(.no-hover),
@@ -8556,7 +8556,7 @@ input[type=submit].green {
     -moz-box-shadow:none;
     -webkit-box-shadow:none;
     box-shadow:none;
-    background:#45a018;
+    background:#CF3013;
     border:0
 }
 button.green:hover,
@@ -8565,7 +8565,7 @@ a.button.green:hover,
 a.button.green.hover,
 input[type=submit].green:hover,
 input[type=submit].green.hover {
-    background:#4bad1a
+    background: #f73513
 }
 button.green:active,
 a.button.green:active,
@@ -8647,14 +8647,14 @@ button.secondary.light-blue,
 .withdrawal-confirmation button.show-tax-impact,
 a.button.secondary.light-blue,
 input[type=submit].secondary.light-blue {
-    border-color:#3381d0;
-    color:#3381d0
+    border-color:#45a018;
+    color:#45a018
 }
 button.secondary.light-blue:hover,
 .withdrawal-confirmation button.show-tax-impact:hover,
 a.button.secondary.light-blue:hover,
 input[type=submit].secondary.light-blue:hover {
-    background:#3381d0;
+    background:#45a018;
     color:#fff
 }
 button.secondary.banner-button,
@@ -8865,14 +8865,14 @@ body.ie .open-close:before {
     border:1px #d00 solid
 }
 label {
-    color:#0d3866;
+    color:#4D642D;
     display:inline;
     margin:0
 }
 .note,
 .ira-recharacterization section table thead th {
     display:block;
-    color:#3381d0;
+    color:#45a018;
     font-size:12px;
     margin:0 0 3px 2px
 }
@@ -8930,7 +8930,7 @@ select.blank-line,
     border-bottom:1px solid #788797;
     background:transparent;
     filter:none;
-    color:#0d3866;
+    color:#4D642D;
     text-align:center;
     -moz-border-radius:0;
     -webkit-border-radius:0;
@@ -9108,7 +9108,7 @@ input[type=tel]:focus,
 input[type=color]:focus,
 .uneditable-input:focus,
 .btn-group:focus {
-    border-color:#0d3866;
+    border-color:#4D642D;
     outline:0;
     outline:thin dotted \9
 }
@@ -9231,7 +9231,7 @@ input[type=color]:focus:focus,
     -moz-box-shadow:none;
     -webkit-box-shadow:none;
     box-shadow:none;
-    border:1px solid #3381d0;
+    border:1px solid #45a018;
     background-color:#fff
 }
 .btn-group .dropdown-toggle {
@@ -9248,7 +9248,7 @@ input[type=color]:focus:focus,
     font-weight:400
 }
 .btn-group .dropdown-toggle:hover {
-    border-color:#3381d0
+    border-color:#45a018
 }
 .btn-group .dropdown-toggle:active {
     filter:none
@@ -9257,10 +9257,10 @@ input[type=color]:focus:focus,
     background:0
 }
 .btn-group .dropdown-toggle .dropdown-label {
-    color:#3381d0
+    color:#45a018
 }
 .btn-group .dropdown-toggle .caret {
-    border-top-color:#3381d0
+    border-top-color:#45a018
 }
 .help-note {
     float:left;
@@ -9831,7 +9831,7 @@ input[type=color]:focus:focus,
 }
 .iconbullet {
     border-radius:50%;
-    background:#3381d0;
+    background:#45a018;
     color:#fff;
     font-size:4em;
     line-height:1.5em;
@@ -9886,7 +9886,7 @@ input[type=color]:focus:focus,
     -webkit-border-radius:50%;
     border-radius:50%;
     font-weight:700;
-    color:#0d3866;
+    color:#4D642D;
     -moz-transform-style:preserve-3d;
     -webkit-transform-style:preserve-3d;
     transform-style:preserve-3d;
@@ -9894,10 +9894,10 @@ input[type=color]:focus:focus,
     text-align:center
 }
 .open-close:hover {
-    border-color:#0d3866
+    border-color:#4D642D
 }
 .open-close:active {
-    background-color:#0d3866;
+    background-color:#4D642D;
     color:#fff
 }
 .open-close:before {
@@ -9913,7 +9913,7 @@ input[type=color]:focus:focus,
 }
 .open-close.close-sm:before,
 .open-close.close-lg:before {
-    content:"â€“"
+    content:"-"
 }
 .open-close.open-lg,
 .open-close.close-lg {
@@ -10172,7 +10172,7 @@ input[type=color]:focus:focus,
 .batch-settings-modal form section .single-goal {
     line-height:32px;
     font-size:16px;
-    color:#3381d0
+    color:#45a018
 }
 .automatic-deposit-settings form section select,
 .automatic-withdrawal-settings form section select,
@@ -10366,7 +10366,7 @@ input[type=color]:focus:focus,
     height:0;
     border-top:11px solid transparent;
     border-bottom:11px solid transparent;
-    border-right:11px solid #0d3866
+    border-right:11px solid #4D642D
 }
 .automatic-deposit-settings form .start-date-fields span.start-date,
 .automatic-withdrawal-settings form .start-date-fields span.start-date,
@@ -10410,7 +10410,7 @@ input[type=color]:focus:focus,
     56,
     102,
     .6);
-    border-color:#0d3866
+    border-color:#4D642D
 }
 .automatic-deposit-settings form .start-date-fields span:focus,
 .automatic-withdrawal-settings form .start-date-fields span:focus,
@@ -10439,7 +10439,7 @@ input[type=color]:focus:focus,
     width:220px;
     display:none;
     background:#fff;
-    border:1px solid #3381d0;
+    border:1px solid #45a018;
     padding-bottom:10px;
     -moz-box-shadow:0 0 4px rgba(0,
     0,
@@ -10484,7 +10484,7 @@ input[type=color]:focus:focus,
     top:9px;
     width:12px;
     height:12px;
-    color:#3381d0;
+    color:#45a018;
     font-weight:300;
     cursor:pointer
 }
@@ -10523,7 +10523,7 @@ input[type=color]:focus:focus,
     display:block;
     line-height:2em;
     text-align:center;
-    color:#3381d0;
+    color:#45a018;
     font-weight:400;
     font-size:16px
 }
@@ -10554,7 +10554,7 @@ input[type=color]:focus:focus,
     font-size:12px
 }
 .ui-datepicker td a {
-    color:#3381d0;
+    color:#45a018;
     cursor:default
 }
 .ui-datepicker td span,
@@ -10589,7 +10589,7 @@ input[type=color]:focus:focus,
 }
 .ui-datepicker td.selected-future span,
 .ui-datepicker td.selected-future a {
-    background:#3381d0
+    background:#45a018
 }
 .ui-datepicker td.selected-past span,
 .ui-datepicker td.selected-past a {
@@ -10616,7 +10616,7 @@ input[type=color]:focus:focus,
 }
 .validation-tooltip {
     border:1px solid #686868;
-    color:#0d3866;
+    color:#4D642D;
     padding:0;
     opacity:.8;
     cursor:default;
@@ -10687,7 +10687,7 @@ input[type=color]:focus:focus,
 .detailed-holdings-tooltip .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .detailed-holdings-tooltip h3 {
     font-size:14px;
-    color:#0d3866
+    color:#4D642D
 }
 .detailed-holdings-tooltip a {
     color:#686868
@@ -10735,7 +10735,7 @@ input[type=color]:focus:focus,
     background:#7db9e8
 }
 .allocation-slider .track .track-overlay.dark {
-    background:#3381d0
+    background:#45a018
 }
 .allocation-slider .slider-markers-container .slider-marker {
     top:-4px
@@ -10852,7 +10852,7 @@ div.guest-form .feedback-icon.green-check {
     -moz-box-shadow:0 0 8px #aaa;
     -webkit-box-shadow:0 0 8px #aaa;
     box-shadow:0 0 8px #aaa;
-    color:#0d3866;
+    color:#4D642D;
     font-size:14px
 }
 .graph-help .title {
@@ -10913,7 +10913,7 @@ div.guest-form .feedback-icon.green-check {
     line-height:.8
 }
 #secondaryContent .banner-close:hover {
-    color:#3381d0
+    color:#45a018
 }
 #secondaryContent .banner {
     display:table-row
@@ -10931,7 +10931,7 @@ div.guest-form .feedback-icon.green-check {
 #secondaryContent .banner .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td #secondaryContent .banner h3,
 #secondaryContent .banner p {
-    color:#0d3866;
+    color:#4D642D;
     line-height:1.25
 }
 #secondaryContent .banner .image {
@@ -10945,7 +10945,7 @@ div.guest-form .feedback-icon.green-check {
     padding:0
 }
 #secondaryContent .banner .image.clock-icon {
-    color:#3381d0;
+    color:#45a018;
     font-size:4em;
     padding:10px 0 0 7px
 }
@@ -11008,7 +11008,7 @@ div.guest-form .feedback-icon.green-check {
 .wizard-buttons #secondaryContent .banner button.cancel {
     margin:10px 0 0;
     background:#fff;
-    border:1px solid #3381d0;
+    border:1px solid #45a018;
     color:#686868;
     -moz-box-shadow:none;
     -webkit-box-shadow:none;
@@ -11017,7 +11017,7 @@ div.guest-form .feedback-icon.green-check {
 #secondaryContent .banner button.secondary,
 #secondaryContent .banner .withdrawal-confirmation button.show-tax-impact,
 .withdrawal-confirmation #secondaryContent .banner button.show-tax-impact {
-    color:#3381d0
+    color:#45a018
 }
 #secondaryContent .banner button.copy-personal {
     margin-top:12px;
@@ -11079,7 +11079,7 @@ div.guest-form .feedback-icon.green-check {
 }
 #secondaryContent .retirement-plan-banner h3,
 #secondaryContent .manual-link-confirmation-banner h3 {
-    color:#0d3866;
+    color:#4D642D;
     font-size:24px;
     margin-bottom:5px
 }
@@ -11253,7 +11253,7 @@ div.guest-form .feedback-icon.green-check {
     right:50px
 }
 #secondaryContent .link-checking-account-verify-info .worksheet .check-annotation {
-    color:#0d3866;
+    color:#4D642D;
     font-weight:600;
     font-style:italic;
     margin-left:61px;
@@ -11320,7 +11320,7 @@ div.guest-form .feedback-icon.green-check {
 }
 .callout-text {
     font-weight:700;
-    color:#3381d0
+    color:#45a018
 }
 .input-text label.validation,
 .input-number label.validation,
@@ -11374,7 +11374,7 @@ div.guest-form .feedback-icon.green-check {
     top:0;
     left:0;
     font-size:1.1em;
-    color:#3381d0;
+    color:#45a018;
     z-index:0;
     -moz-transition:-moz-transform .1s ease-in-out;
     -o-transition:-o-transform .1s ease-in-out;
@@ -11427,7 +11427,7 @@ div.guest-form .feedback-icon.green-check {
     display:block;
     box-sizing:border-box;
     padding-top:38px;
-    border-bottom:1px solid #3381d0
+    border-bottom:1px solid #45a018
 }
 .input-text input,
 .input-number input,
@@ -11445,7 +11445,7 @@ div.guest-form .feedback-icon.green-check {
     height:38px;
     background:transparent;
     border:0;
-    color:#3381d0;
+    color:#45a018;
     font-size:1.1em;
     z-index:1
 }
@@ -11501,7 +11501,7 @@ div.guest-form .feedback-icon.green-check {
     top:49px;
     left:0;
     font-size:1.1em;
-    color:#3381d0;
+    color:#45a018;
     opacity:0
 }
 .input-money.active .symbol,

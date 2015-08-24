@@ -261,7 +261,7 @@
     background: #fff;
 }
 #activity .toggle-graph-type .active {
-    background: #3381d0;
+    background: #8EA86C;
     color: #fff;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -297,7 +297,7 @@
     border: 0;
 }
 #performance .button-filters a.active {
-    background: #3381d0;
+    background: #8EA86C;
     color: #fff;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -400,7 +400,7 @@
     top: 1px;
 }
 #performance .panel.body .controls .sidebar .goals-list li .chart-type.blue:before, #performance .panel.body .controls .sidebar .goals-list li .modal-panel .pricing-plan .select-buttons button.chart-type:before, .modal-panel .pricing-plan .select-buttons #performance .panel.body .controls .sidebar .goals-list li button.chart-type:before, #performance .panel.body .controls .sidebar .goals-list li .modal-buttons .chart-type#yes:before, .modal-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#yes:before, #performance .panel.body .controls .sidebar .goals-list li .modal-buttons .chart-type#ok:before, .modal-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#ok:before, #performance .panel.body .controls .sidebar .goals-list li .modal-buttons .chart-type#next:before, .modal-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#next:before, #performance .panel.body .controls .sidebar .goals-list li .modal-buttons .chart-type#submit:before, .modal-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#submit:before, #performance .panel.body .controls .sidebar .goals-list li .actions .chart-type#yes:before, .actions #performance .panel.body .controls .sidebar .goals-list li .chart-type#yes:before, #performance .panel.body .controls .sidebar .goals-list li .actions .chart-type#ok:before, .actions #performance .panel.body .controls .sidebar .goals-list li .chart-type#ok:before, #performance .panel.body .controls .sidebar .goals-list li .actions .chart-type#next:before, .actions #performance .panel.body .controls .sidebar .goals-list li .chart-type#next:before, #performance .panel.body .controls .sidebar .goals-list li .actions .chart-type#submit:before, .actions #performance .panel.body .controls .sidebar .goals-list li .chart-type#submit:before, #performance .panel.body .controls .sidebar .goals-list li .wizard-buttons .chart-type#yes:before, .wizard-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#yes:before, #performance .panel.body .controls .sidebar .goals-list li .wizard-buttons .chart-type#ok:before, .wizard-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#ok:before, #performance .panel.body .controls .sidebar .goals-list li .wizard-buttons .chart-type#next:before, .wizard-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#next:before, #performance .panel.body .controls .sidebar .goals-list li .wizard-buttons .chart-type#submit:before, .wizard-buttons #performance .panel.body .controls .sidebar .goals-list li .chart-type#submit:before {
-    background: #3381d0;
+    background: #8EA86C;
     border-color: #19416b;
 }
 #performance .panel.body .controls .sidebar .goals-list li .chart-type.green:before {
@@ -549,7 +549,7 @@
     font-weight: 700;
 }
 #performance .panel.body .info .performance-graph table.chart-details td .blue, #performance .panel.body .info .performance-graph table.chart-details td .modal-panel .pricing-plan .select-buttons button, .modal-panel .pricing-plan .select-buttons #performance .panel.body .info .performance-graph table.chart-details td button, #performance .panel.body .info .performance-graph table.chart-details td .modal-buttons #yes, .modal-buttons #performance .panel.body .info .performance-graph table.chart-details td #yes, #performance .panel.body .info .performance-graph table.chart-details td .modal-buttons #ok, .modal-buttons #performance .panel.body .info .performance-graph table.chart-details td #ok, #performance .panel.body .info .performance-graph table.chart-details td .modal-buttons #next, .modal-buttons #performance .panel.body .info .performance-graph table.chart-details td #next, #performance .panel.body .info .performance-graph table.chart-details td .modal-buttons #submit, .modal-buttons #performance .panel.body .info .performance-graph table.chart-details td #submit, #performance .panel.body .info .performance-graph table.chart-details td .actions #yes, .actions #performance .panel.body .info .performance-graph table.chart-details td #yes, #performance .panel.body .info .performance-graph table.chart-details td .actions #ok, .actions #performance .panel.body .info .performance-graph table.chart-details td #ok, #performance .panel.body .info .performance-graph table.chart-details td .actions #next, .actions #performance .panel.body .info .performance-graph table.chart-details td #next, #performance .panel.body .info .performance-graph table.chart-details td .actions #submit, .actions #performance .panel.body .info .performance-graph table.chart-details td #submit, #performance .panel.body .info .performance-graph table.chart-details td .wizard-buttons #yes, .wizard-buttons #performance .panel.body .info .performance-graph table.chart-details td #yes, #performance .panel.body .info .performance-graph table.chart-details td .wizard-buttons #ok, .wizard-buttons #performance .panel.body .info .performance-graph table.chart-details td #ok, #performance .panel.body .info .performance-graph table.chart-details td .wizard-buttons #next, .wizard-buttons #performance .panel.body .info .performance-graph table.chart-details td #next, #performance .panel.body .info .performance-graph table.chart-details td .wizard-buttons #submit, .wizard-buttons #performance .panel.body .info .performance-graph table.chart-details td #submit, #performance .panel.body .info .performance-graph table.chart-details td .invested {
-    color: #3381d0;
+    color: #8EA86C;
 }
 #performance .panel.body .info .performance-graph table.chart-details td .green {
     color: #45a018;
@@ -629,7 +629,7 @@
     font-size: 10px;
 }
 #performance .panel.body .info .performance-graph svg.graph .brush .extent {
-    fill: #3381d0;
+    fill: #8EA86C;
     fill-opacity: .1;
     shape-rendering: crispEdges;
 }
@@ -648,7 +648,7 @@
     stroke-width: 1.5px;
 }
 #performance .panel.body .info .performance-graph svg.graph .context-line.blue, #performance .panel.body .info .performance-graph svg.graph .modal-panel .pricing-plan .select-buttons button.context-line, .modal-panel .pricing-plan .select-buttons #performance .panel.body .info .performance-graph svg.graph button.context-line, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .context-line#yes, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#yes, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .context-line#ok, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#ok, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .context-line#next, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#next, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .context-line#submit, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#submit, #performance .panel.body .info .performance-graph svg.graph .actions .context-line#yes, .actions #performance .panel.body .info .performance-graph svg.graph .context-line#yes, #performance .panel.body .info .performance-graph svg.graph .actions .context-line#ok, .actions #performance .panel.body .info .performance-graph svg.graph .context-line#ok, #performance .panel.body .info .performance-graph svg.graph .actions .context-line#next, .actions #performance .panel.body .info .performance-graph svg.graph .context-line#next, #performance .panel.body .info .performance-graph svg.graph .actions .context-line#submit, .actions #performance .panel.body .info .performance-graph svg.graph .context-line#submit, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .context-line#yes, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#yes, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .context-line#ok, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#ok, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .context-line#next, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#next, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .context-line#submit, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .context-line#submit, #performance .panel.body .info .performance-graph svg.graph .focus-line.blue, #performance .panel.body .info .performance-graph svg.graph .modal-panel .pricing-plan .select-buttons button.focus-line, .modal-panel .pricing-plan .select-buttons #performance .panel.body .info .performance-graph svg.graph button.focus-line, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-line#yes, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#yes, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-line#ok, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#ok, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-line#next, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#next, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-line#submit, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#submit, #performance .panel.body .info .performance-graph svg.graph .actions .focus-line#yes, .actions #performance .panel.body .info .performance-graph svg.graph .focus-line#yes, #performance .panel.body .info .performance-graph svg.graph .actions .focus-line#ok, .actions #performance .panel.body .info .performance-graph svg.graph .focus-line#ok, #performance .panel.body .info .performance-graph svg.graph .actions .focus-line#next, .actions #performance .panel.body .info .performance-graph svg.graph .focus-line#next, #performance .panel.body .info .performance-graph svg.graph .actions .focus-line#submit, .actions #performance .panel.body .info .performance-graph svg.graph .focus-line#submit, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-line#yes, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#yes, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-line#ok, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#ok, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-line#next, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#next, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-line#submit, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-line#submit {
-    stroke: #3381d0;
+    stroke: #8EA86C;
 }
 #performance .panel.body .info .performance-graph svg.graph .context-line.green, #performance .panel.body .info .performance-graph svg.graph .focus-line.green {
     stroke: #45a018;
@@ -670,7 +670,7 @@
     stroke-width: 1px;
 }
 #performance .panel.body .info .performance-graph svg.graph .focus-point.blue, #performance .panel.body .info .performance-graph svg.graph .modal-panel .pricing-plan .select-buttons button.focus-point, .modal-panel .pricing-plan .select-buttons #performance .panel.body .info .performance-graph svg.graph button.focus-point, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-point#yes, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#yes, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-point#ok, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#ok, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-point#next, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#next, #performance .panel.body .info .performance-graph svg.graph .modal-buttons .focus-point#submit, .modal-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#submit, #performance .panel.body .info .performance-graph svg.graph .actions .focus-point#yes, .actions #performance .panel.body .info .performance-graph svg.graph .focus-point#yes, #performance .panel.body .info .performance-graph svg.graph .actions .focus-point#ok, .actions #performance .panel.body .info .performance-graph svg.graph .focus-point#ok, #performance .panel.body .info .performance-graph svg.graph .actions .focus-point#next, .actions #performance .panel.body .info .performance-graph svg.graph .focus-point#next, #performance .panel.body .info .performance-graph svg.graph .actions .focus-point#submit, .actions #performance .panel.body .info .performance-graph svg.graph .focus-point#submit, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-point#yes, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#yes, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-point#ok, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#ok, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-point#next, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#next, #performance .panel.body .info .performance-graph svg.graph .wizard-buttons .focus-point#submit, .wizard-buttons #performance .panel.body .info .performance-graph svg.graph .focus-point#submit {
-    fill: #3381d0;
+    fill: #8EA86C;
 }
 #performance .panel.body .info .performance-graph svg.graph .focus-point.green {
     fill: #45a018;
@@ -691,7 +691,7 @@
     fill: #000;
 }
 #performance .panel.body .info .performance-graph svg.graph .focus-point.contribution {
-    fill: #3381d0;
+    fill: #8EA86C;
 }
 #performance .panel.body .info .performance-graph svg.graph .area.above {
     fill: #d00;
@@ -708,11 +708,11 @@
 }
 #performance .panel.body .info .performance-graph svg.graph .contribution-line {
     fill: none;
-    stroke: #3381d0;
+    stroke: #8EA86C;
     stroke-width: 1.5px;
 }
 #performance .panel.body .info .performance-graph svg.graph .contribution-area {
-    fill: #3381d0;
+    fill: #8EA86C;
     fill-opacity: .15;
 }
 #performance .panel.body .info .performance-graph svg.graph .nv-x .domain {
@@ -1075,7 +1075,7 @@
     border-radius: 50%;
     cursor: pointer;
     opacity: .8;
-    color: #3381d0;
+    color: #8EA86C;
     display: none;
 }
 .progress-nav .back-arrow:before {
@@ -1129,7 +1129,7 @@
     display: none;
 }
 }.progress-nav .step-labels .item.active {
-    color: #3381d0;
+    color: #8EA86C;
 }
 @media (max-width:900px) {
     .progress-nav .step-labels .item.active {
@@ -1144,12 +1144,12 @@
     height: 5px;
 }
 }.progress-nav .progress-bar .inner-bar {
-    background: #3381d0;
+    background: #8EA86C;
     height: 100%;
     width: 0;
 }
 .balance-bubble {
-    background-color: #3381d0;
+    background-color: #8EA86C;
 }
 .balance-bubble .top {
     height: 35%;
@@ -1382,7 +1382,7 @@
     float: right;
     padding-top: 3px;
     margin-right: 6px;
-    color: #3381d0;
+    color: #8EA86C;
     font-size: 12px;
     font-weight: 900;
 }
@@ -1406,7 +1406,7 @@
 #flyoverRegion .flyover .flyover-body h2, #flyoverRegion .flyover .flyover-body .modal-panel .pricing-plan table.plan-table tr td h3, .modal-panel .pricing-plan table.plan-table tr td #flyoverRegion .flyover .flyover-body h3 {
     font-size: 18px;
     font-weight: 400;
-    color: #3381d0;
+    color: #8EA86C;
 }
 #flyoverRegion .flyover .flyover-body ul {
     margin: 0 0 35px 15px;
@@ -1486,8 +1486,8 @@ nav .nav-wrapper ul li {
     float: left;
 }
 nav .nav-wrapper ul li.depressed a {
-    color: #3381d0;
-    border-bottom: 3px solid #3381d0;
+    color: #8EA86C;
+    border-bottom: 3px solid #8EA86C;
     position: relative;
     z-index: 14995;
 }
@@ -1549,7 +1549,7 @@ nav .nav-wrapper .back-to-summary .back-icon {
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     box-shadow: none;
-    border: 1px solid #3381d0;
+    border: 1px solid #8EA86C;
 }
 #tabHeader .account-selector.btn-group .dropdown-toggle {
     background: 0;
@@ -1558,7 +1558,7 @@ nav .nav-wrapper .back-to-summary .back-icon {
     min-height: 37px;
 }
 #tabHeader .account-selector.btn-group .dropdown-toggle:hover {
-    border-color: #3381d0;
+    border-color: #8EA86C;
 }
 #tabHeader .account-selector.btn-group .dropdown-toggle:active {
     -moz-box-shadow: none;
@@ -1570,10 +1570,10 @@ nav .nav-wrapper .back-to-summary .back-icon {
     background-image: none;
 }
 #tabHeader .account-selector.btn-group .dropdown-toggle .dropdown-label {
-    color: #3381d0;
+    color: #8EA86C;
 }
 #tabHeader .account-selector.btn-group .dropdown-toggle .caret {
-    border-top-color: #3381d0;
+    border-top-color: #8EA86C;
 }
 #tabHeader .details {
     display: inline-block;
@@ -1587,7 +1587,7 @@ nav .nav-wrapper .back-to-summary .back-icon {
     margin: 0 0 0 25px;
 }
 #tabHeader .details .stat.goal-amount a {
-    color: #3381d0;
+    color: #8EA86C;
 }
 #tabHeader .details .stat.goal-amount .value [display] .grey-pen {
     margin-left: 5px;
@@ -1617,9 +1617,9 @@ nav .nav-wrapper .back-to-summary .back-icon {
     border: 0;
     font-size: 18px;
     padding-top: 0;
-    border-bottom: 1px solid #3381d0;
+    border-bottom: 1px solid #8EA86C;
     width: 125px;
-    box-shadow: 0 3px 16px -9px #3381d0;
+    box-shadow: 0 3px 16px -9px #8EA86C;
 }
 #tabHeader .actions {
     margin-top: 3px;
@@ -1629,13 +1629,13 @@ nav .nav-wrapper .back-to-summary .back-icon {
     margin-left: 5px;
 }
 #tabHeader .actions .account-settings-region button:hover, #tabHeader .actions .account-status-region button:hover {
-    border-color: #3381d0;
+    border-color: #8EA86C;
 }
 #tabHeader .actions .goal-status {
     height: 35px;
 }
 #tabHeader .actions .label {
-    color: #3381d0;
+    color: #8EA86C;
     font-weight: 700;
     margin: 0 0 3px;
 }
@@ -1793,8 +1793,8 @@ a.about-data-link {
     display: inline-block;
 }
 .account-settings-dropdown .goal-settings-selector.open button.dropdown-toggle {
-    background-color: #3381d0;
-    border-color: #3381d0;
+    background-color: #8EA86C;
+    border-color: #8EA86C;
 }
 .account-settings-dropdown .goal-settings-selector.open button.dropdown-toggle .settings-inactive {
     display: none;
@@ -1824,7 +1824,7 @@ a.about-data-link {
     background: #fca886;
 }
 .session-banner.advisor {
-    background: #fca886;
+    background: #FF9933;
 }
 .welcome-banner {
     background-color: #f5f5f5;
@@ -1971,14 +1971,14 @@ a.about-data-link {
     transition: all .4s;
 }
 #footerLinks form textarea {
-    background-image: url(../../img/feedback_icon.png);
+    background-image: url(../../images/feedback_icon.png);
     background-repeat: no-repeat;
     background-position: 6px 6px;
     text-indent: 28px;
 }
 #footerLinks form input {
     display: none;
-    background-image: url(../../img/feedback_email.png);
+    background-image: url(../../images/feedback_email.png);
     background-repeat: no-repeat;
     background-position: 6px 9px;
     text-indent: 28px;
@@ -2100,11 +2100,11 @@ footer .mcafee {
     color: #686868;
 }
 .settings .nav ul li a:hover {
-    color: #3381d0;
+    color: #8EA86C;
 }
 .settings .heading {
     font-size: 22px;
-    color: #3381d0;
+    color: #8EA86C;
     margin: 45px 0 35px;
 }
 .settings .content {
@@ -2112,7 +2112,7 @@ footer .mcafee {
     margin: 0 auto;
 }
 .settings.bank-accounts .nav li.bank-accounts a {
-    color: #3381d0;
+    color: #8EA86C;
 }
 .settings.bank-accounts .inner {
     width: 50%}
@@ -2277,7 +2277,7 @@ footer .mcafee {
     z-index: 1;
     border-radius: 10px;
     border: 1px solid #fff;
-    background: #3381d0;
+    background: #8EA86C;
 }
 .feed-container .feed-panel .feed-item .icon {
     position: absolute;
@@ -2323,7 +2323,7 @@ footer .mcafee {
     margin: 12px 0 0;
     min-width: 100px;
     color: #fff;
-    background-color: #3381d0;
+    background-color: #8EA86C;
     border-radius: 3px;
     padding: 5px;
     text-align: center;
@@ -2367,10 +2367,10 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 a {
-    color: #0d3866;
+    color: #45a018;
 }
 a:hover {
-    color: #3381d0;
+    color: #8EA86C;
 }
 section#mainContent {
     width: 978px;

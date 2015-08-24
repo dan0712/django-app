@@ -12377,7 +12377,7 @@ var requirejs, require, define;
             },
             getBaseDomain: r,
             getBaseSupportUrl: function() {
-                return "http://support.betterment.com"
+                return "http://support.betasmartz.com"
             },
             getNotificationsUrl: function() {
                 return e.getInstance().get("notificationsHost")
@@ -12450,11 +12450,11 @@ var requirejs, require, define;
         };
         return n
     }), define("components/common/scripts/viewHelpers/customerSupport", ["underscore"], function(e) {
-        var t = "support@betterment.com",
-            n = "support@bettermentinstitutional.com",
-            r = "888-428-9482",
-            i = "888-400-1571",
-            s = "888-373-9907";
+        var t = "support@betasmartz.com",
+            n = "support@betasmartz.com",
+            r = "1800-888-8888",
+            i = "1800-888-8888",
+            s = "1800-888-8888";
         return {
             getSupportNumber: function(t) {
                 var n;
@@ -13220,7 +13220,7 @@ var requirejs, require, define;
                             e.clearTimeout();
                             var n = BMT.alert({
                                 title: "Session Timeout",
-                                body: 'As a security measure, Betterment logs you out after a time with little activity.  Click "OK" to stay logged in.',
+                                body: 'As a security measure, Betasmartz logs you out after a time with little activity.  Click "OK" to stay logged in.',
                                 icon: "warning",
                                 handler: function(e) {
                                     BMT.analytics.track("AutoLogoutStopped"), clearInterval(t), u.refreshTimeout()
@@ -13607,7 +13607,7 @@ var requirejs, require, define;
             }
 
             function w(e, t) {
-                var r = "",
+                /*var r = "",
                     i, s, o;
                 r += '\n                        <div class="tlh-status">\n                            <p>\n                                <a href="#" class="open-tlh-config">\n                                    <span class="losses-label">\n                                        <span>Tax Loss Harvesting+</span>\n                                        <span>', i = n["if"].call(e, e && e.tlhEnabled, {
                     hash: {},
@@ -13626,6 +13626,8 @@ var requirejs, require, define;
                 });
                 if (i || i === 0) r += i;
                 return r += "\n                                </div>\n                            </div>\n                        </div>\n                    ", r
+            */
+            return "";
             }
 
             function E(e, t) {
@@ -13989,7 +13991,7 @@ var requirejs, require, define;
         return {
             NEGATIVE_RETURNS_PERCENTAGE_THRESHOLD: -1,
             NEGATIVE_RETURNS_AGE_THRESHOLD_IN_YEARS: 2,
-            NEGATIVE_RETURNS_TIP_STRING: "Temporary losses are more common in the first few years of investing, and the chance of seeing a loss in a Betterment stock portfolio decreases over time."
+            NEGATIVE_RETURNS_TIP_STRING: "Temporary losses are more common in the first few years of investing, and the chance of seeing a loss in a Betasmartz stock portfolio decreases over time."
         }
     }), define("hbs!views/summary/speedometer", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
@@ -14148,7 +14150,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, a) : h.call(t, "personalReturn", a)), s += l((u = n.pct || t && t.pct, a = {
                 hash: {}
-            }, u ? u.call(t, o, 1, a) : h.call(t, "pct", o, 1, a))) + '\n    </div>\n</li>\n\n<li class="investment-return">\n    <div>\n        Time-weighted return\n        <div class="account-returns-help help-icon">\n            The time-weighted return is the return of the Betterment portfolio over the selected time. This is the time-weighted return excluding the impact of your own cashflows and transfers.\n\n            ', o = n["if"].call(t, t && t.timeWeightedPositivePersonalNegative, {
+            }, u ? u.call(t, o, 1, a) : h.call(t, "pct", o, 1, a))) + '\n    </div>\n</li>\n\n<li class="investment-return">\n    <div>\n        Time-weighted return\n        <div class="account-returns-help help-icon">\n            The time-weighted return is the return of the Betasmartz portfolio over the selected time. This is the time-weighted return excluding the impact of your own cashflows and transfers.\n\n            ', o = n["if"].call(t, t && t.timeWeightedPositivePersonalNegative, {
                 hash: {},
                 inverse: c.program(9, g, i),
                 fn: c.program(7, m, i)
@@ -14888,7 +14890,7 @@ var requirejs, require, define;
                 },
                 USER_NAME_EXISTS: {
                     title: "Email Address In Use",
-                    body: "This email address belongs to an existing Betterment customer. Please login if that's your address, try another address, or contact us if you're having trouble."
+                    body: "This email address belongs to an existing Betasmartz customer. Please login if that's your address, try another address, or contact us if you're having trouble."
                 },
                 IRA_HAS_PENDING_RECHARACTERIZATIONS: {
                     title: "Recharacterization Cannot Be Processed",
@@ -14901,13 +14903,13 @@ var requirejs, require, define;
                 BANK_ACCOUNT_EXISTS: {
                     title: "Error",
                     body: function() {
-                        return ["<p>Oops, something didn't work. Sorry about that. If you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
+                        return ["<p>Uh oh! That function did not work, we are sorry about that. if you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
                     }
                 },
                 UNKNOWN: {
                     title: "Error",
                     body: function() {
-                        return ["<p>Oops, something didn't work. Sorry about that. If you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
+                        return ["<p>Uh oh! That function did not work, we are sorry about that. if you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
                     }
                 },
                 TOO_MUCH_RECENT_ACTIVITY: {
@@ -14926,7 +14928,7 @@ var requirejs, require, define;
                 },
                 CSRF_TOKEN_INVALID: {
                     title: "Error",
-                    body: ["<p>Oops, something didn't work. Sorry about that. If you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join(""),
+                    body: ["<p>Uh oh! That function did not work, we are sorry about that. if you continue to have this problem, please contact us at  ", n.getSupportEmail(), ".</p>"].join(""),
                     handler: function() {
                         window.location.reload()
                     }
@@ -25066,7 +25068,7 @@ var requirejs, require, define;
         }
     }), define("views/common/accountStatusView", ["underscore", "common/betterment.views", "hbs!views/common/accountStatus", "components/common/scripts/constants/accountStatus", "components/common/scripts/services/domainService", "components/common/scripts/services/projectorService", "components/common/scripts/constants/colors"], function(e, t, n, r, i, s, o) {
         var u = function() {
-                return '<a target="_blank" href="' + i.brochureHost() + '/advice-projection-methodology/">Learn more</a>'
+                return ''
             },
             a = {
                 hide: {
@@ -25845,7 +25847,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, a) : c.call(t, "netGain", a)), s += l((u = n.formatTaxes || t && t.formatTaxes, a = {
                 hash: {}
-            }, u ? u.call(t, o, a) : c.call(t, "formatTaxes", o, a))) + '</strong> in losses.\n        This may result in tax savings, depending on your tax\n        <span class="no-break">situation.\n            <span class="loss-tax-help-tip tax-help help-icon">\n              Based on estimated gains and losses.  Actual tax result likely to be different depending on securities prices at the moment you execute the trade.  Furthermore, transactions made at brokerages other than Betterment cannot be taken into account, and could affect these estimates.  This is not tax advice.\n            </span>\n        </span>\n    </p>\n\n    <div class="info-tip">\n        <div class="arrow"></div>\n        <div class="text">\n            We used <a href="<%- brochure_url(\'resources/taxes/lowering-your-tax-bill-by-improving-our-cost-basis-accounting-methods/\') %>" target="_blank">TaxMin</a> lot selling, which sells losses before gains to reduce your taxes.\n        </div>\n    </div>\n\n    <hr />\n\n    <div class="breakdown-region"></div>\n</div>\n', s
+            }, u ? u.call(t, o, a) : c.call(t, "formatTaxes", o, a))) + '</strong> in losses.\n        This may result in tax savings, depending on your tax\n        <span class="no-break">situation.\n            <span class="loss-tax-help-tip tax-help help-icon">\n              Based on estimated gains and losses.  Actual tax result likely to be different depending on securities prices at the moment you execute the trade.  Furthermore, transactions made at brokerages other than Betasmartz cannot be taken into account, and could affect these estimates.  This is not tax advice.\n            </span>\n        </span>\n    </p>\n\n    <div class="info-tip">\n        <div class="arrow"></div>\n        <div class="text">\n            We used <a href="<%- brochure_url(\'resources/taxes/lowering-your-tax-bill-by-improving-our-cost-basis-accounting-methods/\') %>" target="_blank">TaxMin</a> lot selling, which sells losses before gains to reduce your taxes.\n        </div>\n    </div>\n\n    <hr />\n\n    <div class="breakdown-region"></div>\n</div>\n', s
         });
         return t.registerPartial("views/taxImpact/taxImpactLoss", n), n
     }), define("hbs!views/taxImpact/taxImpactGain", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/brochureUrl"], function(e, t) {
@@ -25873,7 +25875,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.estimatedTaxes, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '\n            <label class="estimated-taxes-label">\n                Estimated<br />\n                Taxes\n                <div class="tax-help help-icon">\n                    Estimated tax for this transaction only, based on estimated gains and losses and assuming\n                    the highest tax rates of 39.6% federal, 13.3% state, 3.8% medicare surtax and deductibility\n                    of state taxes.\n                    <br />\n                    <br />\n                    Actual tax result likely to be different depending on specific circumstances, including,\n                    but not limited to, the marginal tax rate applicable to you, any subsequent trading activity,\n                    the presence of other capital gains or losses for the year, and securities prices at the\n                    moment you execute the trade.  Furthermore, transactions made at brokerages other than Betterment cannot be taken into account, and could affect these estimates.  This is not tax advice.\n                </div>\n            </label>\n        </h3>\n    </div>\n\n    <hr />\n\n    <div class="breakdown-region"></div>\n</div>\n', s
+            }) : u), s += l(o) + '\n            <label class="estimated-taxes-label">\n                Estimated<br />\n                Taxes\n                <div class="tax-help help-icon">\n                    Estimated tax for this transaction only, based on estimated gains and losses and assuming\n                    the highest tax rates of 39.6% federal, 13.3% state, 3.8% medicare surtax and deductibility\n                    of state taxes.\n                    <br />\n                    <br />\n                    Actual tax result likely to be different depending on specific circumstances, including,\n                    but not limited to, the marginal tax rate applicable to you, any subsequent trading activity,\n                    the presence of other capital gains or losses for the year, and securities prices at the\n                    moment you execute the trade.  Furthermore, transactions made at brokerages other than Betasmartz cannot be taken into account, and could affect these estimates.  This is not tax advice.\n                </div>\n            </label>\n        </h3>\n    </div>\n\n    <hr />\n\n    <div class="breakdown-region"></div>\n</div>\n', s
         });
         return t.registerPartial("views/taxImpact/taxImpactGain", n), n
     }), define("hbs!views/taxImpact/lossesWashed", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/brochureUrl"], function(e, t) {
@@ -27007,7 +27009,7 @@ var requirejs, require, define;
             cardTitle: "Traditional<br />IRA",
             extraClass: "traditional-ira",
             tooltip: function() {
-                return 'Traditional IRA contributions may be tax deductible, and you defer paying taxes on gains until you withdraw in retirement. Consult a tax advisor to see if your contribution is deductible. <a href="' + t.brochureHost() + '/resources/retirement/401ks-and-iras/roth-or-traditional-which-ira-is-right-for-you/" target="_blank">Learn more &gt;</a>'
+                return 'Traditional IRA contributions may be tax deductible, and you defer paying taxes on gains until you withdraw in retirement. Consult a tax advisor to see if your contribution is deductible. '
             },
             disabledTooltip: "Great job, you already have a Traditional IRA. To simplify your retirement saving we allow you to just have one Traditional IRA and one Roth IRA. To add money or roll over a 401(k) or IRA into your Traditional IRA please go to the Transfer page of your account.",
             goalName: "Traditional IRA",
@@ -27022,7 +27024,7 @@ var requirejs, require, define;
             cardTitle: "Roth IRA",
             extraClass: "roth-ira",
             tooltip: function() {
-                return 'Roth IRA contributions are not tax deductible today, but withdrawals are usually tax-free in retirement. Consult a tax advisor for details. <a href="' + t.brochureHost() + '/resources/retirement/401ks-and-iras/roth-or-traditional-which-ira-is-right-for-you/" target="_blank">Learn more &gt;</a>'
+                return 'Roth IRA contributions are not tax deductible today, but withdrawals are usually tax-free in retirement. Consult a tax advisor for details. '
             },
             disabledTooltip: "Great job, you already have a Roth IRA. To simplify your retirement saving we allow you to just have one Traditional IRA and one Roth IRA. To add money or roll over a 401(k) or IRA into your Roth IRA please go to the Transfer page of your account.",
             goalName: "Roth IRA",
@@ -27050,28 +27052,28 @@ var requirejs, require, define;
             cardTitle: "Roll over<br />your IRA/<br />401(k)/403(b)",
             extraClass: "rollover",
             tooltip: function() {
-                return 'Rolling over allows you to move your existing IRA/401(k)/403(b) retirement savings into a Traditional or Roth IRA. <a href="' + t.brochureHost() + '/resources/retirement/401ks-and-iras/the-benefits-of-rolling-over-your-401k-or-403b-into-an-ira/" target="_blank">Learn more &gt;</a>'
+                return 'Rolling over allows you to move your existing IRA/401(k)/403(b) retirement savings into a Traditional or Roth IRA. '
             },
             goalName: "Traditional IRA",
             goalType: "RETIREMENT",
             accountType: n.TRADITIONAL_IRA,
             rollover: !0
         }), s.EMERGENCY = r(s.BASE, {
-            cardTitle: "Safety Net",
+            cardTitle: "Wealth Protection",
             extraClass: "emergency",
             tooltip: function() {
-                return 'We recommend that everyone have a "safety net" or emergency fund to help keep other goals on track in case of unplanned financial situations. <a href="' + t.brochureHost() + '/resources/personal-finance/goals-and-advice/top-3-financial-goals-every-parent-should-have-for-their-family/" target="_blank">Learn more &gt;</a>'
+                return 'We recommend that everyone have a "wealth protection" or emergency fund to help keep other goals on track in case of unplanned financial situations.'
             },
-            goalName: "Safety Net",
+            goalName: "Wealth Protection",
             goalType: "EMERGENCY",
             accountType: n.INVESTING
         }), s.BUILD_WEALTH = r(s.BASE, {
-            cardTitle: "Build Wealth",
+            cardTitle: "Grow Wealth",
             extraClass: "just-save",
             tooltip: function() {
-                return 'Just save and grow your money without a target amount in mind. <a href="' + t.getBaseSupportUrl() + '/customer/portal/articles/1078929-can-i-have-a-goal-without-a-target" target="_blank">Learn more &gt;</a>'
-            },
-            goalName: "Build Wealth",
+                return 'Just save and grow your money without a target amount in mind.'
+                            },
+            goalName: "Grow Wealth",
             goalType: "BUILD_WEALTH",
             accountType: n.INVESTING,
             onSelect: i
@@ -27079,7 +27081,7 @@ var requirejs, require, define;
             cardTitle: "Retirement",
             extraClass: "retirement",
             tooltip: function() {
-                return 'Create a retirement goal if you have already maxed out your tax-advantaged IRAs or cannot open an IRA at this time. <a href="' + t.brochureHost() + '/resources/retirement/planning-ahead/you-arent-saving-enough-for-retirement/" target="_blank">Learn more &gt;</a>'
+                return 'Create a retirement goal if you have already maxed out your tax-advantaged IRAs or cannot open an IRA at this time. '
             },
             goalName: "My Retirement",
             goalType: "RETIREMENT",
@@ -27099,7 +27101,7 @@ var requirejs, require, define;
             cardTitle: "Education",
             extraClass: "education",
             tooltip: function() {
-                return 'Save for your kid&#39;s education or set some money aside for your own educational growth. <a href="' + t.brochureHost() + '/resources/life/saving-for-college-education-options/" target="_blank">Learn more &gt;<a/>'
+                return 'Save for your kid&#39;s education or set some money aside for your own educational growth.'
             },
             goalName: "Education Fund",
             goalType: "EDUCATION",
@@ -27126,7 +27128,7 @@ var requirejs, require, define;
             }
 
             function h(e, t) {
-                return "\n        Register your existing Betterment Securities brokerage account as a Transfer on Death (TOD) account and designate the beneficiaries to receive the account assets upon your death. Adding a beneficiary to this account will supersede any conflicting provisions in any will, trust, or agreement, except for joint accounts. For joint accounts, ownership shall pass to the surviving joint account holder.\n    "
+                return "\n        Register your existing Betasmartz Securities brokerage account as a Transfer on Death (TOD) account and designate the beneficiaries to receive the account assets upon your death. Adding a beneficiary to this account will supersede any conflicting provisions in any will, trust, or agreement, except for joint accounts. For joint accounts, ownership shall pass to the surviving joint account holder.\n    "
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
@@ -27651,7 +27653,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 goal_verb_and_time: function() {
-                    return this.is_retiree_with_retirement_goal() ? "Since you are age " + this.user_age() + " and retired," : this.self.model.isRetirementGoalDisplayedAsAge() ? "You want to retire at the age of " + this.self.model.goalAge() + ", so" : this.self.model.isEmergency() ? "You want to have a safety net, so" : "You want to invest for " + this.term() + ", so"
+                    return this.is_retiree_with_retirement_goal() ? "Since you are age " + this.user_age() + " and retired," : this.self.model.isRetirementGoalDisplayedAsAge() ? "You want to retire at the age of " + this.self.model.goalAge() + ", so" : this.self.model.isEmergency() ? "You want to have a wealth protection, so" : "You want to invest for " + this.term() + ", so"
                 },
                 build_wealth_text: function() {
                     return BMT.accountGroup.isPersonal() ? "Based on your age and goal to build wealth, we set up a portfolio of " + this.allocation_breakdown() + " to maximize your money's potential growth and reduce potential losses." : "Based on your goal type, we set up a portfolio of " + this.allocation_breakdown() + " to maximize your money's potential growth and reduce potential losses. You can customize this on the next screen."
@@ -27754,13 +27756,13 @@ var requirejs, require, define;
                     hash: {}
                 }) : (s = e && e.firmClientAgreementUrl, i = typeof s === a ? s.call(e, {
                     hash: {}
-                }) : s), r += f(i) + '" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor\'s Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betterment).<br/><br/>\n\n            You understand and agree that this is solely an agreement between you and your advisor, and that Betterment and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that Betterment has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify Betterment and its affiliates in connection with any content in your advisory agreement with your advisor.<br/><br/>\n\n            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. Betterment will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br/><br/>\n\n            By checking the above box and clicking submit below, you agree to be legally bound by your advisor\'s advisory agreement\'s terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor\'s advisory agreement by hand.\n        </div>\n        <div class="agreement-error-client agreement-error conversation-text">\n            <span class="bad">You must accept the advisor\'s agreement to continue.</span>\n        </div>\n\n        <hr/>\n    </div>\n', r
+                }) : s), r += f(i) + '" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor\'s Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betterment).<br/><br/>\n\n            You understand and agree that this is solely an agreement between you and your advisor, and that Betasmartz and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that Betasmartz has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify Betasmartz and its affiliates in connection with any content in your advisory agreement with your advisor.<br/><br/>\n\n            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. Betasmartz will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br/><br/>\n\n            By checking the above box and clicking submit below, you agree to be legally bound by your advisor\'s advisory agreement\'s terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor\'s advisory agreement by hand.\n        </div>\n        <div class="agreement-error-client agreement-error conversation-text">\n            <span class="bad">You must accept the advisor\'s agreement to continue.</span>\n        </div>\n\n        <hr/>\n    </div>\n', r
             }
 
             function h(e, t) {
                 var r = "",
                     i, s;
-                return r += '\n    <div class="clearfix tos sep-num-employees">\n        <div class="clearfix">\n            <p>How many employees will be in the plan?</p>\n            <label class="left"><input type="radio" name="sepSingleEmployee" value="true" id="sep-1-employee" data-validation-model="account" data-error-element-selector=".agreement-error-sep-employees">1 employee (myself)</label>\n            <label class="left"><input type="radio" name="sepSingleEmployee" value="false" id="sep-2-plus-employees" data-error-element-selector=".agreement-error-sep-employees">2 or more employees</label>\n        </div>\n\n        <div class="agreement-error agreement-error-multiple-employees">\n            <span class="bad">Currently, Betterment only supports SEP IRA plans with 1 participant. For more information about our SEP IRA options, please contact us at ', (s = n.supportPhoneNumber) ? i = s.call(e, {
+                return r += '\n    <div class="clearfix tos sep-num-employees">\n        <div class="clearfix">\n            <p>How many employees will be in the plan?</p>\n            <label class="left"><input type="radio" name="sepSingleEmployee" value="true" id="sep-1-employee" data-validation-model="account" data-error-element-selector=".agreement-error-sep-employees">1 employee (myself)</label>\n            <label class="left"><input type="radio" name="sepSingleEmployee" value="false" id="sep-2-plus-employees" data-error-element-selector=".agreement-error-sep-employees">2 or more employees</label>\n        </div>\n\n        <div class="agreement-error agreement-error-multiple-employees">\n            <span class="bad">Currently, Betasmartz only supports SEP IRA plans with 1 participant. For more information about our SEP IRA options, please contact us at ', (s = n.supportPhoneNumber) ? i = s.call(e, {
                     hash: {}
                 }) : (s = e && e.supportPhoneNumber, i = typeof s === a ? s.call(e, {
                     hash: {}
@@ -27794,15 +27796,15 @@ var requirejs, require, define;
             }
 
             function y(e, t) {
-                return "\n            Sunwest Trust, Inc. serves as custodian of Betterment IRAs.\n        "
+                return "\n            Sunwest Trust, Inc. serves as custodian of Betasmartz IRAs.\n        "
             }
 
             function b(e, t) {
-                return "\n            These documents pertain only to your relationship with Betterment LLC and Betterment Securities.\n        "
+                return "\n            These documents pertain only to your relationship with Betasmartz LLC and Betasmartz Securities.\n        "
             }
 
             function w(e, t) {
-                return '\n            If you selected to convert your personal account to a joint account, by selecting "Add an owner to my personal account", you represent that you understand and agree that you are transferring your assets out of a personal account and into a joint account, and that your joint account holder will have access to those assets pursuant to the aforementioned agreements. You represent that you understand the nature and consequences of this action and that you do so voluntarily and willingly. You agree to indemnify and hold Betterment and its affiliates harmless from and against any and all losses, liabilities, costs, judgments, arbitration awards, settlements, taxes, penalties, actions, damages, charges, expenses, or fees (including attorneys\' fees and costs of collection) of any nature whatsoever, and claims therefore arising out of or relating to your decision to convert your personal account to a joint account.\n        '
+                return '\n            If you selected to convert your personal account to a joint account, by selecting "Add an owner to my personal account", you represent that you understand and agree that you are transferring your assets out of a personal account and into a joint account, and that your joint account holder will have access to those assets pursuant to the aforementioned agreements. You represent that you understand the nature and consequences of this action and that you do so voluntarily and willingly. You agree to indemnify and hold Betasmartz and its affiliates harmless from and against any and all losses, liabilities, costs, judgments, arbitration awards, settlements, taxes, penalties, actions, damages, charges, expenses, or fees (including attorneys\' fees and costs of collection) of any nature whatsoever, and claims therefore arising out of or relating to your decision to convert your personal account to a joint account.\n        '
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
@@ -27971,7 +27973,7 @@ var requirejs, require, define;
                     return this.self.options.expandHeight || f
                 },
                 agreementTitle: function() {
-                    return this.self.isAdvisedUser() ? "Betterment Institutional customer agreements" : "customer agreements"
+                    return this.self.isAdvisedUser() ? "Betasmartz Institutional customer agreements" : "customer agreements"
                 },
                 agreementFieldName: function() {
                     return this.self.agreementFieldName()
@@ -28455,7 +28457,7 @@ var requirejs, require, define;
                     return t && e.push({
                         key: "tax-advantage",
                         name: "Tax-advantaged Retirement",
-                        tooltip: 'Individual Retirement Accounts (IRA) are given special tax advantages by the IRS. Traditional IRA contributions are generally tax-free today and Roth IRAs are generally tax-free when you retire. If you&#39;re not sure which one is right for you, <a href="' + v.brochureHost() + '/resources/retirement/401ks-and-iras/choosing-between-traditional-and-roth-iras/" target="_blank">Learn more about the differences &gt;</a>'
+                        tooltip: 'Individual Retirement Accounts (IRA) are given special tax advantages by the IRS. Traditional IRA contributions are generally tax-free today and Roth IRAs are generally tax-free when you retire. If you&#39;re not sure which one is right for you, '
                     }), n && (e.push({
                         key: "essentials",
                         name: "Essentials",
@@ -28670,7 +28672,7 @@ var requirejs, require, define;
                     return this.hasCompleteAccount() && (e = this.getTotalInvestedWithPending()), e >= t
                 },
                 allowsIRAs: function() {
-                    return this.isPersonal()
+                    return false
                 },
                 isTrust: function() {
                     return this.get("type") === "TRUST"
@@ -28784,7 +28786,7 @@ var requirejs, require, define;
                     case "best":
                         return "Best";
                     case "classic":
-                        return "Betterment Classic"
+                        return "Betasmartz Classic"
                 } else if (this.isEmployer()) return "Preferred Employer Plan";
                 return "Other"
             },
@@ -30784,7 +30786,7 @@ var requirejs, require, define;
                     return this.account().isIRA() ? this.money(i.ROLLOVER_MAXIMUM) : this.money(i.DEPOSIT_MAXIMUM)
                 },
                 forCreditName: function() {
-                    return this.account().isIRA() ? "Betterment IRAs" : "Betterment Investments"
+                    return this.account().isIRA() ? "Betasmartz IRAs" : "Betasmartz Investments"
                 },
                 hasAmount: function() {
                     return this.self.options.amount
@@ -31804,7 +31806,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/common/noncoveredAlert", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h1>Wait! You have non-covered positions!</h1>\n\n<div class="modal-body">\n    This transaction may sell securities which were transferred in<br/>\n    from an external account with incomplete information.<br/>\n    Betterment will not be able to properly report gains or losses<br/>\n    on the sale of these non-covered securities. Consult your<br/>\n    tax advisor, as you could have additional reporting<br/>\n    obligations on your tax return. Please confirm you wish to<br/>\n    continue with this transaction.<br/>\n</div>\n\n<div class="modal-buttons">\n    <button class="ok">Continue</button>\n    <button class="cancel">Cancel</button>\n</div>'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h1>Wait! You have non-covered positions!</h1>\n\n<div class="modal-body">\n    This transaction may sell securities which were transferred in<br/>\n    from an external account with incomplete information.<br/>\n    Betasmartz will not be able to properly report gains or losses<br/>\n    on the sale of these non-covered securities. Consult your<br/>\n    tax advisor, as you could have additional reporting<br/>\n    obligations on your tax return. Please confirm you wish to<br/>\n    continue with this transaction.<br/>\n</div>\n\n<div class="modal-buttons">\n    <button class="ok">Continue</button>\n    <button class="cancel">Cancel</button>\n</div>'
         });
         return t.registerPartial("views/common/noncoveredAlert", n), n
     }), define("views/common/noncoveredAlertView", ["common/betterment.views", "hbs!views/common/noncoveredAlert"], function(e, t) {
@@ -32188,7 +32190,7 @@ var requirejs, require, define;
                     n = g.getActualWithdrawalAmount(this.model, this.getWithdrawalAmount());
                 return t && t.doesWithdrawalPushBonusBelowThreshold(n) ? function(n) {
                     var r = this.formatter.money,
-                        i = "Are you sure you want to authorize a withdrawal of " + r(e.amount) + ' from <span class="single-ag-only">your Betterment account</span><span class="multi-ag-only">' + BMT.accountGroup.get("name") + "</span> to your account at " + BMT.accountGroup.get("bankAccount").get("description") + "?<br /><br />In order to keep your signup bonus of " + t.get("prizeDescription") + " you must maintain " + r(t.num("requirementAmount")) + " of your initial deposit for another " + t.num("withholdingDaysRemaining") + " days." + (e.distributionType === "ROLL" ? "<br /><br />" + w : "");
+                        i = "Are you sure you want to authorize a withdrawal of " + r(e.amount) + ' from <span class="single-ag-only">your Betasmartz account</span><span class="multi-ag-only">' + BMT.accountGroup.get("name") + "</span> to your account at " + BMT.accountGroup.get("bankAccount").get("description") + "?<br /><br />In order to keep your signup bonus of " + t.get("prizeDescription") + " you must maintain " + r(t.num("requirementAmount")) + " of your initial deposit for another " + t.num("withholdingDaysRemaining") + " days." + (e.distributionType === "ROLL" ? "<br /><br />" + w : "");
                     BMT.alert({
                         icon: "warning",
                         title: "Please Confirm Transfer",
@@ -32561,7 +32563,7 @@ var requirejs, require, define;
             }
 
             function T(e, t) {
-                return '\n    <div class="info-tip inactive clearfix">\n        <div class="icon">\n            <div class="lightbulb-tip-icon"></div>\n        </div>\n        <div class="text">\n            Automatic deposits save you time and taxes.<br>\n            <a target="_blank" class="bold-text" href="http://support.betterment.com/customer/portal/articles/987453-how-and-when-is-my-portfolio-rebalanced-">Learn More ></a>\n        </div>\n    </div>\n'
+                return '\n    <div class="info-tip inactive clearfix">\n        <div class="icon">\n            <div class="lightbulb-tip-icon"></div>\n        </div>\n        <div class="text">\n            Automatic deposits save you time and taxes.<br>\n            \n        </div>\n    </div>\n'
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
@@ -33078,7 +33080,7 @@ var requirejs, require, define;
             }
 
             function O(e, t) {
-                return '\n            <div class="dividendHelp help-icon right">\n                A dividend is a payment that stocks and bonds make to investors as a reward for owning them. Dividends are paid out to investors regularly, and Betterment automatically reinvests them for you, buying you more shares.\n            </div>\n        '
+                return '\n            <div class="dividendHelp help-icon right">\n                A dividend is a payment that stocks and bonds make to investors as a reward for owning them. Dividends are paid out to investors regularly, and Betasmartz automatically reinvests them for you, buying you more shares.\n            </div>\n        '
             }
 
             function M(e, t) {
@@ -34049,7 +34051,7 @@ var requirejs, require, define;
                 this.meterCompleteCount++, this.$("#circle-" + this.meterCompleteCount).addClass("filled-blue-background", 1e3), this.meterCompleteCount > 1 && this.$("#line-" + this.meterCompleteCount).addClass("filled-blue-background", 1e3), this.meterCompleteCount > 2 && (this.$("#referralHeader").text("You're almost there!"), this.$("#referralSubheader").html('Talk to your friends to make it happen. Get some tips <a class="referral-blog-post" target="_blank" data-track-event="ElementClicked" data-track-location="Invite" data-track-type="Link" data-track-name="ReferralFriendAdvice" data-track-module="Invite" href="' + u.brochureHost() + '/resources/personal-finance/goals-and-advice/how-talk-about-money-friends-family/">' + "from this blog post.</a>"), this.$("#emailInviteButton").text("Invite more friends"), this.$(".input-field").hide(), this.$(".emails").hide())
             },
             resetMeterInvites: function() {
-                this.meterCompleteCount = 0, this.$(".input-field").show(), this.$(".emails").show(), e("#referralHeader").html("Give Betterment to 3 friends and earn <strong>" + this.templateHelpers.headerCopy() + "</strong>"), this.$("#referralSubheader").html(this.templateHelpers.subHeaderCopy()), this.$("#emailInviteButton").text("Send invite" + (this.hasMoreThanOneInvite() ? "s" : "")), this.$(".circle").removeClass("filled-blue-background", 1e3), this.$(".line").removeClass("filled-blue-background", 1e3)
+                this.meterCompleteCount = 0, this.$(".input-field").show(), this.$(".emails").show(), e("#referralHeader").html("Give Betasmartz to 3 friends and earn <strong>" + this.templateHelpers.headerCopy() + "</strong>"), this.$("#referralSubheader").html(this.templateHelpers.subHeaderCopy()), this.$("#emailInviteButton").text("Send invite" + (this.hasMoreThanOneInvite() ? "s" : "")), this.$(".circle").removeClass("filled-blue-background", 1e3), this.$(".line").removeClass("filled-blue-background", 1e3)
             },
             addEmailInvite: function(n) {
                 if (this.meterCompleteCount > 2) {
@@ -44343,7 +44345,7 @@ var requirejs, require, define;
             }
         };
         return e.View.extend({
-            template: "#advice/adviceAccount",
+            template: "#allocation/adviceAccount",
             tagName: "li",
             className: "adviceAccount",
             options: {
@@ -44693,7 +44695,7 @@ var requirejs, require, define;
                             "class": "term no-tooltip"
                         });
                         var l = this.madlib_input(f, r);
-                        i.isBuildWealth() && !i.goalTerm() ? e = l : i.isEmergency() ? e = "I want my safety net funded in " + l + " years." : e = "I may need this money in " + l + " years."
+                        i.isBuildWealth() && !i.goalTerm() ? e = l : i.isEmergency() ? e = "I want my wealth protection funded in " + l + " years." : e = "I may need this money in " + l + " years."
                     }
                     return this.text_wrapper(e)
                 },
@@ -44708,7 +44710,7 @@ var requirejs, require, define;
                     if (s.isEmergency()) r = "If you're not sure, 6x your essential monthly expenses is a good rule of thumb.", u = this.madlib_input(t.extend({
                         name: i,
                         "data-help-content": r
-                    }, o, b)), e = "I would like to have $" + u + " as a Safety Net for unexpected expenses.";
+                    }, o, b)), e = "I would like to have $" + u + " as a Wealth Protection for unexpected expenses.";
                     else if (s.isRetirementGoalDisplayedAsAge()) r = "If you're not sure, 8x your estimated income before retirement is a good rule of thumb. You can always change this later.", u = this.madlib_input(t.extend({
                         name: i,
                         "data-help-content": r
@@ -45199,15 +45201,15 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.rolloverSelector, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '\n                    <span data-hide="view:has_selected_rollover < view.selectedRollover">\n                        into a <span class="ira-name grey">Betterment IRA</span>.\n                    </span>\n                    <span data-show="view:show_rollover_account_type < view.selectedRollover">\n                        into a <span class="ira-name grey"></span>.\n                    </span>\n                    <span data-show="view:show_fund_type_selector < view.selectedRollover">\n                        <span style="margin-left: 10px;">\n                            This plan contains ', (u = n.fundTypeSelector) ? o = u.call(t, {
+            }) : u), s += f(o) + '\n                    <span data-hide="view:has_selected_rollover < view.selectedRollover">\n                        into a <span class="ira-name grey">Betasmartz IRA</span>.\n                    </span>\n                    <span data-show="view:show_rollover_account_type < view.selectedRollover">\n                        into a <span class="ira-name grey"></span>.\n                    </span>\n                    <span data-show="view:show_fund_type_selector < view.selectedRollover">\n                        <span style="margin-left: 10px;">\n                            This plan contains ', (u = n.fundTypeSelector) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.fundTypeSelector, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '.\n                        </span>\n                    </span>\n                    <span data-show="view:show_account_selector < view.selectedRollover">\n                        <span style="margin-left: 10px;">\n                            into a Betterment <span class="account-selector"></span>.\n                        </span>\n                    </span>\n                </span>\n\n                <span data-show="view:show_provider < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <span class="madlib-section">\n                        My old retirement provider is\n                        <span data-show="view:show_other_provider < view.selectedProvider">\n                            <input type="text" class="blank-line" name="previousProvider" data-help-content="Enter the name of your old retirement provider." />\n                        </span>\n                        ', (u = n.providerSelector) ? o = u.call(t, {
+            }) : u), s += f(o) + '.\n                        </span>\n                    </span>\n                    <span data-show="view:show_account_selector < view.selectedRollover">\n                        <span style="margin-left: 10px;">\n                            into a Betasmartz <span class="account-selector"></span>.\n                        </span>\n                    </span>\n                </span>\n\n                <span data-show="view:show_provider < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <span class="madlib-section">\n                        My old retirement provider is\n                        <span data-show="view:show_other_provider < view.selectedProvider">\n                            <input type="text" class="blank-line" name="previousProvider" data-help-content="Enter the name of your old retirement provider." />\n                        </span>\n                        ', (u = n.providerSelector) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.providerSelector, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_default_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m rolling over an account with approximately\n                        $<input type="text" class="blank-line money" name="approximateValue" data-help-content="This can be an estimate." money-input />.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_direct_transfer_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m ready to begin a direct transfer now.\n                    </span>\n\n                </span>\n\n                <div class="clear-left tos-area" data-show="view:should_create_account < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <p>Since you are adding an IRA, we need you to agree to the IRA terms below.</p>\n                    <div class="terms-of-service"></div>\n                </div>\n            </div>\n            <div class="next-step">\n                <div class="vertical-align">\n                    <span class="next-step-text">\n\n                        <!-- if the rollover type requires matched/unmatched show the checkbox for that -->\n                        <span class="match-line" data-show="view:show_matched < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <input type="checkbox" name="matched" />\n                            My employer has matched my contributions to my\n                            <span data-html="view:rollover_label < view.selectedRollover"></span>\n                        </span>\n\n                        <!-- if the rollover type Does NOT require matched/unmatched, show a FAQ link -->\n                        <span data-hide="view:hide_help < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            Not sure which plan you currently have?\n                            <a href="http://support.betterment.com/customer/portal/articles/1080876-how-do-i-know-what-type-of-retirement-account-i-have" target="_blank">Learn more about questions you should ask &gt;</a>\n                        </span>\n\n                        <span data-show="view:show_fund_type_both < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support both">\n                                Having mixed Traditional and Roth funds is a special case, so we ask that you call us at <strong class="bold-text">888.428.9482</strong> or email <a href="mailto:support@betterment.com">support@betterment.com</a> so we can walk you through the process.\n                            </span>\n                        </span>\n\n                        <span data-show="view:show_fund_type_not_sure < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support not-sure">\n                                Generally, if you deducted your contributions from your income, they are Traditional funds.  If your employer made contributions, such as a match, they are Traditional funds.  Roth funds are post-tax.\n                                <br />\n                                <br />\n                                If you still are not sure, call your plan provider.  For further assistance, call us at <strong class="bold-text">888.428.9482</strong>.\n                            </span>\n                        </span>\n\n                    </span>\n                    <button class="right orange ok"\n                        data-enabled="view:enable_button < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider view.approximateValue view.termsAcceptance"\n                        data-text="view:button_text < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider"\n                        data-class="view:button_class < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    </button>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n', s
+            }) : u), s += f(o) + '.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_default_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m rolling over an account with approximately\n                        $<input type="text" class="blank-line money" name="approximateValue" data-help-content="This can be an estimate." money-input />.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_direct_transfer_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m ready to begin a direct transfer now.\n                    </span>\n\n                </span>\n\n                <div class="clear-left tos-area" data-show="view:should_create_account < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <p>Since you are adding an IRA, we need you to agree to the IRA terms below.</p>\n                    <div class="terms-of-service"></div>\n                </div>\n            </div>\n            <div class="next-step">\n                <div class="vertical-align">\n                    <span class="next-step-text">\n\n                        <!-- if the rollover type requires matched/unmatched show the checkbox for that -->\n                        <span class="match-line" data-show="view:show_matched < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <input type="checkbox" name="matched" />\n                            My employer has matched my contributions to my\n                            <span data-html="view:rollover_label < view.selectedRollover"></span>\n                        </span>\n\n                        <!-- if the rollover type Does NOT require matched/unmatched, show a FAQ link -->\n                        <span data-hide="view:hide_help < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            Not sure which plan you currently have?\n                            \n                        </span>\n\n                        <span data-show="view:show_fund_type_both < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support both">\n                                Having mixed Traditional and Roth funds is a special case, so we ask that you call us at <strong class="bold-text">888.428.9482</strong> or email <a href="mailto:support@betterment.com">support@betterment.com</a> so we can walk you through the process.\n                            </span>\n                        </span>\n\n                        <span data-show="view:show_fund_type_not_sure < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support not-sure">\n                                Generally, if you deducted your contributions from your income, they are Traditional funds.  If your employer made contributions, such as a match, they are Traditional funds.  Roth funds are post-tax.\n                                <br />\n                                <br />\n                                If you still are not sure, call your plan provider.  For further assistance, call us at <strong class="bold-text">888.428.9482</strong>.\n                            </span>\n                        </span>\n\n                    </span>\n                    <button class="right orange ok"\n                        data-enabled="view:enable_button < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider view.approximateValue view.termsAcceptance"\n                        data-text="view:button_text < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider"\n                        data-class="view:button_class < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    </button>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/advice/rolloverNarrative", n), n
     }), define("views/advice/rolloverNarrativeView", ["jquery", "underscore", "common/betterment.views", "components/portfolio/scripts/services/portfolioSetService", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "models/rolloverFollowup", "models/account", "components/common/scripts/models/appData", "views/common/inheritedIRAWarningView", "views/common/termsOfServiceView", "views/advice/rolloverAccountSelectorView", "hbs!views/advice/rolloverNarrative", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
@@ -45461,7 +45463,7 @@ var requirejs, require, define;
                 return this.selectedFundType || v.UNKNOWN
             },
             _getName: function() {
-                return p.getDisplayName(this._getAccountType()) || "Betterment IRA"
+                return p.getDisplayName(this._getAccountType()) || "Betasmartz IRA"
             },
             _isRealFundType: function() {
                 return o.Model.isRealFundType(this._getFundType())
@@ -46242,7 +46244,7 @@ var requirejs, require, define;
                         order: 0
                     },
                     STRATEGY: {
-                        title: "Betterment Allocations",
+                        title: "Betasmartz Allocations",
                         order: 1
                     },
                     BENCHMARK: {
@@ -46579,7 +46581,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<div class="performance-graph">\n    <svg class="graph"></svg>\n\n    <!-- Tooltip -->\n    <div class="hover-tooltip ui-tooltip qtip ui-tooltip-default ui-tooltip-rounded ui-tooltip-pos-rc ui-tooltip-focus">\n        <table class="chart-details returns-graph" border="0">\n            <tr>\n                <td><h3 class="tooltip-date"></h3></td>\n                <td>Returns</td>\n                <td>Bonds/Stocks</td>\n            </tr>\n        </table>\n    </div>\n\n    <div class="graph-helper">\n        <div class="helper-group">\n            <a class="view-about right" href="#">About this data</a>\n        </div>\n    </div>\n</div>\n\n<div id="aboutDataCopy" class="start-warning">\n    <p><strong>% Returns for data with different starting points should not be compared.</strong></p>\n</div>\n\n<div id="aboutDataCopy">\n    <p><strong>About the data</strong></p>\n    <p>\n    This graph shows the time-weighted return of your portfolio and comparisons at the selected time points.  Time-weighted returns compensate for external cash flows such as deposits, withdrawals, and dividends which are inherent in a typical portfolio.  This allows apples-to-apples comparison to other possible Betterment allocations and benchmarks where similar flows may not have occurred.  <a href="', (u = n.timeWeightedReturnsLink) ? o = u.call(t, {
+            return s += '<div class="performance-graph">\n    <svg class="graph"></svg>\n\n    <!-- Tooltip -->\n    <div class="hover-tooltip ui-tooltip qtip ui-tooltip-default ui-tooltip-rounded ui-tooltip-pos-rc ui-tooltip-focus">\n        <table class="chart-details returns-graph" border="0">\n            <tr>\n                <td><h3 class="tooltip-date"></h3></td>\n                <td>Returns</td>\n                <td>Bonds/Stocks</td>\n            </tr>\n        </table>\n    </div>\n\n    <div class="graph-helper">\n        <div class="helper-group">\n            <a class="view-about right" href="#">About this data</a>\n        </div>\n    </div>\n</div>\n\n<div id="aboutDataCopy" class="start-warning">\n    <p><strong>% Returns for data with different starting points should not be compared.</strong></p>\n</div>\n\n<div id="aboutDataCopy">\n    <p><strong>About the data</strong></p>\n    <p>\n    This graph shows the time-weighted return of your portfolio and comparisons at the selected time points.  Time-weighted returns compensate for external cash flows such as deposits, withdrawals, and dividends which are inherent in a typical portfolio.  This allows apples-to-apples comparison to other possible Betasmartz allocations and benchmarks where similar flows may not have occurred.  <a href="', (u = n.timeWeightedReturnsLink) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.timeWeightedReturnsLink, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -47267,7 +47269,7 @@ var requirejs, require, define;
                 fn: u.program(1, a, i)
             });
             if (o || o === 0) s += o;
-            s += ' />\n                <label>News about Betterment (e.g., new features)</label>\n            </li>\n            <li>\n                <input type="checkbox" name="specialOffer" ', o = n["if"].call(t, t && t.specialOffer, {
+            s += ' />\n                <label>News about Betasmartz (e.g., new features)</label>\n            </li>\n            <li>\n                <input type="checkbox" name="specialOffer" ', o = n["if"].call(t, t && t.specialOffer, {
                 hash: {},
                 inverse: u.noop,
                 fn: u.program(1, a, i)
@@ -47431,7 +47433,7 @@ var requirejs, require, define;
                 o, u = "function",
                 a = this.escapeExpression,
                 f = this;
-            s += '<h1>Default Account Preferences</h1>\n<div class="description">\n    The account that you select to be your default account will be displayed when you log in to your Betterment account.  Selecting a default account does not change how we manage your portfolio.\n</div>\n<div class="clearfix"></div>\n\n<form method="POST" class="defaultAccountPreferences" action="#">\n    <h2>Select Default Betterment Account</h2>\n    <ul>\n        ', o = n.each.call(t, t && t.accountGroups, {
+            s += '<h1>Default Account Preferences</h1>\n<div class="description">\n    The account that you select to be your default account will be displayed when you log in to your Betasmartz account.  Selecting a default account does not change how we manage your portfolio.\n</div>\n<div class="clearfix"></div>\n\n<form method="POST" class="defaultAccountPreferences" action="#">\n    <h2>Select Default Betasmartz Account</h2>\n    <ul>\n        ', o = n.each.call(t, t && t.accountGroups, {
                 hash: {},
                 inverse: f.noop,
                 fn: f.program(1, l, i)
@@ -47479,7 +47481,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<h1>Link External Accounts</h1>\n<div class="description">\n    Link all accounts to get the most accurate advice during your consultation. Service provided by Quovo.\n    <div class="quovo-tip help-icon">\n        This functionality is provided by Quovo, a third party service with which Betterment has\n        partnered. Use of Quovo is completely optional. By using this service and thereby Quovo,\n        you understand that you are sending your personal data to a third party that Betterment\n        cannot control, agree to do so, and accept all the associated risks. By using this functionality\n        and Quovo through Betterment, you agree to hold Betterment harmless from losses of any kind\n        that may result from Quovo\'s use, misuse, or loss of your personal information. You also agree\n        to abide by Quovo\'s <a href="https://www.quovo.com/splash/terms.php" target="_blank">Terms of Use</a>.\n    </div>\n</div>\n<div class="clearfix"></div>\n\n<iframe src="', (u = n.quovoIframeUrl) ? o = u.call(t, {
+            return s += '<h1>Link External Accounts</h1>\n<div class="description">\n    Link all accounts to get the most accurate advice during your consultation. Service provided by Quovo.\n    <div class="quovo-tip help-icon">\n        This functionality is provided by Quovo, a third party service with which Betasmartz has\n        partnered. Use of Quovo is completely optional. By using this service and thereby Quovo,\n        you understand that you are sending your personal data to a third party that Betterment\n        cannot control, agree to do so, and accept all the associated risks. By using this functionality\n        and Quovo through Betterment, you agree to hold Betasmartz harmless from losses of any kind\n        that may result from Quovo\'s use, misuse, or loss of your personal information. You also agree\n        to abide by Quovo\'s <a href="https://www.quovo.com/splash/terms.php" target="_blank">Terms of Use</a>.\n    </div>\n</div>\n<div class="clearfix"></div>\n\n<iframe src="', (u = n.quovoIframeUrl) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.quovoIframeUrl, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -47944,7 +47946,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.advisedFeeTypeDisplayAmount, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for Betterment and your Investment Advisor. For more details, please see your respective customer agreements. Your Betterment customer agreements can be found ' + l((u = n.link || t && t.link, a = {
+            }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for Betasmartz and your Investment Advisor. For more details, please see your respective customer agreements. Your Betasmartz customer agreements can be found ' + l((u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.advisorAgreementLink, a) : c.call(t, "link", t && t.advisorAgreementLink, a))) + '.\n            </div>\n        </span>\n        <span class="unadvised-user-only">\n            <span class="item-content">', (u = n.feeTypeDisplayName) ? o = u.call(t, {
                 hash: {}
@@ -48121,7 +48123,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, a) : c.call(t, "bestMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' or more</p>\n\n                <p class="or-text"><span class="bold-text">- includes -</span></p>\n\n                <p class="explanation">\n                <span class="feature dotted-underline" id="customHelp">\n                    Personal Consultation\n                    <span class="help-content">A Betterment financial professional will work with you to discuss your needs and create your personalized financial plan.</span>\n                </span> if your balance is ', o = (u = n.consultationMinimum || t && t.consultationMinimum, a = {
+            }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' or more</p>\n\n                <p class="or-text"><span class="bold-text">- includes -</span></p>\n\n                <p class="explanation">\n                <span class="feature dotted-underline" id="customHelp">\n                    Personal Consultation\n                    <span class="help-content">A Betasmartz financial professional will work with you to discuss your needs and create your personalized financial plan.</span>\n                </span> if your balance is ', o = (u = n.consultationMinimum || t && t.consultationMinimum, a = {
                 hash: {}
             }, u ? u.call(t, a) : c.call(t, "consultationMinimum", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
@@ -49746,7 +49748,7 @@ var requirejs, require, define;
                 },
                 subjectToBackupWithholding: {
                     title: "Are you sure you are subject to backup withholding?",
-                    body: "If you are subject to backup witholding, we cannot open an account for you. Most people are NOT subject to backup withholding.<br /><br />Backup withholding is a 28% tax which is withheld from any taxable activity, such as the posting of a dividend or the sale of securities.<br /><br />IMPORTANT: if you have been notified by the IRS concerning your backup withholding status, you must state so when opening a Betterment account. Also, please be aware that Betterment cannot provide any advice concerning tax matters, all questions should be directed to a tax advisor or the IRS."
+                    body: "If you are subject to backup witholding, we cannot open an account for you. Most people are NOT subject to backup withholding.<br /><br />Backup withholding is a 28% tax which is withheld from any taxable activity, such as the posting of a dividend or the sale of securities.<br /><br />IMPORTANT: if you have been notified by the IRS concerning your backup withholding status, you must state so when opening a Betasmartz account. Also, please be aware that Betasmartz cannot provide any advice concerning tax matters, all questions should be directed to a tax advisor or the IRS."
                 }
             },
             extraFields: ["accountType"],
@@ -50889,7 +50891,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.sourceProviderName, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + ' IRA Account Number</label>\n                    <span class="input-area">\n                        <input class="white" type="text" name="sourceAccountNumber" placeholder="Ex. 109238123" autofocus="autofocus"/>\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n                <div class="input-line" data-field="fullRollover">\n\n                    <label class="transfer-type-label">Select type of transfer</label>\n\n                    <div class="no-label transfer-type">\n                        <span class="input-area radio-option">\n                            <input class="white full-rollover" type="radio" name="fullRollover" value="true" checked />\n                            Transfer Full Balance\n                        </span>\n                        <span class="input-area radio-option">\n                            <input class="white partial-rollover" type="radio" name="fullRollover" value="false" />\n                            Transfer Partial Balance\n                        </span>\n                    </div>\n\n                    <label class="amount-label"></label>\n\n                    <span class="input-area">\n                        <span class="almighty-dollar">$</span>\n                        <input class="money" money-input="int" type="text" name="amount" placeholder="Dollar amount" />\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n            </section>\n        </article>\n\n        <hr />\n\n        <div class="legal-text">\n            By proceeding with form submission, you:\n            <ul>\n                <li>\n                    Direct Betterment and the delivering firm to act on all instructions given on this form, including transferring assets to Betterment.\n                </li>\n                <li>\n                    Accept that any assets not readily transferable might not be transferred within the time frames set by FINRA or other applicable authorities.\n                </li>\n                <li>\n                    Accept that Betterment is not responsible for changes in the value of assets that may occur during the transfer process.\n                </li>\n                <li>\n                    Affirm that you are aware of any tax or financial implications that may arise in connection with this transfer or with the sale or liquidation of any assets prior to transfer, including penalties, fees, financial losses, or losses of product features or benefits.\n                </li>\n            </ul>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="complete-form" disabled="disabled">', (u = n.proceedButtonText) ? o = u.call(t, {
+            }) : u), s += f(o) + ' IRA Account Number</label>\n                    <span class="input-area">\n                        <input class="white" type="text" name="sourceAccountNumber" placeholder="Ex. 109238123" autofocus="autofocus"/>\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n                <div class="input-line" data-field="fullRollover">\n\n                    <label class="transfer-type-label">Select type of transfer</label>\n\n                    <div class="no-label transfer-type">\n                        <span class="input-area radio-option">\n                            <input class="white full-rollover" type="radio" name="fullRollover" value="true" checked />\n                            Transfer Full Balance\n                        </span>\n                        <span class="input-area radio-option">\n                            <input class="white partial-rollover" type="radio" name="fullRollover" value="false" />\n                            Transfer Partial Balance\n                        </span>\n                    </div>\n\n                    <label class="amount-label"></label>\n\n                    <span class="input-area">\n                        <span class="almighty-dollar">$</span>\n                        <input class="money" money-input="int" type="text" name="amount" placeholder="Dollar amount" />\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n            </section>\n        </article>\n\n        <hr />\n\n        <div class="legal-text">\n            By proceeding with form submission, you:\n            <ul>\n                <li>\n                    Direct Betasmartz and the delivering firm to act on all instructions given on this form, including transferring assets to Betterment.\n                </li>\n                <li>\n                    Accept that any assets not readily transferable might not be transferred within the time frames set by FINRA or other applicable authorities.\n                </li>\n                <li>\n                    Accept that Betasmartz is not responsible for changes in the value of assets that may occur during the transfer process.\n                </li>\n                <li>\n                    Affirm that you are aware of any tax or financial implications that may arise in connection with this transfer or with the sale or liquidation of any assets prior to transfer, including penalties, fees, financial losses, or losses of product features or benefits.\n                </li>\n            </ul>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="complete-form" disabled="disabled">', (u = n.proceedButtonText) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.proceedButtonText, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -51039,7 +51041,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.amount, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '\n\n        <div class="explanation-copy">\n        Sign the transfer request below using your mouse\n        </div>\n\n        <div class="signature-pad unsigned">\n            <div class="wizard-buttons">\n                <button class="cancel clear-signature">Clear</button>\n            </div>\n        </div>\n\n        <div class="legal-text">\n            <p>\n                I understand that attaching my e-signature is the legal equivalent of submitting a document signed by hand, and that clicking the “Sign &amp; Submit” button manifests my desire and intent to transfer my IRA to Betterment.\n            </p>\n            <p>\n                Betterment uses a third-party service to send faxes on your behalf. Per its policies, this third-party service keeps your faxed information confidential; you may review its privacy policies <a href="http://www.interfax.net/en/privacy" target="_blank">here</a>. By submitting this form you acknowledge and accept the use of this third-party service.\n            </p>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="ok submit-signature">Sign &amp; Submit To ', (u = n.sourceProviderName) ? o = u.call(t, {
+            }) : u), s += f(o) + '\n\n        <div class="explanation-copy">\n        Sign the transfer request below using your mouse\n        </div>\n\n        <div class="signature-pad unsigned">\n            <div class="wizard-buttons">\n                <button class="cancel clear-signature">Clear</button>\n            </div>\n        </div>\n\n        <div class="legal-text">\n            <p>\n                I understand that attaching my e-signature is the legal equivalent of submitting a document signed by hand, and that clicking the “Sign &amp; Submit” button manifests my desire and intent to transfer my IRA to Betterment.\n            </p>\n            <p>\n                Betasmartz uses a third-party service to send faxes on your behalf. Per its policies, this third-party service keeps your faxed information confidential; you may review its privacy policies <a href="http://www.interfax.net/en/privacy" target="_blank">here</a>. By submitting this form you acknowledge and accept the use of this third-party service.\n            </p>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="ok submit-signature">Sign &amp; Submit To ', (u = n.sourceProviderName) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.sourceProviderName, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -52133,7 +52135,7 @@ var requirejs, require, define;
                 fn: c.program(7, m, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n        <span class="unadvised-user-only">Betterment </span>\n        ', (u = n.name) ? o = u.call(t, {
+            return s += '\n        <span class="unadvised-user-only">Betasmartz </span>\n        ', (u = n.name) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.name, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -53092,7 +53094,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = n.helperMissing,
                 f = this.escapeExpression;
-            return s += '<h1>You\'re retired? That\'s great!</h1>\n<div class="body">\n    <p class="unadvised-user-only">\n        Betterment is great for retirees, but this retirement planning tool is only useful if you are not yet retired.\n    </p>\n    <p class="advised-user-only">\n        This service is great for retirees, but this retirement planning tool is only useful if you are not yet retired.\n    </p>\n    <p>\n        If you are retired already and would like draw income from your investments, use the Advice tab to create a\n        Retirement Income goal or change the type of an existing goal to Retirement Income. <span class="unadvised-user-only">' + f((o = n.link || t && t.link, u = {
+            return s += '<h1>You\'re retired? That\'s great!</h1>\n<div class="body">\n    <p class="unadvised-user-only">\n        Betasmartz is great for retirees, but this retirement planning tool is only useful if you are not yet retired.\n    </p>\n    <p class="advised-user-only">\n        This service is great for retirees, but this retirement planning tool is only useful if you are not yet retired.\n    </p>\n    <p>\n        If you are retired already and would like draw income from your investments, use the Advice tab to create a\n        Retirement Income goal or change the type of an existing goal to Retirement Income. <span class="unadvised-user-only">' + f((o = n.link || t && t.link, u = {
                 hash: {}
             }, o ? o.call(t, t && t.retireeFAQLink, u) : a.call(t, "link", t && t.retireeFAQLink, u))) + '</span>\n    </p>\n\n</div>\n<div class="buttons">\n    <button class="blue ok">Continue to Retiree Advice</button>\n    <button class="silver cancel">Cancel</button>\n</div>\n', s
         });
@@ -53459,7 +53461,7 @@ var requirejs, require, define;
                 fn: c.program(1, p, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n\n        <h3 class="social-security-title">\n            Social Security Benefit\n            <div class="help-icon social-security">\n                <span class="help-content">\n                </span>\n            </div>\n        </h3>\n        <div class="value">\n            <div class="social-security-selector"></div>\n        </div>\n\n    </div>\n\n    <div class="right">\n\n        <h2 class="graph-title">Annual Spending at Retirement (today\'s dollars)</h2>\n\n        <div class="graph-region"></div>\n\n        <a class="expand-regulatory">What do "likely" and "conservative" mean? <span class="arrow">&rsaquo;</span></a>\n\n        <div class="expandable regulatory">\n            <p>"Likely" represents a 60% likelihood of the portfolio reaching its goal target, which is more conservative\n            than the average probability.</p>\n\n            <p>"Conservative" represents a 97.5% likelihood of the portfolio reaching its goal target, which approximates\n            a cautious "worst case" approach.</p>\n        </div>\n\n        <p class="unadvised-user-only regulatory">Projections and advice assume expected returns and volatility of Betterment\'s portfolio.\n        If your non-Betterment accounts are not invested similarly to Betterment\'s portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
+            return s += '\n\n        <h3 class="social-security-title">\n            Social Security Benefit\n            <div class="help-icon social-security">\n                <span class="help-content">\n                </span>\n            </div>\n        </h3>\n        <div class="value">\n            <div class="social-security-selector"></div>\n        </div>\n\n    </div>\n\n    <div class="right">\n\n        <h2 class="graph-title">Annual Spending at Retirement (today\'s dollars)</h2>\n\n        <div class="graph-region"></div>\n\n        <a class="expand-regulatory">What do "likely" and "conservative" mean? <span class="arrow">&rsaquo;</span></a>\n\n        <div class="expandable regulatory">\n            <p>"Likely" represents a 60% likelihood of the portfolio reaching its goal target, which is more conservative\n            than the average probability.</p>\n\n            <p>"Conservative" represents a 97.5% likelihood of the portfolio reaching its goal target, which approximates\n            a cautious "worst case" approach.</p>\n        </div>\n\n        <p class="unadvised-user-only regulatory">Projections and advice assume expected returns and volatility of Betterment\'s portfolio.\n        If your non-Betasmartz accounts are not invested similarly to Betterment\'s portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.projectionDisclaimerLink, a) : h.call(t, "link", t && t.projectionDisclaimerLink, a))) + '</p>\n\n        <p class="advised-user-only regulatory">Projections and advice assume expected returns and volatility of this portfolio.\n        If your external accounts are not invested similarly to this portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
                 hash: {}
@@ -54387,7 +54389,7 @@ var requirejs, require, define;
                 }
             },
             l = "Make a one-time contribution or use Automatic Deposits to save throughout the year.",
-            c = "Contribute to your spouse's IRA at Betterment or other provider.",
+            c = "Contribute to your spouse's IRA at Betasmartz or other provider.",
             h = "Contribute to your spouse's IRA here or at an other provider.",
             p = "Taxable or Employer Plan";
         return t.View.extend({
@@ -55474,7 +55476,7 @@ var requirejs, require, define;
                 o, u, a, f = "function",
                 l = this.escapeExpression,
                 c = n.helperMissing;
-            return s += '<div class="inner">\n    <h1>Check your eligibility for <span class="blue">Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>\n\n    <div class="clearfix content">\n        <div class="step1 white-box">\n            <h3>\n                <span class="blue">Step 1:</span> Spousal Account\n                <div class="spouse-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting+ if your spouse has a Betterment account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </div>\n            </h3>\n            <p>Do you have a spouse who currently has a funded Betterment account or IRA?</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-spouse" value="yes" id="haveSpouseYes" />\n                <label for="haveSpouseYes">Yes</label>\n                <input type="radio" name="have-spouse" value="no" id="haveSpouseNo" />\n                <label for="haveSpouseNo">No</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting+ if your spouse has a Betterment account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n\n        <div class="step2 white-box">\n            <h3>\n                <span class="blue">Step 2:</span> Other Accounts\n                <div class="joint-acct-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss Harvesting+ if you have other accounts at Betterment.\n                </div>\n            </h3>\n            <p>', (u = n.accountGroupText) ? o = u.call(t, {
+            return s += '<div class="inner">\n    <h1>Check your eligibility for <span class="blue">Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>\n\n    <div class="clearfix content">\n        <div class="step1 white-box">\n            <h3>\n                <span class="blue">Step 1:</span> Spousal Account\n                <div class="spouse-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting+ if your spouse has a Betasmartz account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </div>\n            </h3>\n            <p>Do you have a spouse who currently has a funded Betasmartz account or IRA?</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-spouse" value="yes" id="haveSpouseYes" />\n                <label for="haveSpouseYes">Yes</label>\n                <input type="radio" name="have-spouse" value="no" id="haveSpouseNo" />\n                <label for="haveSpouseNo">No</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting+ if your spouse has a Betasmartz account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n\n        <div class="step2 white-box">\n            <h3>\n                <span class="blue">Step 2:</span> Other Accounts\n                <div class="joint-acct-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss Harvesting+ if you have other accounts at Betterment.\n                </div>\n            </h3>\n            <p>', (u = n.accountGroupText) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.accountGroupText, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -55482,7 +55484,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a))) + '" target="_blank">Betterment&#39;s portfolio</a>?\n            Think about your 401(k), IRAs, and brokerage accounts.</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-etfs" value="yes" id="haveEtfsYes" />\n                <label for="haveEtfsYes">Yes</label>\n                <input type="radio" name="have-etfs" value="no" id="haveEtfsNo" />\n                <label for="haveEtfsNo">No</label>\n                <input type="radio" name="have-etfs" value="dont-know" id="haveEtfsDontKnow" />\n                <label for="haveEtfsDontKnow">I don&#39;t know</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    You can avoid tax conflicts by replacing the overlapping securities with others,\n                    or by holding (not buying or selling) them.  Moving investments\n                    to Betterment, including IRAs, allows us to most effectively tax loss harvest for you.\n                    <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
                 hash: {}
-            }, u ? u.call(t, "customer/portal/articles/1595496-how-do-i-safely-use-tlh-if-i-have-external-accounts-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-how-do-i-safely-use-tlh-if-i-have-external-accounts-", a))) + '" target="_blank">Learn more &gt;</a>\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="dont-know">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Compare the Betterment portfolio securities to the securities on your other\n                    investment account statements.\n                </p>\n                <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
+            }, u ? u.call(t, "customer/portal/articles/1595496-how-do-i-safely-use-tlh-if-i-have-external-accounts-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-how-do-i-safely-use-tlh-if-i-have-external-accounts-", a))) + '" target="_blank">Learn more &gt;</a>\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="dont-know">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Compare the Betasmartz portfolio securities to the securities on your other\n                    investment account statements.\n                </p>\n                <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
                 hash: {}
             }, u ? u.call(t, "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a))) + '" target="_blank" class="learn-more">Learn about overlapping securities</a>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n    </div>\n\n    <div class="support">\n        <p>\n            Questions? <a target="_blank" href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
                 hash: {}
@@ -55870,7 +55872,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<form class="invite">\n    <h1>Invite joint account holder</h1>\n\n    <p class="secondary">\n        Please enter the email address associated with your partner\'s account. <span class="unadvised-user-only">If your partner does not have a Betterment account, <a class="invite">you can refer him or her here</a>.</span>\n    </p>\n\n    <div class="invite-input">\n        <input type="text" placeholder="Enter email of joint account holder" />\n        <span class="error icon"></span>\n    </div>\n\n    <div class="invite-error-wrapper">\n        <p class="error own-email">\n            To create a joint account, please enter the email address associated with the customer that you\'d like to create a joint account with. You can only invite current customers to your joint account. For more information, please contact us at ', (u = n.supportPhone) ? o = u.call(t, {
+            return s += '<form class="invite">\n    <h1>Invite joint account holder</h1>\n\n    <p class="secondary">\n        Please enter the email address associated with your partner\'s account. <span class="unadvised-user-only">If your partner does not have a Betasmartz account, <a class="invite">you can refer him or her here</a>.</span>\n    </p>\n\n    <div class="invite-input">\n        <input type="text" placeholder="Enter email of joint account holder" />\n        <span class="error icon"></span>\n    </div>\n\n    <div class="invite-error-wrapper">\n        <p class="error own-email">\n            To create a joint account, please enter the email address associated with the customer that you\'d like to create a joint account with. You can only invite current customers to your joint account. For more information, please contact us at ', (u = n.supportPhone) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.supportPhone, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -56988,7 +56990,7 @@ var requirejs, require, define;
             }
 
             function c(e, t) {
-                return '\n            <li>\n                <a href="#summary">Summary</a>\n            </li>\n\n            <li>\n                <a href="#transfer">Transfer</a>\n            </li>\n\n            <li>\n                <a href="#portfolio">Portfolio</a>\n            </li>\n            <li>\n                <a href="#advice">Advice</a>\n            </li>\n\n            <li>\n                <a href="#performance">Performance</a>\n            </li>\n        '
+                return '\n            <li>\n                <a href="#overview">Overview</a>\n            </li>\n\n   <li>\n                <a href="#portfolio">Portfolio</a>\n            </li>\n\n <li>\n                <a href="#allocation">Allocation</a>\n            </li>\n\n   <li>\n                <a href="#performance">Performance</a>\n            </li>\n\n        <li>\n                <a href="#transfer">Transfer</a>\n            </li>\n               '
             }
 
             function h(e, t) {
@@ -57016,7 +57018,7 @@ var requirejs, require, define;
             }
 
             function d(e, t) {
-                return "\n                    Share Betterment and get <strong>1 year free</strong>\n                "
+                return "\n                    Share Betasmartz and get <strong>1 year free</strong>\n                "
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), r = this.merge(r, e.partials);
             var s = "",
@@ -57041,7 +57043,7 @@ var requirejs, require, define;
                 fn: f.program(5, h, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n    </div>\n\n    <div class="advisor-details advised-user-only"></div>\n</div>\n\n<ul class="back-to-summary">\n    <li>\n        <a href="#summary">\n            <span class="back-icon">&#8250;</span>\n            Back to Summary\n        </a>\n    </li>\n</ul>\n', s
+            return s += '\n    </div>\n\n    <div class="advisor-details advised-user-only"></div>\n</div>\n\n<ul class="back-to-summary">\n    <li>\n        <a href="#overview">\n            <span class="back-icon">&#8250;</span>\n            Back to Summary\n        </a>\n    </li>\n</ul>\n', s
         });
         return t.registerPartial("views/common/tabBar", n), n
     }), define("views/advisors/advisorDetailsView", ["jquery", "underscore", "common/betterment.views", "viewHelpers/phoneNumberFormatter"], function(e, t, n, r) {
@@ -57172,7 +57174,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.legalUrl, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '" alt="Terms" title="Terms">Terms</a></li>\n</ul>\n<ul class="unadvised-user-only">\n    <li>Need some assistance?</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="FAQ" href="http://support.betterment.com/" alt="FAQ" title="FAQ">FAQ</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="ContactSupport" href="#" id="support">Contact our support team</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="LiveChat"  href="#" class="open-live-chat">Chat with us now</a></li>\n</ul>\n<ul class="advised-user-only">\n    <li>Technical support</li>\n    <li><a href="mailto:', (u = n.supportEmail) ? o = u.call(t, {
+            }) : u), s += f(o) + '" alt="Terms" title="Terms">Terms</a></li>\n</ul>\n<ul class="unadvised-user-only">\n    <li>Need some assistance?</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="FAQ" href="http://support.betterment.com/" alt="FAQ" title="FAQ">FAQ</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="ContactSupport" href="#" id="support">Contact our support team</a></li>\n    \n</ul>\n<ul class="advised-user-only">\n    <li>Technical support</li>\n    <li><a href="mailto:', (u = n.supportEmail) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.supportEmail, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -57180,7 +57182,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.advisedSupportPhoneNumber, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="LiveChat"  href="#" class="open-live-chat">Chat with us now</a></li>\n</ul>\n<form action="#" method="POST">\n    <label for="message">How can we improve this page?</label>\n    <textarea type="text" class="white" name="message" placeholder="We\'d love to hear your suggestions, ideas, and feedback." ></textarea>\n    <input type="text" class="white" name="from" placeholder="Enter your email if you would like us to get in touch. " />\n    <button class="blue ok" id="suggest">Send feedback</button>\n</form>\n', s
+            }) : u), s += f(o) + '</li>\n    \n</ul>\n<form action="#" method="POST">\n    <label for="message">How can we improve this page?</label>\n    <textarea type="text" class="white" name="message" placeholder="We\'d love to hear your suggestions, ideas, and feedback." ></textarea>\n    <input type="text" class="white" name="from" placeholder="Enter your email if you would like us to get in touch. " />\n    <button class="blue ok" id="suggest">Send feedback</button>\n</form>\n', s
         });
         return t.registerPartial("views/common/footerLinks", n), n
     }), define("views/common/footerLinksView", ["jquery", "underscore", "backbone", "hbs!views/common/footerLinks", "common/betterment.views", "views/common/supportView", "common/betterment.models", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o, u) {
@@ -57777,7 +57779,7 @@ var requirejs, require, define;
                 icon: "speedometer",
                 title: "Be a Better Friend",
                 className: "better-friend-modal",
-                body: "Send your friends a Betterment invitation with a bonus of " + BMT.user.get("referralProgram").get("receiverPrize") + " and you'll get " + BMT.user.get("referralProgram").get("senderPrize") + " for everyone that signs up and funds an account. It just takes a few seconds.",
+                body: "Send your friends a Betasmartz invitation with a bonus of " + BMT.user.get("referralProgram").get("receiverPrize") + " and you'll get " + BMT.user.get("referralProgram").get("senderPrize") + " for everyone that signs up and funds an account. It just takes a few seconds.",
                 buttons: [{
                     id: "yes",
                     title: "Invite"
@@ -58076,7 +58078,7 @@ var requirejs, require, define;
                         i(function() {
                             var n = function(t) {
                                 SnapEngage.getAgentStatusAsync(function(n) {
-                                    e(".open-live-chat").toggleClass("live-chat-disabled", !n).text(n ? "Chat with us now" : "Live chat unavailable"), s(n), t && t()
+                                    /*e(".open-live-chat").toggleClass("live-chat-disabled", !n).text(n ? "Chat with us now" : "Live chat unavailable"), s(n), t && t()*/
                                 })
                             };
                             r || n(function() {
@@ -58166,7 +58168,7 @@ var requirejs, require, define;
             template: t,
             templateHelpers: {
                 headerLogoUrl: function() {
-                    return BMT.hasLoggedInUser() ? "#summary" : n.get() ? !1 : r.brochureHost()
+                    return BMT.hasLoggedInUser() ? "#overview" : n.get() ? !1 : r.brochureHost()
                 }
             },
             onShow: function() {
