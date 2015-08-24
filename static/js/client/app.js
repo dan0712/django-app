@@ -14903,13 +14903,13 @@ var requirejs, require, define;
                 BANK_ACCOUNT_EXISTS: {
                     title: "Error",
                     body: function() {
-                        return ["<p>Uh oh! That function did not work, we are sorry about that. if you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
+                        return ["<p>Uh oh! That function did not work, we are sorry about that. If you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
                     }
                 },
                 UNKNOWN: {
                     title: "Error",
                     body: function() {
-                        return ["<p>Uh oh! That function did not work, we are sorry about that. if you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
+                        return ["<p>Uh oh! That function did not work, we are sorry about that. If you continue to have this problem, please contact us at ", n.getSupportEmail(), ".</p>"].join("")
                     }
                 },
                 TOO_MUCH_RECENT_ACTIVITY: {
@@ -14928,7 +14928,7 @@ var requirejs, require, define;
                 },
                 CSRF_TOKEN_INVALID: {
                     title: "Error",
-                    body: ["<p>Uh oh! That function did not work, we are sorry about that. if you continue to have this problem, please contact us at  ", n.getSupportEmail(), ".</p>"].join(""),
+                    body: ["<p>Uh oh! That function did not work, we are sorry about that. If you continue to have this problem, please contact us at  ", n.getSupportEmail(), ".</p>"].join(""),
                     handler: function() {
                         window.location.reload()
                     }
