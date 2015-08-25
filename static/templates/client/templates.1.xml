@@ -116,7 +116,6 @@ We use Goal Type to determine our recommended allocation.
 <div class="right">Stocks</div>
 </div>
 <% if (showTaxImpactButton()) { %>
-<button class="small secondary light-blue show-tax-impact" data-track-event="ElementClicked" data-track-location="Advice" data-track-name="TaxImpact">Estimate tax impact</button>
 <% } %>
 
 <div class="clearfix info-tip advice-box">
@@ -3303,7 +3302,6 @@ $<input type="text" name="amount" data-validation-model="withdrawal" data-tiploc
 </div>
 
 <button id="transferButton" class="left blue withdraw-amount-box">Withdraw</button>
-<button class="left silver show-tax-impact" data-track-event="ElementClicked" data-track-location="Transfer" data-track-name="TaxImpact">Estimate Tax Impact</button>
 </div>
 <div class="help-note withdraw-amount-box" id="availableHelp">
 (<span class="help-text"><span data-text="view:_availableBalance < .netIncome | money"></span> available</span>)
