@@ -214,7 +214,7 @@ You can make this allocation change starting tomorrow.
 </div>
 <div class="detail">
 <p><a href="<%= brochure_url('/transactions/#day-trading') %>" target="_blank">Federal Regulations</a>
-permit <span style="font-weight:900">only one</span> allocation change per day. When you change your Allocation, you are giving Betterment instructions to
+permit <span style="font-weight:900">only one</span> allocation change per day. When you change your Allocation, you are giving BetaSmartz instructions to
 <a href="<%= brochure_url('/transactions/') %>" target="_blank">trade on your behalf</a>.</p>
 <p>Allocation changes fully rebalance your account.  Any sales will be optimized to reduce taxes, but
 this may result in short-term gains taxes that were otherwise avoided during prior rebalances.</p>
@@ -361,7 +361,7 @@ account first. Go to the <a href="#transfer" class="transfer-link">Transfer tab 
 <div class="arrow bottom"></div>
 <div class="text">
 <span class="heading green">
-Are you sure you want to authorize a deposit of <%= money(oneTimeDepositAmount()) %> from your <%= bankAccountName() %> account to your account at Betterment?
+Are you sure you want to authorize a deposit of <%= money(oneTimeDepositAmount()) %> from your <%= bankAccountName() %> account to your account at BetaSmartz?
 </span>
 It looks like you signed up using a <%= isReferralBonus() ? 'referral link from a friend' : 'promotional link' %>. In order for you to get your
 signup bonus of <%= signupBonusPrize() %>, you must make an initial deposit of <%= money(minimumInitialDepositForBonus()) %> or more on this screen.
@@ -604,7 +604,7 @@ On the next screen, we&#39;ll give you advice on how to achieve your goal.
 <span class="question">Why goal-based investing?</span>
 </div>
 <div class="content">
-Betterment is customizable to the way you think about your money through "goals." Using goals, your portfolio can be segmented into a spectrum of goal-specific risk and return targets. In addition to customized allocations for each goal, if you have a specific target amount in mind, Betterment&#39;s advice engine will recommend savings and time horizon changes to achieve the target. For customers in retirement, goals allow the flexibility to take regular withdrawals or to continue to build wealth with time-horizon based buckets at different risk levels.
+BetaSmartz is customizable to the way you think about your money through "goals." Using goals, your portfolio can be segmented into a spectrum of goal-specific risk and return targets. In addition to customized allocations for each goal, if you have a specific target amount in mind, BetaSmartz&#39;s advice engine will recommend savings and time horizon changes to achieve the target. For customers in retirement, goals allow the flexibility to take regular withdrawals or to continue to build wealth with time-horizon based buckets at different risk levels.
 </div>
 </li>
 <li>
@@ -614,7 +614,7 @@ Betterment is customizable to the way you think about your money through "goals.
 <span class="question">Why this stock allocation?</span>
 </div>
 <div class="content">
-Betterment&#39;s systematic portfolio advice engine considers age, time horizon, and investment goal type to formulate tailored advice on both asset allocation and required savings or withdrawal rate. This process provides ongoing dynamic allocation advice for each investment goal through time. Based on our research, the allocation advice glide path gradually decreases the allocation to stocks over time.  Additionally, each goal can be customized based on your goal-specific risk tolerance (conservative, moderate or aggressive).
+BetaSmartz&#39;s systematic portfolio advice engine considers age, time horizon, and investment goal type to formulate tailored advice on both asset allocation and required savings or withdrawal rate. This process provides ongoing dynamic allocation advice for each investment goal through time. Based on our research, the allocation advice glide path gradually decreases the allocation to stocks over time.  Additionally, each goal can be customized based on your goal-specific risk tolerance (conservative, moderate or aggressive).
 <a href="<%= brochure_url('resources/inside-betterment/investment-advice/') %>" target="_blank">Learn more &gt;</a>
 </div>
 </li>
@@ -625,7 +625,7 @@ Betterment&#39;s systematic portfolio advice engine considers age, time horizon,
 <span class="question">About our projections</span>
 </div>
 <div class="content">
-Betterment&#39;s projections work in concert with the advice engine to show the range of possible future investment values that illustrate the impact of different contribution and withdrawal choices, investment time horizons, and portfolio allocations. Performance projections are derived from the goal&#39;s specific expected return and volatility assumptions. Savings projections estimate required monthly contributions assuming a 60% likelihood of the portfolio reaching its goal target. Suggested withdrawal advice assumes a 99% chance of the portfolio lasting throughout the time horizon.
+BetaSmartz&#39;s projections work in concert with the advice engine to show the range of possible future investment values that illustrate the impact of different contribution and withdrawal choices, investment time horizons, and portfolio allocations. Performance projections are derived from the goal&#39;s specific expected return and volatility assumptions. Savings projections estimate required monthly contributions assuming a 60% likelihood of the portfolio reaching its goal target. Suggested withdrawal advice assumes a 99% chance of the portfolio lasting throughout the time horizon.
 <a href="<%= brochure_url('/advice-projection-methodology/') %>" target="_blank">Learn more &gt;</a>
 </div>
 </li>
@@ -858,7 +858,7 @@ count: count()
 ]]></template><template name="common/iraConversion/createRothIRA"><![CDATA[
 <h1>IRA Conversion - Set up a new Roth IRA</h1>
 <div class="wizard-body">
-In order to convert your Traditional IRA, you must have a Roth IRA with Betterment to move the funds to. Creating one is easy, just check the boxes below. We will use the same retirement age and allocation as your current IRA.
+In order to convert your Traditional IRA, you must have a Roth IRA with BetaSmartz to move the funds to. Creating one is easy, just check the boxes below. We will use the same retirement age and allocation as your current IRA.
 </div>
 
 <form class="ira-checkboxes" action="#" method="POST">
@@ -874,7 +874,7 @@ count: count()
 ]]></template><template name="common/iraConversion/remainingRMD"><![CDATA[
 <h1>IRA Conversion - Required Minimum Distribution (RMD)</h1>
 <div class="wizard-body">
-You are required to take a distribution of <%= money(remainingRMD()) %> from your IRA in <%= new Date().getFullYear() %>. This distribution must be taken prior to IRA conversion. However, according to RMD rules, you may take the distribution from any IRA, including those not held at Betterment.
+You are required to take a distribution of <%= money(remainingRMD()) %> from your IRA in <%= new Date().getFullYear() %>. This distribution must be taken prior to IRA conversion. However, according to RMD rules, you may take the distribution from any IRA, including those not held at BetaSmartz.
 </div>
 
 <form action="#" method="POST">
@@ -884,7 +884,7 @@ Transfer <%= money(remainingRMD()) %> RMD to my linked account now
 </div>
 <div>
 <input type="radio" name="rmd" value="false" <%= self.model.has('rmd') && self.model.not('rmd') ? 'checked="checked"' : '' %> />
-I will handle my RMD outside of Betterment
+I will handle my RMD outside of BetaSmartz
 </div>
 </form>
 
@@ -900,7 +900,7 @@ count: count()
 
 <div class="wizard-body">
 <p>
-A conversion to a Roth IRA is a taxable distribution. Taxes will be due on any converted amounts that were originally deducted from your income. Betterment does not withhold taxes since the associated 10% early withdrawal penalty may adversely affect the benefits of conversion. You are required to pay any taxes due, including any penalties if taxes are not paid on time, from funds outside of your IRA.
+A conversion to a Roth IRA is a taxable distribution. Taxes will be due on any converted amounts that were originally deducted from your income. BetaSmartz does not withhold taxes since the associated 10% early withdrawal penalty may adversely affect the benefits of conversion. You are required to pay any taxes due, including any penalties if taxes are not paid on time, from funds outside of your IRA.
 </p>
 
 <div class="example-box">
@@ -909,7 +909,7 @@ A conversion to a Roth IRA is a taxable distribution. Taxes will be due on any c
 
 <p class="example">$10,000 * (28% + 5%) = $3,300 taxes will be due.</p>
 
-<p>Betterment is not a tax advisor. Consult a tax advisor to understand your specific situation.</p>
+<p>BetaSmartz is not a tax advisor. Consult a tax advisor to understand your specific situation.</p>
 </div>
 
 <form action="#" method="POST">
@@ -949,7 +949,7 @@ style="width: <%= self.model.has('width') ? self.model.num('width') : '365' %>px
 <p class="type-specific-limit-info">
 <p>
 IRA Contributions are limited by tax year, and the limits apply across all
-IRA accounts you own at all brokers.  These calculations are for Betterment
+IRA accounts you own at all brokers.  These calculations are for BetaSmartz
 IRAs only.
 </p>
 <% if (account().isRothIRA()) { %>
@@ -1000,7 +1000,7 @@ For more information, check out IRS Publication 590.
 <h1>Undo Roth Conversion (Recharacterize)</h1>
 
 <div class="modal-body">
-Choose the Roth conversion and amount to recharacterize back to your Betterment Traditional IRA.
+Choose the Roth conversion and amount to recharacterize back to your BetaSmartz Traditional IRA.
 </div>
 
 <div class="clearfix">
@@ -1194,7 +1194,7 @@ View more &#62;
 <form method="POST" class="contact-form" action="#">
 <section class="to-field">
 <label>To</label>
-<span>Betterment Support &lt;support@betterment.com&gt;</span>
+<span>BetaSmartz Support &lt;support@betterment.com&gt;</span>
 </section>
 <section class="from-field">
 <label>From</label>
@@ -1279,14 +1279,14 @@ View more &#62;
 
 ]]></template><template name="common/welcomeRetiree"><![CDATA[
 
-<h1>Welcome to Betterment</h1>
+<h1>Welcome to BetaSmartz</h1>
 
 <p>Steps to get started.</p>
 <ol>
 <li>
 <div>
 <h2>Link your bank account</h2>
-<p>Your securely linked account allows you to deposit and withdraw funds to Betterment.</p>
+<p>Your securely linked account allows you to deposit and withdraw funds to BetaSmartz.</p>
 </div>
 </li>
 <li>
@@ -1366,30 +1366,30 @@ Your friend didn&#39;t sign up before the expiration date.
 <div class="fine-print">
 <strong>Terms and Conditions</strong>
 <p>
-The offer is valid only for new individual accounts with Betterment. Please send invites only to people you know personally who will be glad to get them. Betterment will send one invite and up to two reminders to each friend you invite: (1) in your name; and/or (2) with your name. The reminders may be different from the original invite and can be canceled by emailing support@betterment.com. To qualify for the bonus, referred friends must make an initial deposit
+The offer is valid only for new individual accounts with BetaSmartz. Please send invites only to people you know personally who will be glad to get them. BetaSmartz will send one invite and up to two reminders to each friend you invite: (1) in your name; and/or (2) with your name. The reminders may be different from the original invite and can be canceled by emailing support@betterment.com. To qualify for the bonus, referred friends must make an initial deposit
 <% if (hasMinimumDeposit()) { %>
 of at least <%= minimumDeposit() %>
 <% } %>
 within <%= expirationDays() %> days of signup and not withdraw that initial deposit for <%= expirationDays() %> days.
 </p>
 <p>
-Your participation in the Betterment Refer a Friend Program is subject to the following terms and agreements: Through the Betterment Refer a Friend Program you will invite friends to sign-up for a Betterment account by sending them an invitation via the Betterment interface, and your efforts in soliciting clients to Betterment will be limited to this activity.
+Your participation in the BetaSmartz Refer a Friend Program is subject to the following terms and agreements: Through the BetaSmartz Refer a Friend Program you will invite friends to sign-up for a BetaSmartz account by sending them an invitation via the BetaSmartz interface, and your efforts in soliciting clients to BetaSmartz will be limited to this activity.
 For each "Qualifying New Account"
 <% if (isTimePrize()) { %>
-Betterment will waive its fees applicable to your Betterment account for a period of <%= senderPrizeAmount() %> days, and Betterment will also waive its fees applicable to your Betterment referee friend&#39;s account for a period of <%= receiverPrizeAmount() %> days, both such periods as determined by Betterment. For every third "Qualifying New Account" Betterment will waive its fees applicable to your Betterment account for a period of <%= senderPrizeAmount() %> days plus 1 year, and Betterment will also waive its fees applicable to your Betterment referee friend&#39;s account for a period of <%= receiverPrizeAmount() %> days, both such periods as determined by Betterment. For avoidance of doubt, Betterment will waive its fees applicable to your Betterment account for a period of <%= senderPrizeAmount() %> days for each "Qualifying New Account" and for an additional 1 year for the third "Qualifying New account" for a sum total of <%= 3 * senderPrizeAmount() %> days and 1 year for the three "Qualifying New Accounts".
+BetaSmartz will waive its fees applicable to your BetaSmartz account for a period of <%= senderPrizeAmount() %> days, and BetaSmartz will also waive its fees applicable to your BetaSmartz referee friend&#39;s account for a period of <%= receiverPrizeAmount() %> days, both such periods as determined by BetaSmartz. For every third "Qualifying New Account" BetaSmartz will waive its fees applicable to your BetaSmartz account for a period of <%= senderPrizeAmount() %> days plus 1 year, and BetaSmartz will also waive its fees applicable to your BetaSmartz referee friend&#39;s account for a period of <%= receiverPrizeAmount() %> days, both such periods as determined by BetaSmartz. For avoidance of doubt, BetaSmartz will waive its fees applicable to your BetaSmartz account for a period of <%= senderPrizeAmount() %> days for each "Qualifying New Account" and for an additional 1 year for the third "Qualifying New account" for a sum total of <%= 3 * senderPrizeAmount() %> days and 1 year for the three "Qualifying New Accounts".
 <% } else { %>
-you will receive a <%= senderPrize() %> bonus to your Betterment account, and your Betterment referee friend will receive a <%= receiverPrize() %> bonus to his/her Betterment account. For every third "Qualifying New Account" you will receive a <%= senderPrize() %> bonus to your Betterment account and Betterment will also waive its fees applicable to your Betterment account for a period of 1 year, and your Betterment referee friend will receive a <%= receiverPrize() %> bonus to his/her Betterment account. For avoidance of doubt, you will receive a <%= senderPrize() %> bonus to your Betterment account for each "Qualifying New Account" and Betterment will also waive its fees applicable to your Betterment account for a period of 1 year for the third "Qualifying New Account", for a sum total of $<%= 3 * senderPrizeAmount() %> and 1 year of Betterment waiving its fees applicable to your Betterment account for every three "Qualifying New Accounts".
+you will receive a <%= senderPrize() %> bonus to your BetaSmartz account, and your BetaSmartz referee friend will receive a <%= receiverPrize() %> bonus to his/her BetaSmartz account. For every third "Qualifying New Account" you will receive a <%= senderPrize() %> bonus to your BetaSmartz account and BetaSmartz will also waive its fees applicable to your BetaSmartz account for a period of 1 year, and your BetaSmartz referee friend will receive a <%= receiverPrize() %> bonus to his/her BetaSmartz account. For avoidance of doubt, you will receive a <%= senderPrize() %> bonus to your BetaSmartz account for each "Qualifying New Account" and BetaSmartz will also waive its fees applicable to your BetaSmartz account for a period of 1 year for the third "Qualifying New Account", for a sum total of $<%= 3 * senderPrizeAmount() %> and 1 year of BetaSmartz waiving its fees applicable to your BetaSmartz account for every three "Qualifying New Accounts".
 <% } %>
-A "Qualifying New Account" is a new individual Betterment account opened by your Betterment referee friend using the special designated link from your invitation, which your referee friend funds with an initial deposit
+A "Qualifying New Account" is a new individual BetaSmartz account opened by your BetaSmartz referee friend using the special designated link from your invitation, which your referee friend funds with an initial deposit
 <% if (hasMinimumDeposit()) { %>
 of at least <%= minimumDeposit() %>
 <% } %>
 and does not withdraw that initial deposit for <%= expirationDays() %> days.
-Betterment is not responsible for incorrect entry or other failure on the part of your referees to meet standards of a Qualifying Referral. This promotion is not valid with any other offers and is non-transferrable. Offer available to U.S. Residents only.
-Betterment reserves the right to terminate this offer at any time, to limit the amount of account bonuses you are eligible to receive, and to refuse or recover any promotion award if Betterment determines that it was obtained under wrongful or fraudulent circumstances, that inaccurate or incomplete information was provided in opening the account, or that any terms of the Betterment Account Agreements have been violated.
-In referring friends to open a Betterment account you are offering investment advice on behalf of Betterment and under the supervision and control of Betterment.
-You agree to limit the investment advice you offer to the referral web page and email provided by Betterment.
-You agree that your participation in the Betterment Referral Program will conform to the terms contained herein as well as the provisions of the Investment Advisers Act of 1940, 15 U.S.C. ¬ß 80b-1, and the rules thereunder.
+BetaSmartz is not responsible for incorrect entry or other failure on the part of your referees to meet standards of a Qualifying Referral. This promotion is not valid with any other offers and is non-transferrable. Offer available to U.S. Residents only.
+BetaSmartz reserves the right to terminate this offer at any time, to limit the amount of account bonuses you are eligible to receive, and to refuse or recover any promotion award if BetaSmartz determines that it was obtained under wrongful or fraudulent circumstances, that inaccurate or incomplete information was provided in opening the account, or that any terms of the BetaSmartz Account Agreements have been violated.
+In referring friends to open a BetaSmartz account you are offering investment advice on behalf of BetaSmartz and under the supervision and control of BetaSmartz.
+You agree to limit the investment advice you offer to the referral web page and email provided by BetaSmartz.
+You agree that your participation in the BetaSmartz Referral Program will conform to the terms contained herein as well as the provisions of the Investment Advisers Act of 1940, 15 U.S.C. ¬ß 80b-1, and the rules thereunder.
 </p>
 </div>
 
@@ -1402,7 +1402,7 @@ You agree that your participation in the Betterment Referral Program will confor
 <span id="circle-3" class="circle unfilled-blue-background"><span class="circle-gift-icon"></span></span>
 </div>
 
-<h1 id="referralHeader">Give Betterment to 3 friends and earn <strong>1 year free</strong></h1>
+<h1 id="referralHeader">Give BetaSmartz to 3 friends and earn <strong>1 year free</strong></h1>
 <h2 id="referralSubheader">Plus &mdash; for each friend who joins, <%= extraHeaderText() %></h2>
 <form id="emailInvite" action="#" method="POST">
 
@@ -1599,14 +1599,11 @@ This table shows how much you currently hold in each asset class. Expand the ass
 <span class="question">Why this Portfolio?</span>
 </div>
 <div class="content">
-Betterment constructs globally diversified strategic asset allocation portfolios appropriate for an investor&#39;s goals and time horizon. Each portfolio is selected as the result of a systematic portfolio optimization process that simultaneously balances forecasts for long-run expected returns for each asset class against both historical and forward-looking downside behavior for the portfolio as a whole.
+BetaSmartz constructs globally diversified strategic asset allocation portfolios appropriate for an investor's goals and time horizon. Each portfolio is selected as the result of a systematic portfolio optimization process that simultaneously balances forecasts for long-run expected returns for each asset class against both historical and forward-looking downside behavior for the portfolio as a whole.
 <br/><br/>
-In forecasting expected returns, we utilize the Black-Litterman Global Portfolio Optimization model to appropriately marry market expectations extracted from historical performance and current price levels with Betterment&#39;s views on long-run asset class behavior and correlations. Our advice is based on expected returns as well as downside risk and uncertainty as measured by historical episodes of underperformance and simulated stress tests of the asset performance. The result is a portfolio that provides an optimal blend of asset class exposures across different economic regions, investment styles and security types to deliver the best possible risk-adjusted returns for every level of risk.
+In forecasting expected returns, we utilize the Black-Litterman Global Portfolio Optimization model to appropriately combine market expectations extracted from historical performance and current price levels with BetaSmartz's views on long-run asset class behaviour and correlations. Our advice is based on expected returns as well as downside risk and uncertainty as measured by historical episodes of underperformance and simulated stress tests of the asset performance. The result is a portfolio that provides an optimal blend of asset class exposures across different economic regions, investment styles and security types to deliver the best possible risk-adjusted returns for every level of risk.
 <br/><br/>
-The long-term performance of a portfolio can be negatively impacted by interest rates and inflation. Our fully
-<a href="<%= brochure_url('resources/investment-strategy/portfolio-management/diversification-alpha-performance-portfolio-investing/') %>" target="_blank">diversified</a> <a href="<%= brochure_url('resources/investment-strategy/portfolio-management/portfolio-diversification/') %>" target="_blank">global portfolio</a> helps smooth out the impact of these factors since different areas of the world experience them at different times and with varying severity. Our portfolio also avoids a common behavioral error of investors called <a href="<%= brochure_url('resources/investment-strategy/home-bias-sweet-home-bias/') %>" target="_blank">home-bias</a>, or the tendency to own companies from the country you live in.
-<br/><br/>
-To see the Betterment portfolio&#39;s efficient frontier compared to less robust alternatives, <a href="<%= brochure_url('resources/investment-strategy/portfolio-management/portfolio-optimization/') %>" target="_blank">read more about our portfolio optimization.</a>
+The long-term performance of a portfolio can be negatively impacted by interest rates and inflation. Our fully diversified global portfolio helps smooth out the impact of these factors since different areas of the world experience them at different times and with varying severity. Our portfolio also avoids a common behavioural error of investors called home-bias, or the tendency to own companies from the country you live in.
 </div>
 </li>
 <li>
@@ -1616,9 +1613,9 @@ To see the Betterment portfolio&#39;s efficient frontier compared to less robust
 <span class="question">Why these ETFs?</span>
 </div>
 <div class="content">
-Betterment exclusively uses open-ended index tracking ETFs rather than mutual or closed-end funds due to their low manager risk, low embedded costs and natural tax efficiencies. These structural advantages along with the maturation and growth of the global ETF market over the last two decades has led to liquid investments covering different asset classes, markets, styles, and geographies. As a result, we can source investment vehicles from a market of portfolio components which are versatile, extremely liquid, and easily substitutable. However, not all ETFs are exactly alike and the difference between an optimal and a suboptimal selection can have non-trivial effects on long-term performance of a portfolio.
+BetaSmartz exclusively uses open-ended index tracking ETFs rather than mutual or closed-end funds due to their low manager risk, low embedded costs and natural tax efficiencies. These structural advantages along with the maturation and growth of the global ETF market over the last two decades has led to liquid investments covering different asset classes, markets, styles, and geographies. As a result, we can source investment vehicles from a market of portfolio components which are versatile, extremely liquid, and easily substitutable. However, not all ETFs are exactly alike and the difference between an optimal and a suboptimal selection can have non-trivial effects on long-term performance of a portfolio.
 <br/><br/>
-Excellent security selection requires a thorough process which maximizes the risk-adjusted, after-tax, after-cost return for our customers&#39; portfolios. Betterment&#39;s approach is to aggregate these frictions into a single variable we call total annual cost of ownership. The four key metrics that comprise this measure are:
+Excellent security selection requires a thorough process which maximizes the risk-adjusted, after-tax, after-cost return for our customers' portfolios. BetaSmartz's approach is to aggregate these frictions into a single variable we refer to as the total annual cost of investment. The four key metrics that comprise this measure are:
 <br/><br/>
 <ol style="list-style-type: decimal; margin-left: 17px;">
 <li>
@@ -1631,11 +1628,11 @@ Liquidity (bid-ask spread): The small price difference between the buying price 
 Tracking error: The degree to which a specific security does not precisely replicate its intended underlying index. While not an outright cost as with the other criteria discussed, tracking error (especially high values) has the ability to introduce noise in the long-term returns of the overall portfolio, and reduce the effectiveness of portfolio optimization.
 </li>
 <li>
-Potential market impact: The degree to which ownership and trading activity across the Betterment platform could come to dominate ETF assets managed, daily traded volumes, and the security&#39;s natural market efficiency.
+Potential market impact: The degree to which ownership and trading activity across the BetaSmartz platform could come to dominate ETF assets managed, daily traded volumes, and the security's natural market efficiency.
 </li>
 </ol>
 <br/>
-For standard portfolios, this analysis yields a spectrum of the most cost-effective ETFs for our strategic asset allocation portfolio. For portfolios with active tax strategies (like tax loss harvesting), this process is leveraged to also select a spectrum of secondary securities which serve as close proxies to the primary securities without violating IRS rules for wash sales.
+This analysis yields a spectrum of the most cost-effective ETFs for our strategic asset allocation portfolio.
 </div>
 </li>
 <li>
@@ -1645,24 +1642,19 @@ For standard portfolios, this analysis yields a spectrum of the most cost-effect
 <span class="question">Tax Efficiency</span>
 </div>
 <div class="content">
-Betterment portfolios and the systems that manage them are constructed from the ground up to be maximally tax efficient. This begins with security selection, where we use index tracking ETFs instead of mutual funds. Unlike actively managed funds, index tracking funds have significantly lower turnover resulting in materially lower incidences of capital gains being passed on to investors. In addition, the legal and administrative structure of most ETFs differs from mutual funds in the way that investors are insulated from each other rather than pooled together. As a result, ETF investors are only responsible for their own tax consequences rather than sharing in the collective tax burden through distributions. The end result of just holding ETFs is a portfolio with lower capital gains burden which is also entirely immune to mutual fund style administrator-driven distribution.
+BetaSmartz portfolios and the systems that manage them are constructed from the ground up to be maximally tax efficient. This begins with security selection, where we use index tracking ETFs instead of mutual funds. Unlike actively managed funds, index tracking funds have significantly lower turnover resulting in materially lower incidences of capital gains being passed on to investors. In addition, the legal and administrative structure of most ETFs differs from mutual funds in the way that investors are insulated from each other rather than pooled together. As a result, ETF investors are only responsible for their own tax consequences rather than sharing in the collective tax burden through distributions. The end result of just holding ETFs is a portfolio with lower capital gains burden which is also entirely immune to mutual fund style administrator-driven distribution.
 <br/><br/>
-In addition, Betterment portfolios extract further efficiencies from asset class selection that varies by account tax status. For taxable accounts, Betterment portfolios employ municipal bonds as a major US bond component to lower investor tax burden. Municipal bonds are federally tax-exempt, and may be tax-exempt at the state level. Tax-deferred accounts do not benefit from the tax-exempt status of municipal bonds, so we use a diverse set of high-quality US bonds instead.
-<br/><br/>
-The tax impact of Betterment portfolios is also made more efficient through a number of automated day-to-day management features:
+The tax impact of BetaSmartz portfolios is also made more efficient through a number of automated day-to-day management features:
 <br/><br/>
 <ul style="list-style-type: disc; margin-left: 17px;">
 <li>
-Cash-flows are used to reduce the portfolio drift, which reduces future taxable rebalances.  For example, a deposit from a dividend or automatic transfer will always buy the most underweight asset classes first.  Similarly, a withdrawal will sell the most overweight assets first.
+Cash-flows are used to reduce the portfolio drift, which reduces future taxable rebalances. For example, a deposit from a dividend or automatic transfer will always buy the most underweight asset classes first. Similarly, a withdrawal will sell the most overweight assets first.
 </li>
 <li>
-Tax lot selection is optimized to reduce taxes.  Lots with losses are always sold before lots with gains.  Short term losses are preferred over long term losses, and long term gains are prefered over short term gains.  Additionally, lots with the highest cost basis, and therefore the lowest embedded potential tax burden, are sold first.
+Tax lot selection is optimized to reduce taxes. Lots with losses are always sold before lots with gains. Short term losses are preferred over long term losses, and long term gains are prefered over short term gains. Additionally, lots with the highest cost basis, and therefore the lowest embedded potential tax burden, are sold first.
 </li>
 <li>
 Rebalancing transactions and portfolio updates are tax aware, and always avoid short-term gains which are typically taxed at the highest rates.
-</li>
-<li>
-Tax-loss harvesting is employed to actively take advantage of portfolio losses to offset other gains and ordinary income on your tax return.
 </li>
 </ul>
 </div>
@@ -1764,7 +1756,7 @@ Routing number and Account number can be found at the bottom of your checks.
 <div class="modal-warning"></div>
 <div class="modal-body">
 <p>
-Closing your account is a big deal. If you think you might use Betterment again in the future, you should not close your account and just withdraw the money you need instead. Since there is no minimum balance and we do not charge account maintenance fees, you can keep your account open with no balance without penalty.
+Closing your account is a big deal. If you think you might use BetaSmartz again in the future, you should not close your account and just withdraw the money you need instead. Since there is no minimum balance and we do not charge account maintenance fees, you can keep your account open with no balance without penalty.
 </p>
 <p class="held-funds-info">
 </p>
@@ -2179,7 +2171,7 @@ from the organization&#39;s compliance officer.
 <div class="help-content">
 This information is required for regulatory purposes. If you are an affiliated
 person, you will need to provide confirmation that your compliance officer is aware
-of your account. In addition, Betterment may be required to send a duplicate copy
+of your account. In addition, BetaSmartz may be required to send a duplicate copy
 of your statements to your compliance officer.
 </div>
 </div>
@@ -2202,8 +2194,8 @@ which is withheld from any taxable activity, such as the posting of a dividend o
 the sale of securities.<br /><br />
 
 IMPORTANT: If you have been notified by the IRS concerning your backup withholding
-status, you must state so when opening a Betterment account. Also, please be aware
-that Betterment cannot provide any advice concerning tax matters, all tax questions
+status, you must state so when opening a BetaSmartz account. Also, please be aware
+that BetaSmartz cannot provide any advice concerning tax matters, all tax questions
 should be directed to a tax advisor or the IRS.
 </div>
 </div>
@@ -2439,7 +2431,7 @@ Talk to one of our product specialists, like Brandon.
 <div class="panel card body security">
 <h4 class="advised-user-only">Security & Privacy</h4>
 <h5 class="unadvised-user-only">Security & Privacy</h5>
-<h4 class="unadvised-user-only">Betterment&#39;s Promise</h4>
+<h4 class="unadvised-user-only">BetaSmartz&#39;s Promise</h4>
 <div class="promise">
 <div class="icon unadvised-user-only betterment-lock-icon"></div>
 <div class="icon advised-user-only unbranded-lock-icon"></div>
@@ -2825,7 +2817,7 @@ Tax Loss Harvesting+
 
 ]]></template><template name="tooltips/timeWeightedReturns"><![CDATA[
 <div class="<%= typeof tooltipClass === 'undefined' ? 'returns-help' : tooltipClass %> help-icon">
-The time-weighted return is the return of the Betterment portfolio over the selected time. This is the time-weighted return excluding the impact of your own cashflows and transfers.
+The time-weighted return is the return of the BetaSmartz portfolio over the selected time. This is the time-weighted return excluding the impact of your own cashflows and transfers.
 
 <% if (periodReturn > 0 && periodEarned < 0) { %>
 It can sometimes be positive even with negative earnings.
@@ -3246,7 +3238,7 @@ a fee for sending a wire transfer.
 <span class="bold-text dotted-underline" id="withdrawHelp">
 Withdraw
 <span class="help-content">
-Transfer money from your Betterment goal to your linked checking account. A withdrawal takes 4-5 business days to appear in your linked account if you submit your request before 3:30 PM ET.
+Transfer money from your BetaSmartz goal to your linked checking account. A withdrawal takes 4-5 business days to appear in your linked account if you submit your request before 15:30 Australian Eastern Time (AET).
 </span>
 </span>
 <span>
@@ -3321,8 +3313,8 @@ $<input type="text" name="amount" data-validation-model="withdrawal" data-tiploc
 </div>
 <div class="info-tip ira-info clearfix withdraw-indirect-ira-info">
 <div class="text">
-To transfer your IRA out of Betterment, the receiving institution is required to send us Direct Transfer paperwork. Please contact your new provider for details.
-Your new provider will need your Betterment account number, which is simply the email address you use to log in.
+To transfer your IRA out of BetaSmartz, the receiving institution is required to send us Direct Transfer paperwork. Please contact your new provider for details.
+Your new provider will need your BetaSmartz account number, which is simply the email address you use to log in.
 </div>
 </div>
 <section id="transferWithdrawalSafetyTip" class="info-tip clearfix hide">
@@ -3438,7 +3430,7 @@ Your documents are always encrypted and stored securely to protect your informat
 
 <section>
 <div class="input-line" data-field="domestic">
-<label class="domestic-label">Is this trust a U.S. domestic trust?</label>
+<label class="domestic-label">Is this trust an Australian domiciled trust?</label>
 <span class="input-area">
 <span class="radio-area">
 <input type="radio" name="domestic" value="true" />
@@ -3487,20 +3479,8 @@ Your documents are always encrypted and stored securely to protect your informat
 </span>
 </div>
 
-<div class="input-line" data-field="typeOfTin">
-<label>Type of TIN</label>
-<span class="input-area">
-<select name="typeOfTin">
-<option value="">-</option>
-<option value="TIN">EIN</option>
-<option value="SSN">SSN</option>
-</select>
-<div class="conversation-text"></div>
-</span>
-</div>
-
 <div class="input-line" data-field="tinOrSsn">
-<label>EIN or SSN <span class="security-icon"></span></label>
+<label>Tax File Number <span class="security-icon"></span></label>
 <span class="input-area">
 <input class="white" type="text" name="tinOrSsn" placeholder="123-45-6789" />
 <div class="conversation-text"></div>
@@ -3532,9 +3512,9 @@ Your documents are always encrypted and stored securely to protect your informat
 
 
 <div class="input-line" data-field="zip">
-<label>Zip</label>
+<label>Post Code</label>
 <span class="input-area">
-<input class="white" type="text" name="zip" maxlength="5" placeholder="10001" />
+<input class="white" type="text" name="zip" maxlength="4" placeholder="1001" />
 <div class="conversation-text"></div>
 </span>
 </div>

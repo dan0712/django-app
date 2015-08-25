@@ -15110,6 +15110,7 @@ var requirejs, require, define;
             }
 
             function w(e, t) {
+                return "";
                 var r = "",
                     i, s, o;
                 r += '\n<div class="smart-deposit ', i = n["if"].call(e, e && e.smartDepositEnabled, {
@@ -19787,15 +19788,15 @@ var requirejs, require, define;
     }), define("components/common/scripts/constants/colors", [], function() {
         return {
             DRIFT_STATUS: {
-                NORMAL: "#3381d0",
+                NORMAL: "#45a018",
                 HIGH: "#dd0000",
                 TRANSITION: "#dd0000"
             },
             RISK_TOLERANCE: {
                 TOO_CONSERVATIVE: "#e05923",
-                CONSERVATIVE: "#3381d0",
+                CONSERVATIVE: "#45a018",
                 MODERATE: "#0d3866",
-                AGGRESSIVE: "#3381d0",
+                AGGRESSIVE: "#45a018",
                 TOO_AGGRESSIVE: "#e05923"
             },
             BASE_GRAPH: {
@@ -27081,7 +27082,7 @@ var requirejs, require, define;
             cardTitle: "Retirement",
             extraClass: "retirement",
             tooltip: function() {
-                return 'Create a retirement goal if you have already maxed out your tax-advantaged IRAs or cannot open an IRA at this time. '
+                return 'Create a retirement goal in or out of your Self-managed super fund (SMSF).'
             },
             goalName: "My Retirement",
             goalType: "RETIREMENT",
@@ -27770,7 +27771,7 @@ var requirejs, require, define;
             }
 
             function p(e, t) {
-                return '\n        <div class="title">Betterment\'s agreements</div>\n    '
+                return '\n        <div class="title">BetaSmartz\'s agreements</div>\n    '
             }
 
             function d(e, t) {
@@ -27849,23 +27850,11 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.expandHeight, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '">\n        Betterment\'s <a href="', (u = n.privacyPolicyUrl) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.privacyPolicyUrl, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" target="_blank">privacy policy</a>', (u = n.jointAccountAgreementInjection) ? o = u.call(t, {
+            }) : u), s += f(o) + '">\n        BetaSmartz\'s privacy policy', (u = n.jointAccountAgreementInjection) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.jointAccountAgreementInjection, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + ' and <a href="', (u = n.agreementUrl) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.agreementUrl, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" target="_blank">', (u = n.agreementTitle) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.agreementTitle, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + "</a>, which include the Brokerage Agreement, Advisory Agreement,\n\n        ", o = n["if"].call(t, t && t.showIraAgreement, {
+            }) : u), s += f(o) + " and BetaSmartz Institutional customer agreements, which include the Brokerage Agreement, Advisory Agreement,\n\n        ", o = n["if"].call(t, t && t.showIraAgreement, {
                 hash: {},
                 inverse: l.noop,
                 fn: l.program(11, m, i)
@@ -28886,7 +28875,7 @@ var requirejs, require, define;
     }), define("components/common/scripts/constants/addressConstants", [], function() {
         return {
             unitedStates: function() {
-                return ["AA", "AE", "AP", "AL", "AK", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"]
+                return ["ACT", "QLD", "NSW", "NT",  "SA", "TAS", "VIC", "WA"]
             }
         }
     }), define("models/user", ["jquery", "underscore", "backbone", "common/betterment.models", "components/account/scripts/constants/retirementConstants", "components/account/scripts/constants/accountTypes", "models/accountGroup", "models/referralProgram", "models/rothLimit", "models/v2/retireGuideEnablement", "models/v2/pricingSummary", "models/v2/financialProfile", "models/v2/financialPlan", "models/v2/financialPlanCollection", "models/v2/externalAccount", "models/v2/externalAccountCollection", "components/common/scripts/models/appData", "components/common/scripts/services/dateService", "components/common/scripts/constants/addressConstants"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
@@ -29828,12 +29817,12 @@ var requirejs, require, define;
                         })
                     }
                     if (e && g.hasVariation("smart_deposits_setup_enabled") && e.isSmartDepositEligible()) {
-                        var f = e.get("smartDepositConfig").is("enabled");
+                        /*var f = e.get("smartDepositConfig").is("enabled");
                         r.push({
                             value: "smart-deposit",
                             label: f ? "SmartDeposit settings" : "Set up SmartDeposit",
                             action: !0
-                        })
+                        })*/
                     }
                     return BMT.accounts().size() > 1 && !BMT.accountGroup.isSuspended() && r.push({
                         value: "delete",
@@ -30239,7 +30228,7 @@ var requirejs, require, define;
             function g(e, t) {
                 var r = "",
                     i;
-                r += "\n                                <p>\n                                    IRA Contributions are limited by tax year, and the limits apply across all\n                                    IRA accounts you own at all brokers.  These calculations are for Betterment\n                                    IRAs only.\n                                </p>\n                                ", i = n["if"].call(e, e && e.isRothIRA, {
+                r += "\n                                <p>\n                                    IRA Contributions are limited by tax year, and the limits apply across all\n                                    IRA accounts you own at all brokers.  These calculations are for BetaSmartz\n                                    IRAs only.\n                                </p>\n                                ", i = n["if"].call(e, e && e.isRothIRA, {
                     hash: {},
                     inverse: a.noop,
                     fn: a.program(12, y, t)
@@ -30282,7 +30271,7 @@ var requirejs, require, define;
                 o, u, a = this,
                 f = "function",
                 l = this.escapeExpression;
-            s += '<form class="clearfix" action="#" method="POST">\n\n    <div class="amount-line clearfix">\n        <div class="clearfix">\n            <div class="title">\n                <span class="bold-text dotted-underline" id="depositHelp">\n                    Deposit\n                    <span class="help-content">\n                        Transfer money from your linked checking account to Betterment. A deposit takes 1 business day if submitted before 11:00 PM ET. Check the Activity tab to see when a pending deposit is expected to invest.\n                    </span>\n                </span>\n                <span>\n                    into your ', (u = n.accountName) ? o = u.call(t, {
+            s += '<form class="clearfix" action="#" method="POST">\n\n    <div class="amount-line clearfix">\n        <div class="clearfix">\n            <div class="title">\n                <span class="bold-text dotted-underline" id="depositHelp">\n                    Deposit\n                    <span class="help-content">\n                        Transfer money from your linked checking account to BetaSmartz. A deposit takes 1 business day if submitted before 23:00 Australian Eastern Time (AET). Check the Activity tab to see when a pending deposit is expected to invest.\n                    </span>\n                </span>\n                <span>\n                    into your ', (u = n.accountName) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.accountName, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -32497,6 +32486,7 @@ var requirejs, require, define;
             }
 
             function g(e, t) {
+                return "";
                 var r = "",
                     i, s, o;
                 r += '\n                <button class="round goal-status smart-deposit-settings ', (s = n.smartDepositButtonClass) ? i = s.call(e, {
@@ -32559,7 +32549,7 @@ var requirejs, require, define;
             }
 
             function x(e, t) {
-                return '\n    <div class="info-tip inactive clearfix">\n        <div class="icon">\n            <div class="lightbulb-tip-icon"></div>\n        </div>\n        <div class="text">\n            SmartDeposit invests your excess cash automatically.<br>\n            See the <a href="#" class="smart-deposit-video">video on how it works</a>.\n        </div>\n    </div>\n'
+                return '\n    <div class="info-tip inactive clearfix">\n        <div class="icon">\n            <div class="lightbulb-tip-icon"></div>\n        </div>\n        <div class="text">\n            Auto-Deposit invest your recurring transfers automatically.<br>\n         </div>\n    </div>\n'
             }
 
             function T(e, t) {
@@ -33422,7 +33412,7 @@ var requirejs, require, define;
                     return !!(this.pending && e && !this.isAllocation)
                 },
                 feeTooltipText: function() {
-                    return BMT.user.isAdvised() ? "Your fee is prorated for the amount of time since your last billing." : "Betterment's fee is prorated for the amount of time since your last billing. For more information about pricing and how to lower your fees, click the Pricing Plan button on your Account Settings page."
+                    return BMT.user.isAdvised() ? "Your fee is prorated for the amount of time since your last billing." : "BetaSmartz's fee is prorated for the amount of time since your last billing. For more information about pricing and how to lower your fees, click the Pricing Plan button on your Account Settings page."
                 },
                 showFeeTooltip: function() {
                     return this.isOfType("FEE")
@@ -34151,7 +34141,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/portfolio/portfolio", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="panel card body clearfix">\n    <div class="header-region clearfix"></div>\n\n    <div class="sidebar">\n        <div class="controls-title">your current portfolio</div>\n        <div class="donut-region"></div>\n        <div class="allocation-info-region"></div>\n        <div class="rebalancing-region"></div>\n    </div>\n\n    <div class="info">\n        <div class="positions-table-region"></div>\n        <div class="questions-region"></div>\n    </div>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="panel card body clearfix">\n    <div class="header-region clearfix"></div>\n\n  <div class="info">\n        <div class="positions-table-region"></div>\n        <div class="questions-region"></div>\n    </div>\n  <div class="sidebar">\n        <div class="controls-title">your current portfolio</div>\n        <div class="donut-region"></div>\n        <div class="allocation-info-region"></div>\n        <div class="rebalancing-region"></div>\n    </div>\n\n    </div>\n'
         });
         return t.registerPartial("views/portfolio/portfolio", n), n
     }), define("common/constants/driftStatus", ["components/common/scripts/constants/colors"], function(e) {
@@ -35121,10 +35111,14 @@ var requirejs, require, define;
         var e = function(e) {
             return e.substr(0, 3) + "-" + e.substr(3, 3) + "-" + e.substr(6, 4)
         };
+        var xxw = function(e) {
+            return e.substr(0, 4) + "-" + e.substr(4, 3) + "-" + e.substr(7, 4)
+        };
+
         return {
             format: function(t) {
                 if (t.length === 10) return e(t);
-                if (t.length === 11) return e(t.substr(1, 11));
+                if (t.length === 11) return xxw(t);
                 throw new Error("phoneNumber must be 10 or 11 digits")
             }
         }
@@ -46141,7 +46135,6 @@ var requirejs, require, define;
                         ALLOCATION_CHANGE: "Allocation Changes",
                         FEE: "Fees",
                         STATEMENT: "Statements",
-                        TAX_LOSS_HARVEST: "Tax Loss Harvests",
                         other: "Other"
                     }, {
                         "class": "transaction-type-selector",
@@ -47481,7 +47474,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<h1>Link External Accounts</h1>\n<div class="description">\n    Link all accounts to get the most accurate advice during your consultation. Service provided by Quovo.\n    <div class="quovo-tip help-icon">\n        This functionality is provided by Quovo, a third party service with which BetaSmartz has\n        partnered. Use of Quovo is completely optional. By using this service and thereby Quovo,\n        you understand that you are sending your personal data to a third party that Betterment\n        cannot control, agree to do so, and accept all the associated risks. By using this functionality\n        and Quovo through Betterment, you agree to hold BetaSmartz harmless from losses of any kind\n        that may result from Quovo\'s use, misuse, or loss of your personal information. You also agree\n        to abide by Quovo\'s <a href="https://www.quovo.com/splash/terms.php" target="_blank">Terms of Use</a>.\n    </div>\n</div>\n<div class="clearfix"></div>\n\n<iframe src="', (u = n.quovoIframeUrl) ? o = u.call(t, {
+            return s += '<h1>Link External Accounts</h1>\n<div class="description">\n    Link all accounts to get the most accurate advice during your consultation. Service provided by Quovo.\n    <div class="quovo-tip help-icon">\n        This functionality is provided by Quovo, a third party service with which BetaSmartz has\n        partnered. Use of Quovo is completely optional. By using this service and thereby Quovo,\n        you understand that you are sending your personal data to a third party that BetaSmartz\n        cannot control, agree to do so, and accept all the associated risks. By using this functionality\n        and Quovo through Betterment, you agree to hold BetaSmartz harmless from losses of any kind\n        that may result from Quovo\'s use, misuse, or loss of your personal information. You also agree\n        to abide by Quovo\'s <a href="https://www.quovo.com/splash/terms.php" target="_blank">Terms of Use</a>.\n    </div>\n</div>\n<div class="clearfix"></div>\n\n<iframe src="', (u = n.quovoIframeUrl) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.quovoIframeUrl, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -50648,10 +50641,10 @@ var requirejs, require, define;
             s = {
                 domestic: [{
                     required: !0,
-                    msg: "You must specify whether this is a U.S. domestic trust"
+                    msg: "You must specify whether this is an Australian domiciled trust"
                 }, {
                     acceptance: !0,
-                    msg: 'We only accept U.S. domestic trusts. If you have questions please email us at <a href="mailto:trusts@betterment.com">trusts@betterment.com</a> or call us at 888-428-9482.'
+                    msg: 'We only accept Australian domiciled trust. If you have questions please email us at <a href="mailto:trusts@betterment.com">trusts@betasmartz.com</a> or call us at 1800-888-8888.'
                 }],
                 legalName: {
                     required: !0
@@ -50666,17 +50659,13 @@ var requirejs, require, define;
                 stateOfOrganization: {
                     required: !0
                 },
-                typeOfTin: {
-                    required: !0,
-                    msg: "Type of TIN is required"
-                },
                 tinOrSsn: [{
                     required: !0,
-                    msg: "EIN / SSN is required"
+                    msg: "TFN is required"
                 }, {
                     length: 9,
                     pattern: "digits",
-                    msg: "EIN / SSN must be valid and in a valid format"
+                    msg: "TFN must be valid and in a valid format"
                 }],
                 address: {
                     required: !0,
@@ -50696,8 +50685,8 @@ var requirejs, require, define;
                 zip: {
                     required: !0,
                     pattern: "digits",
-                    length: 5,
-                    msg: "Zip is required and must be valid with 5 digits"
+                    length: 4,
+                    msg: "Zip is required and must be valid with 4 digits"
                 },
                 userAgreement: {
                     required: !0,
@@ -50780,6 +50769,7 @@ var requirejs, require, define;
                 })
             },
             changeTypeOfTin: function(e) {
+                return null;
                 var t = e.currentTarget.value,
                     n = this.$("input[name=tinOrSsn]").val().replace(/[^\d]/g, "");
                 t === "SSN" ? (this.$("input[name=tinOrSsn]").mask("999-99-9999"), this.$("input[name=tinOrSsn]").attr("placeholder", "123-45-6789"), this.$("input[name=tinOrSsn]").val(n)) : (this.$("input[name=tinOrSsn]").mask("99-9999999"), this.$("input[name=tinOrSsn]").attr("placeholder", "12-3456789"), this.$("input[name=tinOrSsn]").val(n))
@@ -53461,7 +53451,7 @@ var requirejs, require, define;
                 fn: c.program(1, p, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n\n        <h3 class="social-security-title">\n            Social Security Benefit\n            <div class="help-icon social-security">\n                <span class="help-content">\n                </span>\n            </div>\n        </h3>\n        <div class="value">\n            <div class="social-security-selector"></div>\n        </div>\n\n    </div>\n\n    <div class="right">\n\n        <h2 class="graph-title">Annual Spending at Retirement (today\'s dollars)</h2>\n\n        <div class="graph-region"></div>\n\n        <a class="expand-regulatory">What do "likely" and "conservative" mean? <span class="arrow">&rsaquo;</span></a>\n\n        <div class="expandable regulatory">\n            <p>"Likely" represents a 60% likelihood of the portfolio reaching its goal target, which is more conservative\n            than the average probability.</p>\n\n            <p>"Conservative" represents a 97.5% likelihood of the portfolio reaching its goal target, which approximates\n            a cautious "worst case" approach.</p>\n        </div>\n\n        <p class="unadvised-user-only regulatory">Projections and advice assume expected returns and volatility of Betterment\'s portfolio.\n        If your non-BetaSmartz accounts are not invested similarly to Betterment\'s portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
+            return s += '\n\n        <h3 class="social-security-title">\n            Social Security Benefit\n            <div class="help-icon social-security">\n                <span class="help-content">\n                </span>\n            </div>\n        </h3>\n        <div class="value">\n            <div class="social-security-selector"></div>\n        </div>\n\n    </div>\n\n    <div class="right">\n\n        <h2 class="graph-title">Annual Spending at Retirement (today\'s dollars)</h2>\n\n        <div class="graph-region"></div>\n\n        <a class="expand-regulatory">What do "likely" and "conservative" mean? <span class="arrow">&rsaquo;</span></a>\n\n        <div class="expandable regulatory">\n            <p>"Likely" represents a 60% likelihood of the portfolio reaching its goal target, which is more conservative\n            than the average probability.</p>\n\n            <p>"Conservative" represents a 97.5% likelihood of the portfolio reaching its goal target, which approximates\n            a cautious "worst case" approach.</p>\n        </div>\n\n        <p class="unadvised-user-only regulatory">Projections and advice assume expected returns and volatility of BetaSmartz\'s portfolio.\n        If your non-BetaSmartz accounts are not invested similarly to BetaSmartz\'s portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.projectionDisclaimerLink, a) : h.call(t, "link", t && t.projectionDisclaimerLink, a))) + '</p>\n\n        <p class="advised-user-only regulatory">Projections and advice assume expected returns and volatility of this portfolio.\n        If your external accounts are not invested similarly to this portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
                 hash: {}
@@ -58312,7 +58302,7 @@ var requirejs, require, define;
                 return this.accountGroup.get("accounts")
             },
             toggleAdvisedBranding: function(t) {
-                e(document.body).toggleClass("advised-user", !!t), e(document.body).toggleClass("unadvised-user", !t), t ? e(document).prop("title", t.get("name") + " - Powered by Betterment") : e(document).prop("title", "Betterment"), BMT.headerLogo.show(new R({
+                e(document.body).toggleClass("advised-user", !!t), e(document.body).toggleClass("unadvised-user", !t), t ? e(document).prop("title", t.get("name") + " - Powered by BetaSmartz") : e(document).prop("title", "Betterment"), BMT.headerLogo.show(new R({
                     model: t
                 }))
             },

@@ -7,7 +7,7 @@
 #trust-signup .right-rail .free-trial h4,
 #trust-signup .right-rail .security h4 {
     font-size: 16px;
-    color: #0d3866;
+    color: #003100;
     font-weight: 600;
     margin-bottom: 15px
 }
@@ -19,7 +19,7 @@
 #trust-signup .right-rail .support h5,
 #trust-signup .right-rail .free-trial h5,
 #trust-signup .right-rail .security h5 {
-    color: #3381d0;
+    color: #45a018;
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 7px
@@ -34,7 +34,7 @@
 #trust-signup .right-rail .security p {
     margin-bottom: 15px;
     font-size: 14px;
-    color: #0d3866
+    color: #003100
 }
 #signup .right-rail .post-account-signup p:last-child,
 #signup .right-rail .support p:last-child,
@@ -65,7 +65,7 @@
 #trust-signup .right-rail .free-trial ul li,
 #trust-signup .right-rail .security ul li {
     font-weight: 700;
-    color: #0d3866;
+    color: #003100;
     margin-bottom: 10px
 }
 #signup .right-rail .post-account-signup ul li .icon,
@@ -129,7 +129,7 @@
 }
 #signup .right-rail .post-account-signup ul li a:hover,
 #trust-signup .right-rail .post-account-signup ul li a:hover {
-    color: #0d3866
+    color: #003100
 }
 #signup .right-rail .support .contact-person,
 #trust-signup .right-rail .support .contact-person {
@@ -142,7 +142,7 @@
 }
 #signup .right-rail .support .contact-person p,
 #trust-signup .right-rail .support .contact-person p {
-    color: #0d3866;
+    color: #003100;
     float: left;
     width: 120px;
     margin: 15px 0 0;
@@ -158,7 +158,7 @@
 }
 #signup .right-rail .support.advised-user-only p,
 #trust-signup .right-rail .support.advised-user-only p {
-    color: #0d3866;
+    color: #003100;
     line-height: 16px;
     margin-bottom: 10px
 }
@@ -166,7 +166,7 @@
 #trust-signup .right-rail .security .promise {
     padding: 15px 0;
     margin-bottom: 15px;
-    border: 2px solid #0d3866;
+    border: 2px solid #003100;
     border-left: 0;
     border-right: 0
 }
@@ -177,7 +177,7 @@
 }
 #signup .right-rail .security .promise p,
 #trust-signup .right-rail .security .promise p {
-    color: #0d3866;
+    color: #003100;
     width: 190px;
     float: left;
     line-height: 16px;
@@ -462,7 +462,7 @@
     margin: 10px 0 20px
 }
 #summary .management .controls .deposit-menu .deposit form section.header.pricing-plan p a {
-    color: #3381d0
+    color: #45a018
 }
 #summary .management .controls .deposit-menu .deposit form section .section-title {
     margin: 0 0 5px
@@ -640,7 +640,7 @@
 }
 #summary .panel .allocation .bonds {
     left: 0;
-    color: #0d3866
+    color: #003100
 }
 #summary .panel .allocation .stocks {
     right: 0;
@@ -740,7 +740,7 @@
     cursor: pointer;
     text-transform: uppercase;
     font-size: 12px;
-    color: #3381d0
+    color: #45a018
 }
 #summary .overview .overview-wrapper .overview-returns .tlh-status .harvested-losses {
     margin-top: 5px;
@@ -1042,7 +1042,7 @@
 }
 #summary #accounts #accountsCollection .account .panel.back .left-side .advice {
     position: relative;
-    color: #0d3866;
+    color: #003100;
     font-size: 17px;
     margin-top: 15px;
     padding: 10px;
@@ -1155,7 +1155,7 @@
     float: left;
     font-size: 18px;
     font-weight: 700;
-    color: #0d3866;
+    color: #003100;
     vertical-align: 2px
 }
 #transfer #upcomingTransfers .upcoming-transfers .heading h3 .open-close {
@@ -1223,7 +1223,7 @@
     font-size: 15px;
     border-top: 0;
     box-shadow: inset 0 1px 0 #fff, inset -1px 0 0 #fff, 0 1px 0 #fff;
-    color: #0d3866;
+    color: #003100;
     font-weight: 400
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .white-overlay {
@@ -1231,7 +1231,7 @@
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .explore-text {
     position: absolute;
-    color: #0d3866;
+    color: #003100;
     font-size: 18px;
     width: 325px;
     top: 22%;
@@ -1332,7 +1332,7 @@
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .last-col .cancel-icon {
     float: right;
     margin-top: 5px;
-    color: #3381d0
+    color: #45a018
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .last-col .cancel-icon:after {
     content: "â€™";
@@ -1347,8 +1347,8 @@
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .last-col .cancel-button {
     position: relative;
     background-color: #fff;
-    border: 1px solid #3381d0;
-    color: #3381d0;
+    border: 1px solid #45a018;
+    color: #45a018;
     height: 27px;
     font-size: 11px;
     -webkit-transition: right .3s, opacity .3s;
@@ -1364,13 +1364,13 @@
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .last-col .cancel-button:hover {
     background-color: #fff;
-    color: #3381d0;
+    color: #45a018;
     right: -1px;
-    border: 1px solid #3381d0;
+    border: 1px solid #45a018;
     opacity: 1
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .last-col .cancel-button:active {
-    background-color: #3381d0;
+    background-color: #45a018;
     color: #fff
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .account-group,
@@ -1443,7 +1443,7 @@
     font-size: 12px;
     line-height: 17px;
     font-weight: 700;
-    color: #0d3866
+    color: #003100
 }
 #transfer .panel.body #top {
     border-bottom: 1px solid #ccc
@@ -1708,7 +1708,7 @@
 }
 #transfer .panel.body #automaticDeposit .automatic-transaction-status .toggle.active,
 #transfer .panel.body #automaticWithdrawal .automatic-transaction-status .toggle.active {
-    color: #3381d0
+    color: #45a018
 }
 #transfer .panel.body #automaticDeposit .info-tip a,
 #transfer .panel.body #automaticWithdrawal .info-tip a {
@@ -1720,7 +1720,7 @@
 }
 #transfer .panel.body #automaticDeposit .info-tip.active .text .next-transfer,
 #transfer .panel.body #automaticWithdrawal .info-tip.active .text .next-transfer {
-    color: #3381d0
+    color: #45a018
 }
 #transfer .panel.body #automaticDeposit .info-tip.inactive .text,
 #transfer .panel.body #automaticWithdrawal .info-tip.inactive .text {
@@ -1878,7 +1878,7 @@
     width: 300px;
     position: relative;
     background-image: url(/app/assets/img/verify_bank_icon.png);
-    background-color: #3381d0;
+    background-color: #45a018;
     background-repeat: no-repeat;
     background-position: center
 }
@@ -2029,7 +2029,7 @@
     width: 480px;
     height: 254px;
     float: left;
-    background-color: #3381d0;
+    background-color: #45a018;
     position: relative;
     overflow: hidden;
     -moz-border-radius: 3px;
@@ -2176,7 +2176,7 @@
     height: 50px;
     border-radius: 50%;
     width: 50px;
-    border: 5px solid #3381d0
+    border: 5px solid #45a018
 }
 #invite #inviteLinkAreaRegion .metered-invite-box .unfilled-blue-background {
     background: rgba(0, 0, 0, .15)
@@ -2187,8 +2187,8 @@
 #invite #inviteLinkAreaRegion .metered-invite-box .line {
     width: 93px;
     display: inline-block;
-    border-top: 4px solid #3381d0;
-    border-bottom: 4px solid #3381d0;
+    border-top: 4px solid #45a018;
+    border-bottom: 4px solid #45a018;
     margin: 24px -8px;
     height: 4px;
     position: relative;
@@ -2401,7 +2401,7 @@
     margin-bottom: 10px
 }
 #portfolio .sidebar .rebalancing-region .rebalancing-title .rebalancing-status {
-    color: #3381d0;
+    color: #45a018;
     font-size: 11px;
     padding-top: 2px;
     text-transform: uppercase
@@ -2437,7 +2437,7 @@
 #portfolio .sidebar .rebalancing-region .drift-amount {
     float: left;
     font-size: 11px;
-    color: #3381d0
+    color: #45a018
 }
 #portfolio .sidebar .rebalancing-region .track {
     position: relative;
@@ -2452,7 +2452,7 @@
     left: 0;
     top: 0;
     height: 8px;
-    background-color: #3381d0
+    background-color: #45a018
 }
 #portfolio .sidebar .rebalancing-region .info-tip {
     padding: 12px
@@ -2571,11 +2571,11 @@
     padding-bottom: 0
 }
 .positions-table .positions-list .position-details .why-these .row-container:hover {
-    color: #3381d0;
+    color: #45a018;
     cursor: pointer
 }
 .positions-table .positions-list .position-details .why-these .row-container:hover .arrow {
-    color: #3381d0
+    color: #45a018
 }
 .positions-table .positions-list .position-details .why-these .arrow {
     color: #686868;
@@ -2635,7 +2635,7 @@
     display: none
 }
 .positions-table .ticker-name:hover {
-    color: #3381d0
+    color: #45a018
 }
 .positions-table .ticker-name:hover .popout-icon {
     display: block
@@ -2673,16 +2673,16 @@
     background-color: #035d0e
 }
 .positions-table .weight-graph.bond .drift-amount {
-    color: #0d3866
+    color: #003100
 }
 .positions-table .weight-graph.bond .target-bar {
-    background-color: #0d3866
+    background-color: #003100
 }
 .positions-table .weight-graph .help-content .drift-amount.stock {
     color: #035d0e
 }
 .positions-table .weight-graph .help-content .drift-amount.bond {
-    color: #0d3866
+    color: #003100
 }
 .positions-table .weight-graph .help-content .short-term-gains {
     color: #E05923
@@ -2745,7 +2745,7 @@
 #advice .panel.body .plan-header {
     *zoom: 1;
     padding: 20px;
-    background: #3381d0
+    background: #45a018
 }
 #advice .panel.body .plan-header:before,
 #advice .panel.body .plan-header:after {
@@ -2793,7 +2793,7 @@
 #advice .panel.body .setup-banner h2,
 #advice .panel.body .setup-banner .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td #advice .panel.body .setup-banner h3 {
-    color: #3381d0;
+    color: #45a018;
     font-weight: 400;
     font-size: 18px;
     margin: 0 0 10px
@@ -2812,7 +2812,7 @@
     letter-spacing: .5px
 }
 #advice .active.setting {
-    box-shadow: inset 0 2px 0 #3381d0
+    box-shadow: inset 0 2px 0 #45a018
 }
 #advice .advice-box {
     padding: 10px;
@@ -3085,7 +3085,7 @@
     margin-left: 0
 }
 #advice .settings-row .setting.term-region .plan .help-note a {
-    color: #3381d0
+    color: #45a018
 }
 #advice .settings-row .setting.auto-transaction-region input[type=text] {
     width: 110px;
@@ -3107,7 +3107,7 @@
     top: 0
 }
 #advice .settings-row .setting.auto-transaction-region .transaction-type-selector button .dropdown-label {
-    color: #3381d0;
+    color: #45a018;
     font-size: 11px;
     text-transform: uppercase;
     overflow: visible
@@ -3207,7 +3207,7 @@
     font-size: 13px
 }
 .projection-graph .hover-tooltip .avg {
-    color: #0d3866
+    color: #003100
 }
 .projection-graph .hover-tooltip .poor {
     color: #aaa
@@ -3220,7 +3220,7 @@
     padding-bottom: 6px;
     position: absolute;
     opacity: .9;
-    color: #0d3866;
+    color: #003100;
     font-size: 13px;
     margin-bottom: 10px
 }
@@ -3244,7 +3244,7 @@
 }
 .projection-graph path {
     fill: none;
-    stroke: #0d3866;
+    stroke: #003100;
     stroke-width: 3px
 }
 .projection-graph path.poor {
@@ -3253,7 +3253,7 @@
 }
 .projection-graph path.deposit {
     stroke-width: 2px;
-    stroke: #3381d0
+    stroke: #45a018
 }
 .projection-graph path.currentBalance {
     stroke: #686868;
@@ -3281,11 +3281,11 @@
     stroke: none
 }
 .projection-graph path.dark {
-    fill: #3381d0;
+    fill: #45a018;
     fill-opacity: .5
 }
 .projection-graph path.light {
-    fill: #3381d0;
+    fill: #45a018;
     fill-opacity: .2
 }
 .projection-graph path.vertical {
@@ -3315,7 +3315,7 @@
     fill: #686868
 }
 .projection-graph svg text.currentBalance {
-    fill: #0d3866
+    fill: #003100
 }
 .projection-graph circle {
     display: none;
@@ -3323,7 +3323,7 @@
     stroke-width: 2px
 }
 .projection-graph circle.avg {
-    stroke: #0d3866
+    stroke: #003100
 }
 .projection-graph circle.poor {
     stroke: #aaa
@@ -3375,7 +3375,7 @@
 }
 .projection-legend .key .bullet.dark,
 .projection-legend .key .line.dark {
-    background: #3381d0
+    background: #45a018
 }
 .projection-legend .key .bullet.light,
 .projection-legend .key .line.light {
@@ -3383,7 +3383,7 @@
 }
 .projection-legend .key .bullet.avg,
 .projection-legend .key .line.avg {
-    background: #0d3866
+    background: #003100
 }
 .projection-legend .key .bullet.poor,
 .projection-legend .key .line.poor {
@@ -3391,7 +3391,7 @@
 }
 .projection-legend .key .bullet.deposit,
 .projection-legend .key .line.deposit {
-    background: #3381d0
+    background: #45a018
 }
 .projection-legend .key .bullet {
     top: 0
@@ -3418,7 +3418,7 @@
 #goalSetup .blue-head,
 #rollover .blue-head {
     font-size: 18px;
-    color: #0d3866;
+    color: #003100;
     font-weight: 700
 }
 #goalSetup .controls,
@@ -3528,7 +3528,7 @@
 #goalSetup .controls #goalSelection ul.select-goal li.adviceAccount .goal-contents,
 #rollover .controls #goalSelection ul.select-goal li.adviceAccount .goal-contents {
     display: none;
-    color: #0d3866;
+    color: #003100;
     padding: 3px 10px 3px 15px;
     font-size: 14px;
     background-color: #fff;
@@ -3552,7 +3552,7 @@
 #goalSetup .controls #goalSelection ul.select-goal li.adviceAccount .goal-contents .row .goal-type,
 #rollover .controls #goalSelection ul.select-goal li.adviceAccount .goal-contents .row .goal-type {
     margin-left: 10px;
-    color: #0d3866;
+    color: #003100;
     font-weight: 700;
     width: 103px;
     line-height: 30px;
@@ -3645,7 +3645,7 @@
     cursor: default;
     color: #fff;
     font-weight: 700;
-    background: #3381d0
+    background: #45a018
 }
 #goalSetup .controls #goalSelection ul.select-goal li.adviceAccount.active .goal-name:hover .white-pen,
 #rollover .controls #goalSelection ul.select-goal li.adviceAccount.active .goal-name:hover .white-pen {
@@ -3719,7 +3719,7 @@
     text-align: center;
     font-size: 18px;
     font-weight: 900;
-    border: 1px solid #0d3866;
+    border: 1px solid #003100;
     -moz-box-shadow: 0 1px 0 #fff;
     -webkit-box-shadow: 0 1px 0 #fff;
     box-shadow: 0 1px 0 #fff;
@@ -3729,10 +3729,10 @@
     background-color: #7db9e8;
     background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzdkYjllOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzMzODFkMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==);
     background-size: 100%;
-    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #7db9e8), color-stop(100%, #3381d0));
-    background-image: -moz-linear-gradient(top, #7db9e8, #3381d0);
-    background-image: -webkit-linear-gradient(top, #7db9e8, #3381d0);
-    background-image: linear-gradient(to bottom, #7db9e8, #3381d0);
+    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #7db9e8), color-stop(100%, #45a018));
+    background-image: -moz-linear-gradient(top, #7db9e8, #45a018);
+    background-image: -webkit-linear-gradient(top, #7db9e8, #45a018);
+    background-image: linear-gradient(to bottom, #7db9e8, #45a018);
     *zoom: 1;
     filter: progid: DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FF7DB9E8', endColorstr='#FF3381D0')
 }
@@ -4142,7 +4142,7 @@
 #goalSetup .info .narrative .card.highlight .summary,
 #rollover .info .advice-cards .card.highlight .summary,
 #rollover .info .narrative .card.highlight .summary {
-    color: #0d3866
+    color: #003100
 }
 #goalSetup .info .advice-cards .card.highlight.first .card-icon,
 #goalSetup .info .narrative .card.highlight.first .card-icon,
@@ -4228,7 +4228,7 @@
 #goalSetup .info .narrative .card .recommendation .title,
 #rollover .info .advice-cards .card .recommendation .title,
 #rollover .info .narrative .card .recommendation .title {
-    color: #0d3866;
+    color: #003100;
     width: 130px;
     font-size: 16px
 }
@@ -4679,7 +4679,7 @@
 #rollover .info .advice-cards .guidance .guide-heading,
 #rollover .info .narrative .guidance .guide-heading {
     font-size: 18px;
-    color: #0d3866;
+    color: #003100;
     font-weight: 700
 }
 #goalSetup .info .advice-cards .guidance .guide-heading .back-on-track-help,
@@ -5036,16 +5036,16 @@
 #rollover .info .narrative .heading .advanced-settings.opened {
     color: #fff;
     border: 1px solid #0a2c4f;
-    -moz-box-shadow: inset 0 1px 0 #0d3866, inset -1px 0 0 #0d3866;
-    -webkit-box-shadow: inset 0 1px 0 #0d3866, inset -1px 0 0 #0d3866;
-    box-shadow: inset 0 1px 0 #0d3866, inset -1px 0 0 #0d3866;
-    background-color: #0d3866;
+    -moz-box-shadow: inset 0 1px 0 #003100, inset -1px 0 0 #003100;
+    -webkit-box-shadow: inset 0 1px 0 #003100, inset -1px 0 0 #003100;
+    box-shadow: inset 0 1px 0 #003100, inset -1px 0 0 #003100;
+    background-color: #003100;
     background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzBkMzg2NiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBkMzg2NiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==);
     background-size: 100%;
-    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #0d3866), color-stop(100%, #0d3866));
-    background-image: -moz-linear-gradient(top, #0d3866, #0d3866);
-    background-image: -webkit-linear-gradient(top, #0d3866, #0d3866);
-    background-image: linear-gradient(to bottom, #0d3866, #0d3866);
+    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #003100), color-stop(100%, #003100));
+    background-image: -moz-linear-gradient(top, #003100, #003100);
+    background-image: -webkit-linear-gradient(top, #003100, #003100);
+    background-image: linear-gradient(to bottom, #003100, #003100);
     *zoom: 1;
     filter: progid: DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FF0D3866', endColorstr='#FF0D3866')
 }
@@ -5053,19 +5053,19 @@
 #goalSetup .info .narrative .heading .advanced-settings.opened:hover,
 #rollover .info .advice-cards .heading .advanced-settings.opened:hover,
 #rollover .info .narrative .heading .advanced-settings.opened:hover {
-    background: #0d3866
+    background: #003100
 }
 #goalSetup .info .advice-cards .heading .advanced-settings.opened:active,
 #goalSetup .info .narrative .heading .advanced-settings.opened:active,
 #rollover .info .advice-cards .heading .advanced-settings.opened:active,
 #rollover .info .narrative .heading .advanced-settings.opened:active {
-    background-color: #0d3866;
+    background-color: #003100;
     background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzBkMzg2NiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBkMzg2NiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==);
     background-size: 100%;
-    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #0d3866), color-stop(100%, #0d3866));
-    background-image: -moz-linear-gradient(top, #0d3866, #0d3866);
-    background-image: -webkit-linear-gradient(top, #0d3866, #0d3866);
-    background-image: linear-gradient(to bottom, #0d3866, #0d3866);
+    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #003100), color-stop(100%, #003100));
+    background-image: -moz-linear-gradient(top, #003100, #003100);
+    background-image: -webkit-linear-gradient(top, #003100, #003100);
+    background-image: linear-gradient(to bottom, #003100, #003100);
     *zoom: 1;
     filter: progid: DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FF0D3866', endColorstr='#FF0D3866')
 }
@@ -5073,7 +5073,7 @@
 #goalSetup .info .narrative .goal-complete .heading,
 #rollover .info .advice-cards .goal-complete .heading,
 #rollover .info .narrative .goal-complete .heading {
-    color: #0d3866
+    color: #003100
 }
 #goalSetup .info .advice-cards .fred-on-track,
 #goalSetup .info .narrative .fred-on-track,
@@ -5404,7 +5404,7 @@
 #rollover .info .narrative .fund-income-goals.goal-complete-container .card .top .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td #rollover .info .narrative .fund-income-goals.goal-complete-container .card .top h3,
 #rollover .info .narrative .fund-income-goals.goal-complete-container .card .top .value {
-    color: #0d3866
+    color: #003100
 }
 #goalSetup .info .advice-cards .advice-card-container.goal-complete-container .card .allocation-text,
 #goalSetup .info .advice-cards .narrative-container.goal-complete-container .card .allocation-text,
@@ -6965,7 +6965,7 @@
 .wizard-buttons #rollover .info .narrative .fund-income-goals .narrative-outline .narrative-inside .madlib.rollover .ira-name#next,
 #rollover .info .narrative .fund-income-goals .narrative-outline .narrative-inside .madlib.rollover .wizard-buttons .ira-name#submit,
 .wizard-buttons #rollover .info .narrative .fund-income-goals .narrative-outline .narrative-inside .madlib.rollover .ira-name#submit {
-    color: #0d3866
+    color: #003100
 }
 #goalSetup .info .advice-cards .advice-card-container .narrative-outline .narrative-inside .madlib.rollover input.blank-line[name=name],
 #goalSetup .info .advice-cards .narrative-container .narrative-outline .narrative-inside .madlib.rollover input.blank-line[name=name],

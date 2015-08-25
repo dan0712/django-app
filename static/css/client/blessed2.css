@@ -439,7 +439,7 @@
     line-height: 21px;
     text-align: center;
     background-color: #e6e6e6;
-    color: #0d3866;
+    color: #006400;
     -moz-border-radius: 2px 2px 0 0;
     -webkit-border-radius: 2px;
     border-radius: 2px 2px 0 0
@@ -467,7 +467,7 @@
 .modal-panel .high-fade h2,
 .modal-panel .high-fade .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td .high-fade h3 {
-    color: #0d3866;
+    color: #006400;
     font-size: 21px
 }
 .modal-panel .high-fade p {
@@ -766,7 +766,7 @@
 }
 .modal-panel .pricing-plan table.plan-table tr:first-child h2.plan-type,
 .modal-panel .pricing-plan table.plan-table tr:first-child td h3.plan-type {
-    color: #0d3866;
+    color: #006400;
     font-size: 25px;
     margin: 65px 0 15px;
     font-weight: 100
@@ -1079,11 +1079,11 @@
     font-size: 16px;
     font-weight: 700;
     margin: 0 0 5px;
-    color: #0d3866;
+    color: #006400;
     line-height: 1.6
 }
 .modal-panel .support-feedback .contact-info {
-    color: #0d3866;
+    color: #006400;
     margin-bottom: 25px
 }
 .modal-panel .support-feedback .contact-info>div.left,
@@ -1433,7 +1433,7 @@
 #secondaryContent .manual-link-confirmation-banner .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row .error .modal-panel .support-feedback .contact-info>div.text .clearfix .contact-email a,
 .modal-panel .support-feedback .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .contact-info>div.text .clearfix .contact-email a,
 .retirement-plan-setup .content .retirement-spending-step .retirement-spending-container .how-we-calculated-container .how-we-calculated .calculated-row #secondaryContent .manual-link-confirmation-banner .error .modal-panel .support-feedback .contact-info>div.text .clearfix .contact-email a {
-    color: #0d3866
+    color: #006400
 }
 .modal-panel .support-feedback .contact-info>div.left .clearfix .contact-email a:hover,
 .modal-panel .support-feedback #secondaryContent .retirement-plan-banner .explanation .contact-info>div.text .clearfix .contact-email a:hover,
@@ -2337,19 +2337,19 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
 }
 .modal-panel .add-goal .card-lists>li .goal-card:active {
     color: #fff;
-    background: #0d3866;
+    background: #006400;
     border: 1px solid #0a2c4f
 }
 .modal-panel .add-goal .card-lists>li .goal-card.selected {
     color: #fff;
-    border: 1px solid #0a2c4f;
-    background-color: #0d3866;
-    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzBkMzg2NiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBkMzg2NiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==);
+    border: 1px solid #003100;
+    background-color: #006400;
+    background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwNjQwMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwNjQwMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
     background-size: 100%;
-    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #0d3866), color-stop(100%, #0d3866));
-    background-image: -moz-linear-gradient(top, #0d3866, #0d3866);
-    background-image: -webkit-linear-gradient(top, #0d3866, #0d3866);
-    background-image: linear-gradient(to bottom, #0d3866, #0d3866);
+    background-image: -webkit-gradient(linear, 50% 0, 50% 100%, color-stop(0%, #006400), color-stop(100%, #006400));
+    background-image: -moz-linear-gradient(top, #006400, #006400);
+    background-image: -webkit-linear-gradient(top, #006400, #006400);
+    background-image: linear-gradient(to bottom, #006400, #006400);
     *zoom: 1;
     filter: progid: DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FF0D3866', endColorstr='#FF0D3866')
 }
@@ -3350,7 +3350,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
     color: #035d0e
 }
 .ui-tooltip .bond .drift-amount {
-    color: #0d3866
+    color: #006400
 }
 .ui-tooltip .summary h2,
 .ui-tooltip .summary .modal-panel .pricing-plan table.plan-table tr td h3,
@@ -3397,7 +3397,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
     position: relative;
     text-align: left;
     background-color: #fff;
-    color: #0d3866;
+    color: #006400;
     padding: 15px;
     display: inline-block;
     -moz-box-shadow: 0 0 10px 2px #bbb;
@@ -3481,7 +3481,7 @@ body:not(.non-joint-ag) .non-joint-ag-only {
 header {
     height: 71px;
     background-repeat: repeat-x;
-    background-color: #0d3866;
+    background-color: #006400;
     border-bottom: 1px solid #fff;
     -moz-transition: background-color .5s linear;
     -o-transition: background-color .5s linear;
@@ -3649,7 +3649,7 @@ header .header-wrapper #subnav .header-button.show-notifications .unread-bubble 
     width: 5px;
     background: #7db9e8;
     border-radius: 10px;
-    border: 1px solid #0d3866
+    border: 1px solid #006400
 }
 header .header-wrapper #subnav .header-button.show-notifications .feed-preview {
     display: none;
@@ -4028,7 +4028,7 @@ div.ghost-form .pane:last-child {
 }
 div.ghost-form .pane h3 {
     font-size: 24px;
-    color: #0d3866;
+    color: #006400;
     line-height: 1.3em;
     padding-top: 65px;
     padding-bottom: 30px
@@ -4057,7 +4057,7 @@ div.ghost-form button.close-link {
     z-index: 1;
     width: auto;
     background: 0;
-    color: #0d3866
+    color: #006400
 }
 div.ghost-form button.close-link:hover {
     color: #A3C745
@@ -4085,7 +4085,7 @@ div.ghost-form .pane.benefits-pane p {
 }
 div.ghost-form .pane.benefits-pane h4 {
     font-weight: 400;
-    color: #0d3866;
+    color: #006400;
     text-align: center
 }
 .goal-complete {
@@ -4209,7 +4209,7 @@ div.ghost-form .pane.benefits-pane h4 {
     box-shadow: none
 }
 .better-spinner input:focus+.spinner-buttons {
-    border-color: #0d3866;
+    border-color: #006400;
     outline: 0;
     outline: thin dotted \9
 }
@@ -4849,7 +4849,7 @@ div.ghost-form .pane.benefits-pane h4 {
     margin-right: 0
 }
 .ribbon-drawer .drawer-ribbon-region .inner .white-box h3 {
-    color: #0d3866;
+    color: #006400;
     font-weight: 300;
     font-size: 19px;
     margin: 0 0 15px;
@@ -4899,7 +4899,7 @@ div.ghost-form .pane.benefits-pane h4 {
 #tlhRibbon .tlh-ribbon .inner .content {
     margin: 0 0 35px;
     position: relative;
-    color: #0d3866
+    color: #006400
 }
 #tlhRibbon .tlh-ribbon .inner .content.pinch {
     padding: 20px 15px 0
@@ -4949,7 +4949,7 @@ div.ghost-form .pane.benefits-pane h4 {
     line-height: 14px
 }
 #tlhRibbon .tlh-ribbon .inner .content .help-links a {
-    color: #0d3866
+    color: #006400
 }
 #tlhRibbon .tlh-ribbon .inner .content .details {
     color: #686868;
@@ -5150,7 +5150,7 @@ div.ghost-form .pane.benefits-pane h4 {
     margin-top: 5px;
     margin-bottom: 10px;
     font-weight: 700;
-    color: #0d3866
+    color: #006400
 }
 #tlhRibbon .tlh-ribbon.tlh-consent .inner .white-box .not-eligible p,
 #tlhRibbon .tlh-ribbon.tlh-consent .inner .white-box .dont-know p {
@@ -5255,10 +5255,10 @@ div.ghost-form .pane.benefits-pane h4 {
     font-size: 12px;
     text-align: center;
     text-transform: uppercase;
-    color: #0d3866
+    color: #006400
 }
 #tlhRibbon .tlh-ribbon.tlh-what-to-expect .bottom-links a {
-    color: #0d3866
+    color: #006400
 }
 #tlhRibbon .tlh-ribbon.tlh-what-to-expect .how-it-works .top-image {
     background-position: -264px -1374px;
@@ -5955,7 +5955,7 @@ div.ghost-form .pane.benefits-pane h4 {
 #summary .panel .joint-account-acceptance th {
     max-width: 420px;
     font-size: 36px;
-    color: #0d3866;
+    color: #006400;
     margin: 0 auto;
     font-weight: 500;
     line-height: 1.2
@@ -6023,7 +6023,7 @@ div.ghost-form .pane.benefits-pane h4 {
     font-size: 36px;
     margin: 50px auto 20px;
     display: block;
-    background: #0d3866;
+    background: #006400;
     width: 64px;
     height: 64px;
     line-height: 64px
@@ -6246,7 +6246,7 @@ html.responsive body .panel.logged-out {
     display: block;
     text-align: center;
     font-size: 14px;
-    color: #0d3866;
+    color: #006400;
     position: relative
 }
 .modal-panel .tax-impact .impact-data .impact-data-region .breakdown-region .impact-details-collapsed:hover {
@@ -6656,7 +6656,7 @@ html.responsive body .panel.logged-out {
     margin: 10px 0
 }
 .tos .title {
-    color: #0d3866;
+    color: #006400;
     margin-left: 10px
 }
 .tos .tos-line {
@@ -10054,7 +10054,7 @@ html.responsive body .panel.logged-out {
 #signup .sub-header a,
 #trust-signup .header-detail a,
 #trust-signup .sub-header a {
-    color: #0d3866
+    color: #006400
 }
 #signup #signupWelcomeHeader.error-header,
 #trust-signup #signupWelcomeHeader.error-header {
@@ -10114,7 +10114,7 @@ html.responsive body .panel.logged-out {
 #trust-signup .panel.body .modal-panel .pricing-plan table.plan-table tr td h3,
 .modal-panel .pricing-plan table.plan-table tr td #trust-signup .panel.body h3 {
     float: left;
-    color: #0d3866;
+    color: #006400;
     margin: 0
 }
 #signup .panel.body .header-detail,
@@ -10125,7 +10125,7 @@ html.responsive body .panel.logged-out {
 #signup .panel.body h3,
 #trust-signup .panel.body h3 {
     line-height: 30px;
-    color: #0d3866
+    color: #006400
 }
 #signup .big-form,
 #trust-signup .big-form {
