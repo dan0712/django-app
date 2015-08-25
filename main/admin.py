@@ -3,6 +3,7 @@ __author__ = 'cristian'
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
 from suit.admin import SortableTabularInline
+from suit.admin import SortableModelAdmin
 
 
 class CountryInline(SortableTabularInline):
@@ -10,10 +11,10 @@ class CountryInline(SortableTabularInline):
     sortable = 'ordering'
 
 
-class AssetClassAdmin(admin.ModelAdmin):
-    list_display = ('name', 'display_order', 'donut_order', 'investment_type', 'super_asset_class')
+class AssetClassAdmin(SortableModelAdmin):
+    list_display = ('name', 'display_name', 'display_order', 'investment_type', 'super_asset_class')
     inlines = (CountryInline,)
-    pass
+    sortable = 'display_order'
+
 
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
-

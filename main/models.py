@@ -6,20 +6,19 @@ from .fields import ColorField
 class Advisor(models.Model):
     is_confirmed = models.BooleanField()
     confirmation_key = models.CharField(max_length=36)
-    user = models.ForeignKey(User, unique=True)
+    user = models.ForeignKey(User)
 
 
 class Client(models.Model):
     is_confirmed = models.BooleanField()
     confirmation_key = models.CharField(max_length=36)
     advisor = models.ForeignKey(Advisor)
-    user = models.ForeignKey(User, unique=True)
+    user = models.ForeignKey(User)
 
 
 class AssetClass(models.Model):
     name = models.CharField(max_length=255)
     display_order = models.PositiveIntegerField()
-    donut_order = models.PositiveIntegerField()
     primary_color = ColorField()
     foreground_color = ColorField()
     drift_color = ColorField()
