@@ -50644,7 +50644,7 @@ var requirejs, require, define;
                     msg: "You must specify whether this is an Australian domiciled trust"
                 }, {
                     acceptance: !0,
-                    msg: 'We only accept Australian domiciled trust. If you have questions please email us at <a href="mailto:trusts@betterment.com">trusts@betasmartz.com</a> or call us at 1800-888-8888.'
+                    msg: 'We only accept Australian domiciled trusts. If you have questions please email us at <a href="mailto:trusts@betterment.com">trusts@betasmartz.com</a> or call us at 1800-888-8888.'
                 }],
                 legalName: {
                     required: !0
@@ -50686,7 +50686,7 @@ var requirejs, require, define;
                     required: !0,
                     pattern: "digits",
                     length: 4,
-                    msg: "Zip is required and must be valid with 4 digits"
+                    msg: "Post Code is required and must be valid with 4 digits"
                 },
                 userAgreement: {
                     required: !0,
