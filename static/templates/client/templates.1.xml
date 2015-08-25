@@ -604,7 +604,7 @@ On the next screen, we&#39;ll give you advice on how to achieve your goal.
 <span class="question">Why goal-based investing?</span>
 </div>
 <div class="content">
-BetaSmartz is customizable to the way you think about your money through "goals." Using goals, your portfolio can be segmented into a spectrum of goal-specific risk and return targets. In addition to customized allocations for each goal, if you have a specific target amount in mind, BetaSmartz&#39;s advice engine will recommend savings and time horizon changes to achieve the target. For customers in retirement, goals allow the flexibility to take regular withdrawals or to continue to build wealth with time-horizon based buckets at different risk levels.
+BetaSmartz is customizable to the way you think about your money through "goals." Using goals, your portfolio can be segmented into a spectrum of goal-specific risk and return targets. In addition to customized allocations for each goal, if you have a specific target amount in mind, BetaSmartz's allocation engine will recommend savings and time horizon changes to achieve the target. For customers in retirement, goals allow the flexibility to take regular withdrawals or to continue to build wealth with time-horizon based buckets at different risk levels.
 </div>
 </li>
 <li>
@@ -614,8 +614,7 @@ BetaSmartz is customizable to the way you think about your money through "goals.
 <span class="question">Why this stock allocation?</span>
 </div>
 <div class="content">
-BetaSmartz&#39;s systematic portfolio advice engine considers age, time horizon, and investment goal type to formulate tailored advice on both asset allocation and required savings or withdrawal rate. This process provides ongoing dynamic allocation advice for each investment goal through time. Based on our research, the allocation advice glide path gradually decreases the allocation to stocks over time.  Additionally, each goal can be customized based on your goal-specific risk tolerance (conservative, moderate or aggressive).
-<a href="<%= brochure_url('resources/inside-betterment/investment-advice/') %>" target="_blank">Learn more &gt;</a>
+BetaSmartz&#39;s systematic portfolio allocation engine considers age, time horizon, and investment goal type to formulate tailored advice on both asset allocation and required savings or withdrawal rate. This process provides ongoing dynamic allocation advice for each investment goal through time. Based on our research, the allocation advice glide path gradually decreases the allocation to stocks over time. Additionally, each goal can be customized based on your goal-specific risk tolerance (conservative, moderate or aggressive).
 </div>
 </li>
 <li>
@@ -625,8 +624,7 @@ BetaSmartz&#39;s systematic portfolio advice engine considers age, time horizon,
 <span class="question">About our projections</span>
 </div>
 <div class="content">
-BetaSmartz&#39;s projections work in concert with the advice engine to show the range of possible future investment values that illustrate the impact of different contribution and withdrawal choices, investment time horizons, and portfolio allocations. Performance projections are derived from the goal&#39;s specific expected return and volatility assumptions. Savings projections estimate required monthly contributions assuming a 60% likelihood of the portfolio reaching its goal target. Suggested withdrawal advice assumes a 99% chance of the portfolio lasting throughout the time horizon.
-<a href="<%= brochure_url('/advice-projection-methodology/') %>" target="_blank">Learn more &gt;</a>
+BetaSmartz&#39;s projections work together with the allocation engine to show the range of possible future investment values that illustrate the impact of different contribution and withdrawal choices, investment time horizons, and portfolio allocations. Performance projections are derived from the goal's specific expected return and volatility assumptions. Savings projections estimate required monthly contributions assuming a 60% likelihood of the portfolio reaching its goal target. Suggested withdrawal advice assumes a 99% chance of the portfolio lasting throughout the time horizon.
 </div>
 </li>
 
