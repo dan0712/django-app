@@ -12359,7 +12359,7 @@ var requirejs, require, define;
             r = function(e) {
                 var t = n(e),
                     r = t.hostname.match(/\.betterment\..+$/),
-                    i = r ? r[0] : ".betterment.com";
+                    i = r ? r[0] : ".betasmartz.com";
                 return i
             };
         return {
@@ -13282,7 +13282,7 @@ var requirejs, require, define;
                     },
                     complete: function() {
                         e.cookie(BMT.userNameCookieKey, null, {
-                            domain: location.host === "localhost" ? "localhost" : "betterment.com",
+                            domain: location.host === "localhost" ? "localhost" : "betasmartz.com",
                             path: "/"
                         })
                     }
@@ -13291,7 +13291,7 @@ var requirejs, require, define;
             saveEmail: function(t) {
                 this.rememberEmail.is(":checked") ? e.cookie(BMT.saveEmailCookieKey, this.userName.val(), {
                     expires: 90,
-                    domain: BMT.isProd() ? ".betterment.com" : ".betterment.qa",
+                    domain: BMT.isProd() ? ".betasmartz.com" : ".betterment.qa",
                     path: "/"
                 }) : e.cookie(BMT.saveEmailCookieKey, null)
             },
@@ -14144,9 +14144,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, t && t.dividends, a) : h.call(t, "money", t && t.dividends, a))) + '</div>\n</li>\n<li class="sub earned">\n    <div><span class="unadvised-user-only">Betterment&#39;s fees</span><span class="advised-user-only">Fees</span></div>\n    <div>' + l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.fees, a) : h.call(t, "money", t && t.fees, a))) + '</div>\n</li>\n\n<hr />\n\n<li class="personal-return">\n    <div>\n        Earnings %\n        <div class="account-returns-help help-icon">\n            Your earnings include the impact of all cash flows, allocation changes and transfers you’ve made over the selected time. Earnings is calculated\n            by dividing your earnings (including market changes, dividends, and fees) by your net deposits or your average balance.\n            <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "customer/portal/articles/2087933-how-does-betterment-calculate-the-earnings-percentage-", a) : h.call(t, "supportUrl", "customer/portal/articles/2087933-how-does-betterment-calculate-the-earnings-percentage-", a))) + '" target="_blank">Read why&nbsp;&gt;</a> This return cannot be compared with other investments since the cashflows will be different.\n        </div>\n    </div>\n    <div>\n        ', o = (u = n.personalReturn || t && t.personalReturn, a = {
+            }, u ? u.call(t, t && t.fees, a) : h.call(t, "money", t && t.fees, a))) + '</div>\n</li>\n\n<hr />\n\n<li class="personal-return">\n    <div>\n        Earnings %\n        <div class="account-returns-help help-icon">\n            Your earnings include the impact of all cash flows, allocation changes and transfers you’ve made over the selected time. Earnings is calculated\n            by dividing your earnings (including market changes, dividends, and fees) by your net deposits or your average balance.\n  This return cannot be compared with other investments since the cashflows will be different.\n        </div>\n    </div>\n    <div>\n        ', o = (u = n.personalReturn || t && t.personalReturn, a = {
                 hash: {}
             }, u ? u.call(t, a) : h.call(t, "personalReturn", a)), s += l((u = n.pct || t && t.pct, a = {
                 hash: {}
@@ -14156,9 +14154,7 @@ var requirejs, require, define;
                 fn: c.program(7, m, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n\n            If you are comparing returns to other investments you hold, you should use this return. <a href="' + l((u = n.brochureUrl || t && t.brochureUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "resources/investment-strategy/portfolio-management/betterment-calculate-investment-returns/", a) : h.call(t, "brochureUrl", "resources/investment-strategy/portfolio-management/betterment-calculate-investment-returns/", a))) + '" target="_blank">Read more&nbsp;&gt;</a>\n        </div>\n    </div>\n    <div>\n        ', o = (u = n.periodReturn || t && t.periodReturn, a = {
+            return s += '\n\n            If you are comparing returns to other investments you hold, you should use this return.\n        </div>\n    </div>\n    <div>\n        ', o = (u = n.periodReturn || t && t.periodReturn, a = {
                 hash: {}
             }, u ? u.call(t, a) : h.call(t, "periodReturn", a)), s += l((u = n.pct || t && t.pct, a = {
                 hash: {}
@@ -15504,7 +15500,7 @@ var requirejs, require, define;
         return s
     }), define("hbs!views/transfer/automaticDepositSettingsEmpty", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="modal-body">\n    Your automatic deposit is currently off.\n\n    <div class="info-tip clearfix">\n        <div class="arrow"></div>\n        <div class="icon">\n            <div class="lightbulb-tip-icon"></div>\n        </div>\n        <div class="text">\n            Turning on automatic deposit helps you reach your goal faster, and also <a target="_blank" href="http://support.betterment.com/customer/portal/articles/987453-how-and-when-is-my-portfolio-rebalanced-">rebalances your portfolio</a> in a tax efficient way.\n        </div>\n    </div>\n</div>\n\n<div class="modal-buttons">\n    <button id="ok">OK</button>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="modal-body">\n    Your automatic deposit is currently off.\n\n    <div class="info-tip clearfix">\n        <div class="arrow"></div>\n        <div class="icon">\n            <div class="lightbulb-tip-icon"></div>\n        </div>\n        <div class="text">\n            Turning on automatic deposit helps you reach your goal faster, and also <a target="_blank" href="http://support.betasmartz.com/customer/portal/articles/987453-how-and-when-is-my-portfolio-rebalanced-">rebalances your portfolio</a> in a tax efficient way.\n        </div>\n    </div>\n</div>\n\n<div class="modal-buttons">\n    <button id="ok">OK</button>\n</div>\n'
         });
         return t.registerPartial("views/transfer/automaticDepositSettingsEmpty", n), n
     }), define("models/automaticDeposit", ["jquery", "underscore", "models/automaticTransaction"], function(e, t, n) {
@@ -21011,7 +21007,7 @@ var requirejs, require, define;
                     icon: "warning",
                     title: "Deposits to inherited IRAs are not allowed.",
                     width: 410,
-                    body: '<p>Making deposits or rollovers into your inherited IRA will trigger tax consequences that you most likely want to avoid. For more details, see the rules in IRS Publication 590 under Inherited IRAs. Contact <a href="mailto:support@betterment.com">support@betterment.com</a> if you have any questions.</p>',
+                    body: '<p>Making deposits or rollovers into your inherited IRA will trigger tax consequences that you most likely want to avoid. For more details, see the rules in IRS Publication 590 under Inherited IRAs. Contact <a href="mailto:support@betasmartz.com">support@betasmartz.com</a> if you have any questions.</p>',
                     bodyAttrs: {}
                 })
             }
@@ -23833,7 +23829,7 @@ var requirejs, require, define;
                 fn: c.program(5, v, i)
             });
             if (o || o === 0) s += o;
-            s += '\n    <div class="learn-more-data">\n        How is this information used?\n    </div>\n    <div class="help-content">\n        By using this service, we will retrieve your account and routing numbers from your bank via Plaid, a third-party service. By using Plaid, you agree to the terms <a href="http://support.betterment.com/customer/portal/articles/1625876-linking-bank-account-to-betterment-with-plaid" target="_blank">here</a> and in your client agreements.\n    </div>\n    <div class="buttons">\n        ' + l((u = n.submitButton || t && t.submitButton, a = {
+            s += '\n    <div class="learn-more-data">\n        How is this information used?\n    </div>\n    <div class="help-content">\n        By using this service, we will retrieve your account and routing numbers from your bank via Plaid, a third-party service. By using Plaid, you agree to the terms <a href="http://support.betasmartz.com/customer/portal/articles/1625876-linking-bank-account-to-betterment-with-plaid" target="_blank">here</a> and in your client agreements.\n    </div>\n    <div class="buttons">\n        ' + l((u = n.submitButton || t && t.submitButton, a = {
                 hash: {}
             }, u ? u.call(t, "Connect bank", a) : f.call(t, "submitButton", "Connect bank", a))) + "\n        ", o = n.unless.call(t, t && t.isRelink, {
                 hash: {},
@@ -24324,7 +24320,7 @@ var requirejs, require, define;
                 fn: f.program(1, l, i)
             });
             if (o || o === 0) s += o;
-            return s += '.</p>\n    <p class="body">You will receive a reminder to verify the amounts <nobr>from support@betterment.com</nobr></p>\n    <div class="buttons">\n        <div class="submit-button">\n            <button type="button">Great, got it</button>\n        </div>\n    </div>\n</div>', s
+            return s += '.</p>\n    <p class="body">You will receive a reminder to verify the amounts <nobr>from support@betasmartz.com</nobr></p>\n    <div class="buttons">\n        <div class="submit-button">\n            <button type="button">Great, got it</button>\n        </div>\n    </div>\n</div>', s
         });
         return t.registerPartial("views/linkBankAccount/manualVerification", n), n
     }), define("views/linkBankAccount/manualVerificationView", ["underscore", "hbs!views/linkBankAccount/manualVerification", "common/betterment.views", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r) {
@@ -28477,7 +28473,7 @@ var requirejs, require, define;
             return e = e || {}, !e.model && BMT.accounts().maxedOutGoals() ? BMT.alert({
                 title: "Cannot Create New Goal",
                 icon: "warning",
-                body: "Sorry, at this time you can only have a maximum of ten regular investing goals and two IRA goals. Let us know if you're interested in having more goals by sending an email to support@betterment.com."
+                body: "Sorry, at this time you can only have a maximum of ten regular investing goals and two IRA goals. Let us know if you're interested in having more goals by sending an email to support@betasmartz.com."
             }) : C.call(N, e)
         }, N
     }), define("models/withheldBonus", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
@@ -30370,7 +30366,7 @@ var requirejs, require, define;
                 fn: f.program(1, l, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n                        </span>\n                        and immediately withdraw them. When you receive the deposits, please come back and tell us those amounts to verify your account. You will receive a reminder to verify the amounts from <a href="mailto:support@betterment.com">support@betterment.com</a>.\n                    </p>\n            </div>\n        </div>\n        <div class="banner-close" data-dismiss="banner"></div>\n    </div>\n</div>', s
+            return s += '\n                        </span>\n                        and immediately withdraw them. When you receive the deposits, please come back and tell us those amounts to verify your account. You will receive a reminder to verify the amounts from <a href="mailto:support@betasmartz.com">support@betasmartz.com</a>.\n                    </p>\n            </div>\n        </div>\n        <div class="banner-close" data-dismiss="banner"></div>\n    </div>\n</div>', s
         });
         return t.registerPartial("views/linkBankAccount/linkWithRoutingConfirmationBanner", n), n
     }), define("views/linkBankAccount/linkWithRoutingConfirmationBannerView", ["common/betterment.views", "hbs!views/linkBankAccount/linkWithRoutingConfirmationBanner"], function(e, t) {
@@ -30837,7 +30833,7 @@ var requirejs, require, define;
             create: function(n) {
                 return new t({
                     title: "Pending Approval",
-                    body: "Your trust account is still pending approval. At this time, we cannot process deposits into your trust account. Please contact trusts@betterment.com or " + e.getSupportNumber() + ".",
+                    body: "Your trust account is still pending approval. At this time, we cannot process deposits into your trust account. Please contact trusts@betasmartz.com or " + e.getSupportNumber() + ".",
                     buttons: [{
                         id: "ok",
                         title: "Continue"
@@ -44642,7 +44638,7 @@ var requirejs, require, define;
                     return this.self._hasRollover()
                 },
                 why_we_ask_link: function() {
-                    return this.self.model.isBuildWealth() ? "http://support.betterment.com/customer/portal/articles/1078929-can-i-have-a-goal-without-a-target" : "http://support.betterment.com/customer/portal/articles/1078904-why-do-you-ask-for-my-time-horizon-and-goal-target-amount"
+                    return this.self.model.isBuildWealth() ? "http://support.betasmartz.com/customer/portal/articles/1078929-can-i-have-a-goal-without-a-target" : "http://support.betasmartz.com/customer/portal/articles/1078904-why-do-you-ask-for-my-time-horizon-and-goal-target-amount"
                 },
                 current_age_text: function() {
                     if (!this.self._showAgeText()) return "";
@@ -45203,7 +45199,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.providerSelector, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_default_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m rolling over an account with approximately\n                        $<input type="text" class="blank-line money" name="approximateValue" data-help-content="This can be an estimate." money-input />.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_direct_transfer_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m ready to begin a direct transfer now.\n                    </span>\n\n                </span>\n\n                <div class="clear-left tos-area" data-show="view:should_create_account < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <p>Since you are adding an IRA, we need you to agree to the IRA terms below.</p>\n                    <div class="terms-of-service"></div>\n                </div>\n            </div>\n            <div class="next-step">\n                <div class="vertical-align">\n                    <span class="next-step-text">\n\n                        <!-- if the rollover type requires matched/unmatched show the checkbox for that -->\n                        <span class="match-line" data-show="view:show_matched < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <input type="checkbox" name="matched" />\n                            My employer has matched my contributions to my\n                            <span data-html="view:rollover_label < view.selectedRollover"></span>\n                        </span>\n\n                        <!-- if the rollover type Does NOT require matched/unmatched, show a FAQ link -->\n                        <span data-hide="view:hide_help < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            Not sure which plan you currently have?\n                            \n                        </span>\n\n                        <span data-show="view:show_fund_type_both < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support both">\n                                Having mixed Traditional and Roth funds is a special case, so we ask that you call us at <strong class="bold-text">888.428.9482</strong> or email <a href="mailto:support@betterment.com">support@betterment.com</a> so we can walk you through the process.\n                            </span>\n                        </span>\n\n                        <span data-show="view:show_fund_type_not_sure < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support not-sure">\n                                Generally, if you deducted your contributions from your income, they are Traditional funds.  If your employer made contributions, such as a match, they are Traditional funds.  Roth funds are post-tax.\n                                <br />\n                                <br />\n                                If you still are not sure, call your plan provider.  For further assistance, call us at <strong class="bold-text">888.428.9482</strong>.\n                            </span>\n                        </span>\n\n                    </span>\n                    <button class="right orange ok"\n                        data-enabled="view:enable_button < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider view.approximateValue view.termsAcceptance"\n                        data-text="view:button_text < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider"\n                        data-class="view:button_class < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    </button>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n', s
+            }) : u), s += f(o) + '.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_default_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m rolling over an account with approximately\n                        $<input type="text" class="blank-line money" name="approximateValue" data-help-content="This can be an estimate." money-input />.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_direct_transfer_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m ready to begin a direct transfer now.\n                    </span>\n\n                </span>\n\n                <div class="clear-left tos-area" data-show="view:should_create_account < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <p>Since you are adding an IRA, we need you to agree to the IRA terms below.</p>\n                    <div class="terms-of-service"></div>\n                </div>\n            </div>\n            <div class="next-step">\n                <div class="vertical-align">\n                    <span class="next-step-text">\n\n                        <!-- if the rollover type requires matched/unmatched show the checkbox for that -->\n                        <span class="match-line" data-show="view:show_matched < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <input type="checkbox" name="matched" />\n                            My employer has matched my contributions to my\n                            <span data-html="view:rollover_label < view.selectedRollover"></span>\n                        </span>\n\n                        <!-- if the rollover type Does NOT require matched/unmatched, show a FAQ link -->\n                        <span data-hide="view:hide_help < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            Not sure which plan you currently have?\n                            \n                        </span>\n\n                        <span data-show="view:show_fund_type_both < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support both">\n                                Having mixed Traditional and Roth funds is a special case, so we ask that you call us at <strong class="bold-text">888.428.9482</strong> or email <a href="mailto:support@betasmartz.com">support@betasmartz.com</a> so we can walk you through the process.\n                            </span>\n                        </span>\n\n                        <span data-show="view:show_fund_type_not_sure < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support not-sure">\n                                Generally, if you deducted your contributions from your income, they are Traditional funds.  If your employer made contributions, such as a match, they are Traditional funds.  Roth funds are post-tax.\n                                <br />\n                                <br />\n                                If you still are not sure, call your plan provider.  For further assistance, call us at <strong class="bold-text">888.428.9482</strong>.\n                            </span>\n                        </span>\n\n                    </span>\n                    <button class="right orange ok"\n                        data-enabled="view:enable_button < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider view.approximateValue view.termsAcceptance"\n                        data-text="view:button_text < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider"\n                        data-class="view:button_class < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    </button>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/advice/rolloverNarrative", n), n
     }), define("views/advice/rolloverNarrativeView", ["jquery", "underscore", "common/betterment.views", "components/portfolio/scripts/services/portfolioSetService", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "models/rolloverFollowup", "models/account", "components/common/scripts/models/appData", "views/common/inheritedIRAWarningView", "views/common/termsOfServiceView", "views/advice/rolloverAccountSelectorView", "hbs!views/advice/rolloverNarrative", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
@@ -50644,7 +50640,7 @@ var requirejs, require, define;
                     msg: "You must specify whether this is an Australian domiciled trust"
                 }, {
                     acceptance: !0,
-                    msg: 'We only accept Australian domiciled trusts. If you have questions please email us at <a href="mailto:trusts@betterment.com">trusts@betasmartz.com</a> or call us at 1800-888-8888.'
+                    msg: 'We only accept Australian domiciled trusts. If you have questions please email us at <a href="mailto:trusts@betasmartz.com">trusts@betasmartz.com</a> or call us at 1800-888-8888.'
                 }],
                 legalName: {
                     required: !0
@@ -54122,7 +54118,7 @@ var requirejs, require, define;
             getRecommendationsText: function(t, n, r, i, s) {
                 var o = this._pronouns(s),
                     u = "";
-                return t > 0 && (r > 0 ? n > 0 ? u = e.money(t, 0) + " in a Roth IRA and " + e.money(n + r, 0) + " in a traditional IRA. " + o.possessive.capitalize() + " income will limit deductibility to " + e.money(n, 0) + "." : u = e.money(t, 0) + " in a Roth IRA and " + e.money(r, 0) + " in a non-deductible traditional IRA. " + o.subject.capitalize() + ' may be able to convert the non-deductible traditional IRA contribution to a Roth IRA. <a href="https://www.betterment.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.' : n > 0 && n !== t ? u = e.money(t, 0) + " in a Roth IRA and " + e.money(n, 0) + " in a deductible traditional IRA. Given that " + o.possessive + ' income falls in the <a href="http://www.irs.gov/Retirement-Plans/Plan-Participant,-Employee/Amount-of-Roth-IRA-Contributions-That-You-Can-Make-for-2014" target="_blank">partial contribution range</a>, any additional deductions could impact what ' + o.singular + " can contribute." : t > n && (u = e.money(t, 0) + " in a Roth IRA. " + o.subject.capitalize() + " won't get a tax deduction now, but withdrawals will be federally tax free if " + o.inPast + " held the account for 5 years and " + o.inPastReference + ' at least 59.5. <a href="http://www.irs.gov/Retirement-Plans/Roth-IRAs" target="_blank">Read more about Roth IRAs</a>.')), !u && n > 0 && (n > t && r === 0 ? i < 0 ? u = e.money(n, 0) + " in a deductible traditional IRA. Given that " + o.possessive + ' future tax rate will likely be lower, it is most efficient to save taxes at a higher rate now and withdraw in retirement at a lower tax rate. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.' : u = e.money(n, 0) + " in a deductible traditional IRA. While " + o.possessive + " future tax rate may not be lower, " + o.singular + ' will benefit from tax free growth. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.' : r > 0 && (u = e.money(n + r, 0) + " in a traditional IRA. " + o.subject.capitalize() + " will be able to claim a partial deduction of " + e.money(n, 0) + '. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.')), u || (t > 0 && n === t ? u = "an equal amount in a Roth IRA and traditional IRA. Given that " + o.possessive + " future tax rate will likely be similar to " + o.possessive + " current rate, having both pre-tax and post-tax accounts may be useful for controlling " + o.possessive + " income and taxes in retirement." : r > 0 && (u = e.money(r, 0) + " in a non-deductible traditional IRA. A non-deductible traditional IRA is funded with after-tax money, and only withdrawals of gains in retirement are taxed. This type of IRA may also allow " + o.subject + ' to efficiently move money into a Roth IRA via a Roth conversion (i.e., a "backdoor" Roth IRA). <a href="https://www.betterment.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.')), u ? (s ? "For your spouse, we recommend investing " : "We recommend investing ") + u : u
+                return t > 0 && (r > 0 ? n > 0 ? u = e.money(t, 0) + " in a Roth IRA and " + e.money(n + r, 0) + " in a traditional IRA. " + o.possessive.capitalize() + " income will limit deductibility to " + e.money(n, 0) + "." : u = e.money(t, 0) + " in a Roth IRA and " + e.money(r, 0) + " in a non-deductible traditional IRA. " + o.subject.capitalize() + ' may be able to convert the non-deductible traditional IRA contribution to a Roth IRA. <a href="https://www.betasmartz.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.' : n > 0 && n !== t ? u = e.money(t, 0) + " in a Roth IRA and " + e.money(n, 0) + " in a deductible traditional IRA. Given that " + o.possessive + ' income falls in the <a href="http://www.irs.gov/Retirement-Plans/Plan-Participant,-Employee/Amount-of-Roth-IRA-Contributions-That-You-Can-Make-for-2014" target="_blank">partial contribution range</a>, any additional deductions could impact what ' + o.singular + " can contribute." : t > n && (u = e.money(t, 0) + " in a Roth IRA. " + o.subject.capitalize() + " won't get a tax deduction now, but withdrawals will be federally tax free if " + o.inPast + " held the account for 5 years and " + o.inPastReference + ' at least 59.5. <a href="http://www.irs.gov/Retirement-Plans/Roth-IRAs" target="_blank">Read more about Roth IRAs</a>.')), !u && n > 0 && (n > t && r === 0 ? i < 0 ? u = e.money(n, 0) + " in a deductible traditional IRA. Given that " + o.possessive + ' future tax rate will likely be lower, it is most efficient to save taxes at a higher rate now and withdraw in retirement at a lower tax rate. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.' : u = e.money(n, 0) + " in a deductible traditional IRA. While " + o.possessive + " future tax rate may not be lower, " + o.singular + ' will benefit from tax free growth. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.' : r > 0 && (u = e.money(n + r, 0) + " in a traditional IRA. " + o.subject.capitalize() + " will be able to claim a partial deduction of " + e.money(n, 0) + '. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.')), u || (t > 0 && n === t ? u = "an equal amount in a Roth IRA and traditional IRA. Given that " + o.possessive + " future tax rate will likely be similar to " + o.possessive + " current rate, having both pre-tax and post-tax accounts may be useful for controlling " + o.possessive + " income and taxes in retirement." : r > 0 && (u = e.money(r, 0) + " in a non-deductible traditional IRA. A non-deductible traditional IRA is funded with after-tax money, and only withdrawals of gains in retirement are taxed. This type of IRA may also allow " + o.subject + ' to efficiently move money into a Roth IRA via a Roth conversion (i.e., a "backdoor" Roth IRA). <a href="https://www.betasmartz.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.')), u ? (s ? "For your spouse, we recommend investing " : "We recommend investing ") + u : u
             },
             _pronouns: function(e) {
                 return {
@@ -54889,7 +54885,7 @@ var requirejs, require, define;
                     skipErrorAlert: !0,
                     success: function(t, n) {
                         e.cookie(BMT.userNameCookieKey, null, {
-                            domain: location.host === "localhost" ? "localhost" : "betterment.com",
+                            domain: location.host === "localhost" ? "localhost" : "betasmartz.com",
                             path: "/"
                         }), BMT.session.parse(), BMT.session.refreshTokens().then(function() {
                             BMT.vent.trigger("login")
@@ -57164,7 +57160,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.legalUrl, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '" alt="Terms" title="Terms">Terms</a></li>\n</ul>\n<ul class="unadvised-user-only">\n    <li>Need some assistance?</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="FAQ" href="http://support.betterment.com/" alt="FAQ" title="FAQ">FAQ</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="ContactSupport" href="#" id="support">Contact our support team</a></li>\n    \n</ul>\n<ul class="advised-user-only">\n    <li>Technical support</li>\n    <li><a href="mailto:', (u = n.supportEmail) ? o = u.call(t, {
+            }) : u), s += f(o) + '" alt="Terms" title="Terms">Terms</a></li>\n</ul>\n<ul class="unadvised-user-only">\n    <li>Need some assistance?</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="FAQ" href="http://support.betasmartz.com/" alt="FAQ" title="FAQ">FAQ</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="ContactSupport" href="#" id="support">Contact our support team</a></li>\n    \n</ul>\n<ul class="advised-user-only">\n    <li>Technical support</li>\n    <li><a href="mailto:', (u = n.supportEmail) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.supportEmail, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -57234,7 +57230,7 @@ var requirejs, require, define;
             },
             onOK: function(r) {
                 var i = n.Syphon.serialize(this);
-                i.from = i.from || "anonymous-feedback@betterment.com", this.model.validate(i) || (this.block(), i.message = "Feedback from Footer: " + i.message + " (URL: " + this.getCurrentPageURL() + ")", this.model.save(i, {
+                i.from = i.from || "anonymous-feedback@betasmartz.com", this.model.validate(i) || (this.block(), i.message = "Feedback from Footer: " + i.message + " (URL: " + this.getCurrentPageURL() + ")", this.model.save(i, {
                     forceSave: !0,
                     success: t.bind(function() {
                         e("#footerLinks form textarea").val(""), this.collapseForm(), BMT.flash("Your message has been sent to our team. Thanks for your feedback!")
