@@ -9,7 +9,6 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^grappelli/', include('grappelli.urls')),
     url(r'^session', csrf_exempt(Session.as_view()), name="session"),
 
     # Advisor views
