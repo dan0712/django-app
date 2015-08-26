@@ -1,338 +1,446 @@
 [
     {
-        "pk": 1, 
-        "model": "main.assetclass", 
+        "pk": 1,
+        "model": "main.assetclass",
         "fields": {
-            "donut_order": 12000, 
-            "name": "US_TOTAL_MARKET_STOCKS", 
-            "drift_color": "#e4f5c9", 
-            "display_order": 1000, 
-            "foreground_color": "#333333", 
-            "primary_color": "#bce577", 
-            "tickers_explanation": "VTI, SCHB, and ITOT all offer exposure to the entire US Stock market and are highly correlated.  They all have very low expense ratios.  VTI is the most liquid and has the tightest bid-ask spreads so it is our primary choice.", 
-            "asset_class_explanation": "US Total Stock Market contains broad exposure to the entire US stock market, including growth and value companies of small, mid and large capitalizations.  This asset class allows participation in the historically strong long-term growth of the US economy."
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 11750, 
-            "name": "US_DIVIDEND_STOCKS", 
-            "drift_color": "#e0f4c6", 
-            "display_order": 1200, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#b2e471", 
-            "tickers_explanation": "VIG, SCHD, DVY and VYM are tilted towards large companies that pay higher dividends.", 
-            "asset_class_explanation": "US dividend stocks give investors broad exposure to higher dividend yield stocks."
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 11500, 
-            "name": "US_LARGE_CAP_STOCKS", 
-            "drift_color": "#def3c3", 
-            "display_order": 1500, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#ace069", 
-            "tickers_explanation": "SPY offers exposure to the largest 500 stocks in the S&P500 index.  VIG and SCHD are tilted towards large companies that pay higher dividends.", 
-            "asset_class_explanation": "US Large-Cap stocks are the highest market capitalization companies in the US market."
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 11000, 
-            "name": "US_LARGE_CAP_VALUE_STOCKS", 
-            "drift_color": "#d5edc1", 
-            "display_order": 2000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#96d363", 
-            "tickers_explanation": "VTV, IVE, and SCHV all offer broad US Large-Cap Value Stock exposure and are highly correlated.  VTV and SCHV have the lowest expense ratios.  VTV is our primary choice due to its high liquidity.  IVE has slightly higher expenses but also offers high liquidity.", 
-            "asset_class_explanation": "US Large-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio toward large size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
-        }
-    }, 
-    {
-        "pk": 5, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 10500, 
-            "name": "US_LARGE_CAP_GROWTH_STOCKS", 
-            "drift_color": "#d7f1c1", 
-            "display_order": 2100, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#9bdb65", 
-            "tickers_explanation": "VUG, VOOG, IWF, SCHG, IVQ and QQQ all offer US Large-Cap Growth Stock exposure and are highly correlated. SCHG and VUG are both the least expensive, while IWF is the most liquid.", 
-            "asset_class_explanation": "US Large-Cap Growth stocks make up 24% of the US Total Stock Market, and include an exposure to large size companies with high price-to-earnings ratios, indicating the market believes they have high growth prospects."
-        }
-    }, 
-    {
-        "pk": 6, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 10300, 
-            "name": "US_MID_CAP_STOCKS", 
-            "drift_color": "#74b503", 
-            "display_order": 2900, 
-            "foreground_color": "#aacff3", 
-            "primary_color": "#74b503", 
-            "tickers_explanation": "VO, IWR, and IJH are highly correlated offerings for broad US Mid-Cap Stock exposure. VO is our primary choice since it has the lowest expense ratio and tightest bid-ask spread.", 
-            "asset_class_explanation": "US Mid-Cap stocks overlap with the US Total Stock Market, but when included tilt the portfolio towards medium size companies."
-        }
-    }, 
-    {
-        "pk": 7, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 10000, 
-            "name": "US_MID_CAP_VALUE_STOCKS", 
-            "drift_color": "#c7e19a", 
-            "display_order": 3000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#74b503", 
-            "tickers_explanation": "VOE, IWS, and IJJ are highly correlated offerings for broad US Mid-Cap Value Stock exposure. VOE is our primary choice since it has the lowest expense ratio and tightest bid-ask spread.", 
-            "asset_class_explanation": "US Mid-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio towards medium size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
-        }
-    }, 
-    {
-        "pk": 8, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 9500, 
-            "name": "US_SMALL_CAP_STOCKS", 
-            "drift_color": "#c1d69b", 
-            "display_order": 3500, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#639906", 
-            "tickers_explanation": "IWM, IJR, VB, JKJ, SLY, SCHA and VTWO all offer broad US Small-Cap Stock exposure and are highly correlated. SCHA and VB are both the least expensive, while IJR and IWM are the most liquid.", 
-            "asset_class_explanation": "US Small-Cap stocks make up 9% of the US Total Stock Market, and deliver exposure to smaller companies across the growth and value spectrum."
-        }
-    }, 
-    {
-        "pk": 9, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 9000, 
-            "name": "US_SMALL_CAP_VALUE_STOCKS", 
-            "drift_color": "#b9d0a5", 
-            "display_order": 4000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#50891e", 
-            "tickers_explanation": "VBR, IWN, and IJS are highly correlated options to gain US Small-Cap Value stock exposure. VBR is our primary choice with its low expenses and largest asset base.", 
+            "display_name": "US Small-Cap Value",
+            "name": "US_SMALL_CAP_VALUE_STOCKS",
+            "super_asset_class": "EQUITY_US",
+            "drift_color": "#b9d0a5",
+            "display_order": 4000,
+            "foreground_color": "#ffffff",
+            "investment_type": "STOCKS",
+            "primary_color": "#50891e",
+            "tickers_explanation": "VBR, IWN, and IJS are highly correlated options to gain US Small-Cap Value stock exposure. VBR is our primary choice with its low expenses and largest asset base.",
             "asset_class_explanation": "US Small-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio towards small size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
         }
-    }, 
+    },
     {
-        "pk": 10, 
-        "model": "main.assetclass", 
+        "pk": 1,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 8500, 
-            "name": "US_MLP", 
-            "drift_color": "#b9d0a5", 
-            "display_order": 4500, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#50891e", 
-            "tickers_explanation": "EMLP is an ETF managed by Energy Income Partners that provides exposure to energy infrastructure via MLP, MLP-related companies, former Canadian Royalty Trusts, and utilities.", 
-            "asset_class_explanation": "Master Limited Partnerships (MLPs) provide exposure to energy infrastructure, but with a lower risk and more stable profile than the underlying commodity (e.g. oil, natural gas, gasoline)."
+            "display_name": "Vanguard Small-Cap Value ETF",
+            "description": "US Small-Cap Value",
+            "ordering": 0,
+            "symbol": "VBR",
+            "unit_price": 103.43,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0937&FundIntExt=INT"
         }
-    }, 
+    },
     {
-        "pk": 11, 
-        "model": "main.assetclass", 
+        "pk": 2,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 8000, 
-            "name": "DEVELOPED_MARKETS_STOCKS", 
-            "drift_color": "#9abe9f", 
-            "display_order": 5000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#035d0e", 
-            "tickers_explanation": "VEA, SCHF, and IEFA are all dependable avenues to gain exposure to International Developed market stocks. VEA is our primary choice with the tightest bid-ask spread and a low expense ratio.", 
+            "display_name": "iShares Russell 2000 Value ETF",
+            "description": "US Small-Cap Value",
+            "ordering": 1,
+            "symbol": "IWN",
+            "unit_price": 94.81,
+            "url": "http://us.ishares.com/product_info/fund/overview/IWN.htm"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "Developed Markets",
+            "name": "DEVELOPED_MARKETS_STOCKS",
+            "super_asset_class": "EQUITY_EU",
+            "drift_color": "#9abe9f",
+            "display_order": 5000,
+            "foreground_color": "#ffffff",
+            "investment_type": "STOCKS",
+            "primary_color": "#035d0e",
+            "tickers_explanation": "VEA, SCHF, and IEFA are all dependable avenues to gain exposure to International Developed market stocks. VEA is our primary choice with the tightest bid-ask spread and a low expense ratio.",
             "asset_class_explanation": "Developed Markets stocks provide exposure to a diverse set of companies from international developed economies including the UK, Europe, Japan, and others.  It has a similar risk/return profile as broad US stocks but with lower internal correlations as compared to the US market."
         }
-    }, 
+    },
     {
-        "pk": 12, 
-        "model": "main.assetclass", 
+        "pk": 3,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 7000, 
-            "name": "EMERGING_MARKETS_STOCKS", 
-            "drift_color": "#9eb0a0", 
-            "display_order": 6000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#0c3911", 
-            "tickers_explanation": "VWO, IEMG, and EEM all offer Emerging Market stock exposure. VWO is our primary choice due to its lower expense ratio and tight bid-ask spread.", 
+            "display_name": "Vanguard FTSE Developed Markets",
+            "description": "Developed Markets",
+            "ordering": 0,
+            "symbol": "VEA",
+            "unit_price": 38.15,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0936&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Schwab International Equity ETF",
+            "description": "Developed Markets",
+            "ordering": 1,
+            "symbol": "SCHF",
+            "unit_price": 29.12,
+            "url": "http://www.schwab.com/public/csim/home/products/exchange_traded_funds/summary.html?symbol=SCHF"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "Emerging Markets",
+            "name": "EMERGING_MARKETS_STOCKS",
+            "super_asset_class": "EQUITY_EM",
+            "drift_color": "#9eb0a0",
+            "display_order": 6000,
+            "foreground_color": "#ffffff",
+            "investment_type": "STOCKS",
+            "primary_color": "#0c3911",
+            "tickers_explanation": "VWO, IEMG, and EEM all offer Emerging Market stock exposure. VWO is our primary choice due to its lower expense ratio and tight bid-ask spread.",
             "asset_class_explanation": "Emerging Markets provide higher return potential and diversification, however it comes with higher risk compared to US or International Developed stocks. This asset helps your portfolio to grow with developing nations as they modernize and become wealthier."
         }
-    }, 
+    },
     {
-        "pk": 13, 
-        "model": "main.assetclass", 
+        "pk": 5,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 2000, 
-            "name": "INFLATION_PROTECTED_BONDS", 
-            "drift_color": "#deefff", 
-            "display_order": 8000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#add6ff", 
-            "tickers_explanation": "VTIP provides exposure to Inflation-Protected US Treasury Bonds. VTIP has a competitive bid-ask spread, low expense ratio, and robust asset base. We selected VTIP over TIP because it has lower duration and therefore is better insulated against interest rate increases.", 
-            "asset_class_explanation": "Inflation Protected Bonds are issued by the US Treasury with the value of the principal (but not interest payments) indexed to inflation. This allocation serves to insulate a part of the portfolio from the depreciating effects of inflation while also having historically low correlation with other asset classes."
+            "display_name": "Vanguard FTSE Emerging Markets",
+            "description": "Emerging Markets",
+            "ordering": 0,
+            "symbol": "VWO",
+            "unit_price": 34.98,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0964&FundIntExt=INT"
         }
-    }, 
+    },
     {
-        "pk": 14, 
-        "model": "main.assetclass", 
+        "pk": 6,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 3000, 
-            "name": "US_HIGH_QUALITY_BONDS", 
-            "drift_color": "#daedff", 
-            "display_order": 9000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#8bc5ff", 
-            "tickers_explanation": "BND and AGG both offer broad exposure to US High Quality bonds.  The two funds are very similar and we utilize BND as our primary choice due to its lower bid-ask spread.", 
-            "asset_class_explanation": "US High-Quality Bonds provide exposure to the US investment-grade bond market, bringing stability to the portfolio with higher income levels than US Treasuries.  While the credit risk is very low, the average bond maturity of 7 years means there is some interest rate risk."
+            "display_name": "iShares Core MSCI Emerging Markets ETF",
+            "description": "Emerging Markets",
+            "ordering": 1,
+            "symbol": "IEMG",
+            "unit_price": 41,
+            "url": "http://us.ishares.com/product_info/fund/overview/IEMG.htm"
         }
-    }, 
+    },
     {
-        "pk": 15, 
-        "model": "main.assetclass", 
+        "pk": 4,
+        "model": "main.assetclass",
         "fields": {
-            "donut_order": 3100, 
-            "name": "US_HIGH_QUALITY_HIGH_DURATION_BONDS", 
-            "drift_color": "#bfdefd", 
-            "display_order": 9100, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#5facf9", 
-            "tickers_explanation": "BLV and VCLT both offer broad exposure to US High Quality High Duration bonds. The two funds are very similar and we utilize BLV as our primary choice due to its lower bid-ask spread and expense ratio.", 
-            "asset_class_explanation": "US High-Quality, High Duration Bonds provide exposure to the more rate-sensitive part of the US investment-grade bond market. While the credit risk is very low, the average bond maturity of 11 years means there is higher interest rate sensitivity."
-        }
-    }, 
-    {
-        "pk": 16, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 4000, 
-            "name": "US_CORPORATE_BONDS", 
-            "drift_color": "#b3d7fb", 
-            "display_order": 10000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#409bf6", 
-            "tickers_explanation": "LQD, VCIT, and ITR provide portfolio exposure to the US Corporate Bond market. LQD's tight bid-ask spread and stronger asset base make it our primary choice.", 
-            "asset_class_explanation": "US Corporate Bonds are issued by corporations to finance business activities. Corporate bonds generally offer much more attractive yields and opportunity for capital appreciation to compensate investors for default risk. They also diversify the fixed-income portfolio, resulting in higher risk-adjusted returns."
-        }
-    }, 
-    {
-        "pk": 17, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 5000, 
-            "name": "INTERNATIONAL_BONDS", 
-            "drift_color": "#99bee3", 
-            "display_order": 11000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#005cb8", 
-            "tickers_explanation": "BNDX provides exposure to International Developed Market investment-grade bonds, largely in the European and Pacific regions. It carries a competitive expense ratio and robust asset base.", 
-            "asset_class_explanation": "International Bonds are issued by non-US developed market governments and organizations. They have high credit quality and provide interest rate diversification for a bond portfolio, resulting in higher risk-adjusted returns."
-        }
-    }, 
-    {
-        "pk": 18, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 6000, 
-            "name": "EMERGING_MARKETS_BONDS", 
-            "drift_color": "#99adc2", 
-            "display_order": 12000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#003366", 
-            "tickers_explanation": "VWOB, EMB, and PCY provide exposure to Emerging Market Bonds.  They are all highly correlated, and VWOB is our primary choice due to its lower expense ratio.", 
-            "asset_class_explanation": "Emerging Markets Bonds are dollar-denominated bonds issued by governments with economies that are rapidly growing and industrializing.  This asset class is higher risk but also offers a higher expected return than developed markets' bonds or US Treasuries.  Their unusually low correlation with other bonds result in higher risk-adjusted performance for the portfolio."
-        }
-    }, 
-    {
-        "pk": 19, 
-        "model": "main.assetclass", 
-        "fields": {
-            "donut_order": 1000, 
-            "name": "SHORT_TERM_TREASURIES", 
-            "drift_color": "#eff7ff", 
-            "display_order": 7000, 
-            "foreground_color": "#333333", 
-            "primary_color": "#d6ebff", 
-            "tickers_explanation": "SHV is used for short-duration exposure to US Treasuries. Its holdings are short-maturity and short-duration with very little interest rate sensitivity.", 
+            "display_name": "Short-Term Treasuries",
+            "name": "SHORT_TERM_TREASURIES",
+            "super_asset_class": "FIXED_INCOME_US",
+            "drift_color": "#eff7ff",
+            "display_order": 7000,
+            "foreground_color": "#333333",
+            "investment_type": "BONDS",
+            "primary_color": "#d6ebff",
+            "tickers_explanation": "SHV is used for short-duration exposure to US Treasuries. Its holdings are short-maturity and short-duration with very little interest rate sensitivity.",
             "asset_class_explanation": "Short-term Treasuries have maturities between one month and one year. This extremely low-risk asset class is a cash alternative that generates nominal benefit through interest payments, and de-risks the portfolio at safer allocations."
         }
-    }, 
+    },
     {
-        "pk": 20, 
-        "model": "main.assetclass", 
+        "pk": 7,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 3000, 
-            "name": "MUNICIPAL_BONDS", 
-            "drift_color": "#daedff", 
-            "display_order": 9000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#8bc5ff", 
-            "tickers_explanation": "MUB and TFI offer broad exposure to the national US Municipal Bond market.  MUB is our primary choice due to its slightly lower expense ratio.", 
+            "display_name": "iShares Short-Term Treasury Bond ETF",
+            "description": "Short-Term Treasuries",
+            "ordering": 0,
+            "symbol": "SHV",
+            "unit_price": 110.27,
+            "url": "http://us.ishares.com/product_info/fund/overview/SHV.htm"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "US Corporate Bonds",
+            "name": "US_CORPORATE_BONDS",
+            "super_asset_class": "FIXED_INCOME_US",
+            "drift_color": "#b3d7fb",
+            "display_order": 10000,
+            "foreground_color": "#ffffff",
+            "investment_type": "BONDS",
+            "primary_color": "#409bf6",
+            "tickers_explanation": "LQD, VCIT, and ITR provide portfolio exposure to the US Corporate Bond market. LQD's tight bid-ask spread and stronger asset base make it our primary choice.",
+            "asset_class_explanation": "US Corporate Bonds are issued by corporations to finance business activities. Corporate bonds generally offer much more attractive yields and opportunity for capital appreciation to compensate investors for default risk. They also diversify the fixed-income portfolio, resulting in higher risk-adjusted returns."
+        }
+    },
+    {
+        "pk": 8,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
+            "description": "US Corporate Bonds",
+            "ordering": 0,
+            "symbol": "LQD",
+            "unit_price": 116.02,
+            "url": "http://us.ishares.com/product_info/fund/overview/LQD.htm"
+        }
+    },
+    {
+        "pk": 9,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Vanguard Intermediate-Term Corporate Bond ETF",
+            "description": "US Corporate Bonds",
+            "ordering": 1,
+            "symbol": "VCIT",
+            "unit_price": 84.84,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3146&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "US Total Stock Market",
+            "name": "US_TOTAL_MARKET_STOCKS",
+            "super_asset_class": "EQUITY_US",
+            "drift_color": "#e4f5c9",
+            "display_order": 1000,
+            "foreground_color": "#333333",
+            "investment_type": "STOCKS",
+            "primary_color": "#bce577",
+            "tickers_explanation": "VTI, SCHB, and ITOT all offer exposure to the entire US Stock market and are highly correlated.  They all have very low expense ratios.  VTI is the most liquid and has the tightest bid-ask spreads so it is our primary choice.",
+            "asset_class_explanation": "US Total Stock Market contains broad exposure to the entire US stock market, including growth and value companies of small, mid and large capitalizations.  This asset class allows participation in the historically strong long-term growth of the US economy."
+        }
+    },
+    {
+        "pk": 10,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Vanguard Total Stock Market ETF",
+            "description": "US Total Stock Market",
+            "ordering": 0,
+            "symbol": "VTI",
+            "unit_price": 105.41,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0970&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 11,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Schwab U.S. Broad Market ETF",
+            "description": "US Total Stock Market",
+            "ordering": 1,
+            "symbol": "SCHB",
+            "unit_price": 49.57,
+            "url": "http://www.schwab.com/public/csim/home/products/exchange_traded_funds/summary.html?symbol=SCHB"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "Inflation-Protected Bonds",
+            "name": "INFLATION_PROTECTED_BONDS",
+            "super_asset_class": "FIXED_INCOME_US",
+            "drift_color": "#deefff",
+            "display_order": 8000,
+            "foreground_color": "#ffffff",
+            "investment_type": "BONDS",
+            "primary_color": "#add6ff",
+            "tickers_explanation": "VTIP provides exposure to Inflation-Protected US Treasury Bonds. VTIP has a competitive bid-ask spread, low expense ratio, and robust asset base. We selected VTIP over TIP because it has lower duration and therefore is better insulated against interest rate increases.",
+            "asset_class_explanation": "Inflation Protected Bonds are issued by the US Treasury with the value of the principal (but not interest payments) indexed to inflation. This allocation serves to insulate a part of the portfolio from the depreciating effects of inflation while also having historically low correlation with other asset classes."
+        }
+    },
+    {
+        "pk": 12,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Vanguard Short-Term Inflation-Protected Securities ETF",
+            "description": "Inflation-Protected Bonds",
+            "ordering": 0,
+            "symbol": "VTIP",
+            "unit_price": 48.28,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3365&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 8,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "International Bonds",
+            "name": "INTERNATIONAL_BONDS",
+            "super_asset_class": "FIXED_INCOME_EU",
+            "drift_color": "#99bee3",
+            "display_order": 11000,
+            "foreground_color": "#ffffff",
+            "investment_type": "BONDS",
+            "primary_color": "#005cb8",
+            "tickers_explanation": "BNDX provides exposure to International Developed Market investment-grade bonds, largely in the European and Pacific regions. It carries a competitive expense ratio and robust asset base.",
+            "asset_class_explanation": "International Bonds are issued by non-US developed market governments and organizations. They have high credit quality and provide interest rate diversification for a bond portfolio, resulting in higher risk-adjusted returns."
+        }
+    },
+    {
+        "pk": 13,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Vanguard Total International Bond ETF",
+            "description": "International Bonds",
+            "ordering": 0,
+            "symbol": "BNDX",
+            "unit_price": 53.1,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3711&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 9,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "US Large-Cap Value",
+            "name": "US_LARGE_CAP_VALUE_STOCKS",
+            "super_asset_class": "EQUITY_US",
+            "drift_color": "#d5edc1",
+            "display_order": 2000,
+            "foreground_color": "#ffffff",
+            "investment_type": "STOCKS",
+            "primary_color": "#96d363",
+            "tickers_explanation": "VTV, IVE, and SCHV all offer broad US Large-Cap Value Stock exposure and are highly correlated.  VTV and SCHV have the lowest expense ratios.  VTV is our primary choice due to its high liquidity.  IVE has slightly higher expenses but also offers high liquidity.",
+            "asset_class_explanation": "US Large-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio toward large size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
+        }
+    },
+    {
+        "pk": 14,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Vanguard Value ETF",
+            "description": "US Large-Cap Value",
+            "ordering": 0,
+            "symbol": "VTV",
+            "unit_price": 82,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0966&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 15,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "iShares S&P 500 Value ETF",
+            "description": "US Large-Cap Value",
+            "ordering": 1,
+            "symbol": "IVE",
+            "unit_price": 89.98,
+            "url": "http://us.ishares.com/product_info/fund/overview/IVE.htm"
+        }
+    },
+    {
+        "pk": 10,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "Municipal Bonds",
+            "name": "MUNICIPAL_BONDS",
+            "super_asset_class": "FIXED_INCOME_US",
+            "drift_color": "#daedff",
+            "display_order": 9000,
+            "foreground_color": "#ffffff",
+            "investment_type": "BONDS",
+            "primary_color": "#8bc5ff",
+            "tickers_explanation": "MUB and TFI offer broad exposure to the national US Municipal Bond market.  MUB is our primary choice due to its slightly lower expense ratio.",
             "asset_class_explanation": "Municipal Bonds are federally tax-exempt bonds issued by state and regional governments to finance capital expenditures. While municipal bond credit risk is slightly higher than US Treasuries, it is still quite low.  This coupled with favorable after-tax income make municipal bonds an excellent addition to taxable portfolios."
         }
-    }, 
+    },
     {
-        "pk": 21, 
-        "model": "main.assetclass", 
+        "pk": 16,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 6500, 
-            "name": "COMMODITIES", 
-            "drift_color": "#9cab9e", 
-            "display_order": 13000, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#082e0c", 
-            "tickers_explanation": "DJP and VDE provide exposure to the broad commodity market.", 
-            "asset_class_explanation": "Commodities provide exposure to the value of raw materials used to create the products consumers buy, such as oil and gas, metals and agricultural products."
+            "display_name": "iShares National AMT-Free Muni Bond ETF",
+            "description": "National Municipal Bonds",
+            "ordering": 0,
+            "symbol": "MUB",
+            "unit_price": 108.99,
+            "url": "http://us.ishares.com/product_info/fund/overview/MUB.htm"
         }
-    }, 
+    },
     {
-        "pk": 22, 
-        "model": "main.assetclass", 
+        "pk": 17,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 6700, 
-            "name": "REAL_ESTATE", 
-            "drift_color": "#9ca99d", 
-            "display_order": 6100, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#07290a", 
-            "tickers_explanation": "VNQ covers the US Real Estate market through a market-capitalization weighted basket of the largest REITs in operation across commercial, residential, and specialized real estate holdings.", 
-            "asset_class_explanation": "Real Estate, including commercial and residential properties, is accessed through Real Estate Investment Trusts which are exchange-traded and significantly more liquid than hard real estate."
+            "display_name": "SPDR Nuveen Barclays Municipal Bond ETF",
+            "description": "US Municipal Bonds",
+            "ordering": 1,
+            "symbol": "TFI",
+            "unit_price": 23.96,
+            "url": "https://www.spdrs.com/product/fund.seam?ticker=TFI"
         }
-    }, 
+    },
     {
-        "pk": 23, 
-        "model": "main.assetclass", 
+        "pk": 11,
+        "model": "main.assetclass",
         "fields": {
-            "donut_order": 6800, 
-            "name": "US_REITS", 
-            "drift_color": "#9aa29b", 
-            "display_order": 6200, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#031605", 
-            "tickers_explanation": "SCHH, VNQ and ICF covers the US Real Estate market through a market-capitalization weighted basket of the largest REITs in operation across commercial, residential, and specialized real estate holdings.", 
-            "asset_class_explanation": "US Real Estate, including commercial and residential properties, is accessed through Real Estate Investment Trusts which are exchange-traded and significantly more liquid than hard real estate."
+            "display_name": "Emerging Markets Bonds",
+            "name": "EMERGING_MARKETS_BONDS",
+            "super_asset_class": "FIXED_INCOME_EM",
+            "drift_color": "#99adc2",
+            "display_order": 12000,
+            "foreground_color": "#ffffff",
+            "investment_type": "BONDS",
+            "primary_color": "#003366",
+            "tickers_explanation": "VWOB, EMB, and PCY provide exposure to Emerging Market Bonds.  They are all highly correlated, and VWOB is our primary choice due to its lower expense ratio.",
+            "asset_class_explanation": "Emerging Markets Bonds are dollar-denominated bonds issued by governments with economies that are rapidly growing and industrializing.  This asset class is higher risk but also offers a higher expected return than developed markets' bonds or US Treasuries.  Their unusually low correlation with other bonds result in higher risk-adjusted performance for the portfolio."
         }
-    }, 
+    },
     {
-        "pk": 24, 
-        "model": "main.assetclass", 
+        "pk": 18,
+        "model": "main.ticker",
         "fields": {
-            "donut_order": 6900, 
-            "name": "INTL_REITS", 
-            "drift_color": "#9bba9f", 
-            "display_order": 6300, 
-            "foreground_color": "#ffffff", 
-            "primary_color": "#05530e", 
-            "tickers_explanation": "VNQI, IFGL and RWX cover the International Real Estate market through a market-capitalization weighted basket of the largest REITs in operation across commercial, residential, and specialized real estate holdings.", 
-            "asset_class_explanation": "International Real Estate, including commercial and residential properties, is accessed through Real Estate Investment Trusts which are exchange-traded and significantly more liquid than hard real estate."
+            "display_name": "Vanguard Emerging Markets Government Bond ETF",
+            "description": "Emerging Markets Bonds",
+            "ordering": 0,
+            "symbol": "VWOB",
+            "unit_price": 75.28,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3820&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 19,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "iShares Emerging Markets USD Bond ETF",
+            "description": "Emerging Markets Bonds",
+            "ordering": 1,
+            "symbol": "EMB",
+            "unit_price": 107.6,
+            "url": "http://us.ishares.com/product_info/fund/overview/EMB.htm"
+        }
+    },
+    {
+        "pk": 12,
+        "model": "main.assetclass",
+        "fields": {
+            "display_name": "US Mid-Cap Value",
+            "name": "US_MID_CAP_VALUE_STOCKS",
+            "super_asset_class": "EQUITY_US",
+            "drift_color": "#c7e19a",
+            "display_order": 3000,
+            "foreground_color": "#ffffff",
+            "investment_type": "STOCKS",
+            "primary_color": "#74b503",
+            "tickers_explanation": "VOE, IWS, and IJJ are highly correlated offerings for broad US Mid-Cap Value Stock exposure. VOE is our primary choice since it has the lowest expense ratio and tightest bid-ask spread.",
+            "asset_class_explanation": "US Mid-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio towards medium size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
+        }
+    },
+    {
+        "pk": 20,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "Vanguard Mid-Cap Value ETF",
+            "description": "US Mid-Cap Value",
+            "ordering": 0,
+            "symbol": "VOE",
+            "unit_price": 90.29,
+            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0935&FundIntExt=INT"
+        }
+    },
+    {
+        "pk": 21,
+        "model": "main.ticker",
+        "fields": {
+            "display_name": "iShares Russell Midcap Value ETF",
+            "description": "US Mid-Cap Value",
+            "ordering": 1,
+            "symbol": "IWS",
+            "unit_price": 71.87,
+            "url": "http://us.ishares.com/product_info/fund/overview/IWS.htm"
         }
     }
 ]

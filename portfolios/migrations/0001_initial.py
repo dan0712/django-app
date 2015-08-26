@@ -16,10 +16,21 @@ class Migration(migrations.Migration):
             fields=[
             ],
             options={
-                'verbose_name': 'Asset class',
-                'proxy': True,
                 'verbose_name_plural': 'Asset classes',
+                'proxy': True,
+                'verbose_name': 'Asset class',
             },
             bases=('main.assetclass',),
+        ),
+        migrations.CreateModel(
+            name='ProxyTicker',
+            fields=[
+            ],
+            options={
+                'verbose_name_plural': 'Ticker',
+                'proxy': True,
+                'verbose_name': 'Tickers',
+            },
+            bases=('main.ticker',),
         ),
     ]

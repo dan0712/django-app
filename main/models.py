@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
 from .fields import ColorField
 
 
@@ -29,9 +30,9 @@ SUPER_ASSET_CLASSES = (
 )
 
 
-
 class AssetClass(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, validators=[RegexValidator(regex=r'^[0-9a-zA-Z_]+$',
+                                                        message="Invalid character only accept (0-9a-zA-Z_) ")])
     display_order = models.PositiveIntegerField()
     primary_color = ColorField()
     foreground_color = ColorField()
@@ -40,14 +41,35 @@ class AssetClass(models.Model):
     tickers_explanation = models.TextField(blank=True, default="", null=False)
     display_name = models.CharField(max_length=255, blank=False, null=False)
     investment_type = models.CharField(max_length=255, choices=INVESTMENT_TYPES,  blank=False, null=False)
-    super_asset_class = models.CharField(max_length=255)
+    super_asset_class = models.CharField(max_length=255, choices=SUPER_ASSET_CLASSES)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        self.name = self.name.upper()
+
+        super(AssetClass, self).save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        return self.name
 
 
 class Ticker(models.Model):
-    symbol = models.CharField(max_length=10, blank=False, null=False)
+    symbol = models.CharField(max_length=10, blank=False, null=False, validators=[RegexValidator(regex=r'^[^ ]+$',
+                                                                                  message="Invalid symbol format")])
     display_name = models.CharField(max_length=255, blank=False, null=False)
     description = models.TextField(blank=True, default="", null=False)
     ordering = models.IntegerField(blank=True, default="", null=False)
     url = models.URLField()
     unit_price = models.FloatField(default=1, editable=False)
     asset_class = models.ForeignKey(AssetClass, related_name="tickers")
+
+    def __str__(self):
+        return self.symbol
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        self.symbol = self.symbol.upper()
+
+        super(Ticker, self).save(force_insert, force_update, using, update_fields)
