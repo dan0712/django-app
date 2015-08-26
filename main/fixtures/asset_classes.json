@@ -22,6 +22,7 @@
             "display_name": "Vanguard Small-Cap Value ETF",
             "description": "US Small-Cap Value",
             "ordering": 0,
+            "asset_class_id": 1,
             "symbol": "VBR",
             "unit_price": 103.43,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0937&FundIntExt=INT"
@@ -34,6 +35,7 @@
             "display_name": "iShares Russell 2000 Value ETF",
             "description": "US Small-Cap Value",
             "ordering": 1,
+            "asset_class_id": 1,
             "symbol": "IWN",
             "unit_price": 94.81,
             "url": "http://us.ishares.com/product_info/fund/overview/IWN.htm"
@@ -62,6 +64,7 @@
             "display_name": "Vanguard FTSE Developed Markets",
             "description": "Developed Markets",
             "ordering": 0,
+            "asset_class_id": 2,
             "symbol": "VEA",
             "unit_price": 38.15,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0936&FundIntExt=INT"
@@ -74,6 +77,7 @@
             "display_name": "Schwab International Equity ETF",
             "description": "Developed Markets",
             "ordering": 1,
+            "asset_class_id": 2,
             "symbol": "SCHF",
             "unit_price": 29.12,
             "url": "http://www.schwab.com/public/csim/home/products/exchange_traded_funds/summary.html?symbol=SCHF"
@@ -102,6 +106,7 @@
             "display_name": "Vanguard FTSE Emerging Markets",
             "description": "Emerging Markets",
             "ordering": 0,
+            "asset_class_id": 3,
             "symbol": "VWO",
             "unit_price": 34.98,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0964&FundIntExt=INT"
@@ -114,6 +119,7 @@
             "display_name": "iShares Core MSCI Emerging Markets ETF",
             "description": "Emerging Markets",
             "ordering": 1,
+            "asset_class_id": 3,
             "symbol": "IEMG",
             "unit_price": 41,
             "url": "http://us.ishares.com/product_info/fund/overview/IEMG.htm"
@@ -142,6 +148,7 @@
             "display_name": "iShares Short-Term Treasury Bond ETF",
             "description": "Short-Term Treasuries",
             "ordering": 0,
+            "asset_class_id": 4,
             "symbol": "SHV",
             "unit_price": 110.27,
             "url": "http://us.ishares.com/product_info/fund/overview/SHV.htm"
@@ -170,6 +177,7 @@
             "display_name": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
             "description": "US Corporate Bonds",
             "ordering": 0,
+            "asset_class_id": 5,
             "symbol": "LQD",
             "unit_price": 116.02,
             "url": "http://us.ishares.com/product_info/fund/overview/LQD.htm"
@@ -182,6 +190,7 @@
             "display_name": "Vanguard Intermediate-Term Corporate Bond ETF",
             "description": "US Corporate Bonds",
             "ordering": 1,
+            "asset_class_id": 5,
             "symbol": "VCIT",
             "unit_price": 84.84,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3146&FundIntExt=INT"
@@ -210,6 +219,7 @@
             "display_name": "Vanguard Total Stock Market ETF",
             "description": "US Total Stock Market",
             "ordering": 0,
+            "asset_class_id": 6,
             "symbol": "VTI",
             "unit_price": 105.41,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0970&FundIntExt=INT"
@@ -222,6 +232,7 @@
             "display_name": "Schwab U.S. Broad Market ETF",
             "description": "US Total Stock Market",
             "ordering": 1,
+            "asset_class_id": 6,
             "symbol": "SCHB",
             "unit_price": 49.57,
             "url": "http://www.schwab.com/public/csim/home/products/exchange_traded_funds/summary.html?symbol=SCHB"
@@ -250,6 +261,7 @@
             "display_name": "Vanguard Short-Term Inflation-Protected Securities ETF",
             "description": "Inflation-Protected Bonds",
             "ordering": 0,
+            "asset_class_id": 7,
             "symbol": "VTIP",
             "unit_price": 48.28,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3365&FundIntExt=INT"
@@ -278,6 +290,7 @@
             "display_name": "Vanguard Total International Bond ETF",
             "description": "International Bonds",
             "ordering": 0,
+            "asset_class_id": 8,
             "symbol": "BNDX",
             "unit_price": 53.1,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3711&FundIntExt=INT"
@@ -306,6 +319,7 @@
             "display_name": "Vanguard Value ETF",
             "description": "US Large-Cap Value",
             "ordering": 0,
+            "asset_class_id": 9,
             "symbol": "VTV",
             "unit_price": 82,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0966&FundIntExt=INT"
@@ -318,6 +332,7 @@
             "display_name": "iShares S&P 500 Value ETF",
             "description": "US Large-Cap Value",
             "ordering": 1,
+            "asset_class_id": 9,
             "symbol": "IVE",
             "unit_price": 89.98,
             "url": "http://us.ishares.com/product_info/fund/overview/IVE.htm"
@@ -346,6 +361,7 @@
             "display_name": "iShares National AMT-Free Muni Bond ETF",
             "description": "National Municipal Bonds",
             "ordering": 0,
+            "asset_class_id": 10,
             "symbol": "MUB",
             "unit_price": 108.99,
             "url": "http://us.ishares.com/product_info/fund/overview/MUB.htm"
@@ -358,6 +374,7 @@
             "display_name": "SPDR Nuveen Barclays Municipal Bond ETF",
             "description": "US Municipal Bonds",
             "ordering": 1,
+            "asset_class_id": 10,
             "symbol": "TFI",
             "unit_price": 23.96,
             "url": "https://www.spdrs.com/product/fund.seam?ticker=TFI"
@@ -386,6 +403,7 @@
             "display_name": "Vanguard Emerging Markets Government Bond ETF",
             "description": "Emerging Markets Bonds",
             "ordering": 0,
+            "asset_class_id": 11,
             "symbol": "VWOB",
             "unit_price": 75.28,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3820&FundIntExt=INT"
@@ -398,6 +416,7 @@
             "display_name": "iShares Emerging Markets USD Bond ETF",
             "description": "Emerging Markets Bonds",
             "ordering": 1,
+            "asset_class_id": 11,
             "symbol": "EMB",
             "unit_price": 107.6,
             "url": "http://us.ishares.com/product_info/fund/overview/EMB.htm"
@@ -426,6 +445,7 @@
             "display_name": "Vanguard Mid-Cap Value ETF",
             "description": "US Mid-Cap Value",
             "ordering": 0,
+            "asset_class_id": 12,
             "symbol": "VOE",
             "unit_price": 90.29,
             "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0935&FundIntExt=INT"
@@ -438,6 +458,7 @@
             "display_name": "iShares Russell Midcap Value ETF",
             "description": "US Mid-Cap Value",
             "ordering": 1,
+            "asset_class_id": 12,
             "symbol": "IWS",
             "unit_price": 71.87,
             "url": "http://us.ishares.com/product_info/fund/overview/IWS.htm"
