@@ -99,4 +99,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
 
+AUTH_USER_MODEL = 'main.User'
+SHOW_HIJACKUSER_IN_ADMIN = False
+
 from local_settings import *

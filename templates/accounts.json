@@ -1,2 +1,56 @@
-
-[{"id":33234,"name":"Retirement","accountNumber":"8400112565787","ordering":0,"rebalanceEnabled":true,"smartDepositViolations":["not_plaid"],"smartDepositConfig":{"enabled":false},"accountGroupId":24449,"portfolioSetId":18,"financialPlanId":null,"accountType":"INVESTING","createdDate":"20121031044645","goalAmount":"100000.0","income":false,"goalType":"RETIREMENT","goalCompletionDate":"20220727000000","automaticDepositId":null,"automaticWithdrawalId":null,"allocation":0.58,"canChangeAllocation":true,"currentBalance":"1181668.39","availableBalance":"1183850.99","availableBalanceForWithdrawal":"1183850.99","pendingDeposits":"0.00","pendingWithdrawals":"0.00","pendingConversions":"0.00","recharacterized":"0.00","stockBalance":"660888.11","bondBalance":"520780.28","cashBalance":"0.00","lifetimeAverageBalance":"585172.90","lifetimeReturn":"0.2087","totalInvested":"1170000.00","totalEarned":"11668.39","accountReturn":{"deposits":"1270000.00","withdrawals":"-100000.00","otherAdjustments":"0.00","fees":"-2182.60","dividends":"41569.96","marketChanges":"-27718.97","totalInvested":"1170000.00","totalEarned":"11668.39","lifetimeReturn":"0.2087","lifetimePersonalReturn":"0.01","lastEndingBalance":"1181668.39","averageBalance":"585172.90"}}]
+[
+  {
+    "id": 33234,
+    "name": "Retirement",
+    "accountNumber": "8400112565787",
+    "ordering": 0,
+    "rebalanceEnabled": true,
+    "smartDepositViolations": [
+      "not_plaid"
+    ],
+    "smartDepositConfig": {
+      "enabled": false
+    },
+    "accountGroupId": 24449,
+    "portfolioSetId": 18,
+    "financialPlanId": null,
+    "accountType": "INVESTING",
+    "createdDate": "20121031044645",
+    "goalAmount": "100000.0",
+    "income": false,
+    "goalType": "RETIREMENT",
+    "goalCompletionDate": "20220727000000",
+    "automaticDepositId": null,
+    "automaticWithdrawalId": null,
+    "allocation": 0.58,
+    "canChangeAllocation": true,
+    "currentBalance": "1181668.39",
+    "availableBalance": "1183850.99",
+    "availableBalanceForWithdrawal": "1183850.99",
+    "pendingDeposits": "0.00",
+    "pendingWithdrawals": "0.00",
+    "pendingConversions": "0.00",
+    "recharacterized": "0.00",
+    "stockBalance": "660888.11",
+    "bondBalance": "520780.28",
+    "cashBalance": "0.00",
+    "lifetimeAverageBalance": "585172.90",
+    "lifetimeReturn": "0.2087",
+    "totalInvested": "1170000.00",
+    "totalEarned": "11668.39",
+    "accountReturn": {
+      "deposits": "1270000.00",
+      "withdrawals": "-100000.00",
+      "otherAdjustments": "0.00",
+      "fees": "-2182.60",
+      "dividends": "41569.96",
+      "marketChanges": "-27718.97",
+      "totalInvested": "1170000.00",
+      "totalEarned": "11668.39",
+      "lifetimeReturn": "0.2087",
+      "lifetimePersonalReturn": "0.01",
+      "lastEndingBalance": "1181668.39",
+      "averageBalance": "585172.90"
+    }
+  }
+]

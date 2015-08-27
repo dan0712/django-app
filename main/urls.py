@@ -13,6 +13,8 @@ urlpatterns = patterns('',
 
     # Advisor views
     url(r'^advisor/login', advisor_login, name='advisor:login'),
+    url(r'^advisor/signup', AdvisorSignUpView.as_view(), name='advisor:sign_up'),
+
 
     # Client views
     url(r'^client/login', client_login, name='client:login'),

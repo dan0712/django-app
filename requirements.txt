@@ -2,3 +2,5 @@ Django==1.8.4
 django-compat==1.0.7
 psycopg2==2.6.1
 django-suit==0.2.13
+Pillow==2.9.0
+django-localflavor-au-tjh==1.1.2

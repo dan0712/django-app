@@ -7,3 +7,20 @@
         {% endfor %}
     </ul>
 {% endif %}
+
+
+{% if form.errors and not form.non_field_errors %}
+    <ul class="flashes">
+
+    {% if form.errors.items|length == 1 %}
+        <li class="alert alert-dismissable alert-alert">Please correct the error below.
+            <button type="button" class="close-btn mpicon close-ko" data-dismiss="alert" aria-hidden="true"></button>
+        </li>
+        {% else %}
+        <li class="alert alert-dismissable alert-alert">Please correct the error below.
+            <button type="button" class="close-btn mpicon close-ko" data-dismiss="alert" aria-hidden="true"></button>
+        </li>
+    {% endif %}
+
+    </ul>
+{% endif %}
