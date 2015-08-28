@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 from .fields import ColorField
 from django_localflavor_au.models import AUPhoneNumberField
 from main.slug import unique_slugify
-
+from django.conf import settings
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -53,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         " Returns the short name for the user."
         return self.first_name
 
-    def email_user(self, subject, message, from_email=None, **kwargs):
+    def email_user(self, subject, message, from_email=settings.DEFAULT_FROM_EMAIL, **kwargs):
         """
         Sends an email to this User.
         """
@@ -73,9 +73,9 @@ class Firm(models.Model):
              update_fields=None):
 
         if not self.firm_slug:
-            unique_slugify(self, self.firm_name)
+            unique_slugify(self, self.firm_name, slug_field_name="firm_slug")
         else:
-            unique_slugify(self, self.firm_slug)
+            unique_slugify(self, self.firm_slug, slug_field_name="firm_slug")
 
         super(Firm, self).save(force_insert, force_update, using, update_fields)
 
@@ -86,13 +86,30 @@ class Firm(models.Model):
 class Advisor(models.Model):
     user = models.OneToOneField(User, related_name="advisor")
     work_phone = AUPhoneNumberField()
-    confirmation_key = models.CharField(max_length=36, null=True)
+    confirmation_key = models.CharField(max_length=36, null=True, blank=True, editable=False)
     token = models.CharField(max_length=36, null=True, editable=False)
     is_accepted = models.BooleanField(default=False, editable=False)
     is_confirmed = models.BooleanField(default=False, editable=False)
     firm = models.ForeignKey(Firm)
     date_of_birth = models.DateField()
     is_supervisor = models.BooleanField(default=False)
+
+    def save(self, *args, **kw):
+        send_confirmation_mail = False
+        if self.pk is not None:
+            orig = Advisor.objects.get(pk=self.pk)
+            if (orig.is_accepted != self.is_accepted) and (self.is_accepted is True):
+                send_confirmation_mail = True
+
+        super(Advisor, self).save(*args, **kw)
+        if send_confirmation_mail and (self.confirmation_key is not None):
+            self.user.email_user("BetaSmartz advisor account confirmation",
+                                 "You advisor account have been approved, "
+                                 "please confirm your email here: "
+                                 "{site_url}/advisor/confirm_email/{confirmation_key}/"
+                                 " \n\n\n  The BetaSmartz Team"
+                                 .format(confirmation_key=self.confirmation_key,
+                                         site_url=settings.SITE_URL))
 
 
 class Client(models.Model):

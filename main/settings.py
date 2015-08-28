@@ -102,4 +102,7 @@ STATICFILES_DIRS = (
 AUTH_USER_MODEL = 'main.User'
 SHOW_HIJACKUSER_IN_ADMIN = False
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 from local_settings import *
