@@ -63,10 +63,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Firm(models.Model):
     firm_name = models.CharField(max_length=255)
     firm_slug = models.CharField(max_length=255, editable=False, unique=True)
-    firm_logo_url = models.ImageField(name="White logo", null=False, blank=False)
-    firm_knocked_out_logo_url = models.ImageField(name="Colored logo", null=False, blank=False)
-    firm_client_agreement_url = models.FileField(name="Client Agreement (PDF)", null=True, blank=True)
-    firm_form_adv_part2_url = models.FileField(name="Form Adv", null=True, blank=True)
+    firm_logo_url = models.ImageField(verbose_name="White logo", null=False, blank=False)
+    firm_knocked_out_logo_url = models.ImageField(verbose_name="Colored logo", null=False, blank=False)
+    firm_client_agreement_url = models.FileField(verbose_name="Client Agreement (PDF)", null=True, blank=True)
+    firm_form_adv_part2_url = models.FileField(verbose_name="Form Adv", null=True, blank=True)
     firm_client_agreement_token = models.CharField(max_length=36, editable=False)
 
     def save(self, force_insert=False, force_update=False, using=None,
