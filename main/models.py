@@ -97,6 +97,9 @@ class Advisor(models.Model):
     date_of_birth = models.DateField()
     is_supervisor = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.user.first_name + " - " + self.firm.firm_name
+
     def save(self, *args, **kw):
         send_confirmation_mail = False
         if self.pk is not None:
