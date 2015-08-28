@@ -6,7 +6,7 @@ from .fields import ColorField
 from django_localflavor_au.models import AUPhoneNumberField
 from main.slug import unique_slugify
 from django.conf import settings
-
+import uuid
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
@@ -63,14 +63,17 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Firm(models.Model):
     firm_name = models.CharField(max_length=255)
     firm_slug = models.CharField(max_length=255, editable=False, unique=True)
-    firm_logo_url = models.ImageField(null=False, blank=False)
-    firm_knocked_out_logo_url = models.ImageField(null=False, blank=False)
-    firm_client_agreement_url = models.FileField(null=True, blank=True)
-    firm_form_adv_part2_url = models.FileField(null=True, blank=True)
+    firm_logo_url = models.ImageField(name="White logo", null=False, blank=False)
+    firm_knocked_out_logo_url = models.ImageField(name="Colored logo", null=False, blank=False)
+    firm_client_agreement_url = models.FileField(name="Client Agreement (PDF)", null=True, blank=True)
+    firm_form_adv_part2_url = models.FileField(name="Form Adv", null=True, blank=True)
     firm_client_agreement_token = models.CharField(max_length=36, editable=False)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+
+        if self.pk is None:
+            self.firm_client_agreement_token = str(uuid.uuid4())
 
         if not self.firm_slug:
             unique_slugify(self, self.firm_name, slug_field_name="firm_slug")
