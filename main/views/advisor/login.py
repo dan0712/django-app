@@ -3,17 +3,46 @@ __author__ = 'cristian'
 from ..utils.login import create_login
 from main.models import Advisor, User
 from django import forms
-from django.views.generic import CreateView
+from django.views.generic import CreateView, View
 from django.utils import safestring
 from django.contrib import messages
 import uuid
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseRedirect
 
-
-__all__ = ["advisor_login", "AdvisorSignUpView"]
+__all__ = ["advisor_login", "AdvisorSignUpView", "AdvisorConfirmEmail"]
 
 advisor_login = create_login(Advisor, 'advisor')
+
+
+class AdvisorConfirmEmail(View):
+
+    def get(self, request, *args, **kwargs):
+
+        token = kwargs.get("token")
+
+        try:
+            advisor = Advisor.objects.get(confirmation_key=token)
+        except ObjectDoesNotExist:
+            advisor = None
+
+        if advisor is None:
+            messages.error(request, "Bad confirmation code")
+        else:
+            if advisor.is_accepted:
+                if advisor.is_confirmed:
+                    messages.error(request, "Advisor already confirmed")
+                else:
+                    advisor.is_confirmed = True
+                    advisor.confirmation_key = None
+                    advisor.save()
+
+                    messages.info(request, "You email have been confirmed, you can login in")
+            else:
+                messages.error(request, "Wait till ours team approve your application")
+
+        return HttpResponseRedirect('/advisor/login')
 
 
 class AdvisorForm(forms.ModelForm):
@@ -46,6 +75,7 @@ class UserForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(UserForm, self).clean()
+        self._validate_unique = False
         self.errors.update(self.advisor_form.errors)
         password1 = cleaned_data.get('password')
         password2 = cleaned_data.get('confirm_password')
@@ -60,7 +90,7 @@ class UserForm(forms.ModelForm):
             user = None
 
         if user is not None:
-            if user.advisor is not None:
+            if hasattr(user, 'advisor'):
                 self._errors['email'] = safestring.mark_safe(u'<ul class="errorlist"><li>User already has an'
                                                              u' advisor account</li></ul>')
             else:

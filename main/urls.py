@@ -14,6 +14,8 @@ urlpatterns = patterns('',
     # Advisor views
     url(r'^advisor/login', advisor_login, name='advisor:login'),
     url(r'^advisor/signup', AdvisorSignUpView.as_view(), name='advisor:sign_up'),
+    url(r'^advisor/confirm_email/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',
+        AdvisorConfirmEmail.as_view(), name='advisor:confirm_email'),
 
 
     # Client views

@@ -7,6 +7,7 @@ from django_localflavor_au.models import AUPhoneNumberField
 from main.slug import unique_slugify
 
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     """
     An abstract base class implementing a fully featured User model with
@@ -83,9 +84,9 @@ class Firm(models.Model):
 
 
 class Advisor(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, related_name="advisor")
     work_phone = AUPhoneNumberField()
-    confirmation_key = models.CharField(max_length=36)
+    confirmation_key = models.CharField(max_length=36, null=True)
     token = models.CharField(max_length=36, null=True, editable=False)
     is_accepted = models.BooleanField(default=False, editable=False)
     is_confirmed = models.BooleanField(default=False, editable=False)
