@@ -1,467 +1,292 @@
 [
-    {
-        "pk": 1,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "US Small-Cap Value",
-            "name": "US_SMALL_CAP_VALUE_STOCKS",
-            "super_asset_class": "EQUITY_US",
-            "drift_color": "#b9d0a5",
-            "display_order": 4000,
-            "foreground_color": "#ffffff",
-            "investment_type": "STOCKS",
-            "primary_color": "#50891e",
-            "tickers_explanation": "VBR, IWN, and IJS are highly correlated options to gain US Small-Cap Value stock exposure. VBR is our primary choice with its low expenses and largest asset base.",
-            "asset_class_explanation": "US Small-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio towards small size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
-        }
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 1,
+      "symbol": "VSO",
+      "ordering": 0,
+      "description": "Australian Small-Cap Value",
+      "url": "https:\/\/www.vanguardinvestments.com.au\/retail\/ret\/investments\/etfdetailVASCIE.jsp",
+      "display_name": "Vanguard MSCI Australian Small Companies Index ETF",
+      "unit_price": 103.43
     },
-    {
-        "pk": 1,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Small-Cap Value ETF",
-            "description": "US Small-Cap Value",
-            "ordering": 0,
-            "asset_class_id": 1,
-            "symbol": "VBR",
-            "unit_price": 103.43,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0937&FundIntExt=INT"
-        }
+    "pk": 1
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 2,
+      "symbol": "VHY",
+      "ordering": 0,
+      "description": "Australian High Yield Corporate",
+      "url": "https:\/\/www.vanguardinvestments.com.au\/retail\/ret\/investments\/etfdetailVASHYE.jsp",
+      "display_name": "Vanguard Australian Shares High Yield ETF",
+      "unit_price": 38.15
     },
-    {
-        "pk": 2,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares Russell 2000 Value ETF",
-            "description": "US Small-Cap Value",
-            "ordering": 1,
-            "asset_class_id": 1,
-            "symbol": "IWN",
-            "unit_price": 94.81,
-            "url": "http://us.ishares.com/product_info/fund/overview/IWN.htm"
-        }
+    "pk": 3
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 3,
+      "symbol": "VGS",
+      "ordering": 0,
+      "description": "Global Markets",
+      "url": "https:\/\/www.vanguardinvestments.com.au\/retail\/ret\/investments\/etfdetailVISIFE.jsp",
+      "display_name": "Vanguard MSCI Index International Shares ETF",
+      "unit_price": 34.98
     },
-    {
-        "pk": 2,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "Developed Markets",
-            "name": "DEVELOPED_MARKETS_STOCKS",
-            "super_asset_class": "EQUITY_EU",
-            "drift_color": "#9abe9f",
-            "display_order": 5000,
-            "foreground_color": "#ffffff",
-            "investment_type": "STOCKS",
-            "primary_color": "#035d0e",
-            "tickers_explanation": "VEA, SCHF, and IEFA are all dependable avenues to gain exposure to International Developed market stocks. VEA is our primary choice with the tightest bid-ask spread and a low expense ratio.",
-            "asset_class_explanation": "Developed Markets stocks provide exposure to a diverse set of companies from international developed economies including the UK, Europe, Japan, and others.  It has a similar risk/return profile as broad US stocks but with lower internal correlations as compared to the US market."
-        }
+    "pk": 5
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 4,
+      "symbol": "RGB",
+      "ordering": 0,
+      "description": "Australian Government Bonds",
+      "url": "http:\/\/www.russell.com\/au\/solutions\/exchange-traded-funds\/data.aspx?id=RAGBETF",
+      "display_name": "Russell Australian Government Bond ETF",
+      "unit_price": 110.27
     },
-    {
-        "pk": 3,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard FTSE Developed Markets",
-            "description": "Developed Markets",
-            "ordering": 0,
-            "asset_class_id": 2,
-            "symbol": "VEA",
-            "unit_price": 38.15,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0936&FundIntExt=INT"
-        }
+    "pk": 7
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 5,
+      "symbol": "BOND",
+      "ordering": 0,
+      "description": "Australian Corporate Bonds",
+      "url": "https:\/\/www.spdrs.com.au\/etf\/fund\/fund_detail_BOND.html",
+      "display_name": "SPDR S&P\/ASX Australian Bond Fund",
+      "unit_price": 116.02
     },
-    {
-        "pk": 4,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Schwab International Equity ETF",
-            "description": "Developed Markets",
-            "ordering": 1,
-            "asset_class_id": 2,
-            "symbol": "SCHF",
-            "unit_price": 29.12,
-            "url": "http://www.schwab.com/public/csim/home/products/exchange_traded_funds/summary.html?symbol=SCHF"
-        }
+    "pk": 8
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 6,
+      "symbol": "VAS",
+      "ordering": 0,
+      "description": "Australian Total Stock Market",
+      "url": "https:\/\/www.vanguardinvestments.com.au\/retail\/ret\/investments\/etfdetailVASIFE.jsp",
+      "display_name": "Vanguard Australian Shares Index ETF",
+      "unit_price": 105.41
     },
-    {
-        "pk": 3,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "Emerging Markets",
-            "name": "EMERGING_MARKETS_STOCKS",
-            "super_asset_class": "EQUITY_EM",
-            "drift_color": "#9eb0a0",
-            "display_order": 6000,
-            "foreground_color": "#ffffff",
-            "investment_type": "STOCKS",
-            "primary_color": "#0c3911",
-            "tickers_explanation": "VWO, IEMG, and EEM all offer Emerging Market stock exposure. VWO is our primary choice due to its lower expense ratio and tight bid-ask spread.",
-            "asset_class_explanation": "Emerging Markets provide higher return potential and diversification, however it comes with higher risk compared to US or International Developed stocks. This asset helps your portfolio to grow with developing nations as they modernize and become wealthier."
-        }
+    "pk": 10
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 7,
+      "symbol": "ILB",
+      "ordering": 0,
+      "description": "Australian Government Inflation",
+      "url": "https:\/\/www.blackrock.com\/au\/individual\/products\/251978\/ishares-government-inflation-etf",
+      "display_name": "iShares Government Inflation ETF",
+      "unit_price": 48.28
     },
-    {
-        "pk": 5,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard FTSE Emerging Markets",
-            "description": "Emerging Markets",
-            "ordering": 0,
-            "asset_class_id": 3,
-            "symbol": "VWO",
-            "unit_price": 34.98,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0964&FundIntExt=INT"
-        }
+    "pk": 12
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 8,
+      "symbol": "RIGS",
+      "ordering": 0,
+      "description": "International Bonds",
+      "url": "http:\/\/www.alpsfunds.com\/overview\/RIGS",
+      "display_name": "RiverFront Strategic Income Fund ETF",
+      "unit_price": 53.1
     },
-    {
-        "pk": 6,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares Core MSCI Emerging Markets ETF",
-            "description": "Emerging Markets",
-            "ordering": 1,
-            "asset_class_id": 3,
-            "symbol": "IEMG",
-            "unit_price": 41,
-            "url": "http://us.ishares.com/product_info/fund/overview/IEMG.htm"
-        }
+    "pk": 13
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 9,
+      "symbol": "VLC",
+      "ordering": 0,
+      "description": "Australian Large-Cap Value",
+      "url": "https:\/\/www.vanguardinvestments.com.au\/retail\/ret\/investments\/etfdetailVALCIE.jsp",
+      "display_name": "Vanguard Value ETF",
+      "unit_price": 82
     },
-    {
-        "pk": 4,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "Short-Term Treasuries",
-            "name": "SHORT_TERM_TREASURIES",
-            "super_asset_class": "FIXED_INCOME_US",
-            "drift_color": "#eff7ff",
-            "display_order": 7000,
-            "foreground_color": "#333333",
-            "investment_type": "BONDS",
-            "primary_color": "#d6ebff",
-            "tickers_explanation": "SHV is used for short-duration exposure to US Treasuries. Its holdings are short-maturity and short-duration with very little interest rate sensitivity.",
-            "asset_class_explanation": "Short-term Treasuries have maturities between one month and one year. This extremely low-risk asset class is a cash alternative that generates nominal benefit through interest payments, and de-risks the portfolio at safer allocations."
-        }
+    "pk": 14
+  },
+  {
+    "model": "main.ticker",
+    "fields": {
+      "asset_class": 10,
+      "symbol": "RSM",
+      "ordering": 0,
+      "description": "Australian Semi-Government Bonds",
+      "url": "http:\/\/www.russell.com\/au\/solutions\/exchange-traded-funds\/data.aspx?id=RASGBETF",
+      "display_name": "Russell Australian Semi-Govt Bd ETF",
+      "unit_price": 108.99
     },
-    {
-        "pk": 7,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares Short-Term Treasury Bond ETF",
-            "description": "Short-Term Treasuries",
-            "ordering": 0,
-            "asset_class_id": 4,
-            "symbol": "SHV",
-            "unit_price": 110.27,
-            "url": "http://us.ishares.com/product_info/fund/overview/SHV.htm"
-        }
+    "pk": 16
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Small-Cap Value stocks overlap with the Australian Total Stock Market, but are included to tilt the portfolio towards small size companies with generally low price-to-earnings ratios. Value-tilting has historically showed good results, and it in general increases the portfolio's dividend yield.",
+      "tickers_explanation": "VSO, ISO, and SSO are highly correlated options to gain Australian Small-Cap Value stock exposure. VSO is our primary choice with its low expenses and large asset base.",
+      "display_name": "Australian Small-Cap Value",
+      "display_order": 2,
+      "name": "AUS_SMALL_CAP_VALUE_STOCKS",
+      "primary_color": "#50891E",
+      "investment_type": "STOCKS",
+      "super_asset_class": "EQUITY_AU",
+      "drift_color": "#B9D0A5",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 5,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "US Corporate Bonds",
-            "name": "US_CORPORATE_BONDS",
-            "super_asset_class": "FIXED_INCOME_US",
-            "drift_color": "#b3d7fb",
-            "display_order": 10000,
-            "foreground_color": "#ffffff",
-            "investment_type": "BONDS",
-            "primary_color": "#409bf6",
-            "tickers_explanation": "LQD, VCIT, and ITR provide portfolio exposure to the US Corporate Bond market. LQD's tight bid-ask spread and stronger asset base make it our primary choice.",
-            "asset_class_explanation": "US Corporate Bonds are issued by corporations to finance business activities. Corporate bonds generally offer much more attractive yields and opportunity for capital appreciation to compensate investors for default risk. They also diversify the fixed-income portfolio, resulting in higher risk-adjusted returns."
-        }
+    "pk": 1
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian High Yield Stocks overlap with the Australian Total Stock Market, but are included to tilt the portfolio towards companies with higher forecast dividends relative to other companies. Value-tilting has historically showed good results, and generally increases the portfolio's dividend yield.",
+      "tickers_explanation": "VHY, RDV, YMAX, SYI, RVL and IHD are all dependable avenues to gain exposure to Australian High Yield Stocks. VHY is our primary choice with its tight bid-ask spread and a low expense ratio.",
+      "display_name": "Australian High Yield Corporate",
+      "display_order": 3,
+      "name": "AUS_HIGH_YIELD_STOCKS",
+      "primary_color": "#035D0E",
+      "investment_type": "STOCKS",
+      "super_asset_class": "EQUITY_AU",
+      "drift_color": "#9ABE9F",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 8,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
-            "description": "US Corporate Bonds",
-            "ordering": 0,
-            "asset_class_id": 5,
-            "symbol": "LQD",
-            "unit_price": 116.02,
-            "url": "http://us.ishares.com/product_info/fund/overview/LQD.htm"
-        }
+    "pk": 2
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Global Markets stocks provide exposure to a diverse set of companies from international developed economies including the US, UK, Europe, Japan, and others, excluding Australia. It reflects global risk\/return and has lower correlations to the Australian market.",
+      "tickers_explanation": "VGS and IOO are both dependable avenues to gain exposure to Global Market stocks. VGS is our primary choice with its tight bid-ask spread and a low expense ratio.",
+      "display_name": "Global Markets",
+      "display_order": 4,
+      "name": "GLOBAL_MARKETS_STOCKS",
+      "primary_color": "#0C3911",
+      "investment_type": "STOCKS",
+      "super_asset_class": "EQUITY_US",
+      "drift_color": "#9EB0A0",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 9,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Intermediate-Term Corporate Bond ETF",
-            "description": "US Corporate Bonds",
-            "ordering": 1,
-            "asset_class_id": 5,
-            "symbol": "VCIT",
-            "unit_price": 84.84,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3146&FundIntExt=INT"
-        }
+    "pk": 3
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Government Bonds are an extremely low-risk asset class as a cash alternative that generates nominal benefit through interest payments, and de-risks the portfolio at safer allocations.",
+      "tickers_explanation": "RGB, GOVT, VGB and IGB offer broad exposure to the Australian Government Bond market. RGB is our primary choice due to its low expense ratio and high liquidity.",
+      "display_name": "Australian Government Bonds",
+      "display_order": 6,
+      "name": "AUS_GOVT_BONDS",
+      "primary_color": "#D6EBFF",
+      "investment_type": "BONDS",
+      "super_asset_class": "FIXED_INCOME_AU",
+      "drift_color": "#EFF7FF",
+      "foreground_color": "#333333"
     },
-    {
-        "pk": 6,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "US Total Stock Market",
-            "name": "US_TOTAL_MARKET_STOCKS",
-            "super_asset_class": "EQUITY_US",
-            "drift_color": "#e4f5c9",
-            "display_order": 1000,
-            "foreground_color": "#333333",
-            "investment_type": "STOCKS",
-            "primary_color": "#bce577",
-            "tickers_explanation": "VTI, SCHB, and ITOT all offer exposure to the entire US Stock market and are highly correlated.  They all have very low expense ratios.  VTI is the most liquid and has the tightest bid-ask spreads so it is our primary choice.",
-            "asset_class_explanation": "US Total Stock Market contains broad exposure to the entire US stock market, including growth and value companies of small, mid and large capitalizations.  This asset class allows participation in the historically strong long-term growth of the US economy."
-        }
+    "pk": 4
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Corporate Bonds are issued by corporations to finance business activities. Corporate bonds generally offer much more attractive yields and opportunity for capital appreciation to compensate investors for default risk. They also diversify the fixed-income portfolio, resulting in higher risk-adjusted returns.",
+      "tickers_explanation": "BOND, IAF, and RCB provide portfolio exposure to the Australian Corporate Bond market. BOND's tight bid-ask spread and stronger asset base make it our primary choice.",
+      "display_name": "Australian Corporate Bonds",
+      "display_order": 5,
+      "name": "AUS_CORPORATE_BONDS",
+      "primary_color": "#409BF6",
+      "investment_type": "BONDS",
+      "super_asset_class": "FIXED_INCOME_AU",
+      "drift_color": "#B3D7FB",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 10,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Total Stock Market ETF",
-            "description": "US Total Stock Market",
-            "ordering": 0,
-            "asset_class_id": 6,
-            "symbol": "VTI",
-            "unit_price": 105.41,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0970&FundIntExt=INT"
-        }
+    "pk": 5
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Total Stock Market contains broad exposure to the entire Australian stock market, including growth and value companies of small, mid and large capitalizations. This asset class allows participation in the historically strong long-term growth of the Australian economy.",
+      "tickers_explanation": "VAS, STW, and QOZ all offer exposure to the entire Australian Stock market and are highly correlated. They all have very low expense ratios. VAS has high liquidity and small bid-ask spreads so it is our primary choice.",
+      "display_name": "Australian Total Stock Market",
+      "display_order": 0,
+      "name": "AUS_TOTAL_MARKET_STOCKS",
+      "primary_color": "#BCE577",
+      "investment_type": "STOCKS",
+      "super_asset_class": "EQUITY_AU",
+      "drift_color": "#E4F5C9",
+      "foreground_color": "#333333"
     },
-    {
-        "pk": 11,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Schwab U.S. Broad Market ETF",
-            "description": "US Total Stock Market",
-            "ordering": 1,
-            "asset_class_id": 6,
-            "symbol": "SCHB",
-            "unit_price": 49.57,
-            "url": "http://www.schwab.com/public/csim/home/products/exchange_traded_funds/summary.html?symbol=SCHB"
-        }
+    "pk": 6
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Government Inflation includes Australian Government Bonds issued by the Australian Commonwealth Government and Australian State-Governments which are supposed to provide a hedge against inflation. This allocation serves to insulate a part of the portfolio from the depreciating effects of inflation while also having historically relatively low correlation with other asset classes.",
+      "tickers_explanation": "ILB is the only offering to have a broad representation of Australian Government Inflation and has a low expense ratio.",
+      "display_name": "Australian Government Inflation",
+      "display_order": 7,
+      "name": "INFLATION_PROTECTED_BONDS",
+      "primary_color": "#ADD6FF",
+      "investment_type": "BONDS",
+      "super_asset_class": "FIXED_INCOME_AU",
+      "drift_color": "#DEEFFF",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 7,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "Inflation-Protected Bonds",
-            "name": "INFLATION_PROTECTED_BONDS",
-            "super_asset_class": "FIXED_INCOME_US",
-            "drift_color": "#deefff",
-            "display_order": 8000,
-            "foreground_color": "#ffffff",
-            "investment_type": "BONDS",
-            "primary_color": "#add6ff",
-            "tickers_explanation": "VTIP provides exposure to Inflation-Protected US Treasury Bonds. VTIP has a competitive bid-ask spread, low expense ratio, and robust asset base. We selected VTIP over TIP because it has lower duration and therefore is better insulated against interest rate increases.",
-            "asset_class_explanation": "Inflation Protected Bonds are issued by the US Treasury with the value of the principal (but not interest payments) indexed to inflation. This allocation serves to insulate a part of the portfolio from the depreciating effects of inflation while also having historically low correlation with other asset classes."
-        }
+    "pk": 7
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "International Bonds are issued by non-Australian developed and emerging market governments, semi-governments and corporates. They have high credit quality and provide interest rate diversification for a bond portfolio, generally resulting in higher risk-adjusted returns.",
+      "tickers_explanation": "RIGS (NYSE) provides exposure to the whole international fixed-income market. It carries a competitive expense ratio and robust asset base.",
+      "display_name": "International Bonds",
+      "display_order": 9,
+      "name": "INTERNATIONAL_BONDS",
+      "primary_color": "#005CB8",
+      "investment_type": "BONDS",
+      "super_asset_class": "FIXED_INCOME_US",
+      "drift_color": "#99BEE3",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 12,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Short-Term Inflation-Protected Securities ETF",
-            "description": "Inflation-Protected Bonds",
-            "ordering": 0,
-            "asset_class_id": 7,
-            "symbol": "VTIP",
-            "unit_price": 48.28,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3365&FundIntExt=INT"
-        }
+    "pk": 8
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Large-Cap Value stocks overlap with the Australian Total Stock Market, but are included to tilt the portfolio toward large size companies with generally low price-to-earnings ratios. Value-tilting has historically showed good performance, and also in general increases the portfolio's dividend yield.",
+      "tickers_explanation": "VLC, ILC and SFY all offer broad Australian Large-Cap Value Stock exposure and are highly correlated. VLC and ILC have the lowest expense ratios. VLC is our primary choice due to its high liquidity.",
+      "display_name": "Australian Large-Cap Value",
+      "display_order": 1,
+      "name": "AUS_LARGE_CAP_VALUE_STOCKS",
+      "primary_color": "#96D363",
+      "investment_type": "STOCKS",
+      "super_asset_class": "EQUITY_AU",
+      "drift_color": "#D5EDC1",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 8,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "International Bonds",
-            "name": "INTERNATIONAL_BONDS",
-            "super_asset_class": "FIXED_INCOME_EU",
-            "drift_color": "#99bee3",
-            "display_order": 11000,
-            "foreground_color": "#ffffff",
-            "investment_type": "BONDS",
-            "primary_color": "#005cb8",
-            "tickers_explanation": "BNDX provides exposure to International Developed Market investment-grade bonds, largely in the European and Pacific regions. It carries a competitive expense ratio and robust asset base.",
-            "asset_class_explanation": "International Bonds are issued by non-US developed market governments and organizations. They have high credit quality and provide interest rate diversification for a bond portfolio, resulting in higher risk-adjusted returns."
-        }
+    "pk": 9
+  },
+  {
+    "model": "main.assetclass",
+    "fields": {
+      "asset_class_explanation": "Australian Semi-Government Bonds are issue by State Government, State Treasury Corporations and Municipalities to finance capital expenditures. While Semi-Government Bond credit risk is slightly higher than Australian Government Bonds, it is still quite low and makes them an excellent addition to portfolios.",
+      "tickers_explanation": "RSM offers broad exposure to the Australian Semi-Government Bond market. RSM is our primary choice due to its low expense ratio and high liquidity.",
+      "display_name": "Australian Semi-Government Bonds",
+      "display_order": 8,
+      "name": "AUS_MUNICIPAL_BONDS",
+      "primary_color": "#8BC5FF",
+      "investment_type": "BONDS",
+      "super_asset_class": "FIXED_INCOME_AU",
+      "drift_color": "#DAEDFF",
+      "foreground_color": "#FFFFFF"
     },
-    {
-        "pk": 13,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Total International Bond ETF",
-            "description": "International Bonds",
-            "ordering": 0,
-            "asset_class_id": 8,
-            "symbol": "BNDX",
-            "unit_price": 53.1,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3711&FundIntExt=INT"
-        }
-    },
-    {
-        "pk": 9,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "US Large-Cap Value",
-            "name": "US_LARGE_CAP_VALUE_STOCKS",
-            "super_asset_class": "EQUITY_US",
-            "drift_color": "#d5edc1",
-            "display_order": 2000,
-            "foreground_color": "#ffffff",
-            "investment_type": "STOCKS",
-            "primary_color": "#96d363",
-            "tickers_explanation": "VTV, IVE, and SCHV all offer broad US Large-Cap Value Stock exposure and are highly correlated.  VTV and SCHV have the lowest expense ratios.  VTV is our primary choice due to its high liquidity.  IVE has slightly higher expenses but also offers high liquidity.",
-            "asset_class_explanation": "US Large-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio toward large size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
-        }
-    },
-    {
-        "pk": 14,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Value ETF",
-            "description": "US Large-Cap Value",
-            "ordering": 0,
-            "asset_class_id": 9,
-            "symbol": "VTV",
-            "unit_price": 82,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0966&FundIntExt=INT"
-        }
-    },
-    {
-        "pk": 15,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares S&P 500 Value ETF",
-            "description": "US Large-Cap Value",
-            "ordering": 1,
-            "asset_class_id": 9,
-            "symbol": "IVE",
-            "unit_price": 89.98,
-            "url": "http://us.ishares.com/product_info/fund/overview/IVE.htm"
-        }
-    },
-    {
-        "pk": 10,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "Municipal Bonds",
-            "name": "MUNICIPAL_BONDS",
-            "super_asset_class": "FIXED_INCOME_US",
-            "drift_color": "#daedff",
-            "display_order": 9000,
-            "foreground_color": "#ffffff",
-            "investment_type": "BONDS",
-            "primary_color": "#8bc5ff",
-            "tickers_explanation": "MUB and TFI offer broad exposure to the national US Municipal Bond market.  MUB is our primary choice due to its slightly lower expense ratio.",
-            "asset_class_explanation": "Municipal Bonds are federally tax-exempt bonds issued by state and regional governments to finance capital expenditures. While municipal bond credit risk is slightly higher than US Treasuries, it is still quite low.  This coupled with favorable after-tax income make municipal bonds an excellent addition to taxable portfolios."
-        }
-    },
-    {
-        "pk": 16,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares National AMT-Free Muni Bond ETF",
-            "description": "National Municipal Bonds",
-            "ordering": 0,
-            "asset_class_id": 10,
-            "symbol": "MUB",
-            "unit_price": 108.99,
-            "url": "http://us.ishares.com/product_info/fund/overview/MUB.htm"
-        }
-    },
-    {
-        "pk": 17,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "SPDR Nuveen Barclays Municipal Bond ETF",
-            "description": "US Municipal Bonds",
-            "ordering": 1,
-            "asset_class_id": 10,
-            "symbol": "TFI",
-            "unit_price": 23.96,
-            "url": "https://www.spdrs.com/product/fund.seam?ticker=TFI"
-        }
-    },
-    {
-        "pk": 11,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "Emerging Markets Bonds",
-            "name": "EMERGING_MARKETS_BONDS",
-            "super_asset_class": "FIXED_INCOME_EM",
-            "drift_color": "#99adc2",
-            "display_order": 12000,
-            "foreground_color": "#ffffff",
-            "investment_type": "BONDS",
-            "primary_color": "#003366",
-            "tickers_explanation": "VWOB, EMB, and PCY provide exposure to Emerging Market Bonds.  They are all highly correlated, and VWOB is our primary choice due to its lower expense ratio.",
-            "asset_class_explanation": "Emerging Markets Bonds are dollar-denominated bonds issued by governments with economies that are rapidly growing and industrializing.  This asset class is higher risk but also offers a higher expected return than developed markets' bonds or US Treasuries.  Their unusually low correlation with other bonds result in higher risk-adjusted performance for the portfolio."
-        }
-    },
-    {
-        "pk": 18,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Emerging Markets Government Bond ETF",
-            "description": "Emerging Markets Bonds",
-            "ordering": 0,
-            "asset_class_id": 11,
-            "symbol": "VWOB",
-            "unit_price": 75.28,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=3820&FundIntExt=INT"
-        }
-    },
-    {
-        "pk": 19,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares Emerging Markets USD Bond ETF",
-            "description": "Emerging Markets Bonds",
-            "ordering": 1,
-            "asset_class_id": 11,
-            "symbol": "EMB",
-            "unit_price": 107.6,
-            "url": "http://us.ishares.com/product_info/fund/overview/EMB.htm"
-        }
-    },
-    {
-        "pk": 12,
-        "model": "main.assetclass",
-        "fields": {
-            "display_name": "US Mid-Cap Value",
-            "name": "US_MID_CAP_VALUE_STOCKS",
-            "super_asset_class": "EQUITY_US",
-            "drift_color": "#c7e19a",
-            "display_order": 3000,
-            "foreground_color": "#ffffff",
-            "investment_type": "STOCKS",
-            "primary_color": "#74b503",
-            "tickers_explanation": "VOE, IWS, and IJJ are highly correlated offerings for broad US Mid-Cap Value Stock exposure. VOE is our primary choice since it has the lowest expense ratio and tightest bid-ask spread.",
-            "asset_class_explanation": "US Mid-Cap Value stocks overlap with the US Total Stock Market, but are included to tilt the portfolio towards medium size companies with low price-to-earnings ratios.  Value-tilting has historically resulted in outperformance, and also increases the portfolio's dividend yield."
-        }
-    },
-    {
-        "pk": 20,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "Vanguard Mid-Cap Value ETF",
-            "description": "US Mid-Cap Value",
-            "ordering": 0,
-            "asset_class_id": 12,
-            "symbol": "VOE",
-            "unit_price": 90.29,
-            "url": "https://personal.vanguard.com/us/funds/snapshot?FundId=0935&FundIntExt=INT"
-        }
-    },
-    {
-        "pk": 21,
-        "model": "main.ticker",
-        "fields": {
-            "display_name": "iShares Russell Midcap Value ETF",
-            "description": "US Mid-Cap Value",
-            "ordering": 1,
-            "asset_class_id": 12,
-            "symbol": "IWS",
-            "unit_price": 71.87,
-            "url": "http://us.ishares.com/product_info/fund/overview/IWS.htm"
-        }
-    }
+    "pk": 10
+  }
 ]
