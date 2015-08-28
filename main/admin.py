@@ -29,6 +29,7 @@ class AdvisorAdmin(admin.ModelAdmin):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email')
+    exclude = ('password', )
     pass
 
 
