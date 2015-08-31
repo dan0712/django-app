@@ -384,8 +384,8 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
     border: 1px solid #45a018;
 }
 #errorModal .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 #errorModal .modal-footer .cancel {
     color: #45a018;
@@ -568,7 +568,7 @@ a {
 }
 a:hover {
     text-decoration: underline;
-    color: #0e1111;
+    color: #333;
 }
 hr {
     border-top: 1px solid #cccccc;
@@ -1646,7 +1646,7 @@ form .help-icon:after {
 }
 }@-moz-keyframes colors {
     0%,  100% {
-    stroke: #0e1111;
+    stroke: #333;
 }
 25%,  75% {
     stroke: #45a018;
@@ -1656,7 +1656,7 @@ form .help-icon:after {
 }
 }@-webkit-keyframes colors {
     0%,  100% {
-    stroke: #0e1111;
+    stroke: #333;
 }
 25%,  75% {
     stroke: #45a018;
@@ -1666,7 +1666,7 @@ form .help-icon:after {
 }
 }@keyframes colors {
     0%,  100% {
-    stroke: #0e1111;
+    stroke: #333;
 }
 25%,  75% {
     stroke: #45a018;
@@ -2733,8 +2733,8 @@ form input[type=submit], form button, .firm-details .button-row .big-secondary-b
     border: 1px solid #45a018;
 }
 .firm-details .button-row .big-primary-button:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .firm-details .button-row .big-secondary-button {
     color: #45a018;
@@ -3658,8 +3658,8 @@ form input[type=submit], form button, .firm-details .button-row .big-secondary-b
     border: 1px solid #45a018;
 }
 .firm-details .button-row .big-primary-button:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .firm-details .button-row .big-secondary-button {
     color: #45a018;
@@ -6217,8 +6217,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .client-invites .client-invites-header-panel input[type=submit]:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #51bb1c;
+    border: 1px solid #51bb1c;
 }
 .client-invites .client-invites-panel .edit_client_invite input[type=submit] {
     color: #45a018;
@@ -8088,8 +8088,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .composite-clients-index .client-profile .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .composite-clients-index .client-profile .modal-footer .cancel, .composite-clients-index .composite-actions a {
     color: #45a018;
@@ -8144,8 +8144,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .composite-clients-index .client-profile .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .composite-clients-index .client-profile .modal-footer .cancel, .composite-clients-index .composite-actions a {
     color: #45a018;
@@ -9204,8 +9204,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .composites-edit .modal .modal-footer .submit:hover, .composites-edit .finish:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .composites-edit .modal .modal-footer .cancel {
     color: #45a018;
@@ -12722,8 +12722,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .composites-show #clientGoalAllocationChange .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .composites-show .impersonation-link>a, .composites-show #clientGoalAllocationChange .modal-footer .cancel {
     color: #45a018;
@@ -13717,8 +13717,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .composites-show #clientGoalAllocationChange .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .composites-show .impersonation-link>a, .composites-show #clientGoalAllocationChange .modal-footer .cancel {
     color: #45a018;
@@ -13969,8 +13969,8 @@ form .help-icon:after {
     border: 1px solid #45a018;
 }
 .fee-override-section .form-buttons input[type=submit]:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .fee-override-section h4 {
     letter-spacing: .4px;
@@ -14112,7 +14112,7 @@ footer.footer .fineprint .betterment-logo, footer.footer .fineprint figcaption {
 footer.footer {
     margin-top: 100px;
     width: 100%;
-    background: #0e1111;
+    background: #333;
     padding-bottom: 100px;
 }
 footer.footer .fineprint {
@@ -14140,7 +14140,7 @@ footer.footer .fineprint figcaption {
 }
 header.top-bar {
     color: #ffffff;
-    background: #0e1111;
+    background: #333;
     width: 100%;
     height: 70px;
     padding: 15px 0;
@@ -14171,9 +14171,7 @@ header.top-bar .logo {
     width: 100%;
     position: relative;
     background: #ffffff;
-    -moz-box-shadow: 0 2px 0 0 #dddddd;
-    -webkit-box-shadow: 0 2px 0 0 #dddddd;
-    box-shadow: 0 2px 0 0 #dddddd;
+    background-color: #333;
 }
 .nav-bar li>a {
     font-size: 1.7rem;
@@ -14202,10 +14200,8 @@ header.top-bar .logo {
     display: block;
 }
 .nav-bar>div li.depressed>a {
-    -moz-box-shadow: 0 3px 0 0 #45a018;
-    -webkit-box-shadow: 0 3px 0 0 #45a018;
-    box-shadow: 0 3px 0 0 #45a018;
-    color: #45a018;
+
+    color: #52be1d;
 }
 .nav-bar ul.right li {
     padding-left: 30px;
@@ -15385,6 +15381,7 @@ header.top-bar .logo {
 }
 .shared-header {
     padding-bottom: 30px;
+    margin-top: 40px;
 }
 .shared-header .return-link {
     margin: 20px 0 40px;
@@ -15664,8 +15661,8 @@ body.style-guide .big-primary-button, body.style-guide .small-primary-button, bo
     border: 1px solid #45a018;
 }
 body.style-guide .big-primary-button:hover, body.style-guide .small-primary-button:hover, body.style-guide .tiny-primary-button:hover, body.style-guide .my-modal-class .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 body.style-guide .big-secondary-button, body.style-guide .small-secondary-button, body.style-guide .tiny-secondary-button, body.style-guide .my-modal-class .modal-footer .cancel {
     color: #45a018;
@@ -16791,8 +16788,8 @@ body.style-guide .big-primary-button, body.style-guide .small-primary-button, bo
     border: 1px solid #45a018;
 }
 body.style-guide .big-primary-button:hover, body.style-guide .small-primary-button:hover, body.style-guide .tiny-primary-button:hover, body.style-guide .my-modal-class .modal-footer .submit:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 body.style-guide .big-secondary-button, body.style-guide .small-secondary-button, body.style-guide .tiny-secondary-button, body.style-guide .my-modal-class .modal-footer .cancel {
     color: #45a018;
@@ -17503,8 +17500,8 @@ body.style-guide .my-modal-class .modal-body {
     border: 1px solid #45a018;
 }
 .support .big-primary-button:hover {
-    background: #0e1111;
-    border: 1px solid #0e1111;
+    background: #333;
+    border: 1px solid #333;
 }
 .support .client-table thead th, .support .advisor-table thead th, .support .client-table thead th *, .support .advisor-table thead th * {
     letter-spacing: .4px;
@@ -18501,7 +18498,7 @@ body.style-guide .my-modal-class .modal-body {
     font-weight: lighter;
     color: #ffffff;
     background: transparent;
-    border: 1px solid rgba(51, 129, 208, 0.5);
+    border: 1px solid rgba(69, 160, 24, 0.50);
 }
 .user-links .user-welcome:hover {
     border: 1px solid #45a018;
@@ -18518,7 +18515,7 @@ body.style-guide .my-modal-class .modal-body {
     font-weight: normal !important;
 }
 .user-links .user-welcome:active, .user-links .user-welcome.open {
-    background-color: rgba(51, 129, 208, 0.8);
+    background-color: rgba(69, 160, 24, 0.80);
 }
 .user-links .user-welcome span {
     font-size: 1.6rem;
@@ -18585,13 +18582,13 @@ body.style-guide .my-modal-class .modal-body {
     background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_white-bb5f3702243910f968731069b5cfd10b.png);
 }
 .user-links .user-menu a.logout {
-    background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/log_out_black-b978706237db582a5fdfe31f3f55533c.png);
+    background-image: url(../images/sign-out_1a1c1b_64.png);
 }
 .user-links .user-menu a.logout:hover {
-    background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/log_out_blue-527014ea850d0541c739f1b358a689f2.png);
+    background-image: url(../images/sign-out_1b926c_64.png);
 }
 .user-links .user-menu a.logout:active {
-    background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/log_out_white-f0a98db9dafd595bfb717ec7d2095bff.png);
+    background-image: url(../images/sign-out_1b926c_64.png);
 }
 
 ul.errorlist > li {

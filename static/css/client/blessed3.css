@@ -10811,14 +10811,14 @@ div.guest-form input.white,
 div.guest-form .input-area .conversation-text {
     font-size:14px
 }
-div.guest-form input[name=firstName],
-div.guest-form input[name=lastName] {
+div.guest-form input[name=first_name],
+div.guest-form input[name=last_name] {
     width:140px
 }
-div.guest-form input[name=middleName] {
+div.guest-form input[name=middle_name] {
     text-indent:0;
     text-align:center;
-    width:20px
+    width:30px
 }
 div.guest-form .conversation-text {
     position:static;

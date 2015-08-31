@@ -1,0 +1,676 @@
+{% extends "layouts/form-base.html" %}
+{% load i18n %}
+{% load app_filters %}
+{% block main_content %}
+<div id="signup">
+
+<h1 class="tab-header" id="signupWelcomeHeader">Sign up for a personal account</h1>
+
+<div class="left">
+
+
+<div class="uncaught-errors panel">
+<p>Oops! Looks like some things were missing:</p>
+<ul></ul>
+</div>
+
+<div class="panel card body big-form">
+<div class="clearfix">
+<h2>Tell us about yourself</h2>
+<p class="right header-detail">All required and confidential</p>
+</br></br>
+<p class="right header-detail"> What you need to apply:</p>
+    </br>
+<p class="right header-detail">You must be 18 years of age or older</p>
+    </br>
+<p class="right header-detail">You must be a permanent resident of Australia</p>
+
+
+</div>
+
+<div>
+
+<form id="basicContact" action="" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="advisor" value="{{ advisor.pk }}">
+    {% for section in form.sections %}
+        <div class="section-container {{ section.css_class }}">
+        <div class="guest-form">
+
+            <div class="section-header">
+                <span class="left blue-circle">{{ forloop.counter }}</span>
+                <h3 class="left">{{ section.header }}</h3>
+                {%  if section.detail %}
+                <p class="section-details">{{ section.detail }}</p>
+                {% endif %}
+            </div>
+        {% for field in section.fields %}
+            <div class="input-line">
+            {{ field.label_tag }}
+                <span class="input-area">
+                    {{ field | add_class:'white' }}
+                    {% if field.help_text %}
+                        <h3 class="help_text">{{ field.help_text }}</h3>
+                    {% endif %}
+                    <div class="conversation-text"><span class="bad">{{ field.errors }}</span></div>
+                </span>
+            </div>
+        {% endfor %}
+        </div>
+        </div>
+        <hr>
+    {% endfor %}
+  <div class="tos client-agreement">
+        <div class="title">Your advisor's agreement</div>
+
+        <div class="clearfix tos-line">
+            <input class="left" type="checkbox" name="clientAgreement" value="true" data-error-element-selector=".agreement-error-client">
+            <div class="left">
+                By checking this box, you acknowledge that you have read and agree to the terms below.
+            </div>
+        </div>
+        <div class="agreement" data-expand="120">
+            By checking the above box and clicking submit below, you agree to be bound by your advisor's <a href="https://demo-app.bettermentinstitutional.com/client_agreements/g1s3jj0bViU/document" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor's Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betterment).<br><br>
+
+            You understand and agree that this is solely an agreement between you and your advisor, and that Betterment and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that Betterment has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify Betterment and its affiliates in connection with any content in your advisory agreement with your advisor.<br><br>
+
+            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. Betterment will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br><br>
+
+            By checking the above box and clicking submit below, you agree to be legally bound by your advisor's advisory agreement's terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor's advisory agreement by hand.
+        </div>
+        <div class="agreement-error-client agreement-error conversation-text">
+            <span class="bad">You must accept the advisor's agreement to continue.</span>
+        </div>
+
+        <hr>
+    </div>
+</form>
+
+<form id="basicContact"><div class="section-container">
+<div class="section-header">
+<span class="left blue-circle">1</span>
+<h3 class="left">Information to establish your account</h3>
+</div>
+
+<section data-validation-model="User">
+
+<div class="guest-form">
+<div class="input-line" data-required="true" data-group="name" aria-describedby="ui-tooltip-3">
+<label>Name</label>
+<span class="input-area">
+<input class="white" type="text" name="firstName" placeholder="First" tabindex="1" style="background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4EaVTO26DQBD1ohQWaS2lg9JybZ+AK7hNwx2oIoVf4UPQ0Lj1FdKktevIpel8AKNUkDcWMxpgSaIEaTVv3sx7uztiTdu2s/98DywOw3Dued4Who/M2aIx5lZV1aEsy0+qiwHELyi+Ytl0PQ69SxAxkWIA4RMRTdNsKE59juMcuZd6xIAFeZ6fGCdJ8kY4y7KAuTRNGd7jyEBXsdOPE3a0QGPsniOnnYMO67LgSQN9T41F2QGrQRRFCwyzoIF2qyBuKKbcOgPXdVeY9rMWgNsjf9ccYesJhk3f5dYT1HX9gR0LLQR30TnjkUEcx2uIuS4RnI+aj6sJR0AM8AaumPaM/rRehyWhXqbFAA9kh3/8/NvHxAYGAsZ/il8IalkCLBfNVAAAAABJRU5ErkJggg==); background-attachment: scroll; background-position: 100% 50%; background-repeat: no-repeat;">
+<input class="white" type="text" name="middleName" placeholder="M" tabindex="20" maxlength="1">
+<input class="white" type="text" name="lastName" placeholder="Last" tabindex="30">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true" data-strategy="default remote" data-remote="/user">
+<label>Email</label>
+<span class="input-area">
+<input class="white" type="text" name="userName" tabindex="40">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+
+<div class="input-line" data-required="true">
+<label>Password</label>
+<span class="input-area">
+<input class="white" type="password" name="password" tabindex="50" style="background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACIUlEQVQ4EX2TOYhTURSG87IMihDsjGghBhFBmHFDHLWwSqcikk4RRKJgk0KL7C8bMpWpZtIqNkEUl1ZCgs0wOo0SxiLMDApWlgOPrH7/5b2QkYwX7jvn/uc//zl3edZ4PPbNGvF4fC4ajR5VrNvt/mo0Gr1ZPOtfgWw2e9Lv9+chX7cs64CS4Oxg3o9GI7tUKv0Q5o1dAiTfCgQCLwnOkfQOu+oSLyJ2A783HA7vIPLGxX0TgVwud4HKn0nc7Pf7N6vV6oZHkkX8FPG3uMfgXC0Wi2vCg/poUKGGcagQI3k7k8mcp5slcGswGDwpl8tfwGJg3xB6Dvey8vz6oH4C3iXcFYjbwiDeo1KafafkC3NjK7iL5ESFGQEUF7Sg+ifZdDp9GnMF/KGmfBdT2HCwZ7TwtrBPC7rQaav6Iv48rqZwg+F+p8hOMBj0IbxfMdMBrW5pAVGV/ztINByENkU0t5BIJEKRSOQ3Aj+Z57iFs1R5NK3EQS6HQqF1zmQdzpFWq3W42WwOTAf1er1PF2USFlC+qxMvFAr3HcexWX+QX6lUvsKpkTyPSEXJkw6MQ4S38Ljdbi8rmM/nY+CvgNcQqdH6U/xrYK9t244jZv6ByUOSiDdIfgBZ12U6dHEHu9TpdIr8F0OP692CtzaW/a6y3y0Wx5kbFHvGuXzkgf0xhKnPzA4UTyaTB8Ph8AvcHi3fnsrZ7Wore02YViqVOrRXXPhfqP8j6MYlawoAAAAASUVORK5CYII=); background-attachment: scroll; background-position: 100% 50%; background-repeat: no-repeat;">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+</div>
+
+<div class="input-line" data-required="true" data-group="dateOfBirth">
+<label>Date of birth</label>
+<span class="input-area">
+<input type="text" class="white dob" name="dobMonth" maxlength="2" placeholder="MM" tabindex="60">
+<input type="text" class="white dob" name="dobDate" maxlength="2" placeholder="DD" tabindex="70">
+<input type="text" class="white dob" name="dobYear" maxlength="4" placeholder="YYYY" tabindex="80">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Gender</label>
+<span class="input-area suppress-live-validation-messages">
+<span class="radio-area">
+<input type="radio" name="gender" value="m" tabindex="90">
+<p>Male</p>
+</span>
+
+<span class="radio-area">
+<input type="radio" name="gender" value="f" tabindex="100">
+<p>Female</p>
+</span>
+
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Address line 1</label>
+<span class="input-area">
+<input class="white" type="text" name="address1" placeholder="Street address" tabindex="110">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line">
+<label>Address line 2</label>
+<span class="input-area">
+<input class="white" type="text" name="address2" placeholder="Apartment, Suite, Unit, Floor (optional)" tabindex="120">
+</span>
+</div>
+
+<div class="input-line" data-required="true" data-group="cityAndState">
+<label>City</label>
+<span class="input-area city-state">
+<input class="white" type="text" name="city" tabindex="130">
+
+<p>State</p>
+<select class="state-selector" tabindex="140" name="state"><option value="" data-value="">-</option><option value="AA" data-value="AA">AA</option><option value="AE" data-value="AE">AE</option><option value="AP" data-value="AP">AP</option><option value="AL" data-value="AL">AL</option><option value="AK" data-value="AK">AK</option><option value="AR" data-value="AR">AR</option><option value="AZ" data-value="AZ">AZ</option><option value="CA" data-value="CA">CA</option><option value="CO" data-value="CO">CO</option><option value="CT" data-value="CT">CT</option><option value="DC" data-value="DC">DC</option><option value="DE" data-value="DE">DE</option><option value="FL" data-value="FL">FL</option><option value="GA" data-value="GA">GA</option><option value="HI" data-value="HI">HI</option><option value="IA" data-value="IA">IA</option><option value="ID" data-value="ID">ID</option><option value="IL" data-value="IL">IL</option><option value="IN" data-value="IN">IN</option><option value="KS" data-value="KS">KS</option><option value="KY" data-value="KY">KY</option><option value="LA" data-value="LA">LA</option><option value="MA" data-value="MA">MA</option><option value="MD" data-value="MD">MD</option><option value="ME" data-value="ME">ME</option><option value="MI" data-value="MI">MI</option><option value="MN" data-value="MN">MN</option><option value="MO" data-value="MO">MO</option><option value="MS" data-value="MS">MS</option><option value="MT" data-value="MT">MT</option><option value="NC" data-value="NC">NC</option><option value="ND" data-value="ND">ND</option><option value="NE" data-value="NE">NE</option><option value="NH" data-value="NH">NH</option><option value="NJ" data-value="NJ">NJ</option><option value="NM" data-value="NM">NM</option><option value="NV" data-value="NV">NV</option><option value="NY" data-value="NY">NY</option><option value="OH" data-value="OH">OH</option><option value="OK" data-value="OK">OK</option><option value="OR" data-value="OR">OR</option><option value="PA" data-value="PA">PA</option><option value="PR" data-value="PR">PR</option><option value="RI" data-value="RI">RI</option><option value="SC" data-value="SC">SC</option><option value="SD" data-value="SD">SD</option><option value="TN" data-value="TN">TN</option><option value="TX" data-value="TX">TX</option><option value="UT" data-value="UT">UT</option><option value="VA" data-value="VA">VA</option><option value="VT" data-value="VT">VT</option><option value="WA" data-value="WA">WA</option><option value="WI" data-value="WI">WI</option><option value="WV" data-value="WV">WV</option><option value="WY" data-value="WY">WY</option></select>
+
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Zip</label>
+<span class="input-area">
+<input class="white" type="text" name="zip" maxlength="5" tabindex="150">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Phone number</label>
+<span class="input-area">
+<input class="white" type="text" name="phone" maxlength="14" tabindex="160" autocomplete="off">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+</section>
+
+</div></form>
+
+<hr>
+
+<!-- SECTION 2 - identity verification -->
+<form id="identityVerification"><div class="section-container signup-section-locked" style="position: relative;">
+<div class="section-header">
+<span class="left blue-circle">2</span>
+<h3 class="left">Identity verification</h3>
+<p class="section-details">We use your SSN to verify your identity and protect against fraud.</p>
+</div>
+
+<section data-validation-model="User">
+
+<div class="input-line" data-required="true">
+<label>Social Security <span class="security-icon"></span></label>
+<span class="input-area">
+<input class="white" type="text" name="ssn" placeholder="" tabindex="170" maxlength="11" autocomplete="off" disabled="">
+<div class="fake-ssn"></div>
+<p class="indent"><a target="_blank" href="https://demo.betasmartz.com/security">Bank-Level Security &gt;</a></p>
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+</section>
+
+<div class="spinner-bg">
+
+    <div class=""></div>
+    <div class="speedometer-for-ie"></div>
+</div></div></form>
+
+<hr>
+
+<!-- SECTION 3 - security questions -->
+<form id="security"><div class="section-container signup-section-locked" style="position: relative;">
+<div class="section-header">
+<span class="left blue-circle">3</span>
+<h3 class="left">Security</h3>
+<p class="section-details">We ask for security questions to protect your account.</p>
+</div>
+
+<section data-validation-model="custom">
+
+<div class="input-line" data-required="true">
+<label>Security question 1</label>
+<span class="input-area">
+<select class="question-selector question-selector-1" tabindex="180" name="securityQuestion1" disabled="">
+    <option value="" data-value="">Please select</option>
+    <option value="What was the name of your elementary school?" data-value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+    <option value="What was the name of your favorite childhood friend?" data-value="What was the name of your favorite childhood friend?">What was the name of your favorite childhood friend?</option>
+    <option value="What was the name of your childhood pet?" data-value="What was the name of your childhood pet?">What was the name of your childhood pet?</option></select>
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Answer</label>
+<span class="input-area">
+<input type="text" class="white" name="securityAnswer1" tabindex="190" disabled="">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Security question 2</label>
+<span class="input-area">
+<select class="question-selector question-selector-2" tabindex="200" name="securityQuestion2" disabled="">
+    <option value="" data-value="">Please select</option><option value="What street did you live on in third grade?" data-value="What street did you live on in third grade?">What street did you live on in third grade?</option><option value="What is your oldest sibling's birth month?" data-value="What is your oldest sibling's birth month?">What is your oldest sibling's birth month?</option><option value="In what city did your mother and father meet?" data-value="In what city did your mother and father meet?">In what city did your mother and father meet?</option></select>
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line" data-required="true">
+<label>Answer</label>
+<span class="input-area">
+<input type="text" class="white" name="securityAnswer2" tabindex="205" disabled="">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+</section>
+
+<div class="spinner-bg">
+
+    <div class=""></div>
+    <div class="speedometer-for-ie"></div>
+</div></div></form>
+
+<hr>
+
+<!-- SECTION 4 - income/net worth -->
+<form id="employment"><div class="section-container">
+<div class="section-header">
+<span class="left blue-circle">4</span>
+<h3 class="left">Employment and financial background</h3>
+<p class="section-details">We are required by the SEC to ask for your employment and financial background,
+and your answers allow us to give you better advice. The more accurate information we have, the better
+advice we can give you.</p>
+</div>
+
+<section data-validation-model="User">
+
+<div class="input-line employment-status" data-required="true">
+<label>Employment status</label>
+<span class="input-area">
+<select class="employment-status-selector" tabindex="210" name="employmentStatus"><option value="" data-value="">Please select</option><option value="FULL_TIME" data-value="FULL_TIME">Employed (full-time)</option><option value="PART_TIME" data-value="PART_TIME">Employed (part-time)</option><option value="SELF_EMPLOYED" data-value="SELF_EMPLOYED">Self-employed</option><option value="STUDENT" data-value="STUDENT">Student</option><option value="RETIRED" data-value="RETIRED">Retired</option><option value="HOMEMAKER" data-value="HOMEMAKER">Homemaker</option><option value="UNEMPLOYED" data-value="UNEMPLOYED">Not employed</option></select>
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line occupation" data-validation-model="Employment">
+<label>Occupation</label>
+<span class="input-area">
+<input type="text" class="white" name="occupation" tabindex="220">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line employer" data-validation-model="Employment">
+<label>Employer</label>
+<span class="input-area">
+<input type="text" class="white" name="employer" tabindex="230">
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line annual-income" data-required="true">
+<label>Income</label>
+<span class="input-area">
+$ <input type="text" class="white" value="0" name="annualIncome" tabindex="240">
+<div class="annual-income-slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 28%;"></a></div>
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+<div class="input-line net-worth" data-required="true">
+<label>Net worth</label>
+<span class="input-area">
+$ <input type="text" class="white" value="0" name="netWorth" tabindex="250">
+<div class="net-worth-slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 0%;"></a></div>
+<div class="conversation-text"><span class="prompt"></span><span class="good"></span><span class="bad"></span><span class="working"></span></div>
+</span>
+</div>
+
+</section>
+
+</div></form>
+
+<hr>
+
+<!-- SECTION 5 - goal details -->
+<form id="goalDetails"></form>
+
+<!-- divider is in the goalDetails template because the goal details section is optional -->
+
+<!-- SECTION 6 - regulatory questions/agreements -->
+<form id="regulatory"><div class="section-container">
+<div class="section-header">
+<span class="left blue-circle">5</span>
+<h3 class="left">Regulatory questions</h3>
+<p class="section-details">We are required by law to ask about the following rare situations. Most users
+will answer <span class="strong">No</span>:</p>
+</div>
+
+<ul class="questions">
+<li class="clearfix">
+<p>You are employed by or associated with a broker dealer.</p>
+<div class="answer">
+<input type="radio" name="associatedToBrokerDealer" id="assBDyes" value="true" tabindex="290">
+<label for="assBDyes">Yes</label>
+<input type="radio" name="associatedToBrokerDealer" id="assBDno" value="false" tabindex="300" checked="checked">
+<label for="assBDno">No</label>
+
+<div class="help-icon right" id="assBDhelp">
+<div class="help-content" style="display: none;">
+If you are associated with a broker dealer you will need to provide written approval
+from the organization's compliance officer.
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="clearfix">
+<p>You are a 10% shareholder, director, or policy maker of a publicly traded company.</p>
+<div class="answer">
+<input type="radio" name="tenPercentInsider" id="tenPIyes" value="true" tabindex="310">
+<label for="tenPIyes">Yes</label>
+<input type="radio" name="tenPercentInsider" id="tenPIno" value="false" tabindex="320" checked="checked">
+<label for="tenPIno">No</label>
+
+<div class="help-icon right" id="tenPIhelp">
+<div class="help-content" style="display: none;">
+This information is required for regulatory purposes. If you are an affiliated
+person, you will need to provide confirmation that your compliance officer is aware
+of your account. In addition, Betterment may be required to send a duplicate copy
+of your statements to your compliance officer.
+</div>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="clearfix">
+<p>You have been notified by the IRS that you are currently subject to backup withholding.</p>
+<div class="answer">
+<input type="radio" name="subjectToBackupWithholding" id="backupyes" value="true" tabindex="330">
+<label for="backupyes">Yes</label>
+<input type="radio" name="subjectToBackupWithholding" id="backupno" value="false" tabindex="340" checked="checked">
+<label for="backupno">No</label>
+
+<div class="help-icon right" id="backuphelp">
+<div class="help-content" style="display: none;">
+Most people are NOT subject to backup withholding. Backup withholding is 28% tax
+which is withheld from any taxable activity, such as the posting of a dividend or
+the sale of securities.<br><br>
+
+IMPORTANT: If you have been notified by the IRS concerning your backup withholding
+status, you must state so when opening a Betterment account. Also, please be aware
+that Betterment cannot provide any advice concerning tax matters, all tax questions
+should be directed to a tax advisor or the IRS.
+</div>
+</div>
+</div>
+</div>
+<div class="cannot-say-yes conversation-text">
+<span class="bad">You cannot open an account because you are subject to backup withholding.</span>
+</div>
+</li>
+</ul>
+
+<div class="regulatory-error conversation-text">
+<span class="bad">These questions are required for regulatory reasons.</span>
+</div>
+
+<hr>
+
+<div class="unadvised-user-only">
+<div class="input-line how-heard">
+<label>How did you hear about us?</label>
+<span class="input-area">
+<select class="how-heard-selector" tabindex="350" name="howHeard"><option value="" data-value="">Please select</option><option value="Friend" data-value="Friend">Friend</option><option value="Facebook / Twitter / Quora" data-value="Facebook / Twitter / Quora">Facebook / Twitter / Quora</option><option value="Print / TV" data-value="Print / TV">Print / TV</option><option value="Mobile Advertising" data-value="Mobile Advertising">Mobile Advertising</option><option value="Mint" data-value="Mint">Mint</option><option value="Podcast" data-value="Podcast">Podcast</option><option value="Radio" data-value="Radio">Radio</option><option value="Posters / Outdoor Advertising" data-value="Posters / Outdoor Advertising">Posters / Outdoor Advertising</option><option value="Other" data-value="Other">Other</option></select>
+</span>
+</div>
+
+<div class="how-heard-error conversation-text">
+<span class="bad">Please tell us how you heard about us.</span>
+</div>
+
+<hr>
+</div>
+
+<div class="tos-area"><div>
+    <div class="tos client-agreement">
+        <div class="title">Your advisor's agreement</div>
+
+        <div class="clearfix tos-line">
+            <input class="left" type="checkbox" name="clientAgreement" value="true" data-error-element-selector=".agreement-error-client">
+            <div class="left">
+                By checking this box, you acknowledge that you have read and agree to the terms below.
+            </div>
+        </div>
+        <div class="agreement" data-expand="120">
+            By checking the above box and clicking submit below, you agree to be bound by your advisor's <a href="https://demo-app.bettermentinstitutional.com/client_agreements/g1s3jj0bViU/document" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor's Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betterment).<br><br>
+
+            You understand and agree that this is solely an agreement between you and your advisor, and that Betterment and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that Betterment has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify Betterment and its affiliates in connection with any content in your advisory agreement with your advisor.<br><br>
+
+            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. Betterment will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br><br>
+
+            By checking the above box and clicking submit below, you agree to be legally bound by your advisor's advisory agreement's terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor's advisory agreement by hand.
+        </div>
+        <div class="agreement-error-client agreement-error conversation-text">
+            <span class="bad">You must accept the advisor's agreement to continue.</span>
+        </div>
+
+        <hr>
+    </div>
+
+
+
+
+
+<div class="tos betterment-agreement">
+
+        <div class="title">Betterment's agreements</div>
+
+
+
+
+
+
+    <div class="clearfix tos-line">
+        <input class="left" type="checkbox" name="userAgreement" value="true" data-validation-model="account" data-error-element-selector=".agreement-error-user">
+        <div class="left">
+            By checking this box, you acknowledge that you have read and agree to the terms below.
+        </div>
+    </div>
+    <div class="agreement" data-expand="120">
+        Betterment's <a href="https://demo.betasmartz.com/security/privacypolicy" target="_blank">privacy policy</a> and <a href="https://demo.betasmartz.com/advisedcustomeragreement" target="_blank">Betterment Institutional customer agreements</a>, which include the Brokerage Agreement, Advisory Agreement,
+
+
+
+        Arbitration Agreements therein, consent to electronic delivery of documents and written communications,
+
+
+
+        and other important agreements. (These agreements are also available on the terms and conditions page of this website.)
+
+
+
+
+            These documents pertain only to your relationship with Betterment LLC and Betterment Securities.
+
+
+        <em>Your brokerage agreement contains a predispute arbitration clause highlighted in paragraph 35 on page 80.</em>
+
+
+    </div>
+    <div class="agreement-error-user agreement-error conversation-text">
+        <span class="bad">You must accept the terms and conditions to continue.</span>
+    </div>
+</div>
+</div></div>
+
+
+</div></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="panel card body big-form identity-correction-form" style="display: none;">
+<div class="clearfix">
+<h2 class="form-header">Please verify the following and submit again.</h2>
+</div>
+
+<!-- SECTION 7 - identity correction -->
+<form id="identityCorrection"></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="right-rail">
+
+<div class="benefits-pane">
+</div>
+
+<div class="panel card body post-account-signup unadvised-user-only">
+<h4>After signing up for a personal account you can:</h4>
+<ul>
+<li>Set up a Joint Account</li>
+<li>Create a Trust Account</li>
+</ul>
+</div>
+
+
+
+<div class="panel card body support unadvised-user-only">
+<h5>Support</h5>
+<h4>Questions? Talk to us.</h4>
+
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">{{ SUPPORT_PHONE }}</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a></span>
+</li>
+</ul>
+</div>
+
+<div class="panel card body support advised-user-only">
+<h4>Financial advice</h4>
+<p>For financial questions and advice, contact your advisor, {{ advisor.name }} .</p>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text advisor-phone" maxlength="14" autocomplete="off">{{ advisor.phone }} </span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ advisor.email }}">Email</a></span>
+</li>
+</ul>
+
+<hr>
+
+<h4>Technical support</h4>
+<p>For technical questions, contact one of our support specialists.</p>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">{{ SUPPORT_PHONE }}</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ SUPPORT_EMAIL }}">Email Support</a></span>
+</li>
+
+</ul>
+</div>
+
+<div class="panel card body security">
+<h4 class="advised-user-only">Security &amp; Privacy</h4>
+<h5 class="unadvised-user-only">Security &amp; Privacy</h5>
+<h4 class="unadvised-user-only">Betterment's Promise</h4>
+<div class="promise">
+<div class="icon advised-user-only unbranded-lock-icon"></div>
+<p>
+We promise to ensure the utmost security and privacy when it comes to your account.
+</p>
+<div class="clearfix"></div>
+</div>
+<ul>
+<li>
+<span class="icon"><span class="security-lock-icon"></span></span>
+<span class="text">Bank Level Security</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="fraud-icon"></span></span>
+<span class="text">Fraud Protection</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="money-bag-icon"></span></span>
+<span class="text">Up to $500,000<br>Account Protection</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="ssl-icon"></span></span>
+<span class="text">Strongest Available Browser Encryption</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon small"><span class="privacy-icon"></span></span>
+<span class="text small">Paramount Privacy Protection</span>
+<div class="clearfix"></div>
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script>
+$(document).ready(function(){
+    var set_tfn = function(){
+        var value = $("ul#id_provide_tfn input:radio:checked").val();
+        if(value !=0){
+            $("input[name=tax_file_number]").parent().parent().hide();
+
+        }
+        else{
+            $("input[name=tax_file_number]").parent().parent().show();
+        }
+
+    };
+    set_tfn();
+    $("ul#id_provide_tfn input:radio").click(function() {
+        set_tfn();
+    });
+});
+
+
+</script>
+
+{% endblock %}
+
+
+

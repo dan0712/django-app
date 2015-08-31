@@ -8,13 +8,38 @@
     <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/app.js"></script>
     <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/jquery-ui.min.js"></script>
 </head>
-<body>
+<body class="index">
 <script>
   if ($.browser.msie) {
     $('body').addClass('ie');
   }
 </script>
 {% include "partials/header.html" %}
+
+{% if is_advisor_view %}
+    <nav class="nav-bar">
+        <div>
+            <ul>
+                <li class="{% block nav_summary %}{% endblock %}">
+                    <a href="/advisor/summary">Summary</a>
+                </li>
+                <li class="{% block nav_clients %}{% endblock %}">
+                    <a href="/advisor/clients">Clients</a>
+                </li>
+                <li class="{% block nav_invites %}{% endblock %}">
+                    <a href="/advisor/client_invites">Invites</a>
+                </li>
+                <li class="{% block nav_agreements %}{% endblock %}">
+                    <a href="/advisor/agreements">Agreements</a>
+                </li>
+                <li class="{% block nav_support %}{% endblock %}">
+                    <a href="/advisor/support">Support</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+{% endif %}
+
 {% include "partials/flashes.html" %}
 <div class="main-content">
 {% block main_content %}

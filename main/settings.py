@@ -41,7 +41,7 @@ INSTALLED_APPS = (
     'hijack',
     'compat',
     'main',
-    'portfolios'
+    'portfolios',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -61,6 +61,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     'django.core.context_processors.request',
+    'main.context_processors.site_contact'
 )
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -104,5 +105,8 @@ SHOW_HIJACKUSER_IN_ADMIN = False
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+SUPPORT_EMAIL = "support@betasmartz.com"
+SUPPORT_PHONE = "1888-888-888"
 
 from local_settings import *

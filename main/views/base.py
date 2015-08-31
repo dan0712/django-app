@@ -10,14 +10,13 @@ from django.contrib.auth import views
 __all__ = ["AdvisorView", "ClientView", "AdminView"]
 
 
-
-def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='advisor:login'):
+def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/advisor/login'):
     """
     Decorator for views that checks that the user is logged in and is an advisor
     member, displaying the login page if necessary.
     """
     return user_passes_test(
-        lambda u: u.is_active and u.is_staff,
+        lambda u: u.is_active and hasattr(u, "advisor"),
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )(view_func)
@@ -38,7 +37,11 @@ def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, l
 class AdvisorView(View):
     @method_decorator(advisor_member_required)
     def dispatch(self, request, *args, **kwargs):
-        return super(AdvisorView, self).dispatch(request, *args, **kwargs)
+        response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
+        if hasattr(response, 'context_data'):
+            response.context_data["advisor"] = request.user.advisor
+            response.context_data["is_advisor_view"] = True
+        return response
 
 
 class ClientView(View):

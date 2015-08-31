@@ -3,11 +3,16 @@ __author__ = 'cristian'
 from django.views.generic import TemplateView
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
-           "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions']
+           "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions', 'ClientFirm']
 
 
 class ClientAppData(TemplateView):
     template_name = "appData.json"
+    content_type = "application/json"
+
+
+class ClientFirm(TemplateView):
+    template_name = "firms.json"
     content_type = "application/json"
 
 

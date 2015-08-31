@@ -10,10 +10,15 @@ import uuid
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
+from django.contrib.auth import (logout as auth_logout)
+__all__ = ["advisor_login", "AdvisorSignUpView", "AdvisorConfirmEmail", 'advisor_logout']
 
-__all__ = ["advisor_login", "AdvisorSignUpView", "AdvisorConfirmEmail"]
+advisor_login = create_login(Advisor, 'advisor', '/advisor/summary')
 
-advisor_login = create_login(Advisor, 'advisor')
+
+def advisor_logout(request):
+    auth_logout(request)
+    return HttpResponseRedirect('/advisor/login')
 
 
 class AdvisorConfirmEmail(View):

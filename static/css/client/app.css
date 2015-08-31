@@ -2391,3 +2391,37 @@ select {
 .SnapABug_Button {
     display: none!important;
 }
+
+input[name=post_code].white {
+    width: 70px!important;
+    margin-right: 25px
+}
+
+ul#id_gender li {
+    display: inline;
+}
+
+input[name=medicare_number]{
+    width: 131px!important;
+}
+h3.help_text{
+    display: inline;
+    margin-left: 5px;
+}
+
+ul#id_provide_tfn label{
+    width: 380px;
+}
+
+.r_questions ul, li{
+    display: inline;
+
+}
+.r_questions > .guest-form > .input-line > label{
+    width: 380px;
+    margin-left: 60px;
+}
+
+.r_questions li label{
+    width: 50px;
+}

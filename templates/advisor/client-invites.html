@@ -1,0 +1,103 @@
+ {% extends "layouts/base.html" %}
+ {% load i18n %}
+ {% block nav_invites %}depressed {% endblock %}
+ {% block main_content %}
+ {% include "advisor/firm-logo.html" %}
+
+    <div id="content-main">
+        <div class="client-invites">
+            <section class="client-invites-header-panel">
+                <div class="invite-form">
+                    <div class="label">
+                        Invite a client via email
+                    </div>
+
+                    <form accept-charset="UTF-8" action=""
+                    class="simple_form new_client_invite" id=
+                    "new_client_invite" method="post" name="new_client_invite"
+                    novalidate="novalidate">
+                        {% csrf_token %}
+                        <input type="hidden" name="advisor" value="{{ advisor.pk }}">
+
+                        <div class=
+                        "input email required client_invite_client_email">
+                            <input class="string email required" id=
+                            "client_invite_client_email" name= "client_email" placeholder=
+                            "Enter client email address here" type="email">
+                             {% for field in form %}
+                                 {{ field.errors }}
+                             {% endfor %}
+                        </div><input name="commit" type="submit" value="Send invitation">
+                    </form>
+                </div>
+
+                <div class="invite-link">
+                    <div class="label">
+                        Copy your invite link
+                    </div>
+
+                    <form accept-charset="UTF-8" action="/client_invites"
+                    class="simple_form invite_link" method="get" novalidate=
+                    "novalidate">
+                        <div style="display:none">
+                            <input name="utf8" type="hidden" value="✓">
+                        </div>
+
+                        <div class=
+                        "input string required readonly invite_link_link">
+                            <input class="string required readonly" id=
+                            "invite_link_link" name="invite_link[link]"
+                            readonly="readonly" type="text" value=
+                            "{{ advisor.invite_url }}">
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="client-invites-panel">
+                <div class="header">
+                    <h2>Your client invites</h2>
+                </div>
+
+                <div class="body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+
+                                <th>Sent Date</th>
+
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for client_invite in client_invites %}
+                            <tr>
+                                <td>{{ client_invite.client_email }}</td>
+
+                                <td>{{ client_invite.sent_date }}</td>
+
+                                <td>
+                                    <form accept-charset="UTF-8" action="" class=
+                                    "simple_form edit_client_invite" id=
+                                    "edit_client_invite_1466" method="post"
+                                    name="edit_client_invite_1466" novalidate=
+                                    "novalidate">
+                                        <div style="display:none">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="advisor" value="{{ advisor.pk }}">
+                                            <input type="hidden" name= "client_email" value="{{ client_invite.client_email }}">
+                                        </div>
+                                        <input name="commit" type=
+                                        "submit" value="Resend invite">
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>{% endblock %}

@@ -3,5 +3,19 @@
         <div class="logo">
             <img alt="Betterment Institutional" height="40" src="{{ STATIC_URL }}images/white_logo.png" width="161">
         </div>
+        {% if is_advisor_view %}
+            <div class="user-links">
+                <div class="user-welcome">
+                    <span>Welcome, <span class="user-first-name">{{ advisor.first_name }}</span></span>
+                </div>
+
+                <div class="user-menu">
+                    <ul>
+                        <li><a class="logout"  href="/advisor/sign_out" rel="nofollow">Log out</a></li>
+                    </ul>
+                </div>
+             </div>
+        {% endif %}
     </div>
+
 </header>

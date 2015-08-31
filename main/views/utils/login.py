@@ -15,7 +15,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import User
+from main.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 
@@ -25,7 +25,7 @@ __all__ = ["create_login"]
 INVALID_CREDENTIALS = "Invalid email or password."
 
 
-def create_login(user_class, user_class_name):
+def create_login(user_class, user_class_name, redirect):
     @never_cache
     @csrf_protect
     @sensitive_post_parameters()
@@ -38,14 +38,14 @@ def create_login(user_class, user_class_name):
         Displays the login form and handles the login action.
         """
         redirect_to = request.POST.get(redirect_field_name,
-                                       request.GET.get(redirect_field_name, ''))
+                                       request.GET.get(redirect_field_name, redirect))
 
         if request.method == "POST":
 
             username = request.POST.get("username", '')
 
             try:
-                user = User.objects.get(username=username)
+                user = User.objects.get(email=username)
             except ObjectDoesNotExist:
                 user = None
                 messages.error(request, INVALID_CREDENTIALS)
@@ -65,10 +65,6 @@ def create_login(user_class, user_class_name):
                 if user_class_object is not None:
                     if not user_class_object.is_confirmed:
                         messages.error(request, "Your %s account has not been confirmed yet." % user_class_name)
-                        continue_login = False
-
-                    if user_class_object.is_locked:
-                        messages.error(request, "Your %s account is locked." % user_class_name)
                         continue_login = False
 
                 if continue_login:

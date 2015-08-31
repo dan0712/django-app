@@ -3,10 +3,12 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, va
     send_mail
 from django.core.validators import RegexValidator
 from .fields import ColorField
-from django_localflavor_au.models import AUPhoneNumberField
+from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
 from main.slug import unique_slugify
 from django.conf import settings
 import uuid
+import datetime
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
@@ -82,6 +84,12 @@ class Firm(models.Model):
 
         super(Firm, self).save(force_insert, force_update, using, update_fields)
 
+    def white_logo(self):
+        if self.firm_logo_url is None:
+            return settings.STATIC_URL + 'images/white_logo.png'
+
+        return settings.MEDIA_URL + self.firm_logo_url.name
+
     def __str__(self):
         return self.firm_name
 
@@ -99,6 +107,31 @@ class Advisor(models.Model):
 
     def __str__(self):
         return self.user.first_name + " - " + self.firm.firm_name
+
+    @property
+    def first_name(self):
+        return self.user.first_name
+
+    @property
+    def name(self):
+        return self.user.first_name + " " + self.user.last_name
+
+    @property
+    def phone(self):
+        return self.work_phone[0:4] + "-" + self.work_phone[4:7] + "-" + self.work_phone[7:10]
+    
+    @property
+    def email(self):
+        return self.user.email
+
+
+    @property
+    def firm_colored_logo(self):
+        return self.firm.firm_knocked_out_logo_url
+
+    @property
+    def invite_url(self):
+        return settings.SITE_URL + "/" + self.firm.firm_slug + "/client/signup/" + self.token
 
     def save(self, *args, **kw):
         send_confirmation_mail = False
@@ -118,13 +151,64 @@ class Advisor(models.Model):
                                          site_url=settings.SITE_URL))
 
 
+TFN_YES = 0
+TFN_NON_RESIDENT = 1
+TFN_CLAIM = 2
+TFN_DONT_WANT = 3
+
+TFN_CHOICES = ((TFN_YES, "Yes"),
+               (TFN_NON_RESIDENT, "I am a non-resident of Australia"),
+               (TFN_CLAIM, "I want to claim an exemption"),
+               (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
+
+Q1 = "What was the name of your elementary school?"
+Q2 = "What was the name of your favorite childhood friend?"
+Q3 = "What was the name of your childhood pet?"
+Q4 = "What street did you live on in third grade?"
+Q5 = "What is your oldest sibling's birth month?"
+Q6 = "In what city did your mother and father meet?"
+
+QUESTION_1_CHOICES = ((Q1, Q1),
+                      (Q2, Q2),
+                      (Q3, Q3))
+
+QUESTION_2_CHOICES = ((Q4, Q4),
+                      (Q5, Q5),
+                      (Q6, Q6))
+
+
+YES_NO = ((False, "No"), (True, "Yes"))
+
+
 class Client(models.Model):
     is_confirmed = models.BooleanField()
     confirmation_key = models.CharField(max_length=36)
     advisor = models.ForeignKey(Advisor)
     user = models.OneToOneField(User)
     accepted = models.BooleanField(default=False, editable=False)
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(verbose_name="Date of birth")
+    gender = models.CharField(max_length=20, default="Male",  choices=(("Male", "Male"), ("Female", "Female")))
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    state = AUStateField()
+    post_code = AUPostCodeField()
+    phone_number = AUPhoneNumberField()
+    medicare_number = models.CharField(max_length=50)
+    tax_file_number = models.CharField(max_length=50)
+    provide_tfn = models.IntegerField(verbose_name="Provide TFN?", choices=TFN_CHOICES, default=TFN_YES)
+    security_question_1 = models.CharField(max_length=255, choices=QUESTION_1_CHOICES)
+    security_question_2 = models.CharField(max_length=255, choices=QUESTION_2_CHOICES)
+    security_answer_1 = models.CharField(max_length=255, verbose_name="Answer")
+    security_answer_2 = models.CharField(max_length=255, verbose_name="Answer")
+    associated_to_broker_dealer = models.BooleanField(verbose_name="You are employed by or associated with "
+                                                                   "a broker dealer.",
+                                                      default=False,
+                                                      choices=YES_NO)
+    ten_percent_insider = models.BooleanField(verbose_name="You are a 10% shareholder, director, or"
+                                                           " policy maker of a publicly traded company.",
+                                              default=False,
+                                              choices=YES_NO)
 
 
 INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"))
@@ -185,3 +269,25 @@ class Ticker(models.Model):
         self.symbol = self.symbol.upper()
 
         super(Ticker, self).save(force_insert, force_update, using, update_fields)
+
+
+class ClientInvite(models.Model):
+    client_email = models.EmailField(unique=True)
+    advisor = models.ForeignKey(Advisor, related_name="client_invites")
+    sent_date = models.DateTimeField(auto_now=True)
+    is_user = models.BooleanField(default=False)
+
+    def send(self):
+        # TODO : when create an user check if is in the invite table and put is_user as True
+        # TODO: SEND EMAIl
+
+        if self.is_user:
+            return
+
+        if User.objects.filter(email=self.client_email):
+            self.is_user = True
+            self.save()
+            return
+
+        self.sent_date = datetime.datetime.now()
+        self.save()
