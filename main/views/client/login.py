@@ -94,7 +94,6 @@ class ClientSignUpForm(forms.ModelForm):
                                           " Most users will answer No:",
                                "css_class": "r_questions"}]
 
-
     @property
     def sections(self):
         for section in self.field_sections:

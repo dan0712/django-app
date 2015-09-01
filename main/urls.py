@@ -10,7 +10,10 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
+
     url(r'^session', csrf_exempt(Session.as_view()), name="session"),
+    url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_legal',
+        InviteLegalView.as_view(), name='betasmartz_admin:invite_legal'),
 
     # Advisor views
     url(r'^advisor/login', advisor_login, name='advisor:login'),

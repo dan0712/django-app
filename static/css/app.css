@@ -478,6 +478,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
     background-color: #f5f5f5;
     border-color: #ccc;
     color: #45a018;
+    font-weight: bold;
 }
 .flashes .alert-error hr, .flashes .alert-alert hr {
     border-top-color: #29718c;
@@ -18593,4 +18594,28 @@ body.style-guide .my-modal-class .modal-body {
 
 ul.errorlist > li {
     color: darkred;
+}
+
+h1.error{
+    color:darkred;
+}
+
+.admin-content .sub-nav{
+    margin-bottom: 40px;
+}
+
+.admin-content .sub-nav a i{
+    margin-right: 5px;
+}
+
+
+.admin-content .sub-nav a{
+    font-size: 25px!important;
+}
+.admin-content .sub-nav a:hover{
+        box-shadow: 0 3px 0 0 #45a018;
+}
+
+.admin-content h1.message{
+    color: #333;
 }

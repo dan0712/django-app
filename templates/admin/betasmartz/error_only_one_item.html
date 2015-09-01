@@ -1,0 +1,7 @@
+{% extends 'admin/betasmartz/layout.html' %}
+{% block title %} <i class="fa fa-exclamation-circle"></i> Error{% endblock %}
+{% block title_class %}error{% endblock %}
+
+{% block main_content %}
+    <h1 class="message">This action can only be performed in <strong>one {{ item_class }}</strong> at the same time.</h1>
+{% endblock %}

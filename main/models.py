@@ -7,7 +7,38 @@ from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPos
 from main.slug import unique_slugify
 from django.conf import settings
 import uuid
-import datetime
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
+
+
+TFN_YES = 0
+TFN_NON_RESIDENT = 1
+TFN_CLAIM = 2
+TFN_DONT_WANT = 3
+
+TFN_CHOICES = ((TFN_YES, "Yes"),
+               (TFN_NON_RESIDENT, "I am a non-resident of Australia"),
+               (TFN_CLAIM, "I want to claim an exemption"),
+               (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
+
+Q1 = "What was the name of your elementary school?"
+Q2 = "What was the name of your favorite childhood friend?"
+Q3 = "What was the name of your childhood pet?"
+Q4 = "What street did you live on in third grade?"
+Q5 = "What is your oldest sibling's birth month?"
+Q6 = "In what city did your mother and father meet?"
+
+QUESTION_1_CHOICES = ((Q1, Q1),
+                      (Q2, Q2),
+                      (Q3, Q3))
+
+QUESTION_2_CHOICES = ((Q4, Q4),
+                      (Q5, Q5),
+                      (Q6, Q6))
+
+
+YES_NO = ((False, "No"), (True, "Yes"))
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -63,35 +94,82 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Firm(models.Model):
-    firm_name = models.CharField(max_length=255)
-    firm_slug = models.CharField(max_length=255, editable=False, unique=True)
-    firm_logo_url = models.ImageField(verbose_name="White logo", null=False, blank=False)
-    firm_knocked_out_logo_url = models.ImageField(verbose_name="Colored logo", null=False, blank=False)
-    firm_client_agreement_url = models.FileField(verbose_name="Client Agreement (PDF)", null=True, blank=True)
-    firm_form_adv_part2_url = models.FileField(verbose_name="Form Adv", null=True, blank=True)
-    firm_client_agreement_token = models.CharField(max_length=36, editable=False)
+    name = models.CharField(max_length=255)
+    dealer_group_number = models.CharField(max_length=50, null=True, blank=True)
+    slug = models.CharField(max_length=100, editable=False, unique=True)
+    logo_url = models.ImageField(verbose_name="White logo", null=True, blank=True)
+    knocked_out_logo_url = models.ImageField(verbose_name="Colored logo", null=True, blank=True)
+    client_agreement_url = models.FileField(verbose_name="Client Agreement (PDF)", null=True, blank=True)
+    form_adv_part2_url = models.FileField(verbose_name="Form Adv", null=True, blank=True)
+    token = models.CharField(max_length=36, editable=False)
+    fee = models.FloatField(default=0)
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 
         if self.pk is None:
-            self.firm_client_agreement_token = str(uuid.uuid4())
+            self.token = str(uuid.uuid4())
 
-        if not self.firm_slug:
-            unique_slugify(self, self.firm_name, slug_field_name="firm_slug")
+        # reset slug with name changes
+        if self.pk is not None:
+            orig = Firm.objects.get(pk=self.pk)
+            if orig.name != self.name:
+                self.slug = None
+
+        if not self.slug:
+            unique_slugify(self, self.name, slug_field_name="slug")
         else:
-            unique_slugify(self, self.firm_slug, slug_field_name="firm_slug")
+            unique_slugify(self, self.slug, slug_field_name="slug")
 
         super(Firm, self).save(force_insert, force_update, using, update_fields)
 
     def white_logo(self):
-        if self.firm_logo_url is None:
+        if self.logo_url is None:
             return settings.STATIC_URL + 'images/white_logo.png'
 
-        return settings.MEDIA_URL + self.firm_logo_url.name
+        return settings.MEDIA_URL + self.logo_url.name
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self).pk
+
+    @property
+    def legal_representative_form_url(self):
+        if self.token is None:
+            return None
+        return settings.SITE_URL + "/" + self.token + "/legal_signup"
 
     def __str__(self):
-        return self.firm_name
+        return self.name
+
+
+class FirmData(models.Model):
+    afsl_asic = models.CharField(default="", max_length=50)
+    afsl_asic_document = models.FileField()
+    office_address_line_1 = models.CharField(max_length=255)
+    office_address_line_2 = models.CharField(max_length=255)
+    office_state = AUStateField()
+    office_city = models.CharField(max_length=255)
+    office_post_code = AUPostCodeField()
+    postal_address_line_1 = models.CharField(max_length=255)
+    postal_address_line_2 = models.CharField(max_length=255)
+    postal_state = AUStateField()
+    postal_city = models.CharField(max_length=255)
+    postal_post_code = AUPostCodeField()
+    daytime_phone_number = AUPhoneNumberField()
+    mobile_phone_number = AUPhoneNumberField()
+    fax_number = AUPhoneNumberField()
+    alternate_email_address = models.EmailField(null=True, blank=True)
+    last_change = models.DateField(auto_now=True)
+    fee_bank_account_name = models.CharField(max_length=100)
+    fee_bank_account_branch_name = models.CharField(max_length=100)
+    fee_bank_account_bsb_number = models.CharField(max_length=20)
+    fee_bank_account_number = models.CharField(max_length=20)
+    fee_bank_account_holder_name = models.CharField(max_length=100)
+    australian_business_number = models.CharField(max_length=20)
+    investor_transfer = models.BooleanField(default=False, choices=YES_NO)
+    previous_adviser_name = models.CharField(max_length=100, null=True, blank=True)
+    previous_margin_lending_adviser_number = models.CharField(max_length=100, null=True, blank=True)
+    previous_bt_adviser_number = models.CharField(max_length=100, null=True, blank=True)
 
 
 class Advisor(models.Model):
@@ -106,7 +184,7 @@ class Advisor(models.Model):
     is_supervisor = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.user.first_name + " - " + self.firm.firm_name
+        return self.user.first_name + " - " + self.firm.name
 
     @property
     def first_name(self):
@@ -127,11 +205,11 @@ class Advisor(models.Model):
 
     @property
     def firm_colored_logo(self):
-        return self.firm.firm_knocked_out_logo_url
+        return self.firm.knocked_out_logo_url
 
     @property
     def invite_url(self):
-        return settings.SITE_URL + "/" + self.firm.firm_slug + "/client/signup/" + self.token
+        return settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
 
     def save(self, *args, **kw):
         send_confirmation_mail = False
@@ -150,34 +228,6 @@ class Advisor(models.Model):
                                  .format(confirmation_key=self.confirmation_key,
                                          site_url=settings.SITE_URL))
 
-
-TFN_YES = 0
-TFN_NON_RESIDENT = 1
-TFN_CLAIM = 2
-TFN_DONT_WANT = 3
-
-TFN_CHOICES = ((TFN_YES, "Yes"),
-               (TFN_NON_RESIDENT, "I am a non-resident of Australia"),
-               (TFN_CLAIM, "I want to claim an exemption"),
-               (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
-
-Q1 = "What was the name of your elementary school?"
-Q2 = "What was the name of your favorite childhood friend?"
-Q3 = "What was the name of your childhood pet?"
-Q4 = "What street did you live on in third grade?"
-Q5 = "What is your oldest sibling's birth month?"
-Q6 = "In what city did your mother and father meet?"
-
-QUESTION_1_CHOICES = ((Q1, Q1),
-                      (Q2, Q2),
-                      (Q3, Q3))
-
-QUESTION_2_CHOICES = ((Q4, Q4),
-                      (Q5, Q5),
-                      (Q6, Q6))
-
-
-YES_NO = ((False, "No"), (True, "Yes"))
 
 
 class Client(models.Model):
@@ -271,23 +321,78 @@ class Ticker(models.Model):
         super(Ticker, self).save(force_insert, force_update, using, update_fields)
 
 
-class ClientInvite(models.Model):
-    client_email = models.EmailField(unique=True)
-    advisor = models.ForeignKey(Advisor, related_name="client_invites")
-    sent_date = models.DateTimeField(auto_now=True)
-    is_user = models.BooleanField(default=False)
+INVITATION_PENDING = 0
+INVITATION_SUBMITTED = 1
+INVITATION_ACTIVE = 3
+INVITATION_CLOSED = 4
+
+EMAIL_INVITATION_STATUSES = ((INVITATION_PENDING, 'Pending'),
+                             (INVITATION_SUBMITTED, 'Submitted'),
+                             (INVITATION_ACTIVE, 'Active'),
+                             (INVITATION_CLOSED, 'Closed'))
+
+
+INVITATION_ADVISOR = 0
+INVITATION_LEGAL_REPRESENTATIVE = 1
+INVITATION_SUPERVISOR = 2
+INVITATION_CLIENT = 3
+INVITATION_TYPE_CHOICES = ((INVITATION_ADVISOR, "Advisor"),
+                           (INVITATION_LEGAL_REPRESENTATIVE, 'Legal representative'),
+                           (INVITATION_CLIENT, 'Client'),
+                           (INVITATION_SUPERVISOR, 'Supervisor'))
+
+INVITATION_TYPE_DICT = {str(INVITATION_ADVISOR): "advisor",
+                        str(INVITATION_LEGAL_REPRESENTATIVE): "legal_representative",
+                        str(INVITATION_CLIENT): "client",
+                        str(INVITATION_SUPERVISOR): "supervisor"}
+
+
+class EmailInvitation(models.Model):
+
+    email = models.EmailField()
+    inviter_type = models.ForeignKey(ContentType)
+    inviter_id = models.PositiveIntegerField()
+    inviter_object = generic.GenericForeignKey('inviter_type', 'inviter_id')
+    send_date = models.DateTimeField(auto_now=True)
+    send_count = models.PositiveIntegerField(default=0)
+    status = models.PositiveIntegerField(choices=EMAIL_INVITATION_STATUSES, default=INVITATION_PENDING)
+    invitation_type = models.PositiveIntegerField(choices=INVITATION_TYPE_CHOICES, default=INVITATION_CLIENT)
+
+    @property
+    def get_status(self):
+        for i in EMAIL_INVITATION_STATUSES:
+            if self.status == i[0]:
+                return i[1]
 
     def send(self):
-        # TODO : when create an user check if is in the invite table and put is_user as True
         # TODO: SEND EMAIl
 
-        if self.is_user:
+        if self.status != INVITATION_PENDING:
             return
 
-        if User.objects.filter(email=self.client_email):
-            self.is_user = True
-            self.save()
-            return
+        try:
+            user = User.objects.get(email=self.email)
+        except ObjectDoesNotExist:
+            user = None
 
-        self.sent_date = datetime.datetime.now()
+        if user is not None:
+            if not user.is_active:
+                self.status = INVITATION_CLOSED
+                self.save()
+                return
+
+            for it in INVITATION_TYPE_CHOICES:
+                if self.invitation_type == it[0]:
+                    model = INVITATION_TYPE_DICT[it[0]]
+                    if hasattr(user, model):
+                        if getattr(user, model).is_confirmed:
+                            self.status = INVITATION_ACTIVE
+                            self.save()
+                            return
+                        else:
+                            self.status = INVITATION_SUBMITTED
+                            self.save()
+                            return
+
+        self.send_count += 1
         self.save()

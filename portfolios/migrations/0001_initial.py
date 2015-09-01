@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '__first__'),
+        ('main', '0001_initial'),
     ]
 
     operations = [
@@ -16,9 +16,9 @@ class Migration(migrations.Migration):
             fields=[
             ],
             options={
+                'proxy': True,
                 'verbose_name': 'Asset class',
                 'verbose_name_plural': 'Asset classes',
-                'proxy': True,
             },
             bases=('main.assetclass',),
         ),
@@ -27,9 +27,9 @@ class Migration(migrations.Migration):
             fields=[
             ],
             options={
+                'proxy': True,
                 'verbose_name': 'Tickers',
                 'verbose_name_plural': 'Ticker',
-                'proxy': True,
             },
             bases=('main.ticker',),
         ),

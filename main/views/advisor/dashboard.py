@@ -1,6 +1,6 @@
 __author__ = 'cristian'
 from ..utils.login import create_login
-from main.models import Advisor, User, ClientInvite
+from main.models import Advisor, User, EmailInvitation
 from django import forms
 from django.views.generic import CreateView, View, TemplateView
 from django.utils import safestring
@@ -16,8 +16,8 @@ __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients', 'AdvisorA
 class AdvisorClientInvitesForm(forms.ModelForm):
 
     class Meta:
-        model = ClientInvite
-        fields = ('client_email', 'advisor')
+        model = EmailInvitation
+        fields = ('email', )
 
     def clean(self):
         cleaned_data = super(AdvisorClientInvitesForm, self).clean()
@@ -26,7 +26,7 @@ class AdvisorClientInvitesForm(forms.ModelForm):
 
     def save(self, *args, **kw):
         try:
-            invitation = ClientInvite.objects.get(client_email=self.cleaned_data.get('client_email'),
+            invitation = EmailInvitation.objects.get(client_email=self.cleaned_data.get('client_email'),
                                                   advisor=self.cleaned_data.get('advisor'))
         except ObjectDoesNotExist:
             invitation = super(AdvisorClientInvitesForm, self).save(*args, **kw)
@@ -42,7 +42,7 @@ class AdvisorClientInvites(CreateView, AdvisorView):
 
     def get(self, request, *args, **kwargs):
         response = super(AdvisorClientInvites, self).get(request, *args, **kwargs)
-        response.context_data["client_invites"] = ClientInvite.objects.filter(advisor=request.user.advisor,
+        response.context_data["client_invites"] = EmailInvitation.objects.filter(advisor=request.user.advisor,
                                                                               is_user=False)
         return response
 

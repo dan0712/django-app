@@ -2,9 +2,11 @@ __author__ = 'cristian'
 
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
-from main.models import Firm, Advisor, User
+from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
+from django.shortcuts import render_to_response, HttpResponseRedirect
+from django.conf import settings
 
 
 class TickerInline(SortableTabularInline):
@@ -40,7 +42,7 @@ class FirmFilter(admin.SimpleListFilter):
         """
         list_id = [[None, "All"]]
         for firm in Firm.objects.all():
-            list_id.append([firm.pk, firm.firm_name])
+            list_id.append([firm.pk, firm.name])
 
         return list_id
 
@@ -78,9 +80,21 @@ class UserAdmin(admin.ModelAdmin):
     pass
 
 
+def invite_legal_representative(modeladmin, request, queryset):
+    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL}
+
+    if queryset.count() > 1:
+        return render_to_response('admin/betasmartz/error_only_one_item.html', context.update({'item_class': 'firm'}))
+
+    else:
+        return HttpResponseRedirect('/betasmartz_admin/firm/{pk}/invite_legal?next=/admin/main/firm/'
+                                    .format(pk=queryset.all()[0].pk))
+
+
 class FirmAdmin(admin.ModelAdmin):
-    list_display = ('firm_name', )
+    list_display = ('name', )
     inlines = (AdvisorInline,)
+    actions = (invite_legal_representative, )
     pass
 
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
