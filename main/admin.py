@@ -2,7 +2,7 @@ __author__ = 'cristian'
 
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
-from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE
+from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE, LegalRepresentative, FirmData
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -16,6 +16,14 @@ class TickerInline(SortableTabularInline):
 
 class AdvisorInline(admin.StackedInline):
     model = Advisor
+
+
+class LegalRepresentativeInline(admin.StackedInline):
+    model = LegalRepresentative
+
+
+class FirmDataInline(admin.StackedInline):
+    model = FirmData
 
 
 class AssetClassAdmin(SortableModelAdmin):
@@ -63,11 +71,11 @@ class FirmFilter(admin.SimpleListFilter):
 
 def approve_application(modeladmin, request, queryset):
     queryset.update(is_accepted=True)
-approve_application.short_description = "Mark selected advisor applications as approved"
+approve_application.short_description = "Approve application(s)"
 
 
 class AdvisorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'work_phone', 'is_accepted', 'is_confirmed', 'is_supervisor', 'firm')
+    list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application, )
 
@@ -93,11 +101,21 @@ def invite_legal_representative(modeladmin, request, queryset):
 
 class FirmAdmin(admin.ModelAdmin):
     list_display = ('name', )
-    inlines = (AdvisorInline,)
+    inlines = ( FirmDataInline, )
     actions = (invite_legal_representative, )
+    pass
+
+
+class LegalRepresentativeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
+    list_filter = ('is_accepted', FirmFilter)
+    actions = (approve_application, )
+
     pass
 
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)
+admin.site.register(LegalRepresentative, LegalRepresentativeAdmin)
+
 admin.site.register(User, UserAdmin)

@@ -2413,7 +2413,7 @@ ul#id_provide_tfn label{
     width: 380px;
 }
 
-.r_questions ul, li{
+.r_questions ul li{
     display: inline;
 
 }
@@ -2424,4 +2424,20 @@ ul#id_provide_tfn label{
 
 .r_questions li label{
     width: 50px;
+}
+
+#signup .big-form .conversation-text, #signup .big-form .conversation-text span.bad {
+    display: block;
+}
+
+#signup .agreement{
+    height: 120px;
+}
+.error_card {
+    background-color: darkred!important;
+}
+
+#id_postal_post_code, #id_office_post_code{
+    width: 100px;
+    
 }

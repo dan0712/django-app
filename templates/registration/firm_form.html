@@ -1,0 +1,232 @@
+{% extends "layouts/form-base.html" %}
+{% load i18n %}
+{% load app_filters %}
+{% block main_content %}
+
+<div id="signup">
+
+<h1 class="tab-header" id="signupWelcomeHeader">Sign up for a {{ sign_up_type }}</h1>
+
+<div class="left">
+    {% if form.errors and not form.non_field_errors %}
+<div class="panel card error_card" id="welcomeBackPanel" style="display: block;">
+<h2>You’re almost there!</h2>
+<p>
+        {% if form.errors.items|length == 1 %}
+            Please correct the error below.
+        {% else %}
+            Please correct the errors below.
+        {% endif %}
+
+</p>
+
+</div>
+{% endif %}
+
+
+<div class="panel card body big-form">
+    <div class="clearfix">
+    <h2>Tell us about yourself</h2>
+    <p class="right header-detail">All required and confidential</p>
+    </br></br>
+    <p class="right header-detail"> What you need to apply:</p>
+        </br>
+    <p class="right header-detail">You must be 18 years of age or older</p>
+        </br>
+    <p class="right header-detail">You must be a permanent resident of Australia</p>
+
+
+</div>
+
+<div>
+
+<form id="basicContact" action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="firm" value="{{ firm.pk }}">
+    {% for section in form.sections %}
+        <div class="section-container {{ section.css_class }}">
+        <div class="guest-form">
+
+            <div class="section-header">
+                <span class="left blue-circle">{{ forloop.counter }}</span>
+                <h3 class="left">{{ section.header }}</h3>
+                {%  if section.detail %}
+                <p class="section-details">{{ section.detail }}</p>
+                {% endif %}
+            </div>
+        {% for field in section.fields %}
+            <div class="input-line">
+            {{ field.label_tag }}
+                <span class="input-area">
+                    {{ field | add_class:'white' }}
+                    {% if field.help_text %}
+                        <h3 class="help_text">{{ field.help_text }}</h3>
+                    {% endif %}
+                    <div class="conversation-text"><span class="bad">{{ field.errors }}</span></div>
+                </span>
+            </div>
+        {% endfor %}
+        </div>
+        </div>
+        <hr>
+    {% endfor %}
+
+      <div class="tos client-agreement">
+            <div class="title">BetaSmartz's agreements</div>
+
+            <div class="clearfix tos-line">
+                <input class="left" type="checkbox" name="betasmartz_agreement" value="true" data-error-element-selector=".agreement-error-client">
+                <div class="left">
+                    By checking this box, you acknowledge that you have read and agree to the terms below.
+                </div>
+            </div>
+
+            <div class="agreement" data-expand="120">
+                 BetaSmartz's privacy policy and BetaSmartz Institutional customer agreements, which include the Brokerage Agreement, Advisory Agreement, Arbitration Agreements therein, consent to electronic delivery of documents and written communications, the Certification of Trust (if applicable), and other important agreements. (These agreements are also available on the terms and conditions page of this website.) These documents pertain only to your relationship with BetaSmartz LLC and BetaSmartz Securities.
+                <em>Your brokerage agreement contains a predispute arbitration clause highlighted in paragraph 35 on page 80.</em>
+            </div>
+             <div class="conversation-text">
+                    <span class="bad">{{ form.betasmartz_agreement.errors}}</span>
+                </div>
+            <hr>
+        </div>
+<div class="buttons" style="clear:both;">
+<input type="submit" class="blue ok" id="signup-complete">
+</div>
+</form>
+
+
+</div>
+</div>
+
+<div class="panel card body big-form identity-correction-form" style="display: none;">
+<div class="clearfix">
+<h2 class="form-header">Please verify the following and submit again.</h2>
+</div>
+
+<!-- SECTION 7 - identity correction -->
+<form id="identityCorrection"></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="right-rail">
+
+<div class="benefits-pane">
+</div>
+
+<div class="panel card body post-account-signup unadvised-user-only">
+<h4>After signing up for a personal account you can:</h4>
+<ul>
+<li>Set up a Joint Account</li>
+<li>Create a Trust Account</li>
+</ul>
+</div>
+
+
+
+<div class="panel card body support unadvised-user-only">
+<h5>Support</h5>
+<h4>Questions? Talk to us.</h4>
+
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">{{ SUPPORT_PHONE }}</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a></span>
+</li>
+</ul>
+</div>
+
+<div class="panel card body support advised-user-only">
+
+<h4>Technical support</h4>
+<p>For technical questions, contact one of our support specialists.</p>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">{{ SUPPORT_PHONE }}</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ SUPPORT_EMAIL }}">Email Support</a></span>
+</li>
+
+</ul>
+</div>
+
+<div class="panel card body security">
+<h4 class="advised-user-only">Security &amp; Privacy</h4>
+<h5 class="unadvised-user-only">Security &amp; Privacy</h5>
+<h4 class="unadvised-user-only">Betterment's Promise</h4>
+<div class="promise">
+<div class="icon advised-user-only unbranded-lock-icon"></div>
+<p>
+We promise to ensure the utmost security and privacy when it comes to your account.
+</p>
+<div class="clearfix"></div>
+</div>
+<ul>
+<li>
+<span class="icon"><span class="security-lock-icon"></span></span>
+<span class="text">Bank Level Security</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="fraud-icon"></span></span>
+<span class="text">Fraud Protection</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="money-bag-icon"></span></span>
+<span class="text">Up to $500,000<br>Account Protection</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon"><span class="ssl-icon"></span></span>
+<span class="text">Strongest Available Browser Encryption</span>
+<div class="clearfix"></div>
+</li>
+<li>
+<span class="icon small"><span class="privacy-icon"></span></span>
+<span class="text small">Paramount Privacy Protection</span>
+<div class="clearfix"></div>
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script>
+$(document).ready(function(){
+    var set_tfn = function(){
+        var value = $("ul#id_provide_tfn input:radio:checked").val();
+        if(value !=0){
+            $("input[name=tax_file_number]").parent().parent().hide();
+
+        }
+        else{
+            $("input[name=tax_file_number]").parent().parent().show();
+        }
+
+    };
+    set_tfn();
+    $("ul#id_provide_tfn input:radio").click(function() {
+        set_tfn();
+    });
+});
+
+
+</script>
+
+{% endblock %}
+
+
+

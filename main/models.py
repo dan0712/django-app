@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, validators, UserManager, timezone,\
     send_mail
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, ValidationError
 from .fields import ColorField
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
 from main.slug import unique_slugify
@@ -10,6 +10,40 @@ import uuid
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.template.loader import render_to_string
+from django import forms
+from django.contrib.auth.hashers import make_password
+from django.utils.safestring import mark_safe
+
+
+def validate_agreement(value):
+    if value is False:
+        raise ValidationError("You must accept the agreement to continue.")
+
+INVITATION_PENDING = 0
+INVITATION_SUBMITTED = 1
+INVITATION_ACTIVE = 3
+INVITATION_CLOSED = 4
+
+EMAIL_INVITATION_STATUSES = ((INVITATION_PENDING, 'Pending'),
+                             (INVITATION_SUBMITTED, 'Submitted'),
+                             (INVITATION_ACTIVE, 'Active'),
+                             (INVITATION_CLOSED, 'Closed'))
+
+
+INVITATION_ADVISOR = 0
+INVITATION_LEGAL_REPRESENTATIVE = 1
+INVITATION_SUPERVISOR = 2
+INVITATION_CLIENT = 3
+INVITATION_TYPE_CHOICES = ((INVITATION_ADVISOR, "Advisor"),
+                           (INVITATION_LEGAL_REPRESENTATIVE, 'Legal representative'),
+                           (INVITATION_CLIENT, 'Client'),
+                           (INVITATION_SUPERVISOR, 'Supervisor'))
+
+INVITATION_TYPE_DICT = {str(INVITATION_ADVISOR): "advisor",
+                        str(INVITATION_LEGAL_REPRESENTATIVE): "legal_representative",
+                        str(INVITATION_CLIENT): "client",
+                        str(INVITATION_SUPERVISOR): "supervisor"}
 
 
 TFN_YES = 0
@@ -38,7 +72,139 @@ QUESTION_2_CHOICES = ((Q4, Q4),
                       (Q6, Q6))
 
 
+PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender', 'address_line_1', 'address_line_2', 'city', 'state',
+                        'post_code', 'phone_number', 'security_question_1', "security_question_2",
+                        "security_answer_1", "security_answer_2", 'medicare_number')
+
+
+PERSONAL_DATA_WIDGETS = {"gender": forms.RadioSelect(),
+                         "date_of_birth": forms.TextInput(attrs={"placeholder": "YYYY-MM-DD"}),
+                         'address_line_1': forms.TextInput(attrs={"placeholder": "Street address"}),
+                         "address_line_2": forms.TextInput(
+                             attrs={"placeholder": "Apartment, Suite, Unit, Floor (optional)"})}
+
+
+class BetaSmartzAgreementForm(forms.ModelForm):
+
+    def clean(self):
+        cleaned_data = super(BetaSmartzAgreementForm, self).clean()
+        if not(cleaned_data["betasmartz_agreement"] is True):
+            self._errors['betasmartz_agreement'] = mark_safe('<ul class="errorlist">'
+                                                             '<li>You must accept the BetaSmartz\'s agreement'
+                                                             ' to continue.</li></ul>')
+
+        return cleaned_data
+
+
+class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
+
+    confirm_password = forms.CharField(max_length=50, widget=forms.PasswordInput())
+    password = forms.CharField(max_length=50, widget=forms.PasswordInput())
+    user_profile_type = None
+
+    def clean(self):
+        cleaned_data = super(BetaSmartzGenericUSerSignupForm, self).clean()
+        self._validate_unique = False
+
+        password1 = cleaned_data.get('password')
+        password2 = cleaned_data.get('confirm_password')
+
+        if password1 and (password1 != password2):
+            self._errors['confirm_password'] = mark_safe('<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
+
+        # check if user already exist
+        try:
+            user = User.objects.get(email=cleaned_data.get('email'))
+        except ObjectDoesNotExist:
+            user = None
+
+        if user is not None:
+            # confirm password
+            if not user.check_password(password1):
+                    self._errors['email'] = mark_safe(u'<ul class="errorlist"><li>User already exists</li></ul>')
+            else:
+                if hasattr(user, self.user_profile_type):
+                    rupt = self.user_profile_type.replace("_", " ")
+                    self._errors['email'] = mark_safe(u'<ul class="errorlist"><li>User already has an'
+                                                      u' {0} account</li></ul>'.format(rupt))
+
+        cleaned_data["password"] = make_password(password1)
+        return cleaned_data
+
+    def save(self, *args, **kw):
+        # check if user already exist
+        try:
+            self.instance = User.objects.get(email=self.cleaned_data.get('email'))
+        except ObjectDoesNotExist:
+            pass
+        return super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
+
+
+class Section:
+
+    def __init__(self, section, form):
+        self.header = section.get("header", "")
+        self.detail = section.get("detail", None)
+        self.css_class = section.get("css_class", None)
+        self.fields = []
+        for field_name in section["fields"]:
+            self.fields.append(form[field_name])
+
+
 YES_NO = ((False, "No"), (True, "Yes"))
+
+
+class NeedApprobation(models.Model):
+    class Meta:
+        abstract = True
+
+    is_accepted = models.BooleanField(default=False, editable=False)
+
+
+class NeedConfirmation(models.Model):
+    class Meta:
+        abstract = True
+
+    confirmation_key = models.CharField(max_length=36, null=True, blank=True, editable=False)
+    is_confirmed = models.BooleanField(default=False, editable=False)
+
+
+class PersonalData(models.Model):
+    class Meta:
+        abstract = True
+
+    date_of_birth = models.DateField(verbose_name="Date of birth")
+    gender = models.CharField(max_length=20, default="Male",  choices=(("Male", "Male"), ("Female", "Female")))
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255)
+    state = AUStateField()
+    post_code = AUPostCodeField()
+    phone_number = AUPhoneNumberField()
+    security_question_1 = models.CharField(max_length=255, choices=QUESTION_1_CHOICES)
+    security_question_2 = models.CharField(max_length=255, choices=QUESTION_2_CHOICES)
+    security_answer_1 = models.CharField(max_length=255, verbose_name="Answer")
+    security_answer_2 = models.CharField(max_length=255, verbose_name="Answer")
+    medicare_number = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.user.first_name + " - " + self.firm.name
+
+    @property
+    def first_name(self):
+        return self.user.first_name
+
+    @property
+    def name(self):
+        return self.user.first_name + " " + self.user.last_name
+
+    @property
+    def phone(self):
+        return self.work_phone[0:4] + "-" + self.work_phone[4:7] + "-" + self.work_phone[7:10]
+
+    @property
+    def email(self):
+        return self.user.email
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -122,11 +288,25 @@ class Firm(models.Model):
 
         super(Firm, self).save(force_insert, force_update, using, update_fields)
 
+    @property
     def white_logo(self):
+
         if self.logo_url is None:
+            return settings.STATIC_URL + 'images/white_logo.png'
+        elif not self.logo_url.name:
             return settings.STATIC_URL + 'images/white_logo.png'
 
         return settings.MEDIA_URL + self.logo_url.name
+
+    @property
+    def colored_logo(self):
+
+        if self.logo_url is None:
+            return settings.STATIC_URL + 'images/colored_logo.png'
+        elif not self.logo_url.name:
+            return settings.STATIC_URL + 'images/colored_logo.png'
+
+        return settings.MEDIA_URL + self.knocked_out_logo_url.name
 
     @property
     def content_type(self):
@@ -138,70 +318,73 @@ class Firm(models.Model):
             return None
         return settings.SITE_URL + "/" + self.token + "/legal_signup"
 
+    @property
+    def supervisor_invite_url(self):
+        if self.token is None:
+            return None
+        return settings.SITE_URL + "/" + self.token + "/supervisor_signup"
+
+    @property
+    def advisor_invite_url(self):
+        if self.token is None:
+            return None
+        return settings.SITE_URL + "/" + self.token + "/advisor_signup"
+
+    @staticmethod
+    def get_inviter_type():
+        return "firm"
+
+    def get_inviter_name(self):
+        return self.name
+
+    def get_invite_url(self, application_type):
+        if application_type == INVITATION_LEGAL_REPRESENTATIVE:
+            return self.legal_representative_form_url
+        if application_type == INVITATION_ADVISOR:
+            return self.advisor_invite_url
+        if application_type == INVITATION_SUPERVISOR:
+            return self.supervisor_invite_url
+
     def __str__(self):
         return self.name
 
 
 class FirmData(models.Model):
-    afsl_asic = models.CharField(default="", max_length=50)
-    afsl_asic_document = models.FileField()
-    office_address_line_1 = models.CharField(max_length=255)
-    office_address_line_2 = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = "Firm detail"
+
+    firm = models.OneToOneField(Firm, related_name='firm_details')
+    afsl_asic = models.CharField("AFSL/ASIC number", max_length=50)
+    afsl_asic_document = models.FileField("AFSL/ASIC doc.")
+    office_address_line_1 = models.CharField("Office address 1", max_length=255)
+    office_address_line_2 = models.CharField("Office address 2", max_length=255, null=True, blank=True)
     office_state = AUStateField()
     office_city = models.CharField(max_length=255)
     office_post_code = AUPostCodeField()
-    postal_address_line_1 = models.CharField(max_length=255)
-    postal_address_line_2 = models.CharField(max_length=255)
+    postal_address_line_1 = models.CharField("Postal address 1", max_length=255)
+    postal_address_line_2 = models.CharField("Postal address 2", max_length=255, null=True, blank=True)
     postal_state = AUStateField()
+    same_address = models.BooleanField(default=False)
     postal_city = models.CharField(max_length=255)
     postal_post_code = AUPostCodeField()
     daytime_phone_number = AUPhoneNumberField()
     mobile_phone_number = AUPhoneNumberField()
     fax_number = AUPhoneNumberField()
-    alternate_email_address = models.EmailField(null=True, blank=True)
+    alternate_email_address = models.EmailField("Email address", null=True, blank=True)
     last_change = models.DateField(auto_now=True)
-    fee_bank_account_name = models.CharField(max_length=100)
-    fee_bank_account_branch_name = models.CharField(max_length=100)
-    fee_bank_account_bsb_number = models.CharField(max_length=20)
-    fee_bank_account_number = models.CharField(max_length=20)
-    fee_bank_account_holder_name = models.CharField(max_length=100)
-    australian_business_number = models.CharField(max_length=20)
-    investor_transfer = models.BooleanField(default=False, choices=YES_NO)
-    previous_adviser_name = models.CharField(max_length=100, null=True, blank=True)
-    previous_margin_lending_adviser_number = models.CharField(max_length=100, null=True, blank=True)
-    previous_bt_adviser_number = models.CharField(max_length=100, null=True, blank=True)
+    fee_bank_account_name = models.CharField('Name', max_length=100)
+    fee_bank_account_branch_name = models.CharField('Branch name', max_length=100)
+    fee_bank_account_bsb_number = models.CharField('BSB number', max_length=20)
+    fee_bank_account_number = models.CharField('Account number', max_length=20)
+    fee_bank_account_holder_name = models.CharField('Account holder', max_length=100)
+    australian_business_number = models.CharField("ABN", max_length=20)
 
 
-class Advisor(models.Model):
+class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     user = models.OneToOneField(User, related_name="advisor")
-    work_phone = AUPhoneNumberField()
-    confirmation_key = models.CharField(max_length=36, null=True, blank=True, editable=False)
     token = models.CharField(max_length=36, null=True, editable=False)
-    is_accepted = models.BooleanField(default=False, editable=False)
-    is_confirmed = models.BooleanField(default=False, editable=False)
     firm = models.ForeignKey(Firm)
-    date_of_birth = models.DateField()
-    is_supervisor = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.user.first_name + " - " + self.firm.name
-
-    @property
-    def first_name(self):
-        return self.user.first_name
-
-    @property
-    def name(self):
-        return self.user.first_name + " " + self.user.last_name
-
-    @property
-    def phone(self):
-        return self.work_phone[0:4] + "-" + self.work_phone[4:7] + "-" + self.work_phone[7:10]
-    
-    @property
-    def email(self):
-        return self.user.email
-
 
     @property
     def firm_colored_logo(self):
@@ -229,13 +412,16 @@ class Advisor(models.Model):
                                          site_url=settings.SITE_URL))
 
 
+class LegalRepresentative(NeedApprobation, NeedConfirmation, PersonalData):
+    user = models.OneToOneField(User, related_name='legal_representative')
+    firm = models.ForeignKey(Firm, related_name='legal_representatives')
+    letter_of_authority = models.FileField()
+    betasmartz_agreement = models.BooleanField()
 
-class Client(models.Model):
-    is_confirmed = models.BooleanField()
-    confirmation_key = models.CharField(max_length=36)
+
+class Client(NeedApprobation, NeedConfirmation):
     advisor = models.ForeignKey(Advisor)
     user = models.OneToOneField(User)
-    accepted = models.BooleanField(default=False, editable=False)
     date_of_birth = models.DateField(verbose_name="Date of birth")
     gender = models.CharField(max_length=20, default="Male",  choices=(("Male", "Male"), ("Female", "Female")))
     address_line_1 = models.CharField(max_length=255)
@@ -244,7 +430,6 @@ class Client(models.Model):
     state = AUStateField()
     post_code = AUPostCodeField()
     phone_number = AUPhoneNumberField()
-    medicare_number = models.CharField(max_length=50)
     tax_file_number = models.CharField(max_length=50)
     provide_tfn = models.IntegerField(verbose_name="Provide TFN?", choices=TFN_CHOICES, default=TFN_YES)
     security_question_1 = models.CharField(max_length=255, choices=QUESTION_1_CHOICES)
@@ -321,32 +506,6 @@ class Ticker(models.Model):
         super(Ticker, self).save(force_insert, force_update, using, update_fields)
 
 
-INVITATION_PENDING = 0
-INVITATION_SUBMITTED = 1
-INVITATION_ACTIVE = 3
-INVITATION_CLOSED = 4
-
-EMAIL_INVITATION_STATUSES = ((INVITATION_PENDING, 'Pending'),
-                             (INVITATION_SUBMITTED, 'Submitted'),
-                             (INVITATION_ACTIVE, 'Active'),
-                             (INVITATION_CLOSED, 'Closed'))
-
-
-INVITATION_ADVISOR = 0
-INVITATION_LEGAL_REPRESENTATIVE = 1
-INVITATION_SUPERVISOR = 2
-INVITATION_CLIENT = 3
-INVITATION_TYPE_CHOICES = ((INVITATION_ADVISOR, "Advisor"),
-                           (INVITATION_LEGAL_REPRESENTATIVE, 'Legal representative'),
-                           (INVITATION_CLIENT, 'Client'),
-                           (INVITATION_SUPERVISOR, 'Supervisor'))
-
-INVITATION_TYPE_DICT = {str(INVITATION_ADVISOR): "advisor",
-                        str(INVITATION_LEGAL_REPRESENTATIVE): "legal_representative",
-                        str(INVITATION_CLIENT): "client",
-                        str(INVITATION_SUPERVISOR): "supervisor"}
-
-
 class EmailInvitation(models.Model):
 
     email = models.EmailField()
@@ -383,7 +542,7 @@ class EmailInvitation(models.Model):
 
             for it in INVITATION_TYPE_CHOICES:
                 if self.invitation_type == it[0]:
-                    model = INVITATION_TYPE_DICT[it[0]]
+                    model = INVITATION_TYPE_DICT[str(it[0])]
                     if hasattr(user, model):
                         if getattr(user, model).is_confirmed:
                             self.status = INVITATION_ACTIVE
@@ -394,5 +553,25 @@ class EmailInvitation(models.Model):
                             self.save()
                             return
 
+        application_type = ""
+
+        for itc in INVITATION_TYPE_CHOICES:
+            if itc[0] == self.invitation_type:
+                application_type = itc[1]
+
+        subject = "BetaSmartz {application_type} sign up form url".format(application_type=application_type)
+        inviter_type = self.inviter_object.get_inviter_type()
+        inviter_name = self.inviter_object.get_inviter_name()
+        invite_url = self.inviter_object.get_invite_url(self.invitation_type)
+
+        context = {'subject': subject,
+                   'invite_url': invite_url,
+                   'inviter_name': inviter_type,
+                   'inviter_class': inviter_name,
+                   'application_type': application_type}
+
+        send_mail(subject, '', None, [self.email],
+                  html_message=render_to_string('email/invite.html', context))
         self.send_count += 1
+
         self.save()

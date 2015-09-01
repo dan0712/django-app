@@ -5,23 +5,33 @@ from django.views.decorators.csrf import csrf_exempt
 from main import  settings
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'main.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-
     url(r'^session', csrf_exempt(Session.as_view()), name="session"),
     url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_legal',
         InviteLegalView.as_view(), name='betasmartz_admin:invite_legal'),
+    # firm views
+    url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/legal_signup$',
+        LegalRepresentativeSignUp.as_view(), name='firm:representative_signup'),
+
+    url(r'^firm/login', firm_login),
+    url(r'^firm/sign_out', firm_logout),
+
+    url(r'^firm/advisor_invites', FirmAdvisorInvites.as_view()),
+    url(r'^firm/supervisor_invites', FirmSupervisorInvites.as_view()),
+
+    url(r'^firm/support$', FirmSupport.as_view()),
+    url(r'^firm/support/forms$', FirmSupportForms.as_view()),
+    url(r'^firm/summary',  FirmSummary.as_view()),
+    url(r'^firm/change-details$',  FirmDataView.as_view()),
+
 
     # Advisor views
-    url(r'^advisor/login', advisor_login, name='advisor:login'),
     url(r'^advisor/signup', AdvisorSignUpView.as_view(), name='advisor:sign_up'),
     url(r'^advisor/confirm_email/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',
         AdvisorConfirmEmail.as_view(), name='advisor:confirm_email'),
+
     url(r'^advisor/client_invites', AdvisorClientInvites.as_view(), name='advisor:client_invites'),
-    url(r'^advisor/sign_out', advisor_logout, name='advisor:logout'),
     url(r'^advisor/clients', AdvisorClients.as_view(), name='advisor:clients'),
     url(r'^advisor/agreements', AdvisorAgreements.as_view(), name='advisor:agreements'),
     url(r'^advisor/support', AdvisorSupport.as_view(), name='advisor:support'),
@@ -57,8 +67,8 @@ urlpatterns = patterns('',
 
 )
 
-
 if settings.DEBUG:
     urlpatterns += patterns('',
                             (r'^media/(?P<path>.*)$', 'django.views.static.serve',
-                             {'document_root': settings.MEDIA_ROOT, 'show_indexes':True}), )
+                             {'document_root': settings.MEDIA_ROOT,
+                              'show_indexes': True}), )

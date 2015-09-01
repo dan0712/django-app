@@ -1,6 +1,5 @@
 __author__ = 'cristian'
 
-from ..utils.login import create_login
 from main.models import Advisor, User
 from django import forms
 from django.views.generic import CreateView, View
@@ -10,15 +9,8 @@ import uuid
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
-from django.contrib.auth import (logout as auth_logout)
-__all__ = ["advisor_login", "AdvisorSignUpView", "AdvisorConfirmEmail", 'advisor_logout']
 
-advisor_login = create_login(Advisor, 'advisor', '/advisor/summary')
-
-
-def advisor_logout(request):
-    auth_logout(request)
-    return HttpResponseRedirect('/advisor/login')
+__all__ = ["AdvisorSignUpView", "AdvisorConfirmEmail"]
 
 
 class AdvisorConfirmEmail(View):
@@ -47,7 +39,7 @@ class AdvisorConfirmEmail(View):
             else:
                 messages.error(request, "Wait till ours team approve your application")
 
-        return HttpResponseRedirect('/advisor/login')
+        return HttpResponseRedirect('/firm/login')
 
 
 class AdvisorForm(forms.ModelForm):
@@ -56,7 +48,7 @@ class AdvisorForm(forms.ModelForm):
 
     class Meta:
         model = Advisor
-        fields = ('date_of_birth', 'work_phone', 'firm')
+        fields = ('date_of_birth', 'phone_number', 'firm')
 
 
 class UserForm(forms.ModelForm):
@@ -136,7 +128,7 @@ class UserForm(forms.ModelForm):
 class AdvisorSignUpView(CreateView):
     form_class = UserForm
     template_name = "advisor-sign-up.html"
-    success_url = "/advisor/login"
+    success_url = "/firm/login"
 
     def get_success_url(self):
         messages.info(self.request, "Your application have been successfully!!!, you will receive a confirmation email"

@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% block firm_nav_support %} depressed {% endblock %}
+{% block main_content %}
+
+<div id="content-main">
+<div class="support">
+    <div class="shared-header">
+        <h1>Support</h1>
+        <nav class="sub-nav">
+            <div>
+                <ul>
+                    <li class="">
+                        <a href="/firm/support">Contact</a>
+                    </li>
+                    <li class="depressed">
+                        <a href="/firm/support/forms">Forms</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+
+    <div class="contact">
+        <div class="advisor-table">
+            <table>
+                <thead>
+        <tr>
+            <th colspan="2">Firm signup/change details form</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="phone">
+            <td><img alt="Phone" src="{{ STATIC_URL }}images/list-alt_45a018_68.png"></td>
+            <td><a href="/firm/change-details">Firm details form</a></td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+
+
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+
+
