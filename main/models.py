@@ -524,7 +524,7 @@ class EmailInvitation(models.Model):
                 return i[1]
 
     def send(self):
-        # TODO: SEND EMAIl
+        # TODO: REVIEW STATUS CHANGE FUNCTION
 
         if self.status != INVITATION_PENDING:
             return
