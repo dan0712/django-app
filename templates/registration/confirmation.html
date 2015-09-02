@@ -18,26 +18,17 @@
 <div id="content-main">
 
 <div class="advisor-signin">
-    <h1>Log in to your {{ user_class_name }} account</h1>
+    <h1>Send email confirmation again</h1>
 
     <form  accept-charset="UTF-8" action="{{ app_path }}" method="post" id="login-form" class="simple_form new_advisor">{% csrf_token %}
      <div class="form-inputs">
-        <div class="input email optional advisor_email"><input autofocus="autofocus" class="string email optional" id="advisor_email" name="username" placeholder="Email" type="email" value=""></div>
-        <div class="input password optional advisor_password"><input class="password optional" id="advisor_password" name="password" placeholder="Password" type="password"></div>
+        <div class="input email optional advisor_email"><input autofocus="autofocus" class="string email optional" id="advisor_email" name="email" placeholder="Email" type="email" value=""></div>
       </div>
 
       <div class="form-actions">
-        <input class="btn" data-disable-with="Signing in..." name="commit" type="submit" value="Sign in">
+        <input class="btn" data-disable-with="Sending ..." name="commit" type="submit" value="Send">
       </div>
     </form>
-
-    <ul class="advisor-links">
-
-    <li><a href="/password/reset/">Forgot your password?</a></li>
-
-    <li><a href="/confirmation/new">Didn't receive confirmation instructions?</a></li>
-
-</ul>
 
 </div>
 

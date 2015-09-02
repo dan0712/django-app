@@ -2,7 +2,7 @@ __author__ = 'cristian'
 
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
-from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE, LegalRepresentative, FirmData
+from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE, LegalRepresentative, FirmData, Client
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -70,7 +70,9 @@ class FirmFilter(admin.SimpleListFilter):
 
 
 def approve_application(modeladmin, request, queryset):
-    queryset.update(is_accepted=True)
+    for obj in queryset.all():
+        obj.approve()
+
 approve_application.short_description = "Approve application(s)"
 
 
@@ -82,6 +84,13 @@ class AdvisorAdmin(admin.ModelAdmin):
     pass
 
 
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
+    list_filter = ('is_accepted', )
+    actions = (approve_application, )
+    pass
+
+
 class UserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email')
     exclude = ('password', )
@@ -89,21 +98,42 @@ class UserAdmin(admin.ModelAdmin):
 
 
 def invite_legal_representative(modeladmin, request, queryset):
-    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL}
+    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'firm'}
 
     if queryset.count() > 1:
-        return render_to_response('admin/betasmartz/error_only_one_item.html', context.update({'item_class': 'firm'}))
+        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
 
     else:
         return HttpResponseRedirect('/betasmartz_admin/firm/{pk}/invite_legal?next=/admin/main/firm/'
                                     .format(pk=queryset.all()[0].pk))
 
 
+def invite_advisor(modeladmin, request, queryset):
+    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'firm'}
+
+    if queryset.count() > 1:
+        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
+
+    else:
+        return HttpResponseRedirect('/betasmartz_admin/firm/{pk}/invite_advisor?next=/admin/main/firm/'
+                                    .format(pk=queryset.all()[0].pk))
+
+
+def invite_supervisor(modeladmin, request, queryset):
+    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'firm'}
+
+    if queryset.count() > 1:
+        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
+
+    else:
+        return HttpResponseRedirect('/betasmartz_admin/firm/{pk}/invite_supervisor?next=/admin/main/firm/'
+                                    .format(pk=queryset.all()[0].pk))
+
+
 class FirmAdmin(admin.ModelAdmin):
     list_display = ('name', )
-    inlines = ( FirmDataInline, )
-    actions = (invite_legal_representative, )
-    pass
+    inlines = (FirmDataInline, )
+    actions = (invite_legal_representative, invite_advisor, invite_supervisor)
 
 
 class LegalRepresentativeAdmin(admin.ModelAdmin):
@@ -116,6 +146,7 @@ class LegalRepresentativeAdmin(admin.ModelAdmin):
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)
+admin.site.register(Client, ClientAdmin)
 admin.site.register(LegalRepresentative, LegalRepresentativeAdmin)
 
 admin.site.register(User, UserAdmin)

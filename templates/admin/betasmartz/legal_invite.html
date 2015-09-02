@@ -1,5 +1,5 @@
 {% extends 'admin/betasmartz/layout.html' %}
-{% block title %} Legal representative invitation {% endblock %}
+{% block title %} {{ invite_type }} invitation {% endblock %}
 
 {% block main_content %}
 
@@ -8,7 +8,7 @@
             <section class="client-invites-header-panel">
                 <div class="invite-form">
                     <div class="label">
-                        Invite a legal representative via email
+                        Invite a {{ invite_type }} via email
                     </div>
 
                     <form accept-charset="UTF-8" action=""
@@ -50,7 +50,7 @@
                             <input class="string required readonly" id=
                             "invite_link_link" name="invite_link[link]"
                             readonly="readonly" type="text" value=
-                            "{{ firm.legal_representative_form_url }}">
+                            "{{ invite_url }}">
                         </div>
                     </form>
                 </div>
@@ -58,7 +58,7 @@
 
             <section class="client-invites-panel">
                 <div class="header">
-                    <h2>Legal representative invitations</h2>
+                    <h2>{{ invite_type }} invitations</h2>
                 </div>
 
                 <div class="body">
@@ -81,8 +81,8 @@
                                 <td>{{ client_invite.send_date }}</td>
 
                                 <td>
-                                    {% if client_invite.status != 0 %}
-                                    {{ client_invite.get_status }}
+                                    {% if client_invite.get_status != 0 %}
+                                    {{ client_invite.get_status_name }}
                                     {% else %}
                                     <form accept-charset="UTF-8" action="" class=
                                     "simple_form edit_client_invite" id=

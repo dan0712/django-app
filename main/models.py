@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, validators, UserManager, timezone,\
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _,\
+    validators, UserManager, timezone,\
     send_mail
 from django.core.validators import RegexValidator, ValidationError
 from .fields import ColorField
@@ -19,6 +20,9 @@ from django.utils.safestring import mark_safe
 def validate_agreement(value):
     if value is False:
         raise ValidationError("You must accept the agreement to continue.")
+
+SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
+                  " following a BetaSmartz approval."
 
 INVITATION_PENDING = 0
 INVITATION_SUBMITTED = 1
@@ -160,13 +164,60 @@ class NeedApprobation(models.Model):
 
     is_accepted = models.BooleanField(default=False, editable=False)
 
+    def approve(self):
+        if self.is_accepted is True:
+            return
+        self.is_accepted = True
+        self.save()
+        self.send_approve_email()
+        pass
+
+    def send_approve_email(self):
+        account_type = self._meta.verbose_name
+
+        subject = "Your BetaSmartz new {0} account have been approved".format(account_type)
+
+        context = {'subject': subject,
+                   'account_type': account_type,
+                   'firm_name': self.firm.name}
+
+        send_mail(subject, '', None, [self.email], html_message=render_to_string('email/approve_account.html', context))
+
 
 class NeedConfirmation(models.Model):
+
     class Meta:
         abstract = True
 
     confirmation_key = models.CharField(max_length=36, null=True, blank=True, editable=False)
     is_confirmed = models.BooleanField(default=False, editable=False)
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self).pk
+
+    def get_confirmation_url(self):
+        if self.is_confirmed is False:
+            if self.confirmation_key is None:
+                self.confirmation_key = str(uuid.uuid4())
+                self.save()
+
+        if self.is_confirmed or (self.confirmation_key is None):
+            return None
+
+        return settings.SITE_URL + "/confirm_email/{0}/{1}".format(self.content_type, self.confirmation_key)
+
+    def send_confirmation_email(self):
+        account_type = self._meta.verbose_name
+
+        subject = "BetaSmartz new {0} account confirmation".format(account_type)
+
+        context = {'subject': subject,
+                   'account_type': account_type,
+                   'confirmation_url': self.get_confirmation_url(),
+                   'firm_name': self.firm.name}
+
+        send_mail(subject, '', None, [self.email], html_message=render_to_string('email/confirmation.html', context))
 
 
 class PersonalData(models.Model):
@@ -385,14 +436,24 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     user = models.OneToOneField(User, related_name="advisor")
     token = models.CharField(max_length=36, null=True, editable=False)
     firm = models.ForeignKey(Firm)
+    letter_of_authority = models.FileField()
+    betasmartz_agreement = models.BooleanField()
 
     @property
     def firm_colored_logo(self):
         return self.firm.knocked_out_logo_url
 
-    @property
-    def invite_url(self):
+    def get_invite_url(self, *args, **kwargs):
+        if self.token is None:
+            return ''
         return settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
+
+    @staticmethod
+    def get_inviter_type():
+        return "advisor"
+
+    def get_inviter_name(self):
+        return self.user.get_full_name()
 
     def save(self, *args, **kw):
         send_confirmation_mail = False
@@ -444,6 +505,10 @@ class Client(NeedApprobation, NeedConfirmation):
                                                            " policy maker of a publicly traded company.",
                                               default=False,
                                               choices=YES_NO)
+
+    @property
+    def firm(self):
+        return self.advisor.firm
 
 
 INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"))
@@ -518,17 +583,13 @@ class EmailInvitation(models.Model):
     invitation_type = models.PositiveIntegerField(choices=INVITATION_TYPE_CHOICES, default=INVITATION_CLIENT)
 
     @property
-    def get_status(self):
+    def get_status_name(self):
         for i in EMAIL_INVITATION_STATUSES:
             if self.status == i[0]:
                 return i[1]
 
-    def send(self):
-        # TODO: REVIEW STATUS CHANGE FUNCTION
-
-        if self.status != INVITATION_PENDING:
-            return
-
+    @property
+    def get_status(self):
         try:
             user = User.objects.get(email=self.email)
         except ObjectDoesNotExist:
@@ -538,20 +599,27 @@ class EmailInvitation(models.Model):
             if not user.is_active:
                 self.status = INVITATION_CLOSED
                 self.save()
-                return
 
             for it in INVITATION_TYPE_CHOICES:
                 if self.invitation_type == it[0]:
                     model = INVITATION_TYPE_DICT[str(it[0])]
                     if hasattr(user, model):
-                        if getattr(user, model).is_confirmed:
-                            self.status = INVITATION_ACTIVE
-                            self.save()
-                            return
-                        else:
-                            self.status = INVITATION_SUBMITTED
-                            self.save()
-                            return
+                        # match advisor or firm
+                        profile = getattr(user, model)
+                        if (profile.firm == self.inviter_object) or \
+                                (getattr(profile, 'advisor', None) == self.inviter_object):
+                            if profile.is_confirmed:
+                                self.status = INVITATION_ACTIVE
+                                self.save()
+                            else:
+                                self.status = INVITATION_SUBMITTED
+                                self.save()
+        return self.status
+
+    def send(self):
+
+        if self.get_status != INVITATION_PENDING:
+            return
 
         application_type = ""
 

@@ -9,6 +9,8 @@ import uuid
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from ..base import AdvisorView
+from ...forms import EmailInviteForm
+from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients', 'AdvisorAgreements', 'AdvisorSupport']
 
@@ -36,14 +38,28 @@ class AdvisorClientInvitesForm(forms.ModelForm):
 
 
 class AdvisorClientInvites(CreateView, AdvisorView):
-    template_name = "advisor/client-invites.html"
-    form_class = AdvisorClientInvitesForm
-    success_url = "/advisor/client_invites"
+    form_class = EmailInviteForm
+    template_name = 'advisor/client-invites.html'
 
-    def get(self, request, *args, **kwargs):
-        response = super(AdvisorClientInvites, self).get(request, *args, **kwargs)
-        response.context_data["client_invites"] = EmailInvitation.objects.filter(advisor=request.user.advisor,
-                                                                              is_user=False)
+    def get_success_url(self):
+        messages.info(self.request, "Invite sent successfully!")
+        return self.request.get_full_path()
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super(AdvisorClientInvites, self).dispatch(request, *args, **kwargs)
+        if hasattr(response, 'context_data'):
+            advisor = request.user.advisor
+            response.context_data["firm"] = advisor.firm
+            response.context_data["inviter"] = advisor
+            invitation_type = INVITATION_CLIENT
+            response.context_data["invitation_type"] = invitation_type
+            response.context_data["invite_url"] = advisor.get_invite_url(invitation_type)
+            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(invitation_type)].title()
+            response.context_data["next"] = request.GET.get("next", None)
+            response.context_data["invites"] = EmailInvitation.objects.filter(invitation_type=invitation_type,
+                                                                              inviter_id=advisor.pk,
+                                                                              inviter_type=advisor.content_type,
+                                                                              )
         return response
 
 

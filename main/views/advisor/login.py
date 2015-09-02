@@ -1,6 +1,7 @@
 __author__ = 'cristian'
 
-from main.models import Advisor, User
+from main.models import Advisor, User, PERSONAL_DATA_FIELDS, PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, \
+    Section, SUCCESS_MESSAGE, Firm
 from django import forms
 from django.views.generic import CreateView, View
 from django.utils import safestring
@@ -9,129 +10,106 @@ import uuid
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
-
-__all__ = ["AdvisorSignUpView", "AdvisorConfirmEmail"]
-
-
-class AdvisorConfirmEmail(View):
-
-    def get(self, request, *args, **kwargs):
-
-        token = kwargs.get("token")
-
-        try:
-            advisor = Advisor.objects.get(confirmation_key=token)
-        except ObjectDoesNotExist:
-            advisor = None
-
-        if advisor is None:
-            messages.error(request, "Bad confirmation code")
-        else:
-            if advisor.is_accepted:
-                if advisor.is_confirmed:
-                    messages.error(request, "Advisor already confirmed")
-                else:
-                    advisor.is_confirmed = True
-                    advisor.confirmation_key = None
-                    advisor.save()
-
-                    messages.info(request, "You email have been confirmed, you can login in")
-            else:
-                messages.error(request, "Wait till ours team approve your application")
-
-        return HttpResponseRedirect('/firm/login')
+from django.utils.safestring import mark_safe
+from django.http import Http404
 
 
-class AdvisorForm(forms.ModelForm):
+__all__ = ["AdvisorSignUpView"]
 
-    date_of_birth = forms.DateField(widget=forms.TextInput(attrs={'class': 'datepicker'}))
+
+class AdvisorProfile(forms.ModelForm):
+    medicare_number = forms.CharField(
+        max_length=20,
+        label=mark_safe('Medicare # <span class="security-icon"></span>'),
+        help_text="Bank-Level Security"
+    )
+
+    user = forms.CharField(required=False)
 
     class Meta:
         model = Advisor
-        fields = ('date_of_birth', 'phone_number', 'firm')
+        fields = PERSONAL_DATA_FIELDS + ('letter_of_authority', 'betasmartz_agreement', 'firm', 'user')
+
+        widgets = PERSONAL_DATA_WIDGETS
 
 
-class UserForm(forms.ModelForm):
-    confirm_password = forms.CharField(max_length=50, widget=forms.PasswordInput())
-    password = forms.CharField(max_length=50, widget=forms.PasswordInput())
+class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
+    user_profile_type = "advisor"
 
     class Meta:
         model = User
         fields = ('email', 'first_name',  'middle_name', 'last_name', 'password', 'confirm_password')
 
     def __init__(self, *args, **kwargs):
-        super(UserForm, self).__init__(*args, **kwargs)
-        advisor_kwargs = kwargs.copy()
+        kwargs.setdefault('label_suffix', '')
+        super(AdvisorUserForm, self).__init__(*args, **kwargs)
+        profile_kwargs = kwargs.copy()
         if 'instance' in kwargs:
-            if kwargs['instance']:
-                self.advisor = kwargs['instance'].advisor
-                advisor_kwargs['instance'] = self.advisor
-        self.advisor_form = AdvisorForm(*args, **advisor_kwargs)
-        self.fields.update(self.advisor_form.fields)
-        self.initial.update(self.advisor_form.initial)
+            self.profile = getattr(kwargs['instance'], self.user_profile_type, None)
+            profile_kwargs['instance'] = self.profile
+        self.profile_form = AdvisorProfile(*args, **profile_kwargs)
+        self.fields.update(self.profile_form.fields)
+        self.initial.update(self.profile_form.initial)
 
-    def clean(self):
-        cleaned_data = super(UserForm, self).clean()
-        self._validate_unique = False
-        self.errors.update(self.advisor_form.errors)
-        password1 = cleaned_data.get('password')
-        password2 = cleaned_data.get('confirm_password')
-
-        if password1 and (password1 != password2):
-            self._errors['confirm_password'] = safestring.mark_safe(u'<ul class="errorlist"><li>Passwords don\'t '
-                                                                    u'match.</li></ul>')
-        # check if user already exist
-        try:
-            user = User.objects.get(email=cleaned_data.get('email'))
-        except ObjectDoesNotExist:
-            user = None
-
-        if user is not None:
-            if hasattr(user, 'advisor'):
-                self._errors['email'] = safestring.mark_safe(u'<ul class="errorlist"><li>User already has an'
-                                                             u' advisor account</li></ul>')
-            else:
-                # confirm password
-                if not user.check_password(password1):
-                    self._errors['email'] = safestring.mark_safe(u'<ul class="errorlist"><li>User already '
-                                                                 u'exists</li></ul>')
-        cleaned_data["password"] = make_password(self.cleaned_data["password"])
-        return cleaned_data
+        self.field_sections = [{"fields": ('first_name', 'middle_name',  'last_name', 'email', 'password',
+                                           'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
+                                           'address_line_2', 'city', 'state', 'post_code', 'phone_number'),
+                                "header": "Information to establish your account"},
+                               {"fields": ('medicare_number', ),
+                                "header": "Identity verification",
+                                "detail": "We use your Medicare number to verify your identity and protect "
+                                          "against fraud."},
+                               {"fields": ('security_question_1', 'security_answer_1', 'security_question_2',
+                                           'security_answer_2'),
+                                "header": "Security",
+                                "detail": "We ask for security questions to protect your account."},
+                               {"fields": ('letter_of_authority', ),
+                                "header": "Authorization",
+                                "detail": "BetaSmartz requires a Letter of Authority (PDF) from the new Dealer Group"
+                                          " which authorises you to act on their behalf. This letter must"
+                                          " be provided by the Dealer Group on Dealer Group company letterhead."}
+                               ]
 
     def save(self, *args, **kw):
-        # check if user already exist
-        try:
-            user = User.objects.get(email=self.cleaned_data.get('email'))
-        except ObjectDoesNotExist:
-            user = None
+        user = super(AdvisorUserForm, self).save(*args, **kw)
+        self.profile = self.profile_form.save(commit=False)
+        self.profile.user = user
+        self.profile.save()
+        self.profile.send_confirmation_email()
+        return user
 
-        if user is None:
-            super(UserForm, self).save(*args, **kw)
-
-        else:
-            user.first_name = self.cleaned_data.get('first_name')
-            user.last_name = self.cleaned_data.get('last_name')
-            user.middle_name = self.cleaned_data.get('middle_name')
-            user.save()
-            self.instance = user
-
-        new_advisor = Advisor(user=self.instance,
-                              work_phone=self.cleaned_data.get('work_phone'),
-                              confirmation_key=str(uuid.uuid4()),
-                              token=str(uuid.uuid4()),
-                              firm=self.cleaned_data.get('firm'),
-                              date_of_birth=self.cleaned_data.get('date_of_birth'))
-        new_advisor.save()
-        return self.instance
+    @property
+    def sections(self):
+        for section in self.field_sections:
+            yield Section(section, self)
 
 
 class AdvisorSignUpView(CreateView):
-    form_class = UserForm
-    template_name = "advisor-sign-up.html"
+    template_name = "registration/firm_form.html"
+    form_class = AdvisorUserForm
     success_url = "/firm/login"
 
-    def get_success_url(self):
-        messages.info(self.request, "Your application have been successfully!!!, you will receive a confirmation email"
-                                    " within the next hours after our team approve it")
+    def __init__(self, *args, **kwargs):
+        self.firm = None
+        super(AdvisorSignUpView, self).__init__(*args, **kwargs)
 
+    def get_success_url(self):
+        messages.info(self.request, SUCCESS_MESSAGE)
         return super(AdvisorSignUpView, self).get_success_url()
+
+    def dispatch(self, request, *args, **kwargs):
+        token = kwargs["token"]
+
+        try:
+            firm = Firm.objects.get(token=token)
+        except ObjectDoesNotExist:
+            raise Http404()
+
+        self.firm = firm
+
+        response = super(AdvisorSignUpView, self).dispatch(request, *args, **kwargs)
+
+        if hasattr(response, 'context_data'):
+            response.context_data["firm"] = self.firm
+            response.context_data["sign_up_type"] = "advisor account"
+        return response

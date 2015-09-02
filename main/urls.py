@@ -2,7 +2,8 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from .views import *
 from django.views.decorators.csrf import csrf_exempt
-from main import  settings
+from main import settings
+from django.shortcuts import HttpResponseRedirect
 
 urlpatterns = patterns('',
 
@@ -10,12 +11,27 @@ urlpatterns = patterns('',
     url(r'^session', csrf_exempt(Session.as_view()), name="session"),
     url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_legal',
         InviteLegalView.as_view(), name='betasmartz_admin:invite_legal'),
+    url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_advisor',
+        AdminInviteAdvisorView.as_view(), name='betasmartz_admin:invite_advisor'),
+    url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_supervisor',
+        AdminInviteSupervisorView.as_view(), name='betasmartz_admin:invite_supervisor'),
+
+
     # firm views
     url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/legal_signup$',
         LegalRepresentativeSignUp.as_view(), name='firm:representative_signup'),
 
-    url(r'^firm/login', firm_login),
-    url(r'^firm/sign_out', firm_logout),
+    url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/advisor_signup',
+        AdvisorSignUpView.as_view()),
+
+    url(r'^login$', firm_login),
+    url(r'^sign_out$', firm_logout),
+    url(r'^confirm_email/(?P<type>\d+)/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})',
+        EmailConfirmationView.as_view()),
+    url(r'^confirmation/new$', NewConfirmation.as_view()),
+
+    url(r'^firm/login', lambda x: HttpResponseRedirect("/login")),
+    url(r'^firm/sign_out', lambda x: HttpResponseRedirect("/sign_out$")),
 
     url(r'^firm/advisor_invites', FirmAdvisorInvites.as_view()),
     url(r'^firm/supervisor_invites', FirmSupervisorInvites.as_view()),
@@ -27,9 +43,6 @@ urlpatterns = patterns('',
 
 
     # Advisor views
-    url(r'^advisor/signup', AdvisorSignUpView.as_view(), name='advisor:sign_up'),
-    url(r'^advisor/confirm_email/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/$',
-        AdvisorConfirmEmail.as_view(), name='advisor:confirm_email'),
 
     url(r'^advisor/client_invites', AdvisorClientInvites.as_view(), name='advisor:client_invites'),
     url(r'^advisor/clients', AdvisorClients.as_view(), name='advisor:clients'),
@@ -63,8 +76,15 @@ urlpatterns = patterns('',
     url(r'^client/api/portfolio-sets/(?P<pk>\d+)/risk-free-rates', PortfolioRiskFreeRates.as_view(),
         name='client:api:portfolio_sets:risk_free_rates'),
 
-
-
+    url(r'^password/reset/$',
+        'django.contrib.auth.views.password_reset',
+        {'post_reset_redirect': '/password/reset/done/', 'template_name': 'registration/password_reset.html'},
+        name="password_reset"),
+    url(r'^password/reset/done/$',
+        'django.contrib.auth.views.password_reset_done'),
+    url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'django.contrib.auth.views.password_reset_confirm',
+        {'post_reset_redirect': '/login'}, name='password_reset_confirm')
 )
 
 if settings.DEBUG:

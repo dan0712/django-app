@@ -2,11 +2,12 @@ __author__ = 'cristian'
 
 from ..base import AdminView
 from ...models import Firm, INVITATION_LEGAL_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section,\
-    PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm
+    PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR,\
+    INVITATION_TYPE_DICT, SUCCESS_MESSAGE
 from ...forms import EmailInviteForm
 from django.contrib import messages
 from main.models import Client, Firm, Advisor, User, LegalRepresentative, FirmData
-from django.views.generic import CreateView, View
+from django.views.generic import CreateView, View, TemplateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
@@ -14,8 +15,11 @@ from django.utils.safestring import mark_safe
 from django.shortcuts import HttpResponseRedirect
 from ..base import LegalView
 from django.views.generic.edit import ProcessFormView
+from django.contrib.contenttypes.models import ContentType
 
-__all__ = ["InviteLegalView", "LegalRepresentativeSignUp", 'FirmDataView']
+
+__all__ = ["InviteLegalView", "LegalRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView", 'NewConfirmation',
+           'AdminInviteSupervisorView', 'AdminInviteAdvisorView']
 
 
 class LegalRepresentativeProfileForm(forms.ModelForm):
@@ -46,9 +50,8 @@ class LegalRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
         super(LegalRepresentativeUserForm, self).__init__(*args, **kwargs)
         profile_kwargs = kwargs.copy()
         if 'instance' in kwargs:
-            if kwargs['instance']:
-                self.profile = kwargs['instance'].legal_representative
-                profile_kwargs['instance'] = self.profile
+            self.profile = getattr(kwargs['instance'], self.user_profile_type, None)
+            profile_kwargs['instance'] = self.profile
         self.profile_form = LegalRepresentativeProfileForm(*args, **profile_kwargs)
         self.fields.update(self.profile_form.fields)
         self.initial.update(self.profile_form.initial)
@@ -77,6 +80,7 @@ class LegalRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
         self.profile = self.profile_form.save(commit=False)
         self.profile.user = user
         self.profile.save()
+        self.profile.send_confirmation_email()
         return user
 
     @property
@@ -95,7 +99,7 @@ class LegalRepresentativeSignUp(CreateView):
         super(LegalRepresentativeSignUp, self).__init__(*args, **kwargs)
 
     def get_success_url(self):
-        messages.info(self.request, "Your application have been successfully!!!, Please confirm your email address")
+        messages.info(self.request, SUCCESS_MESSAGE)
         return super(LegalRepresentativeSignUp, self).get_success_url()
 
     def dispatch(self, request, *args, **kwargs):
@@ -111,6 +115,7 @@ class LegalRepresentativeSignUp(CreateView):
 
         if hasattr(response, 'context_data'):
             response.context_data["firm"] = self.firm
+            response.context_data["sign_up_type"] = "legal representative account"
         return response
 
 
@@ -127,12 +132,66 @@ class InviteLegalView(CreateView, AdminView):
         if hasattr(response, 'context_data'):
             firm = Firm.objects.get(pk=kwargs["pk"])
             response.context_data["firm"] = firm
-            response.context_data["invitation_type"] = INVITATION_LEGAL_REPRESENTATIVE
+            invitation_type = INVITATION_LEGAL_REPRESENTATIVE
+            response.context_data["invitation_type"] = invitation_type
+            response.context_data["invite_url"] = firm.get_invite_url(invitation_type)
+            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(invitation_type)].title()
             response.context_data["next"] = request.GET.get("next", None)
-            response.context_data["invites"] = EmailInvitation.objects.filter(invitation_type=INVITATION_LEGAL_REPRESENTATIVE,
+            response.context_data["invites"] = EmailInvitation.objects.filter(invitation_type=invitation_type,
                                                                               inviter_id=firm.pk,
                                                                               inviter_type=firm.content_type,
                                                                               )
+        return response
+
+
+class AdminInviteAdvisorView(CreateView, AdminView):
+    form_class = EmailInviteForm
+    template_name = 'admin/betasmartz/legal_invite.html'
+
+    def get_success_url(self):
+        messages.info(self.request, "Invite sent successfully!")
+        return self.request.get_full_path()
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super(AdminInviteAdvisorView, self).dispatch(request, *args, **kwargs)
+        if hasattr(response, 'context_data'):
+            firm = Firm.objects.get(pk=kwargs["pk"])
+            invitation_type = INVITATION_ADVISOR
+            response.context_data["firm"] = firm
+            response.context_data["invitation_type"] = invitation_type
+            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(invitation_type)].title()
+            response.context_data["invite_url"] = firm.get_invite_url(invitation_type)
+            response.context_data["next"] = request.GET.get("next", None)
+            response.context_data["invites"] = EmailInvitation.objects.filter(invitation_type=invitation_type,
+                                                                              inviter_id=firm.pk,
+                                                                              inviter_type=firm.content_type,
+                                                                              )
+        return response
+
+
+class AdminInviteSupervisorView(CreateView, AdminView):
+    form_class = EmailInviteForm
+    template_name = 'admin/betasmartz/legal_invite.html'
+
+    def get_success_url(self):
+        messages.info(self.request, "Invite sent successfully!")
+        return self.request.get_full_path()
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super(AdminInviteSupervisorView, self).dispatch(request, *args, **kwargs)
+        if hasattr(response, 'context_data'):
+            firm = Firm.objects.get(pk=kwargs["pk"])
+            invitation_type = INVITATION_SUPERVISOR
+            response.context_data["firm"] = firm
+            response.context_data["invitation_type"] = invitation_type
+            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(invitation_type)].title()
+            response.context_data["next"] = request.GET.get("next", None)
+            response.context_data["invite_url"] = firm.get_invite_url(invitation_type)
+            response.context_data["invites"] = EmailInvitation.objects.filter(invitation_type=invitation_type,
+                                                                              inviter_id=firm.pk,
+                                                                              inviter_type=firm.content_type,
+                                                                              )
+
         return response
 
 
@@ -223,27 +282,65 @@ class FirmDataView(CreateView, LegalView):
         return ProcessFormView.post(self, request, *args, **kwargs)
 
 
-class LegalRepresentativeConfirmEmail(View):
+class EmailConfirmationView(View):
 
     def get(self, request, *args, **kwargs):
 
         token = kwargs.get("token")
+        _type = kwargs.get("type")
 
         try:
-            legal_representative = LegalRepresentative.objects.get(confirmation_key=token)
+            object_class = ContentType.objects.get(pk=_type).model_class()
         except ObjectDoesNotExist:
-            legal_representative = None
+            raise Http404("Page not found")
 
-        if legal_representative is None:
+        try:
+            db_object = object_class.objects.get(confirmation_key=token)
+        except ObjectDoesNotExist:
+            db_object = None
+
+        if db_object is None:
             messages.error(request, "Bad confirmation code")
         else:
-            if legal_representative.is_confirmed:
-                messages.error(request, "legal_representative already confirmed")
+            if db_object.is_confirmed:
+                messages.error(request, "{0} already confirmed".format(object_class.__name__))
             else:
                 messages.info(request, "You email have been confirmed, you can login in")
-                legal_representative.is_confirmed = True
+                db_object.is_confirmed = True
 
-            legal_representative.confirmation_key = None
-            legal_representative.save()
+            db_object.confirmation_key = None
+            db_object.save()
 
-        return HttpResponseRedirect('/firm/login')
+        return HttpResponseRedirect('/login')
+
+
+class NewConfirmation(TemplateView):
+    template_name = 'registration/confirmation.html'
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+        account_types = ('advisor', 'legal_representative', 'supervisor', 'client')
+
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
+            messages.error(request, "Account not found")
+            return HttpResponseRedirect("/login")
+
+        confirmations = 0
+
+        for _type in account_types:
+            if hasattr(user, _type):
+                profile = getattr(user, _type)
+                if profile.is_confirmed:
+                    pass
+                else:
+                    profile.send_confirmation_email()
+                    confirmations += 1
+
+        if not confirmations:
+            messages.error(request, "Account already confirmed")
+            return HttpResponseRedirect("/login")
+
+        messages.info(request, "The new confirmation email has been sent")
+        return HttpResponseRedirect('/login')

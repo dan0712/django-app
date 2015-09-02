@@ -76,8 +76,8 @@
                                 <td>{{ client_invite.send_date }}</td>
 
                                 <td>
-                                    {% if client_invite.status != 0 %}
-                                    {{ client_invite.get_status }}
+                                    {% if client_invite.get_status != 0 %}
+                                    {{ client_invite.get_status_name }}
                                     {% else %}
                                     <form accept-charset="UTF-8" action="" class=
                                     "simple_form edit_client_invite" id=
