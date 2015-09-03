@@ -352,9 +352,9 @@ class Firm(models.Model):
     @property
     def colored_logo(self):
 
-        if self.logo_url is None:
+        if self.knocked_out_logo_url is None:
             return settings.STATIC_URL + 'images/colored_logo.png'
-        elif not self.logo_url.name:
+        elif not self.knocked_out_logo_url.name:
             return settings.STATIC_URL + 'images/colored_logo.png'
 
         return settings.MEDIA_URL + self.knocked_out_logo_url.name
