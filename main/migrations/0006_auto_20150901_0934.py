@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='LegalRepresentative',
+            name='AuthorisedRepresentative',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
                 ('is_accepted', models.BooleanField(default=False, editable=False)),
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 ('security_answer_2', models.CharField(max_length=255, verbose_name='Answer')),
                 ('letter_of_authority', models.FileField(upload_to='')),
                 ('betasmartz_agreement', models.BooleanField(validators=[main.models.validate_agreement])),
-                ('firm', models.ForeignKey(related_name='legal_representatives', to='main.Firm')),
+                ('firm', models.ForeignKey(related_name='authorised_representatives', to='main.Firm')),
                 ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
             ],
             options={

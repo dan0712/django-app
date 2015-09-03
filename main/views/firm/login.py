@@ -15,7 +15,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.forms import AuthenticationForm
-from main.models import User, LegalRepresentative, Advisor
+from main.models import User, AuthorisedRepresentative, Advisor
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.contrib.auth import (logout as auth_logout)
@@ -25,7 +25,7 @@ __all__ = ["firm_login", "firm_logout"]
 
 INVALID_CREDENTIALS = "Invalid email or password."
 
-firm_class = [Advisor, LegalRepresentative ]
+firm_class = [Advisor, AuthorisedRepresentative ]
 
 
 @never_cache
@@ -78,7 +78,7 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
                         redirect_to = request.POST.get(redirect_field_name,
                                                        request.GET.get(redirect_field_name, '/advisor/summary'))
 
-                    if user_class is LegalRepresentative:
+                    if user_class is AuthorisedRepresentative:
                         redirect_to = request.POST.get(redirect_field_name,
                                                        request.GET.get(redirect_field_name, '/firm/summary'))
 

@@ -23,19 +23,19 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='legalrepresentative',
+            model_name='AuthorisedRepresentative',
             name='medicare_number',
             field=models.CharField(max_length=50, default=''),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='legalrepresentative',
+            model_name='AuthorisedRepresentative',
             name='betasmartz_agreement',
             field=models.BooleanField(),
         ),
         migrations.AlterField(
-            model_name='legalrepresentative',
+            model_name='AuthorisedRepresentative',
             name='user',
-            field=models.OneToOneField(related_name='legal_representative', to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(related_name='authorised_representative', to=settings.AUTH_USER_MODEL),
         ),
     ]

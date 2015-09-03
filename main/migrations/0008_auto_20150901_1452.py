@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
-            model_name='legalrepresentative',
+            model_name='AuthorisedRepresentative',
             name='address_line_2',
             field=models.CharField(max_length=255, null=True, blank=True),
         ),

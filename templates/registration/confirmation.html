@@ -18,10 +18,11 @@
 <div id="content-main">
 
 <div class="advisor-signin">
-    <h1>Send email confirmation again</h1>
+    <h1>Didn't receive confirmation instructions?</h1>
 
     <form  accept-charset="UTF-8" action="{{ app_path }}" method="post" id="login-form" class="simple_form new_advisor">{% csrf_token %}
-     <div class="form-inputs">
+     <p>If you didn't receive an email with confirmation instructions, please enter the email address associated with your account to resend your confirmation instructions.</p>
+        <div class="form-inputs">
         <div class="input email optional advisor_email"><input autofocus="autofocus" class="string email optional" id="advisor_email" name="email" placeholder="Email" type="email" value=""></div>
       </div>
 
@@ -29,6 +30,13 @@
         <input class="btn" data-disable-with="Sending ..." name="commit" type="submit" value="Send">
       </div>
     </form>
+
+     <ul class="advisor-links">
+
+    <li><a href="/login">Login in</a></li>
+
+    <li><a href="/password/reset/">Forgot your password?</a></li>
+     </ul>
 
 </div>
 

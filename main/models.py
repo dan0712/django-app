@@ -17,8 +17,6 @@ from django.contrib.auth.hashers import make_password
 from django.utils.safestring import mark_safe
 from datetime import date
 
-
-
 def validate_agreement(value):
     if value is False:
         raise ValidationError("You must accept the agreement to continue.")
@@ -38,16 +36,16 @@ EMAIL_INVITATION_STATUSES = ((INVITATION_PENDING, 'Pending'),
 
 
 INVITATION_ADVISOR = 0
-INVITATION_LEGAL_REPRESENTATIVE = 1
+AUTHORIZED_REPRESENTATIVE = 1
 INVITATION_SUPERVISOR = 2
 INVITATION_CLIENT = 3
 INVITATION_TYPE_CHOICES = ((INVITATION_ADVISOR, "Advisor"),
-                           (INVITATION_LEGAL_REPRESENTATIVE, 'Legal representative'),
+                           (AUTHORIZED_REPRESENTATIVE, 'Authorised representative'),
                            (INVITATION_CLIENT, 'Client'),
                            (INVITATION_SUPERVISOR, 'Supervisor'))
 
 INVITATION_TYPE_DICT = {str(INVITATION_ADVISOR): "advisor",
-                        str(INVITATION_LEGAL_REPRESENTATIVE): "legal_representative",
+                        str(AUTHORIZED_REPRESENTATIVE): "authorised_representative",
                         str(INVITATION_CLIENT): "client",
                         str(INVITATION_SUPERVISOR): "supervisor"}
 
@@ -366,7 +364,7 @@ class Firm(models.Model):
         return ContentType.objects.get_for_model(self).pk
 
     @property
-    def legal_representative_form_url(self):
+    def authorised_representative_form_url(self):
         if self.token is None:
             return None
         return settings.SITE_URL + "/" + self.token + "/legal_signup"
@@ -391,8 +389,8 @@ class Firm(models.Model):
         return self.name
 
     def get_invite_url(self, application_type):
-        if application_type == INVITATION_LEGAL_REPRESENTATIVE:
-            return self.legal_representative_form_url
+        if application_type == AUTHORIZED_REPRESENTATIVE:
+            return self.authorised_representative_form_url
         if application_type == INVITATION_ADVISOR:
             return self.advisor_invite_url
         if application_type == INVITATION_SUPERVISOR:
@@ -475,9 +473,9 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
                                          site_url=settings.SITE_URL))
 
 
-class LegalRepresentative(NeedApprobation, NeedConfirmation, PersonalData):
-    user = models.OneToOneField(User, related_name='legal_representative')
-    firm = models.ForeignKey(Firm, related_name='legal_representatives')
+class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData):
+    user = models.OneToOneField(User, related_name='authorised_representative')
+    firm = models.ForeignKey(Firm, related_name='authorised_representatives')
     letter_of_authority = models.FileField()
     betasmartz_agreement = models.BooleanField()
 

@@ -38,7 +38,7 @@ class FirmSupervisorInvites(CreateView, LegalView):
     def dispatch(self, request, *args, **kwargs):
         response = super(FirmSupervisorInvites, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
-            firm = request.user.legal_representative.firm
+            firm = request.user.authorised_representative.firm
             invitation_type = INVITATION_SUPERVISOR
             response.context_data["inviter"] = firm
             response.context_data["invite_url"] = firm.supervisor_invite_url
@@ -63,7 +63,7 @@ class FirmAdvisorInvites(CreateView, LegalView):
     def dispatch(self, request, *args, **kwargs):
         response = super(FirmAdvisorInvites, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
-            firm = request.user.legal_representative.firm
+            firm = request.user.authorised_representative.firm
             invitation_type = INVITATION_ADVISOR
             response.context_data["inviter"] = firm
             response.context_data["invite_url"] = firm.supervisor_invite_url

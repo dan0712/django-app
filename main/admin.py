@@ -2,7 +2,7 @@ __author__ = 'cristian'
 
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
-from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE, LegalRepresentative, FirmData, Client, ClientAccount
+from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, AuthorisedRepresentative, FirmData, Client, ClientAccount
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -22,8 +22,8 @@ class AdvisorInline(admin.StackedInline):
     model = Advisor
 
 
-class LegalRepresentativeInline(admin.StackedInline):
-    model = LegalRepresentative
+class AuthorisedRepresentativeInline(admin.StackedInline):
+    model = AuthorisedRepresentative
 
 
 class FirmDataInline(admin.StackedInline):
@@ -102,7 +102,7 @@ class UserAdmin(admin.ModelAdmin):
     pass
 
 
-def invite_legal_representative(modeladmin, request, queryset):
+def invite_authorised_representative(modeladmin, request, queryset):
     context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'firm'}
 
     if queryset.count() > 1:
@@ -138,10 +138,10 @@ def invite_supervisor(modeladmin, request, queryset):
 class FirmAdmin(admin.ModelAdmin):
     list_display = ('name', )
     inlines = (FirmDataInline, )
-    actions = (invite_legal_representative, invite_advisor, invite_supervisor)
+    actions = (invite_authorised_representative, invite_advisor, invite_supervisor)
 
 
-class LegalRepresentativeAdmin(admin.ModelAdmin):
+class AuthorisedRepresentativeAdmin(admin.ModelAdmin):
     list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application, )
@@ -152,6 +152,6 @@ admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)
 admin.site.register(Client, ClientAdmin)
-admin.site.register(LegalRepresentative, LegalRepresentativeAdmin)
+admin.site.register(AuthorisedRepresentative, AuthorisedRepresentativeAdmin)
 
 admin.site.register(User, UserAdmin)

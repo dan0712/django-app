@@ -1,12 +1,12 @@
 __author__ = 'cristian'
 
 from ..base import AdminView
-from ...models import Firm, INVITATION_LEGAL_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section,\
+from ...models import Firm, AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section,\
     PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR,\
     INVITATION_TYPE_DICT, SUCCESS_MESSAGE
 from ...forms import EmailInviteForm
 from django.contrib import messages
-from main.models import Client, Firm, Advisor, User, LegalRepresentative, FirmData
+from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, FirmData
 from django.views.generic import CreateView, View, TemplateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
@@ -18,11 +18,11 @@ from django.views.generic.edit import ProcessFormView
 from django.contrib.contenttypes.models import ContentType
 
 
-__all__ = ["InviteLegalView", "LegalRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView", 'NewConfirmation',
+__all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView", 'NewConfirmation',
            'AdminInviteSupervisorView', 'AdminInviteAdvisorView']
 
 
-class LegalRepresentativeProfileForm(forms.ModelForm):
+class AuthorisedRepresentativeProfileForm(forms.ModelForm):
     medicare_number = forms.CharField(
         max_length=20,
         label=mark_safe('Medicare # <span class="security-icon"></span>'),
@@ -32,14 +32,14 @@ class LegalRepresentativeProfileForm(forms.ModelForm):
     user = forms.CharField(required=False)
 
     class Meta:
-        model = LegalRepresentative
+        model = AuthorisedRepresentative
         fields = PERSONAL_DATA_FIELDS + ('letter_of_authority', 'betasmartz_agreement', 'firm', 'user')
 
         widgets = PERSONAL_DATA_WIDGETS
 
 
-class LegalRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
-    user_profile_type = "legal_representative"
+class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
+    user_profile_type = "authorised_representative"
 
     class Meta:
         model = User
@@ -47,12 +47,12 @@ class LegalRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('label_suffix', '')
-        super(LegalRepresentativeUserForm, self).__init__(*args, **kwargs)
+        super(AuthorisedRepresentativeUserForm, self).__init__(*args, **kwargs)
         profile_kwargs = kwargs.copy()
         if 'instance' in kwargs:
             self.profile = getattr(kwargs['instance'], self.user_profile_type, None)
             profile_kwargs['instance'] = self.profile
-        self.profile_form = LegalRepresentativeProfileForm(*args, **profile_kwargs)
+        self.profile_form = AuthorisedRepresentativeProfileForm(*args, **profile_kwargs)
         self.fields.update(self.profile_form.fields)
         self.initial.update(self.profile_form.initial)
 
@@ -76,7 +76,7 @@ class LegalRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
                                ]
 
     def save(self, *args, **kw):
-        user = super(LegalRepresentativeUserForm, self).save(*args, **kw)
+        user = super(AuthorisedRepresentativeUserForm, self).save(*args, **kw)
         self.profile = self.profile_form.save(commit=False)
         self.profile.user = user
         self.profile.save()
@@ -89,18 +89,18 @@ class LegalRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
             yield Section(section, self)
 
 
-class LegalRepresentativeSignUp(CreateView):
+class AuthorisedRepresentativeSignUp(CreateView):
     template_name = "registration/firm_form.html"
-    form_class = LegalRepresentativeUserForm
+    form_class = AuthorisedRepresentativeUserForm
     success_url = "/firm/login"
 
     def __init__(self, *args, **kwargs):
         self.firm = None
-        super(LegalRepresentativeSignUp, self).__init__(*args, **kwargs)
+        super(AuthorisedRepresentativeSignUp, self).__init__(*args, **kwargs)
 
     def get_success_url(self):
         messages.info(self.request, SUCCESS_MESSAGE)
-        return super(LegalRepresentativeSignUp, self).get_success_url()
+        return super(AuthorisedRepresentativeSignUp, self).get_success_url()
 
     def dispatch(self, request, *args, **kwargs):
         token = kwargs["token"]
@@ -111,7 +111,7 @@ class LegalRepresentativeSignUp(CreateView):
             raise Http404()
 
         self.firm = firm
-        response = super(LegalRepresentativeSignUp, self).dispatch(request, *args, **kwargs)
+        response = super(AuthorisedRepresentativeSignUp, self).dispatch(request, *args, **kwargs)
 
         if hasattr(response, 'context_data'):
             response.context_data["firm"] = self.firm
@@ -132,7 +132,7 @@ class InviteLegalView(CreateView, AdminView):
         if hasattr(response, 'context_data'):
             firm = Firm.objects.get(pk=kwargs["pk"])
             response.context_data["firm"] = firm
-            invitation_type = INVITATION_LEGAL_REPRESENTATIVE
+            invitation_type = AUTHORIZED_REPRESENTATIVE
             response.context_data["invitation_type"] = invitation_type
             response.context_data["invite_url"] = firm.get_invite_url(invitation_type)
             response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(invitation_type)].title()
@@ -319,7 +319,7 @@ class NewConfirmation(TemplateView):
 
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
-        account_types = ('advisor', 'legal_representative', 'supervisor', 'client')
+        account_types = ('advisor', 'authorised_representative', 'supervisor', 'client')
 
         try:
             user = User.objects.get(email=email)

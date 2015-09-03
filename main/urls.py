@@ -19,7 +19,7 @@ urlpatterns = patterns('',
 
     # firm views
     url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/legal_signup$',
-        LegalRepresentativeSignUp.as_view(), name='firm:representative_signup'),
+        AuthorisedRepresentativeSignUp.as_view(), name='firm:representative_signup'),
 
     url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/advisor_signup',
         AdvisorSignUpView.as_view()),

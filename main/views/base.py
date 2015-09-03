@@ -28,7 +28,7 @@ def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, lo
     member, displaying the login page if necessary.
     """
     return user_passes_test(
-        lambda u: u.is_active and hasattr(u, "legal_representative"),
+        lambda u: u.is_active and hasattr(u, "authorised_representative"),
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )(view_func)
@@ -68,11 +68,11 @@ class LegalView(View):
 
     @method_decorator(legal_member_required)
     def dispatch(self, request, *args, **kwargs):
-        self.firm = request.user.legal_representative.firm
+        self.firm = request.user.authorised_representative.firm
         response = super(LegalView, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
-            response.context_data["profile"] = request.user.legal_representative
-            response.context_data["firm"] = request.user.legal_representative.firm
+            response.context_data["profile"] = request.user.authorised_representative
+            response.context_data["firm"] = request.user.authorised_representative.firm
             response.context_data["is_legal_view"] = True
         return response
 
