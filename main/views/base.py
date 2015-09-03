@@ -47,8 +47,11 @@ def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, l
 
 
 class AdvisorView(View):
+    advisor = None
+
     @method_decorator(advisor_member_required)
     def dispatch(self, request, *args, **kwargs):
+        self.advisor = request.user.advisor
         response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
             response.context_data["profile"] = request.user.advisor

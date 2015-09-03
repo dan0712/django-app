@@ -2,7 +2,7 @@ __author__ = 'cristian'
 
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
-from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE, LegalRepresentative, FirmData, Client
+from main.models import Firm, Advisor, User, INVITATION_LEGAL_REPRESENTATIVE, LegalRepresentative, FirmData, Client, ClientAccount
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -12,6 +12,10 @@ from django.conf import settings
 class TickerInline(SortableTabularInline):
     model = ProxyTicker
     sortable = 'ordering'
+
+
+class ClientAccountInline(admin.StackedInline):
+    model = ClientAccount
 
 
 class AdvisorInline(admin.StackedInline):
@@ -88,6 +92,7 @@ class ClientAdmin(admin.ModelAdmin):
     list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted', )
     actions = (approve_application, )
+    inlines = (ClientAccountInline, )
     pass
 
 

@@ -1,32 +1,84 @@
 {% extends "layouts/base.html" %}
 {% load i18n %}
+{% block main_js %}{{ STATIC_URL }}js/client.js{% endblock %}
 {% block nav_clients %} depressed {% endblock %}
+{% block body_class %}clients index {% endblock %}
 {% block main_content %}
+
+    <div class="clients-index">
 {% include "advisor/firm-logo.html" %}
-<div class="clients-panel">
+    <div class="clients-panel">
+        <div class="shared-header" style="margin-top: 0px!important;">
+        <nav class="sub-nav">
+            <div>
+                <ul>
+                    <li class="depressed">
+                        <a href="/advisor/clients">Client Overview</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+        <div class="filters">
+             <div class="client-grouping">
+                <select name="client-grouping-select" id="clientGroupingSelect" style="visibility: hidden;">
+                    <option value="0" {% if  filter == "0" %}selected="selected"{% endif %}>View All</option>
+                    <option value="1" {% if  filter == "1" %}selected="selected"{% endif %}>View Primary</option>
+                    <option value="2" {% if  filter == "2" %}selected="selected"{% endif %}>View Secondary</option>
+                </select>
+            </div>
+
+            <div class="client-search">
+                <input type="search" placeholder="Search" value="{{ search }}">
+            </div>
+
+        </div>
+
+
+                <div class="body">
+            <div class="loading">
+                <div class="spinner">
+  <div class="spinner-bg">
+      <svg class="svg-circle-spinner" viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="20" stroke-width="2.5" class="loading-spinner"></circle>
+      </svg>
+      <div class="speedometer-for-ie"></div>
+  </div>
+</div>
+
+            </div>
+            <ul id="results">
+                <div class="clients-table">
     <table>
         <thead>
         <tr>
-            <th><a class="" data-pjax="true" href="?filter=all&amp;search=&amp;skip=0&amp;sort_col=full_name&amp;sort_dir=desc&amp;take=50">Name</a></th>
-            <th><a class="active desc" data-pjax="true" href="?filter=all&amp;search=&amp;skip=0&amp;sort_col=current_balance&amp;sort_dir=asc&amp;take=50">Total Balance</a></th>
-            <th><a class="" data-pjax="true" href="?filter=all&amp;search=&amp;skip=0&amp;sort_col=email_address&amp;sort_dir=desc&amp;take=50">Email Address</a></th>
+            <th><a class="{% if sort_col == "full_name" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=full_name&amp;sort_dir={{ sort_inverse }}">Name</a></th>
+            <th><a class="{% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total Balance</a></th>
+            <th><a class="{% if sort_col == "email_address" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=email_address&amp;sort_dir={{ sort_inverse }}">Email Address</a></th>
             <th>Advisor Relationship</th>
         </tr>
         </thead>
         <tbody>
-            <tr>
-    <td><a href="/client/app#">Rhonda Pearlman</a></td>
-    <td>$1,160,458.33</td>
-    <td><a href="mailto:24449@example.org">24449@example.org</a></td>
-        <td>Primary</td>
-     </tr>
+        {% for client in clients %}
+             <tr>
+                 <td><a href="/advisor/client/{{ client.0 }}">{{ client.1 }}</a></td>
+                 <td>${{ client.2 }}</td>
+                 <td><a href="mailto:{{ client.3 }}">{{ client.3 }}</a></td>
+                 <td>{{ client.4 }}</td>
+            </tr>
+        {% endfor %}
+
         </tbody>
     </table>
     <div class="pager">
     </div>
 </div>
+            </ul>
+        </div>
 
-
+    </div>
+</div>
 {% endblock %}
 
 

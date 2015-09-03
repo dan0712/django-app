@@ -15,6 +15,8 @@ from django.template.loader import render_to_string
 from django import forms
 from django.contrib.auth.hashers import make_password
 from django.utils.safestring import mark_safe
+from datetime import date
+
 
 
 def validate_agreement(value):
@@ -190,7 +192,7 @@ class NeedConfirmation(models.Model):
         abstract = True
 
     confirmation_key = models.CharField(max_length=36, null=True, blank=True, editable=False)
-    is_confirmed = models.BooleanField(default=False, editable=False)
+    is_confirmed = models.BooleanField(default=False, editable=True)
 
     @property
     def content_type(self):
@@ -480,8 +482,44 @@ class LegalRepresentative(NeedApprobation, NeedConfirmation, PersonalData):
     betasmartz_agreement = models.BooleanField()
 
 
+class AccountGroup(models.Model):
+    advisor = models.ForeignKey(Advisor, related_name="primary_account_groups")
+    secondary_advisors = models.ManyToManyField(Advisor, related_name='secondary_account_groups')
+    name = models.CharField(max_length=100)
+
+
+PERSONAL_ACCOUNT = 1
+
+ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"), )
+
+
+class ClientAccount(models.Model):
+    account_group = models.ForeignKey(AccountGroup, related_name="accounts", null=True)
+    custom_fee = models.PositiveIntegerField(default=0)
+    account_type = models.PositiveIntegerField(choices=ACCOUNT_TYPES, default=PERSONAL_ACCOUNT)
+    primary_owner = models.ForeignKey('Client', related_name="accounts")
+
+    @property
+    def total_balance(self):
+        return 0
+
+    @property
+    def account_type_name(self):
+        for at in ACCOUNT_TYPES:
+            if at[0] == self.account_type:
+                return at[1]
+
+    @property
+    def on_track(self):
+        return False
+
+
 class Client(NeedApprobation, NeedConfirmation):
-    advisor = models.ForeignKey(Advisor)
+    advisor = models.ForeignKey(Advisor, related_name="clients")
+    secondary_advisors = models.ManyToManyField(Advisor, related_name='secondary_clients', editable=False)
+    create_date = models.DateTimeField(auto_now_add=True)
+    client_agreement = models.FileField()
+
     user = models.OneToOneField(User)
     date_of_birth = models.DateField(verbose_name="Date of birth")
     gender = models.CharField(max_length=20, default="Male",  choices=(("Male", "Male"), ("Female", "Female")))
@@ -509,6 +547,50 @@ class Client(NeedApprobation, NeedConfirmation):
     @property
     def firm(self):
         return self.advisor.firm
+
+    @property
+    def email(self):
+        return self.user.email
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name()
+
+    @property
+    def age(self):
+        born = self.date_of_birth
+        today = date.today()
+        return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+    @property
+    def total_balance(self):
+        balance = 0
+        for account in self.accounts.all():
+            balance += account.total_balance
+        return balance
+
+    @property
+    def stocks_percentage(self):
+        return 0
+
+    @property
+    def bonds_percentage(self):
+        return 0
+
+    @property
+    def total_returns(self):
+        return 0
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        create_personal_account = False
+        if self.pk is None:
+            create_personal_account = True
+
+        super(Client, self).save(force_insert, force_update, using, update_fields)
+
+        if create_personal_account:
+            new_ac = ClientAccount(primary_owner=self)
+            new_ac.save()
 
 
 INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"))
@@ -643,3 +725,9 @@ class EmailInvitation(models.Model):
         self.send_count += 1
 
         self.save()
+
+
+
+
+
+

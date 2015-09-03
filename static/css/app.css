@@ -18619,3 +18619,4069 @@ h1.error{
 .admin-content h1.message{
     color: #333;
 }
+
+
+.clients-index .clients-panel thead th,
+.clients-index .clients-panel thead th * {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-index .clients-panel thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-index .clients-panel thead th,
+.clients-index .clients-panel thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-index .clients-panel thead th,
+.clients-index .clients-panel thead th * {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-index .clients-panel thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-index .clients-panel thead th,
+.clients-index .clients-panel thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-index .clients-panel thead th,
+.clients-index .clients-panel thead th * {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-index .clients-panel thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-index .clients-panel thead th,
+.clients-index .clients-panel thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-index .clients-panel thead th a.asc,
+.clients-index .clients-panel thead th a.desc {
+    position: relative
+}
+.clients-index .clients-panel thead th a.asc:after,
+.clients-index .clients-panel thead th a.desc:after {
+    display: block;
+    position: absolute;
+    z-index: 5;
+    right: -11px;
+    top: -4px
+}
+.clients-index .clients-panel thead th a.asc:after {
+    content: '';
+    font-family: 'ModernPictogramsPro' !important;
+    font-size: 120%;
+    line-height: 0.8;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: inherit
+}
+.clients-index .clients-panel thead th a.asc.blank:after {
+    content: '\0020'
+}
+.clients-index .clients-panel thead th a.asc.warning:after {
+    content: '\0021'
+}
+.clients-index .clients-panel thead th a.asc.cancel:after {
+    content: '\0022'
+}
+.clients-index .clients-panel thead th a.asc.calculator:after {
+    content: '\0023'
+}
+.clients-index .clients-panel thead th a.asc.buy:after {
+    content: '\0024'
+}
+.clients-index .clients-panel thead th a.asc.accept:after {
+    content: '\0025'
+}
+.clients-index .clients-panel thead th a.asc.shopping-tote:after {
+    content: '\0026'
+}
+.clients-index .clients-panel thead th a.asc.center:after {
+    content: '\0027'
+}
+.clients-index .clients-panel thead th a.asc.tools:after {
+    content: '\0028'
+}
+.clients-index .clients-panel thead th a.asc.award:after {
+    content: '\0029'
+}
+.clients-index .clients-panel thead th a.asc.star:after {
+    content: '\002A'
+}
+.clients-index .clients-panel thead th a.asc.plus:after {
+    content: '\002B'
+}
+.clients-index .clients-panel thead th a.asc.location:after {
+    content: '\002C'
+}
+.clients-index .clients-panel thead th a.asc:after {
+    content: '\002D'
+}
+.clients-index .clients-panel thead th a.asc.settings:after {
+    content: '\002E'
+}
+.clients-index .clients-panel thead th a.asc.arrow-down:after,
+.clients-index .clients-panel thead th a.asc.desc:after {
+    content: '\002F'
+}
+.clients-index .clients-panel thead th a.asc.mute:after {
+    content: '\0030'
+}
+.clients-index .clients-panel thead th a.asc.volume-low:after {
+    content: '\0031'
+}
+.clients-index .clients-panel thead th a.asc.volume-high:after {
+    content: '\0032'
+}
+.clients-index .clients-panel thead th a.asc.table:after {
+    content: '\0033'
+}
+.clients-index .clients-panel thead th a.asc.view-list:after {
+    content: '\0034'
+}
+.clients-index .clients-panel thead th a.asc.view-columns:after {
+    content: '\0035'
+}
+.clients-index .clients-panel thead th a.asc.chart-line:after {
+    content: '\0036'
+}
+.clients-index .clients-panel thead th a.asc.chart-bar:after {
+    content: '\0037'
+}
+.clients-index .clients-panel thead th a.asc.chart-pie:after {
+    content: '\0038'
+}
+.clients-index .clients-panel thead th a.asc.alert:after {
+    content: '\0039'
+}
+.clients-index .clients-panel thead th a.asc.cloud-upload:after {
+    content: '\003A'
+}
+.clients-index .clients-panel thead th a.asc.cloud-download:after {
+    content: '\003B'
+}
+.clients-index .clients-panel thead th a.asc.arrow-left:after {
+    content: '\003C'
+}
+.clients-index .clients-panel thead th a.asc.information:after {
+    content: '\003D'
+}
+.clients-index .clients-panel thead th a.asc.arrow-right:after {
+    content: '\003E'
+}
+.clients-index .clients-panel thead th a.asc.question:after {
+    content: '\003F'
+}
+.clients-index .clients-panel thead th a.asc.at-sign:after {
+    content: '\0040'
+}
+.clients-index .clients-panel thead th a.asc.camera:after {
+    content: '\0041'
+}
+.clients-index .clients-panel thead th a.asc.book-closed:after {
+    content: '\0042'
+}
+.clients-index .clients-panel thead th a.asc.disc:after {
+    content: '\0043'
+}
+.clients-index .clients-panel thead th a.asc.file-download:after {
+    content: '\0044'
+}
+.clients-index .clients-panel thead th a.asc.eye:after {
+    content: '\0045'
+}
+.clients-index .clients-panel thead th a.asc.facebook:after {
+    content: '\0046'
+}
+.clients-index .clients-panel thead th a.asc.facebook-ko:after {
+    content: '\0047'
+}
+.clients-index .clients-panel thead th a.asc.video-camera:after {
+    content: '\0048'
+}
+.clients-index .clients-panel thead th a.asc.trash-bin:after {
+    content: '\0049'
+}
+.clients-index .clients-panel thead th a.asc.tag:after {
+    content: '\004A'
+}
+.clients-index .clients-panel thead th a.asc.file:after {
+    content: '\004B'
+}
+.clients-index .clients-panel thead th a.asc.thumbs-down:after {
+    content: '\004C'
+}
+.clients-index .clients-panel thead th a.asc.ipod:after {
+    content: '\004D'
+}
+.clients-index .clients-panel thead th a.asc.cell-phone:after {
+    content: '\004E'
+}
+.clients-index .clients-panel thead th a.asc.iphone:after {
+    content: '\004F'
+}
+.clients-index .clients-panel thead th a.asc.play:after {
+    content: '\0050'
+}
+.clients-index .clients-panel thead th a.asc.ipad:after {
+    content: '\0051'
+}
+.clients-index .clients-panel thead th a.asc.refresh:after {
+    content: '\0052'
+}
+.clients-index .clients-panel thead th a.asc.projector:after {
+    content: '\0053'
+}
+.clients-index .clients-panel thead th a.asc.twitter-ko:after {
+    content: '\0054'
+}
+.clients-index .clients-panel thead th a.asc.desktop:after {
+    content: '\0055'
+}
+.clients-index .clients-panel thead th a.asc.file-write:after {
+    content: '\0056'
+}
+.clients-index .clients-panel thead th a.asc.windows:after {
+    content: '\0057'
+}
+.clients-index .clients-panel thead th a.asc.close:after {
+    content: '\0058'
+}
+.clients-index .clients-panel thead th a.asc.megaphone:after {
+    content: '\0059'
+}
+.clients-index .clients-panel thead th a.asc.align-left:after {
+    content: '\005A'
+}
+.clients-index .clients-panel thead th a.asc.arrow-basic-down:after {
+    content: '\005B'
+}
+.clients-index .clients-panel thead th a.asc.image-grid:after {
+    content: '\005C'
+}
+.clients-index .clients-panel thead th a.asc.arrow-basic-up:after {
+    content: '\005D'
+}
+.clients-index .clients-panel thead th a.asc.rss:after {
+    content: '\005E'
+}
+.clients-index .clients-panel thead th a.asc.desk:after {
+    content: '\005F'
+}
+.clients-index .clients-panel thead th a.asc.antenna:after {
+    content: '\0060'
+}
+.clients-index .clients-panel thead th a.asc.newspaper:after {
+    content: '\0061'
+}
+.clients-index .clients-panel thead th a.asc.chat-bubble:after {
+    content: '\0062'
+}
+.clients-index .clients-panel thead th a.asc.telephone:after {
+    content: '\0063'
+}
+.clients-index .clients-panel thead th a.asc.printer:after {
+    content: '\0064'
+}
+.clients-index .clients-panel thead th a.asc.pencil:after {
+    content: '\0065'
+}
+.clients-index .clients-panel thead th a.asc.friend-male:after {
+    content: '\0066'
+}
+.clients-index .clients-panel thead th a.asc.friend-pair:after {
+    content: '\0067'
+}
+.clients-index .clients-panel thead th a.asc.video:after {
+    content: '\0068'
+}
+.clients-index .clients-panel thead th a.asc.shopping-cart:after {
+    content: '\0069'
+}
+.clients-index .clients-panel thead th a.asc.heart:after {
+    content: '\006A'
+}
+.clients-index .clients-panel thead th a.asc.friend-female:after {
+    content: '\006B'
+}
+.clients-index .clients-panel thead th a.asc.thumbs-up:after {
+    content: '\006C'
+}
+.clients-index .clients-panel thead th a.asc.envelope:after {
+    content: '\006D'
+}
+.clients-index .clients-panel thead th a.asc.lock:after {
+    content: '\006E'
+}
+.clients-index .clients-panel thead th a.asc.forward:after {
+    content: '\006F'
+}
+.clients-index .clients-panel thead th a.asc.building:after {
+    content: '\0070'
+}
+.clients-index .clients-panel thead th a.asc.lock-open:after {
+    content: '\0071'
+}
+.clients-index .clients-panel thead th a.asc.pencil:after {
+    content: '\0072'
+}
+.clients-index .clients-panel thead th a.asc.search:after {
+    content: '\0073'
+}
+.clients-index .clients-panel thead th a.asc.twitter:after {
+    content: '\0074'
+}
+.clients-index .clients-panel thead th a.asc.resize-small:after {
+    content: '\0075'
+}
+.clients-index .clients-panel thead th a.asc.resize-large:after {
+    content: '\0076'
+}
+.clients-index .clients-panel thead th a.asc.globe:after {
+    content: '\0077'
+}
+.clients-index .clients-panel thead th a.asc.close-ko:after {
+    content: '\0078'
+}
+.clients-index .clients-panel thead th a.asc.zoom-in:after {
+    content: '\0079'
+}
+.clients-index .clients-panel thead th a.asc.zoom-out:after {
+    content: '\007A'
+}
+.clients-index .clients-panel thead th a.asc.clock-time:after {
+    content: '\007B'
+}
+.clients-index .clients-panel thead th a.asc.pipe:after {
+    content: '\007C'
+}
+.clients-index .clients-panel thead th a.asc.clock-alarm:after {
+    content: '\007D'
+}
+.clients-index .clients-panel thead th a.asc.locate:after {
+    content: '\007E'
+}
+.clients-index .clients-panel thead th a.asc.tablet:after {
+    content: '\00A1'
+}
+.clients-index .clients-panel thead th a.asc.folder:after {
+    content: '\00A2'
+}
+.clients-index .clients-panel thead th a.asc.arrow-touch-switch:after {
+    content: '\00A3'
+}
+.clients-index .clients-panel thead th a.asc.microphone-mute:after {
+    content: '\00A5'
+}
+.clients-index .clients-panel thead th a.asc.arrow-touch-left:after {
+    content: '\00A7'
+}
+.clients-index .clients-panel thead th a.asc.power:after {
+    content: '\00A8'
+}
+.clients-index .clients-panel thead th a.asc.resize-move:after {
+    content: '\00A9'
+}
+.clients-index .clients-panel thead th a.asc.lock-solid:after {
+    content: '\00AA'
+}
+.clients-index .clients-panel thead th a.asc.skip-back:after {
+    content: '\00AB'
+}
+.clients-index .clients-panel thead th a.asc.dinosaur:after {
+    content: '\00AC'
+}
+.clients-index .clients-panel thead th a.asc.arrow-touch-up-down:after {
+    content: '\00AE'
+}
+.clients-index .clients-panel thead th a.asc.music-mute:after {
+    content: '\00B0'
+}
+.clients-index .clients-panel thead th a.asc.microphone:after {
+    content: '\00B1'
+}
+.clients-index .clients-panel thead th a.asc.resize-corner-large:after {
+    content: '\00B4'
+}
+.clients-index .clients-panel thead th a.asc.ellipsis:after {
+    content: '\00B5'
+}
+.clients-index .clients-panel thead th a.asc.arrow-touch-up:after {
+    content: '\00B6'
+}
+.clients-index .clients-panel thead th a.asc.arrow-basic-right:after {
+    content: '\00B7'
+}
+.clients-index .clients-panel thead th a.asc.files:after {
+    content: '\00BA'
+}
+.clients-index .clients-panel thead th a.asc.skip-forward:after {
+    content: '\00BB'
+}
+.clients-index .clients-panel thead th a.asc.clock-stopwatch:after {
+    content: '\00BF'
+}
+.clients-index .clients-panel thead th a.asc.fast-forward:after {
+    content: '\00C0'
+}
+.clients-index .clients-panel thead th a.asc.rewind:after {
+    content: '\00C3'
+}
+.clients-index .clients-panel thead th a.asc.crosshair:after {
+    content: '\00C4'
+}
+.clients-index .clients-panel thead th a.asc.link:after {
+    content: '\00C5'
+}
+.clients-index .clients-panel thead th a.asc.view-table:after {
+    content: '\00C6'
+}
+.clients-index .clients-panel thead th a.asc.clock-history:after {
+    content: '\00C7'
+}
+.clients-index .clients-panel thead th a.asc.align-right:after {
+    content: '\00C9'
+}
+.clients-index .clients-panel thead th a.asc.lb-heavy-up:after {
+    content: '\00CC'
+}
+.clients-index .clients-panel thead th a.asc.lb-heavy-right:after {
+    content: '\00CE'
+}
+.clients-index .clients-panel thead th a.asc.lb-heavy-down:after {
+    content: '\00CF'
+}
+.clients-index .clients-panel thead th a.asc.align-center:after {
+    content: '\00D1'
+}
+.clients-index .clients-panel thead th a.asc.lb-heavy-left:after {
+    content: '\00D3'
+}
+.clients-index .clients-panel thead th a.asc.pause:after {
+    content: '\00D5'
+}
+.clients-index .clients-panel thead th a.asc.attachment:after {
+    content: '\00D6'
+}
+.clients-index .clients-panel thead th a.asc.view-grid:after {
+    content: '\00D8'
+}
+.clients-index .clients-panel thead th a.asc.lb-light-skip-right:after {
+    content: '\00DA'
+}
+.clients-index .clients-panel thead th a.asc.bl-light-skip-left:after {
+    content: '\00DB'
+}
+.clients-index .clients-panel thead th a.asc.book-open:after {
+    content: '\00DC'
+}
+.clients-index .clients-panel thead th a.asc.arrow-touch-down:after {
+    content: '\00DF'
+}
+.clients-index .clients-panel thead th a.asc.image-medium:after {
+    content: '\00E0'
+}
+.clients-index .clients-panel thead th a.asc.cloud:after {
+    content: '\00E1'
+}
+.clients-index .clients-panel thead th a.asc.wifi:after {
+    content: '\00E2'
+}
+.clients-index .clients-panel thead th a.asc.apple:after {
+    content: '\00E3'
+}
+.clients-index .clients-panel thead th a.asc.delete:after {
+    content: '\00E4'
+}
+.clients-index .clients-panel thead th a.asc.calendar-grid:after {
+    content: '\00E5'
+}
+.clients-index .clients-panel thead th a.asc.laptop:after {
+    content: '\00E6'
+}
+.clients-index .clients-panel thead th a.asc.calendar-date:after {
+    content: '\00E7'
+}
+.clients-index .clients-panel thead th a.asc.calendar-list:after {
+    content: '\00E8'
+}
+.clients-index .clients-panel thead th a.asc.calendar:after {
+    content: '\00E9'
+}
+.clients-index .clients-panel thead th a.asc.note-list:after {
+    content: '\00EA'
+}
+.clients-index .clients-panel thead th a.asc.notepad-closed:after {
+    content: '\00EB'
+}
+.clients-index .clients-panel thead th a.asc.moleskine:after {
+    content: '\00EC'
+}
+.clients-index .clients-panel thead th a.asc.notepad-open:after {
+    content: '\00ED'
+}
+.clients-index .clients-panel thead th a.asc.notebook-school:after {
+    content: '\00EE'
+}
+.clients-index .clients-panel thead th a.asc.notebook:after {
+    content: '\00EF'
+}
+.clients-index .clients-panel thead th a.asc.notebook-open:after {
+    content: '\00F1'
+}
+.clients-index .clients-panel thead th a.asc.datebook:after {
+    content: '\00F2'
+}
+.clients-index .clients-panel thead th a.asc.tags:after {
+    content: '\00F3'
+}
+.clients-index .clients-panel thead th a.asc.clock-speed:after {
+    content: '\00F4'
+}
+.clients-index .clients-panel thead th a.asc.lightning:after {
+    content: '\00F5'
+}
+.clients-index .clients-panel thead th a.asc.flag:after {
+    content: '\00F6'
+}
+.clients-index .clients-panel thead th a.asc.band-aid:after {
+    content: '\00F7'
+}
+.clients-index .clients-panel thead th a.asc.bookmark:after {
+    content: '\00F8'
+}
+.clients-index .clients-panel thead th a.asc.chat-bubbles:after {
+    content: '\00F9'
+}
+.clients-index .clients-panel thead th a.asc.font:after {
+    content: '\00FA'
+}
+.clients-index .clients-panel thead th a.asc.chat-typing:after {
+    content: '\00FB'
+}
+.clients-index .clients-panel thead th a.asc.pushpin:after {
+    content: '\00FC'
+}
+.clients-index .clients-panel thead th a.asc.glasses:after {
+    content: '\00FF'
+}
+.clients-index .clients-panel thead th a.asc.chair:after {
+    content: '\0152'
+}
+.clients-index .clients-panel thead th a.asc.umbrella:after {
+    content: '\0153'
+}
+.clients-index .clients-panel thead th a.asc.cut:after {
+    content: '\0178'
+}
+.clients-index .clients-panel thead th a.asc.airplay:after {
+    content: '\0192'
+}
+.clients-index .clients-panel thead th a.asc.shipping:after {
+    content: '\03C0'
+}
+.clients-index .clients-panel thead th a.asc.dribbble:after {
+    content: '\2013'
+}
+.clients-index .clients-panel thead th a.asc.lb-light-right:after {
+    content: '\2014'
+}
+.clients-index .clients-panel thead th a.asc.lb-light-left:after {
+    content: '\2018'
+}
+.clients-index .clients-panel thead th a.asc.lb-light-close:after {
+    content: '\2019'
+}
+.clients-index .clients-panel thead th a.asc.arrow-basic-left:after {
+    content: '\201A'
+}
+.clients-index .clients-panel thead th a.asc.lb-light-up:after {
+    content: '\201C'
+}
+.clients-index .clients-panel thead th a.asc.lb-light-down:after {
+    content: '\201D'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-skip-right:after {
+    content: '\201E'
+}
+.clients-index .clients-panel thead th a.asc.music:after {
+    content: '\2020'
+}
+.clients-index .clients-panel thead th a.asc.image-large:after {
+    content: '\2021'
+}
+.clients-index .clients-panel thead th a.asc.arrow-touch-right:after {
+    content: '\2022'
+}
+.clients-index .clients-panel thead th a.asc.record:after {
+    content: '\2026'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-skip-left:after {
+    content: '\2030'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-right:after {
+    content: '\2039'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-left:after {
+    content: '\203A'
+}
+.clients-index .clients-panel thead th a.asc.stop:after {
+    content: '\2044'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-up:after {
+    content: '\20AC'
+}
+.clients-index .clients-panel thead th a.asc.resize-corner-small:after {
+    content: '\2122'
+}
+.clients-index .clients-panel thead th a.asc.photos:after {
+    content: '\2126'
+}
+.clients-index .clients-panel thead th a.asc.photo:after {
+    content: '\2202'
+}
+.clients-index .clients-panel thead th a.asc.arrow-top:after {
+    content: '\2206'
+}
+.clients-index .clients-panel thead th a.asc.fire:after {
+    content: '\220F'
+}
+.clients-index .clients-panel thead th a.asc.starburst:after {
+    content: '\2211'
+}
+.clients-index .clients-panel thead th a.asc.clover:after {
+    content: '\221A'
+}
+.clients-index .clients-panel thead th a.asc.accept-ko:after {
+    content: '\221E'
+}
+.clients-index .clients-panel thead th a.asc.key:after {
+    content: '\222B'
+}
+.clients-index .clients-panel thead th a.asc.arrow-bottom:after {
+    content: '\2248'
+}
+.clients-index .clients-panel thead th a.asc.replay:after {
+    content: '\2260'
+}
+.clients-index .clients-panel thead th a.asc.columns:after {
+    content: '\2264'
+}
+.clients-index .clients-panel thead th a.asc.pencil:after {
+    content: '\2265'
+}
+.clients-index .clients-panel thead th a.asc.shopping-basket:after {
+    content: '\25CA'
+}
+.clients-index .clients-panel thead th a.asc.block:after {
+    content: '\E000'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-down:after {
+    content: '\FB01'
+}
+.clients-index .clients-panel thead th a.asc.lb-med-close:after {
+    content: '\FB02'
+}
+.clients-index .clients-panel thead th a.desc:after {
+    content: '';
+    font-family: 'ModernPictogramsPro' !important;
+    font-size: 120%;
+    line-height: 0.8;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: inherit
+}
+.clients-index .clients-panel thead th a.desc.blank:after {
+    content: '\0020'
+}
+.clients-index .clients-panel thead th a.desc.warning:after {
+    content: '\0021'
+}
+.clients-index .clients-panel thead th a.desc.cancel:after {
+    content: '\0022'
+}
+.clients-index .clients-panel thead th a.desc.calculator:after {
+    content: '\0023'
+}
+.clients-index .clients-panel thead th a.desc.buy:after {
+    content: '\0024'
+}
+.clients-index .clients-panel thead th a.desc.accept:after {
+    content: '\0025'
+}
+.clients-index .clients-panel thead th a.desc.shopping-tote:after {
+    content: '\0026'
+}
+.clients-index .clients-panel thead th a.desc.center:after {
+    content: '\0027'
+}
+.clients-index .clients-panel thead th a.desc.tools:after {
+    content: '\0028'
+}
+.clients-index .clients-panel thead th a.desc.award:after {
+    content: '\0029'
+}
+.clients-index .clients-panel thead th a.desc.star:after {
+    content: '\002A'
+}
+.clients-index .clients-panel thead th a.desc.plus:after {
+    content: '\002B'
+}
+.clients-index .clients-panel thead th a.desc.location:after {
+    content: '\002C'
+}
+.clients-index .clients-panel thead th a.desc.arrow-up:after,
+.clients-index .clients-panel thead th a.desc.asc:after {
+    content: '\002D'
+}
+.clients-index .clients-panel thead th a.desc.settings:after {
+    content: '\002E'
+}
+.clients-index .clients-panel thead th a.desc:after {
+    content: '\002F'
+}
+.clients-index .clients-panel thead th a.desc.mute:after {
+    content: '\0030'
+}
+.clients-index .clients-panel thead th a.desc.volume-low:after {
+    content: '\0031'
+}
+.clients-index .clients-panel thead th a.desc.volume-high:after {
+    content: '\0032'
+}
+.clients-index .clients-panel thead th a.desc.table:after {
+    content: '\0033'
+}
+.clients-index .clients-panel thead th a.desc.view-list:after {
+    content: '\0034'
+}
+.clients-index .clients-panel thead th a.desc.view-columns:after {
+    content: '\0035'
+}
+.clients-index .clients-panel thead th a.desc.chart-line:after {
+    content: '\0036'
+}
+.clients-index .clients-panel thead th a.desc.chart-bar:after {
+    content: '\0037'
+}
+.clients-index .clients-panel thead th a.desc.chart-pie:after {
+    content: '\0038'
+}
+.clients-index .clients-panel thead th a.desc.alert:after {
+    content: '\0039'
+}
+.clients-index .clients-panel thead th a.desc.cloud-upload:after {
+    content: '\003A'
+}
+.clients-index .clients-panel thead th a.desc.cloud-download:after {
+    content: '\003B'
+}
+.clients-index .clients-panel thead th a.desc.arrow-left:after {
+    content: '\003C'
+}
+.clients-index .clients-panel thead th a.desc.information:after {
+    content: '\003D'
+}
+.clients-index .clients-panel thead th a.desc.arrow-right:after {
+    content: '\003E'
+}
+.clients-index .clients-panel thead th a.desc.question:after {
+    content: '\003F'
+}
+.clients-index .clients-panel thead th a.desc.at-sign:after {
+    content: '\0040'
+}
+.clients-index .clients-panel thead th a.desc.camera:after {
+    content: '\0041'
+}
+.clients-index .clients-panel thead th a.desc.book-closed:after {
+    content: '\0042'
+}
+.clients-index .clients-panel thead th a.desc.disc:after {
+    content: '\0043'
+}
+.clients-index .clients-panel thead th a.desc.file-download:after {
+    content: '\0044'
+}
+.clients-index .clients-panel thead th a.desc.eye:after {
+    content: '\0045'
+}
+.clients-index .clients-panel thead th a.desc.facebook:after {
+    content: '\0046'
+}
+.clients-index .clients-panel thead th a.desc.facebook-ko:after {
+    content: '\0047'
+}
+.clients-index .clients-panel thead th a.desc.video-camera:after {
+    content: '\0048'
+}
+.clients-index .clients-panel thead th a.desc.trash-bin:after {
+    content: '\0049'
+}
+.clients-index .clients-panel thead th a.desc.tag:after {
+    content: '\004A'
+}
+.clients-index .clients-panel thead th a.desc.file:after {
+    content: '\004B'
+}
+.clients-index .clients-panel thead th a.desc.thumbs-down:after {
+    content: '\004C'
+}
+.clients-index .clients-panel thead th a.desc.ipod:after {
+    content: '\004D'
+}
+.clients-index .clients-panel thead th a.desc.cell-phone:after {
+    content: '\004E'
+}
+.clients-index .clients-panel thead th a.desc.iphone:after {
+    content: '\004F'
+}
+.clients-index .clients-panel thead th a.desc.play:after {
+    content: '\0050'
+}
+.clients-index .clients-panel thead th a.desc.ipad:after {
+    content: '\0051'
+}
+.clients-index .clients-panel thead th a.desc.refresh:after {
+    content: '\0052'
+}
+.clients-index .clients-panel thead th a.desc.projector:after {
+    content: '\0053'
+}
+.clients-index .clients-panel thead th a.desc.twitter-ko:after {
+    content: '\0054'
+}
+.clients-index .clients-panel thead th a.desc.desktop:after {
+    content: '\0055'
+}
+.clients-index .clients-panel thead th a.desc.file-write:after {
+    content: '\0056'
+}
+.clients-index .clients-panel thead th a.desc.windows:after {
+    content: '\0057'
+}
+.clients-index .clients-panel thead th a.desc.close:after {
+    content: '\0058'
+}
+.clients-index .clients-panel thead th a.desc.megaphone:after {
+    content: '\0059'
+}
+.clients-index .clients-panel thead th a.desc.align-left:after {
+    content: '\005A'
+}
+.clients-index .clients-panel thead th a.desc.arrow-basic-down:after {
+    content: '\005B'
+}
+.clients-index .clients-panel thead th a.desc.image-grid:after {
+    content: '\005C'
+}
+.clients-index .clients-panel thead th a.desc.arrow-basic-up:after {
+    content: '\005D'
+}
+.clients-index .clients-panel thead th a.desc.rss:after {
+    content: '\005E'
+}
+.clients-index .clients-panel thead th a.desc.desk:after {
+    content: '\005F'
+}
+.clients-index .clients-panel thead th a.desc.antenna:after {
+    content: '\0060'
+}
+.clients-index .clients-panel thead th a.desc.newspaper:after {
+    content: '\0061'
+}
+.clients-index .clients-panel thead th a.desc.chat-bubble:after {
+    content: '\0062'
+}
+.clients-index .clients-panel thead th a.desc.telephone:after {
+    content: '\0063'
+}
+.clients-index .clients-panel thead th a.desc.printer:after {
+    content: '\0064'
+}
+.clients-index .clients-panel thead th a.desc.pencil:after {
+    content: '\0065'
+}
+.clients-index .clients-panel thead th a.desc.friend-male:after {
+    content: '\0066'
+}
+.clients-index .clients-panel thead th a.desc.friend-pair:after {
+    content: '\0067'
+}
+.clients-index .clients-panel thead th a.desc.video:after {
+    content: '\0068'
+}
+.clients-index .clients-panel thead th a.desc.shopping-cart:after {
+    content: '\0069'
+}
+.clients-index .clients-panel thead th a.desc.heart:after {
+    content: '\006A'
+}
+.clients-index .clients-panel thead th a.desc.friend-female:after {
+    content: '\006B'
+}
+.clients-index .clients-panel thead th a.desc.thumbs-up:after {
+    content: '\006C'
+}
+.clients-index .clients-panel thead th a.desc.envelope:after {
+    content: '\006D'
+}
+.clients-index .clients-panel thead th a.desc.lock:after {
+    content: '\006E'
+}
+.clients-index .clients-panel thead th a.desc.forward:after {
+    content: '\006F'
+}
+.clients-index .clients-panel thead th a.desc.building:after {
+    content: '\0070'
+}
+.clients-index .clients-panel thead th a.desc.lock-open:after {
+    content: '\0071'
+}
+.clients-index .clients-panel thead th a.desc.pencil:after {
+    content: '\0072'
+}
+.clients-index .clients-panel thead th a.desc.search:after {
+    content: '\0073'
+}
+.clients-index .clients-panel thead th a.desc.twitter:after {
+    content: '\0074'
+}
+.clients-index .clients-panel thead th a.desc.resize-small:after {
+    content: '\0075'
+}
+.clients-index .clients-panel thead th a.desc.resize-large:after {
+    content: '\0076'
+}
+.clients-index .clients-panel thead th a.desc.globe:after {
+    content: '\0077'
+}
+.clients-index .clients-panel thead th a.desc.close-ko:after {
+    content: '\0078'
+}
+.clients-index .clients-panel thead th a.desc.zoom-in:after {
+    content: '\0079'
+}
+.clients-index .clients-panel thead th a.desc.zoom-out:after {
+    content: '\007A'
+}
+.clients-index .clients-panel thead th a.desc.clock-time:after {
+    content: '\007B'
+}
+.clients-index .clients-panel thead th a.desc.pipe:after {
+    content: '\007C'
+}
+.clients-index .clients-panel thead th a.desc.clock-alarm:after {
+    content: '\007D'
+}
+.clients-index .clients-panel thead th a.desc.locate:after {
+    content: '\007E'
+}
+.clients-index .clients-panel thead th a.desc.tablet:after {
+    content: '\00A1'
+}
+.clients-index .clients-panel thead th a.desc.folder:after {
+    content: '\00A2'
+}
+.clients-index .clients-panel thead th a.desc.arrow-touch-switch:after {
+    content: '\00A3'
+}
+.clients-index .clients-panel thead th a.desc.microphone-mute:after {
+    content: '\00A5'
+}
+.clients-index .clients-panel thead th a.desc.arrow-touch-left:after {
+    content: '\00A7'
+}
+.clients-index .clients-panel thead th a.desc.power:after {
+    content: '\00A8'
+}
+.clients-index .clients-panel thead th a.desc.resize-move:after {
+    content: '\00A9'
+}
+.clients-index .clients-panel thead th a.desc.lock-solid:after {
+    content: '\00AA'
+}
+.clients-index .clients-panel thead th a.desc.skip-back:after {
+    content: '\00AB'
+}
+.clients-index .clients-panel thead th a.desc.dinosaur:after {
+    content: '\00AC'
+}
+.clients-index .clients-panel thead th a.desc.arrow-touch-up-down:after {
+    content: '\00AE'
+}
+.clients-index .clients-panel thead th a.desc.music-mute:after {
+    content: '\00B0'
+}
+.clients-index .clients-panel thead th a.desc.microphone:after {
+    content: '\00B1'
+}
+.clients-index .clients-panel thead th a.desc.resize-corner-large:after {
+    content: '\00B4'
+}
+.clients-index .clients-panel thead th a.desc.ellipsis:after {
+    content: '\00B5'
+}
+.clients-index .clients-panel thead th a.desc.arrow-touch-up:after {
+    content: '\00B6'
+}
+.clients-index .clients-panel thead th a.desc.arrow-basic-right:after {
+    content: '\00B7'
+}
+.clients-index .clients-panel thead th a.desc.files:after {
+    content: '\00BA'
+}
+.clients-index .clients-panel thead th a.desc.skip-forward:after {
+    content: '\00BB'
+}
+.clients-index .clients-panel thead th a.desc.clock-stopwatch:after {
+    content: '\00BF'
+}
+.clients-index .clients-panel thead th a.desc.fast-forward:after {
+    content: '\00C0'
+}
+.clients-index .clients-panel thead th a.desc.rewind:after {
+    content: '\00C3'
+}
+.clients-index .clients-panel thead th a.desc.crosshair:after {
+    content: '\00C4'
+}
+.clients-index .clients-panel thead th a.desc.link:after {
+    content: '\00C5'
+}
+.clients-index .clients-panel thead th a.desc.view-table:after {
+    content: '\00C6'
+}
+.clients-index .clients-panel thead th a.desc.clock-history:after {
+    content: '\00C7'
+}
+.clients-index .clients-panel thead th a.desc.align-right:after {
+    content: '\00C9'
+}
+.clients-index .clients-panel thead th a.desc.lb-heavy-up:after {
+    content: '\00CC'
+}
+.clients-index .clients-panel thead th a.desc.lb-heavy-right:after {
+    content: '\00CE'
+}
+.clients-index .clients-panel thead th a.desc.lb-heavy-down:after {
+    content: '\00CF'
+}
+.clients-index .clients-panel thead th a.desc.align-center:after {
+    content: '\00D1'
+}
+.clients-index .clients-panel thead th a.desc.lb-heavy-left:after {
+    content: '\00D3'
+}
+.clients-index .clients-panel thead th a.desc.pause:after {
+    content: '\00D5'
+}
+.clients-index .clients-panel thead th a.desc.attachment:after {
+    content: '\00D6'
+}
+.clients-index .clients-panel thead th a.desc.view-grid:after {
+    content: '\00D8'
+}
+.clients-index .clients-panel thead th a.desc.lb-light-skip-right:after {
+    content: '\00DA'
+}
+.clients-index .clients-panel thead th a.desc.bl-light-skip-left:after {
+    content: '\00DB'
+}
+.clients-index .clients-panel thead th a.desc.book-open:after {
+    content: '\00DC'
+}
+.clients-index .clients-panel thead th a.desc.arrow-touch-down:after {
+    content: '\00DF'
+}
+.clients-index .clients-panel thead th a.desc.image-medium:after {
+    content: '\00E0'
+}
+.clients-index .clients-panel thead th a.desc.cloud:after {
+    content: '\00E1'
+}
+.clients-index .clients-panel thead th a.desc.wifi:after {
+    content: '\00E2'
+}
+.clients-index .clients-panel thead th a.desc.apple:after {
+    content: '\00E3'
+}
+.clients-index .clients-panel thead th a.desc.delete:after {
+    content: '\00E4'
+}
+.clients-index .clients-panel thead th a.desc.calendar-grid:after {
+    content: '\00E5'
+}
+.clients-index .clients-panel thead th a.desc.laptop:after {
+    content: '\00E6'
+}
+.clients-index .clients-panel thead th a.desc.calendar-date:after {
+    content: '\00E7'
+}
+.clients-index .clients-panel thead th a.desc.calendar-list:after {
+    content: '\00E8'
+}
+.clients-index .clients-panel thead th a.desc.calendar:after {
+    content: '\00E9'
+}
+.clients-index .clients-panel thead th a.desc.note-list:after {
+    content: '\00EA'
+}
+.clients-index .clients-panel thead th a.desc.notepad-closed:after {
+    content: '\00EB'
+}
+.clients-index .clients-panel thead th a.desc.moleskine:after {
+    content: '\00EC'
+}
+.clients-index .clients-panel thead th a.desc.notepad-open:after {
+    content: '\00ED'
+}
+.clients-index .clients-panel thead th a.desc.notebook-school:after {
+    content: '\00EE'
+}
+.clients-index .clients-panel thead th a.desc.notebook:after {
+    content: '\00EF'
+}
+.clients-index .clients-panel thead th a.desc.notebook-open:after {
+    content: '\00F1'
+}
+.clients-index .clients-panel thead th a.desc.datebook:after {
+    content: '\00F2'
+}
+.clients-index .clients-panel thead th a.desc.tags:after {
+    content: '\00F3'
+}
+.clients-index .clients-panel thead th a.desc.clock-speed:after {
+    content: '\00F4'
+}
+.clients-index .clients-panel thead th a.desc.lightning:after {
+    content: '\00F5'
+}
+.clients-index .clients-panel thead th a.desc.flag:after {
+    content: '\00F6'
+}
+.clients-index .clients-panel thead th a.desc.band-aid:after {
+    content: '\00F7'
+}
+.clients-index .clients-panel thead th a.desc.bookmark:after {
+    content: '\00F8'
+}
+.clients-index .clients-panel thead th a.desc.chat-bubbles:after {
+    content: '\00F9'
+}
+.clients-index .clients-panel thead th a.desc.font:after {
+    content: '\00FA'
+}
+.clients-index .clients-panel thead th a.desc.chat-typing:after {
+    content: '\00FB'
+}
+.clients-index .clients-panel thead th a.desc.pushpin:after {
+    content: '\00FC'
+}
+.clients-index .clients-panel thead th a.desc.glasses:after {
+    content: '\00FF'
+}
+.clients-index .clients-panel thead th a.desc.chair:after {
+    content: '\0152'
+}
+.clients-index .clients-panel thead th a.desc.umbrella:after {
+    content: '\0153'
+}
+.clients-index .clients-panel thead th a.desc.cut:after {
+    content: '\0178'
+}
+.clients-index .clients-panel thead th a.desc.airplay:after {
+    content: '\0192'
+}
+.clients-index .clients-panel thead th a.desc.shipping:after {
+    content: '\03C0'
+}
+.clients-index .clients-panel thead th a.desc.dribbble:after {
+    content: '\2013'
+}
+.clients-index .clients-panel thead th a.desc.lb-light-right:after {
+    content: '\2014'
+}
+.clients-index .clients-panel thead th a.desc.lb-light-left:after {
+    content: '\2018'
+}
+.clients-index .clients-panel thead th a.desc.lb-light-close:after {
+    content: '\2019'
+}
+.clients-index .clients-panel thead th a.desc.arrow-basic-left:after {
+    content: '\201A'
+}
+.clients-index .clients-panel thead th a.desc.lb-light-up:after {
+    content: '\201C'
+}
+.clients-index .clients-panel thead th a.desc.lb-light-down:after {
+    content: '\201D'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-skip-right:after {
+    content: '\201E'
+}
+.clients-index .clients-panel thead th a.desc.music:after {
+    content: '\2020'
+}
+.clients-index .clients-panel thead th a.desc.image-large:after {
+    content: '\2021'
+}
+.clients-index .clients-panel thead th a.desc.arrow-touch-right:after {
+    content: '\2022'
+}
+.clients-index .clients-panel thead th a.desc.record:after {
+    content: '\2026'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-skip-left:after {
+    content: '\2030'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-right:after {
+    content: '\2039'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-left:after {
+    content: '\203A'
+}
+.clients-index .clients-panel thead th a.desc.stop:after {
+    content: '\2044'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-up:after {
+    content: '\20AC'
+}
+.clients-index .clients-panel thead th a.desc.resize-corner-small:after {
+    content: '\2122'
+}
+.clients-index .clients-panel thead th a.desc.photos:after {
+    content: '\2126'
+}
+.clients-index .clients-panel thead th a.desc.photo:after {
+    content: '\2202'
+}
+.clients-index .clients-panel thead th a.desc.arrow-top:after {
+    content: '\2206'
+}
+.clients-index .clients-panel thead th a.desc.fire:after {
+    content: '\220F'
+}
+.clients-index .clients-panel thead th a.desc.starburst:after {
+    content: '\2211'
+}
+.clients-index .clients-panel thead th a.desc.clover:after {
+    content: '\221A'
+}
+.clients-index .clients-panel thead th a.desc.accept-ko:after {
+    content: '\221E'
+}
+.clients-index .clients-panel thead th a.desc.key:after {
+    content: '\222B'
+}
+.clients-index .clients-panel thead th a.desc.arrow-bottom:after {
+    content: '\2248'
+}
+.clients-index .clients-panel thead th a.desc.replay:after {
+    content: '\2260'
+}
+.clients-index .clients-panel thead th a.desc.columns:after {
+    content: '\2264'
+}
+.clients-index .clients-panel thead th a.desc.pencil:after {
+    content: '\2265'
+}
+.clients-index .clients-panel thead th a.desc.shopping-basket:after {
+    content: '\25CA'
+}
+.clients-index .clients-panel thead th a.desc.block:after {
+    content: '\E000'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-down:after {
+    content: '\FB01'
+}
+.clients-index .clients-panel thead th a.desc.lb-med-close:after {
+    content: '\FB02'
+}
+.clients-index .filters .client-search input {
+    background: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/search_icon-13996db8a708ce5121e9daf4cb5642da.png) no-repeat;
+    background-position: 10px 50%;
+    width: 300px;
+    font-size: 1.4rem;
+    line-height: 2rem;
+    padding: 7px 3px 7px 30px;
+    border: 1px solid #bbbbbb;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px
+}
+.clients-index .filters .client-search input:before {
+    font-family: 'ModernPictogramsPro' !important;
+    font-size: 100%;
+    line-height: 0.8;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    content: '\0073'
+}
+.clients-index .filters {
+    margin: 15px 0px
+}
+.clients-index .filters .client-grouping .selectize-dropdown-header {
+    position: relative;
+    padding: 5px 8px;
+    border-bottom: 1px solid #cccccc;
+    background: #f5f5f5;
+    -moz-border-radius: 3px 3px 0 0;
+    -webkit-border-radius: 3px;
+    border-radius: 3px 3px 0 0
+}
+.clients-index .filters .client-grouping .selectize-dropdown-header-close {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    color: #333333;
+    opacity: 0.4;
+    margin-top: -12px;
+    line-height: 20px;
+    font-size: 2rem !important
+}
+.clients-index .filters .client-grouping .selectize-control {
+    position: relative
+}
+.clients-index .filters .client-grouping .selectize-dropdown,
+.clients-index .filters .client-grouping .selectize-input,
+.clients-index .filters .client-grouping .selectize-input input {
+    color: #303030;
+    font-family: inherit;
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+    -webkit-font-smoothing: inherit
+}
+.clients-index .filters .client-grouping .selectize-input,
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input.input-active {
+    background: #ffffff;
+    cursor: text;
+    display: inline-block
+}
+.clients-index .filters .client-grouping .selectize-input {
+    border: 1px solid #cccccc;
+    padding: 8px;
+    display: inline-block;
+    width: 300px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    height: 40px
+}
+.clients-index .filters .client-grouping .selectize-input div.item {
+    line-height: 25px
+}
+.clients-index .filters .client-grouping .selectize-input.full {
+    background-color: #ffffff
+}
+.clients-index .filters .client-grouping .selectize-input.disabled,
+.clients-index .filters .client-grouping .selectize-input.disabled * {
+    cursor: default !important
+}
+.clients-index .filters .client-grouping .selectize-input.dropdown-active {
+    -moz-border-radius: 3px 3px 0 0;
+    -webkit-border-radius: 3px;
+    border-radius: 3px 3px 0 0
+}
+.clients-index .filters .client-grouping .selectize-input>* {
+    vertical-align: baseline;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline
+}
+.clients-index .filters .client-grouping .selectize-input>input {
+    display: inline-block !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 25px;
+    max-width: 100% !important;
+    margin: 0 2px 0 0 !important;
+    text-indent: 0 !important;
+    border: 0 none !important;
+    background: none !important;
+    line-height: inherit !important;
+    -webkit-user-select: auto !important;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important
+}
+.clients-index .filters .client-grouping .selectize-input>input::-ms-clear {
+    display: none
+}
+.clients-index .filters .client-grouping .selectize-input>input:focus {
+    outline: none !important
+}
+.clients-index .filters .client-grouping .selectize-input::after {
+    content: ' ';
+    display: block;
+    clear: left
+}
+.clients-index .filters .client-grouping .selectize-input.dropdown-active::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    background: #e6e6e6;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0
+}
+.clients-index .filters .client-grouping .selectize-dropdown {
+    position: absolute;
+    z-index: 10;
+    border: 1px solid #cccccc;
+    background: #ffffff;
+    margin: -1px 0 0 0;
+    border-top: 0 none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 0 0 3px 3px;
+    -webkit-border-radius: 0;
+    border-radius: 0 0 3px 3px
+}
+.clients-index .filters .client-grouping .selectize-dropdown [data-selectable] {
+    cursor: pointer;
+    overflow: hidden
+}
+.clients-index .filters .client-grouping .selectize-dropdown [data-selectable] .highlight {
+    background: rgba(125, 168, 208, 0.2);
+    -moz-border-radius: 1px;
+    -webkit-border-radius: 1px;
+    border-radius: 1px
+}
+.clients-index .filters .client-grouping .selectize-dropdown [data-selectable] {
+    padding: 5px 8px
+}
+.clients-index .filters .client-grouping .selectize-dropdown .active {
+    background-color: #f5fafd;
+    color: #495c68
+}
+.clients-index .filters .client-grouping .selectize-dropdown .active.create {
+    color: #495c68
+}
+.clients-index .filters .client-grouping .selectize-dropdown .create {
+    color: rgba(48, 48, 48, 0.5)
+}
+.clients-index .filters .client-grouping .selectize-dropdown-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 200px
+}
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input,
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input input {
+    cursor: pointer
+}
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input.input-active,
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input.input-active input {
+    cursor: text
+}
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #3381d0 transparent transparent transparent
+}
+.clients-index .filters .client-grouping .selectize-control.single .selectize-input.dropdown-active:after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #3381d0 transparent
+}
+.clients-index .filters .client-grouping .selectize-control.rtl.single .selectize-input:after {
+    left: 15px;
+    right: auto
+}
+.clients-index .filters .client-grouping .selectize-control.rtl .selectize-input>input {
+    margin: 0 4px 0 -2px !important
+}
+.clients-index .filters .client-grouping .selectize-control .selectize-input.disabled {
+    opacity: 0.5;
+    background-color: #fafafa
+}
+.clients-index .filters .client-grouping .selectize-input,
+.clients-index .filters .client-grouping .selectize-input * {
+    cursor: pointer !important
+}
+.clients-index .filters .client-grouping .selectize-input input {
+    color: transparent !important
+}
+.clients-index .filters .client-search {
+    float: right;
+    position: relative;
+    margin-top: -43px;
+    background: white
+}
+.clients-index .clients-panel table {
+    width: 100%
+}
+.clients-index .clients-panel thead th {
+    line-height: 1.5rem
+}
+.clients-index .clients-panel tbody tr {
+    border-bottom: 1px solid #cccccc
+}
+.clients-index .clients-panel tbody td {
+    font-size: 1.4rem;
+    font-weight: 100;
+    padding: 13px 10px 10px 10px
+}
+.clients-index .clients-panel th:nth-child(1),
+.clients-index .clients-panel td:nth-child(1) {
+    width: 25%
+}
+.clients-index .clients-panel th:nth-child(2),
+.clients-index .clients-panel td:nth-child(2) {
+    width: 25%
+}
+.clients-index .clients-panel th:nth-child(3),
+.clients-index .clients-panel td:nth-child(3) {
+    width: 25%
+}
+.clients-index .clients-panel th:nth-child(4),
+.clients-index .clients-panel td:nth-child(4) {
+    width: 25%
+}
+.clients-index .clients-panel th:nth-child(1),
+.clients-index .clients-panel td:nth-child(1) {
+    text-align: left
+}
+.clients-index .clients-panel th:nth-child(2),
+.clients-index .clients-panel td:nth-child(2) {
+    text-align: left
+}
+.clients-index .clients-panel th:nth-child(3),
+.clients-index .clients-panel td:nth-child(3) {
+    text-align: left
+}
+.clients-index .clients-panel th:nth-child(4),
+.clients-index .clients-panel td:nth-child(4) {
+    text-align: right
+}
+.clients-index .clients-panel .clients-table .empty {
+    text-align: center
+}
+.clients-index .body {
+    position: relative
+}
+.clients-index .body .loading {
+    display: none;
+    position: absolute;
+    width: 978px;
+    top: 40px;
+    min-height: 100%;
+    height: 100%
+}
+
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th *,
+.clients-show .accounts-overview .client-details .panel h4 {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-show .client-header,
+.clients-show .profile-information .columns,
+.clients-show .accounts-overview .client-details {
+    overflow: hidden;
+    *zoom: 1
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-show .accounts-overview .client-details .panel {
+    background: #f5f5f5;
+    padding: 15px 20px 18px 20px
+}
+.clients-show .accounts-overview .client-details .panel h4 {
+    color: #686868;
+    margin-bottom: 10px
+}
+.clients-show .accounts-overview .client-details .panel p {
+    font-size: 3rem;
+    color: #333333;
+    font-weight: lighter
+}
+.clients-show .accounts-overview .header .create-account>a,
+.clients-show .accounts-overview .header .create-account>a * {
+    display: inline-block;
+    box-shadow: none;
+    text-shadow: none;
+    text-decoration: none;
+    filter: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    border: none;
+    overflow: visible
+}
+.clients-show .accounts-overview .header .create-account>a {
+    cursor: pointer;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px
+}
+.clients-show .accounts-overview .header .create-account>a {
+    font-size: 1.4rem;
+    line-height: 1.4rem;
+    padding: 13px 30px
+}
+.clients-show .accounts-overview .header .create-account>a {
+    color: #ffffff;
+    background: #3381d0;
+    border: 1px solid #3381d0
+}
+.clients-show .accounts-overview .header .create-account>a:hover {
+    background: #0d3866;
+    border: 1px solid #0d3866
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th *,
+.clients-show .accounts-overview .client-details .panel h4 {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-show .client-header,
+.clients-show .profile-information .columns,
+.clients-show .accounts-overview .client-details {
+    overflow: hidden;
+    *zoom: 1
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-show .accounts-overview .client-details .panel {
+    background: #f5f5f5;
+    padding: 15px 20px 18px 20px
+}
+.clients-show .accounts-overview .client-details .panel h4 {
+    color: #686868;
+    margin-bottom: 10px
+}
+.clients-show .accounts-overview .client-details .panel p {
+    font-size: 3rem;
+    color: #333333;
+    font-weight: lighter
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th *,
+.clients-show .accounts-overview .client-details .panel h4 {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-show .client-header,
+.clients-show .profile-information .columns,
+.clients-show .accounts-overview .client-details {
+    overflow: hidden;
+    *zoom: 1
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-show .accounts-overview .client-details .panel {
+    background: #f5f5f5;
+    padding: 15px 20px 18px 20px
+}
+.clients-show .accounts-overview .client-details .panel h4 {
+    color: #686868;
+    margin-bottom: 10px
+}
+.clients-show .accounts-overview .client-details .panel p {
+    font-size: 3rem;
+    color: #333333;
+    font-weight: lighter
+}
+.clients-show .profile-information .client-information-table thead th a.asc,
+.clients-show .profile-information .employment-and-income-table thead th a.asc,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc,
+.clients-show .profile-information .client-information-table thead th a.desc,
+.clients-show .profile-information .employment-and-income-table thead th a.desc,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc {
+    position: relative
+}
+.clients-show .profile-information .client-information-table thead th a.asc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc:after,
+.clients-show .profile-information .client-information-table thead th a.desc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc:after {
+    display: block;
+    position: absolute;
+    z-index: 5;
+    right: -11px;
+    top: -4px
+}
+.clients-show .profile-information .client-information-table thead th a.asc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc:after {
+    content: '';
+    font-family: 'ModernPictogramsPro' !important;
+    font-size: 120%;
+    line-height: 0.8;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: inherit
+}
+.clients-show .profile-information .client-information-table thead th a.asc.blank:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.blank:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.blank:after {
+    content: '\0020'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.warning:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.warning:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.warning:after {
+    content: '\0021'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.cancel:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.cancel:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.cancel:after {
+    content: '\0022'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.calculator:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.calculator:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.calculator:after {
+    content: '\0023'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.buy:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.buy:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.buy:after {
+    content: '\0024'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.accept:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.accept:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.accept:after {
+    content: '\0025'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.shopping-tote:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.shopping-tote:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.shopping-tote:after {
+    content: '\0026'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.center:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.center:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.center:after {
+    content: '\0027'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.tools:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.tools:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.tools:after {
+    content: '\0028'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.award:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.award:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.award:after {
+    content: '\0029'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.star:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.star:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.star:after {
+    content: '\002A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.plus:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.plus:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.plus:after {
+    content: '\002B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.location:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.location:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.location:after {
+    content: '\002C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc:after {
+    content: '\002D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.settings:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.settings:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.settings:after {
+    content: '\002E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-down:after,
+.clients-show .profile-information .client-information-table thead th a.asc.desc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.desc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.desc:after {
+    content: '\002F'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.mute:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.mute:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.mute:after {
+    content: '\0030'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.volume-low:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.volume-low:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.volume-low:after {
+    content: '\0031'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.volume-high:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.volume-high:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.volume-high:after {
+    content: '\0032'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.table:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.table:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.table:after {
+    content: '\0033'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.view-list:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.view-list:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.view-list:after {
+    content: '\0034'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.view-columns:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.view-columns:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.view-columns:after {
+    content: '\0035'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chart-line:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chart-line:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chart-line:after {
+    content: '\0036'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chart-bar:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chart-bar:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chart-bar:after {
+    content: '\0037'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chart-pie:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chart-pie:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chart-pie:after {
+    content: '\0038'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.alert:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.alert:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.alert:after {
+    content: '\0039'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.cloud-upload:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.cloud-upload:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.cloud-upload:after {
+    content: '\003A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.cloud-download:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.cloud-download:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.cloud-download:after {
+    content: '\003B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-left:after {
+    content: '\003C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.information:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.information:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.information:after {
+    content: '\003D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-right:after {
+    content: '\003E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.question:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.question:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.question:after {
+    content: '\003F'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.at-sign:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.at-sign:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.at-sign:after {
+    content: '\0040'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.camera:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.camera:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.camera:after {
+    content: '\0041'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.book-closed:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.book-closed:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.book-closed:after {
+    content: '\0042'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.disc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.disc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.disc:after {
+    content: '\0043'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.file-download:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.file-download:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.file-download:after {
+    content: '\0044'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.eye:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.eye:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.eye:after {
+    content: '\0045'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.facebook:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.facebook:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.facebook:after {
+    content: '\0046'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.facebook-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.facebook-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.facebook-ko:after {
+    content: '\0047'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.video-camera:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.video-camera:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.video-camera:after {
+    content: '\0048'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.trash-bin:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.trash-bin:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.trash-bin:after {
+    content: '\0049'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.tag:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.tag:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.tag:after {
+    content: '\004A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.file:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.file:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.file:after {
+    content: '\004B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.thumbs-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.thumbs-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.thumbs-down:after {
+    content: '\004C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.ipod:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.ipod:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.ipod:after {
+    content: '\004D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.cell-phone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.cell-phone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.cell-phone:after {
+    content: '\004E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.iphone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.iphone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.iphone:after {
+    content: '\004F'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.play:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.play:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.play:after {
+    content: '\0050'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.ipad:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.ipad:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.ipad:after {
+    content: '\0051'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.refresh:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.refresh:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.refresh:after {
+    content: '\0052'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.projector:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.projector:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.projector:after {
+    content: '\0053'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.twitter-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.twitter-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.twitter-ko:after {
+    content: '\0054'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.desktop:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.desktop:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.desktop:after {
+    content: '\0055'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.file-write:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.file-write:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.file-write:after {
+    content: '\0056'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.windows:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.windows:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.windows:after {
+    content: '\0057'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.close:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.close:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.close:after {
+    content: '\0058'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.megaphone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.megaphone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.megaphone:after {
+    content: '\0059'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.align-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.align-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.align-left:after {
+    content: '\005A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-basic-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-basic-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-basic-down:after {
+    content: '\005B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.image-grid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.image-grid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.image-grid:after {
+    content: '\005C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-basic-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-basic-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-basic-up:after {
+    content: '\005D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.rss:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.rss:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.rss:after {
+    content: '\005E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.desk:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.desk:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.desk:after {
+    content: '\005F'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.antenna:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.antenna:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.antenna:after {
+    content: '\0060'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.newspaper:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.newspaper:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.newspaper:after {
+    content: '\0061'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chat-bubble:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chat-bubble:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chat-bubble:after {
+    content: '\0062'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.telephone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.telephone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.telephone:after {
+    content: '\0063'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.printer:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.printer:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.printer:after {
+    content: '\0064'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.pencil:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.pencil:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.pencil:after {
+    content: '\0065'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.friend-male:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.friend-male:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.friend-male:after {
+    content: '\0066'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.friend-pair:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.friend-pair:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.friend-pair:after {
+    content: '\0067'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.video:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.video:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.video:after {
+    content: '\0068'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.shopping-cart:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.shopping-cart:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.shopping-cart:after {
+    content: '\0069'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.heart:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.heart:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.heart:after {
+    content: '\006A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.friend-female:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.friend-female:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.friend-female:after {
+    content: '\006B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.thumbs-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.thumbs-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.thumbs-up:after {
+    content: '\006C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.envelope:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.envelope:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.envelope:after {
+    content: '\006D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lock:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lock:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lock:after {
+    content: '\006E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.forward:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.forward:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.forward:after {
+    content: '\006F'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.building:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.building:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.building:after {
+    content: '\0070'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lock-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lock-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lock-open:after {
+    content: '\0071'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.pencil:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.pencil:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.pencil:after {
+    content: '\0072'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.search:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.search:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.search:after {
+    content: '\0073'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.twitter:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.twitter:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.twitter:after {
+    content: '\0074'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.resize-small:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.resize-small:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.resize-small:after {
+    content: '\0075'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.resize-large:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.resize-large:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.resize-large:after {
+    content: '\0076'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.globe:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.globe:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.globe:after {
+    content: '\0077'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.close-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.close-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.close-ko:after {
+    content: '\0078'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.zoom-in:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.zoom-in:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.zoom-in:after {
+    content: '\0079'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.zoom-out:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.zoom-out:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.zoom-out:after {
+    content: '\007A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.clock-time:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.clock-time:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.clock-time:after {
+    content: '\007B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.pipe:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.pipe:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.pipe:after {
+    content: '\007C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.clock-alarm:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.clock-alarm:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.clock-alarm:after {
+    content: '\007D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.locate:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.locate:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.locate:after {
+    content: '\007E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.tablet:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.tablet:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.tablet:after {
+    content: '\00A1'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.folder:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.folder:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.folder:after {
+    content: '\00A2'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-touch-switch:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-touch-switch:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-touch-switch:after {
+    content: '\00A3'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.microphone-mute:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.microphone-mute:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.microphone-mute:after {
+    content: '\00A5'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-touch-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-touch-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-touch-left:after {
+    content: '\00A7'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.power:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.power:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.power:after {
+    content: '\00A8'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.resize-move:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.resize-move:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.resize-move:after {
+    content: '\00A9'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lock-solid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lock-solid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lock-solid:after {
+    content: '\00AA'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.skip-back:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.skip-back:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.skip-back:after {
+    content: '\00AB'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.dinosaur:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.dinosaur:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.dinosaur:after {
+    content: '\00AC'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-touch-up-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-touch-up-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-touch-up-down:after {
+    content: '\00AE'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.music-mute:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.music-mute:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.music-mute:after {
+    content: '\00B0'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.microphone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.microphone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.microphone:after {
+    content: '\00B1'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.resize-corner-large:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.resize-corner-large:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.resize-corner-large:after {
+    content: '\00B4'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.ellipsis:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.ellipsis:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.ellipsis:after {
+    content: '\00B5'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-touch-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-touch-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-touch-up:after {
+    content: '\00B6'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-basic-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-basic-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-basic-right:after {
+    content: '\00B7'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.files:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.files:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.files:after {
+    content: '\00BA'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.skip-forward:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.skip-forward:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.skip-forward:after {
+    content: '\00BB'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.clock-stopwatch:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.clock-stopwatch:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.clock-stopwatch:after {
+    content: '\00BF'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.fast-forward:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.fast-forward:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.fast-forward:after {
+    content: '\00C0'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.rewind:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.rewind:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.rewind:after {
+    content: '\00C3'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.crosshair:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.crosshair:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.crosshair:after {
+    content: '\00C4'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.link:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.link:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.link:after {
+    content: '\00C5'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.view-table:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.view-table:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.view-table:after {
+    content: '\00C6'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.clock-history:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.clock-history:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.clock-history:after {
+    content: '\00C7'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.align-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.align-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.align-right:after {
+    content: '\00C9'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-heavy-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-heavy-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-heavy-up:after {
+    content: '\00CC'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-heavy-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-heavy-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-heavy-right:after {
+    content: '\00CE'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-heavy-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-heavy-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-heavy-down:after {
+    content: '\00CF'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.align-center:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.align-center:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.align-center:after {
+    content: '\00D1'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-heavy-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-heavy-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-heavy-left:after {
+    content: '\00D3'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.pause:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.pause:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.pause:after {
+    content: '\00D5'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.attachment:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.attachment:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.attachment:after {
+    content: '\00D6'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.view-grid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.view-grid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.view-grid:after {
+    content: '\00D8'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-light-skip-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-light-skip-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-light-skip-right:after {
+    content: '\00DA'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.bl-light-skip-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.bl-light-skip-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.bl-light-skip-left:after {
+    content: '\00DB'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.book-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.book-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.book-open:after {
+    content: '\00DC'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-touch-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-touch-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-touch-down:after {
+    content: '\00DF'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.image-medium:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.image-medium:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.image-medium:after {
+    content: '\00E0'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.cloud:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.cloud:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.cloud:after {
+    content: '\00E1'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.wifi:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.wifi:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.wifi:after {
+    content: '\00E2'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.apple:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.apple:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.apple:after {
+    content: '\00E3'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.delete:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.delete:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.delete:after {
+    content: '\00E4'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.calendar-grid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.calendar-grid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.calendar-grid:after {
+    content: '\00E5'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.laptop:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.laptop:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.laptop:after {
+    content: '\00E6'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.calendar-date:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.calendar-date:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.calendar-date:after {
+    content: '\00E7'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.calendar-list:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.calendar-list:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.calendar-list:after {
+    content: '\00E8'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.calendar:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.calendar:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.calendar:after {
+    content: '\00E9'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.note-list:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.note-list:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.note-list:after {
+    content: '\00EA'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.notepad-closed:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.notepad-closed:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.notepad-closed:after {
+    content: '\00EB'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.moleskine:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.moleskine:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.moleskine:after {
+    content: '\00EC'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.notepad-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.notepad-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.notepad-open:after {
+    content: '\00ED'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.notebook-school:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.notebook-school:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.notebook-school:after {
+    content: '\00EE'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.notebook:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.notebook:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.notebook:after {
+    content: '\00EF'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.notebook-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.notebook-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.notebook-open:after {
+    content: '\00F1'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.datebook:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.datebook:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.datebook:after {
+    content: '\00F2'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.tags:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.tags:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.tags:after {
+    content: '\00F3'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.clock-speed:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.clock-speed:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.clock-speed:after {
+    content: '\00F4'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lightning:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lightning:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lightning:after {
+    content: '\00F5'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.flag:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.flag:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.flag:after {
+    content: '\00F6'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.band-aid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.band-aid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.band-aid:after {
+    content: '\00F7'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.bookmark:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.bookmark:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.bookmark:after {
+    content: '\00F8'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chat-bubbles:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chat-bubbles:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chat-bubbles:after {
+    content: '\00F9'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.font:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.font:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.font:after {
+    content: '\00FA'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chat-typing:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chat-typing:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chat-typing:after {
+    content: '\00FB'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.pushpin:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.pushpin:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.pushpin:after {
+    content: '\00FC'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.glasses:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.glasses:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.glasses:after {
+    content: '\00FF'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.chair:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.chair:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.chair:after {
+    content: '\0152'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.umbrella:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.umbrella:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.umbrella:after {
+    content: '\0153'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.cut:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.cut:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.cut:after {
+    content: '\0178'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.airplay:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.airplay:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.airplay:after {
+    content: '\0192'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.shipping:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.shipping:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.shipping:after {
+    content: '\03C0'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.dribbble:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.dribbble:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.dribbble:after {
+    content: '\2013'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-light-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-light-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-light-right:after {
+    content: '\2014'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-light-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-light-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-light-left:after {
+    content: '\2018'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-light-close:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-light-close:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-light-close:after {
+    content: '\2019'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-basic-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-basic-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-basic-left:after {
+    content: '\201A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-light-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-light-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-light-up:after {
+    content: '\201C'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-light-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-light-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-light-down:after {
+    content: '\201D'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-skip-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-skip-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-skip-right:after {
+    content: '\201E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.music:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.music:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.music:after {
+    content: '\2020'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.image-large:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.image-large:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.image-large:after {
+    content: '\2021'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-touch-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-touch-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-touch-right:after {
+    content: '\2022'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.record:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.record:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.record:after {
+    content: '\2026'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-skip-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-skip-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-skip-left:after {
+    content: '\2030'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-right:after {
+    content: '\2039'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-left:after {
+    content: '\203A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.stop:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.stop:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.stop:after {
+    content: '\2044'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-up:after {
+    content: '\20AC'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.resize-corner-small:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.resize-corner-small:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.resize-corner-small:after {
+    content: '\2122'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.photos:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.photos:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.photos:after {
+    content: '\2126'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.photo:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.photo:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.photo:after {
+    content: '\2202'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-top:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-top:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-top:after {
+    content: '\2206'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.fire:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.fire:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.fire:after {
+    content: '\220F'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.starburst:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.starburst:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.starburst:after {
+    content: '\2211'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.clover:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.clover:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.clover:after {
+    content: '\221A'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.accept-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.accept-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.accept-ko:after {
+    content: '\221E'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.key:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.key:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.key:after {
+    content: '\222B'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.arrow-bottom:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.arrow-bottom:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.arrow-bottom:after {
+    content: '\2248'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.replay:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.replay:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.replay:after {
+    content: '\2260'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.columns:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.columns:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.columns:after {
+    content: '\2264'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.pencil:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.pencil:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.pencil:after {
+    content: '\2265'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.shopping-basket:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.shopping-basket:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.shopping-basket:after {
+    content: '\25CA'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.block:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.block:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.block:after {
+    content: '\E000'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-down:after {
+    content: '\FB01'
+}
+.clients-show .profile-information .client-information-table thead th a.asc.lb-med-close:after,
+.clients-show .profile-information .employment-and-income-table thead th a.asc.lb-med-close:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.asc.lb-med-close:after {
+    content: '\FB02'
+}
+.clients-show .profile-information .client-information-table thead th a.desc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc:after {
+    content: '';
+    font-family: 'ModernPictogramsPro' !important;
+    font-size: 120%;
+    line-height: 0.8;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: inherit
+}
+.clients-show .profile-information .client-information-table thead th a.desc.blank:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.blank:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.blank:after {
+    content: '\0020'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.warning:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.warning:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.warning:after {
+    content: '\0021'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.cancel:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.cancel:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.cancel:after {
+    content: '\0022'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.calculator:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.calculator:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.calculator:after {
+    content: '\0023'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.buy:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.buy:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.buy:after {
+    content: '\0024'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.accept:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.accept:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.accept:after {
+    content: '\0025'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.shopping-tote:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.shopping-tote:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.shopping-tote:after {
+    content: '\0026'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.center:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.center:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.center:after {
+    content: '\0027'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.tools:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.tools:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.tools:after {
+    content: '\0028'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.award:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.award:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.award:after {
+    content: '\0029'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.star:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.star:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.star:after {
+    content: '\002A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.plus:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.plus:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.plus:after {
+    content: '\002B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.location:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.location:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.location:after {
+    content: '\002C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-up:after,
+.clients-show .profile-information .client-information-table thead th a.desc.asc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.asc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.asc:after {
+    content: '\002D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.settings:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.settings:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.settings:after {
+    content: '\002E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc:after {
+    content: '\002F'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.mute:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.mute:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.mute:after {
+    content: '\0030'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.volume-low:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.volume-low:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.volume-low:after {
+    content: '\0031'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.volume-high:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.volume-high:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.volume-high:after {
+    content: '\0032'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.table:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.table:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.table:after {
+    content: '\0033'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.view-list:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.view-list:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.view-list:after {
+    content: '\0034'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.view-columns:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.view-columns:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.view-columns:after {
+    content: '\0035'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chart-line:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chart-line:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chart-line:after {
+    content: '\0036'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chart-bar:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chart-bar:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chart-bar:after {
+    content: '\0037'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chart-pie:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chart-pie:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chart-pie:after {
+    content: '\0038'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.alert:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.alert:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.alert:after {
+    content: '\0039'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.cloud-upload:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.cloud-upload:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.cloud-upload:after {
+    content: '\003A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.cloud-download:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.cloud-download:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.cloud-download:after {
+    content: '\003B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-left:after {
+    content: '\003C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.information:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.information:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.information:after {
+    content: '\003D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-right:after {
+    content: '\003E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.question:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.question:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.question:after {
+    content: '\003F'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.at-sign:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.at-sign:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.at-sign:after {
+    content: '\0040'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.camera:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.camera:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.camera:after {
+    content: '\0041'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.book-closed:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.book-closed:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.book-closed:after {
+    content: '\0042'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.disc:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.disc:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.disc:after {
+    content: '\0043'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.file-download:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.file-download:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.file-download:after {
+    content: '\0044'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.eye:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.eye:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.eye:after {
+    content: '\0045'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.facebook:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.facebook:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.facebook:after {
+    content: '\0046'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.facebook-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.facebook-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.facebook-ko:after {
+    content: '\0047'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.video-camera:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.video-camera:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.video-camera:after {
+    content: '\0048'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.trash-bin:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.trash-bin:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.trash-bin:after {
+    content: '\0049'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.tag:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.tag:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.tag:after {
+    content: '\004A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.file:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.file:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.file:after {
+    content: '\004B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.thumbs-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.thumbs-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.thumbs-down:after {
+    content: '\004C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.ipod:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.ipod:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.ipod:after {
+    content: '\004D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.cell-phone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.cell-phone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.cell-phone:after {
+    content: '\004E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.iphone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.iphone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.iphone:after {
+    content: '\004F'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.play:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.play:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.play:after {
+    content: '\0050'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.ipad:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.ipad:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.ipad:after {
+    content: '\0051'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.refresh:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.refresh:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.refresh:after {
+    content: '\0052'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.projector:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.projector:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.projector:after {
+    content: '\0053'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.twitter-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.twitter-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.twitter-ko:after {
+    content: '\0054'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.desktop:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.desktop:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.desktop:after {
+    content: '\0055'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.file-write:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.file-write:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.file-write:after {
+    content: '\0056'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.windows:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.windows:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.windows:after {
+    content: '\0057'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.close:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.close:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.close:after {
+    content: '\0058'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.megaphone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.megaphone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.megaphone:after {
+    content: '\0059'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.align-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.align-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.align-left:after {
+    content: '\005A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-basic-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-basic-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-basic-down:after {
+    content: '\005B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.image-grid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.image-grid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.image-grid:after {
+    content: '\005C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-basic-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-basic-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-basic-up:after {
+    content: '\005D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.rss:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.rss:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.rss:after {
+    content: '\005E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.desk:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.desk:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.desk:after {
+    content: '\005F'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.antenna:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.antenna:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.antenna:after {
+    content: '\0060'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.newspaper:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.newspaper:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.newspaper:after {
+    content: '\0061'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chat-bubble:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chat-bubble:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chat-bubble:after {
+    content: '\0062'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.telephone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.telephone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.telephone:after {
+    content: '\0063'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.printer:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.printer:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.printer:after {
+    content: '\0064'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.pencil:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.pencil:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.pencil:after {
+    content: '\0065'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.friend-male:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.friend-male:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.friend-male:after {
+    content: '\0066'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.friend-pair:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.friend-pair:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.friend-pair:after {
+    content: '\0067'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.video:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.video:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.video:after {
+    content: '\0068'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.shopping-cart:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.shopping-cart:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.shopping-cart:after {
+    content: '\0069'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.heart:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.heart:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.heart:after {
+    content: '\006A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.friend-female:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.friend-female:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.friend-female:after {
+    content: '\006B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.thumbs-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.thumbs-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.thumbs-up:after {
+    content: '\006C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.envelope:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.envelope:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.envelope:after {
+    content: '\006D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lock:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lock:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lock:after {
+    content: '\006E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.forward:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.forward:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.forward:after {
+    content: '\006F'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.building:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.building:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.building:after {
+    content: '\0070'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lock-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lock-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lock-open:after {
+    content: '\0071'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.pencil:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.pencil:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.pencil:after {
+    content: '\0072'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.search:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.search:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.search:after {
+    content: '\0073'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.twitter:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.twitter:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.twitter:after {
+    content: '\0074'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.resize-small:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.resize-small:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.resize-small:after {
+    content: '\0075'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.resize-large:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.resize-large:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.resize-large:after {
+    content: '\0076'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.globe:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.globe:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.globe:after {
+    content: '\0077'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.close-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.close-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.close-ko:after {
+    content: '\0078'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.zoom-in:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.zoom-in:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.zoom-in:after {
+    content: '\0079'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.zoom-out:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.zoom-out:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.zoom-out:after {
+    content: '\007A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.clock-time:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.clock-time:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.clock-time:after {
+    content: '\007B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.pipe:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.pipe:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.pipe:after {
+    content: '\007C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.clock-alarm:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.clock-alarm:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.clock-alarm:after {
+    content: '\007D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.locate:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.locate:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.locate:after {
+    content: '\007E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.tablet:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.tablet:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.tablet:after {
+    content: '\00A1'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.folder:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.folder:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.folder:after {
+    content: '\00A2'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-touch-switch:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-touch-switch:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-touch-switch:after {
+    content: '\00A3'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.microphone-mute:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.microphone-mute:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.microphone-mute:after {
+    content: '\00A5'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-touch-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-touch-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-touch-left:after {
+    content: '\00A7'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.power:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.power:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.power:after {
+    content: '\00A8'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.resize-move:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.resize-move:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.resize-move:after {
+    content: '\00A9'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lock-solid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lock-solid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lock-solid:after {
+    content: '\00AA'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.skip-back:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.skip-back:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.skip-back:after {
+    content: '\00AB'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.dinosaur:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.dinosaur:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.dinosaur:after {
+    content: '\00AC'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-touch-up-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-touch-up-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-touch-up-down:after {
+    content: '\00AE'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.music-mute:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.music-mute:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.music-mute:after {
+    content: '\00B0'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.microphone:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.microphone:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.microphone:after {
+    content: '\00B1'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.resize-corner-large:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.resize-corner-large:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.resize-corner-large:after {
+    content: '\00B4'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.ellipsis:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.ellipsis:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.ellipsis:after {
+    content: '\00B5'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-touch-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-touch-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-touch-up:after {
+    content: '\00B6'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-basic-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-basic-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-basic-right:after {
+    content: '\00B7'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.files:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.files:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.files:after {
+    content: '\00BA'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.skip-forward:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.skip-forward:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.skip-forward:after {
+    content: '\00BB'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.clock-stopwatch:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.clock-stopwatch:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.clock-stopwatch:after {
+    content: '\00BF'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.fast-forward:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.fast-forward:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.fast-forward:after {
+    content: '\00C0'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.rewind:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.rewind:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.rewind:after {
+    content: '\00C3'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.crosshair:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.crosshair:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.crosshair:after {
+    content: '\00C4'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.link:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.link:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.link:after {
+    content: '\00C5'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.view-table:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.view-table:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.view-table:after {
+    content: '\00C6'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.clock-history:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.clock-history:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.clock-history:after {
+    content: '\00C7'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.align-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.align-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.align-right:after {
+    content: '\00C9'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-heavy-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-heavy-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-heavy-up:after {
+    content: '\00CC'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-heavy-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-heavy-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-heavy-right:after {
+    content: '\00CE'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-heavy-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-heavy-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-heavy-down:after {
+    content: '\00CF'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.align-center:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.align-center:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.align-center:after {
+    content: '\00D1'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-heavy-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-heavy-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-heavy-left:after {
+    content: '\00D3'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.pause:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.pause:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.pause:after {
+    content: '\00D5'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.attachment:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.attachment:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.attachment:after {
+    content: '\00D6'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.view-grid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.view-grid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.view-grid:after {
+    content: '\00D8'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-light-skip-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-light-skip-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-light-skip-right:after {
+    content: '\00DA'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.bl-light-skip-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.bl-light-skip-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.bl-light-skip-left:after {
+    content: '\00DB'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.book-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.book-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.book-open:after {
+    content: '\00DC'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-touch-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-touch-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-touch-down:after {
+    content: '\00DF'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.image-medium:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.image-medium:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.image-medium:after {
+    content: '\00E0'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.cloud:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.cloud:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.cloud:after {
+    content: '\00E1'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.wifi:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.wifi:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.wifi:after {
+    content: '\00E2'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.apple:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.apple:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.apple:after {
+    content: '\00E3'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.delete:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.delete:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.delete:after {
+    content: '\00E4'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.calendar-grid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.calendar-grid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.calendar-grid:after {
+    content: '\00E5'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.laptop:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.laptop:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.laptop:after {
+    content: '\00E6'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.calendar-date:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.calendar-date:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.calendar-date:after {
+    content: '\00E7'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.calendar-list:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.calendar-list:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.calendar-list:after {
+    content: '\00E8'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.calendar:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.calendar:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.calendar:after {
+    content: '\00E9'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.note-list:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.note-list:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.note-list:after {
+    content: '\00EA'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.notepad-closed:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.notepad-closed:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.notepad-closed:after {
+    content: '\00EB'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.moleskine:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.moleskine:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.moleskine:after {
+    content: '\00EC'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.notepad-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.notepad-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.notepad-open:after {
+    content: '\00ED'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.notebook-school:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.notebook-school:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.notebook-school:after {
+    content: '\00EE'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.notebook:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.notebook:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.notebook:after {
+    content: '\00EF'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.notebook-open:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.notebook-open:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.notebook-open:after {
+    content: '\00F1'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.datebook:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.datebook:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.datebook:after {
+    content: '\00F2'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.tags:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.tags:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.tags:after {
+    content: '\00F3'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.clock-speed:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.clock-speed:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.clock-speed:after {
+    content: '\00F4'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lightning:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lightning:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lightning:after {
+    content: '\00F5'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.flag:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.flag:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.flag:after {
+    content: '\00F6'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.band-aid:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.band-aid:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.band-aid:after {
+    content: '\00F7'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.bookmark:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.bookmark:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.bookmark:after {
+    content: '\00F8'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chat-bubbles:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chat-bubbles:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chat-bubbles:after {
+    content: '\00F9'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.font:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.font:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.font:after {
+    content: '\00FA'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chat-typing:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chat-typing:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chat-typing:after {
+    content: '\00FB'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.pushpin:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.pushpin:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.pushpin:after {
+    content: '\00FC'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.glasses:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.glasses:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.glasses:after {
+    content: '\00FF'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.chair:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.chair:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.chair:after {
+    content: '\0152'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.umbrella:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.umbrella:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.umbrella:after {
+    content: '\0153'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.cut:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.cut:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.cut:after {
+    content: '\0178'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.airplay:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.airplay:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.airplay:after {
+    content: '\0192'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.shipping:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.shipping:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.shipping:after {
+    content: '\03C0'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.dribbble:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.dribbble:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.dribbble:after {
+    content: '\2013'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-light-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-light-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-light-right:after {
+    content: '\2014'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-light-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-light-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-light-left:after {
+    content: '\2018'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-light-close:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-light-close:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-light-close:after {
+    content: '\2019'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-basic-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-basic-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-basic-left:after {
+    content: '\201A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-light-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-light-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-light-up:after {
+    content: '\201C'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-light-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-light-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-light-down:after {
+    content: '\201D'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-skip-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-skip-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-skip-right:after {
+    content: '\201E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.music:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.music:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.music:after {
+    content: '\2020'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.image-large:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.image-large:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.image-large:after {
+    content: '\2021'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-touch-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-touch-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-touch-right:after {
+    content: '\2022'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.record:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.record:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.record:after {
+    content: '\2026'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-skip-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-skip-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-skip-left:after {
+    content: '\2030'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-right:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-right:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-right:after {
+    content: '\2039'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-left:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-left:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-left:after {
+    content: '\203A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.stop:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.stop:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.stop:after {
+    content: '\2044'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-up:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-up:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-up:after {
+    content: '\20AC'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.resize-corner-small:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.resize-corner-small:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.resize-corner-small:after {
+    content: '\2122'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.photos:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.photos:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.photos:after {
+    content: '\2126'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.photo:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.photo:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.photo:after {
+    content: '\2202'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-top:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-top:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-top:after {
+    content: '\2206'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.fire:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.fire:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.fire:after {
+    content: '\220F'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.starburst:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.starburst:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.starburst:after {
+    content: '\2211'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.clover:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.clover:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.clover:after {
+    content: '\221A'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.accept-ko:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.accept-ko:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.accept-ko:after {
+    content: '\221E'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.key:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.key:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.key:after {
+    content: '\222B'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.arrow-bottom:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.arrow-bottom:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.arrow-bottom:after {
+    content: '\2248'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.replay:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.replay:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.replay:after {
+    content: '\2260'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.columns:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.columns:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.columns:after {
+    content: '\2264'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.pencil:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.pencil:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.pencil:after {
+    content: '\2265'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.shopping-basket:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.shopping-basket:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.shopping-basket:after {
+    content: '\25CA'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.block:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.block:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.block:after {
+    content: '\E000'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-down:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-down:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-down:after {
+    content: '\FB01'
+}
+.clients-show .profile-information .client-information-table thead th a.desc.lb-med-close:after,
+.clients-show .profile-information .employment-and-income-table thead th a.desc.lb-med-close:after,
+.clients-show .accounts-overview .client-accounts-table thead th a.desc.lb-med-close:after {
+    content: '\FB02'
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th *,
+.clients-show .accounts-overview .client-details .panel h4 {
+    letter-spacing: .4px;
+    font-size: 1.1rem;
+    text-transform: uppercase
+}
+.clients-show .client-header,
+.clients-show .profile-information .columns,
+.clients-show .accounts-overview .client-details {
+    overflow: hidden;
+    *zoom: 1
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th {
+    color: #686868;
+    padding: 11px 11px 6px 11px;
+    margin-bottom: 15px
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th,
+.clients-show .accounts-overview .client-accounts-table thead th,
+.clients-show .profile-information .client-information-table thead th *,
+.clients-show .profile-information .employment-and-income-table thead th *,
+.clients-show .accounts-overview .client-accounts-table thead th * {
+    font-weight: 100;
+    background: #f5f5f5
+}
+.clients-show .accounts-overview .client-details .panel {
+    background: #f5f5f5;
+    padding: 15px 20px 18px 20px
+}
+.clients-show .accounts-overview .client-details .panel h4 {
+    color: #686868;
+    margin-bottom: 10px
+}
+.clients-show .accounts-overview .client-details .panel p {
+    font-size: 3rem;
+    color: #333333;
+    font-weight: lighter
+}
+.clients-show .accounts-overview .header .create-account>a,
+.clients-show .accounts-overview .header .create-account>a * {
+    display: inline-block;
+    box-shadow: none;
+    text-shadow: none;
+    text-decoration: none;
+    filter: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    border: none;
+    overflow: visible
+}
+.clients-show .accounts-overview .header .create-account>a {
+    cursor: pointer;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px
+}
+.clients-show .accounts-overview .header .create-account>a {
+    font-size: 1.4rem;
+    line-height: 1.4rem;
+    padding: 13px 30px
+}
+.clients-show .accounts-overview .header .create-account>a {
+    color: #ffffff;
+    background: #3381d0;
+    border: 1px solid #3381d0
+}
+.clients-show .accounts-overview .header .create-account>a:hover {
+    background: #0d3866;
+    border: 1px solid #0d3866
+}
+.clients-show .client-header {
+    margin-top: 5px
+}
+.clients-show .client-header .return-link {
+    margin: 20px 0;
+    color: #3381d0
+}
+.clients-show .profile-information .columns>div:nth-child(1) {
+    width: 459px
+}
+.clients-show .profile-information .columns>div:nth-child(2) {
+    width: 459px
+}
+.clients-show .profile-information .columns>div {
+    float: left
+}
+.clients-show .profile-information .columns>div:not(:last-child) {
+    margin-right: 60px
+}
+.clients-show .profile-information .client-information-table table,
+.clients-show .profile-information .employment-and-income-table table {
+    width: 459px
+}
+.clients-show .profile-information .client-information-table thead th,
+.clients-show .profile-information .employment-and-income-table thead th {
+    line-height: 1.5rem
+}
+.clients-show .profile-information .client-information-table tbody tr,
+.clients-show .profile-information .employment-and-income-table tbody tr {
+    border-bottom: 1px solid #cccccc
+}
+.clients-show .profile-information .client-information-table tbody td,
+.clients-show .profile-information .employment-and-income-table tbody td {
+    font-size: 1.4rem;
+    font-weight: 100;
+    padding: 13px 10px 10px 10px
+}
+.clients-show .profile-information .client-information-table th:nth-child(1),
+.clients-show .profile-information .client-information-table td:nth-child(1),
+.clients-show .profile-information .employment-and-income-table th:nth-child(1),
+.clients-show .profile-information .employment-and-income-table td:nth-child(1) {
+    width: 40%
+}
+.clients-show .profile-information .client-information-table th:nth-child(2),
+.clients-show .profile-information .client-information-table td:nth-child(2),
+.clients-show .profile-information .employment-and-income-table th:nth-child(2),
+.clients-show .profile-information .employment-and-income-table td:nth-child(2) {
+    width: 60%
+}
+.clients-show .profile-information .client-information-table th:nth-child(1),
+.clients-show .profile-information .client-information-table td:nth-child(1),
+.clients-show .profile-information .employment-and-income-table th:nth-child(1),
+.clients-show .profile-information .employment-and-income-table td:nth-child(1) {
+    text-align: left
+}
+.clients-show .profile-information .client-information-table th:nth-child(2),
+.clients-show .profile-information .client-information-table td:nth-child(2),
+.clients-show .profile-information .employment-and-income-table th:nth-child(2),
+.clients-show .profile-information .employment-and-income-table td:nth-child(2) {
+    text-align: right
+}
+.clients-show .accounts-overview {
+    margin-bottom: 20px
+}
+.clients-show .accounts-overview .header .create-account {
+    float: right
+}
+.clients-show .accounts-overview .client-details {
+    margin-bottom: 20px
+}
+.clients-show .accounts-overview .client-details>div:nth-child(1) {
+    width: 312.66667px
+}
+.clients-show .accounts-overview .client-details>div:nth-child(2) {
+    width: 312.66667px
+}
+.clients-show .accounts-overview .client-details>div:nth-child(3) {
+    width: 312.66667px
+}
+.clients-show .accounts-overview .client-details>div {
+    float: left
+}
+.clients-show .accounts-overview .client-details>div:not(:last-child) {
+    margin-right: 20px
+}
+.clients-show .accounts-overview .client-details .panel span {
+    margin-bottom: -4px;
+    display: inline-block;
+    padding-right: 20px
+}
+.clients-show .accounts-overview .client-accounts-table table {
+    width: 100%
+}
+.clients-show .accounts-overview .client-accounts-table thead th {
+    line-height: 1.5rem
+}
+.clients-show .accounts-overview .client-accounts-table tbody tr {
+    border-bottom: 1px solid #cccccc
+}
+.clients-show .accounts-overview .client-accounts-table tbody td {
+    font-size: 1.4rem;
+    font-weight: 100;
+    padding: 13px 10px 10px 10px
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(1),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(1) {
+    width: 25%
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(2),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(2) {
+    width: 10%
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(3),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(3) {
+    width: 30%
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(4),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(4) {
+    width: 10%
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(5),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(5) {
+    width: 25%
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(1),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(1) {
+    text-align: left
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(2),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(2) {
+    text-align: left
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(3),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(3) {
+    text-align: right
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(4),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(4) {
+    text-align: left
+}
+.clients-show .accounts-overview .client-accounts-table th:nth-child(5),
+.clients-show .accounts-overview .client-accounts-table td:nth-child(5) {
+    text-align: left
+}
+.clients-show .accounts-overview .client-accounts-table td.empty {
+    text-align: center
+}
+.clients-show .accounts-overview .client-accounts-table .on-track {
+    color: #009100
+}
+.clients-show .accounts-overview .client-accounts-table .off-track {
+    color: #e05923
+}

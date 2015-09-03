@@ -49,6 +49,7 @@ urlpatterns = patterns('',
     url(r'^advisor/agreements', AdvisorAgreements.as_view(), name='advisor:agreements'),
     url(r'^advisor/support', AdvisorSupport.as_view(), name='advisor:support'),
     url(r'^advisor/summary', AdvisorSummary.as_view(), name='advisor:summary'),
+    url(r'^advisor/client/(?P<pk>\d+)$', AdvisorClientDetails.as_view(),),
 
 
     # Client views
