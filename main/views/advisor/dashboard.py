@@ -155,3 +155,8 @@ class AdvisorAgreements(TemplateView, AdvisorView):
 
 class AdvisorSupport(TemplateView, AdvisorView):
     template_name = "advisor/support.html"
+
+
+class AdvisorSupport(CreateView, AdvisorView):
+    template_name = "advisor/create-household.html"
+
