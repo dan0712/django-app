@@ -135,7 +135,7 @@ class AdvisorClients(TemplateView, AdvisorView):
 
         clients = []
 
-        for client in pre_clients.all():
+        for client in set(pre_clients.all()):
             relationship = "Primary" if client.advisor == self.advisor else "Secondary"
             clients.append([client.pk, client.full_name, client.total_balance, client.email, relationship])
 
@@ -424,7 +424,7 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
             pre_groups = pre_groups.filter(sq)
 
         groups = []
-        for group in pre_groups.all():
+        for group in set(pre_groups.all()):
             relationship = "Primary" if group.advisor == self.advisor else "Secondary"
             first_account = group.accounts.first()
             groups.append([group.pk, group, group.name, first_account.account_type_name, relationship,
