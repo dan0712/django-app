@@ -1,0 +1,159 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% block nav_clients %} depressed {% endblock %}
+{% block body_class %}composites new composites-edit{% endblock %}
+{% block main_content %}
+
+<div class="return-link">
+    <span class="modern-icon">&#8250;</span>
+    <a href="/advisor/summary">Back to Dashboard</a>
+</div>
+
+
+<form accept-charset="UTF-8" action="{% if object %}/composites/{{ object.pk }}/edit{% else %}/composites/new{% endif %}" class="simple_form new_composite_creation" id="new_composite_creation" method="post" novalidate="novalidate">
+    <div style="display:none">
+        <input name="advisor" type="hidden" value="{{ profile.pk }}" />
+        {% csrf_token %}
+    </div>
+
+    <div class="composite-icon">
+        {% with object as household %}
+            {% include 'advisor/household-icon.html' %}
+        {% endwith %}
+
+    </div>
+
+    <h1 class="active
+        {% if object  and not form.name.errors %}
+            composite-name">
+            {{ object.name }}
+        {% else %}
+            ">
+            <div class="input string optional composite_creation_name"><input class="string optional" id="composite_creation_name" name="name" placeholder="Enter a name" type="text" value="{{ name }}"/><span class="error">{{ form.name.errors }}</span></div>
+        {% endif %}
+    </h1>
+    {% if object %}
+    <h1 id="edit_composite_name" class="">
+        <div class="input string required composite_name">
+            <input class="string required" id="composite_name" name="name" placeholder="Enter a name" type="text" value="{{ object.name }}" />
+        </div>
+    </h1>
+    {% endif %}
+
+    <div class="client-search">
+      <h2>Search for one client at a time</h2>
+      <a class="finish {% if not object %}disabled{% endif %}" href="/composites/{{ object.pk }}">Finish</a>
+      <div class="typing-select"> <!-- required wrapper -->
+    <select name="typing-select" id="clientDropdown" style="visibility: hidden;">
+        <option value="">Search for a client</option>
+        {%  for client in profile.clients.all %}
+            <option value="{{ client.pk }}" {% if client_id == client.pk %}selected="selected"{% endif %}>{{ client.full_name }}</option>
+        {% endfor %}
+
+    </select>
+</div>
+
+    </div>
+
+    <div data-url="" id="clientAccounts">
+</div>
+
+
+<div data-url="" id="clientAccounts">
+    {% if accounts.count > 0 %}
+    <h2>Select accounts to add to the household</h2>
+    <div class="found-accounts">
+        <table>
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Balance</th>
+                    <th>Owners</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for account in accounts.all %}
+            <tr>
+                <td>
+                    <input class="check_boxes optional" id="composite_creation_account_group_ids" name="accounts" type="checkbox" value="{{ account.pk }}">{{ account.account_type_name }}
+                </td>
+                <td>${{ account.total_balance }}</td>
+                <td>{{ account.owners }}</td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <input name="commit" type="submit" value="Add accounts">
+    {% else %}
+        <h2>No accounts</h2>
+    {% endif %}
+</div>
+
+</form>
+<div class="composite-accounts">
+    <h2>
+        Accounts added to household
+    </h2>
+
+    <div class="current-accounts">
+        <table>
+            <thead>
+            <tr>
+                <th>Account</th>
+                <th>Balance</th>
+                <th>Owners</th>
+                <th>Remove Account</th>
+            </tr>
+            <tbody>
+            {% if not object %}
+                <tr>
+                    <td colspan="4">No accounts added</td>
+                </tr>
+            {% else %}
+                {% for ob_account in object.accounts.all %}
+                    <tr>
+                <td>{{ ob_account.account_type_name }}</td>
+                <td>${{ ob_account.total_balance }}</td>
+                <td>{{ ob_account.owners }}</td>
+                <td><span data-toggle="modal" data-target="#addedAccountGroup{{ ob_account.pk }}">×</span></td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% for ob_account in object.accounts.all %}
+
+
+        <div class="modal" id="addedAccountGroup{{ ob_account.pk }}">
+            <div class="modal-dialog">
+
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <div class="close" data-dismiss="modal">×</div>
+                        <h1 class="modal-title">Remove account</h1>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to remove the account
+                            <strong>{{ ob_account.account_type_name }} (${{ ob_account.total_balance }})</strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+
+                        <a class="submit" data-lalo="delete" data-method="delete" href="/composites/{{ ob_account.pk }}/account_groups/{{ object.pk }}" rel="nofollow">Remove</a>
+                        <button class="cancel" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+
+</div>
+    <script>
+            $('#edit_composite_name #composite_name').bind('blur', (function(){$('form').submit()}))
+    </script>
+{% endblock %}

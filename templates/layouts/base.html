@@ -15,6 +15,7 @@
     <link data-turbolinks-track="true" href="{{ STATIC_URL }}css/jquery-ui.min.css" media="all" rel="stylesheet" />
     <script data-turbolinks-track="true" src="{% block main_js %}{{ STATIC_URL }}js/app.js{% endblock %}"></script>
     <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/jquery-ui.min.js"></script>
+{{ csrf_meta }}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 <script>

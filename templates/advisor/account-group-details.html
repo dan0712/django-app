@@ -1,0 +1,150 @@
+ {% extends "layouts/base.html" %}
+ {% load i18n %}
+ {% block nav_clients %}depressed {% endblock %}
+ {% block body_class %}composites show{% endblock %}
+ {% block main_content %}
+ {% include "advisor/firm-logo.html" %}
+<div class="composites-show">
+
+    <div class="composite-header">
+    <div class="return-link">
+        <span class="modern-icon">&#8250;</span>
+        <a href="/advisor/summary">Back to Dashboard</a>
+    </div>
+
+    <div class="composite-name">
+
+        <div class="composite-icon">
+         {% with object as household %}
+
+             {% include "advisor/household-icon.html" %}
+         {% endwith %}
+        </div>
+        <h1>{{ object.name }}</h1>
+    </div>
+    <nav class="nav-bar composite-subnav">
+        <div>
+            <ul>
+                <li class="depressed">
+                    <a href="/composites/{{ object.pk }}">Overview</a>
+                </li>
+                <li class="">
+                    <a href="/composites/{{ object.pk }}/clients">Clients</a>
+                </li>
+                <li class="">
+                    <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
+                </li>
+            </ul>
+
+              <div class="edit-composite">
+                  <a href="/composites/{{ object.pk }}/edit">Edit Household</a>
+              </div>
+        </div>
+    </nav>
+</div>
+
+
+    <div class="composite-overview">
+        <div class="account-group-details">
+            <div class="panel">
+                <h4>Total Balance</h4>
+                <p>${{ object.total_balance }}</p>
+            </div>
+            <div class="panel">
+                <h4>Total Returns</h4>
+                <p>{{ object.total_returns }}%</p>
+            </div>
+            <div class="panel">
+                <h4>Total Allocation</h4>
+                <p>{{ object.stocks_percentage }}% <span>Stocks</span> {{ object.bonds_percentage }}% <span>Bonds</span></p>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<div class="composite-account-groups">
+   {% for account in object.accounts.all %}
+   <div class="composite-account-group-panel">
+      <div class="account-group-info">
+         <div class="account-group-name">
+            <h2>{{ account.account_type_name }}
+               <span><a href="/composites/{{ object.pk }}/clients">{{ account.primary_owner.full_name }}</a></span>
+            </h2>
+         </div>
+         <div class="pricing-plan">
+            Pricing Plan: 55
+            bps <a class="mpicon pencil" data-remote="true" href="/account_groups/52195/fee_override/new"></a>
+         </div>
+         <div class="impersonation-link">
+            <a data-method="post" data-track-advisor-id="416" data-track-event="ElementClicked" data-track-location="CompositeDetails" data-track-module="Dashboard" data-track-name="LogIn" data-track-type="Button" href="/account_groups/52195/impersonation" rel="nofollow" target="_blank">Log in</a>
+         </div>
+      </div>
+      <div class="fee-override-container" id="containerFor52195"></div>
+      <div class="individual-account-group-details">
+         <div class="panel">
+            <h4>Balance</h4>
+            <p>${{ account.total_balance }}</p>
+         </div>
+         <div class="panel">
+            <h4>Returns</h4>
+            <p>{{ account.total_returns }}%</p>
+         </div>
+         <div class="panel">
+            <h4>Allocation</h4>
+            <p>{{ account.stocks_percentage }}% <span>Stocks</span> {{ account.bonds_percentage }}% <span>Bonds</span></p>
+         </div>
+      </div>
+       <div class="goal-details body">
+                 <table>
+                    <thead>
+                       <tr>
+                          <th>Goal Name</th>
+                          <th>Status</th>
+                          <th>Balance</th>
+                          <th>Return</th>
+                          <th>Stocks/Bonds</th>
+                          <th>Auto<br>Frequency</th>
+                          <th>Auto<br>Amount</th>
+                          <th>Term</th>
+                          <th>Target</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                    {% for goal in account.goals.all %}
+                       <tr>
+                          <td>
+                             {{ goal.name }}
+                          </td>
+                          <td>
+                             {% if goal.on_track %}
+                                <span class="on-track">On track</span>
+                              {% else %}
+                                 <span class="off-track">Off track</span>
+                              {% endif %}
+                          </td>
+                          <td>${{ goal.total_balance }}</td>
+                          <td>{{ goal.total_return }}%</td>
+                          <td>
+                              {{ goal.stocks_percentage }}% / {{ goal.bonds_percentage }}%
+                          </td>
+                          <td>{{ goal.auto_frequency }}</td>
+                          <td>{{ goal.auto_amount }}</td>
+                          <td>{{ goal.auto_term }}</td>
+                          <td>${{ goal.target }}</td>
+                       </tr>
+                    {% endfor %}
+
+                    </tbody>
+                 </table>
+              </div>
+   </div>
+   {% endfor %}
+</div>
+
+
+    <div id="allocationChangeModal">
+    </div>
+</div>
+ {% endblock %}

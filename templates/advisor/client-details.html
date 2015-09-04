@@ -61,7 +61,7 @@
                  <td>${{ account.total_balance }}</td>
                  <td><!-- Intentionally left blank for spacing --></td>
                  {% if account.account_group %}
-                    <td><a href="/advisor/composites/{{ account.account_group.pk }}">{{ account.account_group.name }}</a></td>
+                    <td><a href="/composites/{{ account.account_group.pk }}">{{ account.account_group.name }}</a></td>
                  {% else %}
                      <td></td>
                  {% endif %}

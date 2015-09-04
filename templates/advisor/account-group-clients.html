@@ -1,0 +1,77 @@
+ {% extends "layouts/base.html" %}
+ {% load i18n %}
+ {% block nav_invites %}depressed {% endblock %}
+ {% block body_class %}composite_clients index{% endblock %}
+ {% block main_content %}
+ {% include "advisor/firm-logo.html" %}
+
+ <div class="composite-clients-index">
+
+    <div class="composite-header">
+    <div class="return-link">
+        <span class="modern-icon">&#8250;</span>
+        <a href="/advisor/summary">Back to Dashboard</a>
+    </div>
+
+    <div class="composite-name">
+        <div class="composite-icon">
+            {% with object as household %}
+                {% include "advisor/household-icon.html" %}
+            {% endwith %}
+        </div>
+        <h1>{{ object.name }}</h1>
+    </div>
+    <nav class="nav-bar composite-subnav">
+        <div>
+            <ul>
+                <li class="">
+                    <a href="/composites/{{ object.pk }}">Overview</a>
+                </li>
+                <li class="depressed">
+                    <a href="/composites/{{ object.pk }}/clients">Clients</a>
+                </li>
+                <li class="">
+                    <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
+                </li>
+            </ul>
+
+              <div class="edit-composite">
+                  <a href="/composites/{{ object.pk }}/edit">Edit Household</a>
+              </div>
+        </div>
+    </nav>
+</div>
+
+
+    <div class="composite-clients-panel">
+        <div class="body">
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for client in household_clients %}
+                 <tr>
+                    <td>{{ client.full_name }}</td>
+                    <td><a href="{{ client.email }}">{{ client.email }}</a></td>
+                    <td>{{ client.phone_number }}</td>
+                    <td class="composite-actions">
+                        <a href="/advisor/client/{{ client.pk }}">View Profile</a>
+                        <a data-method="get" href="/advisor/clients/ {{client.pk }}/impersonation" rel="nofollow" target="_blank">Log in</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+ {% endblock %}

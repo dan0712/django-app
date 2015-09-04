@@ -3283,8 +3283,23 @@ if (function(t, e) {
             linkDisableSelector: "a[data-disable-with], a[data-disable]",
             buttonDisableSelector: "button[data-remote][data-disable-with], button[data-remote][data-disable]",
             CSRFProtection: function(e) {
-                var n = t('meta[name="csrf-token"]').attr("content");
-                n && e.setRequestHeader("X-CSRF-Token", n)
+                var getCookie = function(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                var n = getCookie('csrftoken');
+                n && e.setRequestHeader("HTTP_X_CSRFTOKEN", n)
             },
             refreshCSRFTokens: function() {
                 var e = t("meta[name=csrf-token]").attr("content"),

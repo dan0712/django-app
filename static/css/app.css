@@ -12533,25 +12533,25 @@ form .help-icon:after {
     margin-right: 20px;
 }
 .composites-index li>div:nth-child(1), .composites-index li>a>div:nth-child(1) {
-    width: 230px;
+    width: 280px;
 }
 .composites-index li>div:nth-child(2), .composites-index li>a>div:nth-child(2) {
-    width: 60px;
+    width: 82px;
 }
 .composites-index li>div:nth-child(3), .composites-index li>a>div:nth-child(3) {
-    width: 127px;
+    width: 174px;
 }
 .composites-index li>div:nth-child(4), .composites-index li>a>div:nth-child(4) {
-    width: 127px;
+    width: 233px;
 }
 .composites-index li>div:nth-child(5), .composites-index li>a>div:nth-child(5) {
-    width: 127px;
+    width: 174px;
 }
 .composites-index li>div:nth-child(6), .composites-index li>a>div:nth-child(6) {
-    width: 157px;
+    width: 0px;
 }
 .composites-index li>div:nth-child(7), .composites-index li>a>div:nth-child(7) {
-    width: 128px;
+    width: 0px;
 }
 .composites-index li {
     width: 100%}

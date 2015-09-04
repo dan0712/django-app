@@ -435,7 +435,7 @@ class FirmData(models.Model):
 class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     user = models.OneToOneField(User, related_name="advisor")
     token = models.CharField(max_length=36, null=True, editable=False)
-    firm = models.ForeignKey(Firm)
+    firm = models.ForeignKey(Firm, related_name="advisors")
     letter_of_authority = models.FileField()
     betasmartz_agreement = models.BooleanField()
 
@@ -451,6 +451,20 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     @staticmethod
     def get_inviter_type():
         return "advisor"
+
+    @property
+    def total_balance(self):
+        return 0
+
+    @property
+    def total_account_groups(self):
+        return self.secondary_account_groups.count() + self.primary_account_groups.count()
+
+    @property
+    def average_balance(self):
+        if self.total_account_groups>0:
+            return self.total_balance / self.total_account_groups
+        return 0
 
     def get_inviter_name(self):
         return self.user.get_full_name()
@@ -485,6 +499,43 @@ class AccountGroup(models.Model):
     secondary_advisors = models.ManyToManyField(Advisor, related_name='secondary_account_groups')
     name = models.CharField(max_length=100)
 
+    @property
+    def total_balance(self):
+        return 0
+
+    @property
+    def total_returns(self):
+        return 0
+
+    @property
+    def allocation(self):
+        return 0
+
+    @property
+    def stocks_percentage(self):
+        return self.allocation * 100.0
+
+    @property
+    def bonds_percentage(self):
+        return (1-self.allocation) * 100.0
+
+    @property
+    def on_track(self):
+        return False
+
+    @property
+    def since(self):
+        min_created_at = self.accounts.first().created_at
+
+        for account in self.accounts.all():
+            if min_created_at>account.created_at:
+                min_created_at = account.created_at
+
+        return min_created_at
+
+    def __str__(self):
+        return self.name
+
 
 PERSONAL_ACCOUNT = 1
 
@@ -496,10 +547,59 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.PositiveIntegerField(choices=ACCOUNT_TYPES, default=PERSONAL_ACCOUNT)
     primary_owner = models.ForeignKey('Client', related_name="accounts")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def remove_from_group(self):
+        old_group = self.account_group
+
+        # get personal group or create it
+        group_name = "{0}".format(self.primary_owner.full_name)
+        groups = AccountGroup.objects.filter(name=group_name, advisor=self.primary_owner.advisor)
+        if groups:
+            group = groups[0]
+        else:
+            group = AccountGroup(name=group_name, advisor=self.primary_owner.advisor)
+            group.save()
+
+        self.account_group = group
+        self.save()
+
+        if old_group:
+            if old_group.accounts.count() == 0:
+                old_group_name = old_group.name
+                # delete account group
+                old_group.delete()
+                return old_group_name
+
+    def add_to_account_group(self, account_group):
+        old_account_group = self.account_group
+        self.account_group = account_group
+        self.save()
+
+        if old_account_group:
+            if old_account_group.accounts.count() == 0:
+                # delete account group
+                old_account_group.delete()
 
     @property
     def total_balance(self):
         return 0
+
+    @property
+    def total_returns(self):
+        return 0
+
+    @property
+    def stocks_percentage(self):
+        return 0
+
+    @property
+    def bonds_percentage(self):
+        return 0
+
+    @property
+    def owners(self):
+        return self.primary_owner.full_name
 
     @property
     def account_type_name(self):
@@ -510,6 +610,12 @@ class ClientAccount(models.Model):
     @property
     def on_track(self):
         return False
+
+    def __str__(self):
+        return "{0}:{1}:{2}:({3})".format(self.primary_owner.full_name,
+                                          self.primary_owner.advisor.first_name,
+                                          self.primary_owner.advisor.firm.name,
+                                          self.account_type_name)
 
 
 class Client(NeedApprobation, NeedConfirmation):
@@ -541,6 +647,17 @@ class Client(NeedApprobation, NeedConfirmation):
                                                            " policy maker of a publicly traded company.",
                                               default=False,
                                               choices=YES_NO)
+
+    def __str__(self):
+        return self.user.get_full_name()
+
+    def rebuild_secondary_advisors(self):
+        self.secondary_advisors.clear()
+        # gell all the accounts
+        for account in self.accounts.all():
+            for secondary_advisor in account.account_group.secondary_advisors.all():
+                self.secondary_advisors.add(secondary_advisor)
+        pass
 
     @property
     def firm(self):
@@ -725,7 +842,39 @@ class EmailInvitation(models.Model):
         self.save()
 
 
+class Goal(models.Model):
+    account = models.ForeignKey(ClientAccount, related_name="goals")
+    name = models.CharField(max_length=100)
+    target = models.FloatField(default=0)
 
+    @property
+    def on_track(self):
+        return False
 
+    @property
+    def total_balance(self):
+        return 0
 
+    @property
+    def total_return(self):
+        return 0
 
+    @property
+    def stocks_percentage(self):
+        return 0
+
+    @property
+    def bonds_percentage(self):
+        return 0
+
+    @property
+    def auto_frequency(self):
+        return "-"
+
+    @property
+    def auto_amount(self):
+        return "-"
+
+    @property
+    def auto_term(self):
+        return "-"
