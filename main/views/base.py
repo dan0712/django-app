@@ -6,15 +6,13 @@ from django.views.generic.edit import View
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import views
+from django.conf import settings
 
 __all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
 
 
 def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/firm/login'):
-    """
-    Decorator for views that checks that the user is logged in and is an advisor
-    member, displaying the login page if necessary.
-    """
+
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "advisor"),
         login_url=login_url,
@@ -23,10 +21,7 @@ def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, 
 
 
 def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/firm/login'):
-    """
-    Decorator for views that checks that the user is logged in and is an advisor
-    member, displaying the login page if necessary.
-    """
+
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "authorised_representative"),
         login_url=login_url,
@@ -34,13 +29,10 @@ def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, lo
     )(view_func)
 
 
-def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='client:login'):
-    """
-    Decorator for views that checks that the user is logged in and is an advisor
-    member, displaying the login page if necessary.
-    """
+def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/firm/login'):
+
     return user_passes_test(
-        lambda u: u.is_active and u.is_staff,
+        lambda u: u.is_active and hasattr(u, "client"),
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )(view_func)
@@ -81,6 +73,13 @@ class ClientView(View):
     @method_decorator(client_member_required)
     def dispatch(self, request, *args, **kwargs):
         return super(ClientView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super(ClientView, self).get_context_data(**kwargs)
+        ctx["profile"] = self.request.user.client
+        ctx["is_advisor"] = "true" if self.request.session.get("is_advisor", False) else "false"
+        ctx["is_demo"] = "true" if settings.IS_DEMO else "false"
+        return ctx
 
 
 class AdminView(View):

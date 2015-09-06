@@ -108,5 +108,5 @@ MEDIA_URL = '/media/'
 
 SUPPORT_EMAIL = "support@betasmartz.com"
 SUPPORT_PHONE = "1888-888-888"
-
+IS_DEMO = False
 from local_settings import *

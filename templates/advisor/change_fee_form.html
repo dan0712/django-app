@@ -1,0 +1,69 @@
+<div class="fee-override-section">
+        <div class="total">
+            <h4>Total Fee</h4>
+
+            <div class="fee-bps">
+                <span class="total-fee">{{object.fee}}</span> bps
+            </div>
+        </div>
+
+        <form action="/composites/client_account/{{object.pk}}/change_fee" method="post">
+            <div style="display:none">
+                {% csrf_token %}
+            </div>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <td>Platform fee</td>
+
+                        <td><span class="platform-fee">{{platform.fee}}</span> bps</td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class=
+                            "input radio_buttons optional fee_override_account_group_spread_exists">
+                            <label class="radio"><input {% if object.custom_fee == 0 %} checked="checked" {% endif %}
+                                class="radio_buttons optional" id=
+                                "fee_override_account_group_spread_exists_false"
+                                name="is_custom_fee"
+                                type="radio" value="false">Firm fee</label>
+                            </div>
+                        </td>
+
+                        <td><span class="advised-fee">{{firm.fee}}</span> bps</td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class=
+                            "input radio_buttons optional fee_override_account_group_spread_exists">
+                            <label class="radio"><input class=
+                            "radio_buttons optional" id=
+                            "fee_override_account_group_spread_exists_true"
+                            name="is_custom_fee"
+                                type="radio" value="true" {% if object.custom_fee != 0 %} checked="checked" {% endif %}>Custom fee</label>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class=
+                            "input string optional fee_override_advisor_spread_bps">
+                            <input class="string optional custom-fee" id=
+                            "fee_override_advisor_spread_bps" maxlength="3"
+                            name="custom_fee" placeholder="bps" size="3"
+                                type="text" value="{{form.custom_fee.value}}">
+                                {{form.custom_fee.errors}}
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="form-buttons">
+                <input class="btn light-btn save" name="commit" type="submit"
+                value="Save"><a class="close" href="/composites/{{object.account_group.pk}}">×</a>
+            </div>
+        </form>
+    </div>

@@ -1,6 +1,6 @@
 __author__ = 'cristian'
 from ..utils.login import create_login
-from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount
+from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
 from django import forms
 from django.views.generic import CreateView, View, TemplateView, ListView, UpdateView, DetailView
 from django.utils import safestring
@@ -12,15 +12,22 @@ from django.db.models import Q
 from operator import itemgetter
 from django.http import Http404
 from ..base import AdvisorView
+from django.template.loader import render_to_string
 from ...forms import EmailInviteForm
 from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client
 from django.utils.safestring import mark_safe
+from django.template import RequestContext
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth import (
+    REDIRECT_FIELD_NAME, load_backend, BACKEND_SESSION_KEY,  login as auth_login
+)
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients', 'AdvisorAgreements', 'AdvisorSupport',
            'AdvisorClientDetails', 'AdvisorCompositeNew', 'AdvisorAccountGroupDetails',
            'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView', 'AdvisorAccountGroupClients',
            'AdvisorAccountGroupSecondaryDetailView', 'AdvisorAccountGroupSecondaryNewView',
-           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary']
+           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary', 'ImpersonateView', 'Logout',
+           'AdvisorClientAccountChangeFee']
 
 
 class AdvisorClientInvitesForm(forms.ModelForm):
@@ -104,7 +111,7 @@ class AdvisorClients(TemplateView, AdvisorView):
 
     def __init__(self, *args, **kwargs):
         super(AdvisorClients, self).__init__(*args, **kwargs)
-        self.filter = "1"
+        self.filter = "0"
         self.search = ""
         self.sort_col = "full_name"
         self.sort_dir = "desc"
@@ -135,7 +142,7 @@ class AdvisorClients(TemplateView, AdvisorView):
 
         clients = []
 
-        for client in set(pre_clients.all()):
+        for client in set(pre_clients.distinct().all()):
             relationship = "Primary" if client.advisor == self.advisor else "Secondary"
             clients.append([client.pk, client.full_name, client.total_balance, client.email, relationship])
 
@@ -267,7 +274,8 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupDetails, self).get_queryset().filter(advisor=self.advisor)
+        return super(AdvisorAccountGroupDetails, self).get_queryset()\
+            .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
         ctx = super(AdvisorAccountGroupDetails, self).get_context_data(**kwargs)
@@ -280,7 +288,8 @@ class AdvisorAccountGroupClients(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupClients, self).get_queryset().filter(advisor=self.advisor)
+        return super(AdvisorAccountGroupClients, self).get_queryset()\
+            .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
         ctx = super(AdvisorAccountGroupClients, self).get_context_data(**kwargs)
@@ -393,7 +402,7 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
 
     def __init__(self, *args, **kwargs):
         super(AdvisorCompositeSummary, self).__init__(*args, **kwargs)
-        self.filter = "1"
+        self.filter = "0"
         self.search = ""
         self.sort_col = "name"
         self.sort_dir = "desc"
@@ -424,7 +433,7 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
             pre_groups = pre_groups.filter(sq)
 
         groups = []
-        for group in set(pre_groups.all()):
+        for group in set(pre_groups.distinct().all()):
             relationship = "Primary" if group.advisor == self.advisor else "Secondary"
             first_account = group.accounts.first()
             groups.append([group.pk, group, group.name, first_account.account_type_name, relationship,
@@ -445,3 +454,136 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
                     "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
                     "groups": self.groups})
         return ctx
+
+
+class ImpersonateBase(View):
+    request = None
+
+    def get_used_backend(self):
+        backend_str = self.request.session[BACKEND_SESSION_KEY]
+        backend = load_backend(backend_str)
+        return backend
+
+
+class ImpersonateView(ImpersonateBase):
+
+    def get(self, request, *args, **kwargs):
+        self.request = request
+
+        imposter = request.user
+
+        if not (hasattr(imposter, 'advisor') or hasattr(imposter, 'supervisor')):
+            raise PermissionDenied
+
+        user_id = kwargs["pk"]
+        user = None
+
+        if hasattr(imposter, 'advisor'):
+
+            try:
+                condition = (Q(client__advisor=imposter.advisor) | Q(client__secondary_advisors__in=[imposter.advisor]))
+                user = User.objects.filter(condition).distinct().get(pk=user_id)
+            except ObjectDoesNotExist:
+                raise PermissionDenied
+
+            add_history = (imposter.pk, 'advisor', request.GET.get('next', '/advisor/summary'))
+
+        elif hasattr(imposter, 'supervisor'):
+            try:
+                condition = Q(advisor__firm=imposter.firm)
+                user = User.objects.filter(condition).distinct().get(pk=user_id)
+            except ObjectDoesNotExist:
+                raise PermissionDenied
+
+            add_history = (imposter.pk, 'supervisor', request.GET.get('next', '/supervisor/summary'))
+
+        if not user:
+            raise PermissionDenied
+
+        backend = self.get_used_backend()
+        user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+        auth_login(request, user)
+
+        impersonate_history = request.session.get('impersonate_history', [])
+        impersonate_history.append(add_history)
+        request.session['impersonate_history'] = impersonate_history
+
+        if add_history[1] == 'advisor':
+            request.session['is_advisor'] = True
+            return HttpResponseRedirect('/client/app')
+
+        elif add_history[1] == 'supervisor':
+            request.session['is_supervisor'] = True
+            return HttpResponseRedirect('/advisor/summary')
+
+
+class Logout(ImpersonateBase):
+
+    def get_imposter(self):
+        impersonate_history = self.request.session.get('impersonate_history', [])
+
+        if impersonate_history:
+            record = impersonate_history.pop()
+            imposter_id = record[0]
+            try:
+                imposter = User.objects.get(pk=imposter_id)
+            except ObjectDoesNotExist:
+                return None, None
+
+            if record[1] == 'advisor':
+                self.request.session.pop('is_advisor', None)
+            elif record[1] == 'supervisor':
+                self.request.session.pop('is_supervisor', None)
+
+            return imposter, record[2]
+
+        return None, None
+
+    def get(self, request, *args, **kwargs):
+        self.request = request
+        imposter, redirect_url = self.get_imposter()
+        if imposter:
+            backend = self.get_used_backend()
+            imposter.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+            auth_login(request, imposter)
+            return HttpResponseRedirect(redirect_url)
+
+        return HttpResponseRedirect('/firm/login')
+
+
+class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
+    model = ClientAccount
+    fields = ('custom_fee', )
+    template_name = 'advisor/fee_override.js'
+    content_type = 'text/javascript'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(AdvisorClientAccountChangeFee, self).get_context_data(**kwargs)
+        ctx["object"] = self.object
+        ctx["platform"] = Platform.objects.first()
+        ctx["firm"] = self.advisor.firm
+        html_output = render_to_string("advisor/change_fee_form.html", RequestContext(self.request, ctx))
+        html_output = mark_safe(html_output.replace("\n", "\\n").replace('"', '\\"').replace("'", "\\'"))
+        ctx["html_output"] = html_output
+        return ctx
+
+    def get_queryset(self):
+        return super(AdvisorClientAccountChangeFee, self).get_queryset().distinct()\
+            .filter(Q(account_group__advisor=self.advisor) | Q(account_group__secondary_advisors__in=[self.advisor]))
+
+    def get_form(self, form_class=None):
+        form = super(AdvisorClientAccountChangeFee, self).get_form(form_class)
+        old_save = form.save
+
+        def save(*args, **kwargs):
+            instance = old_save(*args, **kwargs)
+            if self.request.POST.get("is_custom_fee", "false") == "false":
+                instance.custom_fee = 0
+                instance.save()
+
+            return instance
+        form.save = save
+        return form
+
+    def get_success_url(self):
+        return '/composites/{0}'.format(self.object.account_group.pk)

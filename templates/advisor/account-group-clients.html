@@ -30,14 +30,17 @@
                 <li class="depressed">
                     <a href="/composites/{{ object.pk }}/clients">Clients</a>
                 </li>
-                <li class="">
-                    <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
-                </li>
+                 {% if object.advisor == profile %}
+                    <li class="">
+                        <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
+                    </li>
+                 {% endif %}
             </ul>
-
-              <div class="edit-composite">
-                  <a href="/composites/{{ object.pk }}/edit">Edit Household</a>
-              </div>
+            {% if object.advisor == profile %}
+                <div class="edit-composite">
+                    <a href="/composites/{{ object.pk }}/edit">Edit Household</a>
+                </div>
+            {% endif %}
         </div>
     </nav>
 </div>
@@ -62,7 +65,7 @@
                     <td>{{ client.phone_number }}</td>
                     <td class="composite-actions">
                         <a href="/advisor/client/{{ client.pk }}">View Profile</a>
-                        <a data-method="get" href="/advisor/clients/ {{client.pk }}/impersonation" rel="nofollow" target="_blank">Log in</a>
+                        <a href="/impersonate/{{ client.user.pk }}?next=/composites/{{ object.pk }}/clients">Log in</a>
                     </td>
                 </tr>
                 {% endfor %}

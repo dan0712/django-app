@@ -319,7 +319,7 @@ class Firm(models.Model):
     client_agreement_url = models.FileField(verbose_name="Client Agreement (PDF)", null=True, blank=True)
     form_adv_part2_url = models.FileField(verbose_name="Form Adv", null=True, blank=True)
     token = models.CharField(max_length=36, editable=False)
-    fee = models.FloatField(default=0)
+    fee = models.PositiveIntegerField(default=0)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 
@@ -528,7 +528,7 @@ class AccountGroup(models.Model):
         min_created_at = self.accounts.first().created_at
 
         for account in self.accounts.all():
-            if min_created_at>account.created_at:
+            if min_created_at > account.created_at:
                 min_created_at = account.created_at
 
         return min_created_at
@@ -563,6 +563,7 @@ class ClientAccount(models.Model):
 
         self.account_group = group
         self.save()
+        self.primary_owner.rebuild_secondary_advisors()
 
         if old_group:
             if old_group.accounts.count() == 0:
@@ -580,6 +581,15 @@ class ClientAccount(models.Model):
             if old_account_group.accounts.count() == 0:
                 # delete account group
                 old_account_group.delete()
+
+        self.primary_owner.rebuild_secondary_advisors()
+
+    @property
+    def fee(self):
+        if self.custom_fee != 0:
+            return self.custom_fee + Platform.objects.first().fee
+        else:
+            return self.primary_owner.advisor.firm.fee + Platform.objects.first().fee
 
     @property
     def total_balance(self):
@@ -840,6 +850,10 @@ class EmailInvitation(models.Model):
         self.send_count += 1
 
         self.save()
+
+
+class Platform(models.Model):
+    fee = models.PositiveIntegerField(default=0)
 
 
 class Goal(models.Model):

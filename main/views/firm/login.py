@@ -25,7 +25,7 @@ __all__ = ["firm_login", "firm_logout"]
 
 INVALID_CREDENTIALS = "Invalid email or password."
 
-firm_class = [Advisor, AuthorisedRepresentative ]
+firm_class = [Advisor, AuthorisedRepresentative]
 
 
 @never_cache
@@ -86,7 +86,8 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
                 # Ensure the user-originating redirection url is safe.
                 if not is_safe_url(url=redirect_to, host=request.get_host()):
                     redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
-
+                #clear session
+                request.session.clear()
                 # Okay, security check complete. Log the user in.
                 auth_login(request, form.get_user())
 
@@ -118,5 +119,6 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
 
 def firm_logout(request):
     auth_logout(request)
+
     return HttpResponseRedirect('/firm/login')
 

@@ -56916,9 +56916,10 @@ var requirejs, require, define;
                 this.$(".user-links a").removeClass("selected")
             },
             logout: function(e) {
-                e && e.preventDefault(), BMT.vent.trigger("logout", {
+                window.location.replace("/sign_out");
+                /*e && e.preventDefault(), BMT.vent.trigger("logout", {
                     timeout: !1
-                })
+                })*/
             },
             onDestroy: function() {
                 e(document).unbind("click", this.userMenuHideOnBlur)
@@ -58431,6 +58432,8 @@ var requirejs, require, define;
                     })
                 })
             }), BMT.vent.bind("logout", function(e) {
+                window.location.replace("/sign_out");
+                /*
                 var n = BMT.isTest() || BMT.isLocal() || BMT.user.isAdvised(),
                     r = t.extend({
                         timeout: !1,
@@ -58449,7 +58452,7 @@ var requirejs, require, define;
                     complete: function() {
                         BMT.user.off(), BMT.user = new C, BMT.session = new N, BMT.accountGroup = null, r.after()
                     }
-                })
+                })*/
             }), BMT.analytics.registerProperties({
                 Platform: "Web",
                 App: "WebApp"

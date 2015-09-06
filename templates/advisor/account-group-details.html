@@ -31,14 +31,17 @@
                 <li class="">
                     <a href="/composites/{{ object.pk }}/clients">Clients</a>
                 </li>
-                <li class="">
-                    <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
-                </li>
+                 {% if object.advisor == profile %}
+                    <li class="">
+                        <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
+                    </li>
+                 {%  endif %}
             </ul>
-
+            {% if object.advisor == profile %}
               <div class="edit-composite">
                   <a href="/composites/{{ object.pk }}/edit">Edit Household</a>
               </div>
+            {%  endif %}
         </div>
     </nav>
 </div>
@@ -74,14 +77,14 @@
             </h2>
          </div>
          <div class="pricing-plan">
-            Pricing Plan: 55
-            bps <a class="mpicon pencil" data-remote="true" href="/account_groups/52195/fee_override/new"></a>
+            Pricing Plan: {{ account.fee }}
+            bps <a class="mpicon pencil" data-remote="true" href="/composites/client_account/{{ account.pk }}/change_fee"></a>
          </div>
          <div class="impersonation-link">
-            <a data-method="post" data-track-advisor-id="416" data-track-event="ElementClicked" data-track-location="CompositeDetails" data-track-module="Dashboard" data-track-name="LogIn" data-track-type="Button" href="/account_groups/52195/impersonation" rel="nofollow" target="_blank">Log in</a>
+            <a  href="/impersonate/{{ account.primary_owner.user.pk }}?next=/composites/{{ object.pk }}" rel="nofollow">Log in</a>
          </div>
       </div>
-      <div class="fee-override-container" id="containerFor52195"></div>
+      <div class="fee-override-container" id="containerFor{{ account.pk }}"></div>
       <div class="individual-account-group-details">
          <div class="panel">
             <h4>Balance</h4>

@@ -25,13 +25,13 @@ urlpatterns = patterns('',
         AdvisorSignUpView.as_view()),
 
     url(r'^login$', firm_login),
-    url(r'^sign_out$', firm_logout),
+    url(r'^sign_out$', Logout.as_view()),
     url(r'^confirm_email/(?P<type>\d+)/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})',
         EmailConfirmationView.as_view()),
     url(r'^confirmation/new$', NewConfirmation.as_view()),
 
     url(r'^firm/login', lambda x: HttpResponseRedirect("/login")),
-    url(r'^firm/sign_out', lambda x: HttpResponseRedirect("/sign_out$")),
+    url(r'^firm/sign_out', lambda x: HttpResponseRedirect("/sign_out")),
 
     url(r'^firm/advisor_invites', FirmAdvisorInvites.as_view()),
     url(r'^firm/supervisor_invites', FirmSupervisorInvites.as_view()),
@@ -60,6 +60,10 @@ urlpatterns = patterns('',
     url(r'^composites/(?P<pk>\d+)/composite_secondary_advisors/new$', AdvisorAccountGroupSecondaryNewView.as_view()),
     url(r'^composites/(?P<pk>\d+)/composite_secondary_advisors/(?P<sa_pk>\d+)$',
         AdvisorAccountGroupSecondaryDeleteView.as_view()),
+    url(r'^composites/client_account/(?P<pk>\d+)/change_fee$', AdvisorClientAccountChangeFee.as_view()),
+
+
+    url('^impersonate/(?P<pk>\d+)$', ImpersonateView.as_view()),
 
     # Client views
     url(r'^client/login', client_login, name='client:login'),

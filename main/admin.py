@@ -3,7 +3,7 @@ __author__ = 'cristian'
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, \
-    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal
+    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -157,6 +157,11 @@ class ClientAccountAdmin(admin.ModelAdmin):
 class GoalAdmin(admin.ModelAdmin):
     pass
 
+
+class PlatformAdminAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
 
