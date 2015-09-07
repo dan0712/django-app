@@ -14195,7 +14195,7 @@ header.top-bar .logo {
     display: inline-block;
 }
 .nav-bar>div li:not(:first-child) {
-    padding-left: 50px;
+    padding-left: 30px;
 }
 .nav-bar>div li>a {
     display: block;
@@ -22705,7 +22705,7 @@ h1.error{
 
 body > .nav-bar a{
     text-transform: uppercase;
-    font-size:15px;
+    font-size:14px;
 }
 
 .nav-bar>div li.depressed>a, .nav-bar li>a:hover{
