@@ -74,7 +74,7 @@
                             <tr>
                                 <td>{{ client_invite.email }}</td>
 
-                                <td>{{ client_invite.send_date |b_date}}</td>
+                                <td>{{ client_invite.send_date |b_datetime}}</td>
 
                                 <td>
                                     {% if client_invite.get_status != 0 %}

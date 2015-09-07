@@ -10,7 +10,7 @@
         <p>
         Below is a list of clients that have electronically executed your advisory agreement.
         If you would like to add or update your agreement, please email a PDF of your advisory agreement to <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.
-        To learn more about this feature please visit our [Client Agreement|create hyperlink] page.
+        To learn more about this feature please visit our <a href="#">Client Agreement</a> page.
 
         </p>
         </br>
@@ -38,7 +38,7 @@
                     <tr>
                         <td>{{ client.full_name }}</td>
                         <td>{{ client.email }}</td>
-                        <td>{{ client.create_date |b_date}}</td>
+                        <td>{{ client.create_date |b_datetime}}</td>
                         <td><a href="{{ MEDIA_URL }}{{ client.client_agreement }}" target="_blank">View</a></td>
                     </tr>
                 {% endfor %}

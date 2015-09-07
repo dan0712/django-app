@@ -22,5 +22,9 @@ def b_date(value):
 
 
 @register.filter
+def b_datetime(value):
+    return value.strftime("%B/%d/%Y %H:%M")
+
+@register.filter
 def bs_big_number(value):
     return "{:,}".format(value)
