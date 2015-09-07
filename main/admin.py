@@ -8,6 +8,7 @@ from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 
 
 class TickerInline(SortableTabularInline):
@@ -99,7 +100,25 @@ class ClientAdmin(admin.ModelAdmin):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email')
-    exclude = ('password', )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(UserAdmin, self).get_form(request, obj, **kwargs)
+
+        def clean_password(me):
+            password = me.cleaned_data['password']
+
+            if me.instance:
+                if me.instance.password != password:
+                    password = make_password(password)
+            else:
+                password = make_password(password)
+
+            print(password, "*******************")
+            return password
+
+        form.clean_password = clean_password
+
+        return form
     pass
 
 

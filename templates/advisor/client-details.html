@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load i18n %}
+{% load app_filters %}
 {% block nav_clients %} depressed {% endblock %}
 {% block body_class %}clients show {% endblock %}
 
@@ -90,11 +91,11 @@
                 <tbody>
                 <tr class="member-since">
                     <td>Member since</td>
-                    <td>{{ client.create_date }}</td>
+                    <td>{{ client.create_date | b_date }}</td>
                 </tr>
                 <tr class="date-of-birth">
                     <td>Date of birth</td>
-                    <td>{{ client.date_of_birth }}</td>
+                    <td>{{ client.date_of_birth | b_date}}</td>
                 </tr>
                 <tr class="age">
                     <td>Age</td>
@@ -117,7 +118,7 @@
                     <td>{{ client.state }}</td>
                 </tr>
                 <tr class="zip">
-                    <td>Zip</td>
+                    <td>Postcode</td>
                     <td>{{ client.post_code }}</td>
                 </tr>
                 <tr class="phone">

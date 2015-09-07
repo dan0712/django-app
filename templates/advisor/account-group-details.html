@@ -3,7 +3,7 @@
  {% block nav_clients %}depressed {% endblock %}
  {% block body_class %}composites show{% endblock %}
  {% block main_content %}
- {% include "advisor/firm-logo.html" %}
+ {% load app_filters %}
 <div class="composites-show">
 
     <div class="composite-header">
@@ -135,7 +135,7 @@
                           <td>{{ goal.auto_frequency }}</td>
                           <td>{{ goal.auto_amount }}</td>
                           <td>{{ goal.auto_term }}</td>
-                          <td>${{ goal.target }}</td>
+                          <td>${{ goal.target |bs_big_number }}</td>
                        </tr>
                     {% endfor %}
 

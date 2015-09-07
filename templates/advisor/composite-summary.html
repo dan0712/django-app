@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load i18n %}
+{% load app_filters %}
 {% block nav_summary %} depressed {% endblock %}
 {% block body_class %}composites index {% endblock %}
 {% block main_content %}
@@ -78,7 +79,7 @@
                         </div>
                         <div>
                             <h4>
-                                {% if group.5.on_track %}
+                                {% if group.5 %}
                                     <span class="on-track">On track</span>
                                 {% else %}
                                      <span class="off-track">Off track</span>
@@ -90,7 +91,7 @@
                         </div>
                         <div>
                             <h4>{{ group.7 }}%</h4>
-                            <h5><span>Since</span>{{ group.8 }}</h5>
+                            <h5><span>Since</span>{{ group.8 |b_date}}</h5>
                         </div>
                         <div>
                             <h4>{{ group.10 }}% / {{ group.11 }}%</h4>

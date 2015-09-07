@@ -2,8 +2,12 @@
 <html>
 <head>
 <title>
-    {% if firm %}
-        {{ firm.name }}
+    {% if is_client %}
+        {% if firm %}
+            {{ firm.name }}
+        {% else %}
+            BetaSmartz
+        {% endif %}
     {% else %}
         BetaSmartz
     {% endif %}
@@ -26,7 +30,7 @@
 {% include "partials/header.html" %}
 
 {% if is_advisor_view %}
-    <nav class="nav-bar">
+    <nav class="nav-bar advisor-nav">
         <div>
             <ul>
                 <li class="{% block nav_summary %}{% endblock %}">
@@ -35,11 +39,12 @@
                 <li class="{% block nav_clients %}{% endblock %}">
                     <a href="/advisor/clients">Clients</a>
                 </li>
-                <li class="{% block nav_invites %}{% endblock %}">
-                    <a href="/advisor/client_invites">Invites</a>
-                </li>
+
                 <li class="{% block nav_agreements %}{% endblock %}">
                     <a href="/advisor/agreements">Agreements</a>
+                </li>
+                <li class="{% block nav_invites %}{% endblock %}">
+                    <a href="/advisor/client_invites">Invites</a>
                 </li>
                 <li class="{% block nav_support %}{% endblock %}">
                     <a href="/advisor/support">Support</a>

@@ -42,7 +42,7 @@
 
     <div class="client-search">
       <h2>Search for one client at a time</h2>
-      <a class="finish {% if not object %}disabled{% endif %}" href="/composites/{{ object.pk }}">Finish</a>
+      <a class="finish {% if not object %}disabled{% endif %}" href="{% if object %}/composites/{{ object.pk }}{% else %}#{% endif %}">Finish</a>
       <div class="typing-select"> <!-- required wrapper -->
     <select name="typing-select" id="clientDropdown" style="visibility: hidden;">
         <option value="">Search for a client</option>

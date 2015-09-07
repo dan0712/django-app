@@ -1728,7 +1728,7 @@ body.ie .svg-circle-spinner {
     font-weight: 300;
     font-style: normal;
     src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-531d655a5e293ffa16f18ad4770a94f4.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-748dceac9dfded0ae32bf86a0070d854.ttf) format("truetype");
+    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_light.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-748dceac9dfded0ae32bf86a0070d854.ttf) format("truetype");
 }
 @font-face {
     font-family: 'MuseoSans';
@@ -1742,21 +1742,21 @@ body.ie .svg-circle-spinner {
     font-weight: 500;
     font-style: normal;
     src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-eb1293c28bfd13bae12a4247bba81bec.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-78940352fc85b24079645659dfd7bf74.ttf) format("truetype");
+    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_regular.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-78940352fc85b24079645659dfd7bf74.ttf) format("truetype");
 }
 @font-face {
     font-family: 'MuseoSans';
     font-weight: 500;
     font-style: italic;
     src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-bd8f023807cca801a5ec2481a553b518.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-e09b3910841f087a44afda12fb7375b3.ttf) format("truetype");
+    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_regular.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-e09b3910841f087a44afda12fb7375b3.ttf) format("truetype");
 }
 @font-face {
     font-family: 'MuseoSans';
     font-weight: 700;
     font-style: normal;
     src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-9a38c48db092ecbe12fbb2a815373751.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-1cb67da3ac80ce2306bee28797e505f4.ttf) format("truetype");
+    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_bold.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-1cb67da3ac80ce2306bee28797e505f4.ttf) format("truetype");
 }
 @font-face {
     font-family: 'MuseoSans';
@@ -1782,7 +1782,7 @@ body.ie .svg-circle-spinner {
 @font-face {
     font-family: 'ModernPictogramsPro';
     src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-a18afdd7226c8bca88a1a48fef31fbc9.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-c3f8bb4579244b5146385076a03fef5f.ttf) format("truetype");
+    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/modernpictogramspro_2-webfont.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-c3f8bb4579244b5146385076a03fef5f.ttf) format("truetype");
     font-weight: normal;
     font-style: normal;
 }
@@ -12287,7 +12287,7 @@ form .help-icon:after {
     display: inline-block;
 }
 .composites-index .composite-search input {
-    background: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/search_icon-13996db8a708ce5121e9daf4cb5642da.png) no-repeat;
+    background: url(../images/search_icon.png) no-repeat;
     background-position: 10px 50%;
     width: 300px;
     font-size: 1.4rem;
@@ -12630,7 +12630,7 @@ form .help-icon:after {
     text-transform: uppercase;
 }
 .composites-index .on-track {
-    color: #009100;
+    color: #170091;
 }
 .composites-index .off-track {
     color: #e05923;
@@ -13905,7 +13905,7 @@ form .help-icon:after {
     text-decoration: none;
 }
 .composites-show .goal-details .on-track {
-    color: #009100;
+    color: #170091;
 }
 .composites-show .goal-details .off-track {
     color: #e05923;
@@ -14132,7 +14132,7 @@ footer.footer .fineprint .pad {
 footer.footer .fineprint .betterment-logo {
     margin-bottom: 5px;
     width: 42px;
-    height: 29px;
+    height: 36px;
     background: url(../images/white_logo_mini.png);
 }
 footer.footer .fineprint figcaption {
@@ -19918,7 +19918,7 @@ h1.error{
     content: '\FB02'
 }
 .clients-index .filters .client-search input {
-    background: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/search_icon-13996db8a708ce5121e9daf4cb5642da.png) no-repeat;
+    background: url(../images/search_icon.png) no-repeat;
     background-position: 10px 50%;
     width: 300px;
     font-size: 1.4rem;
@@ -20074,7 +20074,7 @@ h1.error{
     overflow: hidden
 }
 .clients-index .filters .client-grouping .selectize-dropdown [data-selectable] .highlight {
-    background: rgba(125, 168, 208, 0.2);
+    background: rgba(96, 208, 170, 0.2);
     -moz-border-radius: 1px;
     -webkit-border-radius: 1px;
     border-radius: 1px
@@ -20083,11 +20083,11 @@ h1.error{
     padding: 5px 8px
 }
 .clients-index .filters .client-grouping .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68
+    background-color: #e1efe0;
+    color: #6a9183
 }
 .clients-index .filters .client-grouping .selectize-dropdown .active.create {
-    color: #495c68
+    color: #496859
 }
 .clients-index .filters .client-grouping .selectize-dropdown .create {
     color: rgba(48, 48, 48, 0.5)
@@ -20116,12 +20116,12 @@ h1.error{
     height: 0;
     border-style: solid;
     border-width: 5px 5px 0 5px;
-    border-color: #3381d0 transparent transparent transparent
+    border-color: #45a018 transparent transparent transparent
 }
 .clients-index .filters .client-grouping .selectize-control.single .selectize-input.dropdown-active:after {
     margin-top: -4px;
     border-width: 0 5px 5px 5px;
-    border-color: transparent transparent #3381d0 transparent
+    border-color: transparent transparent #45a018 transparent
 }
 .clients-index .filters .client-grouping .selectize-control.rtl.single .selectize-input:after {
     left: 15px;
@@ -20281,8 +20281,8 @@ h1.error{
 }
 .clients-show .accounts-overview .header .create-account>a {
     color: #ffffff;
-    background: #3381d0;
-    border: 1px solid #3381d0
+    background: #45a018;
+    border: 1px solid #45a018
 }
 .clients-show .accounts-overview .header .create-account>a:hover {
     background: #0d3866;
@@ -22525,8 +22525,8 @@ h1.error{
 }
 .clients-show .accounts-overview .header .create-account>a {
     color: #ffffff;
-    background: #3381d0;
-    border: 1px solid #3381d0
+    background: #45a018;
+    border: 1px solid #45a018
 }
 .clients-show .accounts-overview .header .create-account>a:hover {
     background: #0d3866;
@@ -22537,7 +22537,7 @@ h1.error{
 }
 .clients-show .client-header .return-link {
     margin: 20px 0;
-    color: #3381d0
+    color: #45a018
 }
 .clients-show .profile-information .columns>div:nth-child(1) {
     width: 459px
@@ -22680,8 +22680,32 @@ h1.error{
     text-align: center
 }
 .clients-show .accounts-overview .client-accounts-table .on-track {
-    color: #009100
+    color: #170091
 }
 .clients-show .accounts-overview .client-accounts-table .off-track {
     color: #e05923
+}
+
+
+.clients-index .filters .client-search input:hover, .composites-index .composite-search input:hover{
+    border-color: #45a018;
+}
+
+.clients-index .filters .client-search input:focus, .composites-index .composite-search input:focus{
+    border-color: #45a018;
+}
+
+.composites-edit .typing-select .selectize-dropdown .active, .composites-index .composite-grouping .selectize-dropdown .active {
+    background-color: #e1efe0;
+    color: #6a9183;
+}
+
+
+body > .nav-bar a{
+    text-transform: uppercase;
+    font-size:medium;
+}
+
+.nav-bar>div li.depressed>a, .nav-bar li>a:hover{
+    color:white;
 }

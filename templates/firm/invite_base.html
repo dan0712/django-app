@@ -1,3 +1,4 @@
+{% load app_filters %}
  <div id="content-main">
         <div class="client-invites">
             <section class="client-invites-header-panel">
@@ -73,7 +74,7 @@
                             <tr>
                                 <td>{{ client_invite.email }}</td>
 
-                                <td>{{ client_invite.send_date }}</td>
+                                <td>{{ client_invite.send_date |b_date}}</td>
 
                                 <td>
                                     {% if client_invite.get_status != 0 %}

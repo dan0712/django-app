@@ -13,3 +13,14 @@ def add_class(value, index):
     if 'class' not in value.field.widget.attrs:
         value.field.widget.attrs['class'] = index
     return value
+
+
+
+@register.filter
+def b_date(value):
+    return "%02d/%02d/%d" % (value.day, value.month, value.year)
+
+
+@register.filter
+def bs_big_number(value):
+    return "{:,}".format(value)

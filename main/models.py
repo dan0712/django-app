@@ -17,6 +17,7 @@ from django.contrib.auth.hashers import make_password
 from django.utils.safestring import mark_safe
 from datetime import date
 
+
 def validate_agreement(value):
     if value is False:
         raise ValidationError("You must accept the agreement to continue.")
@@ -513,15 +514,15 @@ class AccountGroup(models.Model):
 
     @property
     def stocks_percentage(self):
-        return self.allocation * 100.0
+        return int(self.allocation * 100)
 
     @property
     def bonds_percentage(self):
-        return (1-self.allocation) * 100.0
+        return int((1-self.allocation) * 100)
 
     @property
     def on_track(self):
-        return False
+        return True
 
     @property
     def since(self):
