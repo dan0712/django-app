@@ -22689,10 +22689,12 @@ h1.error{
 
 .clients-index .filters .client-search input:hover, .composites-index .composite-search input:hover{
     border-color: #45a018;
+    outline-color: #45a018;
 }
 
 .clients-index .filters .client-search input:focus, .composites-index .composite-search input:focus{
     border-color: #45a018;
+    outline-color: #45a018;
 }
 
 .composites-edit .typing-select .selectize-dropdown .active, .composites-index .composite-grouping .selectize-dropdown .active {
@@ -22703,7 +22705,7 @@ h1.error{
 
 body > .nav-bar a{
     text-transform: uppercase;
-    font-size:medium;
+    font-size:15px;
 }
 
 .nav-bar>div li.depressed>a, .nav-bar li>a:hover{
