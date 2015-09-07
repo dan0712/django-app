@@ -22705,7 +22705,7 @@ h1.error{
 
 body > .nav-bar a{
     text-transform: uppercase;
-    font-size:14px;
+    font-size:1.2rem;
 }
 
 .nav-bar>div li.depressed>a, .nav-bar li>a:hover{
