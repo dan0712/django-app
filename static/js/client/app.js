@@ -23134,10 +23134,6 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.goal, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '</p>\n<label class="static-label">From</label>\n<p class="static-value">', (u = n.bankAccount) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.bankAccount, o = typeof u === f ? u.call(t, {
-                hash: {}
             }) : u), s += l(o) + '</p>\n<div class="buttons">\n    ' + l((u = n.submitButton || t && t.submitButton, a = {
                 hash: {}
             }, u ? u.call(t, "Deposit", a) : c.call(t, "submitButton", "Deposit", a))) + "\n</div>", s
@@ -30588,7 +30584,7 @@ var requirejs, require, define;
             return function(e) {
                 BMT.alert({
                     title: p.goalSetup ? "Confirm Initial Deposit" : "Please Confirm Deposit",
-                    body: (p.goalSetup ? '<span class="bold-text">Do you want to make this initial deposit?</span><br />' : "") + "Deposit amount: " + n.money(l.amount) + "<br />" + 'To: <span class="bold-text multi-ag-only">' + t.escape(d().get("accountGroup").get("name")) + ' - </span> <span class="bold-text">' + t.escape(d().get("name")) + "</span>" + "<br />" + (d().isIRA() ? 'Contribution Type: <span class="bold-text">' + o.getInstance().get("contributionTypes")[l.contributionType].label + "</span><br />" : "") + "From: " + t.escape(BMT.accountGroup.get("bankAccount").get("description")),
+                    body: (p.goalSetup ? '<span class="bold-text">Do you want to make this initial deposit?</span><br />' : "") + "Deposit amount: " + n.money(l.amount) + "<br />" + 'To: <span class="bold-text multi-ag-only">' + t.escape(d().get("accountGroup").get("name")) + ' - </span> <span class="bold-text">' + t.escape(d().get("name")) + "</span>" + "<br />" + (d().isIRA() ? 'Contribution Type: <span class="bold-text">' + o.getInstance().get("contributionTypes")[l.contributionType].label + "</span><br />" : "") ,
                     bodyAttrs: {
                         style: "line-height: 22px; width: 85%"
                     },
@@ -31340,7 +31336,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/summary/noAccounts", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="welcome-box">\n    <h1>Welcome to Betterment!</h1>\n    <h2>Create a goal to begin</h2>\n\n    <p><button class="create-goal">Create a goal</button></p>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="welcome-box">\n    <h1>Welcome to BetaSmartz!</h1>\n    <h2>Create a goal to begin</h2>\n\n    <p><button class="create-goal">Create a goal</button></p>\n</div>\n'
         });
         return t.registerPartial("views/summary/noAccounts", n), n
     }), define("views/summary/noAccountsView", ["common/betterment.views", "hbs!views/summary/noAccounts", "components/common/scripts/analytics/analytics", "views/common/addGoalView"], function(e, t, n, r) {

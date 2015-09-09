@@ -70,8 +70,11 @@ class LegalView(View):
 
 
 class ClientView(View):
+    client = None
+
     @method_decorator(client_member_required)
     def dispatch(self, request, *args, **kwargs):
+        self.client = self.request.user.client
         return super(ClientView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

@@ -1,9 +1,9 @@
 __author__ = 'cristian'
 
 from django.contrib import admin
-from portfolios.models import ProxyAssetClass, ProxyTicker
+from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, \
-    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform
+    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -14,6 +14,7 @@ from django.contrib.auth.hashers import make_password
 class TickerInline(SortableTabularInline):
     model = ProxyTicker
     sortable = 'ordering'
+    extra = 1
 
 
 class ClientAccountInline(admin.StackedInline):
@@ -180,6 +181,16 @@ class GoalAdmin(admin.ModelAdmin):
 class PlatformAdminAdmin(admin.ModelAdmin):
     pass
 
+
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('goal', 'ticker', 'value')
+    pass
+
+
+class PortfolioSetAdmin(admin.ModelAdmin):
+    filter_horizontal = ('asset_classes',)
+    pass
+
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
@@ -189,5 +200,6 @@ admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(AuthorisedRepresentative, AuthorisedRepresentativeAdmin)
-
 admin.site.register(User, UserAdmin)
+admin.site.register(PortfolioSet, PortfolioSetAdmin)
+admin.site.register(Position, PositionAdmin)

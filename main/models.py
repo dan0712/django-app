@@ -89,6 +89,20 @@ PERSONAL_DATA_WIDGETS = {"gender": forms.RadioSelect(),
                              attrs={"placeholder": "Apartment, Suite, Unit, Floor (optional)"})}
 
 
+
+DEPOSIT = "DEPOSIT"
+WITHDRAWAL = "WITHDRAWAL"
+
+
+TRANSACTION_CHOICES = ((DEPOSIT, "DEPOSIT"), (WITHDRAWAL, 'WITHDRAWAL') )
+
+PENDING = 'PENDING'
+EXECUTED = 'EXECUTED'
+
+TRANSACTION_STATUS_CHOICES = (('PENDING', 'PENDING'),
+                              ('EXECUTED', 'EXECUTED'))
+
+
 class BetaSmartzAgreementForm(forms.ModelForm):
 
     def clean(self):
@@ -502,7 +516,10 @@ class AccountGroup(models.Model):
 
     @property
     def total_balance(self):
-        return 0
+        b = 0
+        for a in self.accounts.all():
+            b += a.total_balance
+        return b
 
     @property
     def total_returns(self):
@@ -538,7 +555,7 @@ class AccountGroup(models.Model):
         return self.name
 
 
-PERSONAL_ACCOUNT = 1
+PERSONAL_ACCOUNT = "PERSONAL"
 
 ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"), )
 
@@ -546,7 +563,7 @@ ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"), )
 class ClientAccount(models.Model):
     account_group = models.ForeignKey(AccountGroup, related_name="accounts", null=True)
     custom_fee = models.PositiveIntegerField(default=0)
-    account_type = models.PositiveIntegerField(choices=ACCOUNT_TYPES, default=PERSONAL_ACCOUNT)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default=PERSONAL_ACCOUNT)
     primary_owner = models.ForeignKey('Client', related_name="accounts")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -593,8 +610,16 @@ class ClientAccount(models.Model):
             return self.primary_owner.advisor.firm.fee + Platform.objects.first().fee
 
     @property
+    def name(self):
+        if self.account_type == PERSONAL_ACCOUNT:
+            return "{0}'s Personal Account".format(self.primary_owner.user.first_name)
+
+    @property
     def total_balance(self):
-        return 0
+        b = 0
+        for goal in self.goals.all():
+            b += goal.total_balance
+        return b
 
     @property
     def total_returns(self):
@@ -765,11 +790,26 @@ class Ticker(models.Model):
     description = models.TextField(blank=True, default="", null=False)
     ordering = models.IntegerField(blank=True, default="", null=False)
     url = models.URLField()
-    unit_price = models.FloatField(default=1, editable=False)
+    unit_price = models.FloatField(default=10)
     asset_class = models.ForeignKey(AssetClass, related_name="tickers")
 
     def __str__(self):
         return self.symbol
+
+    @property
+    def primary(self):
+        return "true" if self.ordering == 0 else "false"
+
+    def shares(self, goal):
+        return self.value(goal)/self.unit_price
+
+    def value(self, goal):
+        v = 0
+
+        for p in Position.objects.filter(goal=goal, ticker=self).all():
+            v += p.value
+
+        return v
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -855,12 +895,105 @@ class EmailInvitation(models.Model):
 
 class Platform(models.Model):
     fee = models.PositiveIntegerField(default=0)
+    portfolio_set = models.ForeignKey('portfolios.PortfolioSet')
 
 
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="goals")
     name = models.CharField(max_length=100)
     target = models.FloatField(default=0)
+    created_date = models.DateTimeField(auto_now_add=True)
+    completion_date = models.DateTimeField()
+    allocation = models.FloatField()
+    account_type = models.CharField(max_length=20, default='INVESTING')
+    type = models.CharField(max_length=20, default='RETIREMENT')
+
+    def __str__(self):
+        return self.name + " : " + self.account.primary_owner.full_name
+
+    @property
+    def life_time_average_balance(self):
+        return 0
+
+    @property
+    def life_time_personal_return(self):
+        return 0
+
+    @property
+    def total_earned(self):
+        return 0
+
+    @property
+    def portfolio_set_id(self):
+        return Platform.objects.first().portfolio_set.pk
+
+    @property
+    def available_balance(self):
+        return self.total_balance + self.pending_withdrawals
+
+    @property
+    def pending_deposits(self):
+        pd = 0.0
+        for d in Transaction.objects.filter(account=self, status=PENDING, type=DEPOSIT).all():
+            pd += d.amount
+        return pd
+
+    @property
+    def pending_withdrawals(self):
+        pw = 0.0
+        for w in Transaction.objects.filter(account=self, status=PENDING, type=WITHDRAWAL).all():
+            pw -= w.amount
+        return pw
+
+    @property
+    def total_deposits(self):
+        pd = 0.0
+        for d in Transaction.objects.filter(account=self, status=EXECUTED, type=DEPOSIT).all():
+            pd += d.amount
+        return pd
+
+    @property
+    def total_withdrawals(self):
+        pw = 0.0
+        for w in Transaction.objects.filter(account=self, status=EXECUTED, type=WITHDRAWAL).all():
+            pw -= w.amount
+        return pw
+
+    @property
+    def total_dividends(self):
+        return 0.0
+
+    @property
+    def market_changes(self):
+        return 0.0
+
+    @property
+    def total_invested(self):
+        return self.total_deposits
+
+    @property
+    def life_time_return(self):
+        return 0.0
+
+    @property
+    def other_adjustments(self):
+        return 0.0
+
+    @property
+    def pending_conversions(self):
+        return 0
+
+    @property
+    def cash_balance(self):
+        return 0.0
+
+    @property
+    def total_fees(self):
+        return 0.0
+
+    @property
+    def recharacterized(self):
+        return 0
 
     @property
     def on_track(self):
@@ -868,6 +1001,17 @@ class Goal(models.Model):
 
     @property
     def total_balance(self):
+        b = 0
+        for p in Position.objects.filter(goal=self).all():
+            b += p.value
+        return b
+
+    @property
+    def stock_balance(self):
+        return 0
+
+    @property
+    def bond_balance(self):
         return 0
 
     @property
@@ -893,3 +1037,22 @@ class Goal(models.Model):
     @property
     def auto_term(self):
         return "-"
+
+
+class Position(models.Model):
+    goal = models.ForeignKey(Goal, related_name='positions')
+    ticker = models.ForeignKey(Ticker)
+    value = models.FloatField()
+
+    def __str__(self):
+        return self.ticker.symbol
+
+
+class Transaction(models.Model):
+    account = models.ForeignKey(Goal, related_name="transactions")
+    type = models.CharField(max_length=20, choices=TRANSACTION_CHOICES)
+    from_account = models.ForeignKey(ClientAccount, related_name="transactions_from", null=True, blank=True)
+    to_account = models.ForeignKey(ClientAccount, related_name="transactions_to", null=True, blank=True)
+    amount = models.BigIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=TRANSACTION_STATUS_CHOICES, default=PENDING)
+    created_date = models.DateTimeField(auto_now_add=True)

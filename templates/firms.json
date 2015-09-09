@@ -1,1 +1,10 @@
-{"id":204,"name":"First Road Advisors","slug":"first-road-advisors","logoUrl":"https://demo-app.bettermentinstitutional.com/firms/1-firm/logo?style=large","knockedOutLogoUrl":"https://demo-app.bettermentinstitutional.com/firms/1-firm/knocked_out_logo?style=large","formAdvPart2Url":null,"clientAgreementUrl":"https://demo-app.bettermentinstitutional.com/client_agreements/y6zMzGVxUQI/document","clientAgreementToken":"y6zMzGVxUQI"}
+{
+   "id":{{profile.advisor.firm.pk}},
+   "name":"{{profile.advisor.firm.name}}",
+   "slug":"{{profile.advisor.firm.slug}}",
+   "logoUrl":"{{profile.advisor.firm.white_logo}}",
+   "knockedOutLogoUrl":"{{profile.advisor.firm.colored_logo}}",
+   "formAdvPart2Url":null,
+   "clientAgreementUrl":"{{MEDIA_URL}}{{profile.advisor.firm.client_agreement_url.name}}",
+   "clientAgreementToken":"{{profile.advisor.firm.token}}"
+}

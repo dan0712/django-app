@@ -1,3 +1,4 @@
+{% load app_filters %}
 {
     "id": "{{profile.pk}}",
     "userName": "{{profile.email}}",
@@ -5,7 +6,7 @@
     "firstName": "{{profile.user.first_name}}",
     "middleName": "{{profile.user.middle_name}}",
     "lastName": "{{profile.user.last_name}}",
-    "dateOfBirth": "19810727000000",
+    "dateOfBirth": "{{profile.date_of_birth |c_datetime}}",
     "type": "FULL",
     "demo": {{is_demo}},
     "address1": "24449 Example Lane",
@@ -13,7 +14,7 @@
     "city": "{{profile.city}}",
     "state": "{{profile.state}}",
     "zip": "{{profile.post_code}}",
-    "phoneNumber": "888-555-1234",
+    "phoneNumber": "{{profile.phone_number}}",
     "userState": "Active",
     "firstLogin": false,
     "lastLogin": "20150406204857",
@@ -50,42 +51,8 @@
         "created_at": "2015-08-31T17:13:09.817-04:00",
         "updated_at": "2015-09-01T11:23:54.655-04:00"
     },
-    "externalAccounts": [{
-        "id": 17,
-        "account_type": "401k",
-        "balance_cents": 3000000,
-        "annual_contribution_cents": 300000,
-        "account_owner": "user",
-        "institution_name": "Fidelity",
-        "investment_type": "stocks",
-        "advisor_fee_percent": null
-    }],
-    "financialPlans": [{
-        "id": 23,
-        "name": "Retirement Plan",
-        "retirement_age": 55,
-        "spouse_retirement_age": 59,
-        "retirement_zip": "21202",
-        "desired_retirement_income_cents": 11600000,
-        "other_retirement_income_cents": 0,
-        "savings_advice_chance": null,
-        "complete": true,
-        "accounts": [{
-            "id": 55078,
-            "bettermentdb_account_id": 33234,
-            "annual_contribution_cents": null
-        }],
-        "external_accounts": [{
-            "id": 17,
-            "account_type": "401k",
-            "balance_cents": 3000000,
-            "annual_contribution_cents": 300000,
-            "account_owner": "user",
-            "institution_name": "Fidelity",
-            "investment_type": "stocks",
-            "advisor_fee_percent": null
-        }]
-    }],
+    "externalAccounts": [],
+    "financialPlans": [],
     "annualIncome": 150000,
     "netWorth": 400000,
     "iraSignup": false,
@@ -112,21 +79,23 @@
         "meterSenderPrize": "90 days free",
         "prizeType": "time"
     },
-    "accountGroups": [{
-        "id": 24449,
-        "name": "Rhonda's Personal Account",
+    "accountGroups": [
+{% for account in profile.accounts.all %}{% if forloop.counter == 1 %}{% else %},{% endif %}
+{
+        "id": {{account.pk}},
+        "name": "{{account.name |safe}}",
         "demo": false,
-        "type": "PERSONAL",
+        "type": "{{account.account_type}}",
         "funded": true,
         "daysFree": 0,
         "hasClosedAccounts": false,
-        "investingSince": "20121031044645",
+        "investingSince": "{{account.created_at | c_datetime}}",
         "accountGroupState": "NORMAL",
         "taxLossHarvestingStatus": "USER_OFF",
         "taxLossHarvestingEnabled": false,
         "taxLossHarvestingConsent": false,
         "taxLossHarvestingGateType": "MINIMUM_BALANCE",
-        "unrealizedLosses": "77546.58",
+        "unrealizedLosses": "0.0",
         "totalLossesHarvested": "0.00",
         "annualHarvestedLosses": [{
             "taxYear": 2015,
@@ -145,7 +114,7 @@
             "confirmed": true,
             "accountNumber": "*************4995",
             "routingNumber": "322271627",
-            "description": "J.P. MORGAN CHASE BANK, N.A.",
+            "description": "Bank Account",
             "plaidBankType": null,
             "linkType": "manual",
             "colorHex": "#3481D1",
@@ -168,8 +137,10 @@
         },
         "canCopyPersonalBankAccount": false,
         "hasHadBankAccount": true,
-        "primaryAccountHolderId": 24449
-    }],
+        "primaryAccountHolderId": {{profile.pk}}
+    }
+{% endfor %}
+],
     "defaultAccountGroupId": null,
     "performerSession": false,
     "advisorSession": {{is_advisor}}

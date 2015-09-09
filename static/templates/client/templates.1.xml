@@ -376,9 +376,7 @@ signup bonus of <%= signupBonusPrize() %>, you must make an initial deposit of <
 </div>
 <div class="detail">
 <p>To: <span class="multi-ag-only"><%= accountGroupName() %> - </span> <%= goalName() %></p>
-<% if (bankAccountName()) { %>
-<p>From: <%= bankAccountName() %></p>
-<% } %>
+
 
 <% if (account().isIRA()) { %>
 <div class="contribution-type-selection clearfix ">
@@ -800,12 +798,8 @@ Your withdrawal causes sales of securities, which may result in taxes.
 <ul>
 <li>
 Withdrawal amount: <strong><%- money(self.model.get('amount')) %></strong>
-<% if (!isIRA()) { %>
-<button class="show-tax-impact" data-track-event="ElementClicked" data-track-location="WithdrawalConfirmModal" data-track-name="TaxImpact">See tax impact</button>
-<% } %>
 </li>
 <li>From: <strong><%- goalName() %></strong></li>
-<li>To: <strong><%- bankAccountName() %></strong></li>
 </ul>
 
 <p class="time-estimate">Please allow 4-5 business days for transfers to complete.</p>
@@ -961,7 +955,6 @@ Limits Calculator to determine if you may be limited.
 </div>
 </div>
 <p>To: <%= account().get('name')  %> </p>
-<p>From: <%= BMT.user.get('bankAccount').get('description') %></p>
 <div class="contribution-type-selection clearfix ">
 <div class="left ira-heading" id="contributionHelp">
 <span class="dotted-underline bold-text">Contribution Type</span>

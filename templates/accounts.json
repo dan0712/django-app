@@ -1,56 +1,61 @@
-[
-  {
-    "id": 33234,
-    "name": "Retirement",
-    "accountNumber": "8400112565787",
-    "ordering": 0,
-    "rebalanceEnabled": true,
-    "smartDepositViolations": [
-      "not_plaid"
-    ],
-    "smartDepositConfig": {
-      "enabled": false
-    },
-    "accountGroupId": 24449,
-    "portfolioSetId": 18,
-    "financialPlanId": null,
-    "accountType": "INVESTING",
-    "createdDate": "20121031044645",
-    "goalAmount": "100000.0",
-    "income": false,
-    "goalType": "RETIREMENT",
-    "goalCompletionDate": "20220727000000",
-    "automaticDepositId": null,
-    "automaticWithdrawalId": null,
-    "allocation": 0.58,
-    "canChangeAllocation": true,
-    "currentBalance": "1181668.39",
-    "availableBalance": "1183850.99",
-    "availableBalanceForWithdrawal": "1183850.99",
-    "pendingDeposits": "0.00",
-    "pendingWithdrawals": "0.00",
-    "pendingConversions": "0.00",
-    "recharacterized": "0.00",
-    "stockBalance": "660888.11",
-    "bondBalance": "520780.28",
-    "cashBalance": "0.00",
-    "lifetimeAverageBalance": "585172.90",
-    "lifetimeReturn": "0.2087",
-    "totalInvested": "1170000.00",
-    "totalEarned": "11668.39",
-    "accountReturn": {
-      "deposits": "1270000.00",
-      "withdrawals": "-100000.00",
-      "otherAdjustments": "0.00",
-      "fees": "-2182.60",
-      "dividends": "41569.96",
-      "marketChanges": "-27718.97",
-      "totalInvested": "1170000.00",
-      "totalEarned": "11668.39",
-      "lifetimeReturn": "0.2087",
-      "lifetimePersonalReturn": "0.01",
-      "lastEndingBalance": "1181668.39",
-      "averageBalance": "585172.90"
+{% load app_filters%}[{% for account in profile.accounts.all %}{% for goal in account.goals.all %}{% if forloop.counter == 1 and forloop.parentloop.counter == 1 %}{% else %},{% endif %}
+    {
+      "id": {{goal.pk}},
+      "name": "{{goal.name}}",
+      "accountNumber": "{{account.pk}}",
+      "ordering": {{forloop.counter0}},
+      "rebalanceEnabled": true,
+      "smartDepositViolations": [
+        "not_plaid"
+      ],
+      "smartDepositConfig": {
+        "enabled": false
+      },
+      "accountGroupId": {{ account.pk }},
+      "portfolioSetId": {{goal.portfolio_set_id}},
+      "financialPlanId": null,
+      "accountType": "{{goal.account_type}}",
+      "createdDate": "{{goal.created_date |c_datetime}}",
+      "goalAmount": "{{goal.target}}",
+      "income": false,
+      "goalType": "{{goal.type}}",
+      "goalCompletionDate": "{{goal.completion_date |c_datetime}}",
+      "automaticDepositId": null,
+      "automaticWithdrawalId": null,
+      "allocation": {{goal.allocation}},
+      "canChangeAllocation": true,
+      "currentBalance": "{{goal.total_balance}}",
+      "availableBalance": "{{goal.available_balance}}",
+      "availableBalanceForWithdrawal": "{{goal.available_balance}}",
+      "pendingDeposits": "{{goal.pending_deposits}}",
+      "pendingWithdrawals": "{{goal.pending_withdrawals}}",
+      "pendingConversions": "{{goal.pending_conversions}}",
+      "recharacterized": "{{goal.recharacterized}}",
+      "stockBalance": "{{goal.stock_balance}}",
+      "bondBalance": "{{goal.bond_balance}}",
+      "cashBalance": "{{goal.cash_balance}}",
+      "lifetimeAverageBalance": "{{goal.life_time_average_balance}}",
+      "lifetimeReturn": "{{goal.life_time_personal_return}}",
+      "totalInvested": "{{goal.total_invested}}",
+      "totalEarned": "{{goal.total_earned}}",
+      "accountReturn": {
+        "deposits": "{{goal.total_deposits}}",
+        "withdrawals": "{{goal.total_withdrawals}}",
+        "otherAdjustments": "{{goal.other_adjustments}}",
+        "fees": "{{goal.total_fees}}",
+        "dividends": "{{goal.total_dividends}}",
+        "marketChanges": "{{goal.market_changes}}",
+        "totalInvested": "{{goal.total_invested}}",
+        "totalEarned": "{{goal.total_earned}}",
+        "lifetimeReturn": "{{goal.life_time_return}}",
+        "lifetimePersonalReturn": "{{goal.life_time_personal_return}}",
+        "lastEndingBalance": "{{goal.total_balance}}",
+        "averageBalance": "{{goal.life_time_average_balance}}"
+      }
     }
-  }
+
+
+
+    {% endfor %}
+  {% endfor %}
 ]

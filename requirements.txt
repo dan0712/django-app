@@ -4,3 +4,5 @@ psycopg2==2.6.1
 django-suit==0.2.13
 Pillow==2.9.0
 django-localflavor-au-tjh==1.1.2
+numpy==1.9.2
+scipy==0.16.0

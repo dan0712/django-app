@@ -12,6 +12,6 @@
   "firmLogoUrl": "{{profile.advisor.firm.white_logo}}",
   "firmKnockedOutLogoUrl": "{{profile.advisor.firm.colored_logo}}",
   "firmFormAdvPart2Url": null,
-  "firmClientAgreementUrl": "https:\/\/demo-app.bettermentinstitutional.com\/client_agreements\/DoihTZ7nfNU\/document",
+  "firmClientAgreementUrl": "{{MEDIA_URL}}{{profile.advisor.firm.client_agreement_url.name}}",
   "firmClientAgreementToken": "{{profile.advisor.firm.token}}"
 }
