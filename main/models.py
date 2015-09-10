@@ -792,6 +792,7 @@ class Ticker(models.Model):
     url = models.URLField()
     unit_price = models.FloatField(default=10)
     asset_class = models.ForeignKey(AssetClass, related_name="tickers")
+    currency = models.CharField(max_length=10, default="AUD")
 
     def __str__(self):
         return self.symbol
@@ -893,9 +894,14 @@ class EmailInvitation(models.Model):
         self.save()
 
 
+YAHOO_API = "YAHOO"
+API_CHOICES = ((YAHOO_API, "YAHOO"), )
+
+
 class Platform(models.Model):
     fee = models.PositiveIntegerField(default=0)
     portfolio_set = models.ForeignKey('portfolios.PortfolioSet')
+    api = models.CharField(max_length=20, default=YAHOO_API, choices=API_CHOICES)
 
 
 class Goal(models.Model):

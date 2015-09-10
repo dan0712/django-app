@@ -7,7 +7,7 @@ from ...models import Transaction, ClientAccount, PENDING, Goal, Platform
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from datetime import datetime
-from portfolios.models import PortfolioByRisk
+from portfolios.models import PortfolioByRisk, PortfolioSet
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
            "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions',
@@ -44,9 +44,22 @@ class PortfolioAssetClasses(ClientView, TemplateView):
         return ctx
 
 
-class PortfolioPortfolios(TemplateView):
+class PortfolioPortfolios(ClientView, TemplateView):
     template_name = "portfolio-portfolios.json"
     content_type = "application/json"
+
+    def get(self, request, *args, **kwargs):
+        portfolio_set = get_object_or_404(PortfolioSet, pk = kwargs["pk"])
+        ret = []
+        for portfolio in portfolio_set.risk_profiles.all():
+            new_pr = { "risk": portfolio.risk,
+                       "expectedReturn": portfolio.expected_return,
+                       "volatility": portfolio.volatility,
+                       'allocations': json.loads(portfolio.allocations)
+                       }
+            ret.append(new_pr)
+
+        return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
 class PortfolioRiskFreeRates(TemplateView):
@@ -98,7 +111,6 @@ class ClientAccountPositions(ClientView, TemplateView):
         portfolio_set = Platform.objects.first().portfolio_set
         pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation).order_by('-risk').first()
         allocations = json.loads(pbr.allocations)
-        print(allocations)
         # get positions
 
         positions = []

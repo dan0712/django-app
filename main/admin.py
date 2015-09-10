@@ -1,7 +1,7 @@
 __author__ = 'cristian'
 
 from django.contrib import admin
-from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet
+from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, \
     AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position
 from suit.admin import SortableTabularInline
@@ -14,11 +14,16 @@ from django.contrib.auth.hashers import make_password
 class TickerInline(SortableTabularInline):
     model = ProxyTicker
     sortable = 'ordering'
-    extra = 1
+    extra = 0
 
 
 class ClientAccountInline(admin.StackedInline):
     model = ClientAccount
+
+
+class PortfolioViewsInline(admin.StackedInline):
+    model = View
+    extra = 0
 
 
 class AdvisorInline(admin.StackedInline):
@@ -189,7 +194,15 @@ class PositionAdmin(admin.ModelAdmin):
 
 class PortfolioSetAdmin(admin.ModelAdmin):
     filter_horizontal = ('asset_classes',)
+    inlines = (PortfolioViewsInline, )
     pass
+
+
+class PortfolioByRiskAdmin(admin.ModelAdmin):
+    list_display = ('risk', 'portfolio_set', 'expected_return', 'volatility')
+    pass
+
+admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
 
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)

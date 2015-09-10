@@ -78,73 +78,43 @@ def assets_meanvar(daily_returns):
     return expreturns, covars
 
 
+def handle_data(all_prices, risk_free, allocation, asset_type):
+    """
+    all prices: table with the dayle closed price for each asset
+    risk_free: risk free rate
+    asset_type: list (0,0,0,1,1,1), where 1 means that is a stock and 0 that is a bond
+    """
 
-def initialize(context):
+    # get initial weightings
+    W = np.ones()/n
 
-  # Set day
-  context.day = 0
-
-  context.rate = '1 Yr'
-
-  context.tau = 0.025 # context.tau is a scalar indicating the uncertainty
-  # in the CAPM (Capital Asset Pricing Model) prior
-
-  context.rf = 0 # context.rf is the risk-free rate
-
-  # Select five large cap equities for the portfolio
-  context.securities = [sid(24),sid(26578),sid(3149), sid(5061)]
-  # Apple, Google, GE, Microsoft
-  context.market_cap = np.zeros(len(context.securities))
-  context.cap_wts = np.array(len(context.securities))
-
-  # Set Max and Min positions in security
-  context.max_notional = 1000000.1
-  context.min_notional = -1000000.0
-
-
-def handle_data(context, data):
-    # Compute market capitalizations and relative market weightings
-    for i in range(0, len(context.securities)):
-        if 'cap' in data[context.securities[i]]:
-            context.market_cap[i] = data[context.securities[i]]['cap']
-    total_cap = float(sum(context.market_cap))
-    context.cap_wts = np.array(context.market_cap/total_cap)
-
-    # Get historical prices
-    all_prices = get_past_prices(data)
-    if 'yield' in data['risk_free_rate']:
-      context.rf = data['risk_free_rate']['yield']
-
-    # Circuit breaker in case transform returns none
-    if all_prices is None:
-        return
-
-    if context.day % refresh_rate is not 0:
-        context.day = context.day + 1
-        return
-    # Make sure the columns of all_prices matches the order of
-    # securites in context.securities.
-    del all_prices['risk_free_rate']
-    all_prices = all_prices[context.securities]
     # Drop missing values and transpose matrix
     daily_returns = all_prices.pct_change().dropna().values.T
 
-    expreturns, covars = assets_meanvar(daily_returns)
-    R = expreturns # R is the vector of expected returns
-    C = covars # C is the covariance matrix
-    W = context.cap_wts
+    expected_returns, co_vars = assets_meanvar(daily_returns)
 
-    new_mean = compute_mean(W,R)
+    # R is the vector of expected returns
+    R = expected_returns
+    # C is the covariance matrix
+    C = co_vars
+
+    new_mean = compute_mean(W, R)
     new_var = compute_var(W, C)
 
-    lmb = (new_mean - context.rf) / new_var # Compute implied equity risk premium
-    Pi = dot(dot(lmb, C), W) # Compute equilibrium excess returns
+    # Compute implied equity risk premium
+    lmb = (new_mean - risk_free) / new_var
+    # Compute equilibrium excess returns
+    Pi = dot(dot(lmb, C), W)
 
     # Solve for weights before incorporating views
-    W = solve_weights(Pi+context.rf, C, context.rf)
+    W = solve_weights(Pi+risk_free, C, risk_free, allocation)
 
-    mean, var = compute_mean_var(W, R, C) # calculate tangency portfolio
+    print(W)
 
+    # calculate tangency portfolio
+    mean, var = compute_mean_var(W, R, C)
+
+    """
     # VIEWS ON ASSET PEcontext.rfORMANCE
     # Here, we give two views, that Google will outpecontext.rform Apple by 3%, and
     # that Google will outpecontext.rform Microsoft by 2%.
@@ -176,5 +146,5 @@ def handle_data(context, data):
         new_position = (portfolio_value*new_weights[security_index])/all_prices[security][window-1]
         order(security, new_position-current_position)
         security_index += security_index
-
     context.day += context.day
+    """

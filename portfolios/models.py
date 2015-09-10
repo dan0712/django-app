@@ -1,7 +1,6 @@
 from main.models import AssetClass, Ticker
 from django.db import models
 
-
 class ProxyAssetClass(AssetClass):
     class Meta:
         proxy = True
@@ -24,10 +23,20 @@ class PortfolioSet(models.Model):
     tau = models.FloatField()
     # views =
 
+    def __str__(self):
+        return self.name
+
 
 class PortfolioByRisk(models.Model):
-    portfolio_set = models.ForeignKey(PortfolioSet)
+    portfolio_set = models.ForeignKey(PortfolioSet, related_name="risk_profiles")
     risk = models.FloatField()
     expected_return = models.FloatField()
     volatility = models.FloatField()
     allocations = models.TextField(default="{}")
+
+
+
+class View(models.Model):
+    q = models.FloatField()
+    assets = models.TextField()
+    portfolio_set = models.ForeignKey(PortfolioSet, related_name="views")
