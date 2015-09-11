@@ -21,7 +21,7 @@
     border-bottom: 1px solid #A3C745
 }
 .input-select:after {
-    content: "â€";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 230%;
     text-transform: none;
@@ -330,7 +330,7 @@
     opacity: 1
 }
 .modals-region .modal-layout .modal-wrapper .close:before {
-    content: "â€™";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 235%;
     text-transform: none;
@@ -2884,7 +2884,7 @@ display:block .modal-panel .batch-settings-modal .settings-list>li .section-bloc
     text-align: center
 }
 .modal-panel .transaction-memo .upper:before {
-    content: "âˆž";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 100%;
     text-transform: none;
@@ -5790,7 +5790,7 @@ div.ghost-form .pane.benefits-pane h4 {
     padding-top: 31px
 }
 #jointAccountSignup .signup-step .joint-account-signup-confirm .joint-accounts-success:before {
-    content: "âˆž";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 120%;
     text-transform: none;
@@ -6029,7 +6029,7 @@ div.ghost-form .pane.benefits-pane h4 {
     line-height: 64px
 }
 .joint-account-acceptance .confirmation-form:before {
-    content: "âˆž";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 120%;
     text-transform: none;
@@ -6880,7 +6880,7 @@ html.responsive body .panel.logged-out {
     transition: all .2s linear
 }
 .retirement-plan nav .edit-assumptions-container:after {
-    content: "â€";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 150%;
     text-transform: none;
@@ -6943,7 +6943,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan nav .edit-assumptions-container.active:after {
     opacity: 1;
     transform: rotate(90deg);
-    content: 'â€™';
+    content: 'a';
     top: 6px
 }
 .retirement-plan .content {
@@ -8148,7 +8148,7 @@ html.responsive body .panel.logged-out {
     border-top: 1px solid #e6e6e6
 }
 .edit-assumptions-region .assumptions a:after {
-    content: "â€”";
+    content: "a”";
     font-family: ModernPictogramsPro!important;
     font-size: 150%;
     text-transform: none;
@@ -8231,7 +8231,7 @@ html.responsive body .panel.logged-out {
     cursor: pointer
 }
 .edit-assumptions-region .assumption-container .read-more a:after {
-    content: "â€”";
+    content: "a”";
     font-family: ModernPictogramsPro!important;
     font-size: 125%;
     text-transform: none;
@@ -8900,7 +8900,7 @@ html.responsive body .panel.logged-out {
     padding: 8px 0
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .remove-account.col:before {
-    content: "â€™";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 200%;
     text-transform: none;
@@ -9369,7 +9369,7 @@ html.responsive body .panel.logged-out {
     transition: all .3s ease-in-out
 }
 .retirement-plan-splash .circle .bottom .down-arrow:after {
-    content: "â€";
+    content: "a";
     font-family: ModernPictogramsPro!important;
     font-size: 220%;
     text-transform: none;

@@ -1316,7 +1316,7 @@
     line-height: 1;
 }
 #flash-placeholder #flash #flash-close:before {
-    content: "â€™";
+    content: "x";
     font-family: ModernPictogramsPro!important;
     font-size: 225%;
     text-transform: none;

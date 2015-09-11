@@ -3,7 +3,11 @@ from django.contrib import admin
 from .views import *
 from django.views.decorators.csrf import csrf_exempt
 from main import settings
-from django.shortcuts import HttpResponseRedirect
+from django.shortcuts import HttpResponseRedirect, HttpResponse
+
+def ok_response_json(*args, **kwargs):
+    return HttpResponse("[]", content_type='application/json')
+
 
 urlpatterns = patterns('',
 
@@ -83,6 +87,7 @@ urlpatterns = patterns('',
     url(r'^client/api/firms', ClientFirm.as_view(), name='client:api:firms'),
     url(r'^client/api/accounts/(?P<pk>\d+)/positions', ClientAccountPositions.as_view(),
         name='client:api:accounts:positions'),
+    url(r'^client/api/client/api/accounts/(?P<pk>\d+)/withdrawals$', csrf_exempt(Withdrawals.as_view())),
 
     url(r'^client/api/portfolio-sets/(?P<pk>\d+)/asset-classes', PortfolioAssetClasses.as_view(),
         name='client:api:portfolio_sets:asset_classes'),
@@ -90,8 +95,13 @@ urlpatterns = patterns('',
         name='client:api:portfolio_sets:portfolios'),
     url(r'^client/api/portfolio-sets/(?P<pk>\d+)/risk-free-rates', PortfolioRiskFreeRates.as_view(),
         name='client:api:portfolio_sets:risk_free_rates'),
+    url(r'^client/api/client/api/accounts/(?P<pk>\d+)/allocations$', csrf_exempt(ChangeAllocation.as_view())),
 
+    url(r'^client/api/account-groups/(?P<pk>\d+)/pending-invites', ok_response_json),
     url(r'^transactions$', csrf_exempt(NewTransactionsView.as_view())),
+    url(r'^client/api/transaction_memos$', csrf_exempt(NewTransactionMemoView.as_view())),
+    url(r'^client/api/accounts/(?P<pk>\d+)$', csrf_exempt(ChangeGoalView.as_view())),
+    url(r'^automaticDeposit$', csrf_exempt(SetAutoDepositView.as_view())),
 
     url(r'^password/reset/$',
         'django.contrib.auth.views.password_reset',

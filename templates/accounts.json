@@ -20,7 +20,8 @@
       "income": false,
       "goalType": "{{goal.type}}",
       "goalCompletionDate": "{{goal.completion_date |c_datetime}}",
-      "automaticDepositId": null,
+      "automaticDepositId": {% if goal.auto_deposit %}{{goal.auto_deposit.pk}}{% else %}null{% endif %},
+      {% if goal.auto_deposit %}"automaticDeposit": {"transactionDateTime2": {% if goal.auto_deposit.transaction_date_time_2 %}"{{goal.auto_deposit.transaction_date_time_2| c_datetime}}" {% else %} null {% endif %}, "transactionDateTime1": "{{goal.auto_deposit.transaction_date_time_1 | c_datetime}}", "nextTransaction": "{{goal.auto_deposit.next_transaction| c_datetime}}", "lastPlanChange": "{{goal.auto_deposit.last_plan_change| c_datetime}}", "id": {{goal.auto_deposit.pk}}, "frequency": "{{goal.auto_deposit.frequency}}", "amount": "{{goal.auto_deposit.amount}}", "enabled": {{goal.auto_deposit.is_enabled}} },{% endif %}
       "automaticWithdrawalId": null,
       "allocation": {{goal.allocation}},
       "canChangeAllocation": true,

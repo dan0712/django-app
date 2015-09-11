@@ -3,7 +3,7 @@ __author__ = 'cristian'
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, \
-    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position
+    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, TransactionMemo
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -19,6 +19,11 @@ class TickerInline(SortableTabularInline):
 
 class ClientAccountInline(admin.StackedInline):
     model = ClientAccount
+
+
+class TransactionMemoInline(admin.StackedInline):
+    model = TransactionMemo
+    extra = 0
 
 
 class PortfolioViewsInline(admin.StackedInline):
@@ -42,6 +47,11 @@ class AssetClassAdmin(SortableModelAdmin):
     list_display = ('name', 'display_name', 'display_order', 'investment_type', 'super_asset_class')
     inlines = (TickerInline,)
     sortable = 'display_order'
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('account', 'type', 'from_account', 'to_account', 'status', 'amount', 'created_date')
+    inlines = (TransactionMemoInline,)
 
 
 class FirmFilter(admin.SimpleListFilter):
@@ -216,3 +226,4 @@ admin.site.register(AuthorisedRepresentative, AuthorisedRepresentativeAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
+admin.site.register(Transaction, TransactionAdmin)

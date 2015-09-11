@@ -15,7 +15,7 @@ from django.template.loader import render_to_string
 from django import forms
 from django.contrib.auth.hashers import make_password
 from django.utils.safestring import mark_safe
-from datetime import date
+from datetime import date, datetime
 
 
 def validate_agreement(value):
@@ -89,12 +89,12 @@ PERSONAL_DATA_WIDGETS = {"gender": forms.RadioSelect(),
                              attrs={"placeholder": "Apartment, Suite, Unit, Floor (optional)"})}
 
 
-
+ALLOCATION = "ALLOCATION"
 DEPOSIT = "DEPOSIT"
 WITHDRAWAL = "WITHDRAWAL"
 
 
-TRANSACTION_CHOICES = ((DEPOSIT, "DEPOSIT"), (WITHDRAWAL, 'WITHDRAWAL') )
+TRANSACTION_CHOICES = ((ALLOCATION, "ALLOCATION"), (DEPOSIT, "DEPOSIT"), (WITHDRAWAL, 'WITHDRAWAL'))
 
 PENDING = 'PENDING'
 EXECUTED = 'EXECUTED'
@@ -469,7 +469,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def total_balance(self):
-        return 0
+        b = 0
+        for ag in self.primary_account_groups.all():
+            b += ag.total_balance
+
+        for ag in self.secondary_account_groups.all():
+            b += ag.total_balance
+        return b
 
     @property
     def total_account_groups(self):
@@ -477,7 +483,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def average_balance(self):
-        if self.total_account_groups>0:
+        if self.total_account_groups > 0:
             return self.total_balance / self.total_account_groups
         return 0
 
@@ -530,16 +536,37 @@ class AccountGroup(models.Model):
         return 0
 
     @property
+    def stock_balance(self):
+        b = 0
+        for account in self.accounts.all():
+            b += account.stock_balance
+        return b
+
+    @property
+    def bond_balance(self):
+        b = 0
+        for account in self.accounts.all():
+            b += account.bond_balance
+        return b
+
+    @property
     def stocks_percentage(self):
-        return int(self.allocation * 100)
+        if self.total_balance == 0:
+            return 0
+        return "{0:.0f}".format(self.stock_balance/self.total_balance * 100)
 
     @property
     def bonds_percentage(self):
-        return int((1-self.allocation) * 100)
+        if self.total_balance == 0:
+            return 0
+        return "{0:.0f}".format(self.bond_balance/self.total_balance * 100)
 
     @property
     def on_track(self):
-        return True
+        on_track = True
+        for account in self.accounts.all():
+            on_track = on_track and account.on_track
+        return on_track
 
     @property
     def since(self):
@@ -622,16 +649,34 @@ class ClientAccount(models.Model):
         return b
 
     @property
+    def stock_balance(self):
+        b = 0
+        for goal in self.goals.all():
+            b += goal.stock_balance
+        return b
+
+    @property
+    def bond_balance(self):
+        b = 0
+        for goal in self.goals.all():
+            b += goal.bond_balance
+        return b
+
+    @property
     def total_returns(self):
         return 0
 
     @property
     def stocks_percentage(self):
-        return 0
+        if self.total_balance == 0:
+            return 0
+        return "{0:.0f}".format(self.stock_balance/self.total_balance * 100)
 
     @property
     def bonds_percentage(self):
-        return 0
+        if self.total_balance == 0:
+            return 0
+        return "{0:.0f}".format(self.bond_balance/self.total_balance * 100)
 
     @property
     def owners(self):
@@ -645,7 +690,10 @@ class ClientAccount(models.Model):
 
     @property
     def on_track(self):
-        return False
+        on_track = True
+        for goal in self.goals.all():
+            on_track = on_track and goal.on_track
+        return on_track
 
     def __str__(self):
         return "{0}:{1}:{2}:({3})".format(self.primary_owner.full_name,
@@ -743,7 +791,8 @@ class Client(NeedApprobation, NeedConfirmation):
             new_ac = ClientAccount(primary_owner=self)
             new_ac.save()
 
-
+BONDS = "BONDS"
+STOCKS = "STOCKS"
 INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"))
 
 
@@ -779,6 +828,10 @@ class AssetClass(models.Model):
 
         super(AssetClass, self).save(force_insert, force_update, using, update_fields)
 
+    @property
+    def donut_order(self):
+        return 8000 - self.display_order
+
     def __str__(self):
         return self.name
 
@@ -803,6 +856,10 @@ class Ticker(models.Model):
 
     def shares(self, goal):
         return self.value(goal)/self.unit_price
+
+    @property
+    def is_stock(self):
+        return self.asset_class.investment_type == STOCKS
 
     def value(self, goal):
         v = 0
@@ -1003,7 +1060,20 @@ class Goal(models.Model):
 
     @property
     def on_track(self):
-        return False
+        from portfolios.models import PortfolioByRisk
+        portfolio_set = Platform.objects.first().portfolio_set
+        current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
+        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=self.allocation)\
+            .order_by('-risk').first()
+        today = date.today()
+        term = self.completion_date.year - today.year
+        expected_return = pbr.expected_return / 100 + portfolio_set.risk_free_rate
+        expected_value = current_balance*(1+expected_return) ** term
+        if hasattr(self, "auto_deposit"):
+            ada = self.auto_deposit.get_annualized
+            for i in range(0, term):
+                expected_value += ada*(1+expected_return) ** (term-i)
+        return expected_value >= self.target
 
     @property
     def total_balance(self):
@@ -1014,11 +1084,19 @@ class Goal(models.Model):
 
     @property
     def stock_balance(self):
-        return 0
+        v = 0
+        for p in self.positions.all():
+            if p.is_stock:
+                v += p.value
+        return v
 
     @property
     def bond_balance(self):
-        return 0
+        v = 0
+        for p in self.positions.all():
+            if not p.is_stock:
+                v += p.value
+        return v
 
     @property
     def total_return(self):
@@ -1026,29 +1104,46 @@ class Goal(models.Model):
 
     @property
     def stocks_percentage(self):
-        return 0
+        if self.total_balance == 0:
+            return 0
+        return "{0:.1f}".format(self.stock_balance/self.total_balance * 100)
 
     @property
     def bonds_percentage(self):
-        return 0
+        if self.total_balance == 0:
+            return 0
+        return "{0:.1f}".format(self.bond_balance/self.total_balance * 100)
 
     @property
     def auto_frequency(self):
-        return "-"
+        if not hasattr(self, "auto_deposit"):
+            return "-"
+        return self.auto_deposit.get_frequency_display()
 
     @property
     def auto_amount(self):
-        return "-"
+        if not hasattr(self, "auto_deposit"):
+            return "-"
+        return self.auto_deposit.amount
 
     @property
     def auto_term(self):
-        return "-"
+        today = date.today()
+        return "{0}y".format(self.completion_date.year - today.year)
 
 
 class Position(models.Model):
     goal = models.ForeignKey(Goal, related_name='positions')
     ticker = models.ForeignKey(Ticker)
-    value = models.FloatField()
+    share = models.FloatField()
+
+    @property
+    def is_stock(self):
+        return self.ticker.is_stock
+
+    @property
+    def value(self):
+        return self.share * self.ticker.unit_price
 
     def __str__(self):
         return self.ticker.symbol
@@ -1059,6 +1154,62 @@ class Transaction(models.Model):
     type = models.CharField(max_length=20, choices=TRANSACTION_CHOICES)
     from_account = models.ForeignKey(ClientAccount, related_name="transactions_from", null=True, blank=True)
     to_account = models.ForeignKey(ClientAccount, related_name="transactions_to", null=True, blank=True)
-    amount = models.BigIntegerField(default=0)
+    amount = models.FloatField(default=0)
     status = models.CharField(max_length=20, choices=TRANSACTION_STATUS_CHOICES, default=PENDING)
     created_date = models.DateTimeField(auto_now_add=True)
+
+
+class TransactionMemo(models.Model):
+    category = models.CharField(max_length=255)
+    comment = models.TextField()
+    transaction_type = models.CharField(max_length=20)
+    transaction = models.ForeignKey(Transaction, related_name="memos")
+
+
+MONTHLY = "MONTHLY"
+TWICE_A_MONTH = "TWICE_A_MONTH"
+EVERY_OTHER_WEEK = "EVERY_OTHER_WEEK"
+WEEKLY = "WEEKLY"
+
+
+FREQUENCY_CHOICES = ((MONTHLY, "1/mo"),
+                     (TWICE_A_MONTH, "2/mo"),
+                     (EVERY_OTHER_WEEK, "2/mo"),
+                     (WEEKLY, 'WEEKLY'))
+
+
+class AutomaticDeposit(models.Model):
+    account = models.OneToOneField(Goal, related_name="auto_deposit")
+    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
+    enabled = models.BooleanField(default=True)
+    amount = models.FloatField()
+    transaction_date_time_1 = models.DateTimeField(null=True)
+    transaction_date_time_2 = models.DateTimeField(null=True)
+    last_plan_change = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def next_transaction(self):
+        return date.today()
+
+    @property
+    def is_enabled(self):
+        return "true" if self.enabled else "false"
+
+    @property
+    def get_annualized(self):
+
+        if self.frequency == MONTHLY:
+            return self.amount*12
+        elif self.frequency == TWICE_A_MONTH:
+            return self.amount*2*12
+        elif self.frequency == EVERY_OTHER_WEEK:
+            return self.amount*2*12
+        elif self.frequency == WEEKLY:
+            return self.amount*4*12
+
+        return 0
+
+
+
+

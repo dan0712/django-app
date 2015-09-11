@@ -3,7 +3,8 @@ __author__ = 'cristian'
 from django.views.generic import TemplateView
 from ..base import ClientView
 import json
-from ...models import Transaction, ClientAccount, PENDING, Goal, Platform
+from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo,\
+    AutomaticDeposit, WITHDRAWAL
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from datetime import datetime
@@ -11,7 +12,8 @@ from portfolios.models import PortfolioByRisk, PortfolioSet
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
            "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions',
-           'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView']
+           'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView', 'ChangeAllocation',
+           'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView', 'Withdrawals']
 
 
 class ClientAppData(TemplateView):
@@ -206,3 +208,96 @@ class NewTransactionsView(ClientView):
 
         return HttpResponse(json.dumps(nt_return), content_type='application/json')
 
+
+class ChangeAllocation(ClientView):
+
+    def post(self, request, *args, **kwargs):
+        goal = get_object_or_404(Goal, pk=kwargs["pk"], account__primary_owner=self.client)
+        payload = json.loads(request.body.decode("utf-8"))
+        goal.allocation = payload["allocation"]
+        new_t = Transaction()
+        new_t.account = goal
+        new_t.amount = goal.allocation
+        new_t.type = ALLOCATION
+        # remove all the pending allocation transactions for this account
+        Transaction.objects.filter(account=goal,type=ALLOCATION, status=PENDING).all().delete()
+        new_t.save()
+        goal.save()
+        return HttpResponse(json.dumps({"transactionId": new_t.pk}), content_type="application/json")
+
+
+class NewTransactionMemoView(ClientView):
+
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.body.decode("utf-8"))
+        tr = get_object_or_404(Transaction, pk=payload["user_transaction_id"].replace("f", ""))
+        trm = TransactionMemo()
+        trm.transaction = tr
+        trm.category = payload["category"]
+        trm.comment = payload["comment"]
+        trm.transaction_type = payload["transaction_type"]
+        trm.save()
+        return HttpResponse(json.dumps({"success": "ok"}), content_type="application/json")
+
+
+class ChangeGoalView(ClientView):
+
+    def put(self, request, *args, **kwargs):
+        goal = get_object_or_404(Goal, pk=kwargs["pk"], account__primary_owner=self.client)
+        payload = json.loads(request.body.decode("utf-8"))
+        goal.name = payload["name"]
+        goal.completion_date = datetime.strptime(payload["goalCompletionDate"], '%Y%m%d%H%M%S')
+        goal.type = payload["goalType"]
+        goal.account_type = payload["accountType"]
+        goal.save()
+        return HttpResponse('null', content_type="application/json")
+
+
+class SetAutoDepositView(ClientView):
+
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.POST.get("model"))
+        pk = payload["account"]
+        goal = get_object_or_404(Goal, pk=pk, account__primary_owner=self.client)
+
+        if hasattr(goal, "auto_deposit"):
+            ad = goal.auto_deposit
+        else:
+            ad = AutomaticDeposit(account=goal)
+
+        ad.amount = payload.get("amount", 0)
+        ad.frequency = payload["frequency"]
+        ad.enabled = payload["enabled"]
+        ad.transaction_date_time_1 = datetime.strptime(payload["transactionDateTime1"], '%Y%m%d%H%M%S')
+        td2 = payload.get("transactionDateTime2", None)
+        if td2:
+            ad.transaction_date_time_2 = datetime.strptime(td2, '%Y%m%d%H%M%S')
+        ad.save()
+
+        payload["id"] = ad.pk
+        payload["lastPlanChange"] = ad.last_plan_change.strftime('%Y%m%d%H%M%S')
+        payload["nextTransaction"] = ad.next_transaction.strftime('%Y%m%d%H%M%S')
+        payload["amount"] = str(ad.amount)
+
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+class Withdrawals(ClientView):
+
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf8'))
+        goal = get_object_or_404(Goal, pk=kwargs["pk"], account__primary_owner=self.client)
+        new_transaction = Transaction()
+        new_transaction.account = goal
+        new_transaction.from_account = None
+        new_transaction.to_account = None
+        new_transaction.type = WITHDRAWAL
+        new_transaction.amount = payload["amount"]
+        new_transaction.save()
+
+        nt_return = {"transactionId": new_transaction.pk,
+                     "account": new_transaction.account.pk,
+                     "type": new_transaction.type,
+                     "amount": new_transaction.amount}
+
+        return HttpResponse(json.dumps(nt_return), content_type="application/json")
