@@ -35,7 +35,6 @@ class PortfolioByRisk(models.Model):
     allocations = models.TextField(default="{}")
 
 
-
 class View(models.Model):
     q = models.FloatField()
     assets = models.TextField()

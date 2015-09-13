@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% load app_filters %}
 {% load i18n %}
 {% block main_js %}{{ STATIC_URL }}js/client.js{% endblock %}
 {% block nav_clients %} depressed {% endblock %}
@@ -63,7 +64,7 @@
         {% for client in clients %}
              <tr>
                  <td><a href="/advisor/client/{{ client.0 }}">{{ client.1 }}</a></td>
-                 <td>${{ client.2 }}</td>
+                 <td>${{ client.2  |bs_big_number}}</td>
                  <td><a href="mailto:{{ client.3 }}">{{ client.3 }}</a></td>
                  <td>{{ client.4 }}</td>
             </tr>

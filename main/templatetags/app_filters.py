@@ -33,4 +33,4 @@ def c_datetime(value):
 
 @register.filter
 def bs_big_number(value):
-    return "{:,}".format(value)
+    return "{:,}".format(float("{0:.2f}".format(value)))

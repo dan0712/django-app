@@ -3,23 +3,28 @@ __author__ = 'cristian'
 from ..base import AdminView
 from ...models import Firm, AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section,\
     PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR,\
-    INVITATION_TYPE_DICT, SUCCESS_MESSAGE
+    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, WITHDRAWAL, DEPOSIT, ALLOCATION, FEE, Position, EXECUTED, PENDING
 from ...forms import EmailInviteForm
 from django.contrib import messages
-from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, FirmData
+from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, FirmData, Transaction, Ticker, Platform
+from portfolios.models import PortfolioByRisk
 from django.views.generic import CreateView, View, TemplateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.safestring import mark_safe
-from django.shortcuts import HttpResponseRedirect
+from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
 from ..base import LegalView
 from django.views.generic.edit import ProcessFormView
 from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
+import json
+from datetime import datetime
+from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, solve_shares_re_balance
+from numpy import array
 
-
-__all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView", 'NewConfirmation',
-           'AdminInviteSupervisorView', 'AdminInviteAdvisorView']
+__all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
+           'NewConfirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction"]
 
 
 class AuthorisedRepresentativeProfileForm(forms.ModelForm):
@@ -344,3 +349,141 @@ class NewConfirmation(TemplateView):
 
         messages.info(request, "The new confirmation email has been sent")
         return HttpResponseRedirect('/login')
+
+
+class AdminExecuteTransaction(TemplateView, AdminView):
+    template_name = 'admin/betasmartz/transaction-form.html'
+    transaction = None
+
+    def get_context_data(self, **kwargs):
+        portfolio_set = Platform.objects.first().portfolio_set
+
+        ctx = super(AdminExecuteTransaction, self).get_context_data(**kwargs)
+        ctx["transaction"] = serializers.serialize('json', [self.transaction])
+        ctx["amount"] = self.transaction.amount
+        ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.account]))[0]["fields"]
+        ctx["account"]["owner_full_name"] = self.transaction.account.account.primary_owner.user.get_full_name()
+        ctx["account"]["advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
+        ctx["account"]["firm_name"] = self.transaction.account.account.primary_owner.advisor.firm.name
+        ctx["account"]["fee"] = self.transaction.account.account.fee
+
+        ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
+
+        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set,
+                                             risk__lte=self.transaction.account.allocation).order_by('-risk').first()
+
+        target_allocation_dict = json.loads(pbr.allocations)
+        tickers_pk = []
+        tickers_prices = []
+        target_allocation = []
+        current_shares = []
+        result_dict = {}
+        current_shares_dict = {}
+        price_dict = {}
+        result_a = []
+        target_allocation_dict_2 = {}
+
+        for ticker in ctx["tickers"]:
+            tickers_pk.append(ticker.pk)
+            tickers_prices.append(ticker.unit_price)
+            target_allocation.append(target_allocation_dict.get(ticker.asset_class.name, 0))
+            positions = Position.objects.filter(goal=self.transaction.account, ticker=ticker).all()
+            cs = 0
+            if positions:
+                for p in positions:
+                    cs += p.share
+            current_shares.append(cs)
+        if self.transaction.status == PENDING:
+            if self.transaction.type == WITHDRAWAL and \
+                    ((self.transaction.account.total_balance-self.transaction.amount) > 0):
+                result_a = list(map(lambda x: -x, solve_shares_wdw(current_shares, tickers_prices,
+                                                                   target_allocation, self.transaction.amount)))
+
+            if self.transaction.type == DEPOSIT:
+                result_a = solve_shares_deposit(current_shares, tickers_prices, target_allocation,
+                                                self.transaction.amount*(1-self.transaction.account.account.fee/1000))
+
+            if self.transaction.type == ALLOCATION:
+                result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
+                ctx["amount"] = 1
+                ctx["account"]["fee"] = sum(abs(result_a*tickers_prices))*ctx["account"]["fee"]
+
+        for i in range(len(result_a)):
+            result_dict[str(tickers_pk[i])] = result_a[i]
+            current_shares_dict[str(tickers_pk[i])] = current_shares[i]
+            price_dict[str(tickers_pk[i])] = tickers_prices[i]
+            target_allocation_dict_2[str(tickers_pk[i])] = target_allocation[i]
+
+        ctx["price_dict"] = price_dict
+        ctx["target_allocation_dict"] = target_allocation_dict_2
+        ctx["current_shares_dict"] = current_shares_dict
+        ctx["result_dict"] = result_dict
+        ctx["account"] = json.dumps(ctx["account"])
+        ctx["tickers"] = serializers.serialize('json', ctx["tickers"])
+        ctx["is_executed"] = self.transaction.status == EXECUTED
+        return ctx
+
+    def dispatch(self, request, *args, **kwargs):
+        self.transaction = get_object_or_404(Transaction, pk=kwargs["pk"])
+        response = super(AdminExecuteTransaction, self).dispatch(request, *args, **kwargs)
+        return response
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.POST.get("data"))
+        positions = []
+        new_amount = 0
+        old_amount = 0
+        new_shares = []
+        old_shares = []
+
+        for pk, v in data.items():
+            if v != 0:
+                ticker = Ticker.objects.get(pk=pk)
+                new_p = Position(ticker=ticker, goal=self.transaction.account, share=v)
+                positions.append(new_p)
+                new_amount += new_p.value
+                new_shares.append(new_p.value)
+
+        for old_p in self.transaction.account.positions.all():
+                old_amount += old_p.value
+                old_shares.append(old_p.value)
+
+        amount = abs(new_amount - old_amount)
+        # delete old positions
+        self.transaction.account.positions.all().delete()
+        # save new
+        # mark transaction as executed
+        self.transaction.executed_date = datetime.now()
+        if self.transaction.type == WITHDRAWAL:
+            fee = amount * self.transaction.account.account.fee / 1000
+            self.transaction.amount = amount*(1-self.transaction.account.account.fee / 1000)
+            # save fee transaction
+            fee_t = Transaction()
+            fee_t.account = self.transaction.account
+            fee_t.type = FEE
+            fee_t.amount = fee
+            fee_t.status = EXECUTED
+            fee_t.executed_date = datetime.now()
+            fee_t.save()
+
+        if self.transaction.type == DEPOSIT:
+            fee = self.transaction.amount * self.transaction.account.account.fee / 1000
+            self.transaction.amount = amount
+            # save fee transaction
+            fee_t = Transaction()
+            fee_t.account = self.transaction.account
+            fee_t.type = FEE
+            fee_t.amount = fee
+            fee_t.status = EXECUTED
+            fee_t.executed_date = datetime.now()
+            fee_t.save()
+
+        if self.transaction.type == ALLOCATION:
+            pass
+
+        self.transaction.status = EXECUTED
+        self.transaction.save()
+        list(map(lambda x: x.save(), positions))
+
+        return HttpResponse('')
+

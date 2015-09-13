@@ -27,7 +27,7 @@ def fitness(W, R, C, r):
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
     # Here, r is the 'target' return
     penalty = 0.1*abs(mean_1-r)
-    return var - 0.1*mean_1 + penalty
+    return var**0.5 - mean_1 + penalty
 
 
 # Solve for optimal portfolio weights

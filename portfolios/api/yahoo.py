@@ -16,7 +16,11 @@ class YahooApi:
                    "BOND": "BOND.AX",
                    "RGB": "RGB.AX",
                    "ILB": "ILB.AX",
-                   "RSM": "RSM.AX"}
+                   "RSM": "RSM.AX",
+                   "VTS": "VTS.AX",
+                   "IJP": "IJP.AX",
+                   "IEU": "IEU.AX",
+                   "VGE": "VGE.AX"}
 
     def __init__(self):
         today = datetime.today()

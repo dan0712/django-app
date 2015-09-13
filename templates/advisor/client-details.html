@@ -24,7 +24,7 @@
     <div class="client-details">
         <div class="panel">
             <h4>Total Balance</h4>
-            <p>${{ client.total_balance }}</p>
+            <p>${{ client.total_balance |bs_big_number }}</p>
         </div>
         <div class="panel">
             <h4>Total Returns</h4>
@@ -59,7 +59,7 @@
                         <span class="off-track">Off track</span>
                      {% endif %}
                  </td>
-                 <td>${{ account.total_balance }}</td>
+                 <td>${{ account.total_balance |bs_big_number }}</td>
                  <td><!-- Intentionally left blank for spacing --></td>
                  {% if account.account_group %}
                     <td><a href="/composites/{{ account.account_group.pk }}">{{ account.account_group.name }}</a></td>

@@ -31,7 +31,7 @@
             <div class="panel">
                 <h4>Total AUM</h4>
 
-                <p class="total_aum">${{ profile.total_balance }}</p>
+                <p class="total_aum">${{ profile.total_balance  |bs_big_number }}</p>
             </div>
             <div class="panel">
                 <h4>Total households</h4>
@@ -41,7 +41,7 @@
             <div class="panel">
                 <h4>Average balance</h4>
 
-                <p class="average_balance">${{ profile.average_balance }}</p>
+                <p class="average_balance">${{ profile.average_balance  |bs_big_number }}</p>
             </div>
         </div>
         <div class="body">
@@ -87,7 +87,7 @@
                                 </h4>
                         </div>
                         <div>
-                            <h4>${{ group.6 }}</h4>
+                            <h4>${{ group.6  |bs_big_number}}</h4>
                         </div>
                         <div>
                             <h4>{{ group.7 }}%</h4>

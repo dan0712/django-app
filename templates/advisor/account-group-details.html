@@ -51,7 +51,7 @@
         <div class="account-group-details">
             <div class="panel">
                 <h4>Total Balance</h4>
-                <p>${{ object.total_balance }}</p>
+                <p>${{ object.total_balance  |bs_big_number}}</p>
             </div>
             <div class="panel">
                 <h4>Total Returns</h4>
@@ -88,7 +88,7 @@
       <div class="individual-account-group-details">
          <div class="panel">
             <h4>Balance</h4>
-            <p>${{ account.total_balance }}</p>
+            <p>${{ account.total_balance  |bs_big_number}}</p>
          </div>
          <div class="panel">
             <h4>Returns</h4>
@@ -127,13 +127,13 @@
                                  <span class="off-track">Off track</span>
                               {% endif %}
                           </td>
-                          <td>${{ goal.total_balance }}</td>
+                          <td>${{ goal.total_balance |bs_big_number}}</td>
                           <td>{{ goal.total_return }}%</td>
                           <td>
                               {{ goal.stocks_percentage }}% / {{ goal.bonds_percentage }}%
                           </td>
                           <td>{{ goal.auto_frequency }}</td>
-                          <td>{{ goal.auto_amount }}</td>
+                          <td>{{ goal.auto_amount |bs_big_number}}</td>
                           <td>{{ goal.auto_term }}</td>
                           <td>${{ goal.target |bs_big_number }}</td>
                        </tr>

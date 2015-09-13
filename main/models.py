@@ -92,9 +92,11 @@ PERSONAL_DATA_WIDGETS = {"gender": forms.RadioSelect(),
 ALLOCATION = "ALLOCATION"
 DEPOSIT = "DEPOSIT"
 WITHDRAWAL = "WITHDRAWAL"
+FEE = "FEE"
 
 
-TRANSACTION_CHOICES = ((ALLOCATION, "ALLOCATION"), (DEPOSIT, "DEPOSIT"), (WITHDRAWAL, 'WITHDRAWAL'))
+TRANSACTION_CHOICES = ((FEE, "FEE"), (ALLOCATION, "ALLOCATION"), (DEPOSIT, "DEPOSIT"),
+                       (WITHDRAWAL, 'WITHDRAWAL'))
 
 PENDING = 'PENDING'
 EXECUTED = 'EXECUTED'
@@ -1157,6 +1159,7 @@ class Transaction(models.Model):
     amount = models.FloatField(default=0)
     status = models.CharField(max_length=20, choices=TRANSACTION_STATUS_CHOICES, default=PENDING)
     created_date = models.DateTimeField(auto_now_add=True)
+    executed_date = models.DateTimeField(null=True)
 
 
 class TransactionMemo(models.Model):

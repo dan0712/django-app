@@ -19,7 +19,7 @@ urlpatterns = patterns('',
         AdminInviteAdvisorView.as_view(), name='betasmartz_admin:invite_advisor'),
     url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_supervisor',
         AdminInviteSupervisorView.as_view(), name='betasmartz_admin:invite_supervisor'),
-
+    url(r'^betasmartz_admin/transaction/(?P<pk>\d+)/execute', AdminExecuteTransaction.as_view()),
 
     # firm views
     url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/legal_signup$',
@@ -33,7 +33,7 @@ urlpatterns = patterns('',
     url(r'^confirm_email/(?P<type>\d+)/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})',
         EmailConfirmationView.as_view()),
     url(r'^confirmation/new$', NewConfirmation.as_view()),
-
+    url(r'^$', lambda x: HttpResponseRedirect("/login")),
     url(r'^firm/login', lambda x: HttpResponseRedirect("/login")),
     url(r'^firm/sign_out', lambda x: HttpResponseRedirect("/sign_out")),
 

@@ -49,9 +49,7 @@ class AssetClassAdmin(SortableModelAdmin):
     sortable = 'display_order'
 
 
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('account', 'type', 'from_account', 'to_account', 'status', 'amount', 'created_date')
-    inlines = (TransactionMemoInline,)
+
 
 
 class FirmFilter(admin.SimpleListFilter):
@@ -138,6 +136,17 @@ class UserAdmin(admin.ModelAdmin):
     pass
 
 
+def execute_transaction(modeladmin, request, queryset):
+    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'transaction'}
+
+    if queryset.count() > 1:
+        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
+
+    else:
+        return HttpResponseRedirect('/betasmartz_admin/transaction/{pk}/execute?next=/admin/main/firm/'
+                                    .format(pk=queryset.all()[0].pk))
+
+
 def invite_authorised_representative(modeladmin, request, queryset):
     context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'firm'}
 
@@ -211,6 +220,12 @@ class PortfolioSetAdmin(admin.ModelAdmin):
 class PortfolioByRiskAdmin(admin.ModelAdmin):
     list_display = ('risk', 'portfolio_set', 'expected_return', 'volatility')
     pass
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('account', 'type', 'from_account', 'to_account', 'status', 'amount', 'created_date')
+    inlines = (TransactionMemoInline,)
+    actions = (execute_transaction, )
+    list_filter = ('status', )
 
 admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
 
