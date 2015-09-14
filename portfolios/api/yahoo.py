@@ -7,6 +7,7 @@ import json
 
 
 class YahooApi:
+    currency_cache = {"AUD": 1}
 
     symbol_dict = {"VSO": "VSO.AX",
                    "VHY": "VHY.AX",
@@ -20,7 +21,27 @@ class YahooApi:
                    "VTS": "VTS.AX",
                    "IJP": "IJP.AX",
                    "IEU": "IEU.AX",
-                   "VGE": "VGE.AX"}
+                   "VGE": "VGE.AX",
+                   "FTAL": "FTAL.L",
+                   "SLXX":"SLXX.L",
+                   "IEAG":"IEAG.L"}
+
+    google_dict = {"VSO": "ASX:VSO",
+                   "VHY": "ASX:VHY",
+                   "VGS": "ASX:VGS",
+                   "VLC": "ASX:VLC",
+                   "VAS": "ASX:VAS",
+                   "BOND": "ASX:BOND",
+                   "RGB": "ASX:RGB",
+                   "ILB": "ASX:ILB",
+                   "RSM": "ASX:RSM",
+                   "VTS": "ASX:VTS",
+                   "IJP": "ASX:IJP",
+                   "IEU": "ASX:IEU",
+                   "VGE": "ASX:VGE",
+                   "FTAL": "FTAL.L",
+                   "SLXX":"SLXX.L",
+                   "IEAG":"IEAG.L"}
 
     def __init__(self):
         today = datetime.today()
@@ -52,11 +73,12 @@ class YahooApi:
 
         return Series(price_data, index=self.dates, name=ticker_symbol)
 
-    @staticmethod
-    def to_aud(currency):
-        if currency == "AUD":
-            return 1
-        elif currency == "USD":
+    def to_aud(self, currency: str)->float:
+        if currency in self.currency_cache:
+            return self.currency_cache[currency]
+        ret = 1
+
+        if currency == "USD":
             url = 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where' \
                   '%20symbol%20in%20(%22AUDUSD%3DX%22)%0A%09%09&format=json&diagnostics=true&' \
                   'env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback='
@@ -64,21 +86,27 @@ class YahooApi:
                 quote_json = json.loads(response.read().decode("utf-8"))
                 bid = float(quote_json['query']['results']['quote']['Bid'])
 
-            return bid
+            ret = 1/bid
+
+        if currency == "GBP":
+            url = 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where' \
+                  '%20symbol%20in%20(%22GBPAUD%3DX%22)%0A%09%09&format=json&diagnostics=true&' \
+                  'env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback='
+            with urllib.request.urlopen(url) as response:
+                quote_json = json.loads(response.read().decode("utf-8"))
+                bid = float(quote_json['query']['results']['quote']['Bid'])
+
+            ret = bid
+
+        self.currency_cache[currency] = ret
+        return ret
 
     def get_unit_price(self, ticker_symbol, currency):
-        ticker_symbol = self.symbol_dict.get(ticker_symbol, ticker_symbol)
+        ticker_symbol = self.google_dict.get(ticker_symbol, ticker_symbol)
 
-        url = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance." \
-              "quotes%20where%20symbol%20in%20(%22{0}%22)%0A%09%09&format=json&" \
-              "diagnostics=true&env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback=".format(ticker_symbol)
-
+        url = "http://finance.google.com/finance/info?client=ig&q={}".format(ticker_symbol)
         with urllib.request.urlopen(url) as response:
-            quote_json = json.loads(response.read().decode("utf-8"))
-            bid = quote_json['query']['results']['quote']['Bid']
-            if bid is None:
-                bid = quote_json['query']['results']['quote']['Ask']
-            if bid is None:
-                return None
+            quote_json = json.loads(response.read().decode("utf-8", errors="ignore").replace("/", ""))
+            bid = quote_json[0]['l']
             bid = float(bid)
         return bid*self.to_aud(currency)

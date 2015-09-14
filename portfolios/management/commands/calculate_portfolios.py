@@ -19,10 +19,12 @@ def calculate_portfolios(portfolio_set):
     series = {}
     asset_type = {}
     asset_name = []
+    asset_super_class_dict = {}
     ticker_parent_dict = {}
     for asset in portfolio_set.asset_classes.all():
         ticker = asset.tickers.filter(ordering=0).first()
         asset_name.append(ticker.symbol)
+        asset_super_class_dict[ticker.symbol] = 1 if asset.super_asset_class in ["EQUITY_AU", "FIXED_INCOME_AU"] else 0
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
@@ -30,7 +32,6 @@ def calculate_portfolios(portfolio_set):
         if unit_price is not None:
             ticker.unit_price = unit_price
             ticker.save()
-
 
     # join all the series in a table, drop missing values
     table = DataFrame(series)
@@ -62,17 +63,23 @@ def calculate_portfolios(portfolio_set):
         new_assets_type.append(asset_type[c])
 
     columns = list(table)
+    asset_super_class = []
+    for k in range(len(columns)):
+        asset_super_class.append(asset_super_class_dict[columns[k]])
 
     # delete all the risk profiles related to this portfolio set
     portfolio_set.risk_profiles.all().delete()
-
+    ba = None
     for allocation in list(np.arange(0, 1.01, 0.01)):
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau)
+                                              new_assets_type,  views, qs, tau, asset_super_class)
+        ba = new_weights
+
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))
         allocations = {}
+
         for idx in range(0, len(columns)):
             allocations[ticker_parent_dict[columns[idx]]] = float("{0:.4f}".format(new_weights[idx]))
 

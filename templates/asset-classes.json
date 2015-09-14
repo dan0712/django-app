@@ -1,1 +1,9 @@
-[{% for asset in platform.portfolio_set.asset_classes.all %}{% if forloop.counter == 1 %}{% else %},{% endif %}{"name": "{{asset.name}}", "displayOrder": {{asset.display_order}}, "donutOrder": {{asset.donut_order}}, "primaryColor": "{{asset.primary_color}}", "foregroundColor": "{{asset.foreground_color}}", "driftColor": "{{asset.foreground_color}}", "assetClassExplanation": "{{asset.asset_class_explanation}}", "tickersExplanation": "{{asset.tickers_explanation}}"}{% endfor %}]
+[{% for asset in platform.portfolio_set.asset_classes.all %}{% if forloop.counter == 1 %}{% else %},{% endif %}
+  {"name": "{{asset.name}}",
+    "displayOrder": {{asset.display_order}},
+  "donutOrder":{{asset.donut_order}},
+  "primaryColor": "{{asset.primary_color}}",
+  "foregroundColor": "{{asset.foreground_color}}",
+  "driftColor": "{{asset.foreground_color}}",
+  "assetClassExplanation":"{{asset.asset_class_explanation}}",
+  "tickersExplanation":"{{asset.tickers_explanation}}"}{% endfor %}]
