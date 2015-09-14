@@ -1,0 +1,270 @@
+{% extends 'admin/betasmartz/layout.html' %}
+{% block title %} execute transaction {% endblock %}
+
+{% block main_content %}
+
+{% verbatim %}
+<div class="inner_html goal-details composites-index"  ng-app='TransactionApp' ng-controller='MainController'>
+
+<h2>Account info</h2>
+    <table>
+        <thead>
+        <tr>
+             <th>Name</th>
+             <th>Owner</th>
+             <th>Advisor</th>
+             <th>Firm</th>
+             <th>Allocation</th>
+        </tr>
+
+        </thead>
+    <tbody>
+    <tr>
+        <td>{{ account.name }}</td>
+        <td>{{ account.owner_full_name }}</td>
+        <td>{{ account.advisor_full_name }}</td>
+        <td>{{ account.firm_name }}</td>
+        <td>{{ account.allocation }}</td>
+    </tr>
+    </tbody>
+    </table>
+<br><br>
+<h2>Transaction info</h2>
+    <table>
+        <thead>
+        <tr>
+             <th>Type</th>
+             <th>Status</th>
+             <th>Amount</th>
+             <th>FeeS</th>
+             <th>Request date</th>
+             <th>Executed date</th>
+        </tr>
+
+        </thead>
+    <tbody>
+    <tr>
+        <td>{{ transaction.type }}</td>
+        <td>{{ transaction.status }}</td>
+        <td>${{ amount }}</td>
+        <td>${{ get_fee()  | number : 2 }}</td>
+        <td>{{ transaction.created_date }}</td>
+        <td>{{ transaction.executed_date }}</td>
+
+    </tr>
+    </tbody>
+    </table>
+    {% endverbatim %}
+
+    {%  if is_executed == False  %}
+    {% verbatim %}
+<br><br><br>
+<h2><strong>Ticker position changes:</strong> <i style="color: grey">suggestion for execute the transaction, modify the values according to the operations executed on the market</i> </h2>
+
+    <div class="new-composite">
+                <a href="javascript:;" ng-click="submit()">Execute</a>
+            </div>
+        <br>
+    <table style="margin-top: 40px;">
+        <thead>
+        <tr>
+             <th>Ticker</th>
+             <th>Current shares</th>
+             <th>Buy</th>
+             <th>Sell</th>
+             <th>New shares</th>
+             <th>Net change</th>
+             <th>Drift</th>
+             <th>New market value</th>
+        </tr>
+
+        </thead>
+    <tbody>
+
+    <tr ng-repeat="ticker in tickers track by ticker.pk">
+        <td>{{ ticker.fields.symbol }}</td>
+        <td>{{ get_shares(ticker.pk) }}</td>
+        <td><input type="text" style="width: 75px" ng-model="buy_dict[ticker.pk]"></td>
+        <td><input type="text" style="width: 75px" ng-model="sell_dict[ticker.pk]"></td>
+        <td>{{ get_new_shares(ticker.pk)  | number : 4 }}</td>
+        <td>$ {{ get_net_change(ticker.pk) | number : 4  }}</td>
+        <td><span ng-class="get_drift_class(ticker.pk)">{{ get_drift(ticker.pk)| number : 4 }} %</span></td>
+        <td>$ {{ new_value(ticker.pk) | number : 4 }}</td>
+
+    </tr>
+
+        <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>$ {{ total_net_change() | number : 4 }}</td>
+        <td><span ng-class="get_total_drift_class(ticker.pk)">{{ total_drift() | number : 4}} %</span></td>
+        <td>$ {{ new_total_balance() | number : 4}}</td>
+
+    </tr>
+    </tbody>
+    </table>
+<br>
+
+<br>
+
+        <br><br>
+
+{% endverbatim %}
+{% endif %}
+</div>
+
+
+
+
+<script>
+var app = angular.module('TransactionApp',[]);
+
+app.controller("MainController", function($scope, $window, $http){
+
+    $scope.transaction = {{ transaction | safe }};
+    $scope.transaction = $scope.transaction[0]["fields"];
+    $scope.account = {{ account | safe }};
+    $scope.tickers  = {{ tickers | safe }};
+    $scope.target_allocation_dict  = {{ target_allocation_dict | safe }};
+    $scope.result_dict  = {{ result_dict | safe }};
+    $scope.current_shares_dict  = {{ current_shares_dict | safe }};
+    $scope.price_dict  = {{ price_dict | safe }};
+    $scope.amount  = {{ amount | safe }};
+
+    $scope.sell_dict = {};
+    $scope.buy_dict = {};
+
+
+    $scope.initialize = function(){
+        for(var i in $scope.tickers){
+            var ticker = $scope.tickers[i]["pk"];
+            $scope.sell_dict[ticker] = 0.0;
+            $scope.buy_dict[ticker] = 0.0;
+
+            if(ticker in $scope.result_dict){
+                var new_position = $scope.result_dict[ticker];
+                if(new_position>0){
+                     $scope.buy_dict[ticker] = parseFloat((new_position).toFixed(4));
+                }
+
+                else{
+                    $scope.sell_dict[ticker] = parseFloat((-new_position).toFixed(4));
+                }
+
+            }
+        }
+
+    };
+    $scope.initialize();
+
+    $scope.get_fee = function(){
+         return $scope.account["fee"]/1000 * $scope.transaction.amount;
+
+    };
+
+    $scope.get_amount_after_fees = function(){
+         return $scope.transaction.amount - $scope.get_fee();
+
+    };
+
+
+    $scope.get_net_change = function(ticker_pk){
+         var net = $scope.buy_dict[ticker_pk] - $scope.sell_dict[ticker_pk];
+         net = $scope.price_dict[ticker_pk]*net;
+         return net;
+
+    };
+
+    $scope.get_new_shares = function(ticker_pk){
+         var new_s =  $scope.current_shares_dict[ticker_pk] + $scope.buy_dict[ticker_pk] - $scope.sell_dict[ticker_pk];
+        console.log(new_s);
+         return new_s;
+    };
+
+    $scope.get_shares = function(ticker_pk){
+        return parseFloat(Math.round($scope.current_shares_dict[ticker_pk]*100) / 100).toFixed(4);
+
+    };
+
+    $scope.new_total_balance = function(){
+        var v = 0;
+        for(var i in $scope.price_dict){
+            v += $scope.get_new_shares(i)*$scope.price_dict[i];
+        }
+        return v;
+    };
+
+    $scope.total_drift = function(){
+        var v = 0;
+        var counter = 0;
+        for(var i in $scope.price_dict){
+            v += $scope.get_drift(i);
+            counter += 1;
+        }
+        return (v/(3/2)/2);
+    };
+
+    $scope.total_net_change = function(){
+        var v = 0;
+        for(var i in $scope.price_dict){
+            v += $scope.get_net_change(i);
+        }
+        return v;
+    };
+
+    $scope.new_value = function(ticker_pk){
+        var v = $scope.get_new_shares(ticker_pk)*$scope.price_dict[ticker_pk];
+        return v;
+    };
+
+
+    $scope.get_drift = function(ticker_pk){
+        var new_b = $scope.new_total_balance();
+        if(new_b==0){
+            return 0;
+        }
+        var drift = Math.abs($scope.new_value(ticker_pk)/new_b - $scope.target_allocation_dict[ticker_pk]);
+        return drift*100;
+    };
+
+    $scope.get_drift_class = function(ticker_pk){
+        var drift = $scope.get_drift(ticker_pk);
+        if(drift<3){ return "green"}
+        if(drift<10){ return "orange"}
+        return "red"
+    };
+
+     $scope.get_total_drift_class = function(ticker_pk){
+        var drift = $scope.total_drift();
+        if(drift<3){ return "green"}
+        if(drift<10){ return "orange"}
+        return "red"
+    };
+
+    $scope.submit = function(){
+      var new_shares = {};
+        for(var i in $scope.price_dict){
+            new_shares[i] = $scope.get_new_shares(i);
+        }
+
+        // Simple POST request example (passing data) :
+        $http.post('', $.param({data:JSON.stringify(new_shares), csrfmiddlewaretoken: Cookies("csrftoken")}),
+                        {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
+                      success(function(data, status, headers, config) {
+                        location.replace('/admin/main/goal/');
+                      }).
+                      error(function(data, status, headers, config) {
+                        // called asynchronously if an error occurs
+                        // or server returns response with an error status.
+                         alert("Error: Can't save due some server issues")
+                      });
+
+    }
+
+
+});
+</script>
+{% endblock %}

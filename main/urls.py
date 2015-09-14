@@ -6,6 +6,7 @@ from main import settings
 from django.shortcuts import HttpResponseRedirect, HttpResponse
 
 def ok_response_json(*args, **kwargs):
+
     return HttpResponse("[]", content_type='application/json')
 
 
@@ -65,6 +66,7 @@ urlpatterns = patterns('',
     url(r'^composites/(?P<pk>\d+)/composite_secondary_advisors/(?P<sa_pk>\d+)$',
         AdvisorAccountGroupSecondaryDeleteView.as_view()),
     url(r'^composites/client_account/(?P<pk>\d+)/change_fee$', AdvisorClientAccountChangeFee.as_view()),
+    url(r'^betasmartz_admin/rebalance/(?P<pk>\d+)$', GoalRebalance.as_view()),
 
 
     url('^impersonate/(?P<pk>\d+)$', ImpersonateView.as_view()),

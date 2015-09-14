@@ -3,10 +3,11 @@ __author__ = 'cristian'
 from ..base import AdminView
 from ...models import Firm, AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section,\
     PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR,\
-    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, WITHDRAWAL, DEPOSIT, ALLOCATION, FEE, Position, EXECUTED, PENDING
+    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, WITHDRAWAL, DEPOSIT, ALLOCATION, FEE, Position, EXECUTED, PENDING, REBALANCE
 from ...forms import EmailInviteForm
 from django.contrib import messages
-from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, FirmData, Transaction, Ticker, Platform
+from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, \
+    FirmData, Transaction, Ticker, Platform, Goal
 from portfolios.models import PortfolioByRisk
 from django.views.generic import CreateView, View, TemplateView
 from django import forms
@@ -24,7 +25,8 @@ from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, 
 from numpy import array
 
 __all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
-           'NewConfirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction"]
+           'NewConfirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
+           "GoalRebalance"]
 
 
 class AuthorisedRepresentativeProfileForm(forms.ModelForm):
@@ -487,3 +489,111 @@ class AdminExecuteTransaction(TemplateView, AdminView):
 
         return HttpResponse('')
 
+
+class GoalRebalance(TemplateView, AdminView):
+    template_name = 'admin/betasmartz/transaction-form-2.html'
+    goal = None
+    transaction = None
+
+    def get_context_data(self, **kwargs):
+        portfolio_set = Platform.objects.first().portfolio_set
+        ctx = super(GoalRebalance, self).get_context_data(**kwargs)
+        ctx["transaction"] = serializers.serialize('json', [self.transaction])
+        ctx["amount"] = self.transaction.amount
+        ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.account]))[0]["fields"]
+        ctx["account"]["owner_full_name"] = self.transaction.account.account.primary_owner.user.get_full_name()
+        ctx["account"]["advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
+        ctx["account"]["firm_name"] = self.transaction.account.account.primary_owner.advisor.firm.name
+        ctx["account"]["fee"] = self.transaction.account.account.fee
+
+        ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
+
+        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set,
+                                             risk__lte=self.transaction.account.allocation).order_by('-risk').first()
+
+        target_allocation_dict = json.loads(pbr.allocations)
+        tickers_pk = []
+        tickers_prices = []
+        target_allocation = []
+        current_shares = []
+        result_dict = {}
+        current_shares_dict = {}
+        price_dict = {}
+        result_a = []
+        target_allocation_dict_2 = {}
+
+        for ticker in ctx["tickers"]:
+            tickers_pk.append(ticker.pk)
+            tickers_prices.append(ticker.unit_price)
+            target_allocation.append(target_allocation_dict.get(ticker.asset_class.name, 0))
+            positions = Position.objects.filter(goal=self.transaction.account, ticker=ticker).all()
+            cs = 0
+            if positions:
+                for p in positions:
+                    cs += p.share
+            current_shares.append(cs)
+        if self.transaction.status == PENDING:
+
+            if self.transaction.type == ALLOCATION:
+                result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
+                ctx["amount"] = 1
+                ctx["account"]["fee"] = sum(abs(result_a*tickers_prices))*ctx["account"]["fee"]
+
+        for i in range(len(result_a)):
+            result_dict[str(tickers_pk[i])] = result_a[i]
+            current_shares_dict[str(tickers_pk[i])] = current_shares[i]
+            price_dict[str(tickers_pk[i])] = tickers_prices[i]
+            target_allocation_dict_2[str(tickers_pk[i])] = target_allocation[i]
+
+        ctx["price_dict"] = price_dict
+        ctx["target_allocation_dict"] = target_allocation_dict_2
+        ctx["current_shares_dict"] = current_shares_dict
+        ctx["result_dict"] = result_dict
+        ctx["account"] = json.dumps(ctx["account"])
+        ctx["tickers"] = serializers.serialize('json', ctx["tickers"])
+        ctx["is_executed"] = self.transaction.status == EXECUTED
+        return ctx
+
+    def dispatch(self, request, *args, **kwargs):
+        self.goal = get_object_or_404(Goal, pk=kwargs["pk"])
+        self.transaction = Transaction(account=self.goal, amount=self.goal.allocation,
+                                       type=ALLOCATION, status=PENDING, created_date=datetime.today())
+        response = super(GoalRebalance, self).dispatch(request, *args, **kwargs)
+        return response
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.POST.get("data"))
+        positions = []
+        new_amount = 0
+        old_amount = 0
+        new_shares = []
+        old_shares = []
+
+        for pk, v in data.items():
+            if v != 0:
+                ticker = Ticker.objects.get(pk=pk)
+                new_p = Position(ticker=ticker, goal=self.transaction.account, share=v)
+                positions.append(new_p)
+                new_amount += new_p.value
+                new_shares.append(new_p.value)
+
+        for old_p in self.transaction.account.positions.all():
+                old_amount += old_p.value
+                old_shares.append(old_p.value)
+
+        amount = abs(new_amount - old_amount)
+        # delete old positions
+        self.transaction.account.positions.all().delete()
+        # save new
+        # mark transaction as executed
+        self.transaction.executed_date = datetime.now()
+
+        self.transaction.type = REBALANCE
+        self.transaction.status = EXECUTED
+
+        list(map(lambda x: x.save(), positions))
+        self.transaction.save()
+        self.goal.drift = self.goal.get_drift
+        self.goal.save()
+
+        return HttpResponseRedirect('/admin/main/goal')

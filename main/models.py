@@ -16,6 +16,8 @@ from django import forms
 from django.contrib.auth.hashers import make_password
 from django.utils.safestring import mark_safe
 from datetime import date, datetime
+import json
+from numpy import array
 
 
 def validate_agreement(value):
@@ -93,9 +95,10 @@ ALLOCATION = "ALLOCATION"
 DEPOSIT = "DEPOSIT"
 WITHDRAWAL = "WITHDRAWAL"
 FEE = "FEE"
+REBALANCE = "REBALANCE"
 
 
-TRANSACTION_CHOICES = ((FEE, "FEE"), (ALLOCATION, "ALLOCATION"), (DEPOSIT, "DEPOSIT"),
+TRANSACTION_CHOICES = ((REBALANCE, 'REBALANCE'), (ALLOCATION, "ALLOCATION"), (DEPOSIT, "DEPOSIT"),
                        (WITHDRAWAL, 'WITHDRAWAL'))
 
 PENDING = 'PENDING'
@@ -974,9 +977,45 @@ class Goal(models.Model):
     allocation = models.FloatField()
     account_type = models.CharField(max_length=20, default='INVESTING')
     type = models.CharField(max_length=20, default='RETIREMENT')
+    drift = models.FloatField(default=0)
+    total_balance_db = models.FloatField(default=0, verbose_name="total balance")
 
     def __str__(self):
         return self.name + " : " + self.account.primary_owner.full_name
+
+    @property
+    def get_drift(self):
+        from portfolios.models import PortfolioByRisk
+
+        tb = self.total_balance
+
+        if tb == 0:
+            return 0
+
+        portfolio_set = Platform.objects.first().portfolio_set
+        tickers = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
+        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=self.allocation)\
+            .order_by('-risk').first()
+
+        target_allocation_dict = json.loads(pbr.allocations)
+        tickers_prices = []
+        target_allocation = []
+        current_allocation = []
+
+        for ticker in tickers:
+            tickers_prices.append(ticker.unit_price)
+            target_allocation.append(target_allocation_dict.get(ticker.asset_class.name, 0))
+            positions = Position.objects.filter(goal=self, ticker=ticker).all()
+            cs = 0
+            if positions:
+                for p in positions:
+                    cs += p.value
+            current_allocation.append(cs/tb)
+
+        current_allocation = array(current_allocation)
+        target_allocation = array(target_allocation)
+
+        return float("{0:.2f}".format(sum(abs(current_allocation - target_allocation))/(3/2)/2*100))
 
     @property
     def life_time_average_balance(self):

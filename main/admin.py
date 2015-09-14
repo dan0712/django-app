@@ -136,6 +136,18 @@ class UserAdmin(admin.ModelAdmin):
     pass
 
 
+def rebalance(modeladmin, request, queryset):
+    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'transaction'}
+
+    if queryset.count() > 1:
+        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
+
+    else:
+        return HttpResponseRedirect('/betasmartz_admin/rebalance/{pk}?next=/admin/main/firm/'
+                                    .format(pk=queryset.all()[0].pk))
+
+
+
 def execute_transaction(modeladmin, request, queryset):
     context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'transaction'}
 
@@ -199,6 +211,8 @@ class ClientAccountAdmin(admin.ModelAdmin):
 
 
 class GoalAdmin(admin.ModelAdmin):
+    list_display = ('account', 'name', 'total_balance_db', 'allocation', 'drift', 'type')
+    actions = (rebalance, )
     pass
 
 
