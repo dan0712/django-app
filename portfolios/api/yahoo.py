@@ -35,22 +35,25 @@ class YahooApi:
         url = "http://real-chart.finance.yahoo.com/table.csv?s=%s&a=00&b=01&c=2010&d=%02d&e=%02d&f=%d&g=%s" \
               "&ignore=.csv" % (ticker_symbol, self.today_month, self.today_day, self.today_year, period)
         price_data = {}
-        with urllib.request.urlopen(url) as response:
-            csv_file = response.read().decode("utf-8").splitlines()
-            line_counter = 0
-            for line in csv_file:
-                if line_counter == 0:
-                    line_counter += 1
-                    continue
-                cells = line.split(",")
-                d_items = cells[0].split("-")
-                if period == "m":
-                    cells[0] = d_items[0] + '-' + d_items[1]
-                    date = datetime.strptime(cells[0], "%Y-%m")
-                else:
-                    date = datetime.strptime(cells[0], "%Y-%m-%d")
-                close = float(cells[4])
-                price_data[date] = close
+        try:
+            with urllib.request.urlopen(url) as response:
+                csv_file = response.read().decode("utf-8").splitlines()
+                line_counter = 0
+                for line in csv_file:
+                    if line_counter == 0:
+                        line_counter += 1
+                        continue
+                    cells = line.split(",")
+                    d_items = cells[0].split("-")
+                    if period == "m":
+                        cells[0] = d_items[0] + '-' + d_items[1]
+                        date = datetime.strptime(cells[0], "%Y-%m")
+                    else:
+                        date = datetime.strptime(cells[0], "%Y-%m-%d")
+                    close = float(cells[4])
+                    price_data[date] = close
+        except urllib.request.HTTPError as e:
+            raise Exception("{0} : {1}".format(e.msg, url))
 
         return Series(price_data, index=self.dates, name=ticker_symbol)
 
