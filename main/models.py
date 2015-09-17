@@ -987,7 +987,9 @@ class EmailInvitation(models.Model):
 
 
 YAHOO_API = "YAHOO"
-API_CHOICES = ((YAHOO_API, "YAHOO"), )
+GOOGLE_API = "GOOGLE"
+API_CHOICES = ((YAHOO_API, "YAHOO"),
+               (GOOGLE_API, 'GOOGLE') )
 
 
 class Platform(models.Model):
@@ -995,6 +997,8 @@ class Platform(models.Model):
     portfolio_set = models.ForeignKey('portfolios.PortfolioSet')
     api = models.CharField(max_length=20, default=YAHOO_API, choices=API_CHOICES)
 
+    def __str__(self):
+        return "BetaSmartz"
 
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="goals")
@@ -1232,6 +1236,12 @@ class Transaction(models.Model):
     new_balance = models.FloatField(default=0)
     inversion = models.FloatField(default=0)
     return_fraction = models.FloatField(default=0)
+
+
+class DataApiDict(models.Model):
+    api = models.CharField(choices=API_CHOICES, max_length=50)
+    platform_symbol = models.CharField(max_length=20)
+    api_symbol = models.CharField(max_length=20)
 
 
 class TransactionMemo(models.Model):

@@ -3,12 +3,15 @@ __author__ = 'cristian'
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, Performer, \
-    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, TransactionMemo
+    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, \
+    TransactionMemo, DataApiDict
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
+from portfolios.management.commands.get_historical_returns import get_historical_returns as internal_get_historical_returns
+from django.contrib import messages
 
 
 class TickerInline(SortableTabularInline):
@@ -47,9 +50,6 @@ class AssetClassAdmin(SortableModelAdmin):
     list_display = ('name', 'display_name', 'display_order', 'investment_type', 'super_asset_class')
     inlines = (TickerInline,)
     sortable = 'display_order'
-
-
-
 
 
 class FirmFilter(admin.SimpleListFilter):
@@ -191,6 +191,16 @@ def invite_supervisor(modeladmin, request, queryset):
                                     .format(pk=queryset.all()[0].pk))
 
 
+def get_historical_returns(modeladmin, request, queryset):
+    try:
+        internal_get_historical_returns()
+    except BaseException as e:
+        messages.error(request, "Please try again, the script for get historical returns has failed: %s" %(str(e)))
+        return
+
+    messages.success(request, "The historical returns for all the symbols has been completed")
+
+
 class FirmAdmin(admin.ModelAdmin):
     list_display = ('name', )
     inlines = (FirmDataInline, )
@@ -216,6 +226,7 @@ class GoalAdmin(admin.ModelAdmin):
 
 
 class PlatformAdminAdmin(admin.ModelAdmin):
+    actions = (get_historical_returns, )
     pass
 
 
@@ -245,6 +256,15 @@ class TransactionAdmin(admin.ModelAdmin):
 class PerformerAdmin(admin.ModelAdmin):
     list_display = ('symbol', 'name', 'group', 'allocation')
     pass
+
+
+class DataApiDictAdmin(admin.ModelAdmin):
+    list_display = ('api', 'platform_symbol', 'api_symbol')
+    list_filter = ('api', 'platform_symbol')
+    pass
+
+
+admin.site.register(DataApiDict, DataApiDictAdmin)
 
 admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
 admin.site.register(Performer, PerformerAdmin)

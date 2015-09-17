@@ -4,44 +4,14 @@ from datetime import datetime
 import pandas as pd
 from pandas import Series
 import json
+from main.models import DataApiDict
 
 
 class YahooApi:
     currency_cache = {"AUD": 1}
 
-    symbol_dict = {"VSO": "VSO.AX",
-                   "VHY": "VHY.AX",
-                   "VGS": "VGS.AX",
-                   "VLC": "VLC.AX",
-                   "VAS": "VAS.AX",
-                   "BOND": "BOND.AX",
-                   "RGB": "RGB.AX",
-                   "ILB": "ILB.AX",
-                   "RSM": "RSM.AX",
-                   "VTS": "VTS.AX",
-                   "IJP": "IJP.AX",
-                   "IEU": "IEU.AX",
-                   "VGE": "VGE.AX",
-                   "FTAL": "FTAL.L",
-                   "SLXX":"SLXX.L",
-                   "IEAG":"IEAG.L"}
-
-    google_dict = {"VSO": "ASX:VSO",
-                   "VHY": "ASX:VHY",
-                   "VGS": "ASX:VGS",
-                   "VLC": "ASX:VLC",
-                   "VAS": "ASX:VAS",
-                   "BOND": "ASX:BOND",
-                   "RGB": "ASX:RGB",
-                   "ILB": "ASX:ILB",
-                   "RSM": "ASX:RSM",
-                   "VTS": "ASX:VTS",
-                   "IJP": "ASX:IJP",
-                   "IEU": "ASX:IEU",
-                   "VGE": "ASX:VGE",
-                   "FTAL": "FTAL.L",
-                   "SLXX":"SLXX.L",
-                   "IEAG":"IEAG.L"}
+    symbol_dict = None
+    google_dict = None
 
     def __init__(self):
         today = datetime.today()
@@ -50,6 +20,14 @@ class YahooApi:
         self.today_day = today.day
         self.dates = pd.date_range('2010-01-01', '{0}-{1}-{2}'
                                    .format(self.today_year, self.today_month+1, self.today_day), freq='D')
+        self.symbol_dict = {}
+        self.google_dict = {}
+
+        for dad in DataApiDict.objects.filter(api="YAHOO").all():
+            self.symbol_dict[dad.platform_symbol] = dad.api_symbol
+
+        for dad in DataApiDict.objects.filter(api="GOOGLE").all():
+            self.google_dict[dad.platform_symbol] = dad.api_symbol
 
     def get_all_prices(self, ticker_symbol, period="m"):
 
