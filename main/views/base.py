@@ -5,8 +5,10 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import View
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth import views
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.contrib import messages
+
 
 __all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
 
@@ -44,6 +46,10 @@ class AdvisorView(View):
     @method_decorator(advisor_member_required)
     def dispatch(self, request, *args, **kwargs):
         self.advisor = request.user.advisor
+        if request.method == "POST":
+            if not self.advisor.is_accepted:
+                raise PermissionDenied()
+
         response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
             response.context_data["profile"] = request.user.advisor
@@ -61,6 +67,10 @@ class LegalView(View):
     @method_decorator(legal_member_required)
     def dispatch(self, request, *args, **kwargs):
         self.firm = request.user.authorised_representative.firm
+        if request.method == "POST":
+            if not request.user.authorised_representative.is_accepted:
+                raise PermissionDenied()
+
         response = super(LegalView, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
             response.context_data["profile"] = request.user.authorised_representative
@@ -75,6 +85,9 @@ class ClientView(View):
     @method_decorator(client_member_required)
     def dispatch(self, request, *args, **kwargs):
         self.client = self.request.user.client
+        if request.method == "POST":
+            if not self.client.is_accepted:
+                raise PermissionDenied()
         return super(ClientView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

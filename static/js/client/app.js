@@ -47205,11 +47205,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.userName, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '" />\n    </section>\n</form>\n\n<button class="update" disabled="disabled">Update info</button>\n\n<hr />\n\n<ul class="stacked-items">\n\n    <li>\n        <label>Password</label>\n        <span class="item-content">**********</span>\n        <button id="changePassword" class="blue">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    <li>\n        <label>Email Preferences</label>\n        <span class="item-content">', (u = n.contactPreferencesStatus) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.contactPreferencesStatus, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '</span>\n        <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeEmailPrefs" id="emailPreferences" class="blue">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    <li class="multi-ag-only">\n        <label>Default Account</label>\n        <span class="item-content">', (u = n.defaultAccountGroupLabel) ? o = u.call(t, {
+            }) : u), s += f(o) + '" />\n    </section>\n</form>\n\n<button class="update" disabled="disabled">Update info</button>\n\n<hr />\n\n<ul class="stacked-items">\n\n    <li>\n        <label>Password</label>\n        <span class="item-content">**********</span>\n        <button id="changePassword" class="blue">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n          <li class="multi-ag-only">\n        <label>Default Account</label>\n        <span class="item-content">', (u = n.defaultAccountGroupLabel) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.defaultAccountGroupLabel, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -47524,23 +47520,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<label>RetireGuide</label>\n<span class="item-content retire-guide-status"> ', (u = n.retireGuideState) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.retireGuideState, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '\n    <span class="retire-guide-help help-icon">\n            RetireGuide is a retirement planning tool available on the Advice tab.\n            RetireGuide requires entering details about your financial profile in order\n            to provide retirement advice.  Once you set up RetireGuide, you have the option to clear\n            your profile. Clearing your profile cannot be undone. If RetireGuide is cleared or has\n            not been set up, you can also hide RetireGuide from your account.\n    </span>\n</span>\n<button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeRetireGuidePrefs" class="blue clear-retire-guide ', (u = n.clearButtonDisplay) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.clearButtonDisplay, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '">Clear</button>\n<button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeRetireGuidePrefs" class="blue hide-retire-guide ', (u = n.hideButtonDisplay) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.hideButtonDisplay, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '">Hide</button>\n<button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeRetireGuidePrefs" class="blue show-retire-guide ', (u = n.showButtonDisplay) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.showButtonDisplay, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '">Show</button>\n<div class="clearfix"></div>\n', s
+            return s += '', s
         });
         return t.registerPartial("views/profile/retireGuidePreferences", n), n
     }), define("views/profile/retireGuidePreferencesView", ["jquery", "underscore", "backbone", "hbs!views/profile/retireGuidePreferences", "common/betterment.views"], function(e, t, n, r, i) {
@@ -47923,33 +47903,13 @@ var requirejs, require, define;
                 o, u, a, f = "function",
                 l = this.escapeExpression,
                 c = n.helperMissing;
-            return s += '<ul>\n    <li>\n        <label>Bank Account</label>\n\n        <span class="item-content">', (u = n.bankAccountDescription) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.bankAccountDescription, o = typeof u === f ? u.call(t, {
-                hash: {}
-            }) : u), s += l(o) + '</span>\n\n        <button class="change-bank-account">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    <li>\n        <label>Pricing Plan</label>\n        <span class="advised-user-only item-content">\n            ', (u = n.advisedFeeTypeDisplayAmount) ? o = u.call(t, {
+            return s += '<ul>\n      <li>\n        <label>Pricing Plan</label>\n        <span class="advised-user-only item-content">\n            ', (u = n.advisedFeeTypeDisplayAmount) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.advisedFeeTypeDisplayAmount, o = typeof u === f ? u.call(t, {
                 hash: {}
             }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for BetaSmartz and your Investment Advisor. For more details, please see your respective customer agreements. Your BetaSmartz customer agreements can be found ' + l((u = n.link || t && t.link, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.advisorAgreementLink, a) : c.call(t, "link", t && t.advisorAgreementLink, a))) + '.\n            </div>\n        </span>\n        <span class="unadvised-user-only">\n            <span class="item-content">', (u = n.feeTypeDisplayName) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.feeTypeDisplayName, o = typeof u === f ? u.call(t, {
-                hash: {}
-            }) : u), s += l(o) + '</span>\n            <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangePricing" class="review-pricing-plan">Review</button>\n        </span>\n\n        <div class="clearfix"></div>\n    </li>\n\n    <li>\n        <label>Account Status</label>\n        <span class="item-content">', (u = n.accountStatus) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.accountStatus, o = typeof u === f ? u.call(t, {
-                hash: {}
-            }) : u), s += l(o) + '</span>\n        <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="CloseAccount" href="#" class="close-account blue">Change</button>\n\n        <section class="info-tip clearfix hide close-info">\n            <div class="arrow"></div>\n            <div class="text trust-ag-only">\n                To close your trust account, amend the trust, or add or remove a trustee, please call our support team at ', (u = n.supportPhoneNumber) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.supportPhoneNumber, o = typeof u === f ? u.call(t, {
-                hash: {}
-            }) : u), s += l(o) + '.\n            </div>\n            <div class="text joint-ag-only">\n                To close your joint account, please call our support team at ', (u = n.supportPhoneNumber) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.supportPhoneNumber, o = typeof u === f ? u.call(t, {
-                hash: {}
-            }) : u), s += l(o) + '.\n            </div>\n        </section>\n\n        <div class="clearfix"></div>\n    </li>\n</ul>\n', s
+            }, u ? u.call(t, t && t.advisorAgreementLink, a) : c.call(t, "link", t && t.advisorAgreementLink, a))) + '.\n            </div>\n        </span>\n    </li>\n</ul>\n', s
         });
         return t.registerPartial("views/profile/accountAdministration", n), n
     }), define("hbs!views/profile/pricingPlan", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {

@@ -76,7 +76,7 @@ urlpatterns = patterns('',
     url(r'^client/app', ClientApp.as_view(), name='client:app'),
     url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUp.as_view(), name='client:sign_up'),
-
+    url(r'^client/api/account-groups/(?P<pk>\d+)/beneficiaries$', CancelableTransactionsView.as_view()),
     url(r'^client/api/appData', ClientAppData.as_view(), name='client:api:app_data'),
     url(r'^client/api/cancelable_transactions', CancelableTransactionsView.as_view()),
     url(r'^client/api/asset-classes', ClientAssetClasses.as_view(), name='client:api:asset_classes'),
@@ -84,7 +84,7 @@ urlpatterns = patterns('',
     url(r'^client/api/visitor', ClientVisitor.as_view(), name='client:api:visitor'),
     url(r'^client/api/advisors/(?P<pk>\d+)', ClientAdvisor.as_view(), name='client:api:advisors'),
     url(r'^client/api/advisors$', ClientAdvisor.as_view(), name='client:api:advisors_2'),
-
+    url(r'^client/api/contact-preference$', ContactPreference.as_view()),
     url(r'^client/api/accounts$', csrf_exempt(ClientAccounts.as_view()), name='client:api:accounts'),
     url(r'^client/api/firms', ClientFirm.as_view(), name='client:api:firms'),
     url(r'^client/api/accounts/(?P<pk>\d+)/positions', ClientAccountPositions.as_view(),
@@ -104,6 +104,10 @@ urlpatterns = patterns('',
     url(r'^client/api/transaction_memos$', csrf_exempt(NewTransactionMemoView.as_view())),
     url(r'^client/api/accounts/(?P<pk>\d+)$', csrf_exempt(ChangeGoalView.as_view())),
     url(r'^automaticDeposit$', csrf_exempt(SetAutoDepositView.as_view())),
+    url(r'^analysisReturns$', AnalysisReturns.as_view()),
+    url(r'^analysisBalances', AnalysisBalances.as_view()),
+
+
 
     url(r'^password/reset/$',
         'django.contrib.auth.views.password_reset',

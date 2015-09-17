@@ -23,7 +23,7 @@ def b_date(value):
 
 @register.filter
 def b_datetime(value):
-    return value.strftime("%B/%d/%Y %H:%M")
+    return value.strftime("%d/%m/%Y %H:%M")
 
 
 @register.filter

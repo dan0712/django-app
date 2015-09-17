@@ -2,7 +2,7 @@ __author__ = 'cristian'
 
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
-from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, \
+from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, Performer, \
     AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, TransactionMemo
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
@@ -147,7 +147,6 @@ def rebalance(modeladmin, request, queryset):
                                     .format(pk=queryset.all()[0].pk))
 
 
-
 def execute_transaction(modeladmin, request, queryset):
     context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'transaction'}
 
@@ -235,13 +234,20 @@ class PortfolioByRiskAdmin(admin.ModelAdmin):
     list_display = ('risk', 'portfolio_set', 'expected_return', 'volatility')
     pass
 
+
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('account', 'type', 'from_account', 'to_account', 'status', 'amount', 'created_date')
     inlines = (TransactionMemoInline,)
     actions = (execute_transaction, )
     list_filter = ('status', )
 
+
+class PerformerAdmin(admin.ModelAdmin):
+    list_display = ('symbol', 'name', 'group', 'allocation')
+    pass
+
 admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
+admin.site.register(Performer, PerformerAdmin)
 
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)

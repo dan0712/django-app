@@ -142,7 +142,7 @@
                 <tbody>
                 <tr class="status">
                     <td>Employment status</td>
-                    <td>{{ client.employment_status }}</td>
+                    <td>{{ client.get_employment_status_display }}</td>
                 </tr>
                 <tr class="occupation">
                     <td>Occupation</td>
@@ -154,11 +154,11 @@
                 </tr>
                 <tr class="annual-income">
                     <td>Annual income</td>
-                    <td>${{ client.anual_income }}</td>
+                    <td>${{ client.income |bs_big_number }}</td>
                 </tr>
                 <tr class="liquid-net-worth">
                     <td>Liquid net worth</td>
-                    <td>${{ client.liquid_net_worth }}</td>
+                    <td>${{ client.net_worth |bs_big_number }}</td>
                 </tr>
                 </tbody>
             </table>

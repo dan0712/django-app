@@ -96,10 +96,11 @@ DEPOSIT = "DEPOSIT"
 WITHDRAWAL = "WITHDRAWAL"
 FEE = "FEE"
 REBALANCE = "REBALANCE"
+MARKET_CHANGE = "MARKET_CHANGE"
 
 
 TRANSACTION_CHOICES = ((REBALANCE, 'REBALANCE'), (ALLOCATION, "ALLOCATION"), (DEPOSIT, "DEPOSIT"),
-                       (WITHDRAWAL, 'WITHDRAWAL'))
+                       (WITHDRAWAL, 'WITHDRAWAL'), (MARKET_CHANGE, "MARKET_CHANGE"))
 
 PENDING = 'PENDING'
 EXECUTED = 'EXECUTED'
@@ -457,6 +458,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     token = models.CharField(max_length=36, null=True, editable=False)
     firm = models.ForeignKey(Firm, related_name="advisors")
     letter_of_authority = models.FileField()
+    work_phone = AUPhoneNumberField(null=True)
     betasmartz_agreement = models.BooleanField()
 
     @property
@@ -642,6 +644,10 @@ class ClientAccount(models.Model):
             return self.primary_owner.advisor.firm.fee + Platform.objects.first().fee
 
     @property
+    def fee_fraction(self):
+        return self.fee/1000
+
+    @property
     def name(self):
         if self.account_type == PERSONAL_ACCOUNT:
             return "{0}'s Personal Account".format(self.primary_owner.user.first_name)
@@ -707,27 +713,29 @@ class ClientAccount(models.Model):
                                           self.account_type_name)
 
 
-class Client(NeedApprobation, NeedConfirmation):
+FULL_TIME = "FULL_TIME"
+PART_TIME = 'PART_TIME'
+SELF_EMPLOYED = 'SELF_EMPLOYED'
+STUDENT = "STUDENT"
+RETIRED = "RETIRED"
+HOMEMAKER = "HOMEMAKER"
+UNEMPLOYED = "UNEMPLOYED"
+
+EMPLOYMENT_STATUS_CHOICES = ((FULL_TIME, 'Employed (full-time)'), (PART_TIME, 'Employed (part-time)'),
+                             (SELF_EMPLOYED, 'Self-employed'), (STUDENT, 'Student'), (RETIRED, 'Retired'),
+                             (HOMEMAKER, 'Homemaker'), (UNEMPLOYED, "Not employed"))
+
+
+class Client(NeedApprobation, NeedConfirmation, PersonalData):
     advisor = models.ForeignKey(Advisor, related_name="clients")
     secondary_advisors = models.ManyToManyField(Advisor, related_name='secondary_clients', editable=False)
     create_date = models.DateTimeField(auto_now_add=True)
     client_agreement = models.FileField()
 
     user = models.OneToOneField(User)
-    date_of_birth = models.DateField(verbose_name="Date of birth")
-    gender = models.CharField(max_length=20, default="Male",  choices=(("Male", "Male"), ("Female", "Female")))
-    address_line_1 = models.CharField(max_length=255)
-    address_line_2 = models.CharField(max_length=255)
-    city = models.CharField(max_length=255)
-    state = AUStateField()
-    post_code = AUPostCodeField()
-    phone_number = AUPhoneNumberField()
-    tax_file_number = models.CharField(max_length=50)
+    tax_file_number = models.CharField(max_length=50, null=True, blank=True)
     provide_tfn = models.IntegerField(verbose_name="Provide TFN?", choices=TFN_CHOICES, default=TFN_YES)
-    security_question_1 = models.CharField(max_length=255, choices=QUESTION_1_CHOICES)
-    security_question_2 = models.CharField(max_length=255, choices=QUESTION_2_CHOICES)
-    security_answer_1 = models.CharField(max_length=255, verbose_name="Answer")
-    security_answer_2 = models.CharField(max_length=255, verbose_name="Answer")
+
     associated_to_broker_dealer = models.BooleanField(verbose_name="You are employed by or associated with "
                                                                    "a broker dealer.",
                                                       default=False,
@@ -736,6 +744,25 @@ class Client(NeedApprobation, NeedConfirmation):
                                                            " policy maker of a publicly traded company.",
                                               default=False,
                                               choices=YES_NO)
+
+    public_position_insider = models.BooleanField(verbose_name=
+                                                  "Do you or a family member hold a public office position.",
+                                                  default=False,
+                                                  choices=YES_NO)
+
+    us_citizen = models.BooleanField(verbose_name="Are you a US citizen/person"
+                                                  " for the purpose of US Federal Income Tax.",
+                                     default=False,
+                                     choices=YES_NO)
+
+    employment_status = models.CharField(max_length=20, choices=EMPLOYMENT_STATUS_CHOICES)
+
+    net_worth = models.FloatField(default=0)
+    income = models.FloatField(default=0)
+    occupation = models.CharField(max_length=255, null=True, blank=True)
+    employer = models.CharField(max_length=255, null=True, blank=True)
+    betasmartz_agreement = models.BooleanField()
+    advisor_agreement = models.BooleanField()
 
     def __str__(self):
         return self.user.get_full_name()
@@ -795,6 +822,7 @@ class Client(NeedApprobation, NeedConfirmation):
         if create_personal_account:
             new_ac = ClientAccount(primary_owner=self)
             new_ac.save()
+            new_ac.remove_from_group()
 
 BONDS = "BONDS"
 STOCKS = "STOCKS"
@@ -1201,6 +1229,9 @@ class Transaction(models.Model):
     status = models.CharField(max_length=20, choices=TRANSACTION_STATUS_CHOICES, default=PENDING)
     created_date = models.DateTimeField(auto_now_add=True)
     executed_date = models.DateTimeField(null=True)
+    new_balance = models.FloatField(default=0)
+    inversion = models.FloatField(default=0)
+    return_fraction = models.FloatField(default=0)
 
 
 class TransactionMemo(models.Model):
@@ -1255,5 +1286,21 @@ class AutomaticDeposit(models.Model):
         return 0
 
 
+class SymbolReturnHistory(models.Model):
+    return_number = models.FloatField(default=0)
+    symbol = models.CharField(max_length=20)
+    date = models.DateField()
+
+STRATEGY = "STRATEGY"
+BENCHMARK = "BENCHMARK"
+BOND = "BOND"
+STOCK = "STOCK"
+PERFORMER_GROUP_CHOICE = ((STRATEGY, "STRATEGY"), (BENCHMARK, "BENCHMARK"),
+                          (BOND, "BOND"), (STOCK, "STOCK"))
 
 
+class Performer(models.Model):
+    symbol = models.CharField(max_length=20, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    group = models.CharField(max_length=20, choices=PERFORMER_GROUP_CHOICE, default=BENCHMARK)
+    allocation = models.FloatField(default=0)

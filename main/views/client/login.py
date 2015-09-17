@@ -1,12 +1,15 @@
 __author__ = 'cristian'
 
 from ..utils.login import create_login
-from main.models import Client, Firm, Advisor, User
+from main.models import Client, Firm, Advisor, User , BetaSmartzGenericUSerSignupForm, PERSONAL_DATA_WIDGETS, \
+    PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE
 from django.views.generic import CreateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.safestring import mark_safe
+from django.contrib import messages
+
 
 __all__ = ["client_login", 'ClientSignUp']
 
@@ -28,31 +31,36 @@ class Section:
 
 
 class ClientForm(forms.ModelForm):
+
     medicare_number = forms.CharField(
         max_length=20,
         label=mark_safe('Medicare # <span class="security-icon"></span>'),
         help_text="Bank-Level Security"
     )
 
+    user = forms.CharField(required=False)
+
     class Meta:
         model = Client
-        fields = ('advisor', 'date_of_birth', 'gender', 'address_line_1', 'address_line_2', 'city', 'state',
-                  'post_code', 'phone_number', 'medicare_number', 'tax_file_number', "provide_tfn",
-                  'security_question_1', "security_question_2", "security_answer_1", "security_answer_2",
-                  "associated_to_broker_dealer", "ten_percent_insider")
+        fields = PERSONAL_DATA_FIELDS + ('advisor',  'tax_file_number', "provide_tfn", "associated_to_broker_dealer",
+                                         "ten_percent_insider", 'public_position_insider', 'us_citizen',
+                                         "employment_status", "net_worth", "income", "occupation", "employer",
+                                         "betasmartz_agreement", "advisor_agreement")
+
         widgets = {"ten_percent_insider": forms.RadioSelect(),
                    "associated_to_broker_dealer": forms.RadioSelect(),
-                   "gender": forms.RadioSelect(),
+                   'public_position_insider': forms.RadioSelect(),
+                   'us_citizen': forms.RadioSelect(),
                    "provide_tfn": forms.RadioSelect(),
-                   "date_of_birth": forms.TextInput(attrs={"placeholder": "MM-DD-YYYY"}),
-                   'address_line_1': forms.TextInput(attrs={"placeholder": "Street address"}),
-                   "address_line_2": forms.TextInput(attrs={"placeholder": "Apartment, Suite, Unit, Floor (optional)"})}
+                   }
+
+        widgets.update(PERSONAL_DATA_WIDGETS)
 
 
-class ClientSignUpForm(forms.ModelForm):
+class ClientSignUpForm(BetaSmartzGenericUSerSignupForm):
 
-    confirm_password = forms.CharField(max_length=50, widget=forms.PasswordInput())
-    password = forms.CharField(max_length=50, widget=forms.PasswordInput())
+    profile = None
+    user_profile_type = "client"
 
     class Meta:
         model = User
@@ -61,14 +69,13 @@ class ClientSignUpForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('label_suffix', '')
         super(ClientSignUpForm, self).__init__(*args, **kwargs)
-        client_kwargs = kwargs.copy()
+        profile_kwargs = kwargs.copy()
         if 'instance' in kwargs:
-            if kwargs['instance']:
-                self.client = kwargs['instance'].client
-                client_kwargs['instance'] = self.client
-        self.client_form = ClientForm(*args, **client_kwargs)
-        self.fields.update(self.client_form.fields)
-        self.initial.update(self.client_form.initial)
+            self.profile = getattr(kwargs['instance'], self.user_profile_type, None)
+            profile_kwargs['instance'] = self.profile
+        self.profile_form = ClientForm(*args, **profile_kwargs)
+        self.fields.update(self.profile_form.fields)
+        self.initial.update(self.profile_form.initial)
 
         self.field_sections = [{"fields": ('first_name', 'middle_name',  'last_name', 'email', 'password',
                                            'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
@@ -88,11 +95,35 @@ class ClientSignUpForm(forms.ModelForm):
                                            'security_answer_2'),
                                 "header": "Security",
                                 "detail": "We ask for security questions to protect your account."},
-                               {"fields": ("associated_to_broker_dealer", "ten_percent_insider"),
+                               {"fields": ("employment_status", "occupation", "employer", "net_worth", "income"),
+                                "header": "Employment and financial background",
+                                "detail": "We are required to ask for your employment and financial background, "
+                                          "and your answers allow us to give you better advice. "
+                                          "The more accurate information we have, the better advice we can give you.",
+                               "css_class": "financial_questions"},
+                               {"fields": ("associated_to_broker_dealer", "ten_percent_insider",
+                                           'public_position_insider', 'us_citizen'),
                                 "header": "Regulatory questions",
                                 "detail": "We are required by law to ask about the following rare situations."
                                           " Most users will answer No:",
                                "css_class": "r_questions"}]
+
+    def clean(self):
+        cleaned_data = super(ClientSignUpForm, self).clean()
+        if not(cleaned_data["advisor_agreement"] is True):
+            self._errors['advisor_agreement'] = mark_safe('<ul class="errorlist">'
+                                                          '<li>You must accept the client\'s agreement'
+                                                          ' to continue.</li></ul>')
+
+        return cleaned_data
+
+    def save(self, *args, **kw):
+        user = super(ClientSignUpForm, self).save(*args, **kw)
+        self.profile = self.profile_form.save(commit=False)
+        self.profile.user = user
+        self.profile.save()
+        self.profile.send_confirmation_email()
+        return user
 
     @property
     def sections(self):
@@ -103,24 +134,29 @@ class ClientSignUpForm(forms.ModelForm):
 class ClientSignUp(CreateView):
     template_name = "registration/client_form.html"
     form_class = ClientSignUpForm
+    success_url = "/firm/login"
 
     def __init__(self, *args, **kwargs):
         self.firm = None
         self.advisor = None
         super(ClientSignUp, self).__init__(*args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        response = super(ClientSignUp, self).get(request, *args, **kwargs)
-        response.context_data["advisor"] = self.advisor
-        response.context_data["firm"] = self.firm
-        return response
+    def get_context_data(self, **kwargs):
+        ctx = super(ClientSignUp, self).get_context_data(**kwargs)
+        ctx["advisor"] = self.advisor
+        ctx["firm"] = self.firm
+        return ctx
+
+    def get_success_url(self):
+        messages.info(self.request, SUCCESS_MESSAGE)
+        return super(ClientSignUp, self).get_success_url()
 
     def dispatch(self, request, *args, **kwargs):
         slug = kwargs["slug"]
         token = kwargs["token"]
 
         try:
-            firm = Firm.objects.get(firm_slug=slug)
+            firm = Firm.objects.get(slug=slug)
         except ObjectDoesNotExist:
             raise Http404()
 

@@ -15,7 +15,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.forms import AuthenticationForm
-from main.models import User, AuthorisedRepresentative, Advisor
+from main.models import User, AuthorisedRepresentative, Advisor, Client
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.contrib.auth import (logout as auth_logout)
@@ -25,7 +25,7 @@ __all__ = ["firm_login", "firm_logout"]
 
 INVALID_CREDENTIALS = "Invalid email or password."
 
-firm_class = [Advisor, AuthorisedRepresentative]
+firm_class = [Advisor, AuthorisedRepresentative, Client]
 
 
 @never_cache
@@ -70,10 +70,11 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
                 if not user_class_object.is_confirmed:
                     messages.error(request, "Your %s account has not been confirmed yet." % user_class_name)
                     continue_login = False
-                elif not user_class_object.is_accepted:
-                    messages.error(request, "Your %s account has not been approved yet." % user_class_name)
-                    continue_login = False
                 else:
+                    if user_class is Client:
+                        redirect_to = request.POST.get(redirect_field_name,
+                                                       request.GET.get(redirect_field_name, '/client/app'))
+
                     if user_class is Advisor:
                         redirect_to = request.POST.get(redirect_field_name,
                                                        request.GET.get(redirect_field_name, '/advisor/summary'))

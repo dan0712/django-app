@@ -4,20 +4,27 @@ from django.views.generic import TemplateView
 from ..base import ClientView
 import json
 from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo,\
-    AutomaticDeposit, WITHDRAWAL
+    AutomaticDeposit, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, MARKET_CHANGE
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from datetime import datetime
+from datetime import datetime, timedelta
 from portfolios.models import PortfolioByRisk, PortfolioSet
+import time
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
            "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions',
            'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView', 'ChangeAllocation',
-           'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView', 'Withdrawals']
+           'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView', 'Withdrawals', 'ContactPreference',
+           'AnalysisReturns', 'AnalysisBalances']
 
 
 class ClientAppData(TemplateView):
     template_name = "appData.json"
+    content_type = "application/json"
+
+
+class ContactPreference(TemplateView):
+    template_name = "contact-preference.json"
     content_type = "application/json"
 
 
@@ -301,3 +308,84 @@ class Withdrawals(ClientView):
                      "amount": new_transaction.amount}
 
         return HttpResponse(json.dumps(nt_return), content_type="application/json")
+
+
+class AnalysisBalances(ClientView):
+
+    def get(self, request, *args, **kwargs):
+        # get all the performances
+        ret = []
+        goal_pk = request.GET.get("account")
+        goal = get_object_or_404(Goal, pk=goal_pk, account__primary_owner=self.client)
+        trs = goal.transactions.filter(type=MARKET_CHANGE).order_by('executed_date').all()
+        if trs:
+            for transaction in trs:
+                r_obj = {"d":transaction.executed_date.strftime('%Y%m%d%H%M%S'),
+                         "inv": transaction.inversion, "bal": transaction.new_balance}
+
+                ret.append(r_obj)
+
+        return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+class AnalysisReturns(ClientView):
+
+    def get(self, request, *args, **kwargs):
+        # get all the performances
+        ret = []
+        counter = 0
+        for p in Performer.objects.all():
+            counter += 1
+            obj = {}
+            if p.group == STRATEGY:
+                obj["name"] = p.name
+            else:
+                obj["name"] = "{0} ({1})".format(p.name, p.symbol)
+
+            obj["group"] = p.group
+            obj["initial"] = False
+            obj["lineID"] = counter
+            obj["returns"] = []
+            returns = SymbolReturnHistory.objects.filter(symbol=p.symbol).order_by('date').all()
+            if returns:
+                b_date = returns[0].date-timedelta(days=1)
+                obj["returns"].append({"d": "{0}".format(int(1000*time.mktime(b_date.timetuple()))),
+                                       "i": 0, "ac": 1, "zero_balance": True})
+            for r in returns:
+                r_obj = {"d": "{0}".format(int(1000*time.mktime(r.date.timetuple()))), "i": r.return_number}
+                if p.group == STRATEGY:
+                    r_obj["ac"] = p.allocation
+                obj["returns"].append(r_obj)
+
+            ret.append(obj)
+
+        for account in self.client.accounts.all():
+            for goal in account.goals.all():
+                trs = goal.transactions.filter(type=MARKET_CHANGE).order_by('executed_date').all()
+                if not trs:
+                    continue
+                counter += 1
+                obj = dict()
+                obj["name"] = goal.name
+                obj["group"] = "ACCOUNT"
+                obj["createdDate"] = goal.created_date.strftime('%Y%m%d%H%M%S')
+                obj["initial"] = False
+                obj["lineID"] = counter
+                b_date_1 = trs[0].executed_date-timedelta(days=2)
+                b_date_2 = trs[0].executed_date-timedelta(days=1)
+
+                obj["returns"] = [{"d": "{0}".format(int(1000*time.mktime(b_date_1.timetuple()))),
+                                  "i": 0, "zero_balance": True, "ac": goal.allocation},
+                                  {"d": "{0}".format(int(1000*time.mktime(b_date_2.timetuple()))), "i": 0,
+                                   "zero_balance": True
+                                   }]
+
+                for transaction in trs:
+                    r_obj = {"d": "{0}".format(int(1000*time.mktime(transaction.executed_date.timetuple()))),
+                             "i": transaction.return_fraction}
+
+                    obj["returns"].append(r_obj)
+
+                ret.append(obj)
+
+        return HttpResponse(json.dumps(ret), content_type="application/json")
