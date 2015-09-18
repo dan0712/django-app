@@ -5,7 +5,7 @@ import pandas as pd
 from pandas import Series
 import json
 from main.models import DataApiDict
-
+from urllib.parse import quote
 
 class YahooApi:
     currency_cache = {"AUD": 1}
@@ -33,7 +33,7 @@ class YahooApi:
 
         ticker_symbol = self.symbol_dict.get(ticker_symbol, ticker_symbol)
         url = "http://real-chart.finance.yahoo.com/table.csv?s=%s&a=00&b=01&c=2010&d=%02d&e=%02d&f=%d&g=%s" \
-              "&ignore=.csv" % (ticker_symbol, self.today_month, self.today_day, self.today_year, period)
+              "&ignore=.csv" % (quote(ticker_symbol), self.today_month, self.today_day, self.today_year, period)
         price_data = {}
         try:
             with urllib.request.urlopen(url) as response:
