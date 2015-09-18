@@ -101,6 +101,7 @@ urlpatterns = patterns('',
 
     url(r'^client/api/account-groups/(?P<pk>\d+)/pending-invites', ok_response_json),
     url(r'^transactions$', csrf_exempt(NewTransactionsView.as_view())),
+    url(r'^transactions\.csv$', csrf_exempt(NewTransactionsView.as_view())),
     url(r'^client/api/transaction_memos$', csrf_exempt(NewTransactionMemoView.as_view())),
     url(r'^client/api/accounts/(?P<pk>\d+)$', csrf_exempt(ChangeGoalView.as_view())),
     url(r'^automaticDeposit$', csrf_exempt(SetAutoDepositView.as_view())),

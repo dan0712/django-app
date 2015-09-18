@@ -33,7 +33,7 @@ def solve_shares_wdw(current_shares, tickers_price, target_allocation, amount):
     shares_change = zeros([n])
 
     # Bounds for decision variables
-    b_ = [(0, current_shares[i]) for i in range(n)]
+    b_ = [(0, float("{:.2f}".format(current_shares[i]))) for i in range(n)]
 
     # Constraints - weights must sum to 1
     # sum of weights of stock should be equal to allocation

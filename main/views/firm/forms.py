@@ -466,7 +466,9 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             fee_t.amount = fee
             fee_t.status = EXECUTED
             fee_t.executed_date = datetime.now()
+            fee_t.new_balance = old_amount - fee
             fee_t.save()
+            self.transaction.new_balance = new_amount
 
         if self.transaction.type == DEPOSIT:
             fee = self.transaction.amount * self.transaction.account.account.fee / 1000
@@ -479,6 +481,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             fee_t.status = EXECUTED
             fee_t.executed_date = datetime.now()
             fee_t.save()
+            self.transaction.new_balance = new_amount
 
         if self.transaction.type == ALLOCATION:
             pass

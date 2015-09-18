@@ -1000,6 +1000,7 @@ class Platform(models.Model):
     def __str__(self):
         return "BetaSmartz"
 
+
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="goals")
     name = models.CharField(max_length=100)
