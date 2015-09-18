@@ -46492,7 +46492,7 @@ var requirejs, require, define;
                             Comparison: r[1] + "-" + r[2]
                         })
                     } else if (n.get("group") === "BENCHMARK") {
-                        var i = n.get("name").match(/\(([A-Z]+)\)/);
+                        var i = n.get("name").match(/\(([\^\.A-Z]+)\)/);
                         BMT.analytics.track("GoalComparisonAdded", {
                             Location: "Analysis",
                             Group: "Benchmark",

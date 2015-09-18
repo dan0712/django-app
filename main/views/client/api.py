@@ -184,7 +184,7 @@ class CancelableTransactionsView(ClientView, TemplateView):
 class NewTransactionsView(ClientView):
 
     def get(self, request, *args, **kwargs):
-        goal_pk = self.request.GET.get("account")
+        goal_pk = self.request.GET.get("account", None)
         days_ago = self.request.GET.get("startDaysAgo", None)
         _format = self.request.GET.get("format", None)
 
@@ -193,8 +193,13 @@ class NewTransactionsView(ClientView):
         except (ValueError, TypeError):
             days_ago = None
 
-        goal = get_object_or_404(Goal, pk=goal_pk, account__primary_owner=self.client)
-        query_set = goal.transactions.order_by("executed_date").filter(status=EXECUTED)
+        print(goal_pk)
+        if goal_pk:
+            goal = get_object_or_404(Goal, pk=goal_pk, account__primary_owner=self.client)
+            query_set = goal.transactions.order_by("executed_date").filter(status=EXECUTED)
+        else:
+            query_set = Transaction.objects.order_by("executed_date").filter(status=EXECUTED,
+                                                                             account__account__primary_owner=self.client)
 
         if days_ago:
             days_ago = datetime.today() - timedelta(days=days_ago)
@@ -223,8 +228,8 @@ class NewTransactionsView(ClientView):
                       "isAllocation": False,
                       "fullTime": dt.strftime('%Y-%m-%d %H:%M:%S'),
                       "id": "{0}".format(transaction.pk),
-                      "accountName": goal.name,
-                      "accountID": "{0}".format(goal.pk),
+                      "accountName": transaction.account.name,
+                      "accountID": "{0}".format(transaction.account.pk),
                       "type": MARKET_CHANGE,
                       "typeID": "2",
                       "date": dt.strftime('%Y%m%d%H%M%S'),
@@ -251,8 +256,8 @@ class NewTransactionsView(ClientView):
                        "fullTime": dt.strftime('%Y-%m-%d %H:%M:%S'),
                        "isAllocation": False,
                        "id": "{0}".format(transaction.pk),
-                       "accountName": goal.name,
-                       "accountID": "{0}".format(goal.pk),
+                       "accountName": transaction.account.name,
+                       "accountID": "{0}".format(transaction.account.pk),
                        "type": transaction.type,
                        "typeID": "1",
                        "date": dt,
