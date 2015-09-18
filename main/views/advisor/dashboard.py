@@ -27,7 +27,7 @@ __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients', 'AdvisorA
            'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView', 'AdvisorAccountGroupClients',
            'AdvisorAccountGroupSecondaryDetailView', 'AdvisorAccountGroupSecondaryNewView',
            'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary', 'ImpersonateView', 'Logout',
-           'AdvisorClientAccountChangeFee']
+           'AdvisorClientAccountChangeFee', "AdvisorSupportGettingStarted"]
 
 
 class AdvisorClientInvitesForm(forms.ModelForm):
@@ -587,3 +587,7 @@ class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
 
     def get_success_url(self):
         return '/composites/{0}'.format(self.object.account_group.pk)
+
+
+class AdvisorSupportGettingStarted(AdvisorView, TemplateView):
+    template_name = 'advisor/support-getting-started.html'

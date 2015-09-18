@@ -5,10 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from main import settings
 from django.shortcuts import HttpResponseRedirect, HttpResponse
 
+
 def ok_response_json(*args, **kwargs):
 
     return HttpResponse("[]", content_type='application/json')
-
 
 urlpatterns = patterns('',
 
@@ -52,7 +52,9 @@ urlpatterns = patterns('',
     url(r'^advisor/client_invites', AdvisorClientInvites.as_view(), name='advisor:client_invites'),
     url(r'^advisor/clients', AdvisorClients.as_view(), name='advisor:clients'),
     url(r'^advisor/agreements', AdvisorAgreements.as_view(), name='advisor:agreements'),
-    url(r'^advisor/support', AdvisorSupport.as_view(), name='advisor:support'),
+    url(r'^advisor/support$', AdvisorSupport.as_view(), name='advisor:support'),
+    url(r'^advisor/support/getting-started$', AdvisorSupportGettingStarted.as_view()),
+
     url(r'^advisor/summary', AdvisorCompositeSummary.as_view(), name='advisor:summary'),
     url(r'^advisor/client/(?P<pk>\d+)$', AdvisorClientDetails.as_view(),),
     url(r'^composites/new$', AdvisorCompositeNew.as_view()),
@@ -105,6 +107,7 @@ urlpatterns = patterns('',
     url(r'^client/api/transaction_memos$', csrf_exempt(NewTransactionMemoView.as_view())),
     url(r'^client/api/accounts/(?P<pk>\d+)$', csrf_exempt(ChangeGoalView.as_view())),
     url(r'^automaticDeposit$', csrf_exempt(SetAutoDepositView.as_view())),
+    url(r'^automaticWithdrawal$', csrf_exempt(SetAutoWithdrawalView.as_view())),
     url(r'^analysisReturns$', AnalysisReturns.as_view()),
     url(r'^analysisBalances', AnalysisBalances.as_view()),
 

@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'compat',
     'main',
     'portfolios',
+    'advisors'
 )
 
 MIDDLEWARE_CLASSES = (

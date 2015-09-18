@@ -4,7 +4,8 @@ from django.views.generic import TemplateView
 from ..base import ClientView
 import json
 from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo,\
-    AutomaticDeposit, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, MARKET_CHANGE, EXECUTED, FEE
+    AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory,\
+    MARKET_CHANGE, EXECUTED, FEE
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from datetime import datetime, timedelta
@@ -15,7 +16,7 @@ __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisit
            "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions',
            'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView', 'ChangeAllocation',
            'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView', 'Withdrawals', 'ContactPreference',
-           'AnalysisReturns', 'AnalysisBalances']
+           'AnalysisReturns', 'AnalysisBalances', "SetAutoWithdrawalView"]
 
 
 class ClientAppData(TemplateView):
@@ -104,7 +105,8 @@ class ClientAccounts(ClientView, TemplateView):
         goal.account_type = model.get("accountType")
         goal.completion_date = datetime.strptime(model.get("goalCompletionDate"), '%Y%m%d%H%M%S')
         goal.allocation = model.get("allocation")
-        goal.target = model.get("goalAmount")
+        goal.target = model.get("goalAmount", None)
+        goal.income = model.get("income", False)
         goal.save()
         return HttpResponse(json.dumps({"id": goal.pk}), content_type='application/json')
 
@@ -400,6 +402,35 @@ class SetAutoDepositView(ClientView):
             ad = goal.auto_deposit
         else:
             ad = AutomaticDeposit(account=goal)
+
+        ad.amount = payload.get("amount", 0)
+        ad.frequency = payload["frequency"]
+        ad.enabled = payload["enabled"]
+        ad.transaction_date_time_1 = datetime.strptime(payload["transactionDateTime1"], '%Y%m%d%H%M%S')
+        td2 = payload.get("transactionDateTime2", None)
+        if td2:
+            ad.transaction_date_time_2 = datetime.strptime(td2, '%Y%m%d%H%M%S')
+        ad.save()
+
+        payload["id"] = ad.pk
+        payload["lastPlanChange"] = ad.last_plan_change.strftime('%Y%m%d%H%M%S')
+        payload["nextTransaction"] = ad.next_transaction.strftime('%Y%m%d%H%M%S')
+        payload["amount"] = str(ad.amount)
+
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+class SetAutoWithdrawalView(ClientView):
+
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.POST.get("model"))
+        pk = payload["account"]
+        goal = get_object_or_404(Goal, pk=pk, account__primary_owner=self.client)
+
+        if hasattr(goal, "auto_withdrawal"):
+            ad = goal.auto_withdrawal
+        else:
+            ad = AutomaticWithdrawal(account=goal)
 
         ad.amount = payload.get("amount", 0)
         ad.frequency = payload["frequency"]

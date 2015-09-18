@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from portfolios.management.commands.get_historical_returns import get_historical_returns as internal_get_historical_returns
 from django.contrib import messages
+from advisors import models as advisor_models
 
 
 class TickerInline(SortableTabularInline):
@@ -264,15 +265,47 @@ class DataApiDictAdmin(admin.ModelAdmin):
     pass
 
 
-admin.site.register(DataApiDict, DataApiDictAdmin)
+def approve_changes(modeladmin, request, queryset):
+    for obj in queryset.all():
+        obj.approve()
 
+    messages(request, "Changes have been approved and applied")
+
+
+class AdvisorChangeDealerGroupAdmin(admin.ModelAdmin):
+    list_display = ('advisor', 'old_firm', 'new_firm', 'approved', 'create_at', 'approved_at')
+    list_filter = ('advisor', 'old_firm', 'new_firm', 'approved')
+    actions = (approve_changes, )
+    pass
+
+
+class AdvisorBulkInvestorTransferAdmin(admin.ModelAdmin):
+    filter_horizontal = ('bulk_investors_spreadsheet',)
+    list_display = ('from_advisor', 'to_advisor', 'approved', 'create_at', 'approved_at')
+    list_filter = ('from_advisor', 'to_advisor', 'approved')
+    actions = (approve_changes, )
+
+    pass
+
+
+class AdvisorSingleInvestorTransferAdmin(admin.ModelAdmin):
+    list_display = ('from_advisor', 'to_advisor', 'investor', 'approved', 'create_at', 'approved_at')
+    list_filter = ('from_advisor', 'to_advisor', 'investor', 'approved')
+    actions = (approve_changes, )
+    pass
+
+
+admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
+admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
+admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
+
+
+admin.site.register(DataApiDict, DataApiDictAdmin)
 admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
 admin.site.register(Performer, PerformerAdmin)
-
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
-
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)

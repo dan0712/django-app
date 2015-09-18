@@ -1004,7 +1004,8 @@ class Platform(models.Model):
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="goals")
     name = models.CharField(max_length=100)
-    target = models.FloatField(default=0)
+    target = models.FloatField(null=True)
+    income = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     completion_date = models.DateTimeField()
     allocation = models.FloatField()
@@ -1262,6 +1263,39 @@ FREQUENCY_CHOICES = ((MONTHLY, "1/mo"),
                      (TWICE_A_MONTH, "2/mo"),
                      (EVERY_OTHER_WEEK, "2/mo"),
                      (WEEKLY, 'WEEKLY'))
+
+
+class AutomaticWithdrawal(models.Model):
+    account = models.OneToOneField(Goal, related_name="auto_withdrawal")
+    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
+    enabled = models.BooleanField(default=True)
+    amount = models.FloatField()
+    transaction_date_time_1 = models.DateTimeField(null=True)
+    transaction_date_time_2 = models.DateTimeField(null=True)
+    last_plan_change = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def next_transaction(self):
+        return date.today()
+
+    @property
+    def is_enabled(self):
+        return "true" if self.enabled else "false"
+
+    @property
+    def get_annualized(self):
+
+        if self.frequency == MONTHLY:
+            return self.amount*12
+        elif self.frequency == TWICE_A_MONTH:
+            return self.amount*2*12
+        elif self.frequency == EVERY_OTHER_WEEK:
+            return self.amount*2*12
+        elif self.frequency == WEEKLY:
+            return self.amount*4*12
+
+        return 0
 
 
 class AutomaticDeposit(models.Model):
