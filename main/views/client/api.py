@@ -659,6 +659,9 @@ class FinancialProfileView(ClientView):
     def get(self, request, *args, **kwargs):
         return HttpResponse(self.client.get_financial_profile, content_type="application/json")
 
+    def post(self, request, *args, **kwargs):
+        return self.put(request, *args, **kwargs)
+
     def put(self,  request, *args, **kwargs):
         payload = json.loads(request.body.decode('utf-8'))
         spouse_retired = payload.get("spouse_retired", None)
