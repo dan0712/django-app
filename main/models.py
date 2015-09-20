@@ -18,6 +18,7 @@ from django.utils.safestring import mark_safe
 from datetime import date, datetime
 import json
 from numpy import array
+from django.core import serializers
 
 
 def validate_agreement(value):
@@ -776,6 +777,68 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         pass
 
     @property
+    def get_financial_plan(self):
+        if hasattr(self, 'financial_plan'):
+            plan = self.financial_plan
+        else:
+            return "null"
+
+        betasmartz_externals = json.loads(serializers.serialize("json", self.financial_plan_external_accounts.all()))
+        external_accounts = []
+
+        for be in betasmartz_externals:
+            be["fields"]["id"] = be["pk"]
+            external_accounts.append(be["fields"])
+
+        betasmartz_goals = []
+
+        for account in self.financial_plan_accounts.all():
+            obj = dict()
+            obj["id"] = account.pk
+            obj["bettermentdb_account_id"] = account.account.pk
+            obj["annual_contribution_cents"] = account.annual_contribution_cents
+            betasmartz_goals.append(obj)
+
+        plan = json.loads(serializers.serialize("json", [plan]))[0]
+        plan["fields"]["id"] = plan["pk"]
+        plan["fields"]["accounts"] = betasmartz_goals
+        plan["fields"]["external_accounts"] = external_accounts
+        plan["fields"]["income_replacement_ratio"] = plan["fields"]["income_replacement_ratio"]
+        plan["fields"]["other_retirement_income_cents"] = plan["fields"]["other_retirement_income_cents"]
+        plan["fields"]["desired_retirement_income_cents"] = plan["fields"]["desired_retirement_income_cents"]
+
+        del plan["fields"]["client"]
+        return mark_safe(json.dumps(plan["fields"]))
+
+    @property
+    def get_financial_profile(self):
+
+        if hasattr(self, 'financial_profile'):
+            profile = self.financial_profile
+        else:
+            return "null"
+
+        data = json.loads(serializers.serialize("json", [profile]))[0]
+        data["fields"]["id"] = data["pk"]
+        del data["fields"]["client"]
+        data["fields"]["social_security_percent_expected"] = str(data["fields"]["social_security_percent_expected"])
+        data["fields"]["annual_salary_percent_growth"] = str(data["fields"]["annual_salary_percent_growth"])
+        data["fields"]["social_security_percent_expected"] = str(data["fields"]["social_security_percent_expected"])
+        data["fields"]["expected_inflation"] = str(data["fields"]["expected_inflation"])
+
+        return mark_safe(json.dumps(data["fields"]))
+
+    @property
+    def external_accounts(self):
+        betasmartz_externals = json.loads(serializers.serialize("json", self.financial_plan_external_accounts.all()))
+        external_accounts = []
+
+        for be in betasmartz_externals:
+            be["fields"]["id"] = be["pk"]
+            external_accounts.append(be["fields"])
+        return mark_safe(json.dumps(external_accounts))
+
+    @property
     def firm(self):
         return self.advisor.firm
 
@@ -1016,6 +1079,27 @@ class Goal(models.Model):
 
     def __str__(self):
         return self.name + " : " + self.account.primary_owner.full_name
+
+    @property
+    def get_financial_plan_id(self):
+        try:
+            FinancialPlanAccount.objects.get(account=self, client=self.account.primary_owner)
+        except ObjectDoesNotExist:
+            return "null"
+
+        if hasattr(self.account.primary_owner, 'financial_plan'):
+            return self.account.primary_owner.financial_plan.pk
+        else:
+            return "null"
+
+    @property
+    def get_financial_plan(self):
+        try:
+            FinancialPlanAccount.objects.get(account=self, client=self.account.primary_owner)
+        except ObjectDoesNotExist:
+            return "null"
+
+        return self.account.primary_owner.get_financial_plan
 
     @property
     def get_drift(self):
@@ -1349,3 +1433,65 @@ class Performer(models.Model):
     name = models.CharField(max_length=100)
     group = models.CharField(max_length=20, choices=PERFORMER_GROUP_CHOICE, default=BENCHMARK)
     allocation = models.FloatField(default=0)
+
+
+class CostOfLivingIndex(models.Model):
+    state = AUStateField(unique=True)
+    value = models.FloatField(default=80.99)
+
+
+class FinancialPlanAccount(models.Model):
+    client = models.ForeignKey(Client, related_name="financial_plan_accounts")
+    account = models.ForeignKey(Goal)
+    annual_contribution_cents = models.CharField(max_length=100, null=True)
+
+
+class FinancialPlanExternalAccount(models.Model):
+    client = models.ForeignKey(Client, related_name="financial_plan_external_accounts")
+    account_type = models.CharField(max_length=100)
+    balance_cents = models.FloatField(default=0, null=True)
+    annual_contribution_cents = models.FloatField(default=0, null=True)
+    account_owner = models.CharField(max_length=100, null=True)
+    institution_name = models.CharField(max_length=255, null=True)
+    investment_type = models.CharField(max_length=100, null=True)
+    advisor_fee_percent = models.CharField(max_length=100, null=True)
+
+
+class FinancialPlan(models.Model):
+    client = models.OneToOneField(Client, related_name="financial_plan")
+    name = models.CharField(max_length=100)
+    other_retirement_income_cents = models.FloatField(default=0)
+    complete = models.BooleanField(default=False)
+    retirement_zip = AUPostCodeField()
+    income_replacement_ratio = models.FloatField(null=True)
+    retirement_age = models.PositiveIntegerField(null=True)
+    spouse_retirement_age = models.PositiveIntegerField(null=True)
+    desired_retirement_income_cents = models.FloatField(default=0)
+    savings_advice_chance = models.CharField(max_length=100, null=True)
+
+
+class FinancialProfile(models.Model):
+    client = models.OneToOneField(Client, related_name="financial_profile")
+    complete = models.BooleanField(default=False)
+    marital_status = models.CharField(default="single", max_length=100)
+    retired = models.BooleanField(default=False)
+    life_expectancy = models.FloatField(default=70, null=True)
+    pretax_income_cents = models.FloatField(default=0, null=True)
+    social_security_monthly_amount_cents = models.FloatField(default=0, null=True)
+    expected_inflation = models.FloatField(default=2.5)
+    social_security_percent_expected = models.FloatField(default=0, null=True)
+    annual_salary_percent_growth = models.FloatField(default=0, null=True)
+    average_tax_percent = models.FloatField(default=0, null=True)
+    spouse_name = models.CharField(max_length=100, null=True)
+    spouse_estimated_birthdate = models.DateTimeField(null=True)
+    spouse_retired = models.BooleanField(default=False)
+    spouse_life_expectancy = models.FloatField(default=80, null=True)
+    spouse_pretax_income_cents = models.FloatField(default=0, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+

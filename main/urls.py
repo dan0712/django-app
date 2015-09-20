@@ -110,6 +110,18 @@ urlpatterns = patterns('',
     url(r'^automaticWithdrawal$', csrf_exempt(SetAutoWithdrawalView.as_view())),
     url(r'^analysisReturns$', AnalysisReturns.as_view()),
     url(r'^analysisBalances', AnalysisBalances.as_view()),
+    url(r'^client/api/zip_codes/(?P<pk>\d+)$', ZipCodes.as_view()),
+    url(r'^client/api/financial_profile$', csrf_exempt(FinancialProfileView.as_view())),
+    url(r'^client/api/financial_plans$', csrf_exempt(FinancialPlansView.as_view())),
+    url(r'^client/api/financial_plans/(?P<pk>\d+)$', csrf_exempt(FinancialPlansView.as_view())),
+    url(r'^client/api/financial_plans/(?P<pk>\d+)/account_addition$', csrf_exempt(FinancialPlansAccountAdditionView.as_view())),
+    url(r'^client/api/financial_plans/account_addition$', csrf_exempt(FinancialPlansAccountAdditionView.as_view())),
+    url(r'^client/api/financial_plans/account_removal$', csrf_exempt(FinancialPlansAccountDeletionView.as_view())),
+    url(r'^client/api/financial_plans/(?P<pk>\d+)/account_removal$', csrf_exempt(FinancialPlansAccountDeletionView.as_view())),
+
+    url(r'^client/api/external_accounts$', csrf_exempt(FinancialPlansExternalAccountAdditionView.as_view())),
+    url(r'^client/api/external_accounts/(?P<pk>\d+)$', csrf_exempt(FinancialPlansExternalAccountDeletionView.as_view())),
+
 
 
 

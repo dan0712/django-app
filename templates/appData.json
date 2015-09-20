@@ -487,8 +487,8 @@
     "FULL"
   ],
   "visitorCookieKey": "visitorKey",
-  "defaultPortfolioSetID": "18",
-  "defaultIraPortfolioSetID": "17",
+  "defaultPortfolioSetID": "1",
+  "defaultIraPortfolioSetID": "1",
   "environment": "demo",
   "logentriesToken": "fb9d7a34-f6eb-41a0-9230-0deb1546c31e",
   "tlhMinimumBalance": 50000,

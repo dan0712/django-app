@@ -5,18 +5,22 @@ from ..base import ClientView
 import json
 from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo,\
     AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory,\
-    MARKET_CHANGE, EXECUTED, FEE
+    MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, FinancialPlanExternalAccount
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from datetime import datetime, timedelta
 from portfolios.models import PortfolioByRisk, PortfolioSet
 import time
+from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
            "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions',
            'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView', 'ChangeAllocation',
            'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView', 'Withdrawals', 'ContactPreference',
-           'AnalysisReturns', 'AnalysisBalances', "SetAutoWithdrawalView"]
+           'AnalysisReturns', 'AnalysisBalances', "SetAutoWithdrawalView", "ZipCodes", "FinancialProfileView",
+           "FinancialPlansView", "FinancialPlansAccountAdditionView", "FinancialPlansAccountDeletionView",
+           "FinancialPlansExternalAccountAdditionView", "FinancialPlansExternalAccountDeletionView"]
 
 
 class ClientAppData(TemplateView):
@@ -549,3 +553,125 @@ class AnalysisReturns(ClientView):
                 ret.append(obj)
 
         return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+class ZipCodes(ClientView):
+    def get(self,  request, *args, **kwargs):
+        col, is_new = CostOfLivingIndex.objects.get_or_create(state=self.client.state)
+
+        ret = {"zip_code": self.client.post_code,
+               "state": self.client.state,
+               "cost_of_living_index": "{0}".format(col.value)}
+
+        return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+class FinancialPlansView(ClientView):
+    
+    def get(self,  request, *args, **kwargs):
+        return HttpResponse(self.client.get_financial_plan, content_type="application/json")
+            
+    def put(self,  request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
+
+    def post(self,  request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf-8'))
+
+        if hasattr(self.client, 'financial_plan'):
+            plan = self.client.financial_plan
+        else:
+            plan = FinancialPlan(client=self.client, name=payload["name"])
+        
+        for k, v in payload.items():
+            setattr(plan, k, v)
+        plan.save()
+        payload["id"] = plan.pk
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+class FinancialPlansAccountAdditionView(ClientView):
+    def post(self,  request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf-8'))
+        goal = get_object_or_404(Goal, pk=payload["account_id"].strip("f"), account__primary_owner=self.client)
+        
+        fp_account, is_new = FinancialPlanAccount.objects.get_or_create(client=self.client, account=goal)
+        fp_account.annual_contribution_cents = payload["annual_contribution_cents"]
+        fp_account.save()
+        payload["id"] = fp_account.pk
+        payload["bettermentdb_account_id"] = goal.pk
+        del payload["account_id"]
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+class FinancialPlansAccountDeletionView(ClientView):
+    def post(self,  request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf-8'))
+        goal = get_object_or_404(Goal, pk=payload["account_id"].strip("f"), account__primary_owner=self.client) 
+
+        try:
+            fp_account = FinancialPlanAccount.objects.get(client=self.client, account=goal)
+        except ObjectDoesNotExist:
+            fp_account = None
+        
+        if fp_account is not None:
+            fp_account.delete()
+        
+        return HttpResponse("null", content_type="application/json")
+
+
+class FinancialPlansExternalAccountAdditionView(ClientView):
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(self.client.external_accounts, content_type="application/json")
+
+    def post(self,  request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf-8'))
+        external_account = FinancialPlanExternalAccount(client=self.client)
+        for k, v in payload.items():
+            setattr(external_account, k, v)      
+        external_account.save()
+        payload["id"] = external_account.id
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+class FinancialPlansExternalAccountDeletionView(ClientView):
+    def put(self, request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf-8'))
+        del payload["client"]
+        del payload["id"]
+        pk = kwargs["pk"]
+        fp_external = get_object_or_404(FinancialPlanExternalAccount, pk=pk, client=self.client)
+
+        for k, v in payload.items():
+            setattr(fp_external, k, v)
+
+        payload["id"] = fp_external.pk
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+    def delete(self,  request, *args, **kwargs):
+        pk = kwargs["pk"]
+        fp_external = get_object_or_404(FinancialPlanExternalAccount, pk=pk, client=self.client) 
+        fp_external.delete()
+        return HttpResponse("null", content_type="application/json")
+
+
+class FinancialProfileView(ClientView):
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(self.client.get_financial_profile, content_type="application/json")
+
+    def put(self,  request, *args, **kwargs):
+        payload = json.loads(request.body.decode('utf-8'))
+        spouse_retired = payload.get("spouse_retired", None)
+        if spouse_retired is None:
+            payload["spouse_retired"] = False   
+        
+        if hasattr(self.client, 'financial_profile'):
+            profile = self.client.financial_profile
+        else:
+            profile = FinancialProfile(client=self.client)
+        
+        for k, v in payload.items():
+            setattr(profile, k, v)
+        profile.save()
+        payload["id"] = profile.pk
+        return HttpResponse(json.dumps(payload), content_type="application/json")

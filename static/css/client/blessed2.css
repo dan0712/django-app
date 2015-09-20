@@ -330,7 +330,7 @@
     opacity: 1
 }
 .modals-region .modal-layout .modal-wrapper .close:before {
-    content: "a";
+    content: "x";
     font-family: ModernPictogramsPro!important;
     font-size: 235%;
     text-transform: none;
@@ -6880,7 +6880,7 @@ html.responsive body .panel.logged-out {
     transition: all .2s linear
 }
 .retirement-plan nav .edit-assumptions-container:after {
-    content: "a";
+    content: "’";
     font-family: ModernPictogramsPro!important;
     font-size: 150%;
     text-transform: none;
@@ -6943,7 +6943,7 @@ html.responsive body .panel.logged-out {
 .retirement-plan nav .edit-assumptions-container.active:after {
     opacity: 1;
     transform: rotate(90deg);
-    content: 'a';
+    content: '’';
     top: 6px
 }
 .retirement-plan .content {
@@ -8148,7 +8148,7 @@ html.responsive body .panel.logged-out {
     border-top: 1px solid #e6e6e6
 }
 .edit-assumptions-region .assumptions a:after {
-    content: "a”";
+    content: "—";
     font-family: ModernPictogramsPro!important;
     font-size: 150%;
     text-transform: none;
@@ -8900,7 +8900,7 @@ html.responsive body .panel.logged-out {
     padding: 8px 0
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .remove-account.col:before {
-    content: "a";
+    content: "x";
     font-family: ModernPictogramsPro!important;
     font-size: 200%;
     text-transform: none;

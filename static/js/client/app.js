@@ -15776,8 +15776,8 @@ var requirejs, require, define;
                 var n = {};
                 return t.id ? n = {
                     id: t.id
-                } : t.bettermentdbAccountId && (n = {
-                    bettermentdbAccountId: t.bettermentdbAccountId
+                } : (t.bettermentdbAccountId || t.bettermentdb_account_id) && (n = {
+                    bettermentdbAccountId: (t.bettermentdbAccountId || t.bettermentdb_account_id)
                 }), e.findWhere(this.get("accounts"), n)
             },
             getAnnualContributionByIdParams: function(e) {
@@ -18052,7 +18052,7 @@ var requirejs, require, define;
                         marriedJointly: 52
                     }
                 },
-                CA: {
+                ACT: {
                     brackets: [{
                         taxRate: .01,
                         single: 0,
@@ -18107,7 +18107,7 @@ var requirejs, require, define;
                         marriedJointly: 212
                     }
                 },
-                CO: {
+                NSW: {
                     brackets: [{
                         taxRate: .0463,
                         single: 0,
@@ -18126,7 +18126,7 @@ var requirejs, require, define;
                         marriedJointly: 0
                     }
                 },
-                CT: {
+                NT: {
                     brackets: [{
                         taxRate: .03,
                         single: 0,
@@ -18165,7 +18165,7 @@ var requirejs, require, define;
                         marriedJointly: 0
                     }
                 },
-                DE: {
+                QLD: {
                     brackets: [{
                         taxRate: .022,
                         single: 2e3,
@@ -18204,7 +18204,7 @@ var requirejs, require, define;
                         marriedJointly: 220
                     }
                 },
-                FL: {
+                SA: {
                     brackets: [{
                         taxRate: 0,
                         single: 0,
@@ -18223,7 +18223,7 @@ var requirejs, require, define;
                         marriedJointly: 0
                     }
                 },
-                GA: {
+                TAS: {
                     brackets: [{
                         taxRate: .01,
                         single: 0,
@@ -18262,7 +18262,7 @@ var requirejs, require, define;
                         marriedJointly: 0
                     }
                 },
-                HI: {
+                VIC: {
                     brackets: [{
                         taxRate: .014,
                         single: 0,
@@ -18325,7 +18325,7 @@ var requirejs, require, define;
                         marriedJointly: 0
                     }
                 },
-                ID: {
+                WA: {
                     brackets: [{
                         taxRate: .016,
                         single: 0,
@@ -18480,7 +18480,7 @@ var requirejs, require, define;
                         marriedJointly: 0
                     }
                 },
-                KY: {
+                CO: {
                     brackets: [{
                         taxRate: .02,
                         single: 0,
@@ -20352,7 +20352,7 @@ var requirejs, require, define;
                     e = e || {}, e.url = "/accounts", r.Collection.prototype.save.call(this, e)
                 },
                 getByIdParams: function(e) {
-                    return this.get(e.bettermentdbAccountId)
+                    return this.get(e.bettermentdbAccountId || e.bettermentdb_account_id)
                 },
                 comparator: function(e, t) {
                     return e.num("accountGroupId") < t.num("accountGroupId") ? -1 : e.num("accountGroupId") > t.num("accountGroupId") ? 1 : e.num("ordering") < t.num("ordering") ? -1 : e.num("ordering") > t.num("ordering") ? 1 : 0
@@ -29863,7 +29863,7 @@ var requirejs, require, define;
                 return e.reduce(t.get("accounts"), function(i, s) {
                     var o = t.getAnnualContributionByIdParams(s);
                     if (e.isNull(o)) {
-                        var u = r().get(s.bettermentdbAccountId);
+                        var u = r().get(s.bettermentdbAccountId || s.bettermentdb_account_id);
                         o = n.netYearlyTransactionAmount(u)
                     }
                     return i + o
@@ -43790,7 +43790,7 @@ var requirejs, require, define;
                         individual_taxable: "taxable"
                     };
                     return e.each(this.get("financialPlan").get("accounts"), function(e) {
-                        var i = p().get(e.bettermentdbAccountId),
+			var i = p().get(e.bettermentdbAccountId || e.bettermentdb_account_id),
                             s = i.get("currentBalance"),
                             o = r[i.get("accountType")];
                         t[o] += s, n[o] += f.netYearlyTransactionAmount(i)
@@ -54010,7 +54010,7 @@ var requirejs, require, define;
             }
 
             function N(e, t) {
-                return '\n            <img src="/app/assets/img/retirement-plan-on-track.png" />\n        '
+                return '\n            <img src="/static/images/retirement-plan-on-track.png" />\n        '
             }
 
             function C(e, t) {

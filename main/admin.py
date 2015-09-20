@@ -4,7 +4,7 @@ from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, Performer, \
     AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, \
-    TransactionMemo, DataApiDict
+    TransactionMemo, DataApiDict, CostOfLivingIndex
 from suit.admin import SortableTabularInline
 from suit.admin import SortableModelAdmin
 from django.shortcuts import render_to_response, HttpResponseRedirect
@@ -295,10 +295,15 @@ class AdvisorSingleInvestorTransferAdmin(admin.ModelAdmin):
     pass
 
 
+class CostOfLivingIndexAdmin(admin.ModelAdmin):
+    list_display = ('state', 'value')
+    pass
+
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
 
+admin.site.register(CostOfLivingIndex, CostOfLivingIndexAdmin)
 
 admin.site.register(DataApiDict, DataApiDictAdmin)
 admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
