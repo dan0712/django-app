@@ -33,4 +33,6 @@ def c_datetime(value):
 
 @register.filter
 def bs_big_number(value):
+    if isinstance(value, str):
+        return value
     return "{:,}".format(float("{0:.2f}".format(value)))

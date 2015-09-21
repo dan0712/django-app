@@ -1067,7 +1067,7 @@ class Platform(models.Model):
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="goals")
     name = models.CharField(max_length=100)
-    target = models.FloatField(null=True)
+    target = models.FloatField(default=0)
     income = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     completion_date = models.DateTimeField()
