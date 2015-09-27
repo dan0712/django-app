@@ -101,6 +101,14 @@ urlpatterns = patterns('',
         name='client:api:portfolio_sets:risk_free_rates'),
     url(r'^client/api/client/api/accounts/(?P<pk>\d+)/allocations$', csrf_exempt(ChangeAllocation.as_view())),
 
+
+    url(r'^client/api/portfolio-sets/goal_(?P<goal_pk>\d+)_(?P<pk>\d+)/asset-classes', PortfolioAssetClasses.as_view(),
+        name='client:api:portfolio_sets:asset_classes'),
+    url(r'^client/api/portfolio-sets/goal_(?P<goal_pk>\d+)_(?P<pk>\d+)/portfolios', PortfolioPortfolios.as_view(),
+        name='client:api:portfolio_sets:portfolios'),
+    url(r'^client/api/portfolio-sets/goal_(?P<goal_pk>\d+)_(?P<pk>\d+)/risk-free-rates', PortfolioRiskFreeRates.as_view(),
+        name='client:api:portfolio_sets:risk_free_rates'),
+
     url(r'^client/api/account-groups/(?P<pk>\d+)/pending-invites', ok_response_json),
     url(r'^transactions$', csrf_exempt(NewTransactionsView.as_view())),
     url(r'^transactions\.csv$', csrf_exempt(NewTransactionsView.as_view())),

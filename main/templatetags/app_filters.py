@@ -15,7 +15,6 @@ def add_class(value, index):
     return value
 
 
-
 @register.filter
 def b_date(value):
     return "%02d/%02d/%d" % (value.day, value.month, value.year)
@@ -36,3 +35,14 @@ def bs_big_number(value):
     if isinstance(value, str):
         return value
     return "{:,}".format(float("{0:.2f}".format(value)))
+
+
+@register.filter
+def json_none(value):
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if value is None:
+        return "null"
+    return value

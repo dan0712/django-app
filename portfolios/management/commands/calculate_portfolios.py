@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from ...models import PortfolioSet, PortfolioByRisk
 from main.models import Platform
-from portfolios.api.yahoo import YahooApi
+from portfolios.api.yahoo import YahooApi, DbApi
 from pandas import concat, ordered_merge, DataFrame
 from portfolios.bl_model import handle_data
 import json
@@ -28,10 +28,6 @@ def calculate_portfolios(portfolio_set):
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
-        unit_price = api.get_unit_price(ticker.symbol, ticker.currency)
-        if unit_price is not None:
-            ticker.unit_price = unit_price
-            ticker.save()
 
     # join all the series in a table, drop missing values
     table = DataFrame(series)
@@ -63,18 +59,13 @@ def calculate_portfolios(portfolio_set):
         new_assets_type.append(asset_type[c])
 
     columns = list(table)
-    asset_super_class = []
-    for k in range(len(columns)):
-        asset_super_class.append(asset_super_class_dict[columns[k]])
 
     # delete all the risk profiles related to this portfolio set
     portfolio_set.risk_profiles.all().delete()
-    ba = None
     for allocation in list(np.arange(0, 1.01, 0.01)):
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, asset_super_class)
-        ba = new_weights
+                                              new_assets_type,  views, qs, tau, [])
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))

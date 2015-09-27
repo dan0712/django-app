@@ -371,10 +371,17 @@ class AdminExecuteTransaction(TemplateView, AdminView):
 
         ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
-        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set,
-                                             risk__lte=self.transaction.account.allocation).order_by('-risk').first()
+        goal = self.transaction.account
+        if goal.custom_size > 0:
+            positions = json.loads(goal.portfolios)
+            target_allocation_dict = positions["{:.2f}".format(goal.allocation)]["allocations"]
 
-        target_allocation_dict = json.loads(pbr.allocations)
+        else:
+            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation)\
+                .order_by('-risk').first()
+
+            target_allocation_dict = json.loads(pbr.allocations)
+
         tickers_pk = []
         tickers_prices = []
         target_allocation = []
@@ -511,10 +518,18 @@ class GoalRebalance(TemplateView, AdminView):
 
         ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
-        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set,
-                                             risk__lte=self.transaction.account.allocation).order_by('-risk').first()
+        goal = self.transaction.account
 
-        target_allocation_dict = json.loads(pbr.allocations)
+        if goal.custom_size > 0:
+            positions = json.loads(goal.portfolios)
+            target_allocation_dict = positions["{:.2f}".format(goal.allocation)]["allocations"]
+
+        else:
+            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation)\
+                .order_by('-risk').first()
+
+            target_allocation_dict = json.loads(pbr.allocations)
+
         tickers_pk = []
         tickers_prices = []
         target_allocation = []

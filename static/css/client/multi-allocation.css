@@ -1,0 +1,113 @@
+.allocation-card-title span{
+    font-size: 11px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.allocation-card-title {
+    height: 22px;
+}
+
+.allocation-card-title .region-name{
+        padding-top: 3px;
+    margin-left: 7px;
+}
+
+.allocation-card {
+    border: 1px solid #ddd;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    padding: 5px;
+    margin-bottom: 5px;
+
+}
+
+
+.allocation-card-content{
+    /* Animate the transitions */
+    -webkit-transition:0.8s; text-align:center;
+    -moz-transition:0.8s; text-align:center;
+    -ms-transition:0.8s; text-align:center;
+    -o-transition:0.8s; text-align:center;
+    transition:0.8s; text-align:center;
+    margin-top: 15px;
+
+}
+
+.allocation-content-hide{
+    display: none;
+}
+.allocation-content-show{
+    display: block;
+}
+.ma-open-close{
+    position: relative;
+    cursor: pointer;
+    display: block;
+    border: 1px solid #ddd;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+    font-weight: 700;
+    color: #4D642D;
+    -moz-transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    line-height: 1;
+    text-align: center;
+    height: 1em;
+    width: 1em;
+    font-size: 18px;
+
+}
+.ma-open-close:hover {
+    border-color: #4D642D;
+}
+
+.ma-open-close:active {
+    background-color: #4D642D;
+    color: #fff;
+}
+
+.ma-open-close.open-lg:before {
+    content: "+";
+}
+
+.ma-open-close.close-lg:before {
+    content: "-";
+}
+
+.ma-text{
+    font-size: 10px!important;
+    letter-spacing: .3px!important;
+}
+
+.allocation-card-content .controls-title{
+    margin-bottom: 0px!important;
+
+}
+
+
+.allocation-card-content .ui-slider{
+    margin-top: 12px;
+    margin-bottom: 12px;
+    margin-left: 8px;
+    width: 200px;
+    background-color: #45A018;
+}
+
+.ma-save-buttons{
+    margin-bottom: 5px;
+    border-color: #45A018;
+    border-top: 2px solid;
+    padding-top: 7px;
+}
+
+.ma-hide{
+    visibility: hidden;
+}
+.ma-show{
+   visibility: visible;
+}

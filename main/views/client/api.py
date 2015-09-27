@@ -2,17 +2,23 @@ __author__ = 'cristian'
 
 from django.views.generic import TemplateView
 from ..base import ClientView
-import json
 from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo,\
     AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory,\
-    MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, FinancialPlanExternalAccount
+    MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount,\
+    FinancialPlanExternalAccount
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from datetime import datetime, timedelta
 from portfolios.models import PortfolioByRisk, PortfolioSet
 import time
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from main.models import Platform
+from portfolios.api.yahoo import DbApi
+from pandas import DataFrame
+from portfolios.bl_model import handle_data
+import json
+import numpy as np
+
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
            "PortfolioAssetClasses", 'PortfolioPortfolios', 'PortfolioRiskFreeRates', 'ClientAccountPositions',
@@ -21,6 +27,103 @@ __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisit
            'AnalysisReturns', 'AnalysisBalances', "SetAutoWithdrawalView", "ZipCodes", "FinancialProfileView",
            "FinancialPlansView", "FinancialPlansAccountAdditionView", "FinancialPlansAccountDeletionView",
            "FinancialPlansExternalAccountAdditionView", "FinancialPlansExternalAccountDeletionView"]
+
+
+def calculate_portfolios_for_goal(goal, portfolio_set):
+    regions = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+    regions_b = ["AU", "INT", "US", "UK", "EU", "JAPAN", "AS", "CN", "EM"]
+    api = DbApi()
+    # get all the assets
+    all_assets = portfolio_set.asset_classes.all()
+    series = {}
+    asset_type = {}
+    asset_name = []
+    super_asset_class = dict()
+    super_class_matrix = np.zeros((len(regions), len(all_assets)))
+
+    ticker_parent_dict = {}
+    idx = 0
+    for asset in all_assets:
+        ticker = asset.tickers.filter(ordering=0).first()
+        asset_name.append(ticker.symbol)
+        super_asset_class[ticker.symbol] = asset.super_asset_class
+        series[ticker.symbol] = api.get_all_prices(ticker.symbol)
+        ticker_parent_dict[ticker.symbol] = asset.name
+        asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
+        idx += 1
+
+    def is_super_class(_ticker, _key):
+        return 1 if super_asset_class[_ticker] in ["EQUITY_" + _key, "FIXED_INCOME_" + _key] else 0
+
+    table = DataFrame(series)
+    columns = list(table)
+    constrains = []
+
+    def create_constrain(super_class_array, _custom_size):
+        def evaluate(x):
+            return sum(x*super_class_array) - _custom_size
+        return evaluate
+
+    for region_idx in range(len(regions)):
+        key = regions_b[region_idx]
+        key_a = regions[region_idx]
+
+        custom_size = getattr(goal, key_a + "_size", 0)
+
+        for ticker_idx in range(0, len(columns)):
+            super_class_matrix[region_idx][ticker_idx] = is_super_class(columns[ticker_idx], key)
+
+        if custom_size != 0:
+            constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[region_idx], custom_size)})
+
+    # join all the series in a table, drop missing values
+    new_assets_type = []
+    views_dict = []
+    qs = []
+
+    tau = portfolio_set.tau
+    for view in portfolio_set.views.all():
+        new_view_dict = {}
+        header, view_values = view.assets.splitlines()
+
+        header = header.split(",")
+        view_values = view_values.split(",")
+
+        for i in range(0, len(header)):
+            new_view_dict[header[i].strip()] = float(view_values[i])
+        views_dict.append(new_view_dict)
+        qs.append(view.q)
+
+    views = []
+    for vd in views_dict:
+        new_view = []
+        for c in list(table):
+            new_view.append(vd.get(c, 0))
+        views.append(new_view)
+
+    for c in list(table):
+        new_assets_type.append(asset_type[c])
+
+    columns = list(table)
+    # write restrictions
+    json_portfolios = {}
+    for allocation in list(np.arange(0, 1.01, 0.01)):
+        # calculate optimal portfolio for different risks 0 - 100
+
+        new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
+                                              new_assets_type,  views, qs, tau, constrains)
+
+        _mean = float("{0:.4f}".format(_mean))*100
+        var = float("{0:.4f}".format((var*100*100)**(1/2)))
+        allocations = {}
+
+        for idx in range(0, len(columns)):
+            allocations[ticker_parent_dict[columns[idx]]] = float("{0:.4f}".format(new_weights[idx]))
+
+        json_portfolios["{0:.2f}".format(allocation)] = {"allocations": allocations, "risk": allocation,
+                                                         "expectedReturn": _mean, "volatility": var}
+
+    return json_portfolios
 
 
 class ClientAppData(TemplateView):
@@ -63,14 +166,43 @@ class PortfolioPortfolios(ClientView, TemplateView):
     content_type = "application/json"
 
     def get(self, request, *args, **kwargs):
-        portfolio_set = get_object_or_404(PortfolioSet, pk = kwargs["pk"])
+        portfolio_set = get_object_or_404(PortfolioSet, pk=kwargs["pk"])
+        goal_pk = kwargs.get("goal_pk", None)
+        pk = kwargs["pk"]
+        if goal_pk:
+            try:
+                goal = Goal.objects.get(pk=goal_pk, account__primary_owner=self.client)
+            except ObjectDoesNotExist:
+                goal = None
+
+            if goal and (goal.custom_size > 0):
+                _continue = True
+                if goal.portfolios in [None, "{}", "[]", ""]:
+                    try:
+                        goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, portfolio_set))
+                        goal.save()
+                    except:
+                        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+                        for m in markets:
+                            setattr(goal, m + "_size", 0)
+                            setattr(goal, m + "_allocation", 0)
+
+                        goal.save()
+                    _continue = False
+
+                if _continue:
+                    ret = []
+                    for k, v in json.loads(goal.portfolios).items():
+                        ret.append(v)
+                    return HttpResponse(json.dumps(ret), content_type="application/json")
+
         ret = []
         for portfolio in portfolio_set.risk_profiles.all():
-            new_pr = { "risk": portfolio.risk,
-                       "expectedReturn": portfolio.expected_return,
-                       "volatility": portfolio.volatility,
-                       'allocations': json.loads(portfolio.allocations)
-                       }
+            new_pr = {"risk": portfolio.risk,
+                      "expectedReturn": portfolio.expected_return,
+                      "volatility": portfolio.volatility,
+                      'allocations': json.loads(portfolio.allocations)
+                      }
             ret.append(new_pr)
 
         return HttpResponse(json.dumps(ret), content_type="application/json")
@@ -102,6 +234,7 @@ class ClientAccounts(ClientView, TemplateView):
 
     def post(self, requests, *args, **kwargs):
         model = json.loads(requests.POST.get("model", '{}'))
+
         goal = Goal()
         goal.account = self.client.accounts.first()
         goal.name = model.get("name")
@@ -124,8 +257,13 @@ class ClientAccountPositions(ClientView, TemplateView):
         goal = get_object_or_404(Goal, pk=pk)
         # get ideal portfolio
         portfolio_set = Platform.objects.first().portfolio_set
-        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation).order_by('-risk').first()
-        allocations = json.loads(pbr.allocations)
+        if goal.custom_size > 0:
+            positions = json.loads(goal.portfolios)
+            allocations = positions["{:.2f}".format(goal.allocation)]["allocations"]
+
+        else:
+            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation).order_by('-risk').first()
+            allocations = json.loads(pbr.allocations)
         # get positions
 
         positions = []
@@ -199,7 +337,6 @@ class NewTransactionsView(ClientView):
         except (ValueError, TypeError):
             days_ago = None
 
-        print(goal_pk)
         if goal_pk:
             goal = get_object_or_404(Goal, pk=goal_pk, account__primary_owner=self.client)
             query_set = goal.transactions.order_by("executed_date").filter(status=EXECUTED)
@@ -391,7 +528,27 @@ class ChangeGoalView(ClientView):
         goal.completion_date = datetime.strptime(payload["goalCompletionDate"], '%Y%m%d%H%M%S')
         goal.type = payload["goalType"]
         goal.account_type = payload["accountType"]
+        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+
+        for m in markets:
+            setattr(goal, m + "_size", payload.get(m + "_size", 0))
+            setattr(goal, m + "_allocation", payload.get(m + "_allocation", 0))
+            setattr(goal, m + "_currency_hedge", payload.get(m + "_currency_hedge", 0))
+
         goal.save()
+        if goal.custom_size > 0:
+            try:
+                goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, goal.portfolio_set))
+            except Exception:
+                for m in markets:
+                    setattr(goal, m + "_size", 0)
+                    setattr(goal, m + "_allocation", 0)
+                return HttpResponse('null', content_type="application/json", status=500)
+        else:
+            goal.portfolios = None
+
+        goal.save()
+
         return HttpResponse('null', content_type="application/json")
 
 

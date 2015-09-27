@@ -7,13 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0067_auto_20150920_0550'),
+        ('main', '0002_auto_20150927_0936'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='financialplan',
-            name='income_replacement_ratio',
-            field=models.CharField(null=True, max_length=100),
+            model_name='monthlyprices',
+            name='date',
+            field=models.DateField(),
         ),
     ]

@@ -21,7 +21,7 @@ def compute_mean_var(W, R, C):
     return compute_mean(W, R), compute_var(W, C)
 
 
-def fitness(W, R, C, r, asset_super_class):
+def fitness(W, R, C, r):
     # For given level of return r, find weights which minimizes portfolio variance.
     mean_1, var = compute_mean_var(W, R, C)
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
@@ -31,7 +31,7 @@ def fitness(W, R, C, r, asset_super_class):
 
 
 # Solve for optimal portfolio weights
-def solve_weights(R, C, risk_free, allocation, assets_type, asset_super_class):
+def solve_weights(R, C, risk_free, allocation, assets_type, constrains):
     n = len(R)
     W = ones([n])/n # Start optimization with equal weights
 
@@ -39,11 +39,12 @@ def solve_weights(R, C, risk_free, allocation, assets_type, asset_super_class):
     # Constraints - weights must sum to 1
     # sum of weights of stock should be equal to allocation
     c_ = ({'type': 'eq', 'fun': lambda x: sum(x)-1.},
-          {'type': 'eq', 'fun': lambda x: dot(assets_type, x)-allocation},
-          {'type': 'ineq', 'fun': lambda x: sum(x*asset_super_class) -0.25})
+          {'type': 'eq', 'fun': lambda x: dot(assets_type, x)-allocation})
+
+    c_ = tuple(list(c_) + constrains)
     # 'target' return is the expected return on the market portfolio
-    optimized = scipy.optimize.minimize(fitness, W, (R, C, sum(R*W), asset_super_class),
-                                        method='SLSQP', constraints=c_, bounds=b_)
+    optimized = scipy.optimize.minimize(fitness, W, (R, C, sum(R*W)),
+                                        method='SLSQP', constraints=c_, bounds=b_,  options={"maxiter": 1000})
     if not optimized.success:
         raise BaseException(optimized.message)
     return optimized.x
@@ -69,7 +70,7 @@ def assets_mean_var(monthly_returns):
     return expected_returns, co_vars
 
 
-def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, asset_super_class):
+def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, constrains):
     """
     all prices: table with the monthly closed price for each asset
     risk_free: risk free rate
@@ -80,11 +81,9 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     n = all_prices.shape[1]
     # get initial weightings
     W = np.ones(n)/n
-    asset_super_class = array(asset_super_class)
     # Drop missing values and transpose matrix
     monthly_returns = all_prices.pct_change().dropna().values.T
     expected_returns, co_vars = assets_mean_var(monthly_returns)
-
     # R is the vector of expected returns
     R = expected_returns
     # C is the covariance matrix
@@ -99,7 +98,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     Pi = dot(dot(lmb, C), W)
 
     # Solve for weights before incorporating views
-    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, asset_super_class)
+    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains)
 
     # calculate tangency portfolio
     mean, var = compute_mean_var(W, R, C)
@@ -123,7 +122,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     sub_c = dot(inv(dot(tau, C)), Pi)
     sub_d = dot(dot(transpose(P), inv(omega)), Q)
     Pi_new = dot(inv(sub_a + sub_b), (sub_c + sub_d))
-    new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, asset_super_class)
+    new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, constrains)
     _mean, var = compute_mean_var(W, R, C)
 
     return new_weights, _mean, var

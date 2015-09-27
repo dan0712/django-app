@@ -4,8 +4,9 @@ from datetime import datetime
 import pandas as pd
 from pandas import Series
 import json
-from main.models import DataApiDict
+from main.models import DataApiDict, MonthlyPrices
 from urllib.parse import quote
+import calendar
 
 
 class YahooApi:
@@ -13,14 +14,14 @@ class YahooApi:
 
     symbol_dict = None
     google_dict = None
+    dates = None
 
     def __init__(self):
         today = datetime.today()
         self.today_year = today.year
         self.today_month = today.month - 1
         self.today_day = today.day
-        self.dates = pd.date_range('2010-01-01', '{0}-{1}-{2}'
-                                   .format(self.today_year, self.today_month+1, self.today_day), freq='D')
+
         self.symbol_dict = {}
         self.google_dict = {}
 
@@ -31,7 +32,14 @@ class YahooApi:
             self.google_dict[dad.platform_symbol] = dad.api_symbol
 
     def get_all_prices(self, ticker_symbol, period="m"):
+        if period == "m":
+            self.dates = pd.date_range('2010-01-01', '{0}-{1}-01'
+                                       .format(self.today_year, self.today_month+1), freq='M')
+        elif period == "d":
+            self.dates = pd.date_range('2010-01-01', '{0}-{1}-{2}'
+                                       .format(self.today_year, self.today_month+1, self.today_day), freq='D')
 
+        db_symbol = ticker_symbol
         ticker_symbol = self.symbol_dict.get(ticker_symbol, ticker_symbol)
         url = "http://real-chart.finance.yahoo.com/table.csv?s=%s&a=00&b=01&c=2010&d=%02d&e=%02d&f=%d&g=%s" \
               "&ignore=.csv" % (quote(ticker_symbol), self.today_month, self.today_day, self.today_year, period)
@@ -49,15 +57,22 @@ class YahooApi:
                     d_items = cells[0].split("-")
                     if period == "m":
                         cells[0] = d_items[0] + '-' + d_items[1]
-                        date = datetime.strptime(cells[0], "%Y-%m")
+                        last_day = calendar.monthrange(int(d_items[0]), int(d_items[1]))[1]
+                        cells[0] += "-" + str(last_day)
+                        date = cells[0]
                     else:
-                        date = datetime.strptime(cells[0], "%Y-%m-%d")
+                        date = cells[0]
                     close = float(cells[4])
-                    price_data[date] = close
+                    price_data[pd.to_datetime(date)] = close
         except urllib.request.HTTPError as e:
             raise Exception("{0} : {1}".format(e.msg, url))
 
-        return Series(price_data, index=self.dates, name=ticker_symbol)
+        if period == "m":
+            for date, price in price_data.items():
+                mp, is_new = MonthlyPrices.objects.get_or_create(date=date, symbol=db_symbol)
+                mp.price = price
+                mp.save()
+        return Series(price_data, index=self.dates, name=db_symbol)
 
     def to_aud(self, currency: str)->float:
         if currency in self.currency_cache:
@@ -96,3 +111,25 @@ class YahooApi:
             bid = quote_json[0]['l']
             bid = float(bid)
         return bid*self.to_aud(currency)
+
+
+class DbApi:
+
+    dates = None
+
+    def __init__(self):
+        today = datetime.today()
+        self.today_year = today.year
+        self.today_month = today.month - 1
+        self.today_day = today.day
+
+    def get_all_prices(self, ticker_symbol: str):
+        self.dates = pd.date_range('2010-01', '{0}-{1}'
+                                   .format(self.today_year, self.today_month+1), freq='M')
+
+        prices = MonthlyPrices.objects.filter(symbol=ticker_symbol).all()
+        price_data = {}
+
+        for i in prices:
+            price_data[pd.to_datetime(i.date.strftime("%Y-%m-%d"))] = i.price
+        return Series(price_data, index=self.dates, name=ticker_symbol)

@@ -19,6 +19,7 @@ from datetime import date, datetime
 import json
 from numpy import array
 from django.core import serializers
+from django.shortcuts import Http404
 
 
 def validate_agreement(value):
@@ -1076,6 +1077,83 @@ class Goal(models.Model):
     type = models.CharField(max_length=20, default='RETIREMENT')
     drift = models.FloatField(default=0)
     total_balance_db = models.FloatField(default=0, verbose_name="total balance")
+    portfolios = models.TextField(null=True)
+
+    # markets
+    au_size = models.FloatField(default=0)
+    au_allocation = models.FloatField(default=0)
+    au_currency_hedge = models.BooleanField(default=False)
+
+    dm_size = models.FloatField(default=0)
+    dm_allocation = models.FloatField(default=0)
+    dm_currency_hedge = models.BooleanField(default=False)
+
+    usa_size = models.FloatField(default=0)
+    usa_allocation = models.FloatField(default=0)
+    usa_currency_hedge = models.BooleanField(default=False)
+
+    uk_size = models.FloatField(default=0)
+    uk_allocation = models.FloatField(default=0)
+    uk_currency_hedge = models.BooleanField(default=False)
+
+    europe_size = models.FloatField(default=0)
+    europe_allocation = models.FloatField(default=0)
+    europe_currency_hedge = models.BooleanField(default=False)
+
+    japan_size = models.FloatField(default=0)
+    japan_allocation = models.FloatField(default=0)
+    japan_currency_hedge = models.BooleanField(default=False)
+
+    asia_size = models.FloatField(default=0)
+    asia_allocation = models.FloatField(default=0)
+    asia_currency_hedge = models.BooleanField(default=False)
+
+    china_size = models.FloatField(default=0)
+    china_allocation = models.FloatField(default=0)
+    china_currency_hedge = models.BooleanField(default=False)
+
+    em_size = models.FloatField(default=0)
+    em_allocation = models.FloatField(default=0)
+    em_currency_hedge = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['name']
+
+    @property
+    def custom_size(self):
+        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+        total_size = 0
+
+        for m in markets:
+            allocation = getattr(self, m + "_allocation")
+            size = getattr(self, m + "_size")
+            if (allocation is None) or (size is None):
+                continue
+
+            total_size += size
+
+        return total_size
+
+    def check_multi_market_allocation(self):
+        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+        total_size = 0
+        total_bonds = 0
+        total_stocks = 0
+
+        for m in markets:
+            allocation = getattr(self, m + "_allocation")
+            size = getattr(self, m + "_size")
+            if (allocation is None) or (size is None):
+                continue
+
+            total_size += size
+
+            total_bonds += size*(1-allocation)
+
+            total_stocks += size*allocation
+
+        if total_size > 1:
+            raise Http404("Bad goal allocation")
 
     def __str__(self):
         return self.name + " : " + self.account.primary_owner.full_name
@@ -1101,6 +1179,10 @@ class Goal(models.Model):
 
         return self.account.primary_owner.get_financial_plan
 
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.check_multi_market_allocation()
+        super(Goal, self).save(force_insert, force_update, using, update_fields)
+
     @property
     def get_drift(self):
         from portfolios.models import PortfolioByRisk
@@ -1112,10 +1194,17 @@ class Goal(models.Model):
 
         portfolio_set = Platform.objects.first().portfolio_set
         tickers = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
-        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=self.allocation)\
-            .order_by('-risk').first()
 
-        target_allocation_dict = json.loads(pbr.allocations)
+        if self.custom_size > 0:
+            positions = json.loads(self.portfolios)
+            target_allocation_dict = positions["{:.2f}".format(self.allocation)]["allocations"]
+
+        else:
+            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=self.allocation)\
+                .order_by('-risk').first()
+
+            target_allocation_dict = json.loads(pbr.allocations)
+
         tickers_prices = []
         target_allocation = []
         current_allocation = []
@@ -1146,6 +1235,10 @@ class Goal(models.Model):
     @property
     def total_earned(self):
         return 0
+
+    @property
+    def portfolio_set(self):
+        return Platform.objects.first().portfolio_set
 
     @property
     def portfolio_set_id(self):
@@ -1491,7 +1584,12 @@ class FinancialProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+class MonthlyPrices(models.Model):
 
+    symbol = models.CharField(max_length=100)
+    price = models.FloatField(default=0)
+    date = models.DateField()
 
-
+    class Meta:
+        ordering = ["symbol", "date"]
 

@@ -132,7 +132,60 @@ You can adjust this risk level by updating your time horizon or target allocatio
 </div>
 </div>
 
-]]></template><template name="advice/autoTransactionRecommendation"><![CDATA[
+]]>
+
+</template><template name="advice/multiAllocation"><![CDATA[
+<div id="multiAllocationRegion" class="clearfix">
+<div class="ma-save-buttons ma-hide clearfix" >
+        <button class="ma-set-all">Set All</button>
+        <button class="ma-reset-all silver right">Reset All</button>
+    </div>
+
+</div>
+
+]]>
+
+</template><template name="advice/multiAllocationCard"><![CDATA[
+<div class="allocation-card">
+        <div class="allocation-card-title">
+            <div class="left">
+                <div class="multi-allocation-toggle ma-open-close open-lg">
+                </div>
+            </div>
+
+            <div class="left">
+                <span class="region-name"></span>
+            </div>
+        </div>
+
+        <div class="allocation-card-content allocation-content-hide">
+            <div class="slider-labels clearfix">
+                <div class="ma-text controls-title left">
+                    size within portfolio
+                </div>
+
+                <div class="ma-text size-pct right">
+
+                </div>
+            </div>
+
+            <div class="size-slider"></div><br>
+
+            <div class="slider-labels clearfix">
+                <div class="ma-text left">
+                    Hedge Currency Exposure
+                </div>
+
+                <div class="ma-text right">
+                    <input class="tiny-toggle" id="currency-hedge" type=
+                    "checkbox">
+                </div>
+            </div>
+        </div>
+    </div>
+]]>
+
+</template><template name="advice/autoTransactionRecommendation"><![CDATA[
 <div class="controls-title">
 <% if (canAutoWithdraw()) { %>
 Monthly <%= autoTransactionTypeSelector() %>

@@ -57,6 +57,7 @@ def get_historical_returns():
         # get target portfolio
 
         portfolio_set = Platform.objects.first().portfolio_set
+
         pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=allocation)\
             .order_by('-risk').first()
 
