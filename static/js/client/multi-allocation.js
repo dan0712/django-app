@@ -1,7 +1,72 @@
-/**
- * Created by cristian on 21/09/15.
- */
-define("components/portfolio/scripts/services/portfolioSetService", ["underscore", "components/portfolio/scripts/models/portfolioSet", "components/common/scripts/models/appData", "components/account/scripts/constants/accountTypes", "jquery"], function(e, t, n, r, jquery) {
+define("models/v2/externalAccount", ["underscore", "components/common/scripts/models/v2/baseModels"], function(e, t) {
+        var n = {
+                transaction_cheque_account: "Transaction / Cheque Account",
+                savings_deposit_account: "Savings / Deposit Account",
+                term_deposit_account: "Term Deposit Account",
+                brokerage_account: "Brokerage Account",
+                my_super: "MySuper",
+                super_found: "Super Found",
+                smsf: "SMSF"
+            },
+            r = {
+                endpoint: "/external_accounts",
+                isSpousal: function() {
+                    return this.get("accountOwner") === "spouse"
+                },
+                isEmployerPlan: function() {
+                    var t = ["401k", "roth_401k", "profit_sharing", "403b", "401a", "457b", "thrift_savings_plan"];
+                    return e.contains(t, this.get("accountType"))
+                },
+                hashKey: function() {
+                    return ["accountOwner", "accountType", "annualContributionCents", "balanceCents"].reduce(function(e, t) {
+                        return e + t + ":" + this.get(t) + ";"
+                    }.bind(this), "")
+                },
+                displayAccountType: function() {
+                    return n[this.get("accountType")]
+                }
+            };
+        r.validation = {
+            institutionName: {
+                required: !0
+            },
+            accountType: {
+                required: !0
+            },
+            investmentType: {
+                required: !0
+            },
+            accountOwner: {
+                required: !0
+            },
+            balanceCents: {
+                required: !0
+            },
+            annualContributionCents: {
+                required: !0
+            },
+            advisorFeePercent: {
+                range: [0, 100],
+                required: !1
+            }
+        };
+        var i = {
+            VALID_ACCOUNT_TYPES: n
+        };
+        return t.RelationalModel.extend(r, i)
+}),define("views/advice/multiAllocationModalView", ["jquery", "underscore", "common/betterment.views"], function($, _, n) {
+    return n.ModalView.extend({
+            template: "advice/confirmMultiAllocationChanges",
+            className: "multi-allocation-modal",
+            onInitialize: function(){},
+            onRender: function() {
+                var changes =  this.options.multiAllocationController.getChanges();
+
+            },
+            onShow: function() {}
+        }
+    );
+}), define("components/portfolio/scripts/services/portfolioSetService", ["underscore", "components/portfolio/scripts/models/portfolioSet", "components/common/scripts/models/appData", "components/account/scripts/constants/accountTypes", "jquery"], function(e, t, n, r, jquery) {
         var i = {},
             s = {};
         //var _ = e;
@@ -30,7 +95,6 @@ define("components/portfolio/scripts/services/portfolioSetService", ["underscore
             loadPortfolioSetForAccount: function(e) {
                 var regions_dict = {
                      au: "Australia",
-                     dm : "Developed Markets",
                      usa: "United States",
                      uk: "United Kingdom",
                      europe: "Europe",
@@ -61,7 +125,6 @@ define("components/portfolio/scripts/services/portfolioSetService", ["underscore
             getPortfolioSetForAccount: function(e) {
                  var regions_dict = {
                      au: "Australia",
-                     dm : "Developed Markets",
                      usa: "United States",
                      uk: "United Kingdom",
                      europe: "Europe",
@@ -118,35 +181,40 @@ define("components/portfolio/scripts/services/portfolioSetService", ["underscore
          onShow: function() {
                 if(this.currency_hedge_value){this.hedge_toggle.tinyToggle("check")};
                 this.drawSize();
+                if(this.size_slider_value>0){this.openCard();}
             },
          createSlider: function() {
-                this.size_slider_value = this.model.num(this.size_slider_model);
+                this.size_slider_value = this.model.num(this.size_slider_model)*100;
                 this.drawSize();
                 var e = this.slider('.size-slider', {
                     min: 0,
-                    max: 1,
-                    step: .01,
+                    max: 100,
+                    step: 1,
                     value: this.size_slider_value,
                     slide: function(e, t) {
+                        var allocated = t.value - this.size_slider_value;
                         this.size_slider_value = t.value;
                         this.drawSize();
+                        this.options.parent.resize(this.options.model_key, allocated);
+                        this.options.parent.fixSize();
                         this.options.parent.hasChanged();
                     }.bind(this)
                 });
                 return e
             },
          hasChanged: function(){
-             return (this.size_slider_value != this.model.num(this.size_slider_model))
+             var changed =  (Math.abs(this.size_slider_value - 100*this.model.num(this.size_slider_model)) > 1)
                  || (this.currency_hedge_value != this.model.get(this.currency_hedge_model));
+             return changed
 
         },
          drawSize: function(){
-              this.$(".size-pct").text(parseInt(this.size_slider_value*100) + "%");
+              this.$(".size-pct").text(parseInt(this.size_slider_value) + "%");
 
          },
          reset: function(){
 
-             this.size_slider_value = this.model.num(this.size_slider_model);
+             this.size_slider_value = this.model.num(this.size_slider_model)*100;
              this.size_slider.slider("value", this.size_slider_value);
              this.currency_hedge_value = this.model.get(this.currency_hedge_model);
              if(this.currency_hedge_value){
@@ -159,12 +227,12 @@ define("components/portfolio/scripts/services/portfolioSetService", ["underscore
 
          },
          save: function(){
-             this.model.set(this.size_slider_model, this.size_slider_value);
+             this.model.set(this.size_slider_model, this.size_slider_value/100);
              this.model.set(this.currency_hedge_model, this.currency_hedge_value);
          },
          openCard: function(e){
-                var button = this.$(e.currentTarget);
-                var card = button.parents('.allocation-card');
+                var button = this.$('.open-lg');
+                var card = this.$('.allocation-card');
                 var content = card.find('.allocation-card-content');
                 button.removeClass("open-lg");
                 button.addClass("close-lg");
@@ -187,17 +255,16 @@ define("components/portfolio/scripts/services/portfolioSetService", ["underscore
  }),
 
  define("views/advice/multiAllocationView",
-     ["underscore", "common/betterment.views", "views/advice/multiAllocationCardView", "components/portfolio/scripts/services/portfolioSetService"],
-     function(_, bt, mac, pss) {
+     ["underscore", "common/betterment.views", "views/advice/multiAllocationCardView", "components/portfolio/scripts/services/portfolioSetService", "views/advice/multiAllocationModalView"],
+     function(_, bt, mac, pss, bsm) {
         return bt.View.extend({
             template: "advice/multiAllocation",
             events: {
                 "click .ma-reset-all": "reset",
-                "click .ma-set-all": "save"},
+                "click .ma-set-all": "preSave"},
             onInitialize: function() {
                 this.$regions_dict = {
                                au: "Australia",
-                               dm : "Developed Markets",
                                usa: "United States",
                                uk: "United Kingdom",
                                europe: "Europe",
@@ -246,24 +313,111 @@ define("components/portfolio/scripts/services/portfolioSetService", ["underscore
                 this.hasChanged();
 
             },
-             save: function() {
-                 var custom_size = 0;
+            fixSize: function(){
+                var market = [];
+                var total_size  = 0;
+                _.each(this.$regions_dict, function(value, key){
+                    var size_value = this[key + "View"].size_slider_value;
+                    if(size_value == 0) return;
+                    total_size += size_value;
+                    market.push({key:key, size_value:size_value});
+                }.bind(this));
+
+                market = _.sortBy(market, function(o){ return o.size_value; });
+                market.reverse();
+                var dif  = 100-total_size;
+                if (dif==0)return;
+
+                this[market[0].key + "View"].size_slider_value += dif;
+                this[market[0].key + "View"].size_slider.slider("value", this[market[0].key + "View"].size_slider_value);
+                this[market[0].key + "View"].drawSize();
+            },
+            resize: function(allocated_key, allocated){
+                var market = [];
+                var default_key = "au";
+                var left_allocation = 0;
+                var allocation_from_custom;
+                if(allocated_key=="au")default_key="usa";
+
+                if(allocated<0){
+                    this[default_key + "View"].size_slider_value = this[default_key + "View"].size_slider_value - allocated;
+                    if(this[default_key + "View"].size_slider_value>1)this[default_key + "View"].size_slider_value=100;
+                    this[default_key + "View"].size_slider.slider("value", this[default_key + "View"].size_slider_value);
+                    this[default_key + "View"].drawSize();
+                    this[default_key + "View"].openCard();
+                    return;
+                }
+
+                if(this[default_key + "View"].size_slider_value>0){
+                   var allocation_from_main =  this[default_key + "View"].size_slider_value - allocated;
+                    if(allocation_from_main>=0){
+                        left_allocation = 0;
+                    }
+                    else{
+                        left_allocation = -1*allocation_from_main;
+                        allocation_from_main = 0;
+                    }
+
+                    this[default_key + "View"].size_slider_value = allocation_from_main;
+                    this[default_key + "View"].size_slider.slider("value", this[default_key + "View"].size_slider_value);
+                    this[default_key + "View"].drawSize();
+
+                    if(left_allocation==0)return;
+
+                }
+                else{
+                    left_allocation = allocated;
+                }
+
+                _.each(this.$regions_dict, function(value, key){
+                    if(key==allocated_key)return;
+                    if(key==default_key)return;
+                    var size_value = this[key + "View"].size_slider_value;
+                    if(size_value == 0) return;
+                    market.push({key:key, size_value:size_value});
+                }.bind(this));
+
+                market = _.sortBy(market, function(o){ return o.size_value; });
+                market.reverse();
+
+                for(var i in market){
+                    allocation_from_custom =  this[market[i].key + "View"].size_slider_value - left_allocation;
+                    if(allocation_from_custom>=0){
+                        left_allocation = 0;
+                    }
+                    else{
+                        left_allocation = -1*allocation_from_custom;
+                        allocation_from_custom = 0;
+                    }
+                    this[market[i].key + "View"].size_slider_value = allocation_from_custom;
+                    this[market[i].key + "View"].size_slider.slider("value", this[market[i].key + "View"].size_slider_value);
+                    this[market[i].key + "View"].drawSize();
+
+                    if(left_allocation==0)return;
+
+                }
+            },
+            preSave:function(){
+                var custom_size = 0;
                  _.each(this.$regions_dict, function(value, key){
                     custom_size = custom_size + this[key + "View"].size_slider_value;
                  }.bind(this));
-                 if (custom_size>1){
+                 if (custom_size!=100){
                      BMT.alert({
                         title: "Error",
-                        body: "The total size should be 1 for the custom allocation, please fix them before save",
+                        body: "The total size should be 100 for the custom allocation, please fix them before save",
                         icon: "error"
                     });
                      return;
-
                  }
+                 var e = new bsm({multiAllocationController: this});
+                 BMT.modal.show(e);
+            },
+             save: function() {
                 _.each(this.$regions_dict, function(value, key){
                     this[key + "View"].save();
                 }.bind(this));
-                 this.options.parent.block();
+                this.options.parent.block();
                 this.model.save().fail(function(){ this.options.parent.unblock();}.bind(this)).then(function(){
                     this.options.parent.unblock();
                     var portfolio_key =  "goal_" + this.model.get("id") + "_" + this.model.get("portfolioSetId");

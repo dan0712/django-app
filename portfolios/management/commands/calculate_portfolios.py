@@ -14,7 +14,7 @@ def get_api(api_name):
 
 
 def calculate_portfolios(portfolio_set):
-    api = get_api(Platform.objects.first().api)
+    api = DbApi()#get_api(Platform.objects.first().api)
     # get all the assets
     series = {}
     asset_type = {}
@@ -24,7 +24,7 @@ def calculate_portfolios(portfolio_set):
     for asset in portfolio_set.asset_classes.all():
         ticker = asset.tickers.filter(ordering=0).first()
         asset_name.append(ticker.symbol)
-        asset_super_class_dict[ticker.symbol] = 1 if asset.super_asset_class in ["EQUITY_AU", "FIXED_INCOME_AU"] else 0
+        asset_super_class_dict[ticker.symbol] = 1 if asset.super_asset_class in ["EQUITY_AU", "FIXED_INCOME_AU", "EQUITY_INT", "FIXED_INCOME_INT"] else 0
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
@@ -60,12 +60,26 @@ def calculate_portfolios(portfolio_set):
 
     columns = list(table)
 
+    constrains = []
+
+    def create_constrain(super_class_array, _custom_size):
+        def evaluate(x):
+            return sum(x*super_class_array) - _custom_size
+        return evaluate
+
+    default_size = 1
+    super_class_array = np.zeros((len(columns)))
+    for ticker_idx in range(0, len(columns)):
+        super_class_array[ticker_idx] = asset_super_class_dict[columns[ticker_idx]]
+
+    constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_array, default_size)})
+
     # delete all the risk profiles related to this portfolio set
     portfolio_set.risk_profiles.all().delete()
     for allocation in list(np.arange(0, 1.01, 0.01)):
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, [])
+                                              new_assets_type,  views, qs, tau, constrains)
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))

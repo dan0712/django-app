@@ -15634,70 +15634,7 @@ var requirejs, require, define;
             relatedModels: ["financialPlan"]
         };
         return e.Model.extend(t)
-    }), define("models/v2/externalAccount", ["underscore", "components/common/scripts/models/v2/baseModels"], function(e, t) {
-        var n = {
-                "401k": "401(k)",
-                traditional_ira: "Traditional IRA",
-                roth_ira: "Roth IRA",
-                roth_401k: "Roth 401(k)",
-                individual_taxable: "Individual (Taxable)",
-                "403b": "403(b)",
-                "401a": "401(a)",
-                "457b": "457(b)",
-                thrift_savings_plan: "Thrift Savings Plan",
-                pension_plan: "Pension Plan",
-                profit_sharing: "Profit Sharing",
-                sep_ira: "SEP IRA",
-                simple_ira: "Simple IRA",
-                health_savings_account: "Health Savings Account"
-            },
-            r = {
-                endpoint: "/external_accounts",
-                isSpousal: function() {
-                    return this.get("accountOwner") === "spouse"
-                },
-                isEmployerPlan: function() {
-                    var t = ["401k", "roth_401k", "profit_sharing", "403b", "401a", "457b", "thrift_savings_plan"];
-                    return e.contains(t, this.get("accountType"))
-                },
-                hashKey: function() {
-                    return ["accountOwner", "accountType", "annualContributionCents", "balanceCents"].reduce(function(e, t) {
-                        return e + t + ":" + this.get(t) + ";"
-                    }.bind(this), "")
-                },
-                displayAccountType: function() {
-                    return n[this.get("accountType")]
-                }
-            };
-        r.validation = {
-            institutionName: {
-                required: !0
-            },
-            accountType: {
-                required: !0
-            },
-            investmentType: {
-                required: !0
-            },
-            accountOwner: {
-                required: !0
-            },
-            balanceCents: {
-                required: !0
-            },
-            annualContributionCents: {
-                required: !0
-            },
-            advisorFeePercent: {
-                range: [0, 100],
-                required: !1
-            }
-        };
-        var i = {
-            VALID_ACCOUNT_TYPES: n
-        };
-        return t.RelationalModel.extend(r, i)
-    }), define("models/v2/externalAccountCollection", ["underscore", "components/common/scripts/models/v2/baseCollection", "models/v2/externalAccount", "components/common/scripts/modules/async"], function(e, t, n, r) {
+    }),define("models/v2/externalAccountCollection", ["underscore", "components/common/scripts/models/v2/baseCollection", "models/v2/externalAccount", "components/common/scripts/modules/async"], function(e, t, n, r) {
         var i = {
             endpoint: "/external_accounts",
             model: n,
@@ -15753,7 +15690,7 @@ var requirejs, require, define;
             RETIREE_MINIMUM_TERM: 1,
             RETIREMENT_AGE: 50,
             DEFAULT_LIFE_EXPECTANCY: 90,
-            DEFAULT_RETIREMENT_AGE: 68,
+            DEFAULT_RETIREMENT_AGE: 65,
             ASSUMED_FEE_RATE: .15,
             MINIMUM_SOCIAL_SECURITY_COLLECTION_AGE: 62,
             IRA_CATCHUP_AGE: 50
@@ -26487,7 +26424,7 @@ var requirejs, require, define;
                         a = o === "DISA";
                     if (u || a) {
                         var f = u ? "Beneficiary" : "Disability",
-                            l = u ? "certified copy of the account holder's death certificate." : "copy of a physician's statement or letter from the Social Security office confirming your disability.";
+                            l = u ? "certified copy of the account holder's death certificate." : "copy of a physician's statement or letter from the Age Pension office confirming your disability.";
                         BMT.alert({
                             width: 450,
                             icon: "warning",
@@ -27798,11 +27735,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.expandHeight, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '">\n        BetaSmartz\'s privacy policy', (u = n.jointAccountAgreementInjection) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.jointAccountAgreementInjection, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + " and BetaSmartz Institutional customer agreements, which include the Brokerage Agreement, Advisory Agreement,\n\n        ", o = n["if"].call(t, t && t.showIraAgreement, {
+            }) : u), s += f(o) + '">\n        BetaSmartz\'s privacy policy' + " and BetaSmartz Institutional customer agreements, which include the Brokerage Agreement, Advisory Agreement,\n\n        ", o = n["if"].call(t, t && t.showIraAgreement, {
                 hash: {},
                 inverse: l.noop,
                 fn: l.program(11, m, i)
@@ -29076,8 +29009,8 @@ var requirejs, require, define;
                     newPassword: b,
                     ssn: function(e, t, n) {
                         if (w.test(e)) return !1;
-                        if (!e) return "Social Security number is required.";
-                        if (!/\d{3}-\d{2}-\d{4}/.test(e)) return "That doesn't look like a valid Social Security number."
+                        if (!e) return "Age Pension number is required.";
+                        if (!/\d{3}-\d{2}-\d{4}/.test(e)) return "That doesn't look like a valid Age Pension number."
                     }
                 }
             }, {
@@ -32196,7 +32129,7 @@ var requirejs, require, define;
                     r = t === "DISA";
                 return this.account().isIRA() && (n || r) ? function(e) {
                     var t = n ? "Beneficiary" : "Disability",
-                        r = n ? "certified copy of the account holder's death certificate." : "copy of a physician's statement or letter from the Social Security office confirming your disability.";
+                        r = n ? "certified copy of the account holder's death certificate." : "copy of a physician's statement or letter from the Age Pension office confirming your disability.";
                     BMT.alert({
                         width: 450,
                         icon: "warning",
@@ -34367,7 +34300,7 @@ var requirejs, require, define;
                         };
                         n.is("complete") ? n.hasPlanAccount(e.getIdParams()) ? i.push(t) : s.push(t) : r.push(t)
                     }), n.is("complete") && i.length > 0 && (r.push({
-                        name: "RetireGuide Goals",
+                        name: "RetireSmart Goals",
                         divider: !0
                     }), r = r.concat(i)), n.is("complete") && s.length > 0 && (i.length > 0 && r.push({
                         name: "Other Goals",
@@ -34375,11 +34308,11 @@ var requirejs, require, define;
                     }), r = r.concat(s)), r.push({
                         divider: !0
                     }), n.is("complete") || t.selectedPlan ? (r.push({
-                        name: "RetireGuide",
+                        name: "RetireSmart",
                         action: "go-to-plan",
                         value: t.selectedPlan
                     }), t.selectedValue = t.selectedValue || t.selectedPlan) : r.push({
-                        name: "Set up RetireGuide",
+                        name: "Set up RetireSmart",
                         action: "go-to-plan-setup",
                         value: "plan-setup"
                     }), r.push({
@@ -43730,6 +43663,13 @@ var requirejs, require, define;
                         r = {};
                     r[c.INVESTING] = "taxable", r[c.TRADITIONAL_IRA] = "traditionalIra", r[c.SEP_IRA] = "traditionalIra", r[c.ROTH_IRA] = "rothIra";
                     var i = {
+                        transaction_cheque_account: "employerPlan",
+                        savings_deposit_account: "employerPlan",
+                        term_deposit_account: "employerPlan",
+                        brokerage_account: "employerPlan",
+                        my_super: "employerPlan",
+                        super_found: "employerPlan",
+                        smsf: "employerPlan",
                         traditional_ira: "traditionalIra",
                         roth_ira: "rothIra",
                         health_savings_account: "rothIra",
@@ -43982,7 +43922,7 @@ var requirejs, require, define;
                 o, u, a, f = n.helperMissing,
                 l = this.escapeExpression,
                 c = "function";
-            return s += '<div class="plan-header">\n    <div class="left">\n        <h2>RetireGuide</h2>\n        <p>\n            Desired Retirement Spending ', o = (u = n.desiredSpending || t && t.desiredSpending, a = {
+            return s += '<div class="plan-header">\n    <div class="left">\n        <h2>RetireSmart</h2>\n        <p>\n            Desired Retirement Spending ', o = (u = n.desiredSpending || t && t.desiredSpending, a = {
                 hash: {}
             }, u ? u.call(t, a) : f.call(t, "desiredSpending", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
@@ -44396,7 +44336,7 @@ var requirejs, require, define;
                         i = this.self.model,
                         s = a.getGoalTypeByName(i.get("goalType")).term;
                     if (i.isRetirementGoalDisplayedAsAge()) {
-                        n = "We recommend retiring at age 68 so you can receive your full social security benefits.";
+                        n = "We recommend retiring at age 68 so you can receive your full Age Pension benefits.";
                         var o = isNaN(i.goalAge()) ? 68 : i.goalAge(),
                             u = this.madlib_input(t.extend({
                                 name: "age",
@@ -47298,7 +47238,7 @@ var requirejs, require, define;
             },
             onInitialize: function() {
                 this.listenTo(BMT.user, "change:retireGuideEnabled", function() {
-                    BMT.user.is("retireGuideEnabled") ? BMT.flash("RetireGuide has been hidden from your account. Click Show RetireGuide to bring it back at any time.") : BMT.flash('RetireGuide is now available in your account. <a href="#retireGuideSetup"><u>Set up RetireGuide</u></a>.'), this.render()
+                    BMT.user.is("retireGuideEnabled") ? BMT.flash("RetireSmart has been hidden from your account. Click Show RetireSmart to bring it back at any time.") : BMT.flash('RetireSmart is now available in your account. <a href="#retireGuideSetup"><u>Set up RetireSmart</u></a>.'), this.render()
                 })
             },
             currentState: function() {
@@ -47311,8 +47251,8 @@ var requirejs, require, define;
             clearRetireGuide: function() {
                 var e = this;
                 BMT.alert({
-                    body: "You are about to clear the personal data you entered when setting up RetireGuide. This cannot be undone.",
-                    title: "Clear RetireGuide Profile",
+                    body: "You are about to clear the personal data you entered when setting up RetireSmart. This cannot be undone.",
+                    title: "Clear RetireSmart Profile",
                     buttons: [{
                         id: "clear-retire-guide-button",
                         title: "Clear"
@@ -47320,7 +47260,7 @@ var requirejs, require, define;
                     handler: function() {
                         BMT.user.get("financialPlans").selected().destroy({
                             success: function() {
-                                BMT.flash("RetireGuide profile has been cleared.  <a href=#retireGuideSetup><u>Start your profile over</u></a>, or visit the Advice tab later to set up RetireGuide again."), e.render()
+                                BMT.flash("RetireSmart profile has been cleared.  <a href=#retireGuideSetup><u>Start your profile over</u></a>, or visit the Advice tab later to set up RetireSmart again."), e.render()
                             }
                         })
                     }
@@ -49585,7 +49525,7 @@ var requirejs, require, define;
             function h(e, t) {
                 var r = "",
                     i, s;
-                return r += '\n        <div class="input-line" data-required="true">\n            <label>Social Security <span class="security-icon"></span></label>\n            <span class="input-area">\n                <input class="white" type="text" name="ssn" placeholder="" tabindex="170" />\n                <div class="fake-ssn"></div>\n                <p class="indent"><a target="_blank" href="', (s = n.brochureSecurityUrl) ? i = s.call(e, {
+                return r += '\n        <div class="input-line" data-required="true">\n            <label>Age Pension <span class="security-icon"></span></label>\n            <span class="input-area">\n                <input class="white" type="text" name="ssn" placeholder="" tabindex="170" />\n                <div class="fake-ssn"></div>\n                <p class="indent"><a target="_blank" href="', (s = n.brochureSecurityUrl) ? i = s.call(e, {
                     hash: {}
                 }) : (s = e && e.brochureSecurityUrl, i = typeof s === u ? s.call(e, {
                     hash: {}
@@ -49754,7 +49694,7 @@ var requirejs, require, define;
                 required: !0,
                 pattern: "digits",
                 length: 9,
-                msg: "That doesn't look like a valid social security number."
+                msg: "That doesn't look like a valid Age Pension number."
             },
             securityQuestion1: {
                 required: !0
@@ -49910,10 +49850,10 @@ var requirejs, require, define;
                 }
             },
             ssn: {
-                prompt: "Since this is a financial account, we are required to have your Social Security number on file. Your information is safe and secure.",
+                prompt: "Since this is a financial account, we are required to have your Age Pension number on file. Your information is safe and secure.",
                 good: "Perfect!",
                 bad: function(e, t, n) {
-                    return e.ssn ? "Your social security number appears to be invalid. Is there a typo?" : "We are required to ask for your Social Security number."
+                    return e.ssn ? "Your Age Pension number appears to be invalid. Is there a typo?" : "We are required to ask for your Age Pension number."
                 }
             },
             employmentStatus: {
@@ -49933,7 +49873,7 @@ var requirejs, require, define;
                 bad: "Your annual gross income is required by law and also helps us give you better advice."
             },
             annualIncomeRetired: {
-                prompt: "This is your current annual income from all sources (social security, pension, etc) in retirement. It may be different than your desired income.",
+                prompt: "This is your current annual income from all sources (Age Pension, pension, etc) in retirement. It may be different than your desired income.",
                 bad: "Your annual gross income is required by law and also helps us give you better advice."
             },
             annualIncomeHomemaker: {
@@ -50162,7 +50102,7 @@ var requirejs, require, define;
             },
             showIdentityCorrection: function(t) {
                 var n = this._addSection("identityCorrection", f);
-                n.options.fieldGroups = t, this.identityCorrectionRegion.show(n), this.$(".big-form").hide(), this.$(".identity-correction-form").show(), e.contains(t, "ssn") && this.$(".identity-correction-form h2.form-header").text("Please check your name and social security number."), this.$("#signupWelcomeHeader").addClass("error-header").text("Whoops, something doesn't look right"), this._scrollToTarget($("body"))
+                n.options.fieldGroups = t, this.identityCorrectionRegion.show(n), this.$(".big-form").hide(), this.$(".identity-correction-form").show(), e.contains(t, "ssn") && this.$(".identity-correction-form h2.form-header").text("Please check your name and Age Pension number."), this.$("#signupWelcomeHeader").addClass("error-header").text("Whoops, something doesn't look right"), this._scrollToTarget($("body"))
             },
             isAdvisedSignup: function() {
                 return !this.advisor.isNew()
@@ -51139,7 +51079,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/retirementPlanning/splash", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header-region">\n</div>\n\n<div class="upper">\n    <h1>See if you are invested correctly for retirement</h1>\n    <p>In 5 minutes, RetireGuide&#8482; will advise you on these questions</p>\n</div>\n<div class="middle">\n    <div class="left bubble-region">\n\n    </div>\n    <div class="right">\n\n        <div class="question">\n            <div>\n                <h3>Am I saving enough?</h3>\n                <p>You know that savings are critical. We\'ll help you figure out how much you need to save to retire on your terms.</p>\n            </div>\n        </div>\n\n        <div class="question">\n            <div>\n                <h3>When can I retire?</h3>\n                <p>Retiring early is a dream of many.  You\'ll see how different retirement age choices affect how much you need to save.</p>\n            </div>\n        </div>\n\n        <div class="question">\n            <div>\n                <h3>Am I invested correctly?</h3>\n                <p>We\'ll help you decide the best accounts or IRAs to use for your situation, so you can maximize your savings after taxes.</p>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="lower">\n    <button class="next">Customize your plan</button>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header-region">\n</div>\n\n<div class="upper">\n    <h1>See if you are invested correctly for retirement</h1>\n    <p>In 5 minutes, RetireSmart&#8482; will advise you on these questions</p>\n</div>\n<div class="middle">\n    <div class="left bubble-region">\n\n    </div>\n    <div class="right">\n\n        <div class="question">\n            <div>\n                <h3>Am I saving enough?</h3>\n                <p>You know that savings are critical. We\'ll help you figure out how much you need to save to retire on your terms.</p>\n            </div>\n        </div>\n\n        <div class="question">\n            <div>\n                <h3>When can I retire?</h3>\n                <p>Retiring early is a dream of many.  You\'ll see how different retirement age choices affect how much you need to save.</p>\n            </div>\n        </div>\n\n        <div class="question">\n            <div>\n                <h3>Am I invested correctly?</h3>\n                <p>We\'ll help you decide the best accounts or IRAs to use for your situation, so you can maximize your savings after taxes.</p>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="lower">\n    <button class="next">Customize your plan</button>\n</div>\n'
         });
         return t.registerPartial("views/retirementPlanning/splash", n), n
     }), define("hbs!views/retirementPlanning/sharedHeader", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -51222,7 +51162,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, a) : f.call(t, "annualIncome", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + " and estimated annual Social Security income of ", o = (u = n.annualSocialSecurityIncome || t && t.annualSocialSecurityIncome, a = {
+            }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + " and estimated annual Age Pension income of ", o = (u = n.annualSocialSecurityIncome || t && t.annualSocialSecurityIncome, a = {
                 hash: {}
             }, u ? u.call(t, a) : f.call(t, "annualSocialSecurityIncome", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
@@ -51440,7 +51380,7 @@ var requirejs, require, define;
                 o, u, a, f = n.helperMissing,
                 l = this.escapeExpression,
                 c = "function";
-            return s += '<div class="question marital-status">\n    <h1>Are you married?</h1>\n    <p>We ask this because your marital status affects your taxes, income, and qualification limits for IRAs. <span class="unadvised-user-only">' + l((u = n.link || t && t.link, a = {
+            return s += '<div class="question marital-status">\n    <h1>Are you married?</h1>\n    <p>We ask this because your marital status affects your taxes, income, and qualification limits for Age Pension. <span class="unadvised-user-only">' + l((u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.disclaimerLink, a) : f.call(t, "link", t && t.disclaimerLink, a))) + '</span></p>\n    <div class="inputs">\n        <div class="status single bubble-button">\n            <div class="button-icon">\n                <div class="icon single-grey"></div>\n            </div>\n            <div class="button-label">Not married</div>\n        </div>\n        <div class="status married bubble-button">\n            <div class="button-icon">\n                <div class="icon married-grey"></div>\n            </div>\n            <div class="button-label">Married</div>\n        </div>\n    </div>\n</div>\n\n<div class="question spouse-info">\n    <h1>What is your spouse\'s name and age?</h1>\n    <p>We ask this so we can customize your plan to you and your spouse. This information is always confidential.</p>\n\n    <div class="inputs">\n        <input type="text" class="spouse name" name="spouseName" placeholder="Name" value="', (u = n.spouseName) ? o = u.call(t, {
                 hash: {}
@@ -51823,7 +51763,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.name, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '\n\n        <div class="goal-warning caution-icon" style="display: inline-block">\n            RetireGuide works across accounts, so prior account-specific targets and time horizons will be removed.\n            To keep your current target, time horizon, and on/off track status, uncheck to remove this goal from RetireGuide.\n        </div>\n    </div>\n    <div class="current-balance col">', o = (u = n.currentBalance || t && t.currentBalance, a = {
+            }) : u), s += l(o) + '\n\n        <div class="goal-warning caution-icon" style="display: inline-block">\n            RetireSmart works across accounts, so prior account-specific targets and time horizons will be removed.\n            To keep your current target, time horizon, and on/off track status, uncheck to remove this goal from RetireSmart.\n        </div>\n    </div>\n    <div class="current-balance col">', o = (u = n.currentBalance || t && t.currentBalance, a = {
                 hash: {}
             }, u ? u.call(t, a) : h.call(t, "currentBalance", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
@@ -51831,7 +51771,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, a) : h.call(t, "annualContribution", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, o, 0, a) : h.call(t, "money", o, 0, a))) + '\n            </span>\n            <span editable>\n                <input input />\n            </span>\n        </span>\n    </div>\n    <div class="percent-stocks col">' + l((u = n.pct || t && t.pct, a = {
+            }, u ? u.call(t, o, 0, a) : h.call(t, "money", o, 0, a))) + '\n            </span>\n            <span editable style="display:none;">\n                <input input  />\n            </span>\n        </span>\n    </div>\n    <div class="percent-stocks col">' + l((u = n.pct || t && t.pct, a = {
                 hash: {}
             }, u ? u.call(t, t && t.allocation, a) : h.call(t, "pct", t && t.allocation, a))) + "</div>\n</div>\n", s
         });
@@ -51986,7 +51926,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/retirementPlanning/externalAccounts", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="list-header">Add your <span class="unadvised-user-only">Non-Betterment</span><span class="advised-user-only">external</span> retirement accounts</div>\n<div class="list-header-row">\n    <div class="account-type">Account Type</div>\n    <div class="account-owner">Account Owner</div>\n    <div class="current-balance">\n        Current Balance\n        <span class="help-content">\n            Latest total dollar value of this account. You should update this number at least annually and re-review your plan.\n        </span>\n    </div>\n    <div class="annual-contribution">\n        Annual Contrib. Including Match\n        <span class="help-content">\n            Enter the total amount that you plan to save each year into this account, plus any company match that you get.\n        </span>\n    </div>\n\n    <div class="remove-account"></div>\n</div>\n\n<div class="accounts-list"></div>\n\n<p class="update-advice">Update your account values periodically to get accurate advice.</p>\n\n<div class="add-external-account bubble-button">\n    <div class="button-icon selected">\n        <div class="symbol">+</div>\n    </div>\n    <div class="button-label loud">Add account</div>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="list-header">Add your <span class="unadvised-user-only">Non-Betterment</span><span class="advised-user-only">external</span> retirement accounts</div>\n<div class="list-header-row">\n    <div class="account-type">Account Type</div>\n    <div class="account-owner">Account Owner</div>\n    <div class="current-balance">\n        Current Balance\n        <span class="help-content">\n            Latest total dollar value of this account. You should update this number at least annually and re-review your plan.\n        </span>\n    </div>\n    <div class="annual-contribution">\n        Annual Contrib. Including Company\n        <span class="help-content">\n            Enter the total amount that you plan to save each year into this account, plus any company contribution that you get.\n        </span>\n    </div>\n\n    <div class="remove-account"></div>\n</div>\n\n<div class="accounts-list"></div>\n\n<p class="update-advice">Update your account values periodically to get accurate advice.</p>\n\n<div class="add-external-account bubble-button">\n    <div class="button-icon selected">\n        <div class="symbol">+</div>\n    </div>\n    <div class="button-label loud">Add account</div>\n</div>\n'
         });
         return t.registerPartial("views/retirementPlanning/externalAccounts", n), n
     }), define("hbs!views/retirementPlanning/externalAccount", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/moneyCents"], function(e, t) {
@@ -52716,7 +52656,7 @@ var requirejs, require, define;
                 fn: l.program(1, c, i)
             });
             if (o || o === 0) s += o;
-            return s += ' like to retire?</h1>\n    <p>An estimate is fine - you can update this later. Social Security benefits increase the later you retire.</p>\n\n    <div class="inputs">\n        <div class="retired-toggler">\n            <label>', (u = n.name) ? o = u.call(t, {
+            return s += ' like to retire?</h1>\n    <p>An estimate is fine - you can update this later.</p>\n\n    <div class="inputs">\n        <div class="retired-toggler">\n            <label>', (u = n.name) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.name, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -53008,13 +52948,13 @@ var requirejs, require, define;
         })
     }), define("hbs!views/retirementPlanning/plan", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header-region"></div>\n<div class="summary"></div>\n<nav>\n    <div class="nav-wrapper">\n        <ul class="main-nav">\n            <li class="projection depressed"><a>Projection</a></li>\n            <li class="how-to-save"><a>How to Save</a></li>\n            <li class="actions"><a>Actions</a></li>\n        </ul>\n        <div class="edit-assumptions-container">\n            <button class="silver edit-assumptions">Edit Assumptions</button>\n        </div>\n    </div>\n</nav>\n<div class="edit-assumptions-region"></div>\n<div class="content clearfix"></div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header-region"></div>\n<div class="summary"></div>\n<nav>\n    <div class="nav-wrapper">\n        <ul class="main-nav">\n            <li class="projection depressed"><a>Projection</a></li>\n            <li class="how-to-save"><a>What to do</a></li>\n            <li class="actions"><a>Actions</a></li>\n        </ul>\n        <div class="edit-assumptions-container">\n            <button class="silver edit-assumptions">Edit Assumptions</button>\n        </div>\n    </div>\n</nav>\n<div class="edit-assumptions-region"></div>\n<div class="content clearfix"></div>\n'
         });
         return t.registerPartial("views/retirementPlanning/plan", n), n
     }), define("hbs!views/retirementPlanning/planSummary", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
             function p(e, t) {
-                return "Your spouse will start Social Security at their retirement age."
+                return "Your spouse will start Age Pension at their retirement age."
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
@@ -53022,7 +52962,7 @@ var requirejs, require, define;
                 l = this.escapeExpression,
                 c = "function",
                 h = this;
-            s += '<h3>Summary <a class="toggle-calculated">How we calculated this <span class="arrow">›</span></a></h3>\n<div class="how-we-calculated">\n    <h1>How we calculated this</h1>\n\n    <p>To calculate how much you should save each year, we first calculate how much you need in total at your selected retirement age\n    in order to provide the level of spending you desire (adjusted for inflation). This includes a Social Security estimate and any other\n    income specified by you in the assumptions. From this, we determine how much you\'ll need to save each month from now until retirement\n    by assuming a 60% likelihood of the portfolio reaching its goal target. You can change your retirement date to see different savings\n    amounts. In these calculations we assume a moderate risk portfolio of stocks and bonds according to our allocation recommendations.</p>\n\n    <p>Don\'t think these assumptions are right for you? You can edit them below.</p>\n</div>\n<p class="savings-required">\n    To spend\n    <a href="#retireGuideSetup/5" class="highlight-blue tooltipped">\n        <span class="help-content">\n            Retirement spending after taxes, in today\'s dollars. Click to edit using the spending calculator.\n        </span>\n        ', o = (u = n.retirementAnnualConsumption || t && t.retirementAnnualConsumption, a = {
+            s += '<h3>Summary <a class="toggle-calculated">How is this calculated <span class="arrow">›</span></a></h3>\n<div class="how-we-calculated">\n    <h1>How is this calculated</h1>\n\n    <p>To calculate how much you should save each year, we first calculate how much you need in total at your selected retirement age\n    in order to provide the level of spending you desire (adjusted for inflation). This includes a Age Pension estimate and any other\n    income specified by you in the assumptions. From this, we determine how much you\'ll need to save each month from now until retirement\n    by assuming a 60% likelihood of the portfolio reaching its goal target. You can change your retirement date to see different savings\n    amounts. In these calculations we assume a moderate risk portfolio of stocks and bonds according to our allocation recommendations.</p>\n\n    <p>Don\'t think these assumptions are right for you? You can edit them below.</p>\n</div>\n<p class="savings-required">\n    To spend\n    <a href="#retireGuideSetup/5" class="highlight-blue tooltipped">\n        <span class="help-content">\n            Retirement spending after taxes, in today\'s dollars. Click to edit using the spending calculator.\n        </span>\n        ', o = (u = n.retirementAnnualConsumption || t && t.retirementAnnualConsumption, a = {
                 hash: {}
             }, u ? u.call(t, a) : f.call(t, "retirementAnnualConsumption", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
@@ -53030,11 +52970,11 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.spouseNameWithAnd, o = typeof u === c ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + ' should save<br/>\n    <span class="highlight-green suggested-annual-contribution tooltipped">\n        <span class="help-content">\n            Based on your profile, current balance, and the assumptions below. Click "How we calculated this" on the right for details.\n        </span>\n        ', o = (u = n.annualContribution || t && t.annualContribution, a = {
+            }) : u), s += l(o) + ' should save<br/>\n    <span class="highlight-green suggested-annual-contribution tooltipped">\n        <span class="help-content">\n            Based on your profile, current balance, and the assumptions below. Click "How is this calculated" on the right for details.\n        </span>\n        ', o = (u = n.annualContribution || t && t.annualContribution, a = {
                 hash: {}
             }, u ? u.call(t, a) : f.call(t, "annualContribution", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + '/year</span>\n    if you want to retire at\n    <span class="highlight-blue tooltipped">\n        <span class="help-content">\n            This is the age we assume you start portfolio withdrawals and Social Security.\n            ', o = n["if"].call(t, t && t.isMarried, {
+            }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + '/year</span>\n    if you want to retire at\n    <span class="highlight-blue tooltipped">\n        <span class="help-content">\n            This is the age we assume you start portfolio withdrawals and Age Pension.\n            ', o = n["if"].call(t, t && t.isMarried, {
                 hash: {},
                 inverse: h.noop,
                 fn: h.program(1, p, i)
@@ -53044,11 +52984,11 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.desiredRetirementAge, o = typeof u === c ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '</span></span>.\n</p>\n<p class="savings-not-required">\n    Congratulations, your current savings and expected Social Security will provide at least\n    <a href="#retireGuideSetup/5" class="highlight-blue tooltipped">\n        <span class="help-content">\n            Retirement spending after taxes, on today\'s dollars. Click to edit using the spending calculator.\n        </span>\n        ', o = (u = n.retirementAnnualConsumption || t && t.retirementAnnualConsumption, a = {
+            }) : u), s += l(o) + '</span></span>.\n</p>\n<p class="savings-not-required">\n    Congratulations, your current savings and expected Age Pension will provide at least\n    <a href="#retireGuideSetup/5" class="highlight-blue tooltipped">\n        <span class="help-content">\n            Retirement spending after taxes, on today\'s dollars. Click to edit using the spending calculator.\n        </span>\n        ', o = (u = n.retirementAnnualConsumption || t && t.retirementAnnualConsumption, a = {
                 hash: {}
             }, u ? u.call(t, a) : f.call(t, "retirementAnnualConsumption", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + '/year</a>\n    in retirement spending starting at\n    <span class="highlight-blue tooltipped">\n        <span class="help-content">\n            This is the age we assume you start portfolio withdrawals and Social Security.\n            ', o = n["if"].call(t, t && t.isMarried, {
+            }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + '/year</a>\n    in retirement spending starting at\n    <span class="highlight-blue tooltipped">\n        <span class="help-content">\n            This is the age we assume you start portfolio withdrawals and Age Pension.\n            ', o = n["if"].call(t, t && t.isMarried, {
                 hash: {},
                 inverse: h.noop,
                 fn: h.program(1, p, i)
@@ -53135,7 +53075,7 @@ var requirejs, require, define;
                 l = this.escapeExpression,
                 c = this,
                 h = n.helperMissing;
-            s += '<div class="tip">\n    <div class="save-more">We recommend increasing your annual savings to <span class="highlight-green"><span class="recommended-savings"></span>/year</span>, choosing a later retirement age, or reducing spending needs.  Once you have settled on an age and savings rate, use <a class="highlight-blue next">How To Save</a> to see the best accounts to use.</div>\n    <div class="saving-enough">You are currently saving enough! Use <a class="highlight-blue next">How To Save</a> to make sure you are saving in the best accounts.</div>\n    <div class="saved-enough">Your current retirement balance will allow you to retire at <span class="highlight-blue">age <span class="desired-retirement-age">', (u = n.retirementAge) ? o = u.call(t, {
+            s += '<div class="tip">\n    <div class="save-more">We recommend increasing your annual savings to <span class="highlight-green"><span class="recommended-savings"></span>/year</span>, choosing a later retirement age, or reducing spending needs.  Once you have settled on an age and savings rate, use <a class="highlight-blue next">What to do</a> to see the best accounts to use.</div>\n    <div class="saving-enough">You are currently saving enough! Use <a class="highlight-blue next">What to do</a> to make sure you are saving in the best accounts.</div>\n    <div class="saved-enough">Your current retirement balance will allow you to retire at <span class="highlight-blue">age <span class="desired-retirement-age">', (u = n.retirementAge) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.retirementAge, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -53145,11 +53085,11 @@ var requirejs, require, define;
                 fn: c.program(1, p, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n\n        <h3 class="social-security-title">\n            Social Security Benefit\n            <div class="help-icon social-security">\n                <span class="help-content">\n                </span>\n            </div>\n        </h3>\n        <div class="value">\n            <div class="social-security-selector"></div>\n        </div>\n\n    </div>\n\n    <div class="right">\n\n        <h2 class="graph-title">Annual Spending at Retirement (today\'s dollars)</h2>\n\n        <div class="graph-region"></div>\n\n        <a class="expand-regulatory">What do "likely" and "conservative" mean? <span class="arrow">&rsaquo;</span></a>\n\n        <div class="expandable regulatory">\n            <p>"Likely" represents a 60% likelihood of the portfolio reaching its goal target, which is more conservative\n            than the average probability.</p>\n\n            <p>"Conservative" represents a 97.5% likelihood of the portfolio reaching its goal target, which approximates\n            a cautious "worst case" approach.</p>\n        </div>\n\n        <p class="unadvised-user-only regulatory">Projections and advice assume expected returns and volatility of BetaSmartz\'s portfolio.\n        If your non-BetaSmartz accounts are not invested similarly to BetaSmartz\'s portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
+            return s += '\n\n        <h3 class="social-security-title">\n            Age Pension Benefit\n            <div class="help-icon social-security">\n                <span class="help-content">\n                </span>\n            </div>\n        </h3>\n        <div class="value">\n            <div class="social-security-selector"></div>\n        </div>\n\n    </div>\n\n    <div class="right">\n\n        <h2 class="graph-title">Annual Spending at Retirement (today\'s dollars)</h2>\n\n        <div class="graph-region"></div>\n\n        <a class="expand-regulatory">What do "likely" and "conservative" mean? <span class="arrow">&rsaquo;</span></a>\n\n        <div class="expandable regulatory">\n            <p>"Likely" represents a 60% likelihood of the portfolio reaching its goal target, which is more conservative\n            than the average probability.</p>\n\n            <p>"Conservative" represents a 97.5% likelihood of the portfolio reaching its goal target, which approximates\n            a cautious "worst case" approach.</p>\n        </div>\n\n        <p class="unadvised-user-only regulatory">Projections and advice assume expected returns and volatility of BetaSmartz\'s portfolio.\n        If your non-BetaSmartz accounts are not invested similarly to BetaSmartz\'s portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.projectionDisclaimerLink, a) : h.call(t, "link", t && t.projectionDisclaimerLink, a))) + '</p>\n\n        <p class="advised-user-only regulatory">Projections and advice assume expected returns and volatility of this portfolio.\n        If your external accounts are not invested similarly to this portfolio, our advice will likely not be\n        accurate for your personal situation. ' + l((u = n.link || t && t.link, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.projectionDisclaimerLink, a) : h.call(t, "link", t && t.projectionDisclaimerLink, a))) + '</p>\n    </div>\n</div>\n\n<div class="lower">\n    <button class="back-to-profile silver">Back to Profile</button>\n    <button class="next">Continue to How to Save</button>\n</div>\n', s
+            }, u ? u.call(t, t && t.projectionDisclaimerLink, a) : h.call(t, "link", t && t.projectionDisclaimerLink, a))) + '</p>\n    </div>\n</div>\n\n<div class="lower">\n    <button class="back-to-profile silver">Back to Profile</button>\n    <button class="next">Continue to What to do</button>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/projection", n), n
     }), define("hbs!views/retirementPlanning/socialSecurityTooltip", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {
@@ -53161,7 +53101,7 @@ var requirejs, require, define;
                     hash: {}
                 }) : (s = e && e.spouseName, i = typeof s === f ? s.call(e, {
                     hash: {}
-                }) : s), r += l(i) + " will have Social Security of " + l((s = n.money || e && e.money, o = {
+                }) : s), r += l(i) + " will have Age Pension of " + l((s = n.money || e && e.money, o = {
                     hash: {}
                 }, s ? s.call(e, e && e.spouseAnnualAmount, 0, o) : c.call(e, "money", e && e.spouseAnnualAmount, 0, o))) + "/year starting at\n    age ", (s = n.spouseRetirementAge) ? i = s.call(e, {
                     hash: {}
@@ -53175,7 +53115,7 @@ var requirejs, require, define;
                 l = this.escapeExpression,
                 c = n.helperMissing,
                 h = this;
-            s += "We estimate based on your age and income that you will have Social Security of " + l((u = n.money || t && t.money, a = {
+            s += "We estimate based on your age and income that you will have Age Pension of " + l((u = n.money || t && t.money, a = {
                 hash: {}
             }, u ? u.call(t, t && t.annualAmount, 0, a) : c.call(t, "money", t && t.annualAmount, 0, a))) + "/year,\nstarting at age ", (u = n.retirementAge) ? o = u.call(t, {
                 hash: {}
@@ -53187,7 +53127,7 @@ var requirejs, require, define;
                 fn: h.program(1, p, i)
             });
             if (o || o === 0) s += o;
-            return s += "\n\nGiven the instability of the Social Security system, the Social Security Administration estimates that only\n3/4 benefits may be available to younger earners.\n", s
+            return s += "\n\nGiven the changes to the Age Pension system, BetaSmartz estimates that only\n3/4 benefits may be available to younger earners.\n", s
         });
         return t.registerPartial("views/retirementPlanning/socialSecurityTooltip", n), n
     }), define("hbs!views/retirementPlanning/projection/currentSavings", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {
@@ -54232,7 +54172,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, t && t.portfolioReadMoreLink, a) : h.call(t, "link", t && t.portfolioReadMoreLink, a))) + '</span></p>\n\n        </div>\n        <div class="income section">\n            <h2>Assumptions about your income</h2>\n\n            <p class="subtle">You can customize your retirement income sources below. We assume you will withdraw from your portfolio based on our safe withdrawal advice with a 99% chance of not outliving your money. <span class="unadvised-user-only read-more">' + l((u = n.link || t && t.link, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.incomeReadMoreLink, a) : h.call(t, "link", t && t.incomeReadMoreLink, a))) + '</span></p>\n\n            <div class="input-container">\n                <h3>Other retirement income sources\n                    <div class="help-icon other-income">\n                        <span class="help-content">\n                            Enter the total amount of annual pre-tax income you expect from sources besides Social Security and your portfolio.  This may include pensions, rental income or other sources.  We assume this income starts at retirement and continues until life expectancy.\n                        </span>\n                    </div>\n                </h3>\n                <p>$ <input type="text" name="otherRetirementIncome" value="', (u = n.otherRetirementIncome) ? o = u.call(t, {
+            }, u ? u.call(t, t && t.incomeReadMoreLink, a) : h.call(t, "link", t && t.incomeReadMoreLink, a))) + '</span></p>\n\n            <div class="input-container">\n                <h3>Other retirement income sources\n                    <div class="help-icon other-income">\n                        <span class="help-content">\n                            Enter the total amount of annual pre-tax income you expect from sources besides Age Pension and your portfolio.  This may include pensions, rental income or other sources.  We assume this income starts at retirement and continues until life expectancy.\n                        </span>\n                    </div>\n                </h3>\n                <p>$ <input type="text" name="otherRetirementIncome" value="', (u = n.otherRetirementIncome) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.otherRetirementIncome, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -55512,7 +55452,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/jointAccountSignup/acceptAgreement", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<form class="agreement">\n    <h1>Customer agreement</h1>\n\n    <div class="tlh-warning">\n        <label>\n            <input type="checkbox" name="tlhAgreement" /> Tax Loss Harvesting+ will be disabled (it can re-enabled after your joint account is created).\n        </label>\n    </div>\n\n    <div class="terms-of-service"></div>\n\n    <div class="button-wrapper">\n        <button class="accept-agreement" disabled="disabled">\n            Continue\n        </button>\n    </div>\n</form>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<form class="agreement">\n    <h1>Customer agreement</h1>\n\n    <div class="tlh-warning">\n          </div>\n\n    <div class="terms-of-service"></div>\n\n    <div class="button-wrapper">\n        <button class="accept-agreement" disabled="disabled">\n            Continue\n        </button>\n    </div>\n</form>\n'
         });
         return t.registerPartial("views/jointAccountSignup/acceptAgreement", n), n
     }), define("views/jointAccountSignup/acceptAgreementView", ["common/betterment.views", "hbs!views/jointAccountSignup/acceptAgreement", "components/common/scripts/services/browserService", "components/common/scripts/analytics/analytics", "models/v1/jointAccountInvite", "views/common/termsOfServiceView"], function(e, t, n, r, i, s) {
@@ -55537,7 +55477,7 @@ var requirejs, require, define;
                 }))
             },
             inputsChanged: function() {
-                var e = this.ui.tlhAgreement.is(":checked") && this.termsOfServiceRegion.currentView.hasUserAcceptedAgreements();
+                var e =  this.termsOfServiceRegion.currentView.hasUserAcceptedAgreements();
                 this.model.set({
                     acceptedAgreement: e
                 }), this.ui.nextButton.prop("disabled", !e)
@@ -57172,7 +57112,7 @@ var requirejs, require, define;
             }
 
             function f(e, t) {
-                return "\n                    <p>RetireGuide&#8482; will give you advice based on your full financial picture. It's free, and we won't change your investments until you're ready.</p>\n                "
+                return "\n                    <p>RetireSmart&#8482; will give you advice based on your full financial picture. It's free, and we won't change your investments until you're ready.</p>\n                "
             }
 
             function l(e, t) {

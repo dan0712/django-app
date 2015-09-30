@@ -18,6 +18,7 @@ from pandas import DataFrame
 from portfolios.bl_model import handle_data
 import json
 import numpy as np
+from portfolios.bl_model import OptimizationException
 
 
 __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
@@ -30,8 +31,8 @@ __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisit
 
 
 def calculate_portfolios_for_goal(goal, portfolio_set):
-    regions = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
-    regions_b = ["AU", "INT", "US", "UK", "EU", "JAPAN", "AS", "CN", "EM"]
+    regions = ["au",  "usa", "uk", "europe", "japan", "asia", "china", "em"]
+    regions_b = ["AU", "US", "UK", "EU", "JAPAN", "AS", "CN", "EM"]
     api = DbApi()
     # get all the assets
     all_assets = portfolio_set.asset_classes.all()
@@ -53,11 +54,18 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         idx += 1
 
     def is_super_class(_ticker, _key):
-        return 1 if super_asset_class[_ticker] in ["EQUITY_" + _key, "FIXED_INCOME_" + _key] else 0
+        if _key == "AU":
+            return 1 if super_asset_class[_ticker] in \
+                        ["EQUITY_AU", "FIXED_INCOME_AU", "EQUITY_INT", "FIXED_INCOME_INT"] else 0
+        else:
+            return 1 if super_asset_class[_ticker] in ["EQUITY_" + _key, "FIXED_INCOME_" + _key] else 0
 
     table = DataFrame(series)
     columns = list(table)
     constrains = []
+    japan_constrain = None
+    japan_size = 0
+    au_size = 0
 
     def create_constrain(super_class_array, _custom_size):
         def evaluate(x):
@@ -74,7 +82,13 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
             super_class_matrix[region_idx][ticker_idx] = is_super_class(columns[ticker_idx], key)
 
         if custom_size != 0:
-            constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[region_idx], custom_size)})
+            if key_a == "japan":
+                japan_constrain = {'type': 'ineq', 'fun': create_constrain(super_class_matrix[region_idx], custom_size)}
+                japan_size = custom_size
+            elif key_a == "au":
+                au_size = custom_size
+            else:
+                constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[region_idx], custom_size)})
 
     # join all the series in a table, drop missing values
     new_assets_type = []
@@ -108,10 +122,18 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     # write restrictions
     json_portfolios = {}
     for allocation in list(np.arange(0, 1.01, 0.01)):
-        # calculate optimal portfolio for different risks 0 - 100
+        ns = au_size
+        new_constrains = constrains[:]
+        if allocation >= japan_size and (japan_constrain is not None):
+            new_constrains.append(japan_constrain)
+        else:
+            ns += japan_size
+        if ns > 0:
+            new_constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[0], ns)})
 
+        # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, constrains)
+                                              new_assets_type,  views, qs, tau, new_constrains)
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))
@@ -181,12 +203,12 @@ class PortfolioPortfolios(ClientView, TemplateView):
                     try:
                         goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, portfolio_set))
                         goal.save()
-                    except:
-                        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+                    except OptimizationException:
+                        markets = ["usa", "uk", "europe", "japan", "asia", "china", "em"]
                         for m in markets:
                             setattr(goal, m + "_size", 0)
                             setattr(goal, m + "_allocation", 0)
-
+                        goal.au_size = 1
                         goal.save()
                     _continue = False
 
@@ -243,6 +265,8 @@ class ClientAccounts(ClientView, TemplateView):
         goal.completion_date = datetime.strptime(model.get("goalCompletionDate"), '%Y%m%d%H%M%S')
         goal.allocation = model.get("allocation")
         goal.target = model.get("goalAmount", None)
+        if goal.target is None:
+            goal.target = 0
         goal.income = model.get("income", False)
         goal.save()
         return HttpResponse(json.dumps({"id": goal.pk}), content_type='application/json')
@@ -310,7 +334,8 @@ class ClientAccountPositions(ClientView, TemplateView):
             else:
                 real_allocation = 0
                 new_p["drift"] = 0
-
+            if new_p["allocation"] == 0 and new_p["totalValue"] == 0:
+                continue
             positions.append(new_p)
 
         # calculate drift and allocations
@@ -496,7 +521,7 @@ class ChangeAllocation(ClientView):
         new_t.amount = goal.allocation
         new_t.type = ALLOCATION
         # remove all the pending allocation transactions for this account
-        Transaction.objects.filter(account=goal,type=ALLOCATION, status=PENDING).all().delete()
+        Transaction.objects.filter(account=goal, type=ALLOCATION, status=PENDING).all().delete()
         new_t.save()
         goal.save()
         return HttpResponse(json.dumps({"transactionId": new_t.pk}), content_type="application/json")
@@ -528,26 +553,34 @@ class ChangeGoalView(ClientView):
         goal.completion_date = datetime.strptime(payload["goalCompletionDate"], '%Y%m%d%H%M%S')
         goal.type = payload["goalType"]
         goal.account_type = payload["accountType"]
-        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+        markets = ["au",  "usa", "uk", "europe", "japan", "asia", "china", "em"]
+
+        has_changed = False
 
         for m in markets:
-            setattr(goal, m + "_size", payload.get(m + "_size", 0))
+            new_size = payload.get(m + "_size", 0)
+            old_size = getattr(goal, m + "_size", 0)
+            has_changed = has_changed or (old_size != new_size)
+            setattr(goal, m + "_size", new_size)
             setattr(goal, m + "_allocation", payload.get(m + "_allocation", 0))
             setattr(goal, m + "_currency_hedge", payload.get(m + "_currency_hedge", 0))
 
-        goal.save()
-        if goal.custom_size > 0:
-            try:
-                goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, goal.portfolio_set))
-            except Exception:
-                for m in markets:
-                    setattr(goal, m + "_size", 0)
-                    setattr(goal, m + "_allocation", 0)
-                return HttpResponse('null', content_type="application/json", status=500)
-        else:
-            goal.portfolios = None
-
-        goal.save()
+        if has_changed:
+            if goal.custom_size > 0:
+                try:
+                    goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, goal.portfolio_set))
+                except OptimizationException:
+                    return HttpResponse('null', content_type="application/json", status=500)
+            else:
+                goal.portfolios = None
+            goal.save()
+            new_t = Transaction()
+            new_t.account = goal
+            new_t.amount = goal.allocation
+            new_t.type = ALLOCATION
+            # remove all the pending allocation transactions for this account
+            Transaction.objects.filter(account=goal, type=ALLOCATION, status=PENDING).all().delete()
+            new_t.save()
 
         return HttpResponse('null', content_type="application/json")
 

@@ -6,6 +6,10 @@ import numpy as np
 import scipy.optimize
 
 
+class OptimizationException(BaseException):
+    pass
+
+
 # Compute the expected return of the portfolio.
 def compute_mean(W, R):
     return sum(R*W)
@@ -27,7 +31,7 @@ def fitness(W, R, C, r):
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
     # Here, r is the 'target' return
     penalty = 0.1*abs(mean_1-r)
-    return var - mean_1 + penalty
+    return var - 0.8*mean_1 + penalty
 
 
 # Solve for optimal portfolio weights
@@ -46,7 +50,7 @@ def solve_weights(R, C, risk_free, allocation, assets_type, constrains):
     optimized = scipy.optimize.minimize(fitness, W, (R, C, sum(R*W)),
                                         method='SLSQP', constraints=c_, bounds=b_,  options={"maxiter": 1000})
     if not optimized.success:
-        raise BaseException(optimized.message)
+        raise OptimizationException(optimized.message)
     return optimized.x
 
 

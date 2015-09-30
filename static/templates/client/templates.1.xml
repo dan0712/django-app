@@ -504,7 +504,21 @@ $ <input type="text" name="amount" money-input />
 </div>
 </div>
 
-]]></template><template name="advice/goalComplete"><![CDATA[
+]]></template>
+<template name="advice/confirmMultiAllocationChanges"><![CDATA[
+<h1>Confirm Changes</h1>
+<table>
+<thead></thead>
+<tbody>
+</tbody>
+</table>
+
+<div class="modal-buttons">
+ <button class="ok">Confirm All Changes</button>
+ <button class="cancel">Cancel</button>
+</div>
+]]>
+</template><template name="advice/goalComplete"><![CDATA[
 <%= build_high_fade({
 title: 'Your "' + _.escape(self.model.get('name')) + '" goal has been set up',
 className: 'positive',

@@ -783,7 +783,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             plan = self.financial_plan
         else:
             return "null"
-
         betasmartz_externals = json.loads(serializers.serialize("json", self.financial_plan_external_accounts.all()))
         external_accounts = []
 
@@ -1080,13 +1079,9 @@ class Goal(models.Model):
     portfolios = models.TextField(null=True)
 
     # markets
-    au_size = models.FloatField(default=0)
+    au_size = models.FloatField(default=1)
     au_allocation = models.FloatField(default=0)
     au_currency_hedge = models.BooleanField(default=False)
-
-    dm_size = models.FloatField(default=0)
-    dm_allocation = models.FloatField(default=0)
-    dm_currency_hedge = models.BooleanField(default=False)
 
     usa_size = models.FloatField(default=0)
     usa_allocation = models.FloatField(default=0)
@@ -1121,7 +1116,7 @@ class Goal(models.Model):
 
     @property
     def custom_size(self):
-        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
+        markets = ["usa", "uk", "europe", "japan", "asia", "china", "em"]
         total_size = 0
 
         for m in markets:
@@ -1131,29 +1126,22 @@ class Goal(models.Model):
                 continue
 
             total_size += size
+        if total_size == 0:
+            if self.au_size != 1:
+                self.au_size = 1
+                self.save()
+        elif total_size < 1:
+            if (self.au_size + total_size) != 1:
+                self.au_size = 1 - total_size
+                self.save()
+        elif total_size > 1:
+            for m in markets:
+                setattr(self, m + "_size", 0)
+            self.au_size = 1
+            self.save()
+            total_size = 0
 
         return total_size
-
-    def check_multi_market_allocation(self):
-        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
-        total_size = 0
-        total_bonds = 0
-        total_stocks = 0
-
-        for m in markets:
-            allocation = getattr(self, m + "_allocation")
-            size = getattr(self, m + "_size")
-            if (allocation is None) or (size is None):
-                continue
-
-            total_size += size
-
-            total_bonds += size*(1-allocation)
-
-            total_stocks += size*allocation
-
-        if total_size > 1:
-            raise Http404("Bad goal allocation")
 
     def __str__(self):
         return self.name + " : " + self.account.primary_owner.full_name
@@ -1178,10 +1166,6 @@ class Goal(models.Model):
             return "null"
 
         return self.account.primary_owner.get_financial_plan
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        self.check_multi_market_allocation()
-        super(Goal, self).save(force_insert, force_update, using, update_fields)
 
     @property
     def get_drift(self):

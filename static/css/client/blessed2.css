@@ -21,7 +21,7 @@
     border-bottom: 1px solid #A3C745
 }
 .input-select:after {
-    content: "a";
+    content: "”";
     font-family: ModernPictogramsPro!important;
     font-size: 230%;
     text-transform: none;
@@ -5733,7 +5733,7 @@ div.ghost-form .pane.benefits-pane h4 {
 }
 #jointAccountSignup .signup-step .terms-of-service .tos .agreement {
     margin: 0 35px 0 32px;
-    height: 40px
+    height: 80px
 }
 #jointAccountSignup .signup-step label {
     color: #686868;
@@ -6646,8 +6646,8 @@ html.responsive body .panel.logged-out {
     vertical-align: -3px
 }
 .rollover-preview .instructions .download-request:hover {
-    border-color: #5093d7;
-    color: #5093d7
+    border-color: #45a018;
+    color: #45a018
 }
 .tos {
     color: #686868
@@ -8474,7 +8474,7 @@ html.responsive body .panel.logged-out {
     width: 100%;
     height: 30%;
     margin-top: 70%;
-    background: #1d5a96
+    background: #C75252
 }
 .retirement-plan-setup .content .bubbles .bubble .bubble-container .sub-container .sub-content {
     text-align: center;
@@ -8499,7 +8499,7 @@ html.responsive body .panel.logged-out {
     z-index: 999
 }
 .retirement-plan-setup .content .bubbles .bubble.spending .background {
-    background: #45a018
+    background: #A3C745
 }
 .retirement-plan-setup .content .questions {
     width: 65%;
@@ -8834,10 +8834,10 @@ html.responsive body .panel.logged-out {
     font-size: 13px
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .add-external-account:hover .button-icon {
-    background: #5093d7
+    background: #45a018
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .add-external-account:hover .button-label {
-    color: #5093d7
+    color: #45a018
 }
 .retirement-plan-setup .content .accounts-step .accounts .external-accounts .list-header-row .annual-contribution {
     padding: 3px 0
