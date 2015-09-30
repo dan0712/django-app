@@ -411,7 +411,8 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                      return;
                  }
                  var e = new bsm({multiAllocationController: this});
-                 BMT.modal.show(e);
+                 //BMT.modal.show(e);
+                this.save();
             },
              save: function() {
                 _.each(this.$regions_dict, function(value, key){
