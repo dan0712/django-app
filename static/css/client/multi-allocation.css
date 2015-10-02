@@ -111,3 +111,28 @@
 .ma-show{
    visibility: visible;
 }
+
+.multi-allocation-table{
+    width: 585px;
+
+}
+
+.multi-allocation-table tr{
+    border-bottom: 1px solid #ddd;
+    height: 50px;
+}
+
+.multi-allocation-table th{
+    font-weight:bold;
+}
+
+.multi-allocation-table tr td:first-child{
+  width:280px;
+  color:#45A018;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.multi-allocation-table tr td:nth-child(2){
+  width:60px;
+}

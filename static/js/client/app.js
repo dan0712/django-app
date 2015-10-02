@@ -15689,7 +15689,7 @@ var requirejs, require, define;
             RETIREE_INCOME_MINIMUM_TERM: 10,
             RETIREE_MINIMUM_TERM: 1,
             RETIREMENT_AGE: 50,
-            DEFAULT_LIFE_EXPECTANCY: 90,
+            DEFAULT_LIFE_EXPECTANCY: 77,
             DEFAULT_RETIREMENT_AGE: 65,
             ASSUMED_FEE_RATE: .15,
             MINIMUM_SOCIAL_SECURITY_COLLECTION_AGE: 62,
@@ -16747,7 +16747,7 @@ var requirejs, require, define;
                 z60Pct: -0.2533471,
                 z50Pct: 0,
                 z40Pct: .2533471,
-                inflation: 3,
+                inflation: 2.5,
                 points: 50,
                 periodsPerYear: 12,
                 millisecondsPerYear: 315576e5
@@ -16757,13 +16757,13 @@ var requirejs, require, define;
             var r = n(7);
             e.exports = {
                 inflation: r.inflation,
-                state: "CO",
+                state: "SA",
                 coli: 100,
                 percentSocialSecurity: .75,
                 deathAge: 90,
                 salaryGrowth: 1,
                 year: (new Date).getFullYear(),
-                retirementAge: 68,
+                retirementAge: 65,
                 beginSocialSecurityCollectionAge: 62,
                 maxDeferredSocialSecurityCollectionAge: 70,
                 retirementAnnualReturn: 4.6105,
@@ -24190,7 +24190,9 @@ var requirejs, require, define;
             function l(e, t) {
                 var r = "",
                     i, s;
-                return r += ' on <span class="expected-deposit-date">', (s = n.expectedDepositDate) ? i = s.call(e, {
+                return r += ' on <span class="' +
+                    '' +
+                    '-deposit-date">', (s = n.expectedDepositDate) ? i = s.call(e, {
                     hash: {}
                 }) : (s = e && e.expectedDepositDate, i = typeof s === u ? s.call(e, {
                     hash: {}
@@ -43668,7 +43670,7 @@ var requirejs, require, define;
                         term_deposit_account: "employerPlan",
                         brokerage_account: "employerPlan",
                         my_super: "employerPlan",
-                        super_found: "employerPlan",
+                        super_fund: "employerPlan",
                         smsf: "employerPlan",
                         traditional_ira: "traditionalIra",
                         roth_ira: "rothIra",
@@ -52948,7 +52950,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/retirementPlanning/plan", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header-region"></div>\n<div class="summary"></div>\n<nav>\n    <div class="nav-wrapper">\n        <ul class="main-nav">\n            <li class="projection depressed"><a>Projection</a></li>\n            <li class="how-to-save"><a>What to do</a></li>\n            <li class="actions"><a>Actions</a></li>\n        </ul>\n        <div class="edit-assumptions-container">\n            <button class="silver edit-assumptions">Edit Assumptions</button>\n        </div>\n    </div>\n</nav>\n<div class="edit-assumptions-region"></div>\n<div class="content clearfix"></div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header-region"></div>\n<div class="summary"></div>\n<nav>\n    <div class="nav-wrapper">\n        <ul class="main-nav">\n            <li class="projection depressed"><a>Projection</a></li>\n            <li class="how-to-save"><a>What to do</a></li>\n            <li class="actions"><a>Make it happen</a></li>\n        </ul>\n        <div class="edit-assumptions-container">\n            <button class="silver edit-assumptions">Edit Assumptions</button>\n        </div>\n    </div>\n</nav>\n<div class="edit-assumptions-region"></div>\n<div class="content clearfix"></div>\n'
         });
         return t.registerPartial("views/retirementPlanning/plan", n), n
     }), define("hbs!views/retirementPlanning/planSummary", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {

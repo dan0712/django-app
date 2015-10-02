@@ -31,8 +31,8 @@ __all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo", 'ClientVisit
 
 
 def calculate_portfolios_for_goal(goal, portfolio_set):
-    regions = ["au",  "usa", "uk", "europe", "japan", "asia", "china", "em"]
-    regions_b = ["AU", "US", "UK", "EU", "JAPAN", "AS", "CN", "EM"]
+    regions = ["au", "dm",  "usa", "uk", "europe", "japan", "asia", "china", "em"]
+    regions_b = ["AU", "INT", "US", "UK", "EU", "JAPAN", "AS", "CN", "EM"]
     api = DbApi()
     # get all the assets
     all_assets = portfolio_set.asset_classes.all()
@@ -54,11 +54,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         idx += 1
 
     def is_super_class(_ticker, _key):
-        if _key == "AU":
-            return 1 if super_asset_class[_ticker] in \
-                        ["EQUITY_AU", "FIXED_INCOME_AU", "EQUITY_INT", "FIXED_INCOME_INT"] else 0
-        else:
-            return 1 if super_asset_class[_ticker] in ["EQUITY_" + _key, "FIXED_INCOME_" + _key] else 0
+        return 1 if super_asset_class[_ticker] in ["EQUITY_" + _key, "FIXED_INCOME_" + _key] else 0
 
     table = DataFrame(series)
     columns = list(table)
@@ -77,6 +73,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         key_a = regions[region_idx]
 
         custom_size = getattr(goal, key_a + "_size", 0)
+        print(custom_size, key, key_a)
 
         for ticker_idx in range(0, len(columns)):
             super_class_matrix[region_idx][ticker_idx] = is_super_class(columns[ticker_idx], key)
@@ -122,6 +119,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     # write restrictions
     json_portfolios = {}
     for allocation in list(np.arange(0, 1.01, 0.01)):
+        print(allocation)
         ns = au_size
         new_constrains = constrains[:]
         if allocation >= japan_size and (japan_constrain is not None):
@@ -129,8 +127,10 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         else:
             ns += japan_size
         if ns > 0:
+            print(ns, super_class_matrix)
             new_constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[0], ns)})
 
+        print(new_constrains)
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
                                               new_assets_type,  views, qs, tau, new_constrains)
@@ -197,7 +197,7 @@ class PortfolioPortfolios(ClientView, TemplateView):
             except ObjectDoesNotExist:
                 goal = None
 
-            if goal and (goal.custom_size > 0):
+            if goal and goal.is_custom_size:
                 _continue = True
                 if goal.portfolios in [None, "{}", "[]", ""]:
                     try:
@@ -208,7 +208,8 @@ class PortfolioPortfolios(ClientView, TemplateView):
                         for m in markets:
                             setattr(goal, m + "_size", 0)
                             setattr(goal, m + "_allocation", 0)
-                        goal.au_size = 1
+                        goal.au_size = 0.5
+                        goal.dm_size = 0.5
                         goal.save()
                     _continue = False
 
@@ -553,7 +554,7 @@ class ChangeGoalView(ClientView):
         goal.completion_date = datetime.strptime(payload["goalCompletionDate"], '%Y%m%d%H%M%S')
         goal.type = payload["goalType"]
         goal.account_type = payload["accountType"]
-        markets = ["au",  "usa", "uk", "europe", "japan", "asia", "china", "em"]
+        markets = ["au",  "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
 
         has_changed = False
 
@@ -566,7 +567,7 @@ class ChangeGoalView(ClientView):
             setattr(goal, m + "_currency_hedge", payload.get(m + "_currency_hedge", 0))
 
         if has_changed:
-            if goal.custom_size > 0:
+            if goal.is_custom_size:
                 try:
                     goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, goal.portfolio_set))
                 except OptimizationException:

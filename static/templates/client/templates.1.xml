@@ -176,10 +176,13 @@ You can adjust this risk level by updating your time horizon or target allocatio
                     Hedge Currency Exposure
                 </div>
 
-                <div class="ma-text right">
-                    <input class="tiny-toggle" id="currency-hedge" type=
-                    "checkbox">
+                <div class="ma-text left" style="margin-left: 30px;">
+                    <input class="tiny-toggle" id="currency-hedge" type= "checkbox">
+
                 </div>
+                 <div class="currency-help help-icon">
+                        By selecting to hedge currency exposure you are short-selling that currency to create a neutral position. This may incur more cost but potentially reduce risk from exposure to an investment in a different currency.
+                  </div>
             </div>
         </div>
     </div>
@@ -260,14 +263,12 @@ You can make this allocation change starting tomorrow.
 <div class="attribute">
 <div class="name">Allocation</div>
 <div class="value"><%= pct(allocationChange().get('allocation')) %> stocks</div>
-<% if (!isIRA()) { %>
-<button class="small light-blue secondary show-tax-impact" data-track-event="ElementClicked" data-track-location="SetAllModal" data-track-name="TaxImpact">Tax Impact</button>
-<% } %>
+
 </div>
 <div class="detail">
-<p><a href="<%= brochure_url('/transactions/#day-trading') %>" target="_blank">Federal Regulations</a>
-permit <span style="font-weight:900">only one</span> allocation change per day. When you change your Allocation, you are giving BetaSmartz instructions to
-<a href="<%= brochure_url('/transactions/') %>" target="_blank">trade on your behalf</a>.</p>
+<p><a href="<%= brochure_url('/transactions/#day-trading') %>" target="_blank">BetaSmartz</a>
+permits <span style="font-weight:900">only one</span> allocation change per day. When you change your Allocation, you are giving BetaSmartz instructions to
+<a href="http://www.betasmartz.com/transactions/" target="_blank">trade on your behalf</a>.</p>
 <p>Allocation changes fully rebalance your account.  Any sales will be optimized to reduce taxes, but
 this may result in short-term gains taxes that were otherwise avoided during prior rebalances.</p>
 </div>
@@ -507,8 +508,8 @@ $ <input type="text" name="amount" money-input />
 ]]></template>
 <template name="advice/confirmMultiAllocationChanges"><![CDATA[
 <h1>Confirm Changes</h1>
-<table>
-<thead></thead>
+<table class="multi-allocation-table">
+<thead><tr><th>Market</th><th>Size</th><th>Hedge Currency Exposure</th></tr></thead>
 <tbody>
 </tbody>
 </table>

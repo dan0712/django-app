@@ -1079,9 +1079,14 @@ class Goal(models.Model):
     portfolios = models.TextField(null=True)
 
     # markets
-    au_size = models.FloatField(default=1)
+    au_size = models.FloatField(default=0.5)
     au_allocation = models.FloatField(default=0)
     au_currency_hedge = models.BooleanField(default=False)
+
+    # markets
+    dm_size = models.FloatField(default=0.5)
+    dm_allocation = models.FloatField(default=0)
+    dm_currency_hedge = models.BooleanField(default=False)
 
     usa_size = models.FloatField(default=0)
     usa_allocation = models.FloatField(default=0)
@@ -1115,6 +1120,11 @@ class Goal(models.Model):
         ordering = ['name']
 
     @property
+    def is_custom_size(self):
+        cs = self.custom_size
+        return not(self.au_size == 0.5 and self.dm_size == 0.5)
+
+    @property
     def custom_size(self):
         markets = ["usa", "uk", "europe", "japan", "asia", "china", "em"]
         total_size = 0
@@ -1127,17 +1137,19 @@ class Goal(models.Model):
 
             total_size += size
         if total_size == 0:
-            if self.au_size != 1:
-                self.au_size = 1
+            if (self.au_size + self.dm_size) != 1:
+                self.au_size = 0.5
+                self.dm_size = 0.5
                 self.save()
         elif total_size < 1:
-            if (self.au_size + total_size) != 1:
-                self.au_size = 1 - total_size
+            if (self.dm_size + self.au_size + total_size) != 1:
+                self.au_size = 1 - total_size - self.dm_size
                 self.save()
-        elif total_size > 1:
+        elif (total_size + self.au_size + self.dm_size) > 1:
             for m in markets:
                 setattr(self, m + "_size", 0)
-            self.au_size = 1
+            self.au_size = 0.5
+            self.dm_size = 0.5
             self.save()
             total_size = 0
 

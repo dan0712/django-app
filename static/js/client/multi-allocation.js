@@ -5,7 +5,7 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                 term_deposit_account: "Term Deposit Account",
                 brokerage_account: "Brokerage Account",
                 my_super: "MySuper",
-                super_found: "Super Found",
+                super_fund: "Super Fund",
                 smsf: "SMSF"
             },
             r = {
@@ -58,11 +58,45 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
     return n.ModalView.extend({
             template: "advice/confirmMultiAllocationChanges",
             className: "multi-allocation-modal",
-            onInitialize: function(){},
+            events: {
+                "click .ok": "saveChanges",
+                "click .cancel": "closeModal"
+            },
+            onInitialize: function(){
+                this.changes =  this.options.multiAllocationController.getChanges();
+            },
             onRender: function() {
-                var changes =  this.options.multiAllocationController.getChanges();
+                var i, row, market, m_size, currency_hedge;
+
+                for(i in this.changes){
+                    market = this.options.multiAllocationController.$regions_dict[this.changes[i].key];
+                    m_size = parseInt(this.changes[i].size);
+                    if(m_size==null || m_size==undefined){
+                        m_size = "---"
+                    }
+                    else{
+                          m_size = m_size  + "% ";
+                    }
+                    if(this.changes[i].currency_hedge_value==null || this.changes[i].currency_hedge_value==undefined){
+                        currency_hedge = "---"
+                    }
+                    else {
+                        currency_hedge = this.changes[i].currency_hedge_value ? "Yes" : "No";
+                    }
+                    row = '<tr><td>' + market + '</td><td>' + m_size + '</td><td>'  + currency_hedge + '</td></tr>';
+                    this.$('tbody').append(row);
+                }
 
             },
+            saveChanges: function(){
+                this.closeModal();
+                this.options.multiAllocationController.save();
+
+            },
+            closeModal: function(){
+                this.options.modal.close(this);
+            },
+
             onShow: function() {}
         }
     );
@@ -95,6 +129,7 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
             loadPortfolioSetForAccount: function(e) {
                 var regions_dict = {
                      au: "Australia",
+                     dm: "Developed Markets",
                      usa: "United States",
                      uk: "United Kingdom",
                      europe: "Europe",
@@ -125,6 +160,7 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
             getPortfolioSetForAccount: function(e) {
                  var regions_dict = {
                      au: "Australia",
+                     dm: "Developed Markets",
                      usa: "United States",
                      uk: "United Kingdom",
                      europe: "Europe",
@@ -161,6 +197,14 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
          events: {
                 "click .open-lg": "openCard",
                 "click .close-lg": "closeCard"
+            },
+         toolTips: {
+                ".currency-help": {
+                    position: {
+                        my: "bottom center",
+                        at: "top center"
+                    }
+                }
             },
          onInitialize: function(){
              this.size_slider_model = this.options.model_key + "_size";
@@ -203,10 +247,19 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                 return e
             },
          hasChanged: function(){
-             var changed =  (Math.abs(this.size_slider_value - 100*this.model.num(this.size_slider_model)) > 1)
-                 || (this.currency_hedge_value != this.model.get(this.currency_hedge_model));
-             return changed
+             var changeObject = {has_changed: false, changes: {key:this.options.model_key}};
 
+             if(Math.abs(this.size_slider_value - 100*this.model.num(this.size_slider_model)) > 1){
+                 changeObject.has_changed = true;
+                 changeObject.changes.size = this.size_slider_value;
+             }
+
+             if(this.currency_hedge_value != this.model.get(this.currency_hedge_model)) {
+                 changeObject.has_changed = true;
+                 changeObject.changes.currency_hedge_value = this.currency_hedge_value;
+             }
+
+             return changeObject
         },
          drawSize: function(){
               this.$(".size-pct").text(parseInt(this.size_slider_value) + "%");
@@ -265,6 +318,7 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
             onInitialize: function() {
                 this.$regions_dict = {
                                au: "Australia",
+                               dm: "Developed Markets",
                                usa: "United States",
                                uk: "United Kingdom",
                                europe: "Europe",
@@ -291,7 +345,8 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                 var buttons = this.$(".ma-save-buttons");
 
                  _.each(this.$regions_dict, function(value, key){
-                    this.changed = this.changed || this[key + "View"].hasChanged();
+                    var changeObject = this[key + "View"].hasChanged();
+                    this.changed = this.changed || changeObject.has_changed;
                 }.bind(this));
 
                 if(this.changed){
@@ -312,6 +367,14 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                 }.bind(this));
                 this.hasChanged();
 
+            },
+            getChanges: function(){
+                var changes = [];
+                _.each(this.$regions_dict, function(value, key){
+                    var changeObject = this[key + "View"].hasChanged();
+                    if(changeObject.has_changed) changes.push(changeObject.changes);
+                }.bind(this));
+                return changes;
             },
             fixSize: function(){
                 var market = [];
@@ -337,7 +400,7 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                 var default_key = "au";
                 var left_allocation = 0;
                 var allocation_from_custom;
-                if(allocated_key=="au")default_key="usa";
+                if(allocated_key=="au")default_key="dm";
 
                 if(allocated<0){
                     this[default_key + "View"].size_slider_value = this[default_key + "View"].size_slider_value - allocated;
@@ -405,14 +468,13 @@ define("models/v2/externalAccount", ["underscore", "components/common/scripts/mo
                  if (custom_size!=100){
                      BMT.alert({
                         title: "Error",
-                        body: "The total size should be 100 for the custom allocation, please fix them before save",
+                        body: "Your portfolio allocation currently exceeds 100%, please adjust the allocation amounts to set your revised allocation.",
                         icon: "error"
                     });
                      return;
                  }
-                 var e = new bsm({multiAllocationController: this});
-                 //BMT.modal.show(e);
-                this.save();
+                var e = new bsm({multiAllocationController: this, modal: BMT.modal});
+                BMT.modal.show(e);
             },
              save: function() {
                 _.each(this.$regions_dict, function(value, key){
