@@ -39,3 +39,8 @@ class View(models.Model):
     q = models.FloatField()
     assets = models.TextField()
     portfolio_set = models.ForeignKey(PortfolioSet, related_name="views")
+
+
+class MarketCap(models.Model):
+    ticker = models.OneToOneField(Ticker, related_name='market_cap')
+    value = models.FloatField(default=0)

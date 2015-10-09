@@ -21,7 +21,7 @@ def calculate_portfolios(portfolio_set):
     asset_name = []
     asset_super_class_dict = {}
     dm_asset_super_class_dict = {}
-
+    market_cap = dict()
     ticker_parent_dict = {}
     for asset in portfolio_set.asset_classes.all():
         ticker = asset.tickers.filter(ordering=0).first()
@@ -31,6 +31,7 @@ def calculate_portfolios(portfolio_set):
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
+        market_cap[ticker.symbol] = api.market_cap(ticker)
 
     # join all the series in a table, drop missing values
     table = DataFrame(series)
@@ -84,10 +85,20 @@ def calculate_portfolios(portfolio_set):
 
     # delete all the risk profiles related to this portfolio set
     portfolio_set.risk_profiles.all().delete()
+    tm = 0
+    # calculate total market cap
+    for k, v in market_cap.items():
+        tm += v
+  
+    mw = []
+    # create market w
+    for ticker_idx in range(0, len(columns)):
+        mw.append(market_cap[columns[ticker_idx]] / tm)
+
     for allocation in list(np.arange(0, 1.01, 0.01)):
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, constrains)
+                                              new_assets_type,  views, qs, tau, constrains, mw)
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))

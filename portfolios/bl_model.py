@@ -30,8 +30,8 @@ def fitness(W, R, C, r):
     mean_1, var = compute_mean_var(W, R, C)
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
     # Here, r is the 'target' return
-    penalty = 0.1*abs(mean_1-r)
-    return var - 0.8*mean_1 + penalty
+    penalty = abs(mean_1-r)
+    return (var**(0.5)-0.07*mean_1+penalty)
 
 
 # Solve for optimal portfolio weights
@@ -74,7 +74,7 @@ def assets_mean_var(monthly_returns):
     return expected_returns, co_vars
 
 
-def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, constrains):
+def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, constrains, mw=None):
     """
     all prices: table with the monthly closed price for each asset
     risk_free: risk free rate
@@ -84,7 +84,10 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     """
     n = all_prices.shape[1]
     # get initial weightings
-    W = np.ones(n)/n
+    if mw is None:
+        W = np.ones(n)/n
+    else:
+        W = mw
     # Drop missing values and transpose matrix
     monthly_returns = all_prices.pct_change().dropna().values.T
     expected_returns, co_vars = assets_mean_var(monthly_returns)

@@ -41,7 +41,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     asset_name = []
     super_asset_class = dict()
     super_class_matrix = np.zeros((len(regions), len(all_assets)))
-
+    market_cap = dict()
     ticker_parent_dict = {}
     idx = 0
     for asset in all_assets:
@@ -51,6 +51,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
+        market_cap[ticker.symbol] = api.market_cap(ticker)
         idx += 1
 
     def is_super_class(_ticker, _key):
@@ -64,6 +65,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     au_size = 0
 
     def create_constrain(super_class_array, _custom_size):
+        print(super_class_array, _custom_size)
         def evaluate(x):
             return sum(x*super_class_array) - _custom_size
         return evaluate
@@ -73,7 +75,6 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         key_a = regions[region_idx]
 
         custom_size = getattr(goal, key_a + "_size", 0)
-        print(custom_size, key, key_a)
 
         for ticker_idx in range(0, len(columns)):
             super_class_matrix[region_idx][ticker_idx] = is_super_class(columns[ticker_idx], key)
@@ -118,6 +119,17 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     columns = list(table)
     # write restrictions
     json_portfolios = {}
+    mw = []
+    tm = 0
+    # calculate total market cap
+    for k, v in market_cap.items():
+        tm += v 
+    
+    # create market w
+    for ticker_idx in range(0, len(columns)):
+        mw.append(market_cap[columns[ticker_idx]] / tm)
+
+
     for allocation in list(np.arange(0, 1.01, 0.01)):
         print(allocation)
         ns = au_size
@@ -127,13 +139,11 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         else:
             ns += japan_size
         if ns > 0:
-            print(ns, super_class_matrix)
             new_constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[0], ns)})
-
-        print(new_constrains)
+        
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, new_constrains)
+                                              new_assets_type,  views, qs, tau, new_constrains, mw)
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))
@@ -282,7 +292,7 @@ class ClientAccountPositions(ClientView, TemplateView):
         goal = get_object_or_404(Goal, pk=pk)
         # get ideal portfolio
         portfolio_set = Platform.objects.first().portfolio_set
-        if goal.custom_size > 0:
+        if goal.is_custom_size:
             positions = json.loads(goal.portfolios)
             allocations = positions["{:.2f}".format(goal.allocation)]["allocations"]
 
@@ -570,7 +580,8 @@ class ChangeGoalView(ClientView):
             if goal.is_custom_size:
                 try:
                     goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, goal.portfolio_set))
-                except OptimizationException:
+                except OptimizationException as e:
+                    print(e)
                     return HttpResponse('null', content_type="application/json", status=500)
             else:
                 goal.portfolios = None

@@ -7,3 +7,4 @@ django-localflavor-au-tjh==1.1.2
 numpy==1.9.2
 scipy==0.16.0
 pandas==0.16.2
+beautifulsoup4==4.3.2

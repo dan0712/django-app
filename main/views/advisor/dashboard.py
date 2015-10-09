@@ -113,7 +113,7 @@ class AdvisorClients(TemplateView, AdvisorView):
         super(AdvisorClients, self).__init__(*args, **kwargs)
         self.filter = "0"
         self.search = ""
-        self.sort_col = "full_name"
+        self.sort_col = "current_balance"
         self.sort_dir = "desc"
 
     def get(self, request, *args, **kwargs):

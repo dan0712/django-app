@@ -34,7 +34,17 @@ def c_datetime(value):
 def bs_big_number(value):
     if isinstance(value, str):
         return value
-    return "{:,}".format(float("{0:.2f}".format(value)))
+    new_v = "{:,}".format(float("{0:.2f}".format(value)))
+    if new_v == "0.0":
+        return "0.00"
+    return new_v
+
+
+@register.filter
+def phone_format(value):
+    if value[:2] == "04":
+        return value[:4] + "-" + value[4:7] + "-" + value[7:10]
+    return value[:2] + "-" + value[2:6] + "-" + value[6:10]
 
 
 @register.filter

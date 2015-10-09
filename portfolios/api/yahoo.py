@@ -7,6 +7,8 @@ import json
 from main.models import DataApiDict, MonthlyPrices
 from urllib.parse import quote
 import calendar
+from bs4 import BeautifulSoup
+from portfolios.models import MarketCap
 
 
 class YahooApi:
@@ -74,7 +76,7 @@ class YahooApi:
                 mp.save()
         return Series(price_data, index=self.dates, name=db_symbol)
 
-    def to_aud(self, currency: str)->float:
+    def to_aud(self, currency):
         if currency in self.currency_cache:
             return self.currency_cache[currency]
         ret = 1
@@ -111,8 +113,25 @@ class YahooApi:
             bid = quote_json[0]['l']
             bid = float(bid)
         return bid*self.to_aud(currency)
-
-
+ 
+    def market_cap(self, ticker):
+        ticker_symbol = self.symbol_dict.get(ticker.symbol, ticker.symbol)
+        url = "http://finance.yahoo.com/q?s={0}".format(ticker_symbol)
+        with urllib.request.urlopen(url) as response:
+            soup = BeautifulSoup(response)
+            net_asset = soup.select('#table1 > tr:nth-of-type(6) > td')[0].getText()
+            if "B" in net_asset:
+                cap = float(net_asset.replace("B", ""))*1000
+            elif "M" in net_asset:
+                cap = float(net_asset.replace("M", ""))
+            else:
+                cap = 0
+        value = cap*self.to_aud(ticker.currency)
+        mp, is_new = MarketCap.objects.get_or_create(ticker=ticker)
+        mp.value = value
+        mp.save()
+        return value
+   
 class DbApi:
 
     dates = None
@@ -123,7 +142,7 @@ class DbApi:
         self.today_month = today.month - 1
         self.today_day = today.day
 
-    def get_all_prices(self, ticker_symbol: str):
+    def get_all_prices(self, ticker_symbol):
         self.dates = pd.date_range('2010-01', '{0}-{1}'
                                    .format(self.today_year, self.today_month+1), freq='M')
 
@@ -133,3 +152,9 @@ class DbApi:
         for i in prices:
             price_data[pd.to_datetime(i.date.strftime("%Y-%m-%d"))] = i.price
         return Series(price_data, index=self.dates, name=ticker_symbol)
+
+    def market_cap(self, ticker):
+        mp = MarketCap.objects.get(ticker=ticker) 
+        return mp.value
+   
+
