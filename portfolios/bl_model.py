@@ -39,14 +39,14 @@ def fitness(W, R, C, r, assets_type, allocation, constrains):
         c += v
         jac += mmult*new_jac
 
-    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - mean_1  +  sqrt(var)
+    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - 10*mean_1  +  sqrt(var)
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
     jac += var_jac
     # jac 100% weight
     jac += mmult*2*(sum(W) -1)
     # jac allocation
     jac += mmult*2*(dot(assets_type, W)-allocation)*assets_type
-    jac -= R
+    jac -= 10*R
     # jacobian sharpe ratio 
     return func, jac 
 
@@ -142,7 +142,6 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     # the uncertainty of our views. Rather than specify the 'confidence'
     # in one's view explicitly, we extrapolate an implied uncertainty
     # from market parameters.
-
     # Compute equilibrium excess returns taking into account views on assets
     sub_a = inv(dot(tau, C))
     sub_b = dot(dot(transpose(P), inv(omega)), P)
