@@ -39,7 +39,7 @@ def fitness(W, R, C, r, assets_type, allocation, constrains):
         c += v
         jac += mmult*new_jac
 
-    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - abs(r-mean_1)*0.1  +  sqrt(var)
+    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - mean_1  +  sqrt(var)
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
     jac += var_jac
     # jac 100% weight
@@ -107,6 +107,10 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     # Drop missing values and transpose matrix
     monthly_returns = all_prices.pct_change().dropna().values.T
     expected_returns, co_vars = assets_mean_var(monthly_returns)
+    index = 0
+    for i in list(all_prices):
+        expected_returns[index] = (1+mean(all_prices[i].pct_change()))**12 -1 
+        index += 1
     # R is the vector of expected returns
     R = expected_returns
     # C is the covariance matrix
@@ -124,9 +128,9 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, W)
 
     # calculate tangency portfolio
-    mean, var = compute_mean_var(W, R, C)
+    _mean, var = compute_mean_var(W, R, C)
     # Compute implied equity risk premium
-    lmb = (mean - risk_free) / var
+    lmb = (_mean - risk_free) / var
     # Compute equilibrium excess returns
     Pi = dot(dot(lmb, C), W)
 
