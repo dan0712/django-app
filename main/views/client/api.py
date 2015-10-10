@@ -565,6 +565,7 @@ class ChangeGoalView(ClientView):
         goal.completion_date = datetime.strptime(payload["goalCompletionDate"], '%Y%m%d%H%M%S')
         goal.type = payload["goalType"]
         goal.account_type = payload["accountType"]
+        goal.save()
         markets = ["au",  "dm", "usa", "uk", "europe", "japan", "asia", "china", "em"]
 
         has_changed = False
