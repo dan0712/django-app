@@ -39,7 +39,7 @@ def fitness(W, R, C, r, assets_type, allocation, constrains):
         c += v
         jac += mmult*new_jac
 
-    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) + sqrt(var) + abs(mean_1-r)*10
+    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - mean_1 + sqrt(var)
 
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
     jac += var_jac
@@ -47,6 +47,7 @@ def fitness(W, R, C, r, assets_type, allocation, constrains):
     jac += mmult*2*(sum(W) -1)
     # jac allocation
     jac += mmult*2*(dot(assets_type, W)-allocation)*assets_type
+    jac -= R
     # jacobian sharpe ratio 
     return func, jac 
 
