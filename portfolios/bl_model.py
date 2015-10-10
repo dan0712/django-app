@@ -25,7 +25,7 @@ def var_gradient(W, C):
 def compute_mean_var(W, R, C):
     return compute_mean(W, R), compute_var(W, C)
 
-def fitness(W, R, C, r, assets_type, allocation, constrains):
+def fitness(W, R, C, r, assets_type, allocation, constrains, iW):
     mmult = 1000
     # For given level of return r, find weights which minimizes portfolio variance.
     mean_1, var = compute_mean_var(W, R, C)
@@ -38,15 +38,17 @@ def fitness(W, R, C, r, assets_type, allocation, constrains):
         v, new_jac = ct(W)
         c += v
         jac += mmult*new_jac
-
-    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - 10*mean_1  +  sqrt(var)
+    
+    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - mean_1/sqrt(var) + 10*sum((iW-W)**2)
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
-    jac += var_jac
+    #jac += 0.1*var_jac
     # jac 100% weight
     jac += mmult*2*(sum(W) -1)
     # jac allocation
     jac += mmult*2*(dot(assets_type, W)-allocation)*assets_type
-    jac -= 10*R
+    #jac -= 10*R
+    jac -= (sqrt(var)*R - mean_1*var_jac) / var
+    jac += 10*2*(iW-W) 
     # jacobian sharpe ratio 
     return func, jac 
 
@@ -61,9 +63,9 @@ def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW):
     # sum of weights of stock should be equal to allocation
     # 'target' return is the expected return on the market portfolio
     optimized = scipy.optimize.minimize(fitness, W,
-                                        (R, C, sum(R*W), assets_type, allocation, constrains),
+                                        (R, C, sum(R*W), assets_type, allocation, constrains, iW),
                                         jac=True, 
-                                        method='SLSQP', bounds=b_,  options={"maxiter": 1000})
+                                        method='SLSQP', bounds=b_, tol=0.001,  options={"maxiter": 1000})
     if not optimized.success:
         raise OptimizationException(optimized.message)
 
@@ -90,7 +92,7 @@ def assets_mean_var(monthly_returns):
     return expected_returns, co_vars
 
 
-def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, constrains, mw=None):
+def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, constrains, mw, initial_w):
     """
     all prices: table with the monthly closed price for each asset
     risk_free: risk free rate
@@ -125,7 +127,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     Pi = dot(dot(lmb, C), W)
 
     # Solve for weights before incorporating views
-    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, W)
+    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, initial_w)
 
     # calculate tangency portfolio
     _mean, var = compute_mean_var(W, R, C)
@@ -149,6 +151,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     sub_d = dot(dot(transpose(P), inv(omega)), Q)
     Pi_new = dot(inv(sub_a + sub_b), (sub_c + sub_d))
     new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, constrains, W)
-    _mean, var = compute_mean_var(new_weights, R, C)
+    new_weights = np.around(new_weights, decimals=2)
+    _mean, var = compute_mean_var(new_weights, expected_returns, C)
 
     return new_weights, _mean, var

@@ -14,7 +14,7 @@ def get_api(api_name):
 
 
 def calculate_portfolios(portfolio_set):
-    api = get_api(Platform.objects.first().api)
+    api = DbApi()#get_api(Platform.objects.first().api)
     # get all the assets
     series = {}
     asset_type = {}
@@ -96,11 +96,12 @@ def calculate_portfolios(portfolio_set):
     # create market w
     for ticker_idx in range(0, len(columns)):
         mw.append(market_cap[columns[ticker_idx]] / tm)
-
+    
+    initial_w = mw
     for allocation in list(np.arange(0, 1.01, 0.01)):
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, constrains, mw)
+                                              new_assets_type,  views, qs, tau, constrains, mw, initial_w)
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))
@@ -108,7 +109,8 @@ def calculate_portfolios(portfolio_set):
 
         for idx in range(0, len(columns)):
             allocations[ticker_parent_dict[columns[idx]]] = float("{0:.4f}".format(new_weights[idx]))
-
+      
+        initial_w = new_weights
         allocations = json.dumps(allocations)
         pf = PortfolioByRisk(portfolio_set=portfolio_set, risk=allocation, expected_return=_mean,
                              volatility=var, allocations=allocations)

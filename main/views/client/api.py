@@ -129,8 +129,8 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     # create market w
     for ticker_idx in range(0, len(columns)):
         mw.append(market_cap[columns[ticker_idx]] / tm)
-
-
+   
+    initial_w = mw
     for allocation in list(np.arange(0, 1.01, 0.01)):
         
         ns = au_size
@@ -144,8 +144,9 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, new_constrains, mw)
-
+                                              new_assets_type,  views, qs, tau, new_constrains, mw, initial_w)
+       
+        initial_w = new_weights 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))
         allocations = {}
