@@ -14,7 +14,7 @@ def get_api(api_name):
 
 
 def calculate_portfolios(portfolio_set):
-    api = DbApi() #get_api(Platform.objects.first().api)
+    api = get_api(Platform.objects.first().api)
     # get all the assets
     series = {}
     asset_type = {}
