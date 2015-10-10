@@ -1,6 +1,6 @@
 __author__ = 'cristian'
 
-from numpy import  array, ones, dot, append, mean, cov, transpose
+from numpy import  array, ones, dot, append, mean, cov, transpose, sqrt, isnan
 from numpy.linalg import inv
 import numpy as np
 import scipy.optimize
@@ -14,43 +14,59 @@ class OptimizationException(BaseException):
 def compute_mean(W, R):
     return sum(R*W)
 
-
 # Compute the variance of the portfolio.
 def compute_var(W,C):
     return dot(dot(W, C), W)
 
+def var_gradient(W, C):
+    return dot(W, C) + dot(W, np.diag(np.diag(C))) 
 
 # Combination of the two functions above - mean and variance of returns calculation.
 def compute_mean_var(W, R, C):
     return compute_mean(W, R), compute_var(W, C)
 
-
-def fitness(W, R, C, r):
+def fitness(W, R, C, r, assets_type, allocation, constrains):
+    mmult = 1000
     # For given level of return r, find weights which minimizes portfolio variance.
     mean_1, var = compute_mean_var(W, R, C)
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
     # Here, r is the 'target' return
-    penalty = abs(mean_1-r)
-    return (var**(0.5)-0.07*mean_1+penalty)
+     
+    c = 0
+    jac = np.zeros(len(W))
+    for ct in constrains:
+        v, new_jac = ct(W)
+        c += v
+        jac += mmult*new_jac
 
+    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) + sqrt(var) + abs(mean_1-r)*10
+
+    var_jac = var_gradient(W, C)*1/2/sqrt(var)
+    jac += var_jac
+    # jac 100% weight
+    jac += mmult*2*(sum(W) -1)
+    # jac allocation
+    jac += mmult*2*(dot(assets_type, W)-allocation)*assets_type
+    # jacobian sharpe ratio 
+    return func, jac 
 
 # Solve for optimal portfolio weights
-def solve_weights(R, C, risk_free, allocation, assets_type, constrains):
+def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW):
+    assets_type = np.array(assets_type)
     n = len(R)
-    W = ones([n])/n # Start optimization with equal weights
+    W = iW
 
     b_ = [(0, 1) for i in range(n)] # Bounds for decision variables
     # Constraints - weights must sum to 1
     # sum of weights of stock should be equal to allocation
-    c_ = ({'type': 'eq', 'fun': lambda x: sum(x)-1.},
-          {'type': 'eq', 'fun': lambda x: dot(assets_type, x)-allocation})
-
-    c_ = tuple(list(c_) + constrains)
     # 'target' return is the expected return on the market portfolio
-    optimized = scipy.optimize.minimize(fitness, W, (R, C, sum(R*W)),
-                                        method='SLSQP', constraints=c_, bounds=b_,  options={"maxiter": 1000})
+    optimized = scipy.optimize.minimize(fitness, W,
+                                        (R, C, sum(R*W), assets_type, allocation, constrains),
+                                        jac=True, 
+                                        method='SLSQP', bounds=b_,  options={"maxiter": 1000})
     if not optimized.success:
         raise OptimizationException(optimized.message)
+
     return optimized.x
 
 
@@ -105,7 +121,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     Pi = dot(dot(lmb, C), W)
 
     # Solve for weights before incorporating views
-    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains)
+    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, W)
 
     # calculate tangency portfolio
     mean, var = compute_mean_var(W, R, C)
@@ -129,7 +145,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     sub_c = dot(inv(dot(tau, C)), Pi)
     sub_d = dot(dot(transpose(P), inv(omega)), Q)
     Pi_new = dot(inv(sub_a + sub_b), (sub_c + sub_d))
-    new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, constrains)
-    _mean, var = compute_mean_var(W, R, C)
+    new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, constrains, W)
+    _mean, var = compute_mean_var(new_weights, R, C)
 
     return new_weights, _mean, var

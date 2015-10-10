@@ -14,7 +14,7 @@ def get_api(api_name):
 
 
 def calculate_portfolios(portfolio_set):
-    api = get_api(Platform.objects.first().api)
+    api = DbApi() #get_api(Platform.objects.first().api)
     # get all the assets
     series = {}
     asset_type = {}
@@ -68,20 +68,22 @@ def calculate_portfolios(portfolio_set):
 
     def create_constrain(_super_class_array, _custom_size):
         def evaluate(x):
-            return sum(x*_super_class_array) - _custom_size
+            jac = 2*(sum(x*_super_class_array) - _custom_size)*np.array(_super_class_array)
+            func = (sum(x*_super_class_array) - _custom_size)**2  
+            return func, jac
         return evaluate
 
     au_size = 0.5
     super_class_array = np.zeros((len(columns)))
     for ticker_idx in range(0, len(columns)):
         super_class_array[ticker_idx] = asset_super_class_dict[columns[ticker_idx]]
-    constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_array, au_size)})
-
+    constrains.append(create_constrain(super_class_array, au_size))
+    
     dm_size = 0.5
     super_class_array = np.zeros((len(columns)))
     for ticker_idx in range(0, len(columns)):
         super_class_array[ticker_idx] = dm_asset_super_class_dict[columns[ticker_idx]]
-    constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_array, dm_size)})
+    constrains.append(create_constrain(super_class_array, dm_size))
 
     # delete all the risk profiles related to this portfolio set
     portfolio_set.risk_profiles.all().delete()

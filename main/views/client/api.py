@@ -65,9 +65,10 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     au_size = 0
 
     def create_constrain(super_class_array, _custom_size):
-        print(super_class_array, _custom_size)
         def evaluate(x):
-            return sum(x*super_class_array) - _custom_size
+            func  = (sum(x*super_class_array) - _custom_size)**2
+            jac = 2*(sum(x*super_class_array) - _custom_size)*np.array(super_class_array) 
+            return func, jac
         return evaluate
 
     for region_idx in range(len(regions)):
@@ -81,12 +82,12 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
 
         if custom_size != 0:
             if key_a == "japan":
-                japan_constrain = {'type': 'ineq', 'fun': create_constrain(super_class_matrix[region_idx], custom_size)}
+                japan_constrain = create_constrain(super_class_matrix[region_idx], custom_size)
                 japan_size = custom_size
             elif key_a == "au":
                 au_size = custom_size
             else:
-                constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[region_idx], custom_size)})
+                constrains.append(create_constrain(super_class_matrix[region_idx], custom_size))
 
     # join all the series in a table, drop missing values
     new_assets_type = []
@@ -131,7 +132,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
 
 
     for allocation in list(np.arange(0, 1.01, 0.01)):
-        print(allocation)
+        
         ns = au_size
         new_constrains = constrains[:]
         if allocation >= japan_size and (japan_constrain is not None):
@@ -139,7 +140,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         else:
             ns += japan_size
         if ns > 0:
-            new_constrains.append({'type': 'ineq', 'fun': create_constrain(super_class_matrix[0], ns)})
+            new_constrains.append(create_constrain(super_class_matrix[0], ns))
         
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,

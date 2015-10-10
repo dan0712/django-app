@@ -142,7 +142,7 @@ class DbApi:
         self.today_month = today.month - 1
         self.today_day = today.day
 
-    def get_all_prices(self, ticker_symbol):
+    def get_all_prices(self, ticker_symbol, period="m"):
         self.dates = pd.date_range('2010-01', '{0}-{1}'
                                    .format(self.today_year, self.today_month+1), freq='M')
 
