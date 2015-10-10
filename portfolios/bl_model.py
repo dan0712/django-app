@@ -39,15 +39,15 @@ def fitness(W, R, C, r, assets_type, allocation, constrains, iW):
         c += v
         jac += mmult*new_jac
     
-    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) - mean_1/sqrt(var) + 10*sum((iW-W)**2)
+    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) + 1/np.exp(mean_1) + sqrt(var) + 10*sum((iW-W)**2)
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
-    #jac += 0.1*var_jac
+    jac += 0.1*var_jac
     # jac 100% weight
     jac += mmult*2*(sum(W) -1)
     # jac allocation
     jac += mmult*2*(dot(assets_type, W)-allocation)*assets_type
-    #jac -= 10*R
-    jac -= (sqrt(var)*R - mean_1*var_jac) / var
+    jac += -R*1/np.exp(mean_1)
+    #jac -= (sqrt(var)*R - mean_1*var_jac) / var * np.exp(mean_1/sqrt(var))
     jac += 10*2*(iW-W) 
     # jacobian sharpe ratio 
     return func, jac 
@@ -57,7 +57,8 @@ def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW):
     assets_type = np.array(assets_type)
     n = len(R)
     W = iW
-
+    tol = 0.00001
+    
     b_ = [(0, 1) for i in range(n)] # Bounds for decision variables
     # Constraints - weights must sum to 1
     # sum of weights of stock should be equal to allocation
@@ -65,7 +66,7 @@ def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW):
     optimized = scipy.optimize.minimize(fitness, W,
                                         (R, C, sum(R*W), assets_type, allocation, constrains, iW),
                                         jac=True, 
-                                        method='SLSQP', bounds=b_, tol=0.001,  options={"maxiter": 1000})
+                                        method='SLSQP', bounds=b_, tol=tol,  options={"maxiter": 1000})
     if not optimized.success:
         raise OptimizationException(optimized.message)
 
