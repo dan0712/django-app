@@ -56,3 +56,10 @@ def json_none(value):
     if value is None:
         return "null"
     return value
+
+
+@register.filter
+def add_class_id(field, css_id):
+    css, _id = css_id.split(", ")
+    return field.as_widget(attrs={"class": css, "id": _id})
+

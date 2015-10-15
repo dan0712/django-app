@@ -1,11 +1,12 @@
 __author__ = 'cristian'
-from ..utils.login import create_login
 from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
 from django import forms
-from django.views.generic import CreateView, View, TemplateView, ListView, UpdateView, DetailView
-from django.utils import safestring
+from django.views.generic import CreateView
+from django.views.generic import DetailView
+from django.views.generic import TemplateView
+from django.views.generic import UpdateView
+from django.views.generic import View
 from django.contrib import messages
-import uuid
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.db.models import Q
@@ -19,37 +20,22 @@ from django.utils.safestring import mark_safe
 from django.template import RequestContext
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import (
-    REDIRECT_FIELD_NAME, load_backend, BACKEND_SESSION_KEY,  login as auth_login
-)
+    load_backend, BACKEND_SESSION_KEY, login as auth_login)
 
-__all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients', 'AdvisorAgreements', 'AdvisorSupport',
-           'AdvisorClientDetails', 'AdvisorCompositeNew', 'AdvisorAccountGroupDetails',
-           'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView', 'AdvisorAccountGroupClients',
-           'AdvisorAccountGroupSecondaryDetailView', 'AdvisorAccountGroupSecondaryNewView',
-           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary', 'ImpersonateView', 'Logout',
-           'AdvisorClientAccountChangeFee', "AdvisorSupportGettingStarted"]
+from datetime import datetime
 
-
-class AdvisorClientInvitesForm(forms.ModelForm):
-
-    class Meta:
-        model = EmailInvitation
-        fields = ('email', )
-
-    def clean(self):
-        cleaned_data = super(AdvisorClientInvitesForm, self).clean()
-        self._validate_unique = False
-        return cleaned_data
-
-    def save(self, *args, **kw):
-        try:
-            invitation = EmailInvitation.objects.get(client_email=self.cleaned_data.get('client_email'),
-                                                  advisor=self.cleaned_data.get('advisor'))
-        except ObjectDoesNotExist:
-            invitation = super(AdvisorClientInvitesForm, self).save(*args, **kw)
-
-        invitation.send()
-        return invitation
+__all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
+           'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
+           'AdvisorCompositeNew', 'AdvisorAccountGroupDetails',
+           'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView',
+           'AdvisorAccountGroupClients',
+           'AdvisorAccountGroupSecondaryDetailView',
+           'AdvisorAccountGroupSecondaryNewView',
+           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary',
+           'ImpersonateView', 'Logout', 'AdvisorClientAccountChangeFee',
+           "AdvisorSupportGettingStarted", "AdvisorClientInviteNewView",
+           'CreateNewClientPrepopulatedView', "BuildPersonalDetails",
+           "BuildFinancialDetails", "BuildConfirm"]
 
 
 class AdvisorClientInvites(CreateView, AdvisorView):
@@ -60,21 +46,32 @@ class AdvisorClientInvites(CreateView, AdvisorView):
         messages.info(self.request, "Invite sent successfully!")
         return self.request.get_full_path()
 
+    def get(self, request, *args, **kwargs):
+        invite_type = request.GET.get('invite_type', None)
+        if invite_type is not None and invite_type in ("prepopulated",
+                                                       "blank"):
+            self.template_name = 'advisor/client-invite-account-type.html'
+        response = super(CreateView, self).get(request, *args, **kwargs)
+        response.context_data["invite_type_new_client"] = invite_type
+        return response
+
     def dispatch(self, request, *args, **kwargs):
-        response = super(AdvisorClientInvites, self).dispatch(request, *args, **kwargs)
+        response = super(AdvisorClientInvites, self).dispatch(request, *args,
+                                                              **kwargs)
         if hasattr(response, 'context_data'):
             advisor = request.user.advisor
             response.context_data["firm"] = advisor.firm
             response.context_data["inviter"] = advisor
             invitation_type = INVITATION_CLIENT
             response.context_data["invitation_type"] = invitation_type
-            response.context_data["invite_url"] = advisor.get_invite_url(invitation_type)
-            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(invitation_type)].title()
+            response.context_data["invite_url"] = advisor.get_invite_url(invitation_type, None)
+            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(
+                invitation_type)].title()
             response.context_data["next"] = request.GET.get("next", None)
-            response.context_data["invites"] = EmailInvitation.objects.filter(invitation_type=invitation_type,
-                                                                              inviter_id=advisor.pk,
-                                                                              inviter_type=advisor.content_type,
-                                                                              )
+            response.context_data["invites"] = EmailInvitation.objects.filter(
+                invitation_type=invitation_type,
+                inviter_id=advisor.pk,
+                inviter_type=advisor.content_type, )
         return response
 
 
@@ -89,7 +86,8 @@ class AdvisorClientDetails(TemplateView, AdvisorView):
     def get(self, request, *args, **kwargs):
         client_id = kwargs["pk"]
         client = Client.objects.filter(pk=client_id)
-        client = client.filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).all()
+        client = client.filter(Q(advisor=self.advisor) | Q(
+            secondary_advisors__in=[self.advisor])).all()
 
         if not client:
             raise Http404("Client not found")
@@ -102,6 +100,12 @@ class AdvisorClientDetails(TemplateView, AdvisorView):
         ctx = super(AdvisorClientDetails, self).get_context_data(**kwargs)
         ctx.update({"client": self.client})
         return ctx
+
+
+class AdvisorClientInviteNewView(TemplateView, AdvisorView):
+    """Docstring for AdvisorClientInviteNewView. """
+
+    template_name = 'advisor/client_invites_new.html'
 
 
 class AdvisorClients(TemplateView, AdvisorView):
@@ -132,33 +136,41 @@ class AdvisorClients(TemplateView, AdvisorView):
         if self.filter == "1":
             pre_clients = pre_clients.filter(advisor=self.advisor)
         elif self.filter == "2":
-            pre_clients = pre_clients.filter(secondary_advisors__in=[self.advisor])
+            pre_clients = pre_clients.filter(
+                secondary_advisors__in=[self.advisor])
         else:
-            pre_clients = pre_clients.filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor]))
+            pre_clients = pre_clients.filter(Q(advisor=self.advisor) | Q(
+                secondary_advisors__in=[self.advisor]))
 
         if self.search:
-            sq = Q(user__first_name__icontains=self.search) | Q(user__last_name__icontains=self.search)
+            sq = Q(user__first_name__icontains=self.search) | Q(
+                user__last_name__icontains=self.search)
             pre_clients = pre_clients.filter(sq)
 
         clients = []
 
         for client in set(pre_clients.distinct().all()):
             relationship = "Primary" if client.advisor == self.advisor else "Secondary"
-            clients.append([client.pk, client.full_name, client.total_balance, client.email, relationship])
+            clients.append([client.pk, client.full_name, client.total_balance,
+                            client.email, relationship])
 
         reverse = self.sort_dir != "asc"
 
-        clients = sorted(clients, key=itemgetter(self.col_dict[self.sort_col]), reverse=reverse)
+        clients = sorted(clients,
+                         key=itemgetter(self.col_dict[self.sort_col]),
+                         reverse=reverse)
         return clients
 
     def get_context_data(self, **kwargs):
         ctx = super(AdvisorClients, self).get_context_data(**kwargs)
-        ctx.update({"filter": self.filter,
-                    "search": self.search,
-                    "sort_col": self.sort_col,
-                    "sort_dir": self.sort_dir,
-                    "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
-                    "clients": self.clients})
+        ctx.update({
+            "filter": self.filter,
+            "search": self.search,
+            "sort_col": self.sort_col,
+            "sort_dir": self.sort_dir,
+            "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
+            "clients": self.clients
+        })
         return ctx
 
 
@@ -171,7 +183,6 @@ class AdvisorSupport(TemplateView, AdvisorView):
 
 
 class AdvisorCompositeForm:
-
     def get_context_data(self, **kwargs):
         ctx = super(AdvisorCompositeForm, self).get_context_data(**kwargs)
         client_id = self.request.GET.get('client_id', None)
@@ -184,7 +195,9 @@ class AdvisorCompositeForm:
                 return ctx
 
             try:
-                ctx["selected_client"] = Client.objects.get(advisor=self.advisor, pk=ctx["client_id"])
+                ctx["selected_client"] = Client.objects.get(
+                    advisor=self.advisor,
+                    pk=ctx["client_id"])
             except ObjectDoesNotExist:
                 pass
 
@@ -211,7 +224,8 @@ class AdvisorCompositeForm:
             return '/composites/new'
 
     def get_queryset(self):
-        return super(AdvisorCompositeForm, self).get_queryset().filter(advisor=self.advisor)
+        return super(AdvisorCompositeForm, self).get_queryset().filter(
+            advisor=self.advisor)
 
 
 class AdvisorCompositeNew(AdvisorCompositeForm, CreateView, AdvisorView):
@@ -222,15 +236,20 @@ class AdvisorCompositeNew(AdvisorCompositeForm, CreateView, AdvisorView):
 
     def post(self, request, *args, **kwargs):
         account_list = request.POST.getlist('accounts')
-        account_list = ClientAccount.objects.filter(pk__in=account_list, primary_owner__advisor=self.advisor)
+        account_list = ClientAccount.objects.filter(
+            pk__in=account_list,
+            primary_owner__advisor=self.advisor)
         if account_list.count() == 0:
-            messages.error(request, 'Failed to create household. Make sure you add at least one account')
+            messages.error(
+                request,
+                'Failed to create household. Make sure you add at least one account')
             return HttpResponseRedirect('/composites/new')
         self.account_list = account_list
         return super(AdvisorCompositeNew, self).post(request, *args, **kwargs)
 
     def get_success_url(self):
-        messages.info(self.request, mark_safe('<span class="mpicon accept"></span>Successfully created household'))
+        messages.info(self.request, mark_safe(
+            '<span class="mpicon accept"></span>Successfully created household'))
         return super(AdvisorCompositeNew, self).get_success_url()
 
 
@@ -242,31 +261,35 @@ class AdvisorCompositeEdit(AdvisorCompositeForm, UpdateView, AdvisorView):
 
     def post(self, request, *args, **kwargs):
         account_list = request.POST.getlist('accounts')
-        account_list = ClientAccount.objects.filter(pk__in=account_list, primary_owner__advisor=self.advisor)
+        account_list = ClientAccount.objects.filter(
+            pk__in=account_list,
+            primary_owner__advisor=self.advisor)
         self.account_list = account_list
         return super(AdvisorCompositeEdit, self).post(request, *args, **kwargs)
 
 
 class AdvisorRemoveAccountFromGroupView(AdvisorView):
-
     def post(self, request, *args, **kwargs):
 
         account_id = kwargs["account_id"]
         account_group_id = kwargs["account_group_id"]
 
         try:
-            account = ClientAccount.objects.get(pk=account_id,
-                                                account_group__pk=account_group_id,
-                                                primary_owner__advisor=self.advisor)
+            account = ClientAccount.objects.get(
+                pk=account_id,
+                account_group__pk=account_group_id,
+                primary_owner__advisor=self.advisor)
         except ObjectDoesNotExist:
             raise Http404()
 
         group_name = account.remove_from_group()
 
         if group_name:
-            return HttpResponseRedirect('/composites/new?name={0}'.format(group_name))
+            return HttpResponseRedirect('/composites/new?name={0}'.format(
+                group_name))
         else:
-            return HttpResponseRedirect('/composites/{0}/edit'.format(account_group_id))
+            return HttpResponseRedirect('/composites/{0}/edit'.format(
+                account_group_id))
 
 
 class AdvisorAccountGroupDetails(DetailView, AdvisorView):
@@ -278,7 +301,8 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
             .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupDetails, self).get_context_data(**kwargs)
+        ctx = super(AdvisorAccountGroupDetails, self).get_context_data(**
+                                                                       kwargs)
         ctx["object"] = self.object
         return ctx
 
@@ -292,10 +316,12 @@ class AdvisorAccountGroupClients(DetailView, AdvisorView):
             .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupClients, self).get_context_data(**kwargs)
+        ctx = super(AdvisorAccountGroupClients, self).get_context_data(**
+                                                                       kwargs)
         ctx["object"] = self.object
 
-        ctx["household_clients"] = set(map(lambda x: x.primary_owner, self.object.accounts.all()))
+        ctx["household_clients"] = set(map(lambda x: x.primary_owner,
+                                           self.object.accounts.all()))
 
         return ctx
 
@@ -306,7 +332,8 @@ class AdvisorAccountGroupSecondaryDetailView(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupSecondaryDetailView, self).get_queryset().filter(advisor=self.advisor)
+        return super(AdvisorAccountGroupSecondaryDetailView,
+                     self).get_queryset().filter(advisor=self.advisor)
 
 
 class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
@@ -316,20 +343,25 @@ class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
     secondary_advisor = None
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupSecondaryNewView, self).get_queryset().filter(advisor=self.advisor)
+        return super(AdvisorAccountGroupSecondaryNewView,
+                     self).get_queryset().filter(advisor=self.advisor)
 
     def get_success_url(self):
         msg = '<span class="mpicon accept"></span>'
         msg += 'Successfully added {0} as a secondary advisor to {1}'
-        msg = msg.format(self.secondary_advisor.user.get_full_name().title(), self.object.name)
+        msg = msg.format(self.secondary_advisor.user.get_full_name().title(),
+                         self.object.name)
         messages.info(self.request, mark_safe(msg))
-        return '/composites/{0}/composite_secondary_advisors/new'.format(self.object.pk)
+        return '/composites/{0}/composite_secondary_advisors/new'.format(
+            self.object.pk)
 
     def get_form(self, form_class=None):
-        form = super(AdvisorAccountGroupSecondaryNewView, self).get_form(form_class)
+        form = super(AdvisorAccountGroupSecondaryNewView,
+                     self).get_form(form_class)
 
         def save_m2m():
-            secondary_advisors = self.request.POST.get("secondary_advisors", None)
+            secondary_advisors = self.request.POST.get("secondary_advisors",
+                                                       None)
             if secondary_advisors:
 
                 try:
@@ -345,7 +377,8 @@ class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
         def save(*args, **kwargs):
             save_m2m()
             # rebuild secondary advisor for all the clients of this account
-            clients = set(map(lambda x: x.primary_owner, self.object.accounts.all()))
+            clients = set(map(lambda x: x.primary_owner,
+                              self.object.accounts.all()))
             for client in clients:
                 client.rebuild_secondary_advisors()
 
@@ -357,23 +390,26 @@ class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
         return form
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupSecondaryNewView, self).get_context_data(**kwargs)
+        ctx = super(AdvisorAccountGroupSecondaryNewView,
+                    self).get_context_data(**kwargs)
         ctx["new"] = True
-        ctx["s_advisors"] = self.advisor.firm.advisors.exclude(pk=self.advisor.pk)
+        ctx["s_advisors"] = self.advisor.firm.advisors.exclude(
+            pk=self.advisor.pk)
         ctx["s_advisors"] = ctx["s_advisors"].exclude(
-            pk__in=list(map(lambda x: x.pk, self.object.secondary_advisors.all())))
+            pk__in=list(map(lambda x: x.pk, self.object.secondary_advisors.all(
+            ))))
 
         return ctx
 
 
 class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
-
     def post(self, request, *args, **kwargs):
         account_group_pk = kwargs["pk"]
         s_advisor_pk = kwargs["sa_pk"]
 
         try:
-            account_group = AccountGroup.objects.get(pk=account_group_pk, advisor=self.advisor)
+            account_group = AccountGroup.objects.get(pk=account_group_pk,
+                                                     advisor=self.advisor)
         except ObjectDoesNotExist:
             raise Http404()
 
@@ -385,20 +421,30 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
         account_group.secondary_advisors.remove(advisor)
 
         # rebuild secondary advisor for all the clients of this account
-        clients = set(map(lambda x: x.primary_owner, account_group.accounts.all()))
+        clients = set(map(lambda x: x.primary_owner,
+                          account_group.accounts.all()))
         for client in clients:
             client.rebuild_secondary_advisors()
 
-        messages.info(request, mark_safe('<span class="mpicon accept"></span>Successfully removed secondary '
-                                         'advisor from {0}'.format(account_group.name)))
+        messages.info(request, mark_safe(
+            '<span class="mpicon accept"></span>Successfully removed secondary '
+            'advisor from {0}'.format(account_group.name)))
 
-        return HttpResponseRedirect('/composites/{0}/composite_secondary_advisors/new'.format(account_group_pk))
+        return HttpResponseRedirect(
+            '/composites/{0}/composite_secondary_advisors/new'.format(
+                account_group_pk))
 
 
 class AdvisorCompositeSummary(TemplateView, AdvisorView):
     model = AccountGroup
     template_name = 'advisor/composite-summary.html'
-    col_dict = {"name": 2, "goal_status": 5, 'current_balance': 6, 'return_percentage': 7, 'allocation': 9}
+    col_dict = {
+        "name": 2,
+        "goal_status": 5,
+        'current_balance': 6,
+        'return_percentage': 7,
+        'allocation': 9
+    }
 
     def __init__(self, *args, **kwargs):
         super(AdvisorCompositeSummary, self).__init__(*args, **kwargs)
@@ -413,7 +459,8 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         self.search = request.GET.get("search", self.search)
         self.sort_col = request.GET.get("sort_col", self.sort_col)
         self.sort_dir = request.GET.get("sort_dir", self.sort_dir)
-        response = super(AdvisorCompositeSummary, self).get(request, *args, **kwargs)
+        response = super(AdvisorCompositeSummary, self).get(request, *args, **
+                                                            kwargs)
         return response
 
     @property
@@ -424,9 +471,11 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         if self.filter == "1":
             pre_groups = pre_groups.filter(advisor=self.advisor)
         elif self.filter == "2":
-            pre_groups = pre_groups.filter(secondary_advisors__in=[self.advisor])
+            pre_groups = pre_groups.filter(
+                secondary_advisors__in=[self.advisor])
         else:
-            pre_groups = pre_groups.filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor]))
+            pre_groups = pre_groups.filter(Q(advisor=self.advisor) | Q(
+                secondary_advisors__in=[self.advisor]))
 
         if self.search:
             sq = Q(name__icontains=self.search)
@@ -436,23 +485,29 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         for group in set(pre_groups.distinct().all()):
             relationship = "Primary" if group.advisor == self.advisor else "Secondary"
             first_account = group.accounts.first()
-            groups.append([group.pk, group, group.name, first_account.account_type_name, relationship,
-                          group.on_track, group.total_balance, group.total_returns, group.since, group.allocation,
-                          group.stocks_percentage, group.bonds_percentage])
+            groups.append(
+                [group.pk, group, group.name, first_account.account_type_name,
+                 relationship, group.on_track, group.total_balance,
+                 group.total_returns, group.since, group.allocation,
+                 group.stocks_percentage, group.bonds_percentage])
 
         reverse = self.sort_dir != "asc"
 
-        groups = sorted(groups, key=itemgetter(self.col_dict[self.sort_col]), reverse=reverse)
+        groups = sorted(groups,
+                        key=itemgetter(self.col_dict[self.sort_col]),
+                        reverse=reverse)
         return groups
 
     def get_context_data(self, **kwargs):
         ctx = super(AdvisorCompositeSummary, self).get_context_data(**kwargs)
-        ctx.update({"filter": self.filter,
-                    "search": self.search,
-                    "sort_col": self.sort_col,
-                    "sort_dir": self.sort_dir,
-                    "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
-                    "groups": self.groups})
+        ctx.update({
+            "filter": self.filter,
+            "search": self.search,
+            "sort_col": self.sort_col,
+            "sort_dir": self.sort_dir,
+            "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
+            "groups": self.groups
+        })
         return ctx
 
 
@@ -466,13 +521,13 @@ class ImpersonateBase(View):
 
 
 class ImpersonateView(ImpersonateBase):
-
     def get(self, request, *args, **kwargs):
         self.request = request
 
         imposter = request.user
 
-        if not (hasattr(imposter, 'advisor') or hasattr(imposter, 'supervisor')):
+        if not (hasattr(imposter, 'advisor') or hasattr(imposter,
+                                                        'supervisor')):
             raise PermissionDenied
 
         user_id = kwargs["pk"]
@@ -481,27 +536,33 @@ class ImpersonateView(ImpersonateBase):
         if hasattr(imposter, 'advisor'):
 
             try:
-                condition = (Q(client__advisor=imposter.advisor) | Q(client__secondary_advisors__in=[imposter.advisor]))
-                user = User.objects.filter(condition).distinct().get(pk=user_id)
+                condition = (Q(client__advisor=imposter.advisor) | Q(
+                    client__secondary_advisors__in=[imposter.advisor]))
+                user = User.objects.filter(condition).distinct().get(
+                    pk=user_id)
             except ObjectDoesNotExist:
                 raise PermissionDenied
 
-            add_history = (imposter.pk, 'advisor', request.GET.get('next', '/advisor/summary'))
+            add_history = (imposter.pk, 'advisor', request.GET.get(
+                'next', '/advisor/summary'))
 
         elif hasattr(imposter, 'supervisor'):
             try:
                 condition = Q(advisor__firm=imposter.firm)
-                user = User.objects.filter(condition).distinct().get(pk=user_id)
+                user = User.objects.filter(condition).distinct().get(
+                    pk=user_id)
             except ObjectDoesNotExist:
                 raise PermissionDenied
 
-            add_history = (imposter.pk, 'supervisor', request.GET.get('next', '/supervisor/summary'))
+            add_history = (imposter.pk, 'supervisor', request.GET.get(
+                'next', '/supervisor/summary'))
 
         if not user:
             raise PermissionDenied
 
         backend = self.get_used_backend()
-        user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+        user.backend = "%s.%s" % (backend.__module__,
+                                  backend.__class__.__name__)
         auth_login(request, user)
 
         impersonate_history = request.session.get('impersonate_history', [])
@@ -518,9 +579,9 @@ class ImpersonateView(ImpersonateBase):
 
 
 class Logout(ImpersonateBase):
-
     def get_imposter(self):
-        impersonate_history = self.request.session.get('impersonate_history', [])
+        impersonate_history = self.request.session.get('impersonate_history',
+                                                       [])
 
         if impersonate_history:
             record = impersonate_history.pop()
@@ -544,7 +605,8 @@ class Logout(ImpersonateBase):
         imposter, redirect_url = self.get_imposter()
         if imposter:
             backend = self.get_used_backend()
-            imposter.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+            imposter.backend = "%s.%s" % (backend.__module__,
+                                          backend.__class__.__name__)
             auth_login(request, imposter)
             return HttpResponseRedirect(redirect_url)
 
@@ -558,12 +620,15 @@ class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
     content_type = 'text/javascript'
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorClientAccountChangeFee, self).get_context_data(**kwargs)
+        ctx = super(AdvisorClientAccountChangeFee, self).get_context_data(
+            **kwargs)
         ctx["object"] = self.object
         ctx["platform"] = Platform.objects.first()
         ctx["firm"] = self.advisor.firm
-        html_output = render_to_string("advisor/change_fee_form.html", RequestContext(self.request, ctx))
-        html_output = mark_safe(html_output.replace("\n", "\\n").replace('"', '\\"').replace("'", "\\'"))
+        html_output = render_to_string("advisor/change_fee_form.html",
+                                       RequestContext(self.request, ctx))
+        html_output = mark_safe(html_output.replace("\n", "\\n").replace(
+            '"', '\\"').replace("'", "\\'"))
         ctx["html_output"] = html_output
         return ctx
 
@@ -582,6 +647,7 @@ class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
                 instance.save()
 
             return instance
+
         form.save = save
         return form
 
@@ -591,3 +657,274 @@ class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
 
 class AdvisorSupportGettingStarted(AdvisorView, TemplateView):
     template_name = 'advisor/support-getting-started.html'
+
+
+USER_DETAILS = ('first_name',  'middle_name', 'last_name', 'email')
+
+
+class PrepopulatedUserForm(forms.ModelForm):
+
+        advisor = None
+        account_class = ""
+
+        def define_advisor(self, advisor):
+            self.advisor = advisor
+
+        def add_account_class(self, account_class):
+            self.account_class = account_class
+
+        class Meta:
+            model = User
+            fields = USER_DETAILS
+        
+        def save(self, *args, **kwargs):
+            self.instance = User(password="KONfLOP212=?hlokifksi21f6s1", prepopulated=True, **self.cleaned_data)
+            self.instance.save()
+            # create client instance
+            new_client = Client(advisor=self.advisor, user=self.instance,
+                                client_agreement=self.advisor.firm.client_agreement_url)
+            new_client.save()
+            personal_account = new_client.accounts.all()[0]
+            personal_account.account_class = self.account_class
+            personal_account.save()
+            return self.instance
+
+
+class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
+    template_name = 'advisor/create_new_client.html'
+    form_class = PrepopulatedUserForm
+    success_url = '/advisor/client_invites/{0}/build/personal_details'
+    account_type = None
+    invite_type = None
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            user = User.objects.get(email=request.POST.get("email", None))
+            if not user.prepopulated:
+                messages.error(request, "User already exists")
+                response = super(CreateNewClientPrepopulatedView, self).get(request, *args, **kwargs)
+                response.context_data["form"] = self.form_class(data=request.POST)
+                return response
+            else:
+                return HttpResponseRedirect(self.success_url.format(user.client.pk))
+
+        except ObjectDoesNotExist:
+            pass
+
+        form = self.form_class(data=request.POST)
+
+        if form.is_valid():
+            form.define_advisor(self.advisor)
+            form.add_account_class(self.account_type)
+            user = form.save()
+            if self.invite_type == "blank":
+                return HttpResponseRedirect("/advisor/client_invites/{0}/build/confirm?invitation_type=blank".format(user.client.pk))
+            else:
+                return HttpResponseRedirect(self.success_url.format(user.client.pk))
+
+        else:
+            response = super(CreateNewClientPrepopulatedView, self).get(request, *args, **kwargs)
+            response.context_data["form"] = form
+            return response
+
+    def dispatch(self, request, *args, **kwargs):
+        self.account_type = request.GET.get("account_type", request.POST.get("account_type", None))
+        self.invite_type = request.GET.get("invite_type", request.POST.get("invite_type", None))
+
+        if self.account_type not in ["joint_account", "trust_account"]:
+            messages.error(request, "Please select an account type")
+            return HttpResponseRedirect('/advisor/client_invites?invite_type={0}'.format(self.invite_type))
+
+        return super(CreateNewClientPrepopulatedView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return super(CreateNewClientPrepopulatedView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context_data = super(CreateNewClientPrepopulatedView, self).get_context_data(**kwargs)
+        context_data["account_type"] = self.account_type
+        context_data["invite_type_new_email"] = self.invite_type
+        return context_data
+
+
+PERSONAL_DETAILS = ('address_line_1', 'address_line_2', 'city', 'state', 'post_code', 'phone_number',
+                    'date_of_birth', "month", "day", "year", "gender")
+
+
+class BuildPersonalDetailsForm(forms.ModelForm):
+        month = forms.CharField(required=False, max_length=150)
+        day = forms.CharField(required=False, max_length=150)
+        year = forms.CharField(required=False, max_length=150)
+
+        class Meta:
+            model = Client
+            fields = PERSONAL_DETAILS
+
+        def __init__(self, *args, **kwargs):
+            # first call parent's constructor
+            super(BuildPersonalDetailsForm, self).__init__(*args, **kwargs)
+            # there's a `fields` property now
+            for k, field in self.fields.items():
+                field.required = False
+            if self.instance and  self.instance.date_of_birth:
+                self.fields["month"].initial = self.instance.date_of_birth.month
+                self.fields["year"].initial = self.instance.date_of_birth.year
+                self.fields["day"].initial = self.instance.date_of_birth.day
+
+        def clean(self):
+            cleaned_data = super(BuildPersonalDetailsForm, self).clean()
+            year = cleaned_data.get("year", "")
+            month = cleaned_data.get("month", "")
+            day = cleaned_data.get("day", "")
+
+            if "" not in (day, month, year):
+
+                try:
+                    date_b = "{year}-{month}-{day}".format(year=year,
+                                                           month=month,
+                                                           day=day)
+
+                    date_b = datetime.strptime(date_b, "%Y-%m-%d")
+                    cleaned_data["date_of_birth"] = date_b
+                except ValueError:
+                    date_b = None
+                    self._errors['date_of_birth'] = mark_safe(u'<ul class="errorlist"><li>Invalid Date</li></ul>')
+
+                if date_b:
+                    cleaned_data["date_of_birth"] = date_b
+                    date_diff = datetime.now().year - date_b.year
+                    if date_diff < 18:
+                        self._errors['date_of_birth'] = \
+                            mark_safe(u'<ul class="errorlist"><li>Client under 18 </li></ul>')
+
+            return cleaned_data
+
+
+class BuildPersonalDetails(AdvisorView, UpdateView):
+    template_name = 'advisor/build_personal_details.html'
+    model = Client
+    form_class = BuildPersonalDetailsForm
+    success_url = '/advisor/client_invites/{0}/build/financial_details'
+
+    def get_queryset(self):
+        q = super(BuildPersonalDetails, self).get_queryset()
+        q.filter(advisor=self.advisor, user__prepopulated=True)
+        return q
+
+    def get_success_url(self):
+        return self.success_url.format(self.object.pk)
+
+    def get_context_data(self, **kwargs):
+        context_data = super(BuildPersonalDetails, self).get_context_data(**kwargs)
+        context_data["years"] = list(range(1895, datetime.now().year))
+        context_data["days"] = list(range(1, 31))
+        context_data["years"].reverse()
+        return context_data
+
+
+FINANCIAL_DETAILS = ('employment_status', 'occupation', 'employer', 'income', 'net_worth',
+                     'associated_to_broker_dealer', 'ten_percent_insider', 'public_position_insider',
+                     'us_citizen')
+
+
+class BuildFinancialDetailsForm(forms.ModelForm):
+
+        class Meta:
+            model = Client
+            fields = FINANCIAL_DETAILS
+
+        def __init__(self, *args, **kwargs):
+            # first call parent's constructor
+            super(BuildFinancialDetailsForm, self).__init__(*args, **kwargs)
+            # there's a `fields` property now
+            for k, field in self.fields.items():
+                field.required = False
+
+
+class BuildFinancialDetails(AdvisorView, UpdateView):
+    template_name = 'advisor/build_financial_details.html'
+    model = Client
+    form_class = BuildFinancialDetailsForm
+    success_url = '/advisor/client_invites/{0}/build/confirm'
+
+    def get_queryset(self):
+        q = super(BuildFinancialDetails, self).get_queryset()
+        q.filter(advisor=self.advisor, user__prepopulated=True)
+        return q
+
+    def get_success_url(self):
+        return self.success_url.format(self.object.pk)
+
+
+class BuildConfirm(AdvisorView, TemplateView):
+    template_name = 'advisor/build_confirm.html'
+    object = None
+    invitation_type = None
+
+    def dispatch(self, request, *args, **kwargs):
+        pk = kwargs["pk"]
+        self.invitation_type = self.request.GET.get("invitation_type", self.request.POST.get('invitation_type', None))
+
+        try:
+            self.object = Client.objects.get(pk=pk, advisor=request.user.advisor)
+        except ObjectDoesNotExist:
+            raise Http404()
+
+        return super(BuildConfirm, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context_data = super(BuildConfirm, self).get_context_data(**kwargs)
+        attributes = []
+        user_values = []
+        user_verbose_names = []
+        for key in USER_DETAILS:
+            user_verbose_names.append(User._meta.get_field_by_name(key)[0].verbose_name.title())
+            user_values.append(getattr(self.object.user, "get_{0}_display".format(key),
+                                       getattr(self.object.user, key, "")))
+        user_dict = dict(zip(user_verbose_names, user_values))
+        user_dict["Full Name"] = "{0} {1} {2}".format(user_dict.pop("First Name"), user_dict.pop("Middle Name"),
+                                                      user_dict.pop("Last Name"))
+
+        verbose_names = []
+        values = []
+        for key in PERSONAL_DETAILS:
+            if key in ("month", "year", "day"):
+                continue
+            verbose_names.append(Client._meta.get_field_by_name(key)[0].verbose_name.title())
+            values.append(getattr(self.object, "get_{0}_display".format(key),
+                                  getattr(self.object.user, key, "")))
+
+        personal_dict = dict(zip(verbose_names, values))
+
+        verbose_names = []
+        values = []
+        for key in FINANCIAL_DETAILS:
+            verbose_names.append(Client._meta.get_field_by_name(key)[0].verbose_name.title())
+            values.append(getattr(self.object, "get_{0}_display".format(key),
+                                  getattr(self.object.user, key, "")))
+
+        financial_dict = dict(zip(verbose_names, values))
+
+        for k, v in user_dict.items():
+            if v:
+                attributes.append({"name": k, "value": v})
+
+        if self.invitation_type != "blank":
+
+            for k, v in personal_dict.items():
+                if v:
+                    attributes.append({"name": k, "value": v})
+
+            for k, v in financial_dict.items():
+                if v:
+                    attributes.append({"name": k, "value": v})
+
+        context_data["attributes"] = attributes
+        context_data["inviter_type"] = self.advisor.content_type
+        context_data["inviter_id"] = self.advisor.pk
+        context_data["invitation_type"] = INVITATION_CLIENT
+        context_data["email"] = self.object.user.email
+
+        return context_data
+

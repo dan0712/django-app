@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% block nav_clients %}depressed {% endblock %}
+{% block main_content %}
+
+    
+<div class="client-invites-new">
+    <div class="progress-header">
+    <ul>
+        <li class="depressed">
+            Select Account Process
+        </li>
+        <li class="">
+            Select Account Type
+        </li>
+        <li class="">
+            Enter Client Details
+        </li>
+        <li class="">
+            Confirm
+        </li>
+    </ul>
+    <div class="progress-bar account-process"></div>
+</div>
+
+    <h1>How would you like to complete the account opening process?</h1>
+
+    <div class="account-process-selector">
+        <a class="blank-form"  href="/advisor/client_invites?invite_type=blank" rel="nofollow">
+            <div>
+                <img alt="Blank form" src="{{STATIC_URL}}images/blank_form-0cd613ad1479c8051b678d3a2fe55bda.svg" />
+                <p class="form-instructions">Email a blank form to my client</p>
+                <hr>
+                <p class="form-description">Select the type of account you would like to open. Your client will receive an email to complete the account opening
+                    process.</p>
+            </div>
+</a>
+        <a class="prepopulated-form"  href="/advisor/client_invites?invite_type=prepopulated" rel="nofollow">
+            <div>
+                <img alt="Prepopulated form" src="{{STATIC_URL}}images/prepopulated_form-4686e7062f547272a603aaca71b7239b.svg" />
+                <p class="form-instructions">Pre-populate the form for my client</p>
+                <hr>
+                <p class="form-description">Provide your client’s information for them to review and approve the opening of their account.</p>
+            </div>
+</a>    </div>
+
+    <div class="advisor-signup-link">
+        <p>You can also copy your invite link:</p>
+        <a href="{{profile.get_invite_url}}">{{profile.get_invite_url}}</a>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+

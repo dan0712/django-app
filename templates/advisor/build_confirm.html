@@ -1,0 +1,65 @@
+{% extends "layouts/base.html" %}
+{% load app_filters %}
+{% load i18n %}
+{% block main_js %}{{STATIC_URL}}js/application-1782c815118e7220b74c97651eab3e9b.js{% endblock %}
+{% block body_class %}client_invites_build show {% endblock %}
+{% block nav_clients %}depressed {% endblock %}
+{% block main_content %}
+
+
+<div class="client-invite client-invite-confirm">
+    <div class="progress-header">
+    <ul>
+        <li class="">
+            Select Account Process
+        </li>
+        <li class="">
+            Select Account Type
+        </li>
+        <li class="">
+            Enter Client Details
+        </li>
+        <li class="depressed">
+            Confirm
+        </li>
+    </ul>
+    <div class="progress-bar confirm"></div>
+</div>
+
+    <h1>Confirm your client's details</h1>
+
+    <p class="main-body">Confirm your client's details below. Your client will receive an email to complete the account opening process.</p>
+
+    <p class="main-body">Please note that the link to sign up will expire in 14 days. You can view the status and resend invitations from the Clients tab.</p>
+
+    <h4>Client Details</h4>
+
+    <div class="attributes">
+        {% for attr in attributes %}
+            <div class="attr">
+                    <label>{{ attr.name }}</label>
+                    <p>{{ attr.value }}</p>
+                </div>
+        {% endfor %}
+
+    </div>
+    <div class="controls">
+        <form accept-charset="UTF-8" action="/advisor/client_invites" class="simple_form edit_client_invite" id="edit_client_invite_1466" method="post" name="edit_client_invite_1466" novalidate="novalidate">
+            <div style="display:none">
+                {% csrf_token %}
+                <input type="hidden" name="inviter_type" value="{{ inviter_type }}">
+                <input type="hidden" name="inviter_id" value="{{ inviter_id }}">
+                <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
+                <input type="hidden" name="email" value="{{ email }}">
+            </div>
+            <input name="commit" type="submit" value="Send email to client for review">
+             <a class="secondary-button cancel" href="/advisor/clients">Cancel</a>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+

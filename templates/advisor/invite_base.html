@@ -1,0 +1,75 @@
+{% load app_filters %}
+ <div id="content-main">
+        <div class="client-invites">
+              <div class="clients-panel">
+                <div class="shared-header" style="margin-top: 0px!important;">
+                <nav class="sub-nav">
+                    <div>
+                            <ul>
+                                <li class="">
+                                <a href="/advisor/clients">Client Overview</a>
+                            </li>
+                            <li class="depressed">
+                                <a href="/advisor/client_invites">Invites</a>
+                            </li>
+                        </ul>
+                        <a class="invite-client" href="/advisor/client_invites/new">Invite Client</a>
+                    </div>
+                </nav>
+            </div>
+
+           
+
+            <section class="client-invites-panel">
+             
+                <div class="body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+
+                                <th>Sent Date</th>
+
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for client_invite in invites %}
+                            {% if client_invite.get_status_name != "Active" %}
+                                <tr>
+                                    <td>{{ client_invite.email }}</td>
+
+                                    <td>{{ client_invite.send_date |b_datetime}}</td>
+
+                                    <td>
+                                        {% if client_invite.get_status != 0 %}
+                                        {{ client_invite.get_status_name }}
+                                        {% else %}
+                                        <form accept-charset="UTF-8" action="" class=
+                                        "simple_form edit_client_invite" id=
+                                        "edit_client_invite_1466" method="post"
+                                        name="edit_client_invite_1466" novalidate=
+                                        "novalidate">
+                                            <div style="display:none">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
+                                                <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
+                                                <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
+                                                <input type="hidden" name= "email" value="{{ client_invite.email }}">
+                                            </div>
+                                            <input name="commit" type=
+                                            "submit" value="Resend invite">
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %} 
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

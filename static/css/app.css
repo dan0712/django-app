@@ -569,7 +569,7 @@ a {
 }
 a:hover {
     text-decoration: underline;
-    color: #333;
+    color: #45a018;
 }
 hr {
     border-top: 1px solid #cccccc;
@@ -9358,8 +9358,8 @@ form .help-icon:after {
     padding: 5px 8px;
 }
 .composites-edit .typing-select .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background-color: #e1efe0;
+    color: #6a9183;
 }
 .composites-edit .typing-select .selectize-dropdown .active.create {
     color: #495c68;
@@ -11219,8 +11219,8 @@ form .help-icon:after {
     padding: 5px 8px;
 }
 .composite-secondary-advisors-index .add-advisor-form .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background-color: #e1efe0;
+    color: #6a9183;
 }
 .composite-secondary-advisors-index .add-advisor-form .selectize-dropdown .active.create {
     color: #495c68;
@@ -12453,8 +12453,8 @@ form .help-icon:after {
     padding: 5px 8px;
 }
 .composites-index .composite-grouping .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background-color: #e1efe0;
+    color: #6a9183;
 }
 .composites-index .composite-grouping .selectize-dropdown .active.create {
     color: #495c68;
@@ -15290,8 +15290,8 @@ header.top-bar .logo {
     padding: 5px 8px;
 }
 .secondary-advisors-index .add-advisor-form .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background-color: #e1efe0;
+    color: #6a9183;
 }
 .secondary-advisors-index .add-advisor-form .selectize-dropdown .active.create {
     color: #495c68;
@@ -17182,8 +17182,8 @@ body.style-guide .typing-select .selectize-dropdown [data-selectable] {
     padding: 5px 8px;
 }
 body.style-guide .typing-select .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background-color: #e1efe0;
+    color: #6a9183;
 }
 body.style-guide .typing-select .selectize-dropdown .active.create {
     color: #495c68;
@@ -17368,8 +17368,8 @@ body.style-guide .simple-select .selectize-dropdown [data-selectable] {
     padding: 5px 8px;
 }
 body.style-guide .simple-select .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background-color: #e1efe0;
+    color: #6a9183;
 }
 body.style-guide .simple-select .selectize-dropdown .active.create {
     color: #495c68;
@@ -22712,3 +22712,1544 @@ body > .nav-bar a{
     color:white;
 }
 
+.shared-header .invite-client {
+    float: right;
+}
+.shared-header .invite-client {
+    color: #45a018;
+    background: #fff;
+    border: 1px solid #45a018;
+    text-decoration: none;
+    }
+
+.shared-header .invite-client:hover{
+    color: #fff;
+    background: #45a018;
+    border: 1px solid #45a018;
+}
+
+.shared-header .invite-client {
+    font-size: 1.4rem;
+    line-height: 1.4rem;
+    padding: 13px 30px;
+}
+
+.shared-header .invite-client {
+    cursor: pointer;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+.client-invites-new {
+    overflow: hidden;
+    *zoom: 1
+}
+.client-invites-new {
+    overflow: hidden;
+    *zoom: 1
+}
+.client-invites-new {
+    overflow: hidden;
+    *zoom: 1
+}
+.client-invites-new {
+    overflow: hidden;
+    *zoom: 1
+}
+.client-invites-new .progress-header .progress-bar {
+    width: 100%;
+    height: 2px;
+    background-color: #e6e6e6;
+    border-left-color: #45a018;
+    border-left-style: solid;
+    margin-bottom: 20px
+}
+.client-invites-new .progress-header ul {
+    display: table;
+    width: 100%
+}
+.client-invites-new .progress-header li {
+    display: table-cell;
+    list-style-type: none;
+    height: 70px;
+    vertical-align: middle;
+    font-size: 1.50rem
+}
+.client-invites-new .progress-header li.depressed {
+    color: #45a018
+}
+.client-invites-new .progress-header li:not(.depressed) {
+    color: #bbbbbb
+}
+.client-invites-new .progress-header li:last-of-type {
+    text-align: right
+}
+.client-invites-new .progress-header div.account-process {
+    border-left-width: 97.8px
+}
+.client-invites-new h1 {
+    color: #333333;
+    margin-top: 30px;
+    text-align: center
+}
+.client-invites-new .blank-form,
+.client-invites-new .prepopulated-form {
+    height: 300px;
+    width: 50%;
+    background-color: #f5f5f5;
+    padding: 20px;
+    background-clip: content-box;
+    -moz-border-radius: 30px;
+    -webkit-border-radius: 30px;
+    border-radius: 30px;
+    text-decoration: none
+}
+.client-invites-new .blank-form img,
+.client-invites-new .prepopulated-form img {
+    height: 100px;
+    width: 100px;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    border-radius: 50px;
+    padding: 10px;
+    margin: 15px auto;
+    display: block;
+    background-color: #bbbbbb
+}
+.client-invites-new .blank-form hr,
+.client-invites-new .prepopulated-form hr {
+    width: 40%;
+    alignment: center
+}
+.client-invites-new .blank-form p,
+.client-invites-new .prepopulated-form p {
+    text-align: center
+}
+.client-invites-new .blank-form p.form-instructions,
+.client-invites-new .prepopulated-form p.form-instructions {
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #686868;
+    padding-bottom: 5px
+}
+.client-invites-new .blank-form p.form-description,
+.client-invites-new .prepopulated-form p.form-description {
+    font-size: 1.2rem;
+    font-weight: 100;
+    color: #999999;
+    padding: 10px 40px
+}
+.client-invites-new .blank-form:hover,
+.client-invites-new .prepopulated-form:hover {
+    background-color: #45a018;
+    cursor: pointer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+.client-invites-new .blank-form:hover img,
+.client-invites-new .prepopulated-form:hover img {
+    background-color: #405F31;
+}
+.client-invites-new .blank-form:hover p,
+.client-invites-new .prepopulated-form:hover p {
+    color: #f5f5f5
+}
+.client-invites-new .blank-form {
+    float: left
+}
+.client-invites-new .prepopulated-form {
+    float: right
+}
+.client-invites-new .account-process-selector {
+    height: 300px
+}
+.client-invites-new .advisor-signup-link {
+    margin-top: 20px;
+    text-align: center
+}
+
+.client-invite-account-type .split-view {
+height:200px;
+}
+
+.client-invite-account-type .split-view .account-type-selection {
+float:left;
+height:300px;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions {
+float:right;
+width:40%;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header {
+outline:none;
+color:#ccc;
+padding-right:20px;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header .down-arrow {
+font-family:ModernPictogramsPro!important;
+line-height:0.8;
+text-transform:none;
+text-decoration:none!important;
+font-style:normal!important;
+font-weight:400!important;
+float:right;
+font-size:4rem;
+color:#45a018;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header .title {
+font-size:1.7rem;
+font-weight:100;
+line-height:3rem;
+margin-bottom:15px;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header.ui-state-active {
+color:#333;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header.ui-state-active .down-arrow {
+transform:rotate(-180deg);
+transition:transform 300ms ease;
+}
+
+.client-invite {
+    *zoom: 1
+}
+
+.client-invite:after {
+    content: "";
+    display: table;
+    clear: both
+}
+
+.client-invite .submit,.client-invite .secondary-button,.client-invite .submit *,.client-invite .secondary-button * {
+    display: inline-block;
+    box-shadow: none;
+    text-shadow: none;
+    text-decoration: none;
+    filter: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    border: none;
+    overflow: visible
+}
+
+.client-invite .submit,.client-invite .secondary-button {
+    cursor: pointer;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px
+}
+
+.client-invite .submit,.client-invite .secondary-button {
+    font-size: 1.4rem;
+    line-height: 1.4rem;
+    padding: 13px 30px
+}
+
+.client-invite .submit {
+    color: #45a018;
+    background: #fff;
+    border: 1px solid #45a018
+}
+
+.client-invite .submit:hover {
+    background: #45a018;
+    border: 1px solid #45a018;
+    color: #fff
+
+}
+
+.client-invite .secondary-button {
+    color: #45a018;
+    background: transparent;
+    border: 1px solid #45a018
+}
+
+.client-invite .secondary-button:hover {
+    color: #fff;
+    background: #45a018
+}
+
+.client-invite {
+    *zoom: 1
+}
+
+.client-invite:after {
+    content: "";
+    display: table;
+    clear: both
+}
+
+.client-invite {
+    *zoom: 1
+}
+
+.client-invite:after {
+    content: "";
+    display: table;
+    clear: both
+}
+
+.client-invite {
+    *zoom: 1
+}
+
+.client-invite:after {
+    content: "";
+    display: table;
+    clear: both
+}
+
+.client-invite-identity label,.client-invite-personal-details label,.client-invite-employment-financial-details label {
+    display: block
+}
+
+.client-invite-identity div.input,.client-invite-personal-details div.input,.client-invite-employment-financial-details div.input {
+    margin-bottom: 5px
+}
+
+.client-invite-identity input[readonly="readonly"],.client-invite-personal-details input[readonly="readonly"],.client-invite-employment-financial-details input[readonly="readonly"] {
+    border: none;
+    height: 25px;
+    margin-top: -10px
+}
+
+.client-invite h1 {
+    color: #333;
+    margin-top: 30px
+}
+
+.client-invite p.main-body {
+    font-size: 1.6rem;
+    padding-bottom: 20px
+}
+
+.client-invite .progress-header .progress-bar {
+    width: 100%;
+    height: 2px;
+    background-color: #e6e6e6;
+    border-left-color: #45a018;
+    border-left-style: solid;
+    margin-bottom: 20px
+}
+
+.client-invite .progress-header ul {
+    display: table;
+    width: 100%
+}
+
+.client-invite .progress-header li {
+    display: table-cell;
+    list-style-type: none;
+    height: 70px;
+    vertical-align: middle;
+    font-size: 1.5rem
+}
+
+.client-invite .progress-header li.depressed {
+    color: #45a018
+}
+
+.client-invite .progress-header li:not(.depressed) {
+    color: #bbb
+}
+
+.client-invite .progress-header li:last-of-type {
+    text-align: right
+}
+
+.client-invite .progress-header div.account-process {
+    border-left-width: 97.8px
+}
+
+.client-invite .progress-header div.account-type {
+    border-left-width: 391.2px
+}
+
+.client-invite .progress-header div.client-details {
+    border-left-width: 684.6px
+}
+
+.client-invite .progress-header div.confirm {
+    border-left-width: 948.66px
+}
+
+.client-invite .error {
+    margin: 5px 0
+}
+
+.client-invite .submit {
+    margin-top: 15px
+}
+
+.client-invite .secondary-button {
+    margin-left: 10px
+}
+
+.client-invite .controls {
+    clear: both
+}
+
+.client-invite label {
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    width: 100%
+}
+
+.client-invite div.input {
+    margin-bottom: 15px
+}
+
+.client-invite input.string {
+    width: 100%
+}
+
+.client-invite .radio_buttons input {
+    margin-right: 10px
+}
+
+.client-invite .radio_buttons label.control-label {
+    width: 100%
+}
+
+.client-invite input:disabled {
+    opacity: .2
+}
+
+.client-invite-account-type .split-view .account-type-selection {
+    float: left;
+    height: 300px
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type {
+    margin-bottom: 0
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown-header {
+    position: relative;
+    padding: 5px 8px;
+    border-bottom: 1px solid #bbb;
+    background: #f5f5f5;
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown-header-close {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    color: #333;
+    opacity: .4;
+    margin-top: -12px;
+    line-height: 20px;
+    font-size: 2rem!important
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control {
+    position: relative
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input input {
+    color: #303030;
+    font-family: inherit;
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+    -webkit-font-smoothing: inherit
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input.input-active {
+    background: #fff;
+    cursor: text;
+    display: inline-block
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input {
+    border: 1px solid #bbb;
+    padding: 8px;
+    display: inline-block;
+    width: 300px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    height: 40px
+}
+
+
+.client-invite-identity form {
+    width: 320px
+}
+.client-invite-identity div.client_invite_first_name {
+    float: left;
+    width: 240px
+}
+.client-invite-identity div.client_invite_middle_initial {
+    float: right;
+    width: 60px
+}
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input div.item {
+    line-height: 25px
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input.full {
+    background-color: #fff
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input.disabled,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input.disabled * {
+    cursor: default!important
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input.dropdown-active {
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input>* {
+    vertical-align: baseline;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input>input {
+    display: inline-block!important;
+    padding: 0!important;
+    min-height: 0!important;
+    max-height: none!important;
+    height: 25px;
+    max-width: 100%!important;
+    margin: 0 2px 0 0!important;
+    text-indent: 0!important;
+    border: 0 none!important;
+    background: none!important;
+    line-height: inherit!important;
+    -webkit-user-select: auto!important;
+    -moz-box-shadow: none!important;
+    -webkit-box-shadow: none!important;
+    box-shadow: none!important
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input>input::-ms-clear {
+    display: none
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input>input:focus {
+    outline: none!important
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input::after {
+    content: ' ';
+    display: block;
+    clear: left
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input.dropdown-active::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    background: #e6e6e6;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown {
+    position: absolute;
+    z-index: 10;
+    border: 1px solid #bbb;
+    background: #fff;
+    margin: -1px 0 0;
+    border-top: 0 none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 0 0 2px 2px;
+    -webkit-border-radius: 0;
+    border-radius: 0 0 2px 2px
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown [data-selectable] {
+    cursor: pointer;
+    overflow: hidden
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown [data-selectable] .highlight {
+    background: rgba(125,168,208,0.2);
+    -moz-border-radius: 1px;
+    -webkit-border-radius: 1px;
+    border-radius: 1px
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown [data-selectable] {
+    padding: 5px 8px
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown .active {
+    background-color: #e1efe0;
+    color: #6a9183
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown .active.create {
+    color: #495c68
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown .create {
+    color: rgba(48,48,48,0.5)
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-dropdown-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 200px
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input input {
+    cursor: pointer
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input.input-active,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input.input-active input {
+    cursor: text
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0;
+    border-color: #45a018 transparent transparent;
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.single .selectize-input.dropdown-active:after {
+    margin-top: -4px;
+    border-width: 0 5px 5px;
+    border-color: transparent transparent #45a018
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.rtl.single .selectize-input:after {
+    left: 15px;
+    right: auto
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control.rtl .selectize-input>input {
+    margin: 0 4px 0 -2px!important
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-control .selectize-input.disabled {
+    opacity: .5;
+    background-color: #fafafa
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input,.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input * {
+    cursor: pointer!important
+}
+
+.client-invite-account-type .split-view .account-type-selection .client_invite_account_type .selectize-input input {
+    color: transparent!important
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions {
+    float: right;
+    width: 40%
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header {
+    outline: none;
+    color: #ccc;
+    padding-right: 20px
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header .down-arrow {
+    font-family: 'ModernPictogramsPro'!important;
+    font-size: 100%;
+    line-height: .8;
+    text-transform: none;
+    text-decoration: none!important;
+    font-style: normal!important;
+    font-weight: 400!important;
+    float: right;
+    font-size: 4rem;
+    color: #45a018;
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header .title {
+    font-size: 1.7rem;
+    font-weight: 100;
+    line-height: 3rem;
+    margin-bottom: 15px
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header.ui-state-active {
+    color: #333
+}
+
+.client-invite-account-type .split-view .frequently-asked-questions .question-header.ui-state-active .down-arrow {
+    transform: rotate(-180deg);
+    transition: transform 300ms ease
+}
+
+.client-invite-personal-details .left,
+.client-invite-employment-financial-details .left {
+    float: left;
+    width: 50%
+}
+.client-invite-personal-details .right,
+.client-invite-employment-financial-details .right {
+    float: right;
+    width: 50%
+}
+.client-invite-personal-details input.string,
+.client-invite-employment-financial-details input.string {
+    width: 90%;
+}
+.client-invite-personal-details .client_invite_zip_code,
+.client-invite-employment-financial-details .client_invite_zip_code {
+    width: 210px;
+    float: right;
+    margin-right: 3%
+
+
+
+
+
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown-header,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown-header {
+    position: relative;
+    padding: 5px 8px;
+    border-bottom: 1px solid #bbbbbb;
+    background: #f5f5f5;
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown-header-close,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown-header-close {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    color: #333333;
+    opacity: 0.4;
+    margin-top: -12px;
+    line-height: 20px;
+    font-size: 2rem !important
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control {
+    position: relative
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown,
+.client-invite-personal-details .client_invite_employment_status .selectize-input,
+.client-invite-personal-details .client_invite_employment_status .selectize-input input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input input {
+    color: #303030;
+    font-family: inherit;
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+    -webkit-font-smoothing: inherit
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input,
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input.input-active,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input.input-active {
+    background: #ffffff;
+    cursor: text;
+    display: inline-block
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input {
+    border: 1px solid #bbbbbb;
+    padding: 8px;
+    display: inline-block;
+    width: 107px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    height: 40px
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input div.item,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input div.item {
+    line-height: 25px
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input.full,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input.full {
+    background-color: #ffffff
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input.disabled,
+.client-invite-personal-details .client_invite_employment_status .selectize-input.disabled *,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input.disabled,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input.disabled * {
+    cursor: default !important
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input.dropdown-active,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input.dropdown-active {
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input>*,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input>* {
+    vertical-align: baseline;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input>input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input>input {
+    display: inline-block !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 25px;
+    max-width: 100% !important;
+    margin: 0 2px 0 0 !important;
+    text-indent: 0 !important;
+    border: 0 none !important;
+    background: none !important;
+    line-height: inherit !important;
+    -webkit-user-select: auto !important;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input>input::-ms-clear,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input>input::-ms-clear {
+    display: none
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input>input:focus,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input>input:focus {
+    outline: none !important
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input::after,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input::after {
+    content: ' ';
+    display: block;
+    clear: left
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input.dropdown-active::before,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input.dropdown-active::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    background: #e6e6e6;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown {
+    position: absolute;
+    z-index: 10;
+    border: 1px solid #bbbbbb;
+    background: #ffffff;
+    margin: -1px 0 0 0;
+    border-top: 0 none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 0 0 2px 2px;
+    -webkit-border-radius: 0;
+    border-radius: 0 0 2px 2px
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown [data-selectable],
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown [data-selectable] {
+    cursor: pointer;
+    overflow: hidden
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown [data-selectable] .highlight,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown [data-selectable] .highlight {
+    background: rgba(125, 168, 208, 0.2);
+    -moz-border-radius: 1px;
+    -webkit-border-radius: 1px;
+    border-radius: 1px
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown [data-selectable],
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown [data-selectable] {
+    padding: 5px 8px
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown .active,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown .active {
+    background-color: #e1efe0;
+    color: #6a9183;
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown .active.create,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown .active.create {
+    color: #495c68
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown .create,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown .create {
+    color: rgba(48, 48, 48, 0.5)
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-dropdown-content,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-dropdown-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 200px
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input,
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input input {
+    cursor: pointer
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input.input-active,
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input.input-active input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input.input-active,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input.input-active input {
+    cursor: text
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input:after,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #45a018 transparent transparent transparent
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control.single .selectize-input.dropdown-active:after,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.single .selectize-input.dropdown-active:after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #45a018 transparent
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control.rtl.single .selectize-input:after,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.rtl.single .selectize-input:after {
+    left: 15px;
+    right: auto
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control.rtl .selectize-input>input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control.rtl .selectize-input>input {
+    margin: 0 4px 0 -2px !important
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-control .selectize-input.disabled,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-control .selectize-input.disabled {
+    opacity: 0.5;
+    background-color: #fafafa
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input,
+.client-invite-personal-details .client_invite_employment_status .selectize-input *,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input * {
+    cursor: pointer !important
+}
+.client-invite-personal-details .client_invite_employment_status .selectize-input input,
+.client-invite-employment-financial-details .client_invite_employment_status .selectize-input input {
+    color: transparent !important
+}
+.client-invite-personal-details .client_invite_employment_status div.selectize-input,
+.client-invite-employment-financial-details .client_invite_employment_status div.selectize-input {
+    width: 90%;
+    height: 32px;
+    padding: 4px 8px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown-header,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown-header {
+    position: relative;
+    padding: 5px 8px;
+    border-bottom: 1px solid #bbbbbb;
+    background: #f5f5f5;
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown-header-close,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown-header-close {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    color: #333333;
+    opacity: 0.4;
+    margin-top: -12px;
+    line-height: 20px;
+    font-size: 2rem !important
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control {
+    position: relative
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown,
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input,
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input input {
+    color: #303030;
+    font-family: inherit;
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+    -webkit-font-smoothing: inherit
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input,
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input.input-active,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input.input-active {
+    background: #ffffff;
+    cursor: text;
+    display: inline-block
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input {
+    border: 1px solid #bbbbbb;
+    padding: 8px;
+    display: inline-block;
+    width: 107px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    height: 40px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input div.item,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input div.item {
+    line-height: 25px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input.full,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input.full {
+    background-color: #ffffff
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input.disabled,
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input.disabled *,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input.disabled,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input.disabled * {
+    cursor: default !important
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input.dropdown-active,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input.dropdown-active {
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input>*,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input>* {
+    vertical-align: baseline;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input>input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input>input {
+    display: inline-block !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 25px;
+    max-width: 100% !important;
+    margin: 0 2px 0 0 !important;
+    text-indent: 0 !important;
+    border: 0 none !important;
+    background: none !important;
+    line-height: inherit !important;
+    -webkit-user-select: auto !important;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input>input::-ms-clear,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input>input::-ms-clear {
+    display: none
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input>input:focus,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input>input:focus {
+    outline: none !important
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input::after,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input::after {
+    content: ' ';
+    display: block;
+    clear: left
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input.dropdown-active::before,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input.dropdown-active::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    background: #e6e6e6;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown {
+    position: absolute;
+    z-index: 10;
+    border: 1px solid #bbbbbb;
+    background: #ffffff;
+    margin: -1px 0 0 0;
+    border-top: 0 none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 0 0 2px 2px;
+    -webkit-border-radius: 0;
+    border-radius: 0 0 2px 2px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown [data-selectable],
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown [data-selectable] {
+    cursor: pointer;
+    overflow: hidden
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown [data-selectable] .highlight,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown [data-selectable] .highlight {
+    background: rgba(125, 168, 208, 0.2);
+    -moz-border-radius: 1px;
+    -webkit-border-radius: 1px;
+    border-radius: 1px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown [data-selectable],
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown [data-selectable] {
+    padding: 5px 8px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown .active,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown .active {
+    background-color: #e1efe0;
+    color: #6a9183;
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown .active.create,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown .active.create {
+    color: #495c68
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown .create,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown .create {
+    color: rgba(48, 48, 48, 0.5)
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-dropdown-content,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-dropdown-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 200px
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input,
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input input {
+    cursor: pointer
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input.input-active,
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input.input-active input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input.input-active,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input.input-active input {
+    cursor: text
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input:after,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #45a018 transparent transparent transparent
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.single .selectize-input.dropdown-active:after,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.single .selectize-input.dropdown-active:after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #45a018 transparent
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.rtl.single .selectize-input:after,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.rtl.single .selectize-input:after {
+    left: 15px;
+    right: auto
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control.rtl .selectize-input>input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control.rtl .selectize-input>input {
+    margin: 0 4px 0 -2px !important
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-control .selectize-input.disabled,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-control .selectize-input.disabled {
+    opacity: 0.5;
+    background-color: #fafafa
+}
+h1 {
+    cursor: pointer !important
+}
+.client-invite-personal-details .client_invite_date_of_birth .selectize-input input,
+.client-invite-employment-financial-details .client_invite_date_of_birth .selectize-input input {
+    color: transparent !important
+}
+.client-invite-personal-details .client_invite_date_of_birth div.selectize-control,
+.client-invite-employment-financial-details .client_invite_date_of_birth div.selectize-control {
+    float: left;
+    margin-right: 10px
+}
+.client-invite-personal-details .client_invite_date_of_birth div.selectize-input,
+.client-invite-employment-financial-details .client_invite_date_of_birth div.selectize-input {
+    height: 32px;
+    padding: 4px 8px
+}
+.client-invite-personal-details .client_invite_date_of_birth .error,
+.client-invite-employment-financial-details .client_invite_date_of_birth .error {
+    clear: both
+}
+.client-invite-personal-details .client_invite_state,
+.client-invite-employment-financial-details .client_invite_state {
+    width: 25%;
+    float: left
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown-header,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown-header {
+    position: relative;
+    padding: 5px 8px;
+    border-bottom: 1px solid #bbbbbb;
+    background: #f5f5f5;
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown-header-close,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown-header-close {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    color: #333333;
+    opacity: 0.4;
+    margin-top: -12px;
+    line-height: 20px;
+    font-size: 2rem !important
+}
+.client-invite-personal-details .client_invite_state .selectize-control,
+.client-invite-employment-financial-details .client_invite_state .selectize-control {
+    position: relative
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown,
+.client-invite-personal-details .client_invite_state .selectize-input,
+.client-invite-personal-details .client_invite_state .selectize-input input,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown,
+.client-invite-employment-financial-details .client_invite_state .selectize-input,
+.client-invite-employment-financial-details .client_invite_state .selectize-input input {
+    color: #303030;
+    font-family: inherit;
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+    -webkit-font-smoothing: inherit
+}
+.client-invite-personal-details .client_invite_state .selectize-input,
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input.input-active,
+.client-invite-employment-financial-details .client_invite_state .selectize-input,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input.input-active {
+    background: #ffffff;
+    cursor: text;
+    display: inline-block
+}
+.client-invite-personal-details .client_invite_state .selectize-input,
+.client-invite-employment-financial-details .client_invite_state .selectize-input {
+    border: 1px solid #bbbbbb;
+    padding: 8px;
+    display: inline-block;
+    width: 240px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    height: 40px
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+.client-invite-personal-details .client_invite_state .selectize-input div.item,
+.client-invite-employment-financial-details .client_invite_state .selectize-input div.item {
+    line-height: 25px
+}
+.client-invite-personal-details .client_invite_state .selectize-input.full,
+.client-invite-employment-financial-details .client_invite_state .selectize-input.full {
+    background-color: #ffffff
+}
+.client-invite-personal-details .client_invite_state .selectize-input.disabled,
+.client-invite-personal-details .client_invite_state .selectize-input.disabled *,
+.client-invite-employment-financial-details .client_invite_state .selectize-input.disabled,
+.client-invite-employment-financial-details .client_invite_state .selectize-input.disabled * {
+    cursor: default !important
+}
+.client-invite-personal-details .client_invite_state .selectize-input.dropdown-active,
+.client-invite-employment-financial-details .client_invite_state .selectize-input.dropdown-active {
+    -moz-border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px;
+    border-radius: 2px 2px 0 0
+}
+.client-invite-personal-details .client_invite_state .selectize-input>*,
+.client-invite-employment-financial-details .client_invite_state .selectize-input>* {
+    vertical-align: baseline;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline
+}
+.client-invite-personal-details .client_invite_state .selectize-input>input,
+.client-invite-employment-financial-details .client_invite_state .selectize-input>input {
+    display: inline-block !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 25px;
+    max-width: 100% !important;
+    margin: 0 2px 0 0 !important;
+    text-indent: 0 !important;
+    border: 0 none !important;
+    background: none !important;
+    line-height: inherit !important;
+    -webkit-user-select: auto !important;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important
+}
+.client-invite-personal-details .client_invite_state .selectize-input>input::-ms-clear,
+.client-invite-employment-financial-details .client_invite_state .selectize-input>input::-ms-clear {
+    display: none
+}
+.client-invite-personal-details .client_invite_state .selectize-input>input:focus,
+.client-invite-employment-financial-details .client_invite_state .selectize-input>input:focus {
+    outline: none !important
+}
+.client-invite-personal-details .client_invite_state .selectize-input::after,
+.client-invite-employment-financial-details .client_invite_state .selectize-input::after {
+    content: ' ';
+    display: block;
+    clear: left
+}
+.client-invite-personal-details .client_invite_state .selectize-input.dropdown-active::before,
+.client-invite-employment-financial-details .client_invite_state .selectize-input.dropdown-active::before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    background: #e6e6e6;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    right: 0
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown {
+    position: absolute;
+    z-index: 10;
+    border: 1px solid #bbbbbb;
+    background: #ffffff;
+    margin: -1px 0 0 0;
+    border-top: 0 none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 0 0 2px 2px;
+    -webkit-border-radius: 0;
+    border-radius: 0 0 2px 2px
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown [data-selectable],
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown [data-selectable] {
+    cursor: pointer;
+    overflow: hidden
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown [data-selectable] .highlight,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown [data-selectable] .highlight {
+    background: rgba(125, 168, 208, 0.2);
+    -moz-border-radius: 1px;
+    -webkit-border-radius: 1px;
+    border-radius: 1px
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown [data-selectable],
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown [data-selectable] {
+    padding: 5px 8px
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown .active,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown .active {
+    background-color: #e1efe0;
+    color: #6a9183;
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown .active.create,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown .active.create {
+    color: #495c68
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown .create,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown .create {
+    color: rgba(48, 48, 48, 0.5)
+}
+.client-invite-personal-details .client_invite_state .selectize-dropdown-content,
+.client-invite-employment-financial-details .client_invite_state .selectize-dropdown-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 200px
+}
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input,
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input input,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input input {
+    cursor: pointer
+}
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input.input-active,
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input.input-active input,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input.input-active,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input.input-active input {
+    cursor: text
+}
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input:after,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #45a018 transparent transparent transparent
+}
+.client-invite-personal-details .client_invite_state .selectize-control.single .selectize-input.dropdown-active:after,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.single .selectize-input.dropdown-active:after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #45a018 transparent
+}
+.client-invite-personal-details .client_invite_state .selectize-control.rtl.single .selectize-input:after,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.rtl.single .selectize-input:after {
+    left: 15px;
+    right: auto
+}
+.client-invite-personal-details .client_invite_state .selectize-control.rtl .selectize-input>input,
+.client-invite-employment-financial-details .client_invite_state .selectize-control.rtl .selectize-input>input {
+    margin: 0 4px 0 -2px !important
+}
+.client-invite-personal-details .client_invite_state .selectize-control .selectize-input.disabled,
+.client-invite-employment-financial-details .client_invite_state .selectize-control .selectize-input.disabled {
+    opacity: 0.5;
+    background-color: #fafafa
+}
+.client-invite-personal-details .client_invite_state .selectize-input,
+.client-invite-personal-details .client_invite_state .selectize-input *,
+.client-invite-employment-financial-details .client_invite_state .selectize-input,
+.client-invite-employment-financial-details .client_invite_state .selectize-input * {
+    cursor: pointer !important
+}
+.client-invite-personal-details .client_invite_state .selectize-input input,
+.client-invite-employment-financial-details .client_invite_state .selectize-input input {
+    color: transparent !important
+}
+.client-invite-personal-details .client_invite_state div.selectize-input,
+.client-invite-employment-financial-details .client_invite_state div.selectize-input {
+    height: 32px;
+    padding: 4px 8px
+}
+.client-invite-personal-details .client_invite_gender,
+.client-invite-employment-financial-details .client_invite_gender {
+    padding-top: 13px;
+    clear: both
+}
+
+.client-invite-confirm .attributes div {
+    float: left;
+    width: 280px;
+    margin: 0 0 20px 0
+}
+.client-invite-confirm .attributes label {
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    color: #686868
+}
+.client-invite-confirm .attributes p {
+    font-size: 1.5rem
+}

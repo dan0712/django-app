@@ -15,8 +15,7 @@
 
 
     <link href="{{ STATIC_URL }}images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
-    <link data-turbolinks-track="true" href="{{ STATIC_URL }}css/app.css" media="all" rel="stylesheet" />
-    <link data-turbolinks-track="true" href="{{ STATIC_URL }}css/jquery-ui.min.css" media="all" rel="stylesheet" />
+    <link data-turbolinks-track="true" href="{{ STATIC_URL }}css/app.css" media="all" rel="stylesheet" /> 
     <script data-turbolinks-track="true" src="{% block main_js %}{{ STATIC_URL }}js/app.js{% endblock %}"></script>
     <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/jquery-ui.min.js"></script>
 {{ csrf_meta }}
@@ -43,9 +42,7 @@
                 <li class="{% block nav_agreements %}{% endblock %}">
                     <a href="/advisor/agreements">Agreements</a>
                 </li>
-                <li class="{% block nav_invites %}{% endblock %}">
-                    <a href="/advisor/client_invites">Invites</a>
-                </li>
+                
                 <li class="{% block nav_support %}{% endblock %}">
                     <a href="/advisor/support">Support</a>
                 </li>

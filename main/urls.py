@@ -49,12 +49,16 @@ urlpatterns = patterns('',
 
     # Advisor views
 
-    url(r'^advisor/client_invites', AdvisorClientInvites.as_view(), name='advisor:client_invites'),
+    url(r'^advisor/client_invites$', AdvisorClientInvites.as_view(), name='advisor:client_invites'),
+    url(r'^advisor/client_invites/(?P<pk>\d+)/build/personal_details$', BuildPersonalDetails.as_view()),
+    url(r'^advisor/client_invites/(?P<pk>\d+)/build/financial_details$', BuildFinancialDetails.as_view()),
+    url(r'^advisor/client_invites/(?P<pk>\d+)/build/confirm$', BuildConfirm.as_view()),
+    url(r'^advisor/client_invites/build/identity$', CreateNewClientPrepopulatedView.as_view()),
+    url(r'^advisor/client_invites/new$', AdvisorClientInviteNewView.as_view()),
     url(r'^advisor/clients', AdvisorClients.as_view(), name='advisor:clients'),
     url(r'^advisor/agreements', AdvisorAgreements.as_view(), name='advisor:agreements'),
     url(r'^advisor/support$', AdvisorSupport.as_view(), name='advisor:support'),
     url(r'^advisor/support/getting-started$', AdvisorSupportGettingStarted.as_view()),
-
     url(r'^advisor/summary', AdvisorCompositeSummary.as_view(), name='advisor:summary'),
     url(r'^advisor/client/(?P<pk>\d+)$', AdvisorClientDetails.as_view(),),
     url(r'^composites/new$', AdvisorCompositeNew.as_view()),
@@ -78,6 +82,9 @@ urlpatterns = patterns('',
     url(r'^client/app', ClientApp.as_view(), name='client:app'),
     url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUp.as_view(), name='client:sign_up'),
+    url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/(?P<pk>\d+)$',
+        ClientSignUpPrepopulated.as_view()),
+
     url(r'^client/api/account-groups/(?P<pk>\d+)/beneficiaries$', CancelableTransactionsView.as_view()),
     url(r'^client/api/appData', ClientAppData.as_view(), name='client:api:app_data'),
     url(r'^client/api/cancelable_transactions', CancelableTransactionsView.as_view()),

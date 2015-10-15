@@ -1,0 +1,122 @@
+{% extends "layouts/base.html" %}
+{% load app_filters %}
+{% load i18n %}
+{% block main_js %}{{STATIC_URL}}js/application-1782c815118e7220b74c97651eab3e9b.js{% endblock %}
+{% block body_class %}client_invites_build show {% endblock %}
+{% block nav_clients %}depressed {% endblock %}
+{% block main_content %}
+    <div class="client-invite client-invite-personal-details">
+    <div class="progress-header">
+    <ul>
+        <li class="">
+            Select Account Process
+        </li>
+        <li class="">
+            Select Account Type
+        </li>
+        <li class="depressed">
+            Enter Client Details
+        </li>
+        <li class="">
+            Confirm
+        </li>
+    </ul>
+    <div class="progress-bar client-details"></div>
+</div>
+
+    <h1>Client Personal Details (Optional)</h1>
+
+    <p class="main-body">Enter your client's personal details</p>
+
+    <form accept-charset="UTF-8" action="" class="simple_form edit_client_invite" id="edit_client_invite_2041" method="post" novalidate="novalidate">
+        {% csrf_token %}
+
+        <div>
+            <div class="left">
+                <div class="input string optional client_invite_address_line_1">
+                    <label class="string optional control-label" for="client_invite_address_line_1">Address 1</label>
+                    <input class="string optional" id="client_invite_address_line_1" value="{{ form.address_line_1.value|default:"" }}" name="{{ form.address_line_1.name }}" type="text" />
+                    <span class="error">{{ form.address_line_1.errors}}</span>
+                </div>
+                <div class="input string optional client_invite_address_line_2">
+                    <label class="string optional control-label" for="client_invite_address_line_2">Address 2</label>
+                    <input class="string optional" id="client_invite_address_line_2" value="{{ form.address_line_2.value|default:"" }}" name="{{ form.address_line_2.name }}" type="text" />
+                    <span class="error">{{ form.address_line_1.errors}}</span>
+
+                </div>
+                <div class="input string optional client_invite_city">
+                    <label class="string optional control-label" for="client_invite_city">City</label>
+                    <input class="string optional" id="client_invite_city" name="{{ form.city.name }}" value="{{ form.city.value|default:"" }}"  type="text" />
+                     <span class="error">{{ form.city.errors}}</span>
+                </div>
+                <div  class="input select optional client_invite_state"><label class="select optional control-label" for="client_invite_state">State</label>
+                    {{ form.state |add_class_id:"select optional, client_invite_state" }}
+                    <span class="error">{{ form.state.errors }}</span>
+                </div>
+                <div class="input string optional client_invite_zip_code">
+                    <label class="string optional control-label" for="client_invite_zip_code">Post Code</label>
+                    <input  style="width: 190px;" class="string optional" id="client_invite_zip_code" maxlength="5" name="{{ form.post_code.name }}" size="5" type="text" value="{{ form.post_code.value|default:""}}" />
+                <span class="error">{{ form.post_code.errors }}</span>
+                </div>
+            </div>
+            <div class="right">
+                <div class="input tel optional client_invite_phone_number">
+                    <label class="tel optional control-label" for="client_invite_phone_number">Phone Number</label>
+                    <input class="string tel optional" data-mask="phone" value="{{ form.phone_number.value|default:""}}" id="client_invite_phone_number" name="{{ form.phone_number.name }}" type="tel" />
+                    <span class="error">{{ form.phone_number.errors }}</span>
+                </div>
+                <div class="input date optional client_invite_date_of_birth"><label class="date optional control-label" for="client_invite_date_of_birth_2i">Date of Birth</label>
+
+                    <select class="date optional" id="client_invite_date_of_birth_3i" name="day">
+                    <option value="">Day</option>
+                    {% for day in days %}
+                        <option value="{{day}}" {% if day == form.day.value %} selected{% endif %}>{{day}}</option>
+                    {% endfor %}
+                    </select>
+
+                    <select class="date optional" id="client_invite_date_of_birth_2i" name="month">
+                        <option value="">Month</option>
+                        <option value="1"  {% if form.month.value == 1 %} selected{% endif %}>January</option>
+                        <option value="2"  {% if form.month.value == 2 %} selected{% endif %}>February</option>
+                        <option value="3" {% if form.month.value == 3 %} selected{% endif %}>March</option>
+                        <option value="4" {% if form.month.value == 4 %} selected{% endif %}>April</option>
+                        <option value="5" {% if form.month.value == 5 %} selected{% endif %}>May</option>
+                        <option value="6" {% if form.month.value == 6 %} selected{% endif %}>June</option>
+                        <option value="7" {% if form.month.value == 7 %} selected{% endif %}>July</option>
+                        <option value="8" {% if form.month.value == 8 %} selected{% endif %}>August</option>
+                        <option value="9" {% if form.month.value == 9 %} selected{% endif %}>September</option>
+                        <option value="10" {% if form.month.value == 10 %} selected{% endif %}>October</option>
+                        <option value="11" {% if form.month.value == 11 %} selected{% endif %}>November</option>
+                        <option value="12" {% if form.month.value == 12 %} selected{% endif %}>December</option>
+                    </select>
+                    <select class="date optional" id="client_invite_date_of_birth_1i" name="year">
+                    <option value="">Year</option>
+                    {% for year in years %}
+                        <option value="{{year}}" {% if year == form.year.value %} selected{% endif %}>{{year}}</option>
+                    {% endfor %}
+                </select>
+<span>{{ form.date_of_birth.errors }}</span>
+</div>
+
+                <div class="input radio_buttons optional client_invite_gender">
+                    <label class="radio_buttons optional control-label">Gender</label>
+                    <label class="radio">
+                        <input class="radio_buttons optional" id="client_invite_gender_m" name="gender" type="radio" value="Male" {% if form.gender.value == "Male" %} checked{%  endif %} />Male</label>
+                    <label class="radio">
+                        <input class="radio_buttons optional" id="client_invite_gender_f" name="gender" type="radio" value="Female" {% if form.gender.value == "Female" %} checked{%  endif %} />Female</label>
+                    <span class="errors" >{{ form.gender.errors }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <input class="submit" name="commit" type="submit" value="Continue" />
+        </div>
+</form>
+
+
+    </div>
+
+{% endblock %}
+
+
+

@@ -42,6 +42,8 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
 
         try:
             user = User.objects.get(email=username)
+            if user.prepopulated:
+                raise ObjectDoesNotExist
         except ObjectDoesNotExist:
             user = None
             messages.error(request, INVALID_CREDENTIALS)

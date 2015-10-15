@@ -23,7 +23,6 @@ class EmailInviteForm(forms.ModelForm):
                                                      inviter_id=self.cleaned_data.get('inviter_id'),
                                                      invitation_type=self.cleaned_data.get('invitation_type'))
         except ObjectDoesNotExist:
-            print("new new new")
             invitation = super(EmailInviteForm, self).save(*args, **kw)
 
         invitation.send()

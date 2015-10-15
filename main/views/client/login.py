@@ -3,7 +3,7 @@ __author__ = 'cristian'
 from ..utils.login import create_login
 from main.models import Client, Firm, Advisor, User , BetaSmartzGenericUSerSignupForm, PERSONAL_DATA_WIDGETS, \
     PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 from django.contrib import messages
 
 
-__all__ = ["client_login", 'ClientSignUp']
+__all__ = ["client_login", 'ClientSignUp', "ClientSignUpPrepopulated"]
 
 client_login = create_login(Client, 'client', '')
 
@@ -168,3 +168,49 @@ class ClientSignUp(CreateView):
         self.firm = firm
         self.advisor = advisor
         return super(ClientSignUp, self).dispatch(request, *args, **kwargs)
+
+
+class ClientSignUpPrepopulated(UpdateView):
+    template_name = "registration/client_form.html"
+    form_class = ClientSignUpForm
+    success_url = "/firm/login"
+    model = User
+
+    def __init__(self, *args, **kwargs):
+        self.firm = None
+        self.advisor = None
+        super(ClientSignUpPrepopulated, self).__init__(*args, **kwargs)
+
+    def get_queryset(self):
+        qs = super(ClientSignUpPrepopulated, self).get_queryset()
+        qs = qs.filter(prepopulated=True)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super(ClientSignUpPrepopulated, self).get_context_data(**kwargs)
+        ctx["advisor"] = self.advisor
+        ctx["firm"] = self.firm
+        print(vars(self.object))
+        return ctx
+
+    def get_success_url(self):
+        messages.info(self.request, SUCCESS_MESSAGE)
+        return super(ClientSignUpPrepopulated, self).get_success_url()
+
+    def dispatch(self, request, *args, **kwargs):
+        slug = kwargs["slug"]
+        token = kwargs["token"]
+
+        try:
+            firm = Firm.objects.get(slug=slug)
+        except ObjectDoesNotExist:
+            raise Http404()
+
+        try:
+            advisor = Advisor.objects.get(token=token, firm=firm)
+        except ObjectDoesNotExist:
+            raise Http404()
+
+        self.firm = firm
+        self.advisor = advisor
+        return super(ClientSignUpPrepopulated, self).dispatch(request, *args, **kwargs)
