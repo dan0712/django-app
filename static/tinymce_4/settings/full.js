@@ -42,6 +42,8 @@ tinymce.init({
         {title: 'Small gray section', description: 'Small gray sections', url: '/static/templates/small_gray_section.html'},
         {title: 'Green button', description: 'button link', url: '/static/templates/button.html'},
         {title: 'Black button', description: 'button link', url: '/static/templates/black-button.html'},
+         {title: '2 columns', description: '2 Columns', url: '/static/templates/2_columns.html'},
+        {title: '3 columns', description: '3 Columns', url: '/static/templates/3_columns.html'},
         {title: '4 columns', description: '4 Columns', url: '/static/templates/4_columns.html'},
   ],
 
