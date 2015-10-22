@@ -16605,6 +16605,8 @@ var requirejs, require, define;
                     return e = y(e), C(u.points - 1, e.termYears, e.currentBalance, e.monthlyDeposit, e.monthlyReturns, e.monthlyVolatility)
                 },
                 suggestedDeposits: function(e) {
+                    console.log(e.targetBalance, e.termYears, e.currentBalance, e.monthlyDeposit, e.monthlyReturns, e.monthlyVolatility, e.zscore)
+
                     return e = y(e), S(e.targetBalance, e.termYears, e.currentBalance, e.monthlyDeposit, e.monthlyReturns, e.monthlyVolatility, e.zscore)
                 },
                 suggestedTerm: function(e) {
@@ -42555,7 +42557,8 @@ var requirejs, require, define;
                         defaultFeeRate: BMT.accountGroup.defaultFeeRate()
                     }),
                     t = s.netMonthlyTransactionAmount(this.model);
-                return e > 0 && t < 0 ? e += Math.abs(t) : e < 0 && t > 0 && (e -= t), e
+    
+            return e > 0 && t < 0 ? e += Math.abs(t) : e < 0 && t > 0 && (e -= t), e
             },
             amountChanged: function() {
                 this.trigger("valueChanged", {

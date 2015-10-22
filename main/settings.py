@@ -42,7 +42,11 @@ INSTALLED_APPS = (
     'compat',
     'main',
     'portfolios',
-    'advisors'
+    'advisors',
+    'support',
+    'tinymce_4',
+    'filebrowser',
+
 )
 
 MIDDLEWARE_CLASSES = (
@@ -111,4 +115,6 @@ SUPPORT_EMAIL = "support@betasmartz.com"
 SUPPORT_PHONE = "1888-888-888"
 IS_DEMO = False
 TIME_ZONE = "Australia/Sydney"
+
+
 from local_settings import *

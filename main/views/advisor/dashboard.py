@@ -64,7 +64,8 @@ class AdvisorClientInvites(CreateView, AdvisorView):
             response.context_data["inviter"] = advisor
             invitation_type = INVITATION_CLIENT
             response.context_data["invitation_type"] = invitation_type
-            response.context_data["invite_url"] = advisor.get_invite_url(invitation_type, None)
+            response.context_data["invite_url"] = advisor.get_invite_url(
+                invitation_type, None)
             response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(
                 invitation_type)].title()
             response.context_data["next"] = request.GET.get("next", None)
@@ -131,7 +132,7 @@ class AdvisorClients(TemplateView, AdvisorView):
 
     @property
     def clients(self):
-        pre_clients = self.model.objects
+        pre_clients = self.model.objects.filter(user__prepopulated=False)
 
         if self.filter == "1":
             pre_clients = pre_clients.filter(advisor=self.advisor)
@@ -301,8 +302,8 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
             .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupDetails, self).get_context_data(**
-                                                                       kwargs)
+        ctx = super(AdvisorAccountGroupDetails, self).get_context_data(
+            **kwargs)
         ctx["object"] = self.object
         return ctx
 
@@ -316,8 +317,8 @@ class AdvisorAccountGroupClients(DetailView, AdvisorView):
             .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupClients, self).get_context_data(**
-                                                                       kwargs)
+        ctx = super(AdvisorAccountGroupClients, self).get_context_data(
+            **kwargs)
         ctx["object"] = self.object
 
         ctx["household_clients"] = set(map(lambda x: x.primary_owner,
@@ -459,8 +460,8 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         self.search = request.GET.get("search", self.search)
         self.sort_col = request.GET.get("sort_col", self.sort_col)
         self.sort_dir = request.GET.get("sort_dir", self.sort_dir)
-        response = super(AdvisorCompositeSummary, self).get(request, *args, **
-                                                            kwargs)
+        response = super(AdvisorCompositeSummary, self).get(request, *args,
+                                                            **kwargs)
         return response
 
     @property
@@ -659,35 +660,40 @@ class AdvisorSupportGettingStarted(AdvisorView, TemplateView):
     template_name = 'advisor/support-getting-started.html'
 
 
-USER_DETAILS = ('first_name',  'middle_name', 'last_name', 'email')
+USER_DETAILS = ('first_name', 'middle_name', 'last_name', 'email')
 
 
 class PrepopulatedUserForm(forms.ModelForm):
 
-        advisor = None
-        account_class = ""
+    advisor = None
+    account_class = ""
 
-        def define_advisor(self, advisor):
-            self.advisor = advisor
+    def define_advisor(self, advisor):
+        self.advisor = advisor
 
-        def add_account_class(self, account_class):
-            self.account_class = account_class
+    def add_account_class(self, account_class):
+        self.account_class = account_class
 
-        class Meta:
-            model = User
-            fields = USER_DETAILS
-        
-        def save(self, *args, **kwargs):
-            self.instance = User(password="KONfLOP212=?hlokifksi21f6s1", prepopulated=True, **self.cleaned_data)
-            self.instance.save()
-            # create client instance
-            new_client = Client(advisor=self.advisor, user=self.instance,
-                                client_agreement=self.advisor.firm.client_agreement_url)
-            new_client.save()
-            personal_account = new_client.accounts.all()[0]
-            personal_account.account_class = self.account_class
-            personal_account.save()
-            return self.instance
+    class Meta:
+        model = User
+        fields = USER_DETAILS
+
+    def save(self, *args, **kwargs):
+        self.instance = User(password="KONfLOP212=?hlokifksi21f6s1",
+                             prepopulated=True,
+                             **
+                             self.cleaned_data)
+        self.instance.save()
+        # create client instance
+        new_client = Client(
+            advisor=self.advisor,
+            user=self.instance,
+            client_agreement=self.advisor.firm.client_agreement_url)
+        new_client.save()
+        personal_account = new_client.accounts.all()[0]
+        personal_account.account_class = self.account_class
+        personal_account.save()
+        return self.instance
 
 
 class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
@@ -703,11 +709,14 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
             user = User.objects.get(email=request.POST.get("email", None))
             if not user.prepopulated:
                 messages.error(request, "User already exists")
-                response = super(CreateNewClientPrepopulatedView, self).get(request, *args, **kwargs)
-                response.context_data["form"] = self.form_class(data=request.POST)
+                response = super(CreateNewClientPrepopulatedView, self).get(
+                    request, *args, **kwargs)
+                response.context_data["form"] = self.form_class(
+                    data=request.POST)
                 return response
             else:
-                return HttpResponseRedirect(self.success_url.format(user.client.pk))
+                return HttpResponseRedirect(self.success_url.format(
+                    user.client.pk))
 
         except ObjectDoesNotExist:
             pass
@@ -719,86 +728,99 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
             form.add_account_class(self.account_type)
             user = form.save()
             if self.invite_type == "blank":
-                return HttpResponseRedirect("/advisor/client_invites/{0}/build/confirm?invitation_type=blank".format(user.client.pk))
+                return HttpResponseRedirect(
+                    "/advisor/client_invites/{0}/build/confirm?invitation_type=blank".format(
+                        user.client.pk))
             else:
-                return HttpResponseRedirect(self.success_url.format(user.client.pk))
+                return HttpResponseRedirect(self.success_url.format(
+                    user.client.pk))
 
         else:
-            response = super(CreateNewClientPrepopulatedView, self).get(request, *args, **kwargs)
+            response = super(CreateNewClientPrepopulatedView, self).get(
+                request, *args, **kwargs)
             response.context_data["form"] = form
             return response
 
     def dispatch(self, request, *args, **kwargs):
-        self.account_type = request.GET.get("account_type", request.POST.get("account_type", None))
-        self.invite_type = request.GET.get("invite_type", request.POST.get("invite_type", None))
+        self.account_type = request.GET.get("account_type", request.POST.get(
+            "account_type", None))
+        self.invite_type = request.GET.get("invite_type", request.POST.get(
+            "invite_type", None))
 
         if self.account_type not in ["joint_account", "trust_account"]:
             messages.error(request, "Please select an account type")
-            return HttpResponseRedirect('/advisor/client_invites?invite_type={0}'.format(self.invite_type))
+            return HttpResponseRedirect(
+                '/advisor/client_invites?invite_type={0}'.format(
+                    self.invite_type))
 
-        return super(CreateNewClientPrepopulatedView, self).dispatch(request, *args, **kwargs)
+        return super(CreateNewClientPrepopulatedView, self).dispatch(
+            request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        return super(CreateNewClientPrepopulatedView, self).get(request, *args, **kwargs)
+        return super(CreateNewClientPrepopulatedView, self).get(request, *args,
+                                                                **kwargs)
 
     def get_context_data(self, **kwargs):
-        context_data = super(CreateNewClientPrepopulatedView, self).get_context_data(**kwargs)
+        context_data = super(CreateNewClientPrepopulatedView,
+                             self).get_context_data(**kwargs)
         context_data["account_type"] = self.account_type
         context_data["invite_type_new_email"] = self.invite_type
         return context_data
 
 
-PERSONAL_DETAILS = ('address_line_1', 'address_line_2', 'city', 'state', 'post_code', 'phone_number',
-                    'date_of_birth', "month", "day", "year", "gender")
+PERSONAL_DETAILS = ('address_line_1', 'address_line_2', 'city', 'state',
+                    'post_code', 'phone_number', 'date_of_birth', "month",
+                    "day", "year", "gender")
 
 
 class BuildPersonalDetailsForm(forms.ModelForm):
-        month = forms.CharField(required=False, max_length=150)
-        day = forms.CharField(required=False, max_length=150)
-        year = forms.CharField(required=False, max_length=150)
+    month = forms.CharField(required=False, max_length=150)
+    day = forms.CharField(required=False, max_length=150)
+    year = forms.CharField(required=False, max_length=150)
 
-        class Meta:
-            model = Client
-            fields = PERSONAL_DETAILS
+    class Meta:
+        model = Client
+        fields = PERSONAL_DETAILS
 
-        def __init__(self, *args, **kwargs):
-            # first call parent's constructor
-            super(BuildPersonalDetailsForm, self).__init__(*args, **kwargs)
-            # there's a `fields` property now
-            for k, field in self.fields.items():
-                field.required = False
-            if self.instance and  self.instance.date_of_birth:
-                self.fields["month"].initial = self.instance.date_of_birth.month
-                self.fields["year"].initial = self.instance.date_of_birth.year
-                self.fields["day"].initial = self.instance.date_of_birth.day
+    def __init__(self, *args, **kwargs):
+        # first call parent's constructor
+        super(BuildPersonalDetailsForm, self).__init__(*args, **kwargs)
+        # there's a `fields` property now
+        for k, field in self.fields.items():
+            field.required = False
+        if self.instance and self.instance.date_of_birth:
+            self.fields["month"].initial = self.instance.date_of_birth.month
+            self.fields["year"].initial = self.instance.date_of_birth.year
+            self.fields["day"].initial = self.instance.date_of_birth.day
 
-        def clean(self):
-            cleaned_data = super(BuildPersonalDetailsForm, self).clean()
-            year = cleaned_data.get("year", "")
-            month = cleaned_data.get("month", "")
-            day = cleaned_data.get("day", "")
+    def clean(self):
+        cleaned_data = super(BuildPersonalDetailsForm, self).clean()
+        year = cleaned_data.get("year", "")
+        month = cleaned_data.get("month", "")
+        day = cleaned_data.get("day", "")
 
-            if "" not in (day, month, year):
+        if "" not in (day, month, year):
 
-                try:
-                    date_b = "{year}-{month}-{day}".format(year=year,
-                                                           month=month,
-                                                           day=day)
+            try:
+                date_b = "{year}-{month}-{day}".format(year=year,
+                                                       month=month,
+                                                       day=day)
 
-                    date_b = datetime.strptime(date_b, "%Y-%m-%d")
-                    cleaned_data["date_of_birth"] = date_b
-                except ValueError:
-                    date_b = None
-                    self._errors['date_of_birth'] = mark_safe(u'<ul class="errorlist"><li>Invalid Date</li></ul>')
+                date_b = datetime.strptime(date_b, "%Y-%m-%d")
+                cleaned_data["date_of_birth"] = date_b
+            except ValueError:
+                date_b = None
+                self._errors['date_of_birth'] = mark_safe(
+                    u'<ul class="errorlist"><li>Invalid Date</li></ul>')
 
-                if date_b:
-                    cleaned_data["date_of_birth"] = date_b
-                    date_diff = datetime.now().year - date_b.year
-                    if date_diff < 18:
-                        self._errors['date_of_birth'] = \
-                            mark_safe(u'<ul class="errorlist"><li>Client under 18 </li></ul>')
+            if date_b:
+                cleaned_data["date_of_birth"] = date_b
+                date_diff = datetime.now().year - date_b.year
+                if date_diff < 18:
+                    self._errors['date_of_birth'] = \
+                        mark_safe(u'<ul class="errorlist"><li>Client under 18 </li></ul>')
 
-            return cleaned_data
+        return cleaned_data
 
 
 class BuildPersonalDetails(AdvisorView, UpdateView):
@@ -816,30 +838,31 @@ class BuildPersonalDetails(AdvisorView, UpdateView):
         return self.success_url.format(self.object.pk)
 
     def get_context_data(self, **kwargs):
-        context_data = super(BuildPersonalDetails, self).get_context_data(**kwargs)
+        context_data = super(BuildPersonalDetails, self).get_context_data(
+            **kwargs)
         context_data["years"] = list(range(1895, datetime.now().year))
         context_data["days"] = list(range(1, 31))
         context_data["years"].reverse()
         return context_data
 
 
-FINANCIAL_DETAILS = ('employment_status', 'occupation', 'employer', 'income', 'net_worth',
-                     'associated_to_broker_dealer', 'ten_percent_insider', 'public_position_insider',
+FINANCIAL_DETAILS = ('employment_status', 'occupation', 'employer', 'income',
+                     'net_worth', 'associated_to_broker_dealer',
+                     'ten_percent_insider', 'public_position_insider',
                      'us_citizen')
 
 
 class BuildFinancialDetailsForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = FINANCIAL_DETAILS
 
-        class Meta:
-            model = Client
-            fields = FINANCIAL_DETAILS
-
-        def __init__(self, *args, **kwargs):
-            # first call parent's constructor
-            super(BuildFinancialDetailsForm, self).__init__(*args, **kwargs)
-            # there's a `fields` property now
-            for k, field in self.fields.items():
-                field.required = False
+    def __init__(self, *args, **kwargs):
+        # first call parent's constructor
+        super(BuildFinancialDetailsForm, self).__init__(*args, **kwargs)
+        # there's a `fields` property now
+        for k, field in self.fields.items():
+            field.required = False
 
 
 class BuildFinancialDetails(AdvisorView, UpdateView):
@@ -864,10 +887,12 @@ class BuildConfirm(AdvisorView, TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         pk = kwargs["pk"]
-        self.invitation_type = self.request.GET.get("invitation_type", self.request.POST.get('invitation_type', None))
+        self.invitation_type = self.request.GET.get(
+            "invitation_type", self.request.POST.get('invitation_type', None))
 
         try:
-            self.object = Client.objects.get(pk=pk, advisor=request.user.advisor)
+            self.object = Client.objects.get(pk=pk,
+                                             advisor=request.user.advisor)
         except ObjectDoesNotExist:
             raise Http404()
 
@@ -879,19 +904,23 @@ class BuildConfirm(AdvisorView, TemplateView):
         user_values = []
         user_verbose_names = []
         for key in USER_DETAILS:
-            user_verbose_names.append(User._meta.get_field_by_name(key)[0].verbose_name.title())
-            user_values.append(getattr(self.object.user, "get_{0}_display".format(key),
-                                       getattr(self.object.user, key, "")))
+            user_verbose_names.append(User._meta.get_field_by_name(key)[
+                0].verbose_name.title())
+            user_values.append(getattr(self.object.user,
+                                       "get_{0}_display".format(key), getattr(
+                                           self.object.user, key, "")))
         user_dict = dict(zip(user_verbose_names, user_values))
-        user_dict["Full Name"] = "{0} {1} {2}".format(user_dict.pop("First Name"), user_dict.pop("Middle Name"),
-                                                      user_dict.pop("Last Name"))
+        user_dict["Full Name"] = "{0} {1} {2}".format(
+            user_dict.pop("First Name"), user_dict.pop("Middle Name"),
+            user_dict.pop("Last Name"))
 
         verbose_names = []
         values = []
         for key in PERSONAL_DETAILS:
             if key in ("month", "year", "day"):
                 continue
-            verbose_names.append(Client._meta.get_field_by_name(key)[0].verbose_name.title())
+            verbose_names.append(Client._meta.get_field_by_name(key)[
+                0].verbose_name.title())
             values.append(getattr(self.object, "get_{0}_display".format(key),
                                   getattr(self.object.user, key, "")))
 
@@ -900,7 +929,8 @@ class BuildConfirm(AdvisorView, TemplateView):
         verbose_names = []
         values = []
         for key in FINANCIAL_DETAILS:
-            verbose_names.append(Client._meta.get_field_by_name(key)[0].verbose_name.title())
+            verbose_names.append(Client._meta.get_field_by_name(key)[
+                0].verbose_name.title())
             values.append(getattr(self.object, "get_{0}_display".format(key),
                                   getattr(self.object.user, key, "")))
 
@@ -927,4 +957,3 @@ class BuildConfirm(AdvisorView, TemplateView):
         context_data["email"] = self.object.user.email
 
         return context_data
-

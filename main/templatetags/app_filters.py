@@ -27,7 +27,9 @@ def b_datetime(value):
 
 @register.filter
 def c_datetime(value):
-    return value.strftime('%Y%m%d%H%M%S')
+    if value:
+        return value.strftime('%Y%m%d%H%M%S')
+    return ""
 
 
 @register.filter
@@ -62,4 +64,3 @@ def json_none(value):
 def add_class_id(field, css_id):
     css, _id = css_id.split(", ")
     return field.as_widget(attrs={"class": css, "id": _id})
-

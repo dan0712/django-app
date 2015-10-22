@@ -527,6 +527,10 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     betasmartz_agreement = models.BooleanField()
 
     @property
+    def clients(self):
+        return self.all_clients.filter(user__prepopulated=False)
+
+    @property
     def firm_colored_logo(self):
         return self.firm.knocked_out_logo_url
 
@@ -827,7 +831,7 @@ EMPLOYMENT_STATUS_CHOICES = (
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
-    advisor = models.ForeignKey(Advisor, related_name="clients")
+    advisor = models.ForeignKey(Advisor, related_name="all_clients")
     secondary_advisors = models.ManyToManyField(
         Advisor,
         related_name='secondary_clients',

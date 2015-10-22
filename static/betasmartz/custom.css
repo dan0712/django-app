@@ -1,0 +1,158 @@
+.alliance-item{
+	display:inline-block;
+	max-width:380px;
+	width:29%;
+	margin:0 2%;
+}
+.alliance-item p{
+		display:none;
+}
+
+.e-info p{
+	display:block;	
+}
+
+.alliance-item img{
+	max-width:100%;	
+}
+
+.comment > #respond {
+	margin-top: 2px;
+	background: #ffffff;
+	padding: 30px 30px 40px;
+}
+
+.pager {
+	overflow: hidden;
+}
+
+.pager li {
+	float: left;
+	width: 50%;
+}
+
+.pager li.next {
+	text-align: right;
+}
+
+.post-bg > .tags {
+	margin-bottom: 20px;
+}
+
+.regularpage {
+	padding: 150px 0 60px;
+}
+
+.has-splash .regularpage {
+	padding: 70px 0 60px;
+}
+
+.pagebuilder-content {
+	padding: 110px 0 60px;
+}
+
+.has-splash .pagebuilder-content {
+	padding: 0 0 60px;
+}
+
+.response-message {
+	display: none;
+}
+
+.pagebuilder-content:empty {
+	display: none;
+}
+
+.page-template-page_builder-php #contact {
+	padding-top: 0;
+}
+
+.page-template-page_builder-php.has-no-contact .pagebuilder-content {
+	padding-bottom: 0;
+}
+
+.is-project .post-title {
+	margin-bottom: 20px;
+}
+
+.overlay-item img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	vertical-align: bottom;
+}
+
+.popup-gallery a,
+.project-type-gallery a {
+	display: none;
+}
+
+.popup-gallery a:first-child,
+.project-type-gallery a:first-child {
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	bottom: 0;
+	z-index: 2;
+}
+
+.section-content-wrap {
+	margin-bottom: 25px;
+}
+
+.section-content-wrap > *:last-child {
+	margin-bottom: 0;
+}
+
+.text-color-light .section-content-wrap * {
+	color: #fff;
+}
+
+.bg-img.fixed {
+	background-attachment: fixed;
+}
+
+.mobile .bg-img.fixed {
+	background-attachment: scroll;
+}
+
+@media screen and (max-width: 782px) {
+	.desktop .admin-bar .top-bar,
+	.mobile .admin-bar .top-bar {
+		top: 42px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.desktop .admin-bar .top-bar,
+	.mobile .admin-bar .top-bar {
+		top: 0;
+	}
+	.alliance-item{
+	display:inline-block;
+	width:100%;
+}
+}
+
+.gallery-link a {
+	cursor: pointer;
+}
+@-moz-document url-prefix() { 
+	input[type="submit"] {
+		line-height: 15px;
+	}
+}
+
+a.btn {
+	padding: 12px 25px;
+}
+
+.pe-wp-default a.btn {
+	margin: 2px;
+}
+
+.pe-wp-default a.btn > i {
+	font-size: 13px;
+}
