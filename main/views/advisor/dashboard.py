@@ -1,4 +1,3 @@
-__author__ = 'cristian'
 from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
 from django import forms
 from django.views.generic import CreateView
@@ -21,7 +20,6 @@ from django.template import RequestContext
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import (
     load_backend, BACKEND_SESSION_KEY, login as auth_login)
-
 from datetime import datetime
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',

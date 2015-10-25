@@ -4,6 +4,7 @@ from .views import *
 from django.views.decorators.csrf import csrf_exempt
 from main import settings
 from django.shortcuts import HttpResponseRedirect, HttpResponse
+from filebrowser.sites import site
 
 
 def ok_response_json(*args, **kwargs):
@@ -13,7 +14,10 @@ def ok_response_json(*args, **kwargs):
 
 urlpatterns = patterns(
     '',
+    url(r'^admin/filebrowser/', include(site.urls)),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^support/', include('pages.urls')),
+
     url(r'^session',
         csrf_exempt(Session.as_view()),
         name="session"),

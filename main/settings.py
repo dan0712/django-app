@@ -36,16 +36,16 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',  
-    'suit',
-    'django.contrib.admin',
     'hijack',
     'compat',
     'main',
     'portfolios',
     'advisors',
-    'support',
     'tinymce_4',
+     'pages',
+    'suit',
     'filebrowser',
+    'django.contrib.admin',
 
 )
 
@@ -57,6 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 )
 
 ROOT_URLCONF = 'main.urls'
@@ -65,6 +66,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 
 TEMPLATE_CONTEXT_PROCESSORS = TCP + (
+    "pages.context_processors.media",
     'django.core.context_processors.request',
     'main.context_processors.site_contact'
 )
@@ -115,6 +117,47 @@ SUPPORT_EMAIL = "support@betasmartz.com"
 SUPPORT_PHONE = "1888-888-888"
 IS_DEMO = False
 TIME_ZONE = "Australia/Sydney"
+PAGE_DEFAULT_TEMPLATE = "support/base.html"
+gettext_noop = lambda s: s
+PAGE_LANGUAGES = (
+    ('en-us', gettext_noop('US English')),
+)
+
+CMS_UNIHANDECODE_HOST = '/static/unihandecode/'
+CMS_UNIHANDECODE_VERSION = '1.0.0'
+CMS_UNIHANDECODE_DECODERS = ['ja', 'zh', 'vn', 'kr', 'diacritic']
+
+
+# Django Suit configuration example
+SUIT_CONFIG = {
+    # header
+    'ADMIN_NAME': 'Betasmartz Admin',
+    # 'HEADER_DATE_FORMAT': 'l, j. F Y',
+    # 'HEADER_TIME_FORMAT': 'H:i',
+
+    # forms
+    # 'SHOW_REQUIRED_ASTERISK': True,  # Default True
+    # 'CONFIRM_UNSAVED_CHANGES': True, # Default True
+
+    # menu
+    # 'SEARCH_URL': '/admin/auth/user/',
+    # 'MENU_ICONS': {
+    #    'sites': 'icon-leaf',
+    #    'auth': 'icon-lock',
+    # },
+    # 'MENU_OPEN_FIRST_CHILD': True, # Default True
+    # 'MENU_EXCLUDE': ('auth.group',),
+    # 'MENU': (
+    #     'sites',
+    #     {'app': 'auth', 'icon':'icon-lock', 'models': ('user', 'group')},
+    #     {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
+    #     {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
+    # ),
+
+    # misc
+    # 'LIST_PER_PAGE': 15
+}
 
 
 from local_settings import *
+

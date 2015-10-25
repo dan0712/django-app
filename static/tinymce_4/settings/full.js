@@ -21,9 +21,9 @@ tinymce.init({
   relative_urls: false,
   valid_elements: '*[*]',
   content_css: [
+    '/static/tinymce_4/tinymce/plugins/fontawesome/css/font-awesome.min.css',
     '/static/tinymce_4/css/tinymce_content.css?' + new Date().getTime(),
     '/static/tinymce_4/css/tinymce_reset.css?'+ new Date().getTime(),
-    '//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css',
     '/static/betasmartz/style.css',
     '/static/betasmartz/base.css',
     '/static/betasmartz/blog.css',
@@ -33,16 +33,18 @@ tinymce.init({
   ],
 
   plugins: [
-    'hr fontawesome noneditable advlist anchor autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
+    'fontawesome noneditable advlist anchor autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
     'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
-    'save table contextmenu directionality emoticons template paste textcolor'
+    'save table contextmenu directionality emoticons template paste textcolor hr'
   ],
   templates: [
         {title: 'Gray section', description: 'gray section', url: '/static/templates/gray-section.html'},
         {title: 'Small gray section', description: 'Small gray sections', url: '/static/templates/small_gray_section.html'},
+        {title: 'Dark Green section', description: 'Dark Green section', url: '/static/templates/dark_green.html'},
+        {title: 'Light Green section', description: 'Light Green section', url: '/static/templates/light_green.html'},
         {title: 'Green button', description: 'button link', url: '/static/templates/button.html'},
         {title: 'Black button', description: 'button link', url: '/static/templates/black-button.html'},
-         {title: '2 columns', description: '2 Columns', url: '/static/templates/2_columns.html'},
+        {title: '2 columns', description: '2 Columns', url: '/static/templates/2_columns.html'},
         {title: '3 columns', description: '3 Columns', url: '/static/templates/3_columns.html'},
         {title: '4 columns', description: '4 Columns', url: '/static/templates/4_columns.html'},
   ],

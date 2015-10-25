@@ -1,3 +1,6 @@
+{% load pages_tags %}
+{% imageplaceholder "header background image" as imgsrc %}
+{% get_content current_page "title" as title %}
 <!DOCTYPE html>
 <html lang="en-AU">
 <!--[if IE 7]><html lang="en" class="ie7"><![endif]-->
@@ -9,52 +12,44 @@
 	<meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/modernizr.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/modernizr.js"></script>
 
-	<title>Features | BetaSmartz</title>
+	<title>{{ title }} | BetaSmartz</title>
 
 	<!-- Fonts -->
 	<link href='http://fonts.googleapis.com/css?family=Raleway:400,100,300,700' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
 
 	<!-- Essential stylesheets -->
-	<!--<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/font-awesome.min.css">-->
-    <link rel="stylesheet" href="http://cdn.jsdelivr.net/fontawesome/4.3.0/css/font-awesome.min.css?ver=4.3.0">
 
-	<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/magnific-popup.css">
-	<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/bxslider.css">
-	<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/owl.carousel.css">
-	<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/owl.theme.css">
-	<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/base.css">
+	<!--<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/lib/font-awesome.min.css">-->
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/fontawesome/4.4.0/css/font-awesome.min.css?ver=4.4.0">
+
+	<link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/magnific-popup.css">
+	<link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/bxslider.css">
+	<link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/owl.carousel.css">
+	<link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/owl.theme.css">
+	<link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/base.css">
 
 	<!-- The stylesheet -->
-	<link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/style.css">
+	<link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/style.css">
 	<!--<link rel="stylesheet" href="css/color/green.css">-->
-    <link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/custom.css">
-    <link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/main.css">
-    <link rel="stylesheet" href="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/css/blog.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/custom.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/main.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}betasmartz/blog.css">
 
 	<!-- The favicon -->
 
-	        	<link rel="shortcut icon" href="http://www.betasmartz.com/wp-content/uploads/2015/09/icon.png">
-
-    <link rel='stylesheet' id='tooltipck-css'  href='http://www.betasmartz.com/wp-content/plugins/tooltip-ck/assets/tooltipck.css?ver=4.1.8' type='text/css' media='all' />
-<link rel='stylesheet' id='contact-form-7-css'  href='http://www.betasmartz.com/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=4.1' type='text/css' media='all' />
-<link rel='stylesheet' id='wp-pagenavi-css'  href='http://www.betasmartz.com/wp-content/plugins/wp-pagenavi/pagenavi-css.css?ver=2.70' type='text/css' media='all' />
-<link rel='stylesheet' id='mailchimp-for-wp-checkbox-css'  href='http://www.betasmartz.com/wp-content/plugins/mailchimp-for-wp/assets/css/checkbox.min.css?ver=2.2.5' type='text/css' media='all' />
-<link rel='stylesheet' id='mailchimp-for-wp-form-css'  href='http://www.betasmartz.com/wp-content/plugins/mailchimp-for-wp/assets/css/form.min.css?ver=2.2.5' type='text/css' media='all' />
-<link rel='stylesheet' id='shiftnav-css'  href='http://www.betasmartz.com/wp-content/plugins/shiftnav-responsive-mobile-menu/assets/css/shiftnav.css?ver=1.2' type='text/css' media='all' />
-<link rel='stylesheet' id='shiftnav-font-awesome-css'  href='http://www.betasmartz.com/wp-content/plugins/shiftnav-responsive-mobile-menu/assets/css/fontawesome/css/font-awesome.min.css?ver=1.2' type='text/css' media='all' />
-<link rel='stylesheet' id='shiftnav-standard-dark-css'  href='http://www.betasmartz.com/wp-content/plugins/shiftnav-responsive-mobile-menu/assets/css/skins/standard-dark.css?ver=4.1.8' type='text/css' media='all' />
-<link rel='stylesheet' id='style.owl.carousel-css'  href='http://www.betasmartz.com/wp-content/plugins/owl-carousel/css/owl.carousel.css?ver=4.1.8' type='text/css' media='all' />
-<link rel='stylesheet' id='style.owl.carousel.theme-css'  href='http://www.betasmartz.com/wp-content/plugins/owl-carousel/css/owl.theme.css?ver=4.1.8' type='text/css' media='all' />
-<link rel='stylesheet' id='style.owl.carousel.transitions-css'  href='http://www.betasmartz.com/wp-content/plugins/owl-carousel/css/owl.transitions.css?ver=4.1.8' type='text/css' media='all' />
-<link rel='stylesheet' id='style.owl.carousel.styles-css'  href='http://www.betasmartz.com/wp-content/plugins/owl-carousel/css/styles.css?ver=4.1.8' type='text/css' media='all' />
-<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
-<script type='text/javascript' src='http://www.betasmartz.com/wp-content/plugins/tooltip-ck/assets/tooltipck.js?ver=4.1.8'></script>
-<script type='text/javascript' src='http://www.betasmartz.com/wp-content/plugins/owl-carousel/js/owl.carousel.js?ver=4.1.8'></script>
-<script type='text/javascript' src='http://www.betasmartz.com/wp-content/plugins/owl-carousel/js/script.js?ver=4.1.8'></script>
-<link rel='canonical' href='http://www.betasmartz.com/features/' />
+    <link rel="shortcut icon" href="{{ STATIC_URL }}images/favicon.ico">
+    <link rel='stylesheet' id='tooltipck-css'  href='{{ STATIC_URL }}betasmartz/css/tooltipck.css?ver=4.1.8' type='text/css' media='all' />
+    <link rel='stylesheet' id='contact-form-7-css'  href='{{ STATIC_URL }}betasmartz/css/styles.css?ver=4.1' type='text/css' media='all' />
+    <link rel='stylesheet' id='wp-pagenavi-css'  href='{{ STATIC_URL }}betasmartz/css/pagenavi-css.css?ver=2.70' type='text/css' media='all' />
+    <link rel='stylesheet' id='shiftnav-css'  href='{{ STATIC_URL }}betasmartz/css/shiftnav.css?ver=1.2' type='text/css' media='all' />
+    <link rel='stylesheet' id='shiftnav-standard-dark-css'  href='{{ STATIC_URL }}betasmartz/css/standard-dark.css?ver=4.1.8' type='text/css' media='all' />
+    <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+    <script type='text/javascript' src='{{ STATIC_URL }}betasmartz/css/tooltipck.js?ver=4.1.8'></script>
+    <script type='text/javascript' src='{{ STATIC_URL }}betasmartz/css/owl.carousel.js?ver=4.1.8'></script>
+    <script type='text/javascript' src='{{ STATIC_URL }}betasmartz/css/owl-script.js'></script>
 
 	<!-- ShiftNav CSS
 	================================================================ -->
@@ -81,14 +76,14 @@
 		<!-- Javascript -->
 	<!--<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/jquery.min.js"></script>-->
 
-    <script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/nt-shortcode.js"></script>
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/retina.min.js"></script>
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/jquery.magnific-popup.min.js"></script>
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/jquery.bxslider.min.js"></script>
+    <script src="{{ STATIC_URL }}betasmartz/js/nt-shortcode.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/js/retina.min.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/js/jquery.magnific-popup.min.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/js/jquery.bxslider.min.js"></script>
 	<!--<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/owl.carousel.min.js"></script>-->
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/jquery.fitvids.js"></script>
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/lib/jquery.equal.js"></script>
-	<script src="http://www.betasmartz.com/wp-content/themes/djclentheam/assets/js/main.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/js/jquery.fitvids.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/js/jquery.equal.js"></script>
+	<script src="{{ STATIC_URL }}betasmartz/js/main.js"></script>
 	<!--[if lt IE 9]>
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
@@ -151,7 +146,7 @@ color:#A6CE39;
 
 				<!-- Symbolic or typographic logo -->
 				<div class="tb-logo">
-                    					                        <a href="#home" class="scrollto">
+                    <a href="#home" class="scrollto">
                             <img src="http://www.betasmartz.com/wp-content/uploads/2015/09/logoBG.png" alt="logo" />
                         </a>
                     				</div>
@@ -161,19 +156,14 @@ color:#A6CE39;
 				<input type="checkbox" id="toggle" />
 				<label for="toggle" class="toggle"></label>
 
+                <nav class="menu">
+                    <ul class="header_menu menu">
+                        {% for page in pages_navigation %}
+                            {% pages_menu page %}
+                        {% endfor %}
+                    </ul>
+                </nav>
 
-				<!-- Menu items -->
-				<nav class="menu">
-					<ul id="menu-main-menu" class="header_menu menu menu"><li id="menu-item-22" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22"><a href="http://www.betasmartz.com/">Home</a></li>
-<li id="menu-item-23" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-4 current_page_item menu-item-23"><a href="http://www.betasmartz.com/features/">Features</a></li>
-<li id="menu-item-24" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-24"><a href="http://www.betasmartz.com/tools/">Tools</a></li>
-<li id="menu-item-25" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25"><a href="http://www.betasmartz.com/portfolios/">Portfolios</a></li>
-<li id="menu-item-26" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-26"><a href="http://www.betasmartz.com/team/">Team</a></li>
-<li id="menu-item-376" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-376"><a href="http://www.betasmartz.com/faqs/">FAQs</a></li>
-<li id="menu-item-379" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-379"><a href="http://www.betasmartz.com/news/">News</a></li>
-<li id="menu-item-391" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-391"><a href="http://www.betasmartz.com/connect/">Connect</a></li>
-<li id="menu-item-531" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-531"><a href="http://www.betasmartz.com/login/">Login</a></li>
-</ul>				</nav>
 
 
 			</div>
@@ -182,66 +172,9 @@ color:#A6CE39;
 
 
 <div id="features" class="pagebuilder-content">
-<section class="padding-top-normal padding-bottom-normal  bg-image-cover section-type-intro" id="section-24" style="background-color: #fff;background-image: url('http://www.betasmartz.com/wp-content/uploads/2015/06/shutterstock_258760433-Edited.jpg');">
-
-
-
-		<div class="row section-content">
-			<div class="eight col center text-center">
-				<div class="intro-section-content section-content-wrap">
-
-
-                <h1 style="text-align: center;">Accelerate your business.</h1>
-
-                </div>
-
-            </div>
-		</div>
-
-
-
-		<div class="row equal">
-
-
-								<div class="col four">
-					<div class="icon-nav">
-
-                        <i class="fa fa-briefcase"></i>
-
-                        <p><b>Scale Your Practice</b></p>
-<p>Stop running software that wasn’t designed to work together. Put an end to custom reports and manual rebalancing.</p>
-
-
-					</div>
-				</div>
-                				<div class="col four">
-					<div class="icon-nav">
-
-                        <i class="fa fa-child"></i>
-
-                        <p><b>Scale Your Clients</b></p>
-<p>BetaSmartz will help you to reallocate the time and money spent on the routine parts of your business that do not add value.</p>
-
-
-					</div>
-				</div>
-                				<div class="col four">
-					<div class="icon-nav">
-
-                        <i class="fa fa-code-fork"></i>
-
-                        <p><b>Scale Your Technology</b></p>
-<p>Technology development continues to accelerate, yet most advisors are behind the curve. Your clients deserve our digital and mobile experience.</p>
-
-
-					</div>
-				</div>
-
-
-
-		</div>
-
-
+<section class="padding-top-normal padding-bottom-normal
+  bg-image-cover section-type-intro" id="section-24" style="background-color: #fff;{% if imgsrc %} background-image: url('{{ MEDIA_URL }}{{ imgsrc }}'); {% endif %}">
+    {% placeholder "Header text" with TinyMceTextArea %}
 </section>
 
 
@@ -255,7 +188,7 @@ color:#A6CE39;
 
 
 
-                <h1 style="text-align: center;"><i class="fa fa-cogs"></i> Features</h1>
+                <h1 style="text-align: center;"><i class="fa fa-cogs"></i> {{ title }}</h1>
 
             </div>
 
@@ -264,337 +197,8 @@ color:#A6CE39;
     </div>
 
 </section>
-
-
-
-<section class="padding-top-normal padding-bottom-none  bg-image-cover section-type-process" id="section-41" style="background-color:#ffffff;">
-
-
-
-		<div class="row section-content">
-			<div class="eight col center text-center">
-				<div class="section-content-wrap">
-
-
-					<h1 style="text-align: center;">You’re in control of <strong>your relationship with your client</strong>.</h1>
-<h3 style="text-align: center;">Clients see your branded experience, sign up with you, and communicate directly with you.</h3>
-<h4 style="text-align: center;">Your brand on your portal for your clients.</h4>
-<p><img class="aligncenter size-full wp-image-155" src="http://www.betasmartz.com/wp-content/uploads/2015/09/features-laptop1a.png" alt="features-laptop1c" width="750" height="400" /></p>
-
-				</div>
-			</div>
-		</div>
-
-
-
-
-		<div class="row equal">
-
-
-								<div class="col three medium-six small-twelve">
-					<div class="icon-circle">
-
-
-							<i class="fa fa-file-o"></i>
-
-
-							<h3 class="h5">Branded Statements</h3>
-<p>Statements and other client documents are branded with your logo.</p>
-
-
-
-					</div>
-				</div>
-                				<div class="col three medium-six small-twelve">
-					<div class="icon-circle">
-
-
-							<i class="fa fa-flag-checkered"></i>
-
-
-							<h3 class="h5">Branded Sign-Up</h3>
-<p>Your brand is visible during the sign-up process.</p>
-
-
-
-					</div>
-				</div>
-                				<div class="col three medium-six small-twelve">
-					<div class="icon-circle">
-
-
-							<i class="fa fa-list-alt"></i>
-
-
-							<h3 class="h5">Branded Portal</h3>
-<p>Clients see your brand and can access your contact information within the client portal.</p>
-
-
-
-					</div>
-				</div>
-                				<div class="col three medium-six small-twelve">
-					<div class="icon-circle">
-
-
-							<i class="fa fa-envelope-o"></i>
-
-
-							<h3 class="h5">Branded E-mails</h3>
-<p>Branded client communication is automated for every transaction.</p>
-
-
-
-					</div>
-				</div>
-
-		</div>
-
-
-</section>
-
-<section class="padding-top-none padding-bottom-large  section-type-column" style="background-color: ;" id="section-59">
-
-    <div class="container">
-
-        <div class="row">
-
-            <div class="three columns col"></div>
-
-            <div class="three columns col">
-
-
-
-                <h4><a class="button blue" href="/connect">I Want In</a></h4>
-
-            </div>
-
-            <div class="three columns col">
-
-
-
-                <h4><a class="button" href="#section-centralized-advisor-dashboard">Show Me More</a></h4>
-
-            </div>
-
-            <div class="three columns col"></div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-
-<section class="padding-top-normal padding-bottom-normal  bg-image-cover section-type-process" id="section-centralized-advisor-dashboard" style="background-color: #fff;background-image: url('http://www.betasmartz.com/wp-content/uploads/2015/06/shutterstock_136235642-Edited.jpg');">
-
-
-
-		<div class="row section-content">
-			<div class="eight col center text-center">
-				<div class="section-content-wrap">
-
-                	<p><img class="aligncenter size-full wp-image-167" src="http://www.betasmartz.com/wp-content/uploads/2015/09/features-laptop1a11.png" alt="features-laptop1c" width="750" height="400" /></p>
-<h2 style="text-align: center;">Centralised Advisor Dashboard</h2>
-<h5>A clean, advisor-branded interface combines power with ease of use for the ultimate advisor experience.</h5>
-<p><script src="//fast.wistia.com/assets/external/popover-v1.js" charset="ISO-8859-1"></script></p>
-<h1></h1>
-
-				</div>
-			</div>
-		</div>
-
-
-
-
-		<div class="row equal">
-
-
-
-
-                <div class="col four">
-					<div class="icon-circle">
-
-                            <i class="fa fa-flag-checkered"></i>
-
-
-							<h3 class="h5">Sign-Up</h3>
-<p>A quick and simple sign-up process gets clients up and running on the platform without the headache.</p>
-
-					</div>
-				</div>
-
-                <div class="col four">
-					<div class="icon-circle">
-
-                            <i class="fa fa-bar-chart"></i>
-
-
-							<h3 class="h5">Smart Rebalancing</h3>
-<p>Breaking down how portfolios are rebalanced and where drift occurs has never been easier. </p>
-
-					</div>
-				</div>
-
-                <div class="col four">
-					<div class="icon-circle">
-
-                            <i class="fa fa-tasks"></i>
-
-
-							<h3 class="h5">Decumulation Calculator</h3>
-<p>This tool provides on-the-spot advice for clients who want to know how much is safe to withdraw.</p>
-
-					</div>
-				</div>
-
-		</div>
-
-
-</section>
-
-
-<section class="padding-top-normal padding-bottom-normal  bg-image-cover section-type-process" id="section-taxes" style="background-color: #f0f3f7;">
-
-
-
-		<div class="row section-content">
-			<div class="eight col center text-center">
-				<div class="section-content-wrap">
-
-                	<h2 style="text-align: center;">Save time you would spend doing regular account maintenance and <strong>spend it with your clients</strong> instead.</h2>
-<p>&nbsp;</p>
-
-				</div>
-			</div>
-
-		</div>
-
-
-
-
-		<div class="row equal">
-
-
-
-				<div class="col six">
-					<div class="icon-circle">
-
-
-							<i class="fa fa-retweet"></i>
-
-							<h3 class="h5">Automated Back Office</h3>
-<p>We automate all the time-consuming, mundane tasks for you including trading, rebalancing, account opening, and portfolio management.</p>
-
-					</div>
-				</div>
-
-
-				<div class="col six">
-					<div class="icon-circle">
-
-
-							<i class="fa fa-tachometer"></i>
-
-							<h3 class="h5">Advisor Dashboard</h3>
-<p>Start your day with a glance at your entire client base. Proactive alerts let you know which clients may need attention.</p>
-<p>Meanwhile, we automate all communication – sent on your behalf, from you – regarding cash flows and other actions of importance. Even when you&#8217;re not working, BetaSmartz is working for you.</p>
-
-					</div>
-				</div>
-
-
-
-		</div>
-
-
-</section>
-
-<section class="padding-top-none padding-bottom-none  section-type-column" style="background-color: #e1e4e8 ;" id="section-64">
-
-    <div class="container">
-
-        <div class="row">
-
-            <div class="twelve columns col">
-
-
-                <p style="text-align: center;"><small>Unless otherwise specified, all return figures shown above are for illustrative purposes only, and are not actual customer or model returns. Actual returns will vary greatly and depend on personal and market circumstances.</small></p>
-
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="padding-top-normal padding-bottom-large  section-type-column" style="background-color: ;" id="section-20">
-
-    <div class="container">
-
-
-        <div class="row">
-
-            <div class="twelve columns col">
-
-            	<h2 style="text-align: center;">We’ll pay your bills.</h2>
-<h5 style="text-align: center;">We will calculate, remit, and provide statements for all of your assets on the platform. That way you can spend your time on the things that matter most.</h5>
-<p>&nbsp;</p>
-<h4><a class="button blue" href="/connect">Okay, Let’s Do This!</a></h4>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="padding-top-large padding-bottom-large text-color-light section-type-column" style="background-color: #a6ce39;" id="section-22">
-
-    <div class="container">
-
-        <div class="row">
-
-            <div class="twelve columns col">
-
-
-                <div id="mc4wp_widget-2" class="widget_mc4wp_widget"><h3  style="text-align: center;" class="widget-title">Get news and updates</h3><!-- Form by MailChimp for WordPress plugin v2.2.5 - https://mc4wp.com/ --><div id="mc4wp-form-1" class="form mc4wp-form"><form method="post" action="http://www.betasmartz.com/features/"><p>
-<div class="sign_shine">
-<label style="display: block; text-transform: uppercase; font-size: 20px;">Email address </label>
-	<input style="max-width:300px; float:left;display:block;" type="email" id="mc4wp_email" name="EMAIL" placeholder="" required />
-
-<input class="btn_shine" type="submit" value="Sign up" />
+    {% placeholder "Body text" with TinyMceTextArea %}
 </div>
-
-</p><textarea name="_mc4wp_required_but_not_really" style="display: none !important;"></textarea><input type="hidden" name="_mc4wp_form_submit" value="1" /><input type="hidden" name="_mc4wp_form_instance" value="1" /><input type="hidden" name="_mc4wp_form_nonce" value="230a9b0778" /></form></div><!-- / MailChimp for WP Plugin --></div>
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	<!-- Back to top -->
@@ -633,7 +237,14 @@ color:#A6CE39;
 	<div class="shiftnav shiftnav-nojs shiftnav-left-edge shiftnav-skin-standard-dark shiftnav-transition-standard" id="shiftnav-main" data-shiftnav-id="shiftnav-main">
 		<div class="shiftnav-inner">
 			<h3 class="shiftnav-menu-title shiftnav-site-title"><a href="http://www.betasmartz.com">BetaSmartz</a></h3>
-	<nav class="shiftnav-nav"><ul id="menu-main-menu-1" class="shiftnav-menu shiftnav-targets-default shiftnav-targets-text-default shiftnav-targets-icon-default"><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-22 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/">Home</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-4 current_page_item menu-item-23 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/features/">Features</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-24 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/tools/">Tools</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/portfolios/">Portfolios</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-26 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/team/">Team</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-376 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/faqs/">FAQs</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-379 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/news/">News</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-391 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/connect/">Connect</a></li><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-531 shiftnav-depth-0"><a class="shiftnav-target"  href="http://www.betasmartz.com/login/">Login</a></li></ul></nav>		</div><!-- /.shiftnav-inner -->
+	<nav class="shiftnav-nav">
+          <ul class="shiftnav-menu shiftnav-targets-default shiftnav-targets-text-default shiftnav-targets-icon-default">
+                        {% for page in pages_navigation %}
+                            {% pages_menu page %}
+                        {% endfor %}
+          </ul>
+
+        </nav>		</div><!-- /.shiftnav-inner -->
 	</div><!-- /.shiftnav #shiftnav-main -->
 
 
@@ -641,19 +252,19 @@ color:#A6CE39;
 				jQuery('.mc4wp-form').find('[type="submit"]').click(function () {
 					jQuery(this).parents('.mc4wp-form').addClass('mc4wp-form-submitted');
 				});
-			</script><script type='text/javascript' src='http://www.betasmartz.com/wp-content/plugins/contact-form-7/includes/js/jquery.form.min.js?ver=3.51.0-2014.06.20'></script>
+			</script><script type='text/javascript' src='{{ STATIC_URL }}betasmartz/css/jquery.form.min.js?ver=3.51.0-2014.06.20'></script>
 <script type='text/javascript'>
 /* <![CDATA[ */
 var _wpcf7 = {"loaderUrl":"http:\/\/www.betasmartz.com\/wp-content\/plugins\/contact-form-7\/images\/ajax-loader.gif","sending":"Sending ..."};
 /* ]]> */
 </script>
-<script type='text/javascript' src='http://www.betasmartz.com/wp-content/plugins/contact-form-7/includes/js/scripts.js?ver=4.1'></script>
+<script type='text/javascript' src='{{ STATIC_URL }}betasmartz/css/scripts.js?ver=4.1'></script>
 <script type='text/javascript'>
 /* <![CDATA[ */
 var shiftnav_data = {"shift_body":"on","lock_body":"on","lock_body_x":"off","swipe_close":"on","swipe_open":"off","swipe_tolerance_x":"150","swipe_tolerance_y":"60","swipe_edge_proximity":"80","open_current":"off","collapse_accordions":"off","scroll_panel":"on"};
 /* ]]> */
 </script>
-<script type='text/javascript' src='http://www.betasmartz.com/wp-content/plugins/shiftnav-responsive-mobile-menu/assets/js/shiftnav.js?ver=1.2'></script>
+<script type='text/javascript' src='{{ STATIC_URL }}betasmartz/css/shiftnav.js?ver=1.2'></script>
 
 </body>
 </html>

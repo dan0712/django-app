@@ -969,7 +969,7 @@ a.arrow-link:hover:before {
 
 /* Hover effect */
 .top-bar .menu ul li:hover a {
-	color: #ffffff;
+	color: #45a018;
 }
 
 .top-bar .menu ul li a {
@@ -991,7 +991,7 @@ a.arrow-link:hover:before {
 /* Styling for the sub menu items */
 .top-bar .menu ul ul {
 	position: absolute;
-	top: 100%;
+	top: 75%;
 	background: #111111;
 	background: rgba(7,7,7,0.9);
 	padding: 0 0 10px 0;

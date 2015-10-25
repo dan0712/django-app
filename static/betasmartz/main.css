@@ -196,7 +196,7 @@ body form.form .submit input {
 
 /* Navigation bar */
 .top-bar {
-  background:rgba(255, 255, 255, 0.85);
+  background:rgba(255, 255, 255, 1);
   }
   .top-bar .menu {
     margin-top: 75px;

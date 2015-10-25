@@ -1,5 +1,3 @@
-__author__ = 'cristian'
-
 from django.contrib import admin
 from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, Performer, \
@@ -13,11 +11,7 @@ from django.contrib.auth.hashers import make_password
 from portfolios.management.commands.get_historical_returns import get_historical_returns as internal_get_historical_returns
 from django.contrib import messages
 from advisors import models as advisor_models
-from support.models import SupportPage
 
-
-class SupportPageAdmin(admin.ModelAdmin):
-    pass
 
 
 class TickerInline(SortableTabularInline):
@@ -325,4 +319,3 @@ admin.site.register(User, UserAdmin)
 admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
-admin.site.register(SupportPage, SupportPageAdmin)

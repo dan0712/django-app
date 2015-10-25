@@ -2,3 +2,16 @@
 {
   border: none !important;
 }
+
+
+.field-box{
+  width: 90%!important;
+}
+
+.field-box > label, .field-box > div {
+  float: left;
+}
+
+.field-box > div {
+  width: 90%;
+}

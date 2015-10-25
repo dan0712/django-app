@@ -1,20 +1,26 @@
-__author__ = 'cristian'
-
-from django.contrib.auth.models import User
+from pages.widgets import *
 
 
-@property
-def is_advisor(self):
-    if self.advisor is None:
-        return False
-    return True
+class TinyMceTextArea(Textarea):
+    """A RichTextarea widget."""
+    class Media:
+        js = ['tinymce_4/tinymce/tinymce.min.js',
+              'tinymce_4/settings/django-filebrowser.js',
+              'tinymce_4/settings/full.js'
+              ]
+        css = {
+            'all': [
+                'tinymce_4/settings/django-grapelli.css',
+            ]
+        }
 
+    def __init__(self, language=None, attrs=None, **kwargs):
+        attrs = {'class': 'tinymce'}
+        self.language = language
+        super(TinyMceTextArea, self).__init__(attrs)
 
-@property
-def is_client(self):
-    if self.client is None:
-        return False
-    return True
+    def render(self, name, value, attrs=None, **kwargs):
+        rendered = super(TinyMceTextArea, self).render(name, value, attrs)
+        return rendered
 
-User.add_to_class("is_advisor", is_advisor)
-User.add_to_class("is_client", is_client)
+register_widget(TinyMceTextArea)
