@@ -14,8 +14,9 @@ class ChangeDealerGroup(models.Model):
     new_firm = models.ForeignKey(Firm, related_name="new_advisors")
     approved = models.BooleanField(default=False)
     create_at = models.DateTimeField(auto_now_add=True)
-    approved_at = models.DateTimeField(null=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
     work_phone = AUPhoneNumberField()
+    new_email = models.EmailField()
     letter_previous_group = models.FileField()
     letter_new_group = models.FileField()
     signature = models.FileField()
@@ -23,6 +24,7 @@ class ChangeDealerGroup(models.Model):
     def approve(self):
         self.approved = True
         self.advisor.firm = self.new_firm
+        self.advisor.user.email = self.new_email
         self.advisor.work_phone = self.work_phone
         """
         self.advisor.office_address_line_1 = self.office_address_line_1
@@ -53,9 +55,17 @@ class SingleInvestorTransfer(models.Model):
     approved_at = models.DateTimeField(null=True)
     create_at = models.DateTimeField(auto_now_add=True)
     investor = models.ForeignKey(Client)
-    signature_investor = models.FileField()
-    signature_advisor = models.FileField()
-    signature_joint_investor = models.FileField()
+    firm = models.ForeignKey(Firm, editable=False)
+    signatures = models.FileField()
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        if self.pk is None:
+            self.firm = self.from_advisor.firm
+
+        return super(SingleInvestorTransfer, self).save(force_insert=False,
+                                                        force_update=False, using=None, update_fields=None)
 
     def approve(self):
         self.investor.advisor = self.to_advisor
@@ -73,13 +83,22 @@ class BulkInvestorTransfer(models.Model):
     to_advisor = models.ForeignKey(Advisor, related_name="bulk_transfer_to_advisors")
     approved = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True)
-
+    firm = models.ForeignKey(Firm, editable=False)
     create_at = models.DateTimeField(auto_now_add=True)
-    bulk_investors_spreadsheet = models.ManyToManyField(Client)
-    signature = models.FileField()
+    investors = models.ManyToManyField(Client)
+    signatures = models.FileField()
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        if self.pk is None:
+            self.firm = self.from_advisor.firm
+
+        return super(BulkInvestorTransfer, self).save(force_insert=False,
+                                                      force_update=False, using=None, update_fields=None)
 
     def approve(self):
-        for investor in self.bulk_investors_spreadsheet.all():
+        for investor in self.investors.all():
             investor.advisor = self.to_advisor
             investor.save()
             for account in investor.accounts.all():

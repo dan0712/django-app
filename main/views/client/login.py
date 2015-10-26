@@ -2,7 +2,7 @@ __author__ = 'cristian'
 
 from ..utils.login import create_login
 from main.models import Client, Firm, Advisor, User , BetaSmartzGenericUSerSignupForm, PERSONAL_DATA_WIDGETS, \
-    PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE
+    PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE, ClientAccount
 from django.views.generic import CreateView, UpdateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
@@ -175,6 +175,7 @@ class ClientSignUpPrepopulated(UpdateView):
     form_class = ClientSignUpForm
     success_url = "/firm/login"
     model = User
+    account = None
 
     def __init__(self, *args, **kwargs):
         self.firm = None
@@ -190,16 +191,19 @@ class ClientSignUpPrepopulated(UpdateView):
         ctx = super(ClientSignUpPrepopulated, self).get_context_data(**kwargs)
         ctx["advisor"] = self.advisor
         ctx["firm"] = self.firm
-        print(vars(self.object))
         return ctx
 
     def get_success_url(self):
+        client_account = self.object.client.accounts_all.first()
+        client_account.confirmed = True
+        client_account.save()
         messages.info(self.request, SUCCESS_MESSAGE)
         return super(ClientSignUpPrepopulated, self).get_success_url()
 
     def dispatch(self, request, *args, **kwargs):
         slug = kwargs["slug"]
         token = kwargs["token"]
+        account_token = kwargs["account_token"]
 
         try:
             firm = Firm.objects.get(slug=slug)
@@ -208,6 +212,11 @@ class ClientSignUpPrepopulated(UpdateView):
 
         try:
             advisor = Advisor.objects.get(token=token, firm=firm)
+        except ObjectDoesNotExist:
+            raise Http404()
+
+        try:
+            account = ClientAccount.objects.get(token=account_token, confirmed=False, primary_owner__advisor=advisor)
         except ObjectDoesNotExist:
             raise Http404()
 

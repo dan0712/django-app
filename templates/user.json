@@ -90,7 +90,7 @@
         "advisorId": {{profile.advisor.pk}},
         "feeAmount": "{{account.fee_fraction}}",
         "bankAccount": {
-            "id": 24995,
+            "id": {{account.pk}},
             "active": true,
             "confirmed": true,
             "accountNumber": "*************4995",

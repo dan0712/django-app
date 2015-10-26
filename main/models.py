@@ -527,6 +527,10 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     betasmartz_agreement = models.BooleanField()
 
     @property
+    def dashboard_url(self):
+        return "/advisor/summary"
+
+    @property
     def clients(self):
         return self.all_clients.filter(user__prepopulated=False)
 
@@ -546,7 +550,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
 
         if user:
-            invitation_url += "/" + str(user.pk)
+            invitation_url += "/" + str(user.pk) + "/" + user.client.accounts_all.first().token
         return invitation_url
 
     @staticmethod
@@ -613,6 +617,10 @@ class AccountGroup(models.Model):
     name = models.CharField(max_length=100)
 
     @property
+    def accounts(self):
+        return self.accounts_all.filter(confirmed=True, primary_owner__user__prepopulated=False)
+
+    @property
     def total_balance(self):
         b = 0
         for a in self.accounts.all():
@@ -645,13 +653,13 @@ class AccountGroup(models.Model):
     def stocks_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0:.0f}".format(self.stock_balance / self.total_balance * 100)
+        return "{0}".format(int(round(self.stock_balance / self.total_balance * 100)))
 
     @property
     def bonds_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0:.0f}".format(self.bond_balance / self.total_balance * 100)
+        return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
 
     @property
     def on_track(self):
@@ -687,16 +695,23 @@ ACCOUNT_CLASSES = ((JOINT_ACCOUNT, "Joint Account"),
 
 class ClientAccount(models.Model):
     account_group = models.ForeignKey(AccountGroup,
-                                      related_name="accounts",
+                                      related_name="accounts_all",
                                       null=True)
     custom_fee = models.PositiveIntegerField(default=0)
     account_class = models.CharField(max_length=20, choices=ACCOUNT_CLASSES, default=TRUST_ACCOUNT)
 
-    account_type = models.CharField(max_length=20,
-                                    choices=ACCOUNT_TYPES,
-                                    default=PERSONAL_ACCOUNT)
-    primary_owner = models.ForeignKey('Client', related_name="accounts")
+    account_name = models.CharField(max_length=255, default=PERSONAL_ACCOUNT)
+    primary_owner = models.ForeignKey('Client', related_name="accounts_all")
     created_at = models.DateTimeField(auto_now_add=True)
+    token = models.CharField(max_length=36, editable=False)
+    confirmed = models.BooleanField(default=False)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.pk is None:
+            self.token = str(uuid.uuid4())
+
+        return super(ClientAccount, self).save(force_insert, force_update, using, update_fields)
 
     def remove_from_group(self):
         old_group = self.account_group
@@ -750,9 +765,12 @@ class ClientAccount(models.Model):
 
     @property
     def name(self):
-        if self.account_type == PERSONAL_ACCOUNT:
+        """if self.account_name == PERSONAL_ACCOUNT:
             return "{0}'s Personal Account".format(
-                self.primary_owner.user.first_name)
+                self.primary_owner.user.first_name)"""
+
+        return "{0}'s {1}".format(
+                self.primary_owner.user.first_name, self.get_account_class_display())
 
     @property
     def total_balance(self):
@@ -783,13 +801,13 @@ class ClientAccount(models.Model):
     def stocks_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0:.0f}".format(self.stock_balance / self.total_balance * 100)
+        return "{0}".format(int(round(self.stock_balance / self.total_balance * 100)))
 
     @property
     def bonds_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0:.0f}".format(self.bond_balance / self.total_balance * 100)
+        return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
 
     @property
     def owners(self):
@@ -798,7 +816,7 @@ class ClientAccount(models.Model):
     @property
     def account_type_name(self):
         for at in ACCOUNT_TYPES:
-            if at[0] == self.account_type:
+            if at[0] == self.account_name:
                 return at[1]
 
     @property
@@ -807,6 +825,26 @@ class ClientAccount(models.Model):
         for goal in self.goals.all():
             on_track = on_track and goal.on_track
         return on_track
+
+    @property
+    def confirmation_url(self):
+        return settings.SITE_URL + "/client/confirm/account/{0}".format(self.pk)
+
+    def send_confirmation_email(self):
+
+        subject = "BetaSmartz new account confirmation"
+
+        context = {
+            'advisor': self.primary_owner.advisor,
+            'confirmation_url': self.confirmation_url,
+            'account_type': self.get_account_class_display(),
+        }
+
+        send_mail(subject,
+                  '',
+                  None,
+                  [self.primary_owner.user.email],
+                  html_message=render_to_string('email/confirm_new_client_account.html', context))
 
     def __str__(self):
         return "{0}:{1}:{2}:({3})".format(
@@ -887,6 +925,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             for secondary_advisor in account.account_group.secondary_advisors.all(
             ):
                 self.secondary_advisors.add(secondary_advisor)
+
+    @property
+    def accounts(self):
+        return self.accounts_all.filter(confirmed=True)
 
     @property
     def get_financial_plan(self):
@@ -1540,13 +1582,13 @@ class Goal(models.Model):
     def stocks_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0:.1f}".format(self.stock_balance / self.total_balance * 100)
+        return "{0}".format(int(round(self.stock_balance / self.total_balance * 100)))
 
     @property
     def bonds_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0:.1f}".format(self.bond_balance / self.total_balance * 100)
+        return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
 
     @property
     def auto_frequency(self):

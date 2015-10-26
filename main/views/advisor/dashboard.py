@@ -11,16 +11,18 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from operator import itemgetter
 from django.http import Http404
-from ..base import AdvisorView
+from ..base import AdvisorView, ClientView
 from django.template.loader import render_to_string
 from ...forms import EmailInviteForm
-from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client
+from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_CLASSES
 from django.utils.safestring import mark_safe
 from django.template import RequestContext
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import (
-    load_backend, BACKEND_SESSION_KEY, login as auth_login)
+    load_backend, BACKEND_SESSION_KEY, login as auth_login, logout as auth_logout)
 from datetime import datetime
+from django.http import QueryDict
+
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
@@ -33,7 +35,10 @@ __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'ImpersonateView', 'Logout', 'AdvisorClientAccountChangeFee',
            "AdvisorSupportGettingStarted", "AdvisorClientInviteNewView",
            'CreateNewClientPrepopulatedView', "BuildPersonalDetails",
-           "BuildFinancialDetails", "BuildConfirm"]
+           "BuildFinancialDetails", "BuildConfirm", "AdvisorForms",
+           "AdvisorCreateNewAccountForExistingClient",
+           "AdvisorCreateNewAccountForExistingClientSelectAccountType",
+           "ConfirmClientNewAccount"]
 
 
 class AdvisorClientInvites(CreateView, AdvisorView):
@@ -179,6 +184,10 @@ class AdvisorAgreements(TemplateView, AdvisorView):
 
 class AdvisorSupport(TemplateView, AdvisorView):
     template_name = "advisor/support.html"
+
+
+class AdvisorForms(TemplateView, AdvisorView):
+    template_name = "advisor/forms.html"
 
 
 class AdvisorCompositeForm:
@@ -484,6 +493,9 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         for group in set(pre_groups.distinct().all()):
             relationship = "Primary" if group.advisor == self.advisor else "Secondary"
             first_account = group.accounts.first()
+            if first_account is None:
+                continue
+
             groups.append(
                 [group.pk, group, group.name, first_account.account_type_name,
                  relationship, group.on_track, group.total_balance,
@@ -609,6 +621,7 @@ class Logout(ImpersonateBase):
             auth_login(request, imposter)
             return HttpResponseRedirect(redirect_url)
 
+        auth_logout(request)
         return HttpResponseRedirect('/firm/login')
 
 
@@ -679,8 +692,7 @@ class PrepopulatedUserForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         self.instance = User(password="KONfLOP212=?hlokifksi21f6s1",
                              prepopulated=True,
-                             **
-                             self.cleaned_data)
+                             **self.cleaned_data)
         self.instance.save()
         # create client instance
         new_client = Client(
@@ -688,7 +700,7 @@ class PrepopulatedUserForm(forms.ModelForm):
             user=self.instance,
             client_agreement=self.advisor.firm.client_agreement_url)
         new_client.save()
-        personal_account = new_client.accounts.all()[0]
+        personal_account = new_client.accounts_all.all()[0]
         personal_account.account_class = self.account_class
         personal_account.save()
         return self.instance
@@ -955,3 +967,105 @@ class BuildConfirm(AdvisorView, TemplateView):
         context_data["email"] = self.object.user.email
 
         return context_data
+
+
+class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, TemplateView):
+    template_name = "advisor/account-invite-account-type.html"
+    client = None
+
+    def dispatch(self, request, *args, **kwargs):
+        client_pk = kwargs["pk"]
+        advisor = request.user.advisor
+
+        try:
+            client = advisor.clients.get(pk=client_pk)
+        except ObjectDoesNotExist:
+            raise PermissionDenied()
+
+        self.client = client
+
+        return super(AdvisorCreateNewAccountForExistingClientSelectAccountType, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorCreateNewAccountForExistingClientSelectAccountType, self).get_context_data(**kwargs)
+        ctx_data["client"] = self.client
+        return ctx_data
+
+
+class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
+    template_name = "advisor/account_invite_confirm.html"
+    model = ClientAccount
+    fields = ('primary_owner', 'account_class')
+    client = None
+    account_class = None
+
+    def get_success_url(self):
+        messages.success(self.request, "New account confirmation email sent successfully.")
+        return "/advisor/client/{0}".format(self.client.pk)
+
+    def dispatch(self, request, *args, **kwargs):
+        client_pk = kwargs["pk"]
+        account_class = request.POST.get("account_type", request.GET.get("account_type", None))
+
+        if account_class is None:
+            account_class = request.POST.get("account_class", request.GET.get("account_class", None))
+
+        if account_class not in ["joint_account", "trust_account"]:
+            raise Http404()
+
+        advisor = request.user.advisor
+
+        try:
+            client = advisor.clients.get(pk=client_pk)
+        except ObjectDoesNotExist:
+            raise PermissionDenied()
+
+        self.client = client
+        self.account_class = account_class
+
+        return super(AdvisorCreateNewAccountForExistingClient, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super(AdvisorCreateNewAccountForExistingClient, self).form_valid(form)
+        self.object.send_confirmation_email()
+        return response
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorCreateNewAccountForExistingClient, self).get_context_data(**kwargs)
+        ctx_data["client"] = self.client
+        ctx_data["account_class"] = self.account_class
+        account_type_name = self.account_class
+        for i in ACCOUNT_CLASSES:
+            if i[0] == self.account_class:
+                account_type_name = i[1]
+        ctx_data["account_type_name"] = account_type_name
+        return ctx_data
+
+
+class ConfirmClientNewAccountForm(forms.ModelForm):
+    class Meta:
+        model = ClientAccount
+        fields = ("confirmed", )
+
+    def clean_confirmed(self):
+        confirmed = self.cleaned_data["confirmed"]
+        if not confirmed:
+            self._errors["confirmed"] = "Please confirm"
+        return confirmed
+
+
+class ConfirmClientNewAccount(ClientView, UpdateView):
+    model = ClientAccount
+    form_class = ConfirmClientNewAccountForm
+    template_name = "advisor/client_account_invite_confirm.html"
+    success_url = "/client/app"
+
+    def post(self, request, *args, **kwargs):
+        if self.is_advisor:
+            raise Http404()
+        return super(ConfirmClientNewAccount, self).post(request, *args, **kwargs)
+
+    def get_queryset(self):
+        qs = super(ConfirmClientNewAccount, self).get_queryset()
+        qs = qs.filter(primary_owner=self.client, confirmed=False)
+        return qs

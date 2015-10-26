@@ -109,7 +109,10 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = ('is_accepted', )
     actions = (approve_application, )
     inlines = (ClientAccountInline, )
-    pass
+
+    def get_queryset(self, request):
+        qs = super(ClientAdmin, self).get_queryset(request)
+        return qs.filter(user__prepopulated=False)
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -267,19 +270,18 @@ class DataApiDictAdmin(admin.ModelAdmin):
 def approve_changes(modeladmin, request, queryset):
     for obj in queryset.all():
         obj.approve()
-
-    messages(request, "Changes have been approved and applied")
+    messages.info(request, "Changes have been approved and applied")
 
 
 class AdvisorChangeDealerGroupAdmin(admin.ModelAdmin):
-    list_display = ('advisor', 'old_firm', 'new_firm', 'approved', 'create_at', 'approved_at')
+    list_display = ('advisor', 'new_email', 'old_firm', 'new_firm', 'approved', 'create_at', 'approved_at')
     list_filter = ('advisor', 'old_firm', 'new_firm', 'approved')
     actions = (approve_changes, )
     pass
 
 
 class AdvisorBulkInvestorTransferAdmin(admin.ModelAdmin):
-    filter_horizontal = ('bulk_investors_spreadsheet',)
+    filter_horizontal = ('investors',)
     list_display = ('from_advisor', 'to_advisor', 'approved', 'create_at', 'approved_at')
     list_filter = ('from_advisor', 'to_advisor', 'approved')
     actions = (approve_changes, )
@@ -288,7 +290,7 @@ class AdvisorBulkInvestorTransferAdmin(admin.ModelAdmin):
 
 
 class AdvisorSingleInvestorTransferAdmin(admin.ModelAdmin):
-    list_display = ('from_advisor', 'to_advisor', 'investor', 'approved', 'create_at', 'approved_at')
+    list_display = ('from_advisor', 'to_advisor', 'firm', 'investor', 'approved', 'create_at', 'approved_at')
     list_filter = ('from_advisor', 'to_advisor', 'investor', 'approved')
     actions = (approve_changes, )
     pass

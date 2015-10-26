@@ -1,0 +1,8 @@
+{% extends 'email/email.html' %}
+
+{% block message %}
+
+    Please follow this link <b><a href="{{ confirmation_url }}">{{ confirmation_url }}</a></b> in order to confirm your
+    new {{ account_type }} account for {{ advisor.firm.name }}.
+
+{% endblock %}

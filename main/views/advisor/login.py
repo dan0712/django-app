@@ -1,9 +1,9 @@
 __author__ = 'cristian'
 
 from main.models import Advisor, User, PERSONAL_DATA_FIELDS, PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, \
-    Section, SUCCESS_MESSAGE, Firm
+    Section, SUCCESS_MESSAGE, Firm, Client
 from django import forms
-from django.views.generic import CreateView, View
+from django.views.generic import CreateView, View, UpdateView
 from django.utils import safestring
 from django.contrib import messages
 import uuid
@@ -12,9 +12,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.http import Http404
+from advisors.models import ChangeDealerGroup, SingleInvestorTransfer, BulkInvestorTransfer
+from ..base import AdvisorView
+from django.http import QueryDict
 
-
-__all__ = ["AdvisorSignUpView"]
+__all__ = ["AdvisorSignUpView", "AdvisorChangeDealerGroupView", "AdvisorChangeDealerGroupUpdateView",
+           "AdvisorSingleInvestorTransferView", "AdvisorSingleInvestorTransferUpdateView",
+           "AdvisorBulkInvestorTransferView", "AdvisorBulkInvestorTransferUpdateView"]
 
 
 class AdvisorProfile(forms.ModelForm):
@@ -113,3 +117,281 @@ class AdvisorSignUpView(CreateView):
             response.context_data["firm"] = self.firm
             response.context_data["sign_up_type"] = "advisor account"
         return response
+
+
+class ChangeDealerGroupForm(forms.ModelForm):
+
+    clients = forms.ModelMultipleChoiceField(required=False, widget=forms.SelectMultiple(attrs={"disabled": True}),
+                                             queryset=None)
+
+    class Meta:
+        model = ChangeDealerGroup
+        fields = ("advisor", "old_firm", "new_firm", "work_phone", "new_email", "letter_new_group",
+                  "letter_previous_group", "signature", "clients")
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('label_suffix', '')
+        if "data" in kwargs:
+            q = QueryDict('', mutable=True)
+            q.update(kwargs["data"])
+            initial = dict()
+            initial["advisor"] = str(kwargs["initial"]["advisor"].pk)
+            initial["old_firm"] = str(kwargs["initial"]["old_firm"].pk)
+            q.update(initial)
+            kwargs["data"] = q
+        super(ChangeDealerGroupForm, self).__init__(*args, **kwargs)
+
+        self.field_sections = [{"fields": ('new_firm', 'work_phone', 'new_email'),
+                                "header": "New arrangements"},
+                               {"fields": ('clients', ),
+                                "header": "Your current investors"},
+                               {"fields": ('letter_previous_group', ),
+                                "header": "Previous Dealer Group Release Authorization",
+                                "detail": mark_safe("A letter from the previous Dealer Group authorising the release "
+                                                    "your current investors. A template of this letter has been supplied "
+                                                    "This letter must be provided on the previous Dealer Groups "
+                                                    "company letterhead. <a href='/static/docs/previous_dealer_group_release_authorization.pdf'>Example</a>")},
+                               {"fields": ('letter_new_group', ),
+                                "header": "New Dealer Group Acceptance Authorization",
+                                "detail": mark_safe("A letter from the new Dealer Group accepting the transfer of your "
+                                          "current investors. A template of this letter has been supplied. This letter"
+                                          "must be provided on the new Dealer Groups company letterhead. <a href='/static/docs/new_dealer_group_acceptance_authorization.pdf'>Example</a>")},
+                               {"fields": ('signature', ),
+                                "header": "Adviser Signature",
+                                "detail": mark_safe("This section need to be signed by an Authorised Signatory of the new Dealer Group. <a href='/static/docs/advisor_signature_change_dealer_group.pdf'>Example</a>"),
+                                }
+                               ]
+        self.fields["new_firm"].queryset = Firm.objects.exclude(pk=self.initial["old_firm"].pk)
+        self.fields["clients"].queryset = self.initial["advisor"].clients
+
+    def clean_new_email(self):
+        email = self.cleaned_data["new_email"]
+        if User.objects.exclude(pk=self.initial["advisor"].user.pk).filter(email=email).count():
+            self._errors['new_email'] = "User with this email already exists"
+
+        return email
+
+    @property
+    def sections(self):
+        for section in self.field_sections:
+            yield Section(section, self)
+
+
+class AdvisorChangeDealerGroupView(AdvisorView, CreateView):
+    template_name = "advisor/firm_form.html"
+    success_url = "/advisor/support/forms"
+    form_class = ChangeDealerGroupForm
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorChangeDealerGroupView, self).get_context_data(**kwargs)
+        ctx_data["form_name"] = "Change of dealer group"
+        return ctx_data
+
+    def get_success_url(self):
+        messages.success(self.request, "Change of dealer group submitted successfully")
+        return super(AdvisorChangeDealerGroupView, self).get_success_url()
+
+    def get_initial(self):
+        return {"advisor": self.advisor, "old_firm": self.advisor.firm, "new_email": self.advisor.email}
+
+    def dispatch(self, request, *args, **kwargs):
+
+        try:
+            cdg = ChangeDealerGroup.objects.exclude(approved=True).get(advisor=request.user.advisor)
+            return HttpResponseRedirect("/advisor/support/forms/change/firm/update/{0}".format(cdg.pk))
+        except ObjectDoesNotExist:
+            return super(AdvisorChangeDealerGroupView, self).dispatch(request, *args, **kwargs)
+
+
+class AdvisorChangeDealerGroupUpdateView(AdvisorView, UpdateView):
+    template_name = "advisor/firm_form.html"
+    success_url = "/advisor/support/forms"
+    form_class = ChangeDealerGroupForm
+    model = ChangeDealerGroup
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorChangeDealerGroupUpdateView, self).get_context_data(**kwargs)
+        ctx_data["form_name"] = "Change of dealer group"
+        ctx_data["object"] = self.object
+        return ctx_data
+
+    def get_success_url(self):
+        messages.success(self.request, "Change of dealer group submitted successfully")
+        return super(AdvisorChangeDealerGroupUpdateView, self).get_success_url()
+
+    def get_initial(self):
+        return {"advisor": self.advisor, "old_firm": self.advisor.firm, "new_email": self.advisor.email}
+
+
+class SingleInvestorTransferForm(forms.ModelForm):
+
+    class Meta:
+        model = SingleInvestorTransfer
+        fields = ("from_advisor", "to_advisor", "investor", "signatures",)
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('label_suffix', '')
+        if "data" in kwargs:
+            q = QueryDict('', mutable=True)
+            q.update(kwargs["data"])
+            initial = dict()
+            initial["from_advisor"] = str(kwargs["initial"]["from_advisor"].pk)
+            q.update(initial)
+            kwargs["data"] = q
+
+        super(SingleInvestorTransferForm, self).__init__(*args, **kwargs)
+
+        self.field_sections = [{"fields": ('to_advisor', ),
+                                "header": "To Adviser"},
+                               {"fields": ('investor', ),
+                                "header": "Investor"},
+                               {"fields": ('signatures', ),
+                                "header": "Signatures",
+                                "detail": mark_safe("Signatures of the investor and the previous adviser, if is"
+                                                    " a Joint account the signature of the second (B) investor "
+                                                    "is required. <a href='/static/docs/advisor_single_transferer_signatures.pdf'>Example</a>")},
+                               ]
+
+        self.fields["investor"].queryset = self.initial["from_advisor"].clients
+        self.fields["to_advisor"].queryset = Advisor.objects.filter(firm=self.initial["from_advisor"].firm)
+
+    @property
+    def sections(self):
+        for section in self.field_sections:
+            yield Section(section, self)
+
+
+class AdvisorSingleInvestorTransferView(AdvisorView, CreateView):
+    template_name = "advisor/firm_form.html"
+    success_url = "/advisor/support/forms"
+    form_class = SingleInvestorTransferForm
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorSingleInvestorTransferView, self).get_context_data(**kwargs)
+        ctx_data["form_name"] = "Single investor transfer"
+        return ctx_data
+
+    def get_success_url(self):
+        messages.success(self.request, "Single investor transfer submitted successfully")
+        return super(AdvisorSingleInvestorTransferView, self).get_success_url()
+
+    def get_initial(self):
+        return {"from_advisor": self.advisor}
+
+    def dispatch(self, request, *args, **kwargs):
+
+        try:
+            sit = SingleInvestorTransfer.objects.exclude(approved=True).get(from_advisor=request.user.advisor)
+            return HttpResponseRedirect("/advisor/support/forms/transfer/single/update/{0}".format(sit.pk))
+        except ObjectDoesNotExist:
+            return super(AdvisorSingleInvestorTransferView, self).dispatch(request, *args, **kwargs)
+
+
+class AdvisorSingleInvestorTransferUpdateView(AdvisorView, UpdateView):
+    template_name = "advisor/firm_form.html"
+    success_url = "/advisor/support/forms"
+    form_class = SingleInvestorTransferForm
+    model = SingleInvestorTransfer
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorSingleInvestorTransferUpdateView, self).get_context_data(**kwargs)
+        ctx_data["form_name"] = "Single investor transfer"
+        ctx_data["object"] = self.object
+        return ctx_data
+
+    def get_success_url(self):
+        messages.success(self.request, "Single investor transfer submitted successfully")
+        return super(AdvisorSingleInvestorTransferUpdateView, self).get_success_url()
+
+    def get_initial(self):
+        return {"from_advisor": self.advisor}
+
+
+class BulkInvestorTransferForm(forms.ModelForm):
+
+    class Meta:
+        model = BulkInvestorTransfer
+        fields = ("from_advisor", "to_advisor", "investors", "signatures",)
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('label_suffix', '')
+        if "data" in kwargs:
+            q = QueryDict('', mutable=True)
+            q.update(kwargs["data"])
+            initial = dict()
+            initial["from_advisor"] = str(kwargs["initial"]["from_advisor"].pk)
+            q.update(initial)
+            kwargs["data"] = q
+
+        super(BulkInvestorTransferForm, self).__init__(*args, **kwargs)
+
+        self.field_sections = [{"fields": ('to_advisor', ),
+                                "header": "To Adviser"},
+                               {"fields": ('investors', ),
+                                "detail": "You can select 2 or more investor for transfer",
+                                "header": "Investors"},
+                               {"fields": ('signatures', ),
+                                "header": "Signatures",
+                                "detail": mark_safe("Signatures the previous adviser, and new adviser."
+                                                    " <a href='/static/docs/advisor_bulk_transferer_signatures.pdf'>Example</a>")},
+                               ]
+
+        self.fields["investors"].queryset = self.initial["from_advisor"].clients
+        self.fields["to_advisor"].queryset = Advisor.objects.filter(firm=self.initial["from_advisor"].firm)
+
+    def clean_investors(self):
+        investors = self.cleaned_data["investors"]
+        if len(investors)<2:
+            self._errors["investors"] = "Please select 2 or more investors"
+        return investors
+
+    @property
+    def sections(self):
+        for section in self.field_sections:
+            yield Section(section, self)
+
+
+class AdvisorBulkInvestorTransferView(AdvisorView, CreateView):
+    template_name = "advisor/firm_form.html"
+    success_url = "/advisor/support/forms"
+    form_class = BulkInvestorTransferForm
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorBulkInvestorTransferView, self).get_context_data(**kwargs)
+        ctx_data["form_name"] = "Bulk investor transfer"
+        return ctx_data
+
+    def get_success_url(self):
+        messages.success(self.request, "Bulk investor transfer submitted successfully")
+        return super(AdvisorBulkInvestorTransferView, self).get_success_url()
+
+    def get_initial(self):
+        return {"from_advisor": self.advisor}
+
+    def dispatch(self, request, *args, **kwargs):
+
+        try:
+            sit = BulkInvestorTransfer.objects.exclude(approved=True).get(from_advisor=request.user.advisor)
+            return HttpResponseRedirect("/advisor/support/forms/transfer/bulk/update/{0}".format(sit.pk))
+        except ObjectDoesNotExist:
+            return super(AdvisorBulkInvestorTransferView, self).dispatch(request, *args, **kwargs)
+        
+    
+class AdvisorBulkInvestorTransferUpdateView(AdvisorView, UpdateView):
+    template_name = "advisor/firm_form.html"
+    success_url = "/advisor/support/forms"
+    form_class = BulkInvestorTransferForm
+    model = BulkInvestorTransfer
+
+    def get_context_data(self, **kwargs):
+        ctx_data = super(AdvisorBulkInvestorTransferUpdateView, self).get_context_data(**kwargs)
+        ctx_data["form_name"] = "Bulk investor transfer"
+        ctx_data["object"] = self.object
+        return ctx_data
+
+    def get_success_url(self):
+        messages.success(self.request, "Bulk investor transfer submitted successfully")
+        return super(AdvisorBulkInvestorTransferUpdateView, self).get_success_url()
+
+    def get_initial(self):
+        return {"from_advisor": self.advisor}

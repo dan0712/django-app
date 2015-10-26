@@ -13,7 +13,7 @@ from django.contrib import messages
 __all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
 
 
-def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/firm/login'):
+def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
 
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "advisor"),
@@ -22,7 +22,7 @@ def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, 
     )(view_func)
 
 
-def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/firm/login'):
+def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
 
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "authorised_representative"),
@@ -31,7 +31,7 @@ def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, lo
     )(view_func)
 
 
-def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/firm/login'):
+def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
 
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "client"),
@@ -81,10 +81,13 @@ class LegalView(View):
 
 class ClientView(View):
     client = None
+    is_advisor = None
 
     @method_decorator(client_member_required)
     def dispatch(self, request, *args, **kwargs):
         self.client = self.request.user.client
+        self.is_advisor = self.request.session.get("is_advisor", False)
+
         if request.method == "POST":
             if not self.client.is_accepted:
                 raise PermissionDenied()

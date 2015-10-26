@@ -39,6 +39,12 @@ def bs_big_number(value):
     new_v = "{:,}".format(float("{0:.2f}".format(value)))
     if new_v == "0.0":
         return "0.00"
+    try:
+        d, f = new_v.split(".")
+        if len(f) == 1:
+            new_v += "0"
+    except:
+        pass
     return new_v
 
 

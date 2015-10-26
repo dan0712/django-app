@@ -10078,12 +10078,13 @@ html.responsive body .panel.logged-out {
 }
 #signup #welcomeBackPanel,
 #trust-signup #welcomeBackPanel {
-    background-color: #A3C745;
+    background-color: #45a018;
     color: #fff;
     display: none;
     margin-bottom: 15px;
     padding: 20px 24px;
     position: relative
+
 }
 #signup #welcomeBackPanel .x-close,
 #trust-signup #welcomeBackPanel .x-close {

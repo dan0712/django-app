@@ -74,6 +74,29 @@ urlpatterns = patterns(
     url(r'^advisor/support$',
         AdvisorSupport.as_view(),
         name='advisor:support'),
+    url(r'^advisor/support/forms$',
+        AdvisorForms.as_view()),
+    url(r'^advisor/support/forms/change/firm$',
+        AdvisorChangeDealerGroupView.as_view()),
+    url(r'^advisor/support/forms/change/firm/update/(?P<pk>\d+)$',
+        AdvisorChangeDealerGroupUpdateView.as_view()),
+
+    url(r'^advisor/support/forms/transfer/single$',
+        AdvisorSingleInvestorTransferView.as_view()),
+
+    url(r'^advisor/support/forms/transfer/single/update/(?P<pk>\d+)$',
+        AdvisorSingleInvestorTransferUpdateView.as_view()),
+    
+    url(r'^advisor/support/forms/transfer/bulk$',
+        AdvisorBulkInvestorTransferView.as_view()),
+
+    url(r'^advisor/support/forms/transfer/bulk/update/(?P<pk>\d+)$',
+        AdvisorBulkInvestorTransferUpdateView.as_view()),
+
+    url(r"^advisor/client/(?P<pk>\d+)/account_invites/new$",
+        AdvisorCreateNewAccountForExistingClientSelectAccountType.as_view()),
+    url(r"^advisor/client/(?P<pk>\d+)/account_invites$", AdvisorCreateNewAccountForExistingClient.as_view()),
+
     url(r'^advisor/support/getting-started$',
         AdvisorSupportGettingStarted.as_view()),
     url(r'^advisor/summary',
@@ -108,7 +131,7 @@ urlpatterns = patterns(
     url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUp.as_view(),
         name='client:sign_up'),
-    url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/(?P<pk>\d+)$',
+    url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/(?P<pk>\d+)/(?P<account_token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUpPrepopulated.as_view()),
     url(r'^client/api/account-groups/(?P<pk>\d+)/beneficiaries$',
         CancelableTransactionsView.as_view()),
@@ -196,6 +219,9 @@ urlpatterns = patterns(
         csrf_exempt(FinancialPlansExternalAccountAdditionView.as_view())),
     url(r'^client/api/external_accounts/(?P<pk>\d+)$',
         csrf_exempt(FinancialPlansExternalAccountDeletionView.as_view())),
+
+    url(r'^client/confirm/account/(?P<pk>\d+)$',
+        ConfirmClientNewAccount.as_view()),
     url(r'^password/reset/$',
         'django.contrib.auth.views.password_reset',
         {

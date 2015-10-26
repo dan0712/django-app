@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% block nav_support %} depressed {% endblock %}
+{% block main_content %}
+
+<div id="content-main">
+<div class="support">
+    <div class="shared-header">
+        <h1>Support</h1>
+        <nav class="sub-nav">
+            <div>
+                <ul>
+                    <li class="">
+                        <a href="/advisor/support">Contact</a>
+                    </li>
+                    <li class="depressed">
+                        <a href="/advisor/support/forms">Forms</a>
+                    </li>
+
+                    <li class="">
+                        <a href="/advisor/support/getting-started">Getting Started</a>
+                    </li>
+
+
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+
+    <div class="contact">
+        <div class="advisor-table">
+            <table>
+                <thead>
+        <tr>
+            <th colspan="2">Forms</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="form">
+            <td><img alt="Form" src="{{ STATIC_URL }}images/list-alt_45a018_68.png"></td>
+            <td><a href="/advisor/support/forms/change/firm">Change dealer group</a></td>
+        </tr>
+        <tr class="form">
+            <td><img alt="Form" src="{{ STATIC_URL }}images/list-alt_45a018_68.png"></td>
+            <td><a href="/advisor/support/forms/transfer/single">Single investor transfer [Same firm]</a></td>
+        </tr>
+        <tr class="form">
+            <td><img alt="Form" src="{{ STATIC_URL }}images/list-alt_45a018_68.png"></td>
+            <td><a href="/advisor/support/forms/transfer/bulk">Bulk investor transfer [Same firm]</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+
+
