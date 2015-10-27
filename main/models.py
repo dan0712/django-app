@@ -689,7 +689,7 @@ ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"), )
 JOINT_ACCOUNT = "joint_account"
 TRUST_ACCOUNT = "trust_account"
 
-ACCOUNT_CLASSES = ((JOINT_ACCOUNT, "Joint Account"),
+ACCOUNT_CLASSES = ((JOINT_ACCOUNT, "Personal Account"),
                    (TRUST_ACCOUNT, "SMSF/Trust Account"))
 
 
