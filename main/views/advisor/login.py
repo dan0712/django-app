@@ -247,7 +247,7 @@ class SingleInvestorTransferForm(forms.ModelForm):
                                 "header": "Investor"},
                                {"fields": ('signatures', ),
                                 "header": "Signatures",
-                                "detail": mark_safe("Signatures of the investor and the previous advisor: if this is"
+                                "detail": mark_safe("Signatures of the investor and the previous advisor: if this is "
                                                     "for a Joint Account the signature of the second  investor(B) "
                                                     "is required. <a target='_blank' href='/static/docs/advisor_single_transferer_signatures.pdf'>Example</a>")},
                                ]
@@ -328,7 +328,7 @@ class BulkInvestorTransferForm(forms.ModelForm):
         self.field_sections = [{"fields": ('to_advisor', ),
                                 "header": "To Advisor"},
                                {"fields": ('investors', ),
-                                "detail": "You can select 2 or more Investor for transfer",
+                                "detail": "You can select 2 or more investors for transfer",
                                 "header": "Investors"},
                                {"fields": ('signatures', ),
                                 "header": "Signatures",
