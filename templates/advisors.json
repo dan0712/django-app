@@ -9,8 +9,8 @@
   "firmId": {{profile.advisor.firm.pk}},
   "firmName": "{{profile.advisor.firm.name}}",
   "firmSlug": "{{profile.advisor.firm.slug}}",
-  "firmLogoUrl": "{{profile.advisor.firm.white_logo}}",
-  "firmKnockedOutLogoUrl": "{{profile.advisor.firm.colored_logo}}",
+  "firmLogoUrl": "{{profile.advisor.firm.colored_logo}}",
+  "firmKnockedOutLogoUrl": "{{profile.advisor.firm.white_logo}}",
   "firmFormAdvPart2Url": null,
   "firmClientAgreementUrl": "{{MEDIA_URL}}{{profile.advisor.firm.client_agreement_url.name}}",
   "firmClientAgreementToken": "{{profile.advisor.firm.token}}"
