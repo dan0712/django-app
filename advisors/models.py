@@ -17,8 +17,8 @@ class ChangeDealerGroup(models.Model):
     approved_at = models.DateTimeField(null=True, blank=True)
     work_phone = AUPhoneNumberField()
     new_email = models.EmailField()
-    letter_previous_group = models.FileField()
-    letter_new_group = models.FileField()
+    letter_previous_group = models.FileField(verbose_name="Prev. Group Letter")
+    letter_new_group = models.FileField("New Group Letter")
     signature = models.FileField()
 
     def approve(self):
@@ -50,7 +50,7 @@ class ChangeDealerGroup(models.Model):
 
 class SingleInvestorTransfer(models.Model):
     from_advisor = models.ForeignKey(Advisor)
-    to_advisor = models.ForeignKey(Advisor, related_name="single_transfer_to_advisors")
+    to_advisor = models.ForeignKey(Advisor, verbose_name="To Advisor", related_name="single_transfer_to_advisors")
     approved = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True)
     create_at = models.DateTimeField(auto_now_add=True)
@@ -80,7 +80,7 @@ class SingleInvestorTransfer(models.Model):
 
 class BulkInvestorTransfer(models.Model):
     from_advisor = models.ForeignKey(Advisor)
-    to_advisor = models.ForeignKey(Advisor, related_name="bulk_transfer_to_advisors")
+    to_advisor = models.ForeignKey(Advisor, verbose_name="To Advisor", related_name="bulk_transfer_to_advisors")
     approved = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True)
     firm = models.ForeignKey(Firm, editable=False)

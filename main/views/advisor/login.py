@@ -147,18 +147,18 @@ class ChangeDealerGroupForm(forms.ModelForm):
                                 "header": "Your current investors"},
                                {"fields": ('letter_previous_group', ),
                                 "header": "Previous Dealer Group Release Authorization",
-                                "detail": mark_safe("A letter from the previous Dealer Group authorising the release "
-                                                    "your current investors. A template of this letter has been supplied "
-                                                    "This letter must be provided on the previous Dealer Groups "
-                                                    "company letterhead. <a href='/static/docs/previous_dealer_group_release_authorization.pdf'>Example</a>")},
+                                "detail": mark_safe("A letter from your previous Dealer Group authorising the release "
+                                                    "of your current investors. A template of this letter has been supplied, "
+                                                    "This letter must be provided on the previous Dealer Group's "
+                                                    "company letterhead. <a target='_blank' href='/static/docs/previous_dealer_group_release_authorization.pdf'>Example</a>")},
                                {"fields": ('letter_new_group', ),
                                 "header": "New Dealer Group Acceptance Authorization",
                                 "detail": mark_safe("A letter from the new Dealer Group accepting the transfer of your "
                                           "current investors. A template of this letter has been supplied. This letter"
-                                          "must be provided on the new Dealer Groups company letterhead. <a href='/static/docs/new_dealer_group_acceptance_authorization.pdf'>Example</a>")},
+                                          "must be provided on the new Dealer Group's company letterhead. <a target='_blank' href='/static/docs/new_dealer_group_acceptance_authorization.pdf'>Example</a>")},
                                {"fields": ('signature', ),
-                                "header": "Adviser Signature",
-                                "detail": mark_safe("This section need to be signed by an Authorised Signatory of the new Dealer Group. <a href='/static/docs/advisor_signature_change_dealer_group.pdf'>Example</a>"),
+                                "header": "Advisor Signature",
+                                "detail": mark_safe("Please upload a signature approval by an Authorised Signatory of the new Dealer Group. <a target='_blank' href='/static/docs/advisor_signature_change_dealer_group.pdf'>Example</a>"),
                                 }
                                ]
         self.fields["new_firm"].queryset = Firm.objects.exclude(pk=self.initial["old_firm"].pk)
@@ -242,14 +242,14 @@ class SingleInvestorTransferForm(forms.ModelForm):
         super(SingleInvestorTransferForm, self).__init__(*args, **kwargs)
 
         self.field_sections = [{"fields": ('to_advisor', ),
-                                "header": "To Adviser"},
+                                "header": "To Advisor"},
                                {"fields": ('investor', ),
                                 "header": "Investor"},
                                {"fields": ('signatures', ),
                                 "header": "Signatures",
-                                "detail": mark_safe("Signatures of the investor and the previous adviser, if is"
-                                                    " a Joint account the signature of the second (B) investor "
-                                                    "is required. <a href='/static/docs/advisor_single_transferer_signatures.pdf'>Example</a>")},
+                                "detail": mark_safe("Signatures of the investor and the previous advisor: if this is"
+                                                    "for a Joint Account the signature of the second  investor(B) "
+                                                    "is required. <a target='_blank' href='/static/docs/advisor_single_transferer_signatures.pdf'>Example</a>")},
                                ]
 
         self.fields["investor"].queryset = self.initial["from_advisor"].clients
@@ -326,14 +326,14 @@ class BulkInvestorTransferForm(forms.ModelForm):
         super(BulkInvestorTransferForm, self).__init__(*args, **kwargs)
 
         self.field_sections = [{"fields": ('to_advisor', ),
-                                "header": "To Adviser"},
+                                "header": "To Advisor"},
                                {"fields": ('investors', ),
-                                "detail": "You can select 2 or more investor for transfer",
+                                "detail": "You can select 2 or more Investor for transfer",
                                 "header": "Investors"},
                                {"fields": ('signatures', ),
                                 "header": "Signatures",
-                                "detail": mark_safe("Signatures the previous adviser, and new adviser."
-                                                    " <a href='/static/docs/advisor_bulk_transferer_signatures.pdf'>Example</a>")},
+                                "detail": mark_safe("Signatures of the previous advisor and new advisor."
+                                                    " <a target='_blank' href='/static/docs/advisor_bulk_transferer_signatures.pdf'>Example</a>")},
                                ]
 
         self.fields["investors"].queryset = self.initial["from_advisor"].clients

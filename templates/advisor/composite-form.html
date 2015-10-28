@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load i18n %}
+{% load app_filters %}
 {% block nav_clients %} depressed {% endblock %}
 {% block body_class %}composites new composites-edit{% endblock %}
 {% block main_content %}
@@ -77,7 +78,7 @@
                 <td>
                     <input class="check_boxes optional" id="composite_creation_account_group_ids" name="accounts" type="checkbox" value="{{ account.pk }}">{{ account.account_type_name }}
                 </td>
-                <td>${{ account.total_balance }}</td>
+                <td>${{ account.total_balance | bs_big_number }}</td>
                 <td>{{ account.owners }}</td>
             </tr>
             {% endfor %}
@@ -115,7 +116,7 @@
                 {% for ob_account in object.accounts.all %}
                     <tr>
                 <td>{{ ob_account.account_type_name }}</td>
-                <td>${{ ob_account.total_balance }}</td>
+                <td>${{ ob_account.total_balance | bs_big_number }}</td>
                 <td>{{ ob_account.owners }}</td>
                 <td><span data-toggle="modal" data-target="#addedAccountGroup{{ ob_account.pk }}">×</span></td>
                 </tr>
@@ -139,7 +140,7 @@
                     </div>
                     <div class="modal-body">
                         <p>Are you sure you want to remove the account
-                            <strong>{{ ob_account.account_type_name }} (${{ ob_account.total_balance }})</strong>?</p>
+                            <strong>{{ ob_account.account_type_name }} (${{ ob_account.total_balance | bs_big_number}})</strong>?</p>
                     </div>
                     <div class="modal-footer">
 

@@ -558,19 +558,26 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return "advisor"
 
     @property
+    def households(self):
+        all_households = list(self.primary_account_groups.all()) + list(self.secondary_account_groups.all())
+        active_households = []
+        for h in all_households:
+            if list(h.accounts.all()):
+                active_households.append(h)
+
+        return active_households
+
+    @property
     def total_balance(self):
         b = 0
-        for ag in self.primary_account_groups.all():
+        for ag in self.households:
             b += ag.total_balance
 
-        for ag in self.secondary_account_groups.all():
-            b += ag.total_balance
         return b
 
     @property
     def total_account_groups(self):
-        return self.secondary_account_groups.count(
-        ) + self.primary_account_groups.count()
+        return len(self.households)
 
     @property
     def average_balance(self):

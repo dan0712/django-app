@@ -8055,7 +8055,7 @@ h2,
 button,
 a.button,
 input[type=submit] {
-    background:#A3C745;
+    background: #006400;
     border:0;
     letter-spacing:.25px;
     color:#fff;
@@ -8080,6 +8080,13 @@ input[type=submit] {
     height:35px;
     line-height:4px;
     outline:0
+
+
+
+
+
+
+
 }
 button:hover,
 button.hover,
@@ -8087,8 +8094,11 @@ a.button:hover,
 a.button.hover,
 input[type=submit]:hover,
 input[type=submit].hover {
-    background:#bce550;
+    background: #45A008;
     text-decoration:none
+
+
+
 }
 button.cancel:not(.silver):not(button[disabled]):not(button[disabled]:active):not(a.button[disabled]):not(a.button[disabled]:active):not(input[type=submit][disabled]):not(input[type=submit][disabled]:active),
 a.button.cancel:not(.silver):not(button[disabled]):not(button[disabled]:active):not(a.button[disabled]):not(a.button[disabled]:active):not(input[type=submit][disabled]):not(input[type=submit][disabled]:active),
@@ -9363,7 +9373,7 @@ input[type=color]:focus:focus,
     line-height:.8
 }
 .notepad-icon:before {
-    content:"Ã­";
+    content:"ÃƒÂ­";
     font-family:ModernPictogramsPro!important;
     font-size:120%;
     text-transform:none;
@@ -10903,7 +10913,7 @@ div.guest-form .feedback-icon.green-check {
     cursor:pointer
 }
 #secondaryContent .banner-close:before {
-    content:"â€™";
+    content:"Ã¢â‚¬â„¢";
     font-family:ModernPictogramsPro!important;
     font-size:225%;
     text-transform:none;
@@ -11042,7 +11052,7 @@ div.guest-form .feedback-icon.green-check {
     color:#dfe7ef
 }
 #secondaryContent .banner .urgency p:before {
-    content:"Â¿";
+    content:"Ã‚Â¿";
     font-family:ModernPictogramsPro!important;
     font-size:230%;
     text-transform:none;
