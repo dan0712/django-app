@@ -2,8 +2,8 @@
    "id":{{profile.advisor.firm.pk}},
    "name":"{{profile.advisor.firm.name}}",
    "slug":"{{profile.advisor.firm.slug}}",
-   "logoUrl":"{{profile.advisor.firm.white_logo}}",
-   "knockedOutLogoUrl":"{{profile.advisor.firm.colored_logo}}",
+   "logoUrl":"{{profile.advisor.firm.colored_logo}}",
+   "knockedOutLogoUrl":"{{profile.advisor.firm.white_logo}}",
    "formAdvPart2Url":null,
    "clientAgreementUrl":"{{MEDIA_URL}}{{profile.advisor.firm.client_agreement_url.name}}",
    "clientAgreementToken":"{{profile.advisor.firm.token}}"
