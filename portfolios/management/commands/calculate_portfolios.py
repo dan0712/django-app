@@ -3,7 +3,7 @@ from ...models import PortfolioSet, PortfolioByRisk
 from main.models import Platform
 from portfolios.api.yahoo import YahooApi, DbApi
 from pandas import concat, ordered_merge, DataFrame
-from portfolios.bl_model import handle_data
+from portfolios.bl_model import handle_data, assets_covariance
 import json
 import numpy as np
 
@@ -14,7 +14,7 @@ def get_api(api_name):
 
 
 def calculate_portfolios(portfolio_set):
-    api = DbApi()#get_api(Platform.objects.first().api)
+    api = get_api(Platform.objects.first().api)
     # get all the assets
     series = {}
     asset_type = {}
@@ -35,12 +35,50 @@ def calculate_portfolios(portfolio_set):
 
     # join all the series in a table, drop missing values
     table = DataFrame(series)
+    old_columns = list(table)
     new_assets_type = []
     views_dict = []
     qs = []
 
     tau = portfolio_set.tau
+    constrains = []
+
+    def create_constrain(_super_classes, _custom_size):
+        def evaluate(_columns, x):
+            _super_class_array = np.array([])
+            for _c in _columns:
+                if _c in _super_classes:
+                    _super_class_array = np.append(_super_class_array, [1])
+                else:
+                    _super_class_array = np.append(_super_class_array, [0])
+            jac = 2*(sum(x*_super_class_array) - _custom_size)*np.array(_super_class_array)
+            func = (sum(x*_super_class_array) - _custom_size)**2  
+            return func, jac
+        return evaluate
+
+    only_use_this_assets = []
+    au_size = 0.5
+    super_classes = []
+    for ticker_idx in range(0, len(old_columns)):
+        if asset_super_class_dict[old_columns[ticker_idx]]:
+            super_classes.append(old_columns[ticker_idx])
+            only_use_this_assets.append(old_columns[ticker_idx])
+    constrains.append(create_constrain(super_classes, au_size))
+    
+    dm_size = 0.5
+    super_classes = []
+    for ticker_idx in range(0, len(old_columns)):
+        if dm_asset_super_class_dict[old_columns[ticker_idx]]:
+            super_classes.append(old_columns[ticker_idx])
+            only_use_this_assets.append(old_columns[ticker_idx])
+    constrains.append(create_constrain(super_classes, dm_size))
+
+    table = table.reindex(index=None, columns=only_use_this_assets)
+    columns = list(table)
+
+    # get views
     for view in portfolio_set.views.all():
+        _append = True
         new_view_dict = {}
         header, view_values = view.assets.splitlines()
 
@@ -48,7 +86,14 @@ def calculate_portfolios(portfolio_set):
         view_values = view_values.split(",")
 
         for i in range(0, len(header)):
+            _symbol = header[i].strip()
+            if _symbol not in columns:
+                _append = False
+
             new_view_dict[header[i].strip()] = float(view_values[i])
+
+        if not _append:
+            continue
         views_dict.append(new_view_dict)
         qs.append(view.q)
 
@@ -62,53 +107,66 @@ def calculate_portfolios(portfolio_set):
     for c in list(table):
         new_assets_type.append(asset_type[c])
 
-    columns = list(table)
-
-    constrains = []
-
-    def create_constrain(_super_class_array, _custom_size):
-        def evaluate(x):
-            jac = 2*(sum(x*_super_class_array) - _custom_size)*np.array(_super_class_array)
-            func = (sum(x*_super_class_array) - _custom_size)**2  
-            return func, jac
-        return evaluate
-
-    au_size = 0.5
-    super_class_array = np.zeros((len(columns)))
-    for ticker_idx in range(0, len(columns)):
-        super_class_array[ticker_idx] = asset_super_class_dict[columns[ticker_idx]]
-    constrains.append(create_constrain(super_class_array, au_size))
-    
-    dm_size = 0.5
-    super_class_array = np.zeros((len(columns)))
-    for ticker_idx in range(0, len(columns)):
-        super_class_array[ticker_idx] = dm_asset_super_class_dict[columns[ticker_idx]]
-    constrains.append(create_constrain(super_class_array, dm_size))
 
     # delete all the risk profiles related to this portfolio set
     portfolio_set.risk_profiles.all().delete()
     tm = 0
+    mw = np.array([])
     # calculate total market cap
-    for k, v in market_cap.items():
-        tm += v
-  
-    mw = []
     # create market w
     for ticker_idx in range(0, len(columns)):
-        mw.append(market_cap[columns[ticker_idx]] / tm)
+        mw = np.append(mw, market_cap[columns[ticker_idx]])
+        tm += market_cap[columns[ticker_idx]]
+
+    if tm == 0:
+        mw = np.ones([len(mw)])/len(mw)
+    else:
+        mw = mw/tm
     
     initial_w = mw
-    for allocation in list(np.arange(0, 1.01, 0.01)):
+
+    assets_len = len(columns)
+    expected_returns = np.array([])
+    # Drop missing values and transpose matrix
+
+    # calculate expected returns
+    for i in range(assets_len):
+        er = (1+np.mean(table[columns[i]].pct_change()))**12 - 1
+        expected_returns = np.append(expected_returns, er)
+
+    # calculate covariance matrix
+    co_vars = np.zeros([assets_len, assets_len])
+    for i in range(assets_len):
+
+        var_table = table.reindex(index=None, columns=[columns[i], columns[i]])
+        monthly_returns_i_i = var_table.pct_change().dropna().values.T
+        co_vars_i_i = assets_covariance(monthly_returns_i_i)
+        co_vars[i, i] = co_vars_i_i[0, 1]
+
+        for j in range(i+1, assets_len):
+            # covariance
+            new_table = table.reindex(index=None, columns=[columns[i], columns[j]])
+            monthly_returns_i_j = new_table.pct_change().dropna().values.T
+            co_vars_i_j = assets_covariance(monthly_returns_i_j)
+            co_vars[j, i] = co_vars[i, j] = co_vars_i_j[0, 1]
+
+    for allocation in list(np.around(np.arange(0, 1.01, 0.01), decimals=2)):
         # calculate optimal portfolio for different risks 0 - 100
-        new_weights, _mean, var = handle_data(table, portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, constrains, mw, initial_w)
+        new_weights, _mean, var = handle_data(assets_len, expected_returns, co_vars,
+                                              portfolio_set.risk_free_rate, allocation,
+                                              new_assets_type,  views, qs, tau, constrains, mw,
+                                              initial_w, columns)
 
         _mean = float("{0:.4f}".format(_mean))*100
         var = float("{0:.4f}".format((var*100*100)**(1/2)))
         allocations = {}
 
-        for idx in range(0, len(columns)):
-            allocations[ticker_parent_dict[columns[idx]]] = float("{0:.4f}".format(new_weights[idx]))
+        for column in old_columns:
+            if column in columns:
+                idx = columns.index(column)
+                allocations[ticker_parent_dict[column]] = float("{0:.4f}".format(new_weights[idx]))
+            else:
+                allocations[ticker_parent_dict[column]] = 0
       
         initial_w = new_weights
         allocations = json.dumps(allocations)

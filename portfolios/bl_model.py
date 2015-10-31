@@ -14,57 +14,80 @@ class OptimizationException(BaseException):
 def compute_mean(W, R):
     return sum(R*W)
 
+
 # Compute the variance of the portfolio.
 def compute_var(W,C):
     return dot(dot(W, C), W)
 
+
 def var_gradient(W, C):
     return dot(W, C) + dot(W, np.diag(np.diag(C))) 
+
 
 # Combination of the two functions above - mean and variance of returns calculation.
 def compute_mean_var(W, R, C):
     return compute_mean(W, R), compute_var(W, C)
 
-def fitness(W, R, C, r, assets_type, allocation, constrains, iW):
-    mmult = 1000
+
+def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order):
+    w_w = 10000
+    w_er = 1000
+    w_sqrt = 1000
     # For given level of return r, find weights which minimizes portfolio variance.
     mean_1, var = compute_mean_var(W, R, C)
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
     # Here, r is the 'target' return
-     
-    c = 0
     jac = np.zeros(len(W))
-    for ct in constrains:
-        v, new_jac = ct(W)
-        c += v
-        jac += mmult*new_jac
-    
-    func = mmult*(c + (sum(W)-1)**2 + (dot(assets_type, W)-allocation)**2) + 1/np.exp(mean_1) + sqrt(var) + 10*sum((iW-W)**2)
+    func = 0
+    # expected returns function
+    func = w_er*1/np.exp(mean_1)
+    # jac mean
+    jac += (-R*1/np.exp(mean_1))*w_er
+
+    # variance
+    # func += w_sqrt*sqrt(var)
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
-    jac += 0.1*var_jac
-    # jac 100% weight
-    jac += mmult*2*(sum(W) -1)
-    # jac allocation
-    jac += mmult*2*(dot(assets_type, W)-allocation)*assets_type
-    jac += -R*1/np.exp(mean_1)
-    #jac -= (sqrt(var)*R - mean_1*var_jac) / var * np.exp(mean_1/sqrt(var))
-    jac += 10*2*(iW-W) 
-    # jacobian sharpe ratio 
-    return func, jac 
+    jac += w_sqrt*var_jac
+
+    # ====================================================
+    #               portfolio weights
+    # ==================================================
+    # 100% weight
+    func += w_w*((sum(W)-1)**2)
+    jac += w_w*(2*(sum(W) -1) * np.ones(len(W)))
+
+    # Allocation
+    func += w_w*((dot(assets_type, W)-allocation)**2)
+    jac += w_w*(2*(dot(assets_type, W)-allocation)*assets_type)
+
+    for ct in constrains:
+        v, new_jac = ct(order, W)
+        func += w_w*v
+        jac += w_w*new_jac
+
+    if allocation != 0:
+        func += 10*sum((W-iW)**2)
+        jac += 10*2*(W-iW)
+    return np.around(func, decimals=4), np.around(jac, decimals=4)
+
 
 # Solve for optimal portfolio weights
-def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW):
+def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW, order):
+    R = np.around(R, decimals=4)
+    C = np.around(C, decimals=4)
     assets_type = np.array(assets_type)
+
     n = len(R)
     W = iW
-    tol = 0.00001
+    tol = 0.001
+    W = np.around(W, decimals=4)
     
     b_ = [(0, 1) for i in range(n)] # Bounds for decision variables
     # Constraints - weights must sum to 1
     # sum of weights of stock should be equal to allocation
     # 'target' return is the expected return on the market portfolio
     optimized = scipy.optimize.minimize(fitness, W,
-                                        (R, C, sum(R*W), assets_type, allocation, constrains, iW),
+                                        (R, C, sum(R*W), assets_type, allocation, constrains, iW, order),
                                         jac=True, 
                                         method='SLSQP', bounds=b_, tol=tol,  options={"maxiter": 1000})
     if not optimized.success:
@@ -73,27 +96,19 @@ def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW):
     return optimized.x
 
 
-# Weights - array of asset weights
-# Expreturns - expected returns based on historical data
 # Covars - covariance matrix of asset returns based on historical data
-def assets_mean_var(monthly_returns):
+def assets_covariance(monthly_returns):
 
-    # Calculate expected returns
-    expected_returns = array([])
-    (rows, cols) = monthly_returns.shape
-    for r in range(rows):
-        expected_returns = append(expected_returns, mean(monthly_returns[r]))
     # Compute covariance matrix
     co_vars = cov(monthly_returns)
     # Annualized expected returns and covariances
     # Assumes 12 trading months per year
-    expected_returns = (1+expected_returns)**12-1
-    co_vars *= 12
-
-    return expected_returns, co_vars
+    return co_vars * 12
 
 
-def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, constrains, mw, initial_w):
+def handle_data(n, expected_returns, co_vars, risk_free,
+                allocation, assets_type, views, qs, tau,
+                constrains, mw, initial_w, order):
     """
     all prices: table with the monthly closed price for each asset
     risk_free: risk free rate
@@ -101,19 +116,12 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     allocation: number between 0-1, 0-means all in bond, 1 all in stock
 
     """
-    n = all_prices.shape[1]
     # get initial weightings
     if mw is None:
         W = np.ones(n)/n
     else:
         W = mw
-    # Drop missing values and transpose matrix
-    monthly_returns = all_prices.pct_change().dropna().values.T
-    expected_returns, co_vars = assets_mean_var(monthly_returns)
-    index = 0
-    for i in list(all_prices):
-        expected_returns[index] = (1+mean(all_prices[i].pct_change()))**12 -1 
-        index += 1
+
     # R is the vector of expected returns
     R = expected_returns
     # C is the covariance matrix
@@ -128,7 +136,7 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     Pi = dot(dot(lmb, C), W)
 
     # Solve for weights before incorporating views
-    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, initial_w)
+    W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, initial_w, order)
 
     # calculate tangency portfolio
     _mean, var = compute_mean_var(W, R, C)
@@ -137,22 +145,32 @@ def handle_data(all_prices, risk_free, allocation, assets_type, views, qs, tau, 
     # Compute equilibrium excess returns
     Pi = dot(dot(lmb, C), W)
 
-    # VIEWS ON ASSET
-    P = np.array(views)
-    Q = np.array(qs)
+    if views:
+        # VIEWS ON ASSET
+        P = np.array(views)
+        Q = np.array(qs)
 
-    omega = dot(dot(dot(tau, P), C), transpose(P)) # omega represents
-    # the uncertainty of our views. Rather than specify the 'confidence'
-    # in one's view explicitly, we extrapolate an implied uncertainty
-    # from market parameters.
-    # Compute equilibrium excess returns taking into account views on assets
-    sub_a = inv(dot(tau, C))
-    sub_b = dot(dot(transpose(P), inv(omega)), P)
-    sub_c = dot(inv(dot(tau, C)), Pi)
-    sub_d = dot(dot(transpose(P), inv(omega)), Q)
-    Pi_new = dot(inv(sub_a + sub_b), (sub_c + sub_d))
-    new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, constrains, W)
-    new_weights = np.around(new_weights, decimals=2)
+        omega = dot(dot(dot(tau, P), C), transpose(P)) # omega represents
+        # the uncertainty of our views. Rather than specify the 'confidence'
+        # in one's view explicitly, we extrapolate an implied uncertainty
+        # from market parameters.
+        # Compute equilibrium excess returns taking into account views on assets
+        sub_a = inv(dot(tau, C))
+        sub_b = dot(dot(transpose(P), inv(omega)), P)
+        sub_c = dot(inv(dot(tau, C)), Pi)
+        sub_d = dot(dot(transpose(P), inv(omega)), Q)
+        Pi_new = dot(inv(sub_a + sub_b), (sub_c + sub_d))
+        new_weights = solve_weights(Pi_new+risk_free, C, risk_free, allocation, assets_type, constrains, W, order)
+        new_weights = np.around(new_weights, decimals=2)
+    else:
+        new_weights = np.around(W, decimals=2)
+
+    # normalize weights
+    # remove weights < 5%
+    # for i in range(len(new_weights)):
+    #    if new_weights[i] < 0.05:
+    #        new_weights[i] = 0
+    # print(sum(new_weights))
+
     _mean, var = compute_mean_var(new_weights, expected_returns, C)
-
     return new_weights, _mean, var
