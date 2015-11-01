@@ -45,7 +45,7 @@ def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order):
     jac += (-R*1/np.exp(mean_1))*w_er
 
     # variance
-    # func += w_sqrt*sqrt(var)
+    func += w_sqrt*sqrt(var)
     var_jac = var_gradient(W, C)*1/2/sqrt(var)
     jac += w_sqrt*var_jac
 
