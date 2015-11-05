@@ -1,9 +1,34 @@
 __author__ = 'cristian'
 
-from numpy import  array, ones, dot, append, mean, cov, transpose, sqrt, isnan
+from numpy import array, ones, dot, append, mean, cov, transpose, sqrt, isnan
 from numpy.linalg import inv
 import numpy as np
 import scipy.optimize
+from sklearn.covariance import OAS
+
+
+def calculate_co_vars(assets_len, table):
+    columns = list(table)
+    sk = OAS(assume_centered=True)
+    sk.fit(table.pct_change().dropna().values)
+
+    # calculate covariance matrix
+    co_vars = np.zeros([assets_len, assets_len])
+    for i in range(assets_len):
+
+        var_table = table.reindex(index=None, columns=[columns[i], columns[i]])
+        monthly_returns_i_i = var_table.pct_change().dropna().values.T
+        co_vars_i_i = assets_covariance(monthly_returns_i_i)
+        co_vars[i, i] = co_vars_i_i[0, 1]
+
+        for j in range(i+1, assets_len):
+            # covariance
+            new_table = table.reindex(index=None, columns=[columns[i], columns[j]])
+            monthly_returns_i_j = new_table.pct_change().dropna().values.T
+            co_vars_i_j = assets_covariance(monthly_returns_i_j)
+            co_vars[j, i] = co_vars[i, j] = co_vars_i_j[0, 1]
+    sk_co_var = ((1-sk.shrinkage_)*co_vars + sk.shrinkage_*np.trace(co_vars)/assets_len*np.identity(assets_len))
+    return sk_co_var
 
 
 class OptimizationException(BaseException):

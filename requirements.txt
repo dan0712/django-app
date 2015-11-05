@@ -20,3 +20,4 @@ whoosh
 Markdown
 djangorestframework
 git+git://github.com/riklaunim/django-ckeditor.git#egg=django_ckeditor_updated-master
+scikit-learn
