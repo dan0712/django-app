@@ -1079,7 +1079,7 @@
     display: none;
 }
 .progress-nav .back-arrow:before {
-    content: "â€˜";
+    content: "ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“";
     font-family: ModernPictogramsPro!important;
     font-size: 300%;
     text-transform: none;
@@ -1907,9 +1907,8 @@ a.about-data-link {
     clear: both;
 }
 #footerLinks div {
-    width: 978px;
-    margin: 0 auto;
-    *zoom: 1;
+    width: 185px;
+    margin: 0 auto;*zoom:1;
 }
 #footerLinks div:before, #footerLinks div:after {
     content: "";
@@ -1939,6 +1938,7 @@ a.about-data-link {
 #footerLinks ul li {
     list-style: none;
     margin-bottom: 8px;
+    text-align: center;
 }
 #footerLinks ul li a {
     text-decoration: none;
@@ -1947,7 +1947,7 @@ a.about-data-link {
     font-weight: 700;
 }
 #footerLinks ul.advised-user-only {
-    margin-left: 107px;
+    margin-left: 0px;
 }
 #footerLinks form {
     width: 474px;
@@ -2444,4 +2444,9 @@ ul#id_provide_tfn label{
 .r_questions .input-line .input-area {
     width: 150px;
 
+}
+
+
+#footerLinks ul li i{
+    padding-right: 10px;
 }

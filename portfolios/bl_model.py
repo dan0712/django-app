@@ -28,7 +28,7 @@ def calculate_co_vars(assets_len, table):
             co_vars_i_j = assets_covariance(monthly_returns_i_j)
             co_vars[j, i] = co_vars[i, j] = co_vars_i_j[0, 1]
     sk_co_var = ((1-sk.shrinkage_)*co_vars + sk.shrinkage_*np.trace(co_vars)/assets_len*np.identity(assets_len))
-    return sk_co_var
+    return sk_co_var, co_vars
 
 
 class OptimizationException(BaseException):
@@ -131,7 +131,7 @@ def assets_covariance(monthly_returns):
     return co_vars * 12
 
 
-def handle_data(n, expected_returns, co_vars, risk_free,
+def handle_data(n, expected_returns, sk_co_var, co_vars, risk_free,
                 allocation, assets_type, views, qs, tau,
                 constrains, mw, initial_w, order):
     """
@@ -150,7 +150,7 @@ def handle_data(n, expected_returns, co_vars, risk_free,
     # R is the vector of expected returns
     R = expected_returns
     # C is the covariance matrix
-    C = co_vars
+    C = sk_co_var
 
     new_mean = compute_mean(W, R)
     new_var = compute_var(W, C)
@@ -197,5 +197,5 @@ def handle_data(n, expected_returns, co_vars, risk_free,
     #        new_weights[i] = 0
     # print(sum(new_weights))
 
-    _mean, var = compute_mean_var(new_weights, expected_returns, C)
+    _mean, var = compute_mean_var(new_weights, expected_returns, co_vars)
     return new_weights, _mean, var

@@ -8087,6 +8087,12 @@ input[type=submit] {
 
 
 
+
+
+
+
+
+
 }
 button:hover,
 button.hover,
@@ -11526,4 +11532,12 @@ div.guest-form .feedback-icon.green-check {
 }
 .input-percent {
     max-width:100px
+}
+
+.retireBlue{
+    background-color: #00619E;
+}
+
+.retireBlue:hover{
+    background-color: #0084D6;
 }

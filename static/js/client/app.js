@@ -56804,15 +56804,15 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.legalUrl, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '" alt="Terms" title="Terms">Terms</a></li>\n</ul>\n<ul class="unadvised-user-only">\n    <li>Need some assistance?</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="FAQ" href="http://support.betasmartz.com/" alt="FAQ" title="FAQ">FAQ</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="ContactSupport" href="#" id="support">Contact our support team</a></li>\n    \n</ul>\n<ul class="advised-user-only">\n    <li>Technical support</li>\n    <li><a href="mailto:', (u = n.supportEmail) ? o = u.call(t, {
+            }) : u), s += f(o) + '" alt="Terms" title="Terms">Terms</a></li>\n</ul>\n<ul class="unadvised-user-only">\n    <li>Need some assistance?</li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="FAQ" href="http://support.betasmartz.com/" alt="FAQ" title="FAQ">FAQ</a></li>\n    <li><a target="_blank" data-track-event="ElementClicked" data-track-location="BottomNav" data-track-name="ContactSupport" href="#" id="support">Contact our support team</a></li>\n    \n</ul>\n<ul class="advised-user-only">\n    <li>Technical support</li>\n    <li><i class="fa fa-envelope-o"></i><a href="mailto:', (u = n.supportEmail) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.supportEmail, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '">Email us</a></li>\n    <li>Call ', (u = n.advisedSupportPhoneNumber) ? o = u.call(t, {
+            }) : u), s += f(o) + '">Email us</a></li>\n    <li> <i class="fa fa-phone"></i>Call ', (u = n.advisedSupportPhoneNumber) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.advisedSupportPhoneNumber, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '</li>\n    \n</ul>\n<form action="#" method="POST">\n    <label for="message">How can we improve this page?</label>\n    <textarea type="text" class="white" name="message" placeholder="We\'d love to hear your suggestions, ideas, and feedback." ></textarea>\n    <input type="text" class="white" name="from" placeholder="Enter your email if you would like us to get in touch. " />\n    <button class="blue ok" id="suggest">Send feedback</button>\n</form>\n', s
+            }) : u), s += f(o) + '</li>\n\n</ul>', s
         });
         return t.registerPartial("views/common/footerLinks", n), n
     }), define("views/common/footerLinksView", ["jquery", "underscore", "backbone", "hbs!views/common/footerLinks", "common/betterment.views", "views/common/supportView", "common/betterment.models", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o, u) {

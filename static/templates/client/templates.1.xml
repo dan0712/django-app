@@ -2606,6 +2606,7 @@ state: side == 'front' ? 'open' : 'close'
 <button class="left flat blue" id="gotoRollover">Rollover</button>
 <% } %>
 <button class="left flat blue" id="addGoal"><%- addGoalText() %></button>
+<button class="left flat retireBlue" onclick="location.hash = '#retireGuide';">RetireSmart</button>
 </div>
 </div>
 

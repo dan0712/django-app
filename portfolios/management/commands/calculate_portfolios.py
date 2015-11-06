@@ -134,11 +134,11 @@ def calculate_portfolios(portfolio_set):
         expected_returns = np.append(expected_returns, er)
 
     # calculate covariance matrix
-    co_vars = calculate_co_vars(assets_len, table)
+    sk_co_var, co_vars = calculate_co_vars(assets_len, table)
 
     for allocation in list(np.around(np.arange(0, 1.01, 0.01), decimals=2)):
         # calculate optimal portfolio for different risks 0 - 100
-        new_weights, _mean, var = handle_data(assets_len, expected_returns, co_vars,
+        new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
                                               portfolio_set.risk_free_rate, allocation,
                                               new_assets_type,  views, qs, tau, constrains, mw,
                                               initial_w, columns)

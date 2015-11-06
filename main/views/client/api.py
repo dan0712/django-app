@@ -178,7 +178,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
         expected_returns = np.append(expected_returns, er)
 
     # calculate covariance matrix
-    co_vars = calculate_co_vars(assets_len, table)
+    sk_co_var, co_vars = calculate_co_vars(assets_len, table)
 
     initial_w = mw
     for allocation in list(np.arange(0, 1.01, 0.01)):
@@ -193,7 +193,7 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
             new_constrains.append(create_constrain(super_classes_matrix[0], ns))
 
         # calculate optimal portfolio for different risks 0 - 100
-        new_weights, _mean, var = handle_data(assets_len, expected_returns, co_vars,
+        new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var,  co_vars,
                                               portfolio_set.risk_free_rate, allocation,
                                               new_assets_type,  views, qs, tau, new_constrains, mw,
                                               initial_w, columns)
