@@ -93,19 +93,19 @@ def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order):
     if allocation != 0:
         func += 10*sum((W-iW)**2)
         jac += 10*2*(W-iW)
-    return np.around(func, decimals=4), np.around(jac, decimals=4)
+    return np.around(func, decimals=7), np.around(jac, decimals=7)
 
 
 # Solve for optimal portfolio weights
 def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW, order):
-    R = np.around(R, decimals=4)
-    C = np.around(C, decimals=4)
+    R = np.around(R, decimals=7)
+    C = np.around(C, decimals=7)
     assets_type = np.array(assets_type)
 
     n = len(R)
     W = iW
     tol = 0.001
-    W = np.around(W, decimals=4)
+    W = np.around(W, decimals=7)
     
     b_ = [(0, 1) for i in range(n)] # Bounds for decision variables
     # Constraints - weights must sum to 1
