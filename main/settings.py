@@ -113,7 +113,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 SUPPORT_EMAIL = "support@betasmartz.com"
-SUPPORT_PHONE = "1888-888-888"
+SUPPORT_PHONE = "1888888888"
 IS_DEMO = False
 TIME_ZONE = "Australia/Sydney"
 PAGE_DEFAULT_TEMPLATE = "support/base.html"

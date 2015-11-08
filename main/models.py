@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _,\
     UserManager, timezone,\
     send_mail
-from django.core.validators import RegexValidator, ValidationError
+from django.core.validators import RegexValidator, ValidationError, MaxLengthValidator, BaseValidator
 from .fields import ColorField
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
 from main.slug import unique_slugify
@@ -19,6 +19,7 @@ from datetime import date
 import json
 from numpy import array
 from django.core import serializers
+import re
 
 
 def validate_agreement(value):
@@ -64,12 +65,12 @@ TFN_CHOICES = (
     (TFN_CLAIM, "I want to claim an exemption"),
     (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"), )
 
-Q1 = "What was the name of your elementary school?"
-Q2 = "What was the name of your favorite childhood friend?"
-Q3 = "What was the name of your childhood pet?"
-Q4 = "What street did you live on in third grade?"
-Q5 = "What is your oldest sibling's birth month?"
-Q6 = "In what city did your mother and father meet?"
+Q1 = "What was the name of your primary school?"
+Q2 = "What is your mother's maiden name?"
+Q3 = "What was the name of your first pet?"
+Q4 = "What was your first car?"
+Q5 = "What was your favorite subject at school?"
+Q6 = "In what month was your father born?"
 
 QUESTION_1_CHOICES = ((Q1, Q1), (Q2, Q2), (Q3, Q3))
 
@@ -83,11 +84,11 @@ PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender', 'address_line_1',
 
 PERSONAL_DATA_WIDGETS = {
     "gender": forms.RadioSelect(),
-    "date_of_birth": forms.TextInput(attrs={"placeholder": "YYYY-MM-DD"}),
+    "date_of_birth": forms.TextInput(attrs={"placeholder": "DD-MM-YYYY"}),
     'address_line_1':
-    forms.TextInput(attrs={"placeholder": "Street address"}),
+    forms.TextInput(attrs={"placeholder": "House name. Unit/House number"}),
     "address_line_2": forms.TextInput(
-        attrs={"placeholder": "Apartment, Suite, Unit, Floor (optional)"})
+        attrs={"placeholder": "Street address"})
 }
 
 ALLOCATION = "ALLOCATION"
@@ -275,7 +276,7 @@ class PersonalData(models.Model):
                               choices=(("Male", "Male"), ("Female", "Female")))
     address_line_1 = models.CharField(max_length=255, default="")
     address_line_2 = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=255, default="")
+    city = models.CharField(max_length=255, default="", verbose_name="City/Town")
     state = AUStateField(default='QLD')
     post_code = AUPostCodeField(null=True)
     phone_number = AUPhoneNumberField(null=True)
@@ -319,7 +320,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
 
     first_name = models.CharField(_('first name'), max_length=30)
-    middle_name = models.CharField(_('middle name'), max_length=30, blank=True)
+    middle_name = models.CharField(_('middle name (s)'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30)
     username = models.CharField(max_length=30, editable=False, default='')
     email = models.EmailField(
@@ -875,6 +876,55 @@ EMPLOYMENT_STATUS_CHOICES = (
     (UNEMPLOYED, "Not employed"))
 
 
+class TaxFileNumberValidator(object):
+
+    def __call__(self, value):
+
+        if len(value) != 9:
+            return False, 'Invalid TFN, check the digits.'
+
+        weights = [1, 4, 3, 7, 5, 8, 6, 9, 10]
+        _sum = 0
+
+        try:
+            for i in range(9):
+                _sum += int(value[i])*weights[i]
+        except ValueError:
+            return False, 'Invalid TFN, check the digits.'
+
+        remainder = _sum % 11
+
+        if remainder != 0:
+            return False, 'Invalid TFN, check the digits.'
+
+        return True, ""
+
+
+class MedicareNumberValidator(object):
+
+    def __call__(self, value):
+
+        if len(value) != 11:
+            return False, 'Invalid Medicare number.'
+
+        weights = [1, 3, 7, 9, 1, 3, 7, 9]
+        _sum = 0
+
+        try:
+            check_digit = int(value[8])
+            for i in range(8):
+                _sum += int(value[i])*weights[i]
+        except ValueError:
+            return False, 'Invalid Medicare number.'
+
+        remainder = _sum % 10
+
+        if remainder != check_digit:
+            return False, 'Invalid Medicare number.'
+
+        return True, ""
+
+
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
     advisor = models.ForeignKey(Advisor, related_name="all_clients")
     secondary_advisors = models.ManyToManyField(
@@ -885,38 +935,38 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     client_agreement = models.FileField()
 
     user = models.OneToOneField(User)
-    tax_file_number = models.CharField(max_length=50, null=True, blank=True)
+    tax_file_number = models.CharField(max_length=9, null=True, blank=True)
     provide_tfn = models.IntegerField(verbose_name="Provide TFN?",
                                       choices=TFN_CHOICES,
                                       default=TFN_YES)
 
     associated_to_broker_dealer = models.BooleanField(
-        verbose_name="You are employed by or associated with "
-        "a broker dealer.",
+        verbose_name="Are employed by or associated with "
+        "a broker dealer?",
         default=False,
         choices=YES_NO)
     ten_percent_insider = models.BooleanField(
-        verbose_name="You are a 10% shareholder, director, or"
-        " policy maker of a publicly traded company.",
+        verbose_name="Are you a 10% shareholder, director, or"
+        " policy maker of a publicly traded company?",
         default=False,
         choices=YES_NO)
 
     public_position_insider = models.BooleanField(
-        verbose_name="Do you or a family member hold a public office position.",
+        verbose_name="Do you or a family member hold a public office position?",
         default=False,
         choices=YES_NO)
 
     us_citizen = models.BooleanField(
         verbose_name="Are you a US citizen/person"
-        " for the purpose of US Federal Income Tax.",
+        " for the purpose of US Federal Income Tax?",
         default=False,
         choices=YES_NO)
 
     employment_status = models.CharField(max_length=20,
                                          choices=EMPLOYMENT_STATUS_CHOICES)
 
-    net_worth = models.FloatField(default=0)
-    income = models.FloatField(default=0)
+    net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
+    income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
     employer = models.CharField(max_length=255, null=True, blank=True)
     betasmartz_agreement = models.BooleanField(default=False)

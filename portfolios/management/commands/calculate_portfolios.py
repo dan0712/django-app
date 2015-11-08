@@ -132,7 +132,6 @@ def calculate_portfolios(portfolio_set):
     for i in range(assets_len):
         er = (1+np.mean(table[columns[i]].pct_change()))**12 - 1
         expected_returns = np.append(expected_returns, er)
-
     # calculate covariance matrix
     sk_co_var, co_vars = calculate_co_vars(assets_len, table)
 

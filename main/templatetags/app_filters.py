@@ -50,6 +50,10 @@ def bs_big_number(value):
 
 @register.filter
 def phone_format(value):
+    if not value:
+        return ""
+    if value[:4] == "1888" or value[:4] == "1800":
+        return value[:4] + "-" + value[4:8] + "-" + value[8:10]
     if value[:2] == "04":
         return value[:4] + "-" + value[4:7] + "-" + value[7:10]
     return value[:2] + "-" + value[2:6] + "-" + value[6:10]

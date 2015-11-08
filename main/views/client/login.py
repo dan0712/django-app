@@ -2,13 +2,14 @@ __author__ = 'cristian'
 
 from ..utils.login import create_login
 from main.models import Client, Firm, Advisor, User , BetaSmartzGenericUSerSignupForm, PERSONAL_DATA_WIDGETS, \
-    PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE, ClientAccount
+    PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE, ClientAccount, TaxFileNumberValidator, MedicareNumberValidator
 from django.views.generic import CreateView, UpdateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.safestring import mark_safe
 from django.contrib import messages
+from django.core.validators import ValidationError
 
 
 __all__ = ["client_login", 'ClientSignUp', "ClientSignUpPrepopulated"]
@@ -32,13 +33,13 @@ class Section:
 
 class ClientForm(forms.ModelForm):
 
+    user = forms.CharField(required=False)
     medicare_number = forms.CharField(
-        max_length=20,
         label=mark_safe('Medicare # <span class="security-icon"></span>'),
         help_text="Bank-Level Security"
     )
+    date_of_birth = forms.DateField(input_formats=["%d-%m-%Y"])
 
-    user = forms.CharField(required=False)
 
     class Meta:
         model = Client
@@ -61,6 +62,9 @@ class ClientSignUpForm(BetaSmartzGenericUSerSignupForm):
 
     profile = None
     user_profile_type = "client"
+    tax_file_number = forms.CharField(required=False)
+    medicare_number = forms.CharField()
+    date_of_birth = forms.DateField(input_formats=["%d-%m-%Y"])
 
     class Meta:
         model = User
@@ -114,6 +118,27 @@ class ClientSignUpForm(BetaSmartzGenericUSerSignupForm):
             self._errors['advisor_agreement'] = mark_safe('<ul class="errorlist">'
                                                           '<li>You must accept the client\'s agreement'
                                                           ' to continue.</li></ul>')
+
+        medicare_number = cleaned_data.get("medicare_number", "").replace(" ", "").replace("/", "")
+        tax_file_number = cleaned_data.get("tax_file_number", "")
+        provide_tfn = cleaned_data.get("provide_tfn", 0)
+
+        if provide_tfn == 0:
+            if not tax_file_number:
+                self._errors['tax_file_number'] = mark_safe('<ul class="errorlist">'
+                                                            '<li>Tax file number is required.</li></ul>')
+            else:
+                valid, msg = TaxFileNumberValidator()(tax_file_number)
+                if not valid:
+                    self._errors['tax_file_number'] = mark_safe('<ul class="errorlist">'
+                                                                '<li>{0}</li></ul>'.format(msg))
+        else:
+            cleaned_data["tax_file_number"] = ""
+
+        valid, msg = MedicareNumberValidator()(medicare_number)
+        if not valid:
+            self._errors['medicare_number'] = mark_safe('<ul class="errorlist">'
+                                                        '<li>{0}</li></ul>'.format(msg))
 
         return cleaned_data
 

@@ -248,7 +248,7 @@ class SingleInvestorTransferForm(forms.ModelForm):
                                {"fields": ('signatures', ),
                                 "header": "Signatures",
                                 "detail": mark_safe("Signatures of the investor and the previous advisor: if this is "
-                                                    "for a Joint Account the signature of the second  investor(B) "
+                                                    "for a Joint Account the signature of the second  investor "
                                                     "is required. <a target='_blank' href='/static/docs/advisor_single_transferer_signatures.pdf'>Example</a>")},
                                ]
 

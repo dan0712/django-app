@@ -23,7 +23,7 @@
     </br>
 <p class="right header-detail">You must be 18 years of age or older</p>
     </br>
-<p class="right header-detail">You must be a permanent resident of Australia</p>
+<p class="right header-detail">You must be a citizen or  permanent resident of Australia</p>
 
 
 </div>
@@ -61,7 +61,7 @@
         <hr>
     {% endfor %}
   <div class="tos client-agreement">
-        <div class="title">Your advisor's agreement</div>
+        <div class="title">Advisor's Agreements:</div>
 
         <div class="clearfix tos-line">
             <input class="left" type="checkbox" name="advisor_agreement" value="true" data-error-element-selector=".agreement-error-client">
@@ -70,14 +70,16 @@
             </div>
         </div>
         <div class="agreement" data-expand="120">
-            By checking the above box and clicking submit below, you agree to be bound by your advisor's <a href="{{ MEDIA_URL }}{{ advisor.firm.client_agreement_url }}" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor's Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betterment).<br><br>
 
-            You understand and agree that this is solely an agreement between you and your advisor, and that Betterment and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that Betterment has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify Betterment and its affiliates in connection with any content in your advisory agreement with your advisor.<br><br>
+By checking the above box and clicking submit below, you agree to be bound by your advisor’s  <a href="{{ MEDIA_URL }}{{ advisor.firm.client_agreement_url }}" target="_blank">advisory agreement</a>.
 
-            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. Betterment will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br><br>
+You understand and agree that this is solely an agreement between you and your advisor, and that BetaSmartz and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that BetaSmartz has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify BetaSmartz and its affiliates in connection with any content in your advisory agreement with your advisor.
 
-            By checking the above box and clicking submit below, you agree to be legally bound by your advisor's advisory agreement's terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor's advisory agreement by hand.
-        </div>
+You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. BetaSmartz will not charge you a fee to use this website, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.
+
+By checking the above box and clicking submit below, you agree to be legally bound by your advisor’s advisory agreement’s terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor’s advisory agreement by hand.
+
+</div>
         <div class="agreement-error-client agreement-error conversation-text">
             <span class="bad">{{ form.advisor_agreement.errors}}</span>
         </div>
@@ -97,7 +99,8 @@
             </div>
 
             <div class="agreement" data-expand="120">
-                 {% include "partials/tos.html" %}
+                 BetaSmartz’s <a href="http://www.betasmartz.com/terms-and-conditions/">privacy policy</a> and <a href="http://www.betasmartz.com/terms-and-conditions/">customer agreements</a>, which include the Brokerage Agreement, Advisory Agreement, Arbitration Agreements therein, consent to electronic delivery of documents and written communications, and other important agreements.
+                 (These agreements are also available on the terms and conditions page of this website.)
             </div>
              <div class="conversation-text">
                     <span class="bad">{{ form.betasmartz_agreement.errors}}</span>
@@ -164,11 +167,11 @@
 
 <div class="panel card body support advised-user-only">
 <h4>Financial advice</h4>
-<p>For financial questions and advice, contact your advisor, {{ advisor.name }} .</p>
+<p>For financial questions and advice, contact your advisor, {{ advisor.name }}.</p>
 <ul>
 <li>
 <span class="icon"><span class="phone-icon"></span></span>
-<span class="text advisor-phone" maxlength="14" autocomplete="off">{{ advisor.phone }} </span>
+<span class="text advisor-phone" maxlength="14" autocomplete="off">{{ advisor.phone |phone_format }} </span>
 </li>
 <li>
 <span class="icon"><span class="mail-icon"></span></span>
@@ -183,7 +186,7 @@
 <ul>
 <li>
 <span class="icon"><span class="phone-icon"></span></span>
-<span class="text">{{ SUPPORT_PHONE }}</span>
+<span class="text">{{ SUPPORT_PHONE| phone_format }}</span>
 </li>
 <li>
 <span class="icon"><span class="mail-icon"></span></span>
@@ -215,11 +218,7 @@ We promise to ensure the utmost security and privacy when it comes to your accou
 <span class="text">Fraud Protection</span>
 <div class="clearfix"></div>
 </li>
-<li>
-<span class="icon"><span class="money-bag-icon"></span></span>
-<span class="text">Up to $500,000<br>Account Protection</span>
-<div class="clearfix"></div>
-</li>
+
 <li>
 <span class="icon"><span class="ssl-icon"></span></span>
 <span class="text">Strongest Available Browser Encryption</span>
@@ -236,9 +235,15 @@ We promise to ensure the utmost security and privacy when it comes to your accou
 
 </div>
 <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.maskedinput.min.js"></script>
 <script>
 $(document).ready(function(){
     var set_tfn = function(){
+
+        $("#id_medicare_number").mask("9999 99999 9/9");
+        $("#id_phone_number").mask("99-9999-9999");
+        $("#id_date_of_birth").mask("99-99-9999");
+
         var value = $("ul#id_provide_tfn input:radio:checked").val();
         if(value !=0){
             $("input[name=tax_file_number]").parent().parent().hide();
