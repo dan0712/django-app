@@ -27,6 +27,7 @@ def calculate_co_vars(assets_len, table):
             monthly_returns_i_j = new_table.pct_change().dropna().values.T
             co_vars_i_j = assets_covariance(monthly_returns_i_j)
             co_vars[j, i] = co_vars[i, j] = co_vars_i_j[0, 1]
+    # annualized
     sk_co_var = ((1-sk.shrinkage_)*co_vars + sk.shrinkage_*np.trace(co_vars)/assets_len*np.identity(assets_len))
     return sk_co_var, co_vars
 
@@ -54,10 +55,10 @@ def compute_mean_var(W, R, C):
     return compute_mean(W, R), compute_var(W, C)
 
 
-def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order):
+def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order, bonds):
     w_w = 10000
-    w_er = 1000
-    w_sqrt = 1000
+    w_er = 100
+    w_sqrt = 100
     # For given level of return r, find weights which minimizes portfolio variance.
     mean_1, var = compute_mean_var(W, R, C)
     # Penalty for not meeting stated portfolio return effectively serves as optimization constraint
@@ -65,13 +66,13 @@ def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order):
     jac = np.zeros(len(W))
     func = 0
     # expected returns function
-    func = w_er*1/np.exp(mean_1)
+    func = -w_er*mean_1
     # jac mean
-    jac += (-R*1/np.exp(mean_1))*w_er
+    jac += -w_er*R
 
     # variance
     func += w_sqrt*sqrt(var)
-    var_jac = var_gradient(W, C)*1/2/sqrt(var)
+    var_jac = var_gradient(W, C)/(2*sqrt(var))
     jac += w_sqrt*var_jac
 
     # ====================================================
@@ -79,40 +80,44 @@ def fitness(W, R, C, r, assets_type, allocation, constrains, iW, order):
     # ==================================================
     # 100% weight
     func += w_w*((sum(W)-1)**2)
-    jac += w_w*(2*(sum(W) -1) * np.ones(len(W)))
+    jac += w_w*(2*(sum(W) - 1) * np.ones(len(W)))
 
-    # Allocation
+    # Allocation stock
     func += w_w*((dot(assets_type, W)-allocation)**2)
     jac += w_w*(2*(dot(assets_type, W)-allocation)*assets_type)
+    bond_allocation = 1-allocation
+
+    # Allocation bonds
+    func += w_w*((dot(bonds, W)-bond_allocation)**2)
+    jac += w_w*(2*(dot(bonds, W)-bond_allocation)*bonds)
 
     for ct in constrains:
         v, new_jac = ct(order, W)
         func += w_w*v
         jac += w_w*new_jac
 
-    if allocation != 0:
+    if (allocation != 0) and (allocation != 1):
         func += 10*sum((W-iW)**2)
         jac += 10*2*(W-iW)
-    return np.around(func, decimals=7), np.around(jac, decimals=7)
+
+    return np.around(func, decimals=10), np.around(jac, decimals=10)
 
 
 # Solve for optimal portfolio weights
 def solve_weights(R, C, risk_free, allocation, assets_type, constrains, iW, order):
-    R = np.around(R, decimals=7)
-    C = np.around(C, decimals=7)
     assets_type = np.array(assets_type)
 
     n = len(R)
     W = iW
-    tol = 0.001
-    W = np.around(W, decimals=7)
-    
+    tol = 0.00001
+    bonds = list(map(lambda x: 0 if x == 1 else 1, assets_type))
+    bonds = np.array(bonds)
     b_ = [(0, 1) for i in range(n)] # Bounds for decision variables
     # Constraints - weights must sum to 1
     # sum of weights of stock should be equal to allocation
     # 'target' return is the expected return on the market portfolio
     optimized = scipy.optimize.minimize(fitness, W,
-                                        (R, C, sum(R*W), assets_type, allocation, constrains, iW, order),
+                                        (R, C, sum(R*W), assets_type, allocation, constrains, iW, order, bonds),
                                         jac=True, 
                                         method='SLSQP', bounds=b_, tol=tol,  options={"maxiter": 1000})
     if not optimized.success:
@@ -152,33 +157,34 @@ def handle_data(n, expected_returns, sk_co_var, co_vars, risk_free,
     # C is the covariance matrix
     C = sk_co_var
 
-    new_mean = compute_mean(W, R)
-    new_var = compute_var(W, C)
+    market_return = compute_mean(W, R)
+    market_variance = compute_var(W, C)
 
     # Compute implied equity risk premium
-    lmb = (new_mean - risk_free) / new_var
+    delta = (market_return - risk_free) / market_variance
     # Compute equilibrium excess returns
-    Pi = dot(dot(lmb, C), W)
+    Pi = dot(dot(delta, C), W)
 
     # Solve for weights before incorporating views
     W = solve_weights(Pi+risk_free, C, risk_free, allocation, assets_type, constrains, initial_w, order)
 
-    # calculate tangency portfolio
-    _mean, var = compute_mean_var(W, R, C)
-    # Compute implied equity risk premium
-    lmb = (_mean - risk_free) / var
-    # Compute equilibrium excess returns
-    Pi = dot(dot(lmb, C), W)
-
     if views:
+        # calculate tangency portfolio
+        _mean, var = compute_mean_var(W, R, C)
+        # Compute implied equity risk premium
+        delta = (_mean - risk_free) / var
+        # Compute equilibrium excess returns
+        Pi = dot(dot(delta, C), W)
         # VIEWS ON ASSET
         P = np.array(views)
         Q = np.array(qs)
 
-        omega = dot(dot(dot(tau, P), C), transpose(P)) # omega represents
+        # omega represents
         # the uncertainty of our views. Rather than specify the 'confidence'
         # in one's view explicitly, we extrapolate an implied uncertainty
         # from market parameters.
+        omega = dot(dot(dot(tau, P), C), transpose(P))
+
         # Compute equilibrium excess returns taking into account views on assets
         sub_a = inv(dot(tau, C))
         sub_b = dot(dot(transpose(P), inv(omega)), P)
@@ -195,7 +201,6 @@ def handle_data(n, expected_returns, sk_co_var, co_vars, risk_free,
     # for i in range(len(new_weights)):
     #    if new_weights[i] < 0.05:
     #        new_weights[i] = 0
-    # print(sum(new_weights))
 
     _mean, var = compute_mean_var(new_weights, expected_returns, co_vars)
     return new_weights, _mean, var

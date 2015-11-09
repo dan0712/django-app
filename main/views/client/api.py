@@ -180,7 +180,6 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
     sk_co_var, co_vars = calculate_co_vars(assets_len, table)
     initial_w = mw
     for allocation in list(np.arange(0, 1.01, 0.01)):
-
         ns = au_size
         new_constrains = constrains[:]
         if allocation >= japan_size and (japan_constrain is not None):
@@ -214,7 +213,6 @@ def calculate_portfolios_for_goal(goal, portfolio_set):
             "expectedReturn": _mean,
             "volatility": var
         }
-
     return json_portfolios
 
 
