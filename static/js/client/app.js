@@ -15690,7 +15690,7 @@ var requirejs, require, define;
             RETIREE_MINIMUM_TERM: 1,
             RETIREMENT_AGE: 50,
             DEFAULT_LIFE_EXPECTANCY: 77,
-            DEFAULT_RETIREMENT_AGE: 65,
+            DEFAULT_RETIREMENT_AGE: 67,
             ASSUMED_FEE_RATE: .15,
             MINIMUM_SOCIAL_SECURITY_COLLECTION_AGE: 62,
             IRA_CATCHUP_AGE: 50
@@ -19592,8 +19592,8 @@ var requirejs, require, define;
             }),
             n = {
                 INVESTING: "Investing",
-                TRADITIONAL_IRA: "Traditional IRA",
-                ROTH_IRA: "Roth IRA",
+                TRADITIONAL_IRA: "SMSF",
+                ROTH_IRA: "SMSF",
                 SEP_IRA: "SEP IRA"
             },
             r = e.clone(t);
@@ -19645,11 +19645,11 @@ var requirejs, require, define;
                 return [{
                     term: r,
                     value: "TRADITIONAL",
-                    label: "Traditional IRA"
+                    label: "SMSF"
                 }, {
                     term: r,
                     value: "ROTH",
-                    label: "Roth IRA"
+                    label: "SMSF"
                 }, {
                     term: r,
                     value: "SEP",
@@ -19678,10 +19678,10 @@ var requirejs, require, define;
                     label: "Regular (Taxable)",
                     value: r.INVESTING
                 }, {
-                    label: "Traditional IRA",
+                    label: "SMSF",
                     value: r.TRADITIONAL_IRA
                 }, {
-                    label: "Roth IRA",
+                    label: "SMSF",
                     value: r.ROTH_IRA
                 }, {
                     label: "SEP IRA",
@@ -20982,7 +20982,7 @@ var requirejs, require, define;
                 bodyText: function() {
                     if (this.account().isIRA() && !this.account().isSepIRA()) {
                         var e = (new Date).getFullYear();
-                        return "Max out your IRA contributions for " + e + " with an Automatic Deposit. Once you've " + "reached your maximum contribution for the year Automatic Deposit will suspend until " + (e + 1) + "."
+                        return "Max out your SMSF contributions for " + e + " with an Automatic Deposit. Once you've " + "reached your maximum contribution for the year Automatic Deposit will suspend until " + (e + 1) + "."
                     }
                 },
                 showMaximizeIRA: function() {
@@ -25856,7 +25856,7 @@ var requirejs, require, define;
         return t.registerPartial("views/taxImpact/longTermTooltip", n), t.registerPartial("views/taxImpact/longTermTooltip", n), n
     }), define("hbs!views/taxImpact/washedLossesTooltip", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="washed-losses-help caution-icon">\n    Due to purchases made within the last 30 days in your account, the wash sale rule is expected to disallow\n    the tax loss that would otherwise be realized from this transaction. Disallowed losses will be preserved\n    in the securities that were recently purchased, and can be realized at a later date, if the securities\n    remain at a loss. However, if the recent purchases were made in your IRA account, losses will be permanently\n    disallowed.\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="washed-losses-help caution-icon">\n    Due to purchases made within the last 30 days in your account, the wash sale rule is expected to disallow\n    the tax loss that would otherwise be realized from this transaction. Disallowed losses will be preserved\n    in the securities that were recently purchased, and can be realized at a later date, if the securities\n    remain at a loss. However, if the recent purchases were made in your SMSF account, losses will be permanently\n    disallowed.\n</div>\n'
         });
         return t.registerPartial("views/taxImpact/washedLossesTooltip", n), t.registerPartial("views/taxImpact/washedLossesTooltip", n), n
     }), define("hbs!views/taxImpact/shortTermTooltip", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -26899,31 +26899,31 @@ var requirejs, require, define;
             cardTitle: "Traditional<br />IRA",
             extraClass: "traditional-ira",
             tooltip: function() {
-                return 'Traditional IRA contributions may be tax deductible, and you defer paying taxes on gains until you withdraw in retirement. Consult a tax advisor to see if your contribution is deductible. '
+                return 'SMSF contributions may be tax deductible, and you defer paying taxes on gains until you withdraw in retirement. Consult a tax advisor to see if your contribution is deductible. '
             },
-            disabledTooltip: "Great job, you already have a Traditional IRA. To simplify your retirement saving we allow you to just have one Traditional IRA and one Roth IRA. To add money or roll over a 401(k) or IRA into your Traditional IRA please go to the Transfer page of your account.",
-            goalName: "Traditional IRA",
+            disabledTooltip: "Great job, you already have a SMSF. To simplify your retirement saving we allow you to just have one SMSF and one SMSF. To add money or roll over a 401(k) or IRA into your SMSF please go to the Transfer page of your account.",
+            goalName: "SMSF",
             goalType: "RETIREMENT",
             accountType: n.TRADITIONAL_IRA
         }), s.TRADITIONAL_IRA_INCOME = r(s.BASE_INCOME, {
             cardTitle: "Traditional<br />Income<br />IRA",
             extraClass: "traditional-income-ira",
-            goalName: "Traditional IRA",
+            goalName: "SMSF",
             accountType: n.TRADITIONAL_IRA
         }), s.ROTH_IRA = r(s.BASE, {
-            cardTitle: "Roth IRA",
+            cardTitle: "SMSF",
             extraClass: "roth-ira",
             tooltip: function() {
-                return 'Roth IRA contributions are not tax deductible today, but withdrawals are usually tax-free in retirement. Consult a tax advisor for details. '
+                return 'SMSF contributions are not tax deductible today, but withdrawals are usually tax-free in retirement. Consult a tax advisor for details. '
             },
-            disabledTooltip: "Great job, you already have a Roth IRA. To simplify your retirement saving we allow you to just have one Traditional IRA and one Roth IRA. To add money or roll over a 401(k) or IRA into your Roth IRA please go to the Transfer page of your account.",
-            goalName: "Roth IRA",
+            disabledTooltip: "Great job, you already have a SMSF. To simplify your retirement saving we allow you to just have one SMSF and one SMSF. To add money or roll over a 401(k) or IRA into your SMSF please go to the Transfer page of your account.",
+            goalName: "SMSF",
             goalType: "RETIREMENT",
             accountType: n.ROTH_IRA
         }), s.ROTH_IRA_INCOME = r(s.BASE_INCOME, {
             cardTitle: "Roth<br />Income<br />IRA",
             extraClass: "roth-income-ira",
-            goalName: "Roth IRA",
+            goalName: "SMSF",
             accountType: n.ROTH_IRA
         }), s.SEP_IRA = r(s.BASE, {
             cardTitle: "SEP IRA",
@@ -26939,12 +26939,12 @@ var requirejs, require, define;
             goalName: "SEP IRA",
             accountType: n.SEP_IRA
         }), s.ROLLOVER = r(s.BASE, {
-            cardTitle: "Roll over<br />your IRA/<br />401(k)/403(b)",
+            cardTitle: "Roll over<br />your SMSF/<br />401(k)/403(b)",
             extraClass: "rollover",
             tooltip: function() {
-                return 'Rolling over allows you to move your existing IRA/401(k)/403(b) retirement savings into a Traditional or Roth IRA. '
+                return 'Rolling over allows you to move your existing IRA/401(k)/403(b) retirement savings into a Traditional or SMSF. '
             },
-            goalName: "Traditional IRA",
+            goalName: "SMSF",
             goalType: "RETIREMENT",
             accountType: n.TRADITIONAL_IRA,
             rollover: !0
@@ -27014,7 +27014,7 @@ var requirejs, require, define;
     }), define("hbs!views/profile/editBeneficiaries", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
             function c(e, t) {
-                return "\n        Please designate beneficiaries for your IRA. If you are married, your spouse will automatically be named as your sole primary beneficiary. If you choose not to designate any beneficiaries, your IRA will become the property of your estate upon your death.\n    "
+                return "\n        Please designate beneficiaries for your SMSF. If you are married, your spouse will automatically be named as your sole primary beneficiary. If you choose not to designate any beneficiaries, your SMSF will become the property of your estate upon your death.\n    "
             }
 
             function h(e, t) {
@@ -27664,7 +27664,7 @@ var requirejs, require, define;
             }
 
             function d(e, t) {
-                return '\n        <div class="clearfix tos-line withholding">\n            <input class="left" type="checkbox" name="iraWithholding" value="true" data-validation-model="account" data-error-element-selector=".agreement-error-ira">\n            <div class="left">\n                By checking this box, you elect to not have federal and state withholding taken from your IRA distributions when you withdraw or convert.\n            </div>\n        </div>\n        <div class="agreement-error-ira agreement-error conversation-text">\n            <span class="bad">You must accept our IRA Withholding terms to continue.</span>\n        </div>\n    '
+                return '\n        <div class="clearfix tos-line withholding">\n            <input class="left" type="checkbox" name="iraWithholding" value="true" data-validation-model="account" data-error-element-selector=".agreement-error-ira">\n            <div class="left">\n                By checking this box, you elect to not have federal and state withholding taken from your SMSF distributions when you withdraw or convert.\n            </div>\n        </div>\n        <div class="agreement-error-ira agreement-error conversation-text">\n            <span class="bad">You must accept our IRA Withholding terms to continue.</span>\n        </div>\n    '
             }
 
             function v(e, t) {
@@ -28331,7 +28331,7 @@ var requirejs, require, define;
                     return t && e.push({
                         key: "tax-advantage",
                         name: "Tax-advantaged Retirement",
-                        tooltip: 'Individual Retirement Accounts (IRA) are given special tax advantages by the IRS. Traditional IRA contributions are generally tax-free today and Roth IRAs are generally tax-free when you retire. If you&#39;re not sure which one is right for you, '
+                        tooltip: 'Individual Retirement Accounts (IRA) are given special tax advantages by the IRS. SMSF contributions are generally tax-free today and SMSFs are generally tax-free when you retire. If you&#39;re not sure which one is right for you, '
                     }), n && (e.push({
                         key: "essentials",
                         name: "Essentials",
@@ -29131,7 +29131,7 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<h1>IRA Conversion - Choose a Roth IRA</h1>\n\n<div class="wizard-body">\n    You have more than one eligible Roth IRA to convert into. Please select which Roth you would like to use.\n</div>\n\n<div class="account-selector-region"></div>\n\n', (u = n.wizardControls) ? o = u.call(t, {
+            return s += '<h1>IRA Conversion - Choose a SMSF</h1>\n\n<div class="wizard-body">\n    You have more than one eligible SMSF to convert into. Please select which Roth you would like to use.\n</div>\n\n<div class="account-selector-region"></div>\n\n', (u = n.wizardControls) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.wizardControls, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -29416,7 +29416,7 @@ var requirejs, require, define;
                                     BMT.refreshAccounts()
                                 }
                             });
-                            var e = r.model.needsRoth() ? "Roth IRA created and " : "";
+                            var e = r.model.needsRoth() ? "SMSF created and " : "";
                             e += "IRA Conversion initiated.", e += r.model.is("rmd") ? " RMD sent." : "", e += " You will receive a confirmation email shortly.", BMT.flash(e), BMT.modal.close(r)
                         },
                         complete: function() {
@@ -29453,7 +29453,7 @@ var requirejs, require, define;
                 bodyAttrs: {
                     style: "width: 100%;"
                 },
-                body: 'You are about to convert all or part of your Traditional IRA to a Roth IRA. See our <a target="_blank" href="' + i.getBaseSupportUrl() + '/customer/portal/topics/435583-iras-and-rollovers">Frequently Asked Questions</a> for more information ' + "and to see if converting may be right for you.",
+                body: 'You are about to convert all or part of your SMSF to a SMSF. See our <a target="_blank" href="' + i.getBaseSupportUrl() + '/customer/portal/topics/435583-iras-and-rollovers">Frequently Asked Questions</a> for more information ' + "and to see if converting may be right for you.",
                 buttons: [{
                     id: "ok",
                     title: "Start Conversion"
@@ -30087,7 +30087,7 @@ var requirejs, require, define;
             }
 
             function p(e, t) {
-                return "\n                                Each tax year you are generally allowed to contribute a combined $5,500 to your IRAs if\n                                you are younger than 50, and $6,500 if you are 50 and older (use our tool to help figure\n                                out your Roth limit). You may continue contributing money toward a tax year until you\n                                file your taxes for that year.\n                            "
+                return "\n                                Each tax year you are generally allowed to contribute a combined $5,500 to your SMSFs if\n                                you are younger than 50, and $6,500 if you are 50 and older (use our tool to help figure\n                                out your Roth limit). You may continue contributing money toward a tax year until you\n                                file your taxes for that year.\n                            "
             }
 
             function d(e, t) {
@@ -30123,7 +30123,7 @@ var requirejs, require, define;
             }
 
             function y(e, t) {
-                return "\n                                    <p>\n                                        Roth IRAs may have additional limits based on income.  Use our Roth IRA\n                                        Limits Calculator to determine if you may be limited.\n                                    </p>\n                                "
+                return "\n                                    <p>\n                                        SMSFs may have additional limits based on income.  Use our SMSF\n                                        Limits Calculator to determine if you may be limited.\n                                    </p>\n                                "
             }
 
             function b(e, t) {
@@ -30182,7 +30182,7 @@ var requirejs, require, define;
                 fn: a.program(17, E, i)
             });
             if (o || o === 0) s += o;
-            return s += '\n\n        <div class="excess-contributions info-tip clearfix hidden">\n            <div class="arrow"></div>\n            <div class="icon">\n                <div class="lightbulb-tip-icon"></div>\n            </div>\n            <div class="text">\n                You made excess contributions to your IRA.  Make a Removal of Excess Contributions withdrawal below to correct this.\n            </div>\n        </div>\n    </div>\n</form>\n', s
+            return s += '\n\n        <div class="excess-contributions info-tip clearfix hidden">\n            <div class="arrow"></div>\n            <div class="icon">\n                <div class="lightbulb-tip-icon"></div>\n            </div>\n            <div class="text">\n                You made excess contributions to your SMSF.  Make a Removal of Excess Contributions withdrawal below to correct this.\n            </div>\n        </div>\n    </div>\n</form>\n', s
         });
         return t.registerPartial("views/transfer/deposit", n), n
     }), define("views/common/iraDepositConfirmationAlertView", ["jquery", "underscore", "components/common/scripts/models/appData", "views/common/alertView"], function(e, t, n, r) {
@@ -32755,7 +32755,7 @@ var requirejs, require, define;
                         t = new Date <= s.getInstance().date("taxDay"),
                         n = (new Date).getFullYear(),
                         r = n - 1;
-                    return e.isIRA() ? t ? "You can still contribute to your IRA for " + r + ". You can also make contributions for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + " IRA contribution deadline has passed, but you can still contribute for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : !e.isIRA() && BMT.accountGroup.hasIRAGoal() ? t ? "You can still contribute to your IRA for " + r + '. You can also make contributions to <a href="#" class="bold-text open-ira-goal">your IRA</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + ' IRA contribution deadline has passed, but you can still contribute to <a href="#" class="bold-text open-ira-goal">your IRA</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : t ? "Save taxes by making IRA Contributions for " + r + " and " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.' : "Save taxes by making an IRA Contribution for " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.'
+                    return e.isIRA() ? t ? "You can still contribute to your SMSF for " + r + ". You can also make contributions for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + " IRA contribution deadline has passed, but you can still contribute for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : !e.isIRA() && BMT.accountGroup.hasIRAGoal() ? t ? "You can still contribute to your SMSF for " + r + '. You can also make contributions to <a href="#" class="bold-text open-ira-goal">your SMSF</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + ' IRA contribution deadline has passed, but you can still contribute to <a href="#" class="bold-text open-ira-goal">your SMSF</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : t ? "Save taxes by making IRA Contributions for " + r + " and " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.' : "Save taxes by making an IRA Contribution for " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.'
                 }
             },
             openIRAGoal: function() {
@@ -44400,7 +44400,7 @@ var requirejs, require, define;
                 initial_deposit_text: function() {
                     var e, n, r = this.self.model;
                     if (!this.self._shouldShowInitialDeposit()) return "";
-                    r.isIRA() ? (n = "Try to max out your IRA contributions. This should not include rollovers", this._hasRollover() || (n += " (you can do a rollover after your IRA is set up)"), n += ".") : n = "You can start this goal with an initial deposit, or enter 0 if you will deposit money later.";
+                    r.isIRA() ? (n = "Try to max out your SMSF contributions. This should not include rollovers", this._hasRollover() || (n += " (you can do a rollover after your SMSF is set up)"), n += ".") : n = "You can start this goal with an initial deposit, or enter 0 if you will deposit money later.";
                     var i = {};
                     r.isIRA() && (i.style = "text-align: left;");
                     var s = this.madlib_input(t.extend({
@@ -44983,7 +44983,7 @@ var requirejs, require, define;
                         label: "SEP IRA",
                         value: p.SEP_IRA
                     }, {
-                        label: "Traditional IRA",
+                        label: "SMSF",
                         value: p.TRADITIONAL_IRA
                     }];
                     return this.build_dropdown_menu(e, {
@@ -45568,7 +45568,7 @@ var requirejs, require, define;
             function y(e, t) {
                 var r = "",
                     i;
-                r += '\n        <h2>Download your IRA Tax Form</h2>\n        <p>Download a printable PDF copy of your IRA Tax Form (1099-R and/or FMV &amp; RMD).</p>\n        <table class="tax-form-list">\n        ', i = n.each.call(e, (i = e && e.self, i == null || i === !1 ? i : i.iraStatements), {
+                r += '\n        <h2>Download your SMSF Tax Form</h2>\n        <p>Download a printable PDF copy of your SMSF Tax Form (1099-R and/or FMV &amp; RMD).</p>\n        <table class="tax-form-list">\n        ', i = n.each.call(e, (i = e && e.self, i == null || i === !1 ? i : i.iraStatements), {
                     hash: {},
                     inverse: l.noop,
                     fn: l.program(14, b, t)
@@ -47854,7 +47854,7 @@ var requirejs, require, define;
                     return o.FEATURE_MINIMUM_BALANCES.PERSONAL_CONSULTATION
                 },
                 builderIraMessage: function() {
-                    return BMT.accounts().hasIRA() ? "or by maxing out your IRA contribution" : ""
+                    return BMT.accounts().hasIRA() ? "or by maxing out your SMSF contribution" : ""
                 },
                 showAlternativeFeeSummary: function() {
                     return this.self.model.isClassic() || this.self.model.isEmployer()
@@ -50630,7 +50630,7 @@ var requirejs, require, define;
                 }
             },
             showFullAmount: function() {
-                this.ui.amountLabel.html("Enter an estimate of your IRA balance:")
+                this.ui.amountLabel.html("Enter an estimate of your SMSF balance:")
             },
             showPartialAmount: function() {
                 this.ui.amountLabel.html("Enter exact amount to transfer:")
@@ -50694,8 +50694,8 @@ var requirejs, require, define;
                 },
                 accountType: function() {
                     var e = {
-                        TraditionalIRA: "Traditional IRA",
-                        RothIRA: "Roth IRA",
+                        TraditionalIRA: "SMSF",
+                        RothIRA: "SMSF",
                         SepIRA: "SEP IRA",
                         SimpleIRA: "SIMPLE IRA",
                         "401K": "401(k)",
@@ -50744,7 +50744,7 @@ var requirejs, require, define;
                 this.isValidSignature() ? this.confirmTransfer() : BMT.alert({
                     icon: "warning",
                     title: "Signature Required",
-                    body: "<p>Please sign the form in order to process your IRA transfer.</p>"
+                    body: "<p>Please sign the form in order to process your SMSF transfer.</p>"
                 }), BMT.analytics.track("ElementClicked", {
                     Name: "SignAndSubmit",
                     Type: "Button",
@@ -53685,15 +53685,15 @@ var requirejs, require, define;
             }
 
             function S(e, t) {
-                return "\n                    <p>After your IRA contributions, contribute to your company plan and taxable account for the rest of your savings.  Your employer plan may be a good choice if it has low fees and sufficient choices to diversify.</p>\n                "
+                return "\n                    <p>After your SMSF contributions, contribute to your company plan and personal or joint taxable account for the rest of your savings.  Your employer plan may be a good choice if it has low fees and sufficient choices to diversify.</p>\n                "
             }
 
             function x(e, t) {
-                return "\n                    <p>After your IRA contributions, contribute to a taxable account for the rest of your savings.</p>\n                "
+                return "\n                    <p>After your SMSF contributions, contribute to a personal or joint taxable account for the rest of your savings.</p>\n                "
             }
 
             function T(e, t) {
-                return '\n            <div class="retirement-savings">\n                <p class="heading">Retirement Savings</p>\n                <p class="savings-amount per-year"></p>\n            </div>\n            <div class="savings-breakdown">\n                <div class="investment-distribution">\n                    <div class="column traditional-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">Traditional IRA</h3>\n                    </div>\n                    <div class="column spouse-traditional-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">Spouse Traditional IRA</h3>\n                    </div>\n                    <div class="column roth-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">Roth IRA</h3>\n                    </div>\n                    <div class="column spouse-roth-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">Spouse Roth IRA</h3>\n                    </div>\n                    <div class="column taxable">\n                        <div class="fill"></div>\n                        <h3 class="name"></h3>\n                    </div>\n                </div>\n\n                <div class="savings-line-items">\n                    <div class="line-item traditional-ira clearfix">\n                        <div class="name">Traditional IRA</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item spouse-traditional-ira clearfix">\n                        <div class="name">Spouse Traditional IRA</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item roth-ira clearfix">\n                        <div class="name">Roth IRA</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item spouse-roth-ira clearfix">\n                        <div class="name">Spouse Roth IRA</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item taxable clearfix">\n                        <div class="name"></div>\n                        <div class="value per-year"></div>\n                    </div>\n                </div>\n            </div>\n        '
+                return '\n            <div class="retirement-savings">\n                <p class="heading">Retirement Savings</p>\n                <p class="savings-amount per-year"></p>\n            </div>\n            <div class="savings-breakdown">\n                <div class="investment-distribution">\n                    <div class="column traditional-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">SMSF</h3>\n                    </div>\n                    <div class="column spouse-traditional-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">Spouse SMSF</h3>\n                    </div>\n                    <div class="column roth-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">SMSF</h3>\n                    </div>\n                    <div class="column spouse-roth-ira">\n                        <div class="fill"></div>\n                        <h3 class="name">Spouse SMSF</h3>\n                    </div>\n                    <div class="column taxable">\n                        <div class="fill"></div>\n                        <h3 class="name"></h3>\n                    </div>\n                </div>\n\n                <div class="savings-line-items">\n                    <div class="line-item traditional-ira clearfix">\n                        <div class="name">SMSF</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item spouse-traditional-ira clearfix">\n                        <div class="name">Spouse SMSF</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item roth-ira clearfix">\n                        <div class="name">SMSF</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item spouse-roth-ira clearfix">\n                        <div class="name">Spouse SMSF</div>\n                        <div class="value per-year"></div>\n                    </div>\n                    <div class="line-item taxable clearfix">\n                        <div class="name"></div>\n                        <div class="value per-year"></div>\n                    </div>\n                </div>\n            </div>\n        '
             }
 
             function N(e, t) {
@@ -53756,12 +53756,12 @@ var requirejs, require, define;
             getEligibilitiesText: function(t, n, r, i, s, o) {
                 var u = this._pronouns(o),
                     a = o ? u.subject.capitalize() + " is " : u.subject.capitalize() + " are ";
-                return t > 0 ? (a += "eligible to contribute up to ", r === 0 && n > 0 ? a += e.money(n, 0) + " " : a += e.money(t, 0) + " ", r === 0 && n > 0 ? a += "in a Roth IRA for the " + s + " tax year. " + u.subject.capitalize() + " can't contribute to a traditional IRA due to " + u.possessive + " age." : n !== t || r !== t && i !== t ? i === t && n === 0 ? a += "in a deductible traditional IRA for the " + s + " tax year. " + u.singular.capitalize() + " can't contribute to a Roth IRA due to " + u.possessive + " income and filing status." : i === 0 && n === 0 ? a += "in a non-deductible traditional IRA for the " + s + " tax year. " + u.singular.capitalize() + " can't contribute to a Roth or deductible traditional IRA due to " + u.possessive + " income, filing status, and availability of " + u.possessive + " employer retirement plan." : n > 0 ? (a += "for the " + s + " tax year. This total can be split between partial contributions of up to " + e.money(n, 0) + " in a Roth IRA and ", i > 0 ? a += e.money(i, 0) + " in a " : a += e.money(r, 0) + " in a non-", a += "deductible traditional IRA.") : a = "" : (a += "for the " + s + " tax year. This total can be split between a Roth IRA and ", r === t && i !== t && (a += "non-"), a += "deductible traditional IRA.")) : a += "not eligible to contribute to an IRA for the " + s + " tax year. " + u.possessive.capitalize() + " age disqualifies " + u.subjectOrThem + " for a traditional contribution, and " + u.possessiveOrTheir + " income disqualifies " + u.subjectOrThem + " for a Roth contribution.", a
+                return t > 0 ? (a += "eligible to contribute up to ", r === 0 && n > 0 ? a += e.money(n, 0) + " " : a += e.money(t, 0) + " ", r === 0 && n > 0 ? a += "in a SMSF for the " + s + " tax year. " + u.subject.capitalize() + " can't contribute to a SMSF due to " + u.possessive + " age." : n !== t || r !== t && i !== t ? i === t && n === 0 ? a += "in a deductible SMSF for the " + s + " tax year. " + u.singular.capitalize() + " can't contribute to a SMSF due to " + u.possessive + " income and filing status." : i === 0 && n === 0 ? a += "in a non-deductible SMSF for the " + s + " tax year. " + u.singular.capitalize() + " can't contribute to a Roth or deductible SMSF due to " + u.possessive + " income, filing status, and availability of " + u.possessive + " employer retirement plan." : n > 0 ? (a += "for the " + s + " tax year. This total can be split between partial contributions of up to " + e.money(n, 0) + " in a SMSF and ", i > 0 ? a += e.money(i, 0) + " in a " : a += e.money(r, 0) + " in a non-", a += "deductible SMSF.") : a = "" : (a += "for the " + s + " tax year. This total can be split between a SMSF and ", r === t && i !== t && (a += "non-"), a += "deductible SMSF.")) : a += "not eligible to contribute to an IRA for the " + s + " tax year. " + u.possessive.capitalize() + " age disqualifies " + u.subjectOrThem + " for a traditional contribution, and " + u.possessiveOrTheir + " income disqualifies " + u.subjectOrThem + " for a Roth contribution.", a
             },
             getRecommendationsText: function(t, n, r, i, s) {
                 var o = this._pronouns(s),
                     u = "";
-                return t > 0 && (r > 0 ? n > 0 ? u = e.money(t, 0) + " in a Roth IRA and " + e.money(n + r, 0) + " in a traditional IRA. " + o.possessive.capitalize() + " income will limit deductibility to " + e.money(n, 0) + "." : u = e.money(t, 0) + " in a Roth IRA and " + e.money(r, 0) + " in a non-deductible traditional IRA. " + o.subject.capitalize() + ' may be able to convert the non-deductible traditional IRA contribution to a Roth IRA. <a href="https://www.betasmartz.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.' : n > 0 && n !== t ? u = e.money(t, 0) + " in a Roth IRA and " + e.money(n, 0) + " in a deductible traditional IRA. Given that " + o.possessive + ' income falls in the <a href="http://www.irs.gov/Retirement-Plans/Plan-Participant,-Employee/Amount-of-Roth-IRA-Contributions-That-You-Can-Make-for-2014" target="_blank">partial contribution range</a>, any additional deductions could impact what ' + o.singular + " can contribute." : t > n && (u = e.money(t, 0) + " in a Roth IRA. " + o.subject.capitalize() + " won't get a tax deduction now, but withdrawals will be federally tax free if " + o.inPast + " held the account for 5 years and " + o.inPastReference + ' at least 59.5. <a href="http://www.irs.gov/Retirement-Plans/Roth-IRAs" target="_blank">Read more about Roth IRAs</a>.')), !u && n > 0 && (n > t && r === 0 ? i < 0 ? u = e.money(n, 0) + " in a deductible traditional IRA. Given that " + o.possessive + ' future tax rate will likely be lower, it is most efficient to save taxes at a higher rate now and withdraw in retirement at a lower tax rate. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.' : u = e.money(n, 0) + " in a deductible traditional IRA. While " + o.possessive + " future tax rate may not be lower, " + o.singular + ' will benefit from tax free growth. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.' : r > 0 && (u = e.money(n + r, 0) + " in a traditional IRA. " + o.subject.capitalize() + " will be able to claim a partial deduction of " + e.money(n, 0) + '. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about traditional IRAs</a>.')), u || (t > 0 && n === t ? u = "an equal amount in a Roth IRA and traditional IRA. Given that " + o.possessive + " future tax rate will likely be similar to " + o.possessive + " current rate, having both pre-tax and post-tax accounts may be useful for controlling " + o.possessive + " income and taxes in retirement." : r > 0 && (u = e.money(r, 0) + " in a non-deductible traditional IRA. A non-deductible traditional IRA is funded with after-tax money, and only withdrawals of gains in retirement are taxed. This type of IRA may also allow " + o.subject + ' to efficiently move money into a Roth IRA via a Roth conversion (i.e., a "backdoor" Roth IRA). <a href="https://www.betasmartz.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.')), u ? (s ? "For your spouse, we recommend investing " : "We recommend investing ") + u : u
+                return t > 0 && (r > 0 ? n > 0 ? u = e.money(t, 0) + " in a SMSF and " + e.money(n + r, 0) + " in a SMSF. " + o.possessive.capitalize() + " income will limit deductibility to " + e.money(n, 0) + "." : u = e.money(t, 0) + " in a SMSF and " + e.money(r, 0) + " in a non-deductible SMSF. " + o.subject.capitalize() + ' may be able to convert the non-deductible SMSF contribution to a SMSF. <a href="https://www.betasmartz.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.' : n > 0 && n !== t ? u = e.money(t, 0) + " in a SMSF and " + e.money(n, 0) + " in a deductible SMSF. Given that " + o.possessive + ' income falls in the <a href="http://www.irs.gov/Retirement-Plans/Plan-Participant,-Employee/Amount-of-Roth-IRA-Contributions-That-You-Can-Make-for-2014" target="_blank">partial contribution range</a>, any additional deductions could impact what ' + o.singular + " can contribute." : t > n && (u = e.money(t, 0) + " in a SMSF. " + o.subject.capitalize() + " won't get a tax deduction now, but withdrawals will be federally tax free if " + o.inPast + " held the account for 5 years and " + o.inPastReference + ' at least 59.5. <a href="http://www.irs.gov/Retirement-Plans/Roth-IRAs" target="_blank">Read more about SMSFs</a>.')), !u && n > 0 && (n > t && r === 0 ? i < 0 ? u = e.money(n, 0) + " in a deductible SMSF. Given that " + o.possessive + ' future tax rate will likely be lower, it is most efficient to save taxes at a higher rate now and withdraw in retirement at a lower tax rate. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about SMSFs</a>.' : u = e.money(n, 0) + " in a deductible SMSF. While " + o.possessive + " future tax rate may not be lower, " + o.singular + ' will benefit from tax free growth. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about SMSFs</a>.' : r > 0 && (u = e.money(n + r, 0) + " in a SMSF. " + o.subject.capitalize() + " will be able to claim a partial deduction of " + e.money(n, 0) + '. <a href="http://www.irs.gov/Retirement-Plans/Traditional-IRAs" target="_blank">Read more about SMSFs</a>.')), u || (t > 0 && n === t ? u = "an equal amount in a SMSF and SMSF. Given that " + o.possessive + " future tax rate will likely be similar to " + o.possessive + " current rate, having both pre-tax and post-tax accounts may be useful for controlling " + o.possessive + " income and taxes in retirement." : r > 0 && (u = e.money(r, 0) + " in a non-deductible SMSF. A non-deductible SMSF is funded with after-tax money, and only withdrawals of gains in retirement are taxed. This type of IRA may also allow " + o.subject + ' to efficiently move money into a SMSF via a Roth conversion (i.e., a "backdoor" SMSF). <a href="https://www.betasmartz.com/resources/retirement/401ks-and-iras/roth-ira-rules-smart-ways-to-avoid-taxes-on-a-conversion/" target="_blank">Read more about Roth conversions</a>.')), u ? (s ? "For your spouse, we recommend investing " : "We recommend investing ") + u : u
             },
             _pronouns: function(e) {
                 return {
@@ -53987,7 +53987,7 @@ var requirejs, require, define;
     }), define("views/retirementPlanning/addRecommendedGoalView", ["underscore", "common/betterment.views", "hbs!views/retirementPlanning/addRecommendedGoal", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/common/alertView", "services/accountService", "components/common/scripts/viewHelpers/customerSupport", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a) {
         var f = {
                 traditionalIra: {
-                    title: "Traditional IRA",
+                    title: "SMSF",
                     description: "Contributions may be tax deductible and grow tax free, but withdrawals in retirement are subject to income tax.",
                     addGoalCard: i.get("TRADITIONAL_IRA"),
                     filter: {
@@ -53997,7 +53997,7 @@ var requirejs, require, define;
                     }
                 },
                 rothIra: {
-                    title: "Roth IRA",
+                    title: "SMSF",
                     description: "Roth contributions are not tax-deductible, but all growth and qualified withdrawals are tax free.",
                     addGoalCard: i.get("ROTH_IRA"),
                     filter: {
