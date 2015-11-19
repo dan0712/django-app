@@ -9,6 +9,7 @@ from urllib.parse import quote
 import calendar
 from bs4 import BeautifulSoup
 from portfolios.models import MarketCap
+import random
 
 
 class YahooApi:
@@ -17,6 +18,7 @@ class YahooApi:
     symbol_dict = None
     google_dict = None
     dates = None
+    historical_currency_cache = dict()
 
     def __init__(self):
         today = datetime.today()
@@ -33,13 +35,62 @@ class YahooApi:
         for dad in DataApiDict.objects.filter(api="GOOGLE").all():
             self.google_dict[dad.platform_symbol] = dad.api_symbol
 
-    def get_all_prices(self, ticker_symbol, period="m"):
+    def get_rate(self, currency, date):
+        y, m, d = date.split("-")
+        formatted_date = "{y}-{m}".format(**locals())
+
+        rand = random.random()
+        now = datetime.now()
+        year = now.year
+        month = now.month
+
+        end = "{year}-{month}-01".format(**locals())
+
+        url = "http://www.myfxbook.com/getHistoricalDataByDate.json?" \
+              "&start=2008-02-01%2000:00&end={end}%2000:00&symbol={symbol}"\
+              "&timeScale=43200&userTimeFormat=0&rand={rand}".format(rand=rand, symbol=currency, end=end)
+        currency_cache = self.historical_currency_cache.get(currency, {})
+        
+        if not currency_cache:
+            # get data from the net
+            try:
+                with urllib.request.urlopen(url) as response:
+                    html_file = json.loads(response.read().decode("utf-8"))["content"]["historyData"]
+                    soup = BeautifulSoup(html_file)
+                    rows = soup.find_all("tr")
+                    for row in rows:
+                        columns = row.find_all("td")
+                        if not columns:
+                            continue
+                        try:
+                            _date, price = datetime.strptime(columns[0].text, "%b %d, %Y %H:%M"), float(columns[4].text)
+                        except (IndexError, ValueError):
+                            continue
+                        currency_cache[_date.strftime("%Y-%m")] = price
+            except urllib.request.HTTPError as e:
+                raise Exception("{0} : {1}".format(e.msg, url))
+
+            self.historical_currency_cache[currency] = currency_cache
+
+        rate = currency_cache.get(formatted_date, 1)
+        return rate
+
+    def to_aud_historical(self, price, date, currency):
+        if currency == "AUD":
+            return price
+
+        if currency == "USD":
+            return (1/self.get_rate('AUDUSD', date)) * price;
+        if currency == "GBP":
+            return self.get_rate('GBPAUD', date) * price
+
+    def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
         if period == "m":
             self.dates = pd.date_range('2010-01-01', '{0}-{1}-01'
-                                       .format(self.today_year, self.today_month+1), freq='M')
+                    .format(self.today_year, self.today_month+1), freq='M')
         elif period == "d":
             self.dates = pd.date_range('2010-01-01', '{0}-{1}-{2}'
-                                       .format(self.today_year, self.today_month+1, self.today_day), freq='D')
+                    .format(self.today_year, self.today_month+1, self.today_day), freq='D')
 
         db_symbol = ticker_symbol
         ticker_symbol = self.symbol_dict.get(ticker_symbol, ticker_symbol)
@@ -64,7 +115,7 @@ class YahooApi:
                         date = cells[0]
                     else:
                         date = cells[0]
-                    close = float(cells[4])
+                    close = self.to_aud_historical(float(cells[4]), date, currency)
                     price_data[pd.to_datetime(date)] = close
         except urllib.request.HTTPError as e:
             raise Exception("{0} : {1}".format(e.msg, url))
@@ -83,8 +134,8 @@ class YahooApi:
 
         if currency == "USD":
             url = 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where' \
-                  '%20symbol%20in%20(%22AUDUSD%3DX%22)%0A%09%09&format=json&diagnostics=true&' \
-                  'env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback='
+                    '%20symbol%20in%20(%22AUDUSD%3DX%22)%0A%09%09&format=json&diagnostics=true&' \
+                    'env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback='
             with urllib.request.urlopen(url) as response:
                 quote_json = json.loads(response.read().decode("utf-8"))
                 bid = float(quote_json['query']['results']['quote']['Bid'])
@@ -93,8 +144,8 @@ class YahooApi:
 
         if currency == "GBP":
             url = 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where' \
-                  '%20symbol%20in%20(%22GBPAUD%3DX%22)%0A%09%09&format=json&diagnostics=true&' \
-                  'env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback='
+                    '%20symbol%20in%20(%22GBPAUD%3DX%22)%0A%09%09&format=json&diagnostics=true&' \
+                    'env=http%3A%2F%2Fdatatables.org%2Falltables.env&callback='
             with urllib.request.urlopen(url) as response:
                 quote_json = json.loads(response.read().decode("utf-8"))
                 bid = float(quote_json['query']['results']['quote']['Bid'])
@@ -113,7 +164,7 @@ class YahooApi:
             bid = quote_json[0]['l']
             bid = float(bid)
         return bid*self.to_aud(currency)
- 
+
     def market_cap(self, ticker):
         ticker_symbol = self.symbol_dict.get(ticker.symbol, ticker.symbol)
         url = "http://finance.yahoo.com/q?s={0}".format(ticker_symbol)
@@ -131,7 +182,8 @@ class YahooApi:
         mp.value = value
         mp.save()
         return value
-   
+
+
 class DbApi:
 
     dates = None
@@ -142,9 +194,9 @@ class DbApi:
         self.today_month = today.month - 1
         self.today_day = today.day
 
-    def get_all_prices(self, ticker_symbol, period="m"):
+    def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
         self.dates = pd.date_range('2010-01', '{0}-{1}'
-                                   .format(self.today_year, self.today_month+1), freq='M')
+            .format(self.today_year, self.today_month+1), freq='M')
 
         prices = MonthlyPrices.objects.filter(symbol=ticker_symbol).all()
         price_data = {}
@@ -156,5 +208,5 @@ class DbApi:
     def market_cap(self, ticker):
         mp = MarketCap.objects.get(ticker=ticker) 
         return mp.value
-   
+
 

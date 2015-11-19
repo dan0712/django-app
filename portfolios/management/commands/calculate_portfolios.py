@@ -28,7 +28,7 @@ def calculate_portfolios(portfolio_set):
         asset_name.append(ticker.symbol)
         asset_super_class_dict[ticker.symbol] = 1 if asset.super_asset_class in ["EQUITY_AU", "FIXED_INCOME_AU"] else 0
         dm_asset_super_class_dict[ticker.symbol] = 1 if asset.super_asset_class in ["EQUITY_INT", "FIXED_INCOME_INT"] else 0
-        series[ticker.symbol] = api.get_all_prices(ticker.symbol)
+        series[ticker.symbol] = api.get_all_prices(ticker.symbol, currency=ticker.currency)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
         market_cap[ticker.symbol] = api.market_cap(ticker)
