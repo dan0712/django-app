@@ -15688,8 +15688,8 @@ var requirejs, require, define;
             MINIMUM_LIFE_EXPECTANCY: a,
             RETIREE_INCOME_MINIMUM_TERM: 10,
             RETIREE_MINIMUM_TERM: 1,
-            RETIREMENT_AGE: 50,
-            DEFAULT_LIFE_EXPECTANCY: 77,
+            RETIREMENT_AGE: 67,
+            DEFAULT_LIFE_EXPECTANCY: 90,
             DEFAULT_RETIREMENT_AGE: 67,
             ASSUMED_FEE_RATE: .15,
             MINIMUM_SOCIAL_SECURITY_COLLECTION_AGE: 62,
@@ -51391,11 +51391,11 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.spouseName, o = typeof u === c ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '" /> is\n        <input type="number" class="spouse age" name="spouseAge" value="', (u = n.spouseAge) ? o = u.call(t, {
+            }) : u), s += l(o) + '" />\n        <input type="text" class="spouse age" style="width:100px;" name="spouseAge" placeholder="birth date" value="', (u = n.spouseAge) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.spouseAge, o = typeof u === c ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '" /> years old\n    </div>\n    <div class="error" data-field="spouseInputs"></div>\n</div>\n\n<div class="buttons">\n    <button class="silver back">Back</button>\n    <button class="blue next">Save and Continue</button>\n</div>\n', s
+            }) : u), s += l(o) + '" />\n    </div>\n    <div class="error" data-field="spouseInputs"></div>\n</div>\n\n<div class="buttons">\n    <button class="silver back">Back</button>\n    <button class="blue next">Save and Continue</button>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/personalDetails", n), n
     }), define("hbs!views/retirementPlanning/personalDetailsBubble", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -51425,7 +51425,7 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/retirementPlanning/personalDetailsBubble", n), n
-    }), define("views/retirementPlanning/personalDetailsView", ["common/betterment.views", "hbs!views/retirementPlanning/personalDetails", "hbs!views/retirementPlanning/personalDetailsBubble"], function(e, t, n) {
+    }), define("views/retirementPlanning/personalDetailsView", ["jqueryMask","common/betterment.views", "hbs!views/retirementPlanning/personalDetails", "hbs!views/retirementPlanning/personalDetailsBubble"], function(jm, e, t, n) {
         return e.View.extend({
             template: t,
             className: "personal-details-step",
@@ -51463,6 +51463,7 @@ var requirejs, require, define;
                 this.profile = this.options.profile, this.plan = this.options.plan
             },
             onRender: function() {
+                this.ui.spouseAgeInput.mask("99/99/9999");
                 this.ui.spouseElements.toggle(this.profile.isMarried()), this.profile.isMarried() ? this.selectMarried() : this.selectSingle(), this.options.bubbles.content("user", n({
                     name: BMT.user.get("firstName"),
                     age: this.profile.getAge()
@@ -52385,7 +52386,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.retirementZip, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '\n                                </span>\n                                <span editable data-current="', (u = n.retirementZip) ? o = u.call(t, {
+            }) : u), s += l(o) + '\n                                </span>\n                                <span editable style="display:none" data-current="', (u = n.retirementZip) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.retirementZip, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -52395,7 +52396,7 @@ var requirejs, require, define;
                 hash: {
                     decimals: 0
                 }
-            }, u ? u.call(t, o, a) : h.call(t, "number", o, a))) + '%\n                                </span>\n                                <span editable data-current="', (u = n.annualSalaryPercentGrowth) ? o = u.call(t, {
+            }, u ? u.call(t, o, a) : h.call(t, "number", o, a))) + '%\n                                </span>\n                                <span style="display:none;" editable data-current="', (u = n.annualSalaryPercentGrowth) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.annualSalaryPercentGrowth, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -52405,7 +52406,7 @@ var requirejs, require, define;
                 hash: {}
             }) : u), s += l(o) + '%)\n                        </div>\n                        <span class="arrow">&rsaquo;</span>\n                    </div>\n                    <div class="error" data-field="annualSalaryPercentGrowth"></div>\n                    <div class="explanation">\n                        <span class="unadvised-user-only">\n                            Since you are using Betterment, we assume you are an above average performer and will get\n                            raises in excess of inflation.\n                        </span>\n                        <span class="advised-user-only">\n                            We assume you will get raises in excess of inflation.\n                        </span>\n                        We assume 1% plus inflation raises of 3%, but you can change these in the Assumptions in the\n                        next step.\n                    </div>\n                </div>\n                <div class="typical-spending calculated-row">\n                    <div class="row-header">\n                        <div class="copy">\n                            Spending\n                            <span class="income-replacement-ratio inline-editable">\n                                <span display data-model="plan" data-property="incomeReplacementRatio">\n                                    ' + l((u = n.pct || t && t.pct, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.incomeReplacementRatio, 0, a) : h.call(t, "pct", t && t.incomeReplacementRatio, 0, a))) + '\n                                </span>\n                                <span editable data-current="', (u = n.incomeReplacementRatio) ? o = u.call(t, {
+            }, u ? u.call(t, t && t.incomeReplacementRatio, 0, a) : h.call(t, "pct", t && t.incomeReplacementRatio, 0, a))) + '\n                                </span>\n                                <span editable  style="display:none;" data-current="', (u = n.incomeReplacementRatio) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.incomeReplacementRatio, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -52532,7 +52533,7 @@ var requirejs, require, define;
                 })), this.block(), this.loadZipData().then(this.showInitialState)
             },
             showInitialState: function() {
-                this.plan.has("desiredRetirementIncomeCents") && this.plan.dollars("desiredRetirementIncome") !== this.getDesiredRetirementSpending() ? (this.toggleResetButton(!0), this.ui.howWeCalculatedContainer.hide(), this.redraw(!1)) : this.recalculateConsumption(!1), this.unblock()
+                this.plan.has("desiredRetirementIncomeCents") && this.plan.dollars("desiredRetirementIncome") !== this.getDesiredRetirementSpending() ? (this.toggleResetButton(!0),  this.redraw(!1)) : this.recalculateConsumption(!1), this.unblock()
             },
             toggleExplanation: function(e) {
                 var t = $(e.currentTarget),
@@ -52572,7 +52573,7 @@ var requirejs, require, define;
                 this.block(), this.recalculateConsumption(!0).then(this.unblock.bind(this)), this.toggleResetButton(!1)
             },
             toggleResetButton: function(e) {
-                e ? (this.ui.resetContainer.removeClass("inactive"), this.ui.howWeCalculatedContainer.slideUp()) : (this.ui.resetContainer.addClass("inactive"), this.ui.howWeCalculatedContainer.slideDown())
+                e ? this.ui.resetContainer.removeClass("inactive") : this.ui.resetContainer.addClass("inactive")
             },
             loadZipData: function() {
                 return this.zipCode = new a({

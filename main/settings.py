@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'suit',
     'filebrowser',
     'django.contrib.admin',
+    'django_cron',
 
 )
 

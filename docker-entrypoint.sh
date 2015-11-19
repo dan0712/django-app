@@ -1,3 +1,21 @@
 #!/bin/bash
-python /betasmartz/manage.py migrate
-python /betasmartz/manage.py runserver 0.0.0.0:8000
+# save env vars
+printenv > /all.envs
+
+python /betasmartz/manage.py migrate main --noinput
+python /betasmartz/manage.py migrate --noinput
+
+# Create the log file to be able to run tail
+touch /var/log/all.log
+
+#add to crontab
+crontab /betasmartz/devop/cron
+
+# Run cron service
+cron
+
+# start supervisor
+supervisord
+
+# read logs
+tail -f /var/log/all.log

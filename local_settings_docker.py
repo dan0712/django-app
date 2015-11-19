@@ -1,21 +1,38 @@
-__author__ = 'cristian'
 import os
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-         'NAME': os.environ["DB_NAME"],
-         'USER': os.environ["DB_USER"],
-         'PASSWORD': os.environ["DB_PASSWORD"],
-         'HOST': os.environ["DB_HOST"],
-         'PORT': os.environ.get("DB_PORT", ""),
-     }
-}
 
-SITE_URL = os.environ["SITE_URL"]
+environment = os.environ["ENVIRONMENT"]
+
+if environment == "prod":
+    DATABASES = {
+         'default': {
+             'ENGINE': 'django.db.backends.postgresql_psycopg2',
+             'NAME': "betasmartz_prod",
+             'USER': "postgres",
+             'PASSWORD': os.environ["DB_PASSWORD"],
+             'HOST': os.environ["DB_HOST"],
+             'PORT': 5432,
+         }
+    }
+    SITE_URL = "app.betasmartz.com"
+
+elif environment == "dev":
+    DATABASES = {
+         'default': {
+             'ENGINE': 'django.db.backends.postgresql_psycopg2',
+             'NAME': "betasmartz_dev",
+             'USER': "postgres",
+             'PASSWORD': os.environ["DB_PASSWORD"],
+             'HOST': os.environ["DB_HOST"],
+             'PORT': 5432,
+         }
+    }
+    SITE_URL = "demo.betasmartz.com"
+    
+    
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ["EMAIL_HOST"]
-EMAIL_PORT = os.environ["EMAIL_PORT"]
-EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
-EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
-DEFAULT_FROM_EMAIL = os.environ["DEFAULT_FROM_EMAIL"]
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.zoho.com")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", 587)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "press@gendabot.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "C^7d#G8hy&3z88Dz@df8U5U4!MpmRXf%Y!sj")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "press@gendabot.com")

@@ -21,3 +21,7 @@ Markdown
 djangorestframework
 git+git://github.com/riklaunim/django-ckeditor.git#egg=django_ckeditor_updated-master
 scikit-learn
+uwsgi
+django_cron
+tornado
+pexpect
