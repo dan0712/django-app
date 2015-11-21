@@ -4,4 +4,4 @@ ADD /prod.sh /docker-entrypoint-initdb.d/prod.sh
 
 RUN chmod +x /docker-entrypoint-initdb.d/dev.sh
 RUN chmod +x /docker-entrypoint-initdb.d/prod.sh
-
+RUN adduser postgres root

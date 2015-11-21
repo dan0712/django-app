@@ -1,0 +1,863 @@
+{
+    "class_name": "BoxBlocking",
+    "entities": {
+        "box_user": {
+            "label": "Box User",
+            "entity_type": "base_entity",
+            "properties": {
+                "id": {
+                    "is_id": true,
+                    "label": "Id",
+                    "is_unique": true,
+                    "value_type": "TEXT",
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ]
+                },
+                "type": {
+                    "label": "Type",
+                    "default_value": "user",
+                    "value_type": "TEXT"
+                },
+                "name": {
+                    "label": "Name",
+                    "value_type": "TEXT"
+                },
+                "login": {
+                    "is_mandatory": false,
+                    "label": "Login",
+                    "is_unique": true,
+                    "value_type": "TEXT"
+                },
+                "created_at": {
+                    "label": "Created At",
+                    "value_type": "DATETIME"
+                },
+                "modified_at": {
+                    "label": "Modified At",
+                    "value_type": "DATETIME"
+                },
+                "role": {
+                    "is_mandatory": false,
+                    "label": "Role",
+                    "options": [
+                        {
+                            "id": "user",
+                            "label": "User"
+                        },
+                        {
+                            "id": "coadmin",
+                            "label": "Co-Admin"
+                        },
+                        {
+                            "id": "admin",
+                            "label": "Admin"
+                        }
+                    ],
+                    "value_type": "LIST"
+                },
+                "language": {
+                    "label": "Language",
+                    "value_type": "TEXT"
+                },
+                "timezone": {
+                    "label": "Timezone",
+                    "value_type": "TEXT"
+                },
+                "space_amount": {
+                    "label": "Space Amount",
+                    "value_type": "INTEGER"
+                },
+                "space_used": {
+                    "label": "Space Used",
+                    "value_type": "INTEGER"
+                },
+                "max_upload_size": {
+                    "label": "Max Upload Size",
+                    "value_type": "INTEGER"
+                },
+                "can_see_managed_users": {
+                    "is_mandatory": false,
+                    "label": "Can See Managed Users",
+                    "value_type": "BOOLEAN"
+                },
+                "is_sync_enabled": {
+                    "is_mandatory": false,
+                    "label": "Is Sync Enabled",
+                    "value_type": "BOOLEAN"
+                },
+                "is_external_collab_restricted": {
+                    "is_mandatory": false,
+                    "label": "Is External Collab Restricted",
+                    "value_type": "BOOLEAN"
+                },
+                "status": {
+                    "label": "Status",
+                    "value_type": "TEXT"
+                },
+                "job_title": {
+                    "label": "Job Title",
+                    "value_type": "TEXT"
+                },
+                "phone": {
+                    "label": "Phone",
+                    "value_type": "TEXT"
+                },
+                "address": {
+                    "label": "Address",
+                    "default_value": "",
+                    "value_type": "TEXT"
+                },
+                "avatar_url": {
+                    "label": "Avatar Url",
+                    "default_value": "",
+                    "value_type": "TEXT"
+                },
+                "is_exempt_from_device_limits": {
+                    "is_mandatory": false,
+                    "label": "Is Exempt From Device Limits",
+                    "value_type": "BOOLEAN"
+                },
+                "is_exempt_from_login_verification": {
+                    "is_mandatory": false,
+                    "label": "Is Exempt From Login Verification",
+                    "value_type": "BOOLEAN"
+                }
+            },
+            "name": "box_user"
+        },
+        "box_folder": {
+            "label": "Box Folder",
+            "entity_type": "base_entity",
+            "properties": {
+                "folder_id": {
+                    "is_id": true,
+                    "label": "Folder",
+                    "is_unique": true,
+                    "value_type": "TEXT",
+                    "resolver_references": [
+                        "BOX_FOLDER_FOLDER_ID"
+                    ]
+                },
+                "type": {
+                    "label": "Type",
+                    "default_value": "folder",
+                    "value_type": "TEXT"
+                },
+                "sequence_id": {
+                    "is_mandatory": false,
+                    "label": "Sequence",
+                    "is_unique": true,
+                    "value_type": "TEXT"
+                },
+                "etag": {
+                    "is_mandatory": false,
+                    "label": "Etag",
+                    "value_type": "TEXT"
+                },
+                "name": {
+                    "is_mandatory": false,
+                    "label": "Name",
+                    "value_type": "TEXT"
+                },
+                "created_at": {
+                    "is_mandatory": false,
+                    "label": "Created At",
+                    "value_type": "DATETIME"
+                },
+                "modified_at": {
+                    "is_mandatory": false,
+                    "label": "Modified At",
+                    "value_type": "DATETIME"
+                },
+                "description": {
+                    "is_mandatory": false,
+                    "label": "Description",
+                    "value_type": "TEXT"
+                },
+                "size": {
+                    "is_mandatory": false,
+                    "label": "Size",
+                    "value_type": "FLOAT"
+                },
+                "created_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Created By",
+                    "resolver": "box_user_to_box_folder_by_created_by_id",
+                    "value_type": "TEXT"
+                },
+                "modified_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Modified By",
+                    "resolver": "box_user_to_box_folder_by_modified_by_id",
+                    "value_type": "TEXT"
+                },
+                "trashed_at": {
+                    "is_mandatory": false,
+                    "label": "Trashed At",
+                    "value_type": "DATETIME"
+                },
+                "purged_at": {
+                    "is_mandatory": false,
+                    "label": "Purged At",
+                    "value_type": "DATETIME"
+                },
+                "content_created_at": {
+                    "is_mandatory": false,
+                    "label": "Content Created At",
+                    "value_type": "DATETIME"
+                },
+                "content_modified_at": {
+                    "is_mandatory": false,
+                    "label": "Content Modified At",
+                    "value_type": "DATETIME"
+                },
+                "owned_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Owned By",
+                    "resolver": "box_user_to_box_folder_by_owned_by_id",
+                    "value_type": "TEXT"
+                },
+                "link_access_permissions": {
+                    "is_mandatory": false,
+                    "label": "Link Access Permissions",
+                    "value_type": "TEXT"
+                },
+                "link_expiration": {
+                    "is_mandatory": false,
+                    "label": "Link Expiration",
+                    "value_type": "DATETIME"
+                },
+                "link_access_scope": {
+                    "is_mandatory": false,
+                    "label": "Link Access Scope",
+                    "value_type": "TEXT"
+                },
+                "parent_id": {
+                    "resolver_references": [
+                        "BOX_FOLDER_FOLDER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Parent",
+                    "resolver": "box_folder_to_box_folder_by_parent_id",
+                    "value_type": "TEXT"
+                },
+                "item_status": {
+                    "is_mandatory": false,
+                    "label": "Item Status",
+                    "value_type": "TEXT"
+                },
+                "sync_state": {
+                    "is_mandatory": false,
+                    "label": "Sync State",
+                    "value_type": "TEXT"
+                },
+                "has_collaborations": {
+                    "is_mandatory": false,
+                    "label": "Has Collaborations",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                }
+            },
+            "name": "box_folder"
+        },
+        "box_file": {
+            "label": "Box File",
+            "entity_type": "base_entity",
+            "properties": {
+                "id": {
+                    "is_id": true,
+                    "label": "Id",
+                    "is_unique": true,
+                    "value_type": "TEXT"
+                },
+                "type": {
+                    "is_mandatory": false,
+                    "label": "Type",
+                    "default_value": "file",
+                    "value_type": "TEXT"
+                },
+                "sequence_id": {
+                    "is_mandatory": false,
+                    "label": "Sequence",
+                    "is_unique": true,
+                    "value_type": "TEXT"
+                },
+                "etag": {
+                    "is_mandatory": false,
+                    "label": "Etag",
+                    "value_type": "TEXT"
+                },
+                "sha1": {
+                    "is_mandatory": false,
+                    "label": "Sha1",
+                    "value_type": "TEXT"
+                },
+                "name": {
+                    "is_mandatory": false,
+                    "label": "Name",
+                    "value_type": "TEXT"
+                },
+                "description": {
+                    "is_mandatory": false,
+                    "label": "Description",
+                    "value_type": "TEXT"
+                },
+                "size": {
+                    "is_mandatory": false,
+                    "label": "Size",
+                    "value_type": "INTEGER"
+                },
+                "created_at": {
+                    "is_mandatory": false,
+                    "label": "Created At",
+                    "value_type": "DATETIME"
+                },
+                "modified_at": {
+                    "is_mandatory": false,
+                    "label": "Modified At",
+                    "value_type": "DATETIME"
+                },
+                "trashed_at": {
+                    "is_mandatory": false,
+                    "label": "Trashed At",
+                    "value_type": "DATETIME"
+                },
+                "purged_at": {
+                    "is_mandatory": false,
+                    "label": "Purged At",
+                    "value_type": "DATETIME"
+                },
+                "content_created_at": {
+                    "is_mandatory": false,
+                    "label": "Content Created At",
+                    "value_type": "DATETIME"
+                },
+                "content_modified_at": {
+                    "is_mandatory": false,
+                    "label": "Content Modified At",
+                    "value_type": "DATETIME"
+                },
+                "created_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Created By",
+                    "resolver": "box_user_to_box_file_by_created_by_id",
+                    "value_type": "TEXT"
+                },
+                "modified_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Modified By",
+                    "resolver": "box_user_to_box_file_by_modified_by_id",
+                    "value_type": "TEXT"
+                },
+                "owned_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Owned By",
+                    "resolver": "box_user_to_box_file_by_owned_by_id",
+                    "value_type": "TEXT"
+                },
+                "link_access_permissions": {
+                    "is_mandatory": false,
+                    "label": "Link Access Permissions",
+                    "value_type": "TEXT"
+                },
+                "link_expiration": {
+                    "is_mandatory": false,
+                    "label": "Link Expiration",
+                    "value_type": "DATETIME"
+                },
+                "link_access_scope": {
+                    "is_mandatory": false,
+                    "label": "Link Access Scope",
+                    "value_type": "TEXT"
+                },
+                "link": {
+                    "is_mandatory": false,
+                    "label": "Link",
+                    "value_type": "TEXT"
+                },
+                "parent_id": {
+                    "resolver_references": [
+                        "BOX_FOLDER_FOLDER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Parent",
+                    "resolver": "box_folder_to_box_file_by_parent_id",
+                    "value_type": "TEXT"
+                },
+                "item_status": {
+                    "is_mandatory": false,
+                    "label": "Item Status",
+                    "value_type": "TEXT"
+                },
+                "version_number": {
+                    "is_mandatory": false,
+                    "label": "Version Number",
+                    "value_type": "TEXT"
+                },
+                "comment_count": {
+                    "is_mandatory": false,
+                    "label": "Comment Count",
+                    "value_type": "INTEGER"
+                },
+                "permissions_id": {
+                    "resolver_references": [
+                        "BOX_FILE_PERMISSIONS_ENTITY_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Permissions",
+                    "resolver": "box_file_permissions_to_box_file_by_permissions_id",
+                    "value_type": "INTEGER"
+                },
+                "extension": {
+                    "is_mandatory": false,
+                    "label": "Extension",
+                    "default_value": "",
+                    "value_type": "TEXT"
+                },
+                "is_package": {
+                    "is_mandatory": false,
+                    "label": "Is Package",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "owner_name": {
+                    "show_in_policy_result": true,
+                    "is_mandatory": false,
+                    "label": "Owner Name",
+                    "value_type": "TEXT"
+                },
+                "owner_email": {
+                    "show_in_policy_result": true,
+                    "is_mandatory": false,
+                    "label": "Owner Email",
+                    "value_type": "TEXT"
+                },
+                "owner_in_domain": {
+                    "show_in_policy_result": true,
+                    "is_mandatory": false,
+                    "label": "Is owner in domain",
+                    "default_value": true,
+                    "value_type": "BOOLEAN"
+                },
+                "is_shared_external": {
+                    "is_mandatory": false,
+                    "label": "Is file shared externally",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                }
+            },
+            "name": "box_file"
+        },
+        "box_event": {
+            "label": "Box Event",
+            "entity_type": "base_entity",
+            "properties": {
+                "event_id": {
+                    "is_id": true,
+                    "label": "Event",
+                    "is_unique": true,
+                    "value_type": "TEXT"
+                },
+                "type": {
+                    "is_mandatory": false,
+                    "label": "Type",
+                    "default_value": "event",
+                    "value_type": "TEXT"
+                },
+                "created_by_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "is_mandatory": false,
+                    "label": "Created By",
+                    "resolver": "box_user_to_box_event_by_created_by_id",
+                    "value_type": "TEXT"
+                },
+                "event_type": {
+                    "is_mandatory": false,
+                    "label": "Event Type",
+                    "options": [
+                        {
+                            "id": "ITEM_CREATE",
+                            "label": "A folder or file was created"
+                        },
+                        {
+                            "id": "ITEM_UPLOAD",
+                            "label": "A folder or file was uploaded"
+                        },
+                        {
+                            "id": "COMMENT_CREATE",
+                            "label": "A comment was created on a folder, file, or other comment"
+                        },
+                        {
+                            "id": "ITEM_DOWNLOAD",
+                            "label": "A file or folder was downloaded"
+                        },
+                        {
+                            "id": "ITEM_PREVIEW",
+                            "label": "A file was previewed"
+                        },
+                        {
+                            "id": "ITEM_MOVE",
+                            "label": "A file or folder was moved"
+                        },
+                        {
+                            "id": "ITEM_COPY",
+                            "label": "A file or folder was copied"
+                        },
+                        {
+                            "id": "TASK_ASSIGNMENT_CREATE",
+                            "label": "A task was assigned"
+                        },
+                        {
+                            "id": "LOCK_CREATE",
+                            "label": "A file was locked"
+                        },
+                        {
+                            "id": "LOCK_DESTROY",
+                            "label": "A file was unlocked"
+                        },
+                        {
+                            "id": "ITEM_TRASH",
+                            "label": "A file or folder was marked as deleted"
+                        },
+                        {
+                            "id": "ITEM_UNDELETE_VIA_TRASH",
+                            "label": "A file or folder was recovered out of the trash"
+                        },
+                        {
+                            "id": "COLLAB_ADD_COLLABORATOR",
+                            "label": "A collaborator was added to a folder"
+                        },
+                        {
+                            "id": "COLLAB_INVITE_COLLABORATOR",
+                            "label": "A collaborator was invited on a folder"
+                        },
+                        {
+                            "id": "COLLAB_REMOVE_COLLABORATOR",
+                            "label": "A collaborator was removed from a folder"
+                        },
+                        {
+                            "id": "ITEM_SYNC",
+                            "label": "A folder was marked for sync"
+                        },
+                        {
+                            "id": "ITEM_UNSYNC",
+                            "label": "A folder was un-marked for sync"
+                        },
+                        {
+                            "id": "ITEM_RENAME",
+                            "label": "A file or folder was renamed"
+                        },
+                        {
+                            "id": "ITEM_SHARED_CREATE",
+                            "label": "A file or folder was enabled for sharing"
+                        },
+                        {
+                            "id": "ITEM_SHARED_UNSHARE",
+                            "label": "A file or folder was disabled for sharing"
+                        },
+                        {
+                            "id": "ITEM_SHARED",
+                            "label": "A folder was shared"
+                        },
+                        {
+                            "id": "TAG_ITEM_CREATE",
+                            "label": "A tag was added to a file or folder"
+                        },
+                        {
+                            "id": "ADD_LOGIN_ACTIVITY_DEVICE",
+                            "label": "A user is logging in from a device we haven't seen before"
+                        },
+                        {
+                            "id": "REMOVE_LOGIN_ACTIVITY_DEVICE",
+                            "label": "We invalidated a user session associated with an app"
+                        },
+                        {
+                            "id": "CHANGE_ADMIN_ROLE",
+                            "label": "When an admin role changes for a use"
+                        },
+                        {
+                            "id": "GROUP_ADD_USER",
+                            "label": "Added user to group"
+                        },
+                        {
+                            "id": "NEW_USER",
+                            "label": "Created user"
+                        },
+                        {
+                            "id": "GROUP_CREATION",
+                            "label": "Created new group"
+                        },
+                        {
+                            "id": "GROUP_DELETION",
+                            "label": "Deleted group"
+                        },
+                        {
+                            "id": "DELETE_USER",
+                            "label": "Deleted user"
+                        },
+                        {
+                            "id": "GROUP_EDITED",
+                            "label": "Edited group"
+                        },
+                        {
+                            "id": "EDIT_USER",
+                            "label": "Edited user"
+                        },
+                        {
+                            "id": "GROUP_ADD_FOLDER",
+                            "label": "Granted folder access"
+                        },
+                        {
+                            "id": "GROUP_REMOVE_USER",
+                            "label": "Removed from group"
+                        },
+                        {
+                            "id": "GROUP_REMOVE_FOLDER",
+                            "label": "Removed folder access"
+                        },
+                        {
+                            "id": "ADMIN_LOGIN",
+                            "label": "Admin login"
+                        },
+                        {
+                            "id": "ADD_DEVICE_ASSOCIATION",
+                            "label": "Added device association"
+                        },
+                        {
+                            "id": "FAILED_LOGIN",
+                            "label": "Failed login"
+                        },
+                        {
+                            "id": "LOGIN",
+                            "label": "Login"
+                        },
+                        {
+                            "id": "USER_AUTHENTICATE_OAUTH2_TOKEN_REFRESH",
+                            "label": "Oauth2 token was refreshed for this user"
+                        },
+                        {
+                            "id": "REMOVE_DEVICE_ASSOCIATION",
+                            "label": "Removed device association"
+                        },
+                        {
+                            "id": "TERMS_OF_SERVICE_AGREE",
+                            "label": "Agreed to terms"
+                        },
+                        {
+                            "id": "TERMS_OF_SERVICE_REJECT",
+                            "label": "Rejected terms"
+                        },
+                        {
+                            "id": "COPY",
+                            "label": "Copied"
+                        },
+                        {
+                            "id": "DELETE",
+                            "label": "Deleted"
+                        },
+                        {
+                            "id": "DOWNLOAD",
+                            "label": "Downloaded"
+                        },
+                        {
+                            "id": "EDIT",
+                            "label": "Edited"
+                        },
+                        {
+                            "id": "LOCK",
+                            "label": "Locked"
+                        },
+                        {
+                            "id": "MOVE",
+                            "label": "Moved"
+                        },
+                        {
+                            "id": "PREVIEW",
+                            "label": "Previewed"
+                        },
+                        {
+                            "id": "RENAME",
+                            "label": "Renamed"
+                        },
+                        {
+                            "id": "STORAGE_EXPIRATION",
+                            "label": "Set file auto-delete"
+                        },
+                        {
+                            "id": "UNDELETE",
+                            "label": "Undeleted"
+                        },
+                        {
+                            "id": "UNLOCK",
+                            "label": "Unlocked"
+                        },
+                        {
+                            "id": "UPLOAD",
+                            "label": "Uploaded"
+                        },
+                        {
+                            "id": "SHARE",
+                            "label": "Enabled shared links"
+                        },
+                        {
+                            "id": "UPDATE_SHARE_EXPIRATION",
+                            "label": "Extend shared link expiration"
+                        },
+                        {
+                            "id": "SHARE_EXPIRATION",
+                            "label": "Set shared link expiration"
+                        },
+                        {
+                            "id": "UNSHARE",
+                            "label": "Unshared links"
+                        },
+                        {
+                            "id": "ITEM_ACCEPT_COLLABORATION",
+                            "label": "Accepted invites"
+                        },
+                        {
+                            "id": "COLLABORATION_ROLE_CHANGE",
+                            "label": "Changed user roles"
+                        },
+                        {
+                            "id": "UPDATE_COLLABORATION_EXPIRATION",
+                            "label": "Extend collaborator expiration"
+                        },
+                        {
+                            "id": "COLLABORATION_REMOVE",
+                            "label": "Removed collaborators"
+                        },
+                        {
+                            "id": "COLLABORATION_INVITE",
+                            "label": "Invited"
+                        },
+                        {
+                            "id": "COLLABORATION_EXPIRATION",
+                            "label": "Set collaborator expiration"
+                        },
+                        {
+                            "id": "ITEM_SYNC",
+                            "label": "Synced folder"
+                        },
+                        {
+                            "id": "ITEM_UNSYNC",
+                            "label": "Un-synced folder"
+                        }
+                    ],
+                    "value_type": "LIST"
+                },
+                "session_id": {
+                    "is_mandatory": false,
+                    "label": "Session",
+                    "value_type": "TEXT"
+                },
+                "source_id": {
+                    "is_mandatory": false,
+                    "label": "Source",
+                    "value_type": "TEXT"
+                },
+                "source_type": {
+                    "is_mandatory": false,
+                    "label": "Source Type",
+                    "value_type": "TEXT"
+                },
+                "created_at": {
+                    "label": "Created At",
+                    "value_type": "DATETIME"
+                }
+            },
+            "name": "box_event"
+        },
+        "box_folder_permissions": {
+            "label": "Box Folder Permissions",
+            "entity_type": "base_entity",
+            "properties": {
+                "entity_id": {
+                    "label": "Entity",
+                    "is_id": true,
+                    "value_type": "INTEGER"
+                },
+                "can_download": {
+                    "label": "Can Download",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_upload": {
+                    "label": "Can Upload",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_rename": {
+                    "label": "Can Rename",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_delete": {
+                    "label": "Can Delete",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_share": {
+                    "label": "Can Share",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_preview": {
+                    "label": "Can Preview",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_invite_collaborator": {
+                    "label": "Can Invite Collaborator",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "can_set_share_access": {
+                    "label": "Can Set Share Access",
+                    "default_value": false,
+                    "value_type": "BOOLEAN"
+                },
+                "folder_id": {
+                    "resolver_references": [
+                        "BOX_FOLDER_FOLDER_ID"
+                    ],
+                    "label": "Folder",
+                    "resolver": "box_folder_to_box_folder_permissions_by_folder_id",
+                    "value_type": "TEXT"
+                },
+                "user_id": {
+                    "resolver_references": [
+                        "BOX_USER_ID"
+                    ],
+                    "label": "User",
+                    "resolver": "box_user_to_box_folder_permissions_by_user_id",
+                    "value_type": "TEXT"
+                }
+            },
+            "name": "box_folder_permissions"
+        }
+    },
+    "name": "box",
+    "class_file": "modules.box.av_module_box"
+}
