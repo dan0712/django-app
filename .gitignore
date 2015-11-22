@@ -41,7 +41,7 @@ pyvenv.cfg
 ## File-based project format:
 *.ipr
 *.iws
-
+*.swp
 ## Plugin-specific files:
 
 # IntelliJ

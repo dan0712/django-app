@@ -36,3 +36,4 @@ EMAIL_PORT = os.environ.get("EMAIL_PORT", 587)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "press@gendabot.com")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "C^7d#G8hy&3z88Dz@df8U5U4!MpmRXf%Y!sj")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "press@gendabot.com")
+STATIC_ROOT = "/collected_static"
