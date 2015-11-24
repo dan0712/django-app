@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Prepend the upstream configuration
 python configure_nginx.py
