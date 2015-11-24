@@ -6,12 +6,12 @@ python /betasmartz/manage.py migrate main --noinput
 python /betasmartz/manage.py migrate --noinput
 python /betasmartz/manage.py collectstatic --noinput
 
-
 # Create the log file to be able to run tail
 touch /var/log/all.log
 
 #add to crontab
-crontab /betasmartz/devop/cron
+(printenv && cat /betasmartz/devop/cron) > /betasmartz/devop/cron.new
+crontab /betasmartz/devop/cron.new
 
 # Run cron service
 cron

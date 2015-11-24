@@ -1,0 +1,27 @@
+.shiftnav-open.shiftnav-open-left #shiftnav-toggle-main,
+.shiftnav-open.shiftnav-open-left .shiftnav-wrap{
+	-webkit-transform: translateX(290px);
+	-moz-transform: translateX(290px);
+	-ms-transform: translateX(290px);
+	-o-transform: translateX(290px);
+	transform: translateX(290px);
+}
+.shiftnav-open.shiftnav-open-right #shiftnav-toggle-main,
+.shiftnav-open.shiftnav-open-right .shiftnav-wrap{
+	-webkit-transform: translateX(-290px);
+	-moz-transform: translateX(-290px);
+	-ms-transform: translateX(-290px);
+	-o-transform: translateX(-290px);
+	transform: translateX(-290px);
+}
+
+//Delay on desktop screens but not mobile devices
+@media screen and (min-width:767px){
+	.shiftnav-open #shiftnav-toggle-main{
+		-webkit-transition-delay: .02s;
+		-moz-transition-delay: .02s;
+		-ms-transition-delay: .02s;
+		-o-transition-delay: .02s;
+		transition-delay: .02s;
+	}
+}

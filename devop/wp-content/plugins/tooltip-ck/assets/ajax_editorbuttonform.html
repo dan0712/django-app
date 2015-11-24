@@ -1,0 +1,62 @@
+<form id="tooltipck_button_form">
+    <label for="tooltipck_text">Enter the the text to mouseover</label>
+	<br/>
+    <input type="text" name="tooltipck_text" id="tooltipck_text" value="Text to hover" />
+    <br />
+    <label for="tooltipck_tip">Enter the tooltip content</label>
+	<br/>
+    <input type="text" name="tooltipck_tip" id="tooltipck_tip" value="a friendly little boy" />
+	<fieldset>
+		<legend>Settings</legend>
+		<cite>If you leave these fields blank, the general settings from the plugin will be used.</cite>
+		<br/><br/>
+		<label for="tooltipck_w">Tooltip width</label>
+		<br/>
+		<input type="text" id="tooltipck_w" name="tooltipck_w" data-param="w" class="tooltipck_param"/>
+		<br/>
+		<label for="offsetx">Offset X</label>
+		<br/>
+		<input type="text" id="tooltipck_offsetx" name="tooltipck_offsetx" data-param="offsetx" class="tooltipck_param"/>px
+		<br/>
+		<label for="offsety">Offset Y</label>
+		<br/>
+		<input type="text" id="tooltipck_offsety" name="tooltipck_offsety" data-param="offsety" class="tooltipck_param" />px
+		<br/>
+		<label for="tooltipck_mood">Open duration</label>
+		<br/>
+		<input  type="text"id="tooltipck_mood" name="tooltipck_mood" data-param="mood" class="tooltipck_param"/>ms
+		<br/>
+		<label for="tooltipck_tipd">Hide delay</label>
+		<br/>
+		<input type="text" id="tooltipck_tipd" name="tooltipck_tipd" data-param="tipd" class="tooltipck_param"/>ms
+	</fieldset>
+</form>
+<style type="text/css">
+#tooltipck_button_form  {
+	padding: 8px;
+}
+
+#tooltipck_button_form .wp-dialog .ui-dialog-title {
+	color: #fff;
+}
+#tooltipck_button_form .ui-dialog>* {
+  padding-left: 10px;
+}
+#tooltipck_button_form .ui-dialog-content form {
+  margin-bottom: 10px;
+}
+#tooltipck_button_form .ui-dialog .ui-dialog-buttonpane button {
+  width: inherit;
+  margin: 0.5em 0.4em 0.5em 0 !important;
+}
+
+#tooltipck_button_form fieldset {
+	border: 1px solid #1E8CBE;
+	padding: 4px;
+}
+
+#tooltipck_button_form legend {
+	font-weight: bold;
+	color: #1E8CBE;
+}
+</style>

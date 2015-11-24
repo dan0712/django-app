@@ -14,6 +14,8 @@ if environment == "prod":
          }
     }
     SITE_URL = "app.betasmartz.com"
+    DEBUG = False
+    # ALLOWED_HOSTS = ["app.betasmartz.com"]
 
 elif environment == "dev":
     DATABASES = {
@@ -27,6 +29,7 @@ elif environment == "dev":
          }
     }
     SITE_URL = "demo.betasmartz.com"
+    DEBUG = True
     
     
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
