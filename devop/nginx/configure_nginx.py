@@ -17,7 +17,7 @@ app = nginx_app_file.format(app_host=os.environ["APP_PORT_80_TCP_ADDR"],
                             app_port=os.environ["APP_PORT_80_TCP_PORT"],
                             domain="app")
 
-open("app.conf.new", "w+").write(app)
+open("app.conf.new", "w+").write(wp_file)
 
 # write wp conf
 wp = nginx_app_file.format(app_host=os.environ["WP_PORT_80_TCP_ADDR"],
