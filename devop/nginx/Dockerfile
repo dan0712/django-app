@@ -1,4 +1,9 @@
 FROM nginx
+RUN apt-get update -y &&\
+    apt-get install -y python &&\
+    apt-get clean &&\
+    rm -rf /var/lib/apt/lists/*
+
 ADD ./uwsgi_params /betasmartz/uwsgi_params
 ADD ./entrypoint.sh /entrypoint.sh
 ADD ./nginx-app.conf /nginx-app.conf
