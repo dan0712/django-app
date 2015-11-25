@@ -13,14 +13,14 @@ demo = nginx_app_file.format(app_host=os.environ["DEMO_PORT_80_TCP_ADDR"],
 open("demo.conf.new", "w+").write(demo)
 
 # write app conf
-app = nginx_app_file.format(app_host=os.environ["APP_PORT_80_TCP_ADDR"],
+app = wp_file.format(app_host=os.environ["APP_PORT_80_TCP_ADDR"],
                             app_port=os.environ["APP_PORT_80_TCP_PORT"],
                             domain="app")
 
-open("app.conf.new", "w+").write(wp_file)
+open("app.conf.new", "w+").write(app)
 
 # write wp conf
-wp = nginx_app_file.format(app_host=os.environ["WP_PORT_80_TCP_ADDR"],
+wp = wp_file.format(app_host=os.environ["WP_PORT_80_TCP_ADDR"],
                            app_port=os.environ["WP_PORT_80_TCP_PORT"],
                            domain="")
 
