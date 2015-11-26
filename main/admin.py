@@ -11,7 +11,13 @@ from django.contrib.auth.hashers import make_password
 from portfolios.management.commands.get_historical_returns import get_historical_returns as internal_get_historical_returns
 from django.contrib import messages
 from advisors import models as advisor_models
+from import_export.admin import ImportExportModelAdmin
+from import_export import resources
 
+class AssetResource(resources.ModelResource):
+
+    class Meta:
+        model = ProxyAssetClass
 
 
 class TickerInline(SortableTabularInline):
@@ -46,9 +52,10 @@ class FirmDataInline(admin.StackedInline):
     model = FirmData
 
 
-class AssetClassAdmin(SortableModelAdmin):
+class AssetClassAdmin(SortableModelAdmin, ImportExportModelAdmin):
     list_display = ('name', 'display_name', 'display_order', 'investment_type', 'super_asset_class')
     inlines = (TickerInline,)
+    resource_class = AssetResource
     sortable = 'display_order'
 
 

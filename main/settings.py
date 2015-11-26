@@ -31,34 +31,34 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',  
-    'compat',
-    'main',
-    'portfolios',
-    'advisors',
-    'tinymce_4',
-     'pages',
-    'suit',
-    'filebrowser',
-    'django.contrib.admin',
-    'django_cron',
-
-)
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',  
+        'compat',
+        'main',
+        'portfolios',
+        'advisors',
+        'tinymce_4',
+        'pages',
+        'import_export',
+        'suit',
+        'filebrowser',
+        'django.contrib.admin',
+        'django_cron',
+        )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-)
+        )
 
 ROOT_URLCONF = 'main.urls'
 
@@ -66,19 +66,19 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 
 TEMPLATE_CONTEXT_PROCESSORS = TCP + (
-    "pages.context_processors.media",
-    'django.core.context_processors.request',
-    'main.context_processors.site_contact'
-)
+        "pages.context_processors.media",
+        'django.core.context_processors.request',
+        'main.context_processors.site_contact'
+        )
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            }
+        }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -100,12 +100,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR,  'templates'),
-)
+        os.path.join(BASE_DIR,  'templates'),
+        )
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
-)
+        os.path.join(BASE_DIR, "static"),
+        )
 
 AUTH_USER_MODEL = 'main.User'
 SHOW_HIJACKUSER_IN_ADMIN = False
@@ -120,8 +120,8 @@ TIME_ZONE = "Australia/Sydney"
 PAGE_DEFAULT_TEMPLATE = "support/base.html"
 gettext_noop = lambda s: s
 PAGE_LANGUAGES = (
-    ('en-us', gettext_noop('US English')),
-)
+        ('en-us', gettext_noop('US English')),
+        )
 
 CMS_UNIHANDECODE_HOST = '/static/unihandecode/'
 CMS_UNIHANDECODE_VERSION = '1.0.0'
@@ -130,33 +130,33 @@ CMS_UNIHANDECODE_DECODERS = ['ja', 'zh', 'vn', 'kr', 'diacritic']
 
 # Django Suit configuration example
 SUIT_CONFIG = {
-    # header
-    'ADMIN_NAME': 'Betasmartz Admin',
-    # 'HEADER_DATE_FORMAT': 'l, j. F Y',
-    # 'HEADER_TIME_FORMAT': 'H:i',
+        # header
+        'ADMIN_NAME': 'Betasmartz Admin',
+        # 'HEADER_DATE_FORMAT': 'l, j. F Y',
+        # 'HEADER_TIME_FORMAT': 'H:i',
 
-    # forms
-    # 'SHOW_REQUIRED_ASTERISK': True,  # Default True
-    # 'CONFIRM_UNSAVED_CHANGES': True, # Default True
+        # forms
+        # 'SHOW_REQUIRED_ASTERISK': True,  # Default True
+        # 'CONFIRM_UNSAVED_CHANGES': True, # Default True
 
-    # menu
-    # 'SEARCH_URL': '/admin/auth/user/',
-    # 'MENU_ICONS': {
-    #    'sites': 'icon-leaf',
-    #    'auth': 'icon-lock',
-    # },
-    # 'MENU_OPEN_FIRST_CHILD': True, # Default True
-    # 'MENU_EXCLUDE': ('auth.group',),
-    # 'MENU': (
-    #     'sites',
-    #     {'app': 'auth', 'icon':'icon-lock', 'models': ('user', 'group')},
-    #     {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
-    #     {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
-    # ),
+        # menu
+        # 'SEARCH_URL': '/admin/auth/user/',
+        # 'MENU_ICONS': {
+        #    'sites': 'icon-leaf',
+        #    'auth': 'icon-lock',
+        # },
+        # 'MENU_OPEN_FIRST_CHILD': True, # Default True
+        # 'MENU_EXCLUDE': ('auth.group',),
+        # 'MENU': (
+        #     'sites',
+        #     {'app': 'auth', 'icon':'icon-lock', 'models': ('user', 'group')},
+        #     {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
+        #     {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
+        # ),
 
-    # misc
-    # 'LIST_PER_PAGE': 15
-}
+        # misc
+        # 'LIST_PER_PAGE': 15
+        }
 
 
 from local_settings import *

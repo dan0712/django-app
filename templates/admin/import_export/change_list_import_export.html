@@ -1,0 +1,8 @@
+{% extends "admin/import_export/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+  <a href="import/" class="import_link btn btn-success">{% trans "Import" %}</a>
+  <a href="export/{{ cl.get_query_string }}" class="export_link btn btn-success">{% trans "Export" %}</a>
+  {{ block.super }}
+{% endblock %}

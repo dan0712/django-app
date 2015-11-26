@@ -25,3 +25,4 @@ uwsgi
 django_cron
 tornado
 pexpect
+django-import-export

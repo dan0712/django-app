@@ -34,6 +34,9 @@
     "RETIREMENT": {
       "label": "Retirement",
       "defaultTerm": "68"
+    }, "RETIREMENT_ETHICAL": {
+      "label": "Ethical Retirement",
+      "defaultTerm": "68"
     },
     "EDUCATION": {
       "label": "Education",
@@ -59,8 +62,16 @@
       "label": "Safety Net",
       "defaultTerm": "3"
     },
+    "EMERGENCY_ETHICAL": {
+      "label": "Ethical Savings",
+      "defaultTerm": "3"
+    },
     "BUILD_WEALTH": {
       "label": "Build Wealth",
+      "defaultTerm": "20"
+    },
+    "BUILD_WEALTH_ETHICAL": {
+      "label": "Build Ethical Wealth",
       "defaultTerm": "20"
     },
     "HOUSE": {
