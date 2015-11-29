@@ -26,3 +26,6 @@ django_cron
 tornado
 pexpect
 django-import-export
+tablib
+diff_match_patch
+Pillow

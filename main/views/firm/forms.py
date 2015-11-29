@@ -8,7 +8,6 @@ from ...forms import EmailInviteForm
 from django.contrib import messages
 from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, \
     FirmData, Transaction, Ticker, Platform, Goal
-from portfolios.models import PortfolioByRisk
 from django.views.generic import CreateView, View, TemplateView
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
@@ -372,15 +371,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
         goal = self.transaction.account
-        if goal.custom_size > 0:
-            positions = json.loads(goal.portfolios)
-            target_allocation_dict = positions["{:.2f}".format(goal.allocation)]["allocations"]
-
-        else:
-            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation)\
-                .order_by('-risk').first()
-
-            target_allocation_dict = json.loads(pbr.allocations)
+        target_allocation_dict = goal.target_allocation
 
         tickers_pk = []
         tickers_prices = []
@@ -519,16 +510,7 @@ class GoalRebalance(TemplateView, AdminView):
         ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
         goal = self.transaction.account
-
-        if goal.custom_size > 0:
-            positions = json.loads(goal.portfolios)
-            target_allocation_dict = positions["{:.2f}".format(goal.allocation)]["allocations"]
-
-        else:
-            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=goal.allocation)\
-                .order_by('-risk').first()
-
-            target_allocation_dict = json.loads(pbr.allocations)
+        target_allocation_dict = goal.target_allocation
 
         tickers_pk = []
         tickers_prices = []

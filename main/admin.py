@@ -1,5 +1,5 @@
 from django.contrib import admin
-from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View, PortfolioByRisk
+from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View
 from main.models import Firm, Advisor, User, AUTHORIZED_REPRESENTATIVE, Performer, \
     AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, \
     TransactionMemo, DataApiDict, CostOfLivingIndex
@@ -250,12 +250,6 @@ class PortfolioSetAdmin(admin.ModelAdmin):
     inlines = (PortfolioViewsInline, )
     pass
 
-
-class PortfolioByRiskAdmin(admin.ModelAdmin):
-    list_display = ('risk', 'portfolio_set', 'expected_return', 'volatility')
-    pass
-
-
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('account', 'type', 'from_account', 'to_account', 'status', 'amount', 'created_date')
     inlines = (TransactionMemoInline,)
@@ -314,7 +308,6 @@ admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTran
 admin.site.register(CostOfLivingIndex, CostOfLivingIndexAdmin)
 
 admin.site.register(DataApiDict, DataApiDictAdmin)
-admin.site.register(PortfolioByRisk, PortfolioByRiskAdmin)
 admin.site.register(Performer, PerformerAdmin)
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)

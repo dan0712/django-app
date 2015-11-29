@@ -1,9 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
-from ...models import PortfolioSet, PortfolioByRisk
+from ...models import PortfolioSet
 from main.models import Platform, Performer, Ticker, SymbolReturnHistory, STRATEGY
 from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
-from portfolios.bl_model import handle_data
 import json
 import numpy as np
 
@@ -56,13 +55,11 @@ def get_historical_returns():
         p.save()
         # get target portfolio
 
-        portfolio_set = Platform.objects.first().portfolio_set
-
-        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=allocation)\
-            .order_by('-risk').first()
+        portfolio_set = p.portfolio_set
+        portfolios = json.loads(portfolio_set.portfolios)
+        target_allocation_dict = portfolios["{:.2f}".format(allocation)]
 
         target_allocation = []
-        target_allocation_dict = json.loads(pbr.allocations)
         for c_symbol in list(returns):
             fraction = 0
             # check if symbol is the ticker db

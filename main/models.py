@@ -20,6 +20,7 @@ import json
 from numpy import array
 from django.core import serializers
 import re
+from json.decoder import JSONDecodeError
 
 
 def validate_agreement(value):
@@ -1345,84 +1346,57 @@ class Goal(models.Model):
     drift = models.FloatField(default=0)
     total_balance_db = models.FloatField(default=0,
                                          verbose_name="total balance")
+    custom_portfolio_set = models.ForeignKey('portfolios.PortfolioSet', null=True, blank=True)
+    custom_regions = models.TextField(null=True)
     portfolios = models.TextField(null=True)
-
-    # markets
-    au_size = models.FloatField(default=0.5)
-    au_allocation = models.FloatField(default=0)
-    au_currency_hedge = models.BooleanField(default=False)
-
-    # markets
-    dm_size = models.FloatField(default=0.5)
-    dm_allocation = models.FloatField(default=0)
-    dm_currency_hedge = models.BooleanField(default=False)
-
-    usa_size = models.FloatField(default=0)
-    usa_allocation = models.FloatField(default=0)
-    usa_currency_hedge = models.BooleanField(default=False)
-
-    uk_size = models.FloatField(default=0)
-    uk_allocation = models.FloatField(default=0)
-    uk_currency_hedge = models.BooleanField(default=False)
-
-    europe_size = models.FloatField(default=0)
-    europe_allocation = models.FloatField(default=0)
-    europe_currency_hedge = models.BooleanField(default=False)
-
-    japan_size = models.FloatField(default=0)
-    japan_allocation = models.FloatField(default=0)
-    japan_currency_hedge = models.BooleanField(default=False)
-
-    asia_size = models.FloatField(default=0)
-    asia_allocation = models.FloatField(default=0)
-    asia_currency_hedge = models.BooleanField(default=False)
-
-    china_size = models.FloatField(default=0)
-    china_allocation = models.FloatField(default=0)
-    china_currency_hedge = models.BooleanField(default=False)
-
-    em_size = models.FloatField(default=0)
-    em_allocation = models.FloatField(default=0)
-    em_currency_hedge = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['name']
 
     @property
     def is_custom_size(self):
-        self.custom_size
-        return not (self.au_size == 0.5 and self.dm_size == 0.5)
+        if self.custom_regions is None:
+            return False
+
+        region_sizes = {}
+        try:
+            region_sizes = json.loads(self.custom_regions)
+        except JSONDecodeError:
+            pass
+
+        if len(region_sizes) == 0:
+            return False
+
+        portfolio_set_regions = self.portfolio_set.regions
+
+        total_size = 0
+        for key in region_sizes.keys():
+            if key not in portfolio_set_regions:
+                self.custom_regions = None
+                self.save()
+                return False
+            total_size += region_sizes["key"]["size"]
+
+        if total_size != 1:
+            self.custom_regions = None
+            self.save()
+            return False
+
+        return True
 
     @property
-    def custom_size(self):
-        markets = ["usa", "uk", "europe", "japan", "asia", "china", "em"]
-        total_size = 0
+    def region_sizes(self):
+        region_sizes = {}
+        if self.is_custom_size:
+            cr = json.loads(self.custom_regions)
+            for k in cr:
+                region_sizes[k] = cr[k]["size"]
+            return region_sizes
+        sizes = json.loads(self.portfolio_set.default_region_sizes)
 
-        for m in markets:
-            allocation = getattr(self, m + "_allocation")
-            size = getattr(self, m + "_size")
-            if (allocation is None) or (size is None):
-                continue
-
-            total_size += size
-        if total_size == 0:
-            if (self.au_size + self.dm_size) != 1:
-                self.au_size = 0.5
-                self.dm_size = 0.5
-                self.save()
-        elif total_size < 1:
-            if (self.dm_size + self.au_size + total_size) != 1:
-                self.au_size = 1 - total_size - self.dm_size
-                self.save()
-        elif (total_size + self.au_size + self.dm_size) > 1:
-            for m in markets:
-                setattr(self, m + "_size", 0)
-            self.au_size = 0.5
-            self.dm_size = 0.5
-            self.save()
-            total_size = 0
-
-        return total_size
+        if len(sizes) == 0:
+            raise Exception("bad region size for portfolio %s " % self.portfolio_set.name)
+        return sizes
 
     def __str__(self):
         return self.name + " : " + self.account.primary_owner.full_name
@@ -1451,28 +1425,33 @@ class Goal(models.Model):
         return self.account.primary_owner.get_financial_plan
 
     @property
-    def get_drift(self):
-        from portfolios.models import PortfolioByRisk
+    def portfolio_set(self):
+        if self.custom_portfolio_set is None:
+            return Platform.objects.first().portfolio_set
+        return self.custom_portfolio_set
 
+    @property
+    def target_portfolio(self):
+        if self.is_custom_size:
+            positions = json.loads(self.portfolios)
+        else:
+            positions = self.portfolio_set.portfolios
+        return positions["{:.2f}".format(self.allocation)]
+
+    @property
+    def target_allocation(self):
+        return self.target_portfolio["allocations"]
+
+    @property
+    def get_drift(self):
         tb = self.total_balance
 
         if tb == 0:
             return 0
 
-        portfolio_set = Platform.objects.first().portfolio_set
+        portfolio_set = self.portfolio_set
         tickers = Ticker.objects.filter(
             asset_class__in=portfolio_set.asset_classes.all())
-
-        if self.custom_size > 0:
-            positions = json.loads(self.portfolios)
-            target_allocation_dict = positions["{:.2f}".format(
-                self.allocation)]["allocations"]
-
-        else:
-            pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=self.allocation)\
-                .order_by('-risk').first()
-
-            target_allocation_dict = json.loads(pbr.allocations)
 
         tickers_prices = []
         target_allocation = []
@@ -1480,7 +1459,7 @@ class Goal(models.Model):
 
         for ticker in tickers:
             tickers_prices.append(ticker.unit_price)
-            target_allocation.append(target_allocation_dict.get(
+            target_allocation.append(self.target_allocation_dict.get(
                 ticker.asset_class.name, 0))
             positions = Position.objects.filter(goal=self, ticker=ticker).all()
             cs = 0
@@ -1508,12 +1487,8 @@ class Goal(models.Model):
         return 0
 
     @property
-    def portfolio_set(self):
-        return Platform.objects.first().portfolio_set
-
-    @property
     def portfolio_set_id(self):
-        return Platform.objects.first().portfolio_set.pk
+        return self.portfolio_set.pk
 
     @property
     def available_balance(self):
@@ -1593,19 +1568,19 @@ class Goal(models.Model):
 
     @property
     def on_track(self):
-        from portfolios.models import PortfolioByRisk
-        portfolio_set = Platform.objects.first().portfolio_set
         current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
-        pbr = PortfolioByRisk.objects.filter(portfolio_set=portfolio_set, risk__lte=self.allocation)\
-            .order_by('-risk').first()
         today = date.today()
         term = self.completion_date.year - today.year
-        expected_return = pbr.expected_return / 100 + portfolio_set.risk_free_rate
+        expected_return = self.target_portfolio["expectedReturn"] / 100 + self.portfolio_set.risk_free_rate
         expected_value = current_balance * (1 + expected_return) ** term
         if hasattr(self, "auto_deposit"):
             ada = self.auto_deposit.get_annualized
             for i in range(0, term):
                 expected_value += ada * (1 + expected_return) ** (term - i)
+        if hasattr(self, "auto_withdrawal"):
+            ada = self.auto_withdrawal.get_annualized
+            for i in range(0, term):
+                expected_value -= ada * (1 + expected_return) ** (term - i)
         return expected_value >= self.target
 
     @property

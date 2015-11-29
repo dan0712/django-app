@@ -1,4 +1,4 @@
-[{% for asset in platform.portfolio_set.asset_classes.all %}{% if forloop.counter == 1 %}{% else %},{% endif %}
+[{% for asset in asset_classes %}{% if forloop.counter == 1 %}{% else %},{% endif %}
   {"name": "{{asset.name}}",
     "displayOrder": {{asset.display_order}},
   "donutOrder":{{asset.donut_order}},

@@ -1,220 +1,31 @@
-__author__ = 'cristian'
-
-from django.views.generic import TemplateView
-from ..base import ClientView
-from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo,\
-    AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory,\
-    MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount,\
-    FinancialPlanExternalAccount
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
-from datetime import datetime, timedelta
-from portfolios.models import PortfolioByRisk, PortfolioSet
-import time
-from django.core.exceptions import ObjectDoesNotExist
-from portfolios.api.yahoo import DbApi
-from pandas import DataFrame
-from portfolios.bl_model import handle_data, assets_covariance, calculate_co_vars
 import json
+import time
+from datetime import datetime, timedelta
 import numpy as np
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
+from django.http.response import Http404
+from django.shortcuts import get_object_or_404
+from django.views.generic import TemplateView
+from pandas import DataFrame
+from portfolios.api.yahoo import DbApi
 from portfolios.bl_model import OptimizationException
+from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
+from portfolios.models import PortfolioSet
+from ..base import ClientView
+from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo, \
+    AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
+    MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
+    FinancialPlanExternalAccount, AssetClass
 
-__all__ = ["ClientAppData", 'ClientAssetClasses', "ClientUserInfo",
-           'ClientVisitor', 'ClientAdvisor', 'ClientAccounts',
-           "PortfolioAssetClasses", 'PortfolioPortfolios',
-           'PortfolioRiskFreeRates', 'ClientAccountPositions', 'ClientFirm',
-           'NewTransactionsView', 'CancelableTransactionsView',
-           'ChangeAllocation', 'NewTransactionMemoView', 'ChangeGoalView',
-           'SetAutoDepositView', 'Withdrawals', 'ContactPreference',
-           'AnalysisReturns', 'AnalysisBalances', "SetAutoWithdrawalView",
-           "ZipCodes", "FinancialProfileView", "FinancialPlansView",
-           "FinancialPlansAccountAdditionView",
-           "FinancialPlansAccountDeletionView",
-           "FinancialPlansExternalAccountAdditionView",
-           "FinancialPlansExternalAccountDeletionView"]
-
-
-def calculate_portfolios_for_goal(goal, portfolio_set):
-    regions = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china",
-               "em"]
-    regions_b = ["AU", "INT", "US", "UK", "EU", "JAPAN", "AS", "CN", "EM"]
-    api = DbApi()
-    # get all the assets
-    all_assets = portfolio_set.asset_classes.all()
-    series = {}
-    asset_type = {}
-    asset_name = []
-    super_asset_class = dict()
-    super_classes_matrix = []
-    for i in range(len(all_assets)):
-        super_classes_matrix.append([])
-    market_cap = dict()
-    ticker_parent_dict = {}
-    idx = 0
-    for asset in all_assets:
-        ticker = asset.tickers.filter(ordering=0).first()
-        asset_name.append(ticker.symbol)
-        super_asset_class[ticker.symbol] = asset.super_asset_class
-        series[ticker.symbol] = api.get_all_prices(ticker.symbol)
-        ticker_parent_dict[ticker.symbol] = asset.name
-        asset_type[
-            ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
-        market_cap[ticker.symbol] = api.market_cap(ticker)
-        idx += 1
-
-    def is_super_class(_ticker, _key):
-        return 1 if super_asset_class[_ticker] in ["EQUITY_" + _key,
-                                                   "FIXED_INCOME_" + _key
-                                                   ] else 0
-
-    table = DataFrame(series)
-    old_columns = list(table)
-    constrains = []
-    japan_constrain = None
-    japan_size = 0
-    au_size = 0
-
-    def create_constrain(_super_classes, _custom_size):
-        def evaluate(_columns, x):
-            _super_class_array = np.array([])
-            for _c in _columns:
-                if _c in _super_classes:
-                    _super_class_array = np.append(_super_class_array, [1])
-                else:
-                    _super_class_array = np.append(_super_class_array, [0])
-            jac = 2*(sum(x*_super_class_array) - _custom_size)*np.array(_super_class_array)
-            func = (sum(x*_super_class_array) - _custom_size)**2
-            return func, jac
-        return evaluate
-
-    only_use_this_assets = []
-
-    for region_idx in range(len(regions)):
-        key = regions_b[region_idx]
-        key_a = regions[region_idx]
-
-        custom_size = getattr(goal, key_a + "_size", 0)
-
-        for ticker_idx in range(0, len(old_columns)):
-            if is_super_class(old_columns[ticker_idx], key):
-                super_classes_matrix[region_idx].append(old_columns[ticker_idx])
-
-        if int(custom_size*100) != 0:
-
-            only_use_this_assets.extend(super_classes_matrix[region_idx])
-            if key_a == "japan":
-                if int(100*getattr(goal, "au_size", 0)) == 0:
-                    only_use_this_assets.extend(super_classes_matrix[0])
-                japan_constrain = create_constrain(
-                    super_classes_matrix[region_idx], custom_size)
-                japan_size = custom_size
-            elif key_a == "au":
-                au_size = custom_size
-            else:
-                constrains.append(create_constrain(super_classes_matrix[
-                    region_idx], custom_size))
-
-    # join all the series in a table, drop missing values
-    new_assets_type = []
-    views_dict = []
-    qs = []
-    tau = portfolio_set.tau
-    table = table.reindex(index=None, columns=only_use_this_assets)
-    columns = list(table)
-
-    # get views
-    for view in portfolio_set.views.all():
-        _append = True
-        new_view_dict = {}
-        header, view_values = view.assets.splitlines()
-
-        header = header.split(",")
-        view_values = view_values.split(",")
-
-        for i in range(0, len(header)):
-            _symbol = header[i].strip()
-            if _symbol not in columns:
-                _append = False
-
-            new_view_dict[header[i].strip()] = float(view_values[i])
-
-        if not _append:
-            continue
-        views_dict.append(new_view_dict)
-        qs.append(view.q)
-
-    views = []
-
-    for vd in views_dict:
-        new_view = []
-        for c in list(table):
-            new_view.append(vd.get(c, 0))
-        views.append(new_view)
-
-    for c in list(table):
-        new_assets_type.append(asset_type[c])
-
-    # write restrictions
-    json_portfolios = {}
-    mw = np.array([])
-    tm = 0
-    # calculate total market cap
-    # create market w
-    for ticker_idx in range(0, len(columns)):
-        mw = np.append(mw, market_cap[columns[ticker_idx]])
-        tm += market_cap[columns[ticker_idx]]
-
-    if tm == 0:
-        mw = np.ones([len(mw)])/len(mw)
-    else:
-        mw = mw/tm
-
-    assets_len = len(columns)
-    expected_returns = np.array([])
-
-    # calculate expected returns
-    for i in range(assets_len):
-        er = (1+np.mean(table[columns[i]].pct_change()))**12 - 1
-        expected_returns = np.append(expected_returns, er)
-
-    # calculate covariance matrix
-    sk_co_var, co_vars = calculate_co_vars(assets_len, table)
-    initial_w = mw
-    for allocation in list(np.arange(0, 1.01, 0.01)):
-        ns = au_size
-        new_constrains = constrains[:]
-        if allocation >= japan_size and (japan_constrain is not None):
-            new_constrains.append(japan_constrain)
-        else:
-            ns += japan_size
-        if ns > 0:
-            new_constrains.append(create_constrain(super_classes_matrix[0], ns))
-
-        # calculate optimal portfolio for different risks 0 - 100
-        new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var,  co_vars,
-                                              portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type,  views, qs, tau, new_constrains, mw,
-                                              initial_w, columns)
-
-        initial_w = new_weights
-        _mean = float("{0:.4f}".format(_mean)) * 100
-        var = float("{0:.4f}".format((var * 100 * 100) ** (1 / 2)))
-        allocations = {}
-
-        for column in old_columns:
-            if column in columns:
-                idx = columns.index(column)
-                allocations[ticker_parent_dict[column]] = float("{0:.4f}".format(new_weights[idx]))
-            else:
-                allocations[ticker_parent_dict[column]] = 0
-
-        json_portfolios["{0:.2f}".format(allocation)] = {
-            "allocations": allocations,
-            "risk": allocation,
-            "expectedReturn": _mean,
-            "volatility": var
-        }
-    return json_portfolios
+__all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisitor', 'ClientAdvisor',
+           'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
+           'ClientAccountPositions', 'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView',
+           'ChangeAllocation', 'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView',
+           'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances',
+           'SetAutoWithdrawalView', 'ZipCodes', 'FinancialProfileView',
+           'FinancialPlansView', 'FinancialPlansAccountAdditionView', 'FinancialPlansAccountDeletionView',
+           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView']
 
 
 class ClientAppData(TemplateView):
@@ -238,7 +49,7 @@ class ClientAssetClasses(ClientView, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super(ClientAssetClasses, self).get_context_data(*args, **kwargs)
-        ctx["platform"] = Platform.objects.first()
+        ctx["asset_classes"] = AssetClass.objects.all()
         return ctx
 
 
@@ -247,9 +58,10 @@ class PortfolioAssetClasses(ClientView, TemplateView):
     content_type = "application/json"
 
     def get_context_data(self, *args, **kwargs):
-        ctx = super(PortfolioAssetClasses, self).get_context_data(*args, **
-                                                                  kwargs)
-        ctx["portfolio_set"] = Platform.objects.first().portfolio_set
+        pk = kwargs["goal_pk"]
+        goal = get_object_or_404(Goal, pk=pk)
+        ctx = super(PortfolioAssetClasses, self).get_context_data(*args, **kwargs)
+        ctx["portfolio_set"] = goal.portfolio_set
         return ctx
 
 
@@ -260,7 +72,6 @@ class PortfolioPortfolios(ClientView, TemplateView):
     def get(self, request, *args, **kwargs):
         portfolio_set = get_object_or_404(PortfolioSet, pk=kwargs["pk"])
         goal_pk = kwargs.get("goal_pk", None)
-        kwargs["pk"]
         if goal_pk:
             try:
                 goal = Goal.objects.get(pk=goal_pk,
@@ -273,7 +84,7 @@ class PortfolioPortfolios(ClientView, TemplateView):
                 if goal.portfolios in [None, "{}", "[]", ""]:
                     try:
                         goal.portfolios = json.dumps(
-                            calculate_portfolios_for_goal(goal, portfolio_set))
+                            calculate_portfolios_for_goal(goal))
                         goal.save()
                     except OptimizationException:
                         markets = ["usa", "uk", "europe", "japan", "asia",
@@ -337,6 +148,10 @@ class ClientAccounts(ClientView, TemplateView):
         goal.account = self.client.accounts.first()
         goal.name = model.get("name")
         goal.type = model.get("goalType")
+
+        if "ETHICAL" in goal.type:
+            goal.custom_portfolio_set = PortfolioSet.objects.get(name="Ethical")
+
         goal.account_type = model.get("accountType")
         goal.completion_date = datetime.strptime(
             model.get("goalCompletionDate"), '%Y%m%d%H%M%S')
@@ -358,21 +173,11 @@ class ClientAccountPositions(ClientView, TemplateView):
         pk = kwargs["pk"]
         goal = get_object_or_404(Goal, pk=pk)
         # get ideal portfolio
-        portfolio_set = Platform.objects.first().portfolio_set
-        if goal.is_custom_size:
-            positions = json.loads(goal.portfolios)
-            allocations = positions["{:.2f}".format(goal.allocation)][
-                "allocations"]
-
-        else:
-            pbr = PortfolioByRisk.objects.filter(
-                portfolio_set=portfolio_set,
-                risk__lte=goal.allocation).order_by('-risk').first()
-            allocations = json.loads(pbr.allocations)
-        # get positions
+        target_portfolio = goal.target_portfolio
+        allocations = target_portfolio["allocations"]
 
         positions = []
-        for asset in portfolio_set.asset_classes.all():
+        for asset in goal.portfolio_set.asset_classes.all():
             asset_total_value = 0
             new_p = dict()
 
@@ -493,7 +298,7 @@ class NewTransactionsView(ClientView):
                     "change": "{:.2f}".format(transaction.amount),
                     "balance": "{:.2f}".format(transaction.new_balance),
                     "createdDate":
-                    transaction.created_date.strftime('%Y%m%d%H%M%S'),
+                        transaction.created_date.strftime('%Y%m%d%H%M%S'),
                     "completedDate": dt.strftime('%Y%m%d%H%M%S'),
                     "isCanceled": False,
                     "shortDescription": "Market Change",
@@ -507,7 +312,7 @@ class NewTransactionsView(ClientView):
                 market_change_by_week[week_day]["balance"] = "{:.2f}".format(
                     transaction.new_balance)
                 change = float(market_change_by_week[week_day][
-                    "change"]) + transaction.amount
+                                   "change"]) + transaction.amount
                 market_change_by_week[week_day]["change"] = "{:.2f}".format(
                     change)
 
@@ -527,7 +332,7 @@ class NewTransactionsView(ClientView):
                     "change": "{:.2f}".format(transaction.amount),
                     "balance": "{:.2f}".format(transaction.new_balance),
                     "createdDate":
-                    transaction.created_date.strftime('%Y%m%d%H%M%S'),
+                        transaction.created_date.strftime('%Y%m%d%H%M%S'),
                     "completedDate": dt.strftime('%Y%m%d%H%M%S'),
                     "isCanceled": False,
                     "shortDescription": transaction.type.replace(
@@ -567,11 +372,11 @@ class NewTransactionsView(ClientView):
             for tr in transactions:
                 if 'childTransactions' in tr:
                     for child_tr in tr["childTransactions"]:
-                        csv += "{0}, \"{1}\", {2}, {3}, {4}\n"\
+                        csv += "{0}, \"{1}\", {2}, {3}, {4}\n" \
                             .format(child_tr["accountName"], child_tr["description"],
                                     child_tr["change"], child_tr["balance"], child_tr["fullTime"])
                 else:
-                    csv += "{0}, \"{1}\", {2}, {3}, {4}\n"\
+                    csv += "{0}, \"{1}\", {2}, {3}, {4}\n" \
                         .format(tr["accountName"], tr["description"],
                                 tr["change"], tr["balance"], tr["fullTime"])
 
@@ -692,7 +497,7 @@ class ChangeGoalView(ClientView):
             if goal.is_custom_size:
                 try:
                     goal.portfolios = json.dumps(calculate_portfolios_for_goal(
-                        goal, goal.portfolio_set))
+                        goal))
                 except OptimizationException as e:
                     print(e)
                     return HttpResponse('null',
@@ -861,7 +666,7 @@ class AnalysisReturns(ClientView):
             for r in returns:
                 r_obj = {
                     "d":
-                    "{0}".format(int(1000 * time.mktime(r.date.timetuple()))),
+                        "{0}".format(int(1000 * time.mktime(r.date.timetuple()))),
                     "i": r.return_number
                 }
                 if p.group == STRATEGY:

@@ -158,6 +158,10 @@ SUIT_CONFIG = {
         # 'LIST_PER_PAGE': 15
         }
 
+CRON_CLASSES = [
+    "portfolios.cron.CalculatePortfoliosCron",
+    # ...
+]
 
 from local_settings import *
 

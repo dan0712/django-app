@@ -25,6 +25,8 @@ class YahooApi:
         self.today_year = today.year
         self.today_month = today.month - 1
         self.today_day = today.day
+        self.series_cache = {}
+        self.market_cap_cache = {}
 
         self.symbol_dict = {}
         self.google_dict = {}
@@ -56,7 +58,7 @@ class YahooApi:
             try:
                 with urllib.request.urlopen(url) as response:
                     html_file = json.loads(response.read().decode("utf-8"))["content"]["historyData"]
-                    soup = BeautifulSoup(html_file)
+                    soup = BeautifulSoup(html_file, "html.parser")
                     rows = soup.find_all("tr")
                     for row in rows:
                         columns = row.find_all("td")
@@ -85,12 +87,16 @@ class YahooApi:
             return self.get_rate('GBPAUD', date) * price
 
     def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
+        if ticker_symbol in self.series_cache:
+            return self.series_cache[ticker_symbol]
+
         if period == "m":
             self.dates = pd.date_range('2010-01-01', '{0}-{1}-01'
-                    .format(self.today_year, self.today_month+1), freq='M')
+                                       .format(self.today_year, self.today_month+1), freq='M')
         elif period == "d":
             self.dates = pd.date_range('2010-01-01', '{0}-{1}-{2}'
-                    .format(self.today_year, self.today_month+1, self.today_day), freq='D')
+                                       .format(self.today_year, self.today_month+1,
+                                               self.today_day), freq='D')
 
         db_symbol = ticker_symbol
         ticker_symbol = self.symbol_dict.get(ticker_symbol, ticker_symbol)
@@ -125,7 +131,8 @@ class YahooApi:
                 mp, is_new = MonthlyPrices.objects.get_or_create(date=date, symbol=db_symbol)
                 mp.price = price
                 mp.save()
-        return Series(price_data, index=self.dates, name=db_symbol)
+        self.series_cache[ticker_symbol] = Series(price_data, index=self.dates, name=db_symbol)
+        return self.series_cache[ticker_symbol]
 
     def to_aud(self, currency):
         if currency in self.currency_cache:
@@ -166,10 +173,12 @@ class YahooApi:
         return bid*self.to_aud(currency)
 
     def market_cap(self, ticker):
+        if ticker.symbol in self.market_cap_cache:
+            return self.market_cap_cache[ticker.symbol]
         ticker_symbol = self.symbol_dict.get(ticker.symbol, ticker.symbol)
         url = "http://finance.yahoo.com/q?s={0}".format(ticker_symbol)
         with urllib.request.urlopen(url) as response:
-            soup = BeautifulSoup(response)
+            soup = BeautifulSoup(response, "html.parser")
             net_asset = soup.select('#table1 > tr:nth-of-type(6) > td')[0].getText()
             if "B" in net_asset:
                 cap = float(net_asset.replace("B", ""))*1000
@@ -181,7 +190,8 @@ class YahooApi:
         mp, is_new = MarketCap.objects.get_or_create(ticker=ticker)
         mp.value = value
         mp.save()
-        return value
+        self.market_cap_cache[ticker.symbol] = value
+        return self.market_cap_cache[ticker.symbol]
 
 
 class DbApi:
@@ -195,8 +205,7 @@ class DbApi:
         self.today_day = today.day
 
     def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
-        self.dates = pd.date_range('2010-01', '{0}-{1}'
-            .format(self.today_year, self.today_month+1), freq='M')
+        self.dates = pd.date_range('2010-01', '{0}-{1}'.format(self.today_year, self.today_month+1), freq='M')
 
         prices = MonthlyPrices.objects.filter(symbol=ticker_symbol).all()
         price_data = {}
@@ -206,7 +215,8 @@ class DbApi:
         return Series(price_data, index=self.dates, name=ticker_symbol)
 
     def market_cap(self, ticker):
-        mp = MarketCap.objects.get(ticker=ticker) 
+        print(vars(ticker))
+        mp = MarketCap.objects.get(ticker=ticker)
         return mp.value
 
 

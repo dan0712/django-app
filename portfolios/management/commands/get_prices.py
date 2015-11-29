@@ -1,7 +1,7 @@
 __author__ = 'cristian'
 
 from django.core.management.base import BaseCommand, CommandError
-from ...models import PortfolioSet, PortfolioByRisk
+from ...models import PortfolioSet
 from main.models import Platform, Goal
 from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame

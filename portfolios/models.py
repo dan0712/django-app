@@ -1,6 +1,7 @@
 from main.models import AssetClass, Ticker
 from django.db import models
 
+
 class ProxyAssetClass(AssetClass):
     class Meta:
         proxy = True
@@ -21,18 +22,17 @@ class PortfolioSet(models.Model):
     asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
     risk_free_rate = models.FloatField()
     tau = models.FloatField()
-    # views =
+    default_region_sizes = models.TextField(default="{}")
+    portfolios = models.TextField(editable=False, null=True, blank=True)
+
+    @property
+    def regions(self):
+        def get_regions(x):
+            return x.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
+        return [get_regions(asset_class.super_asset_class) for asset_class in self.asset_classes.all()]
 
     def __str__(self):
         return self.name
-
-
-class PortfolioByRisk(models.Model):
-    portfolio_set = models.ForeignKey(PortfolioSet, related_name="risk_profiles")
-    risk = models.FloatField()
-    expected_return = models.FloatField()
-    volatility = models.FloatField()
-    allocations = models.TextField(default="{}")
 
 
 class View(models.Model):
