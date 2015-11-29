@@ -1,4 +1,4 @@
-define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/common/addGoal/cardRow", "modules/modelStrategyBuilder", "models/account", "models/rolloverFollowup", "views/common/addGoal/addGoalCardView", "views/common/addGoal/addGoalCardDefinitions", "views/profile/editBeneficiariesView", "views/advice/goalCompleteView", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "components/account/scripts/services/goalTypeService", "components/common/scripts/services/domainService", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/analytics/analytics", "services/financialPlanUpdater", "views/common/termsOfServiceView", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
+define("views/common/addGoalView", ["services/firmFetcher","jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/common/addGoal/cardRow", "modules/modelStrategyBuilder", "models/account", "models/rolloverFollowup", "views/common/addGoal/addGoalCardView", "views/common/addGoal/addGoalCardDefinitions", "views/profile/editBeneficiariesView", "views/advice/goalCompleteView", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "components/account/scripts/services/goalTypeService", "components/common/scripts/services/domainService", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/analytics/analytics", "services/financialPlanUpdater", "views/common/termsOfServiceView", "components/account/scripts/constants/accountTypes"], function(firm, e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
         var E = {
                 fixed: !0,
                 delay: 250
@@ -295,9 +295,11 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                     return BMT.user.get("financialPlans").selected()
                 },
                 defaultCardLists: function() {
+                    var firmModel = firm.get();
                     var e = [],
                         t = BMT.accountGroup.allowsIRAs() && (this._isNew() || this.model.isIRA() || !BMT.user.isFull()),
-                        n = this.model && this.model.isInvestingAccount() || this._isNew() && !BMT.accounts().maxedOutInvestmentGoals();
+                        n = this.model && this.model.isInvestingAccount() || this._isNew() && !BMT.accounts().maxedOutInvestmentGoals(),
+                        canUseEthical = firmModel.get("can_use_ethical_portfolio");
 
                     return t && e.push({
                         key: "tax-advantage",
@@ -311,7 +313,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                         key: "major-savings",
                         name: "Major Savings",
                         tooltip: "If you plan to make a major purchase in the future, it&#39;s better to save for it through smart investing than buy it on credit."
-                    }),e.push({
+                    }), canUseEthical && e.push({
                         key: "ethical-investing",
                         name: "Ethical Investing",
                         tooltip: "If you plan to save or grow your wealth using only Ethical funds (companies with no exposure to tobacco and controversial weapons) to help manage your money." })), e
@@ -319,9 +321,12 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 defaultCards: function() {
                     var e = {
                         essentials: [f.get("EMERGENCY"), f.get("BUILD_WEALTH"), f.get("RETIREMENT"), f.get("RETIREMENT_INCOME")],
-                        "major-savings": [f.get("HOUSE"), f.get("EDUCATION"), f.get("OTHER")],
-                        "ethical-investing": [f.get("EMERGENCY_ETHICAL"), f.get("BUILD_WEALTH_ETHICAL"), f.get("RETIREMENT_ETHICAL"), f.get("RETIREMENT_INCOME_ETHICAL")]
+                        "major-savings": [f.get("HOUSE"), f.get("EDUCATION"), f.get("OTHER")]
                     };
+                    var firmModel = firm.get();
+                    if(firmModel.get("can_use_ethical_portfolio")){
+                        e["ethical-investing"]  = [f.get("EMERGENCY_ETHICAL"), f.get("BUILD_WEALTH_ETHICAL"), f.get("RETIREMENT_ETHICAL"), f.get("RETIREMENT_INCOME_ETHICAL")]
+                    }
                     return e["tax-advantage"] = t.reduce(w.getIRATypes(), function(e, t) {
                         var n = !this._isRollover() && this.model && this.model.isAccountType(t) || !BMT.accounts().hasAccountWithType(t),
                             r = f.inherit(t, {

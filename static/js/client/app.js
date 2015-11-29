@@ -27884,7 +27884,8 @@ var requirejs, require, define;
                     knockedOutLogoUrl: e.get("firmKnockedOutLogoUrl"),
                     formAdvPart2Url: e.get("firmFormAdvPart2Url"),
                     clientAgreementUrl: e.get("firmClientAgreementUrl"),
-                    clientAgreementToken: e.get("firmClientAgreementToken")
+                    clientAgreementToken: e.get("firmClientAgreementToken"),
+                    can_use_ethical_portfolio: e.get("can_use_ethical_portfolio")
                 }) : n = null
             }
         }

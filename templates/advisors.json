@@ -13,5 +13,8 @@
   "firmKnockedOutLogoUrl": "{{profile.advisor.firm.white_logo}}",
   "firmFormAdvPart2Url": null,
   "firmClientAgreementUrl": "{{MEDIA_URL}}{{profile.advisor.firm.client_agreement_url.name}}",
-  "firmClientAgreementToken": "{{profile.advisor.firm.token}}"
+  "firmClientAgreementToken": "{{profile.advisor.firm.token}}",
+  "can_use_ethical_portfolio": {% if profile.advisor.firm.can_use_ethical_portfolio %} true {% else %} false {% endif %}
+
+
 }
