@@ -31,6 +31,22 @@ class PortfolioSet(models.Model):
             return x.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
         return [get_regions(asset_class.super_asset_class) for asset_class in self.asset_classes.all()]
 
+    @property
+    def regions_currencies(self):
+        rc = {}
+
+        def get_regions_currencies(asset):
+            region = asset.super_asset_class.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
+            if region not in rc:
+                rc[region] = "AUD"
+            ticker = asset.tickers.filter(ordering=0).first()
+            if ticker.currency != "AUD":
+                rc[region] = ticker.currency
+
+        for asset_class in self.asset_classes.all():
+            get_regions_currencies(asset_class)
+        return rc
+
     def __str__(self):
         return self.name
 

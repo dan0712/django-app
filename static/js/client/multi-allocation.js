@@ -475,28 +475,9 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 return o.promise()
             },
             loadPortfolioSetForAccount: function(e) {
-                var regions_dict = {
-                     au: "Australia",
-                     dm: "Developed Markets",
-                     usa: "United States",
-                     uk: "United Kingdom",
-                     europe: "Europe",
-                     japan: "Japan",
-                     asia: "Asia (ex-Japan)",
-                     china: "China",
-                     em: "Emerging Markets"};
-                var custom_size = 0;
-                _.each(regions_dict, function(value, key){
-                   custom_size = custom_size + e.get(key + "_size");
+                var key = "goal_" + e.get("id") + "_" + e.get("portfolioSetId");
+                return this.loadPortfolioSet(key);
 
-                }.bind(this));
-                if(custom_size=0) {
-                    return this.loadPortfolioSet(e.get("portfolioSetId"))
-                }
-                else{
-                    var key = "goal_" + e.get("id") + "_" + e.get("portfolioSetId");
-                    return this.loadPortfolioSet(key);
-                }
             },
             getPortfolioSet: function(e) {
                 return i[e];
@@ -506,28 +487,9 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 delete s[key];
             },
             getPortfolioSetForAccount: function(e) {
-                 var regions_dict = {
-                     au: "Australia",
-                     dm: "Developed Markets",
-                     usa: "United States",
-                     uk: "United Kingdom",
-                     europe: "Europe",
-                     japan: "Japan",
-                     asia: "Asia (ex-Japan)",
-                     china: "China",
-                     em: "Emerging Markets"};
-                var custom_size = 0;
-                _.each(regions_dict, function(value, key){
-                   custom_size = custom_size + e.get(key + "_size");
+                var key = "goal_" + e.get("id") + "_" + e.get("portfolioSetId");
+                return i[key]
 
-                }.bind(this));
-                if(custom_size=0) {
-                    return this.getPortfolioSet(e.get("portfolioSetId"));
-                }
-                else{
-                    var key = "goal_" + e.get("id") + "_" + e.get("portfolioSetId");
-                    return i[key]
-                }
             },
             getDefaultInvestingPortfolioSetId: function() {
                 return n.getInstance().get("defaultPortfolioSetID")
@@ -576,7 +538,14 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 if(this.size_slider_value>0){this.openCard();}
             },
          createSlider: function() {
-                this.size_slider_value = this.model.num(this.size_slider_model)*100;
+                var region  = this.model.get("regions_allocation")[this.options.model_key];
+                if(!region){
+                    this.size_slider_value = 0;
+                }
+                else{
+                    this.size_slider_value = region["size"]*100;
+                }
+
                 this.drawSize();
                 var e = this.slider('.size-slider', {
                     min: 0,
@@ -596,8 +565,12 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
             },
          hasChanged: function(){
              var changeObject = {has_changed: false, changes: {key:this.options.model_key}};
-
-             if(Math.abs(this.size_slider_value - 100*this.model.num(this.size_slider_model)) > 1){
+             var old_size = 0;
+             var region  = this.model.get("regions_allocation")[this.options.model_key];
+             if(region) {
+                old_size  = 100 *region["size"]
+             }
+             if(Math.abs(this.size_slider_value - old_size) > 1){
                  changeObject.has_changed = true;
                  changeObject.changes.size = this.size_slider_value;
              }
@@ -615,7 +588,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
          },
          reset: function(){
 
-             this.size_slider_value = this.model.num(this.size_slider_model)*100;
+             this.size_slider_value = this.model.get("regions_currencies")[this.options.model_key]["size"]*100;
              this.size_slider.slider("value", this.size_slider_value);
              this.currency_hedge_value = this.model.get(this.currency_hedge_model);
              if(this.currency_hedge_value){
@@ -665,25 +638,27 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 "click .ma-set-all": "preSave"},
             onInitialize: function() {
                 this.$regions_dict = {
-                               au: "Australia",
-                               dm: "Developed Markets",
-                               usa: "United States",
-                               uk: "United Kingdom",
-                               europe: "Europe",
-                               japan: "Japan",
-                               asia: "Asia (ex-Japan)",
-                               china: "China",
-                               em: "Emerging Markets"};
-                _.each(this.$regions_dict, function(value, key){
+                               AU: "Australia",
+                               INT: "Developed Markets",
+                               US: "United States",
+                               UK: "United Kingdom",
+                               EU: "Europe",
+                               JAPAN: "Japan",
+                               AS: "Asia (ex-Japan)",
+                               CN: "China",
+                               EM: "Emerging Markets"};
+
+                _.each(this.model.get("regions_currencies"), function(value, key){
                     this.addRegion(key+"Region", "#" + key + "-region");
 
                 }.bind(this));
 
             },
             onRender: function() {
-                _.each(this.$regions_dict, function(value, key){
+                _.each(this.model.get("regions_currencies"), function(value, key){
                     this.$("div#multiAllocationRegion").append("<div id='" + key + "-region'></div>");
-                    this[key + "View"] = new mac({model:this.model, parent:this, model_key: key, title: value});
+                    this[key + "View"] = new mac({model:this.model, parent:this,
+                                                  model_key: key, title: this.$regions_dict[key]});
                     this[key + "Region"].show(this[key + "View"]);
 
                 }.bind(this));
@@ -692,7 +667,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 this.changed = false;
                 var buttons = this.$(".ma-save-buttons");
 
-                 _.each(this.$regions_dict, function(value, key){
+                 _.each(this.model.get("regions_currencies"), function(value, key){
                     var changeObject = this[key + "View"].hasChanged();
                     this.changed = this.changed || changeObject.has_changed;
                 }.bind(this));
@@ -710,7 +685,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
             onShow: function() {
             },
             reset: function() {
-                _.each(this.$regions_dict, function(value, key){
+                _.each(this.model.get("regions_currencies"), function(value, key){
                     this[key + "View"].reset();
                 }.bind(this));
                 this.hasChanged();
@@ -718,7 +693,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
             },
             getChanges: function(){
                 var changes = [];
-                _.each(this.$regions_dict, function(value, key){
+                _.each(this.model.get("regions_currencies"), function(value, key){
                     var changeObject = this[key + "View"].hasChanged();
                     if(changeObject.has_changed) changes.push(changeObject.changes);
                 }.bind(this));
@@ -727,7 +702,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
             fixSize: function(){
                 var market = [];
                 var total_size  = 0;
-                _.each(this.$regions_dict, function(value, key){
+                _.each(this.model.get("regions_currencies"), function(value, key){
                     var size_value = this[key + "View"].size_slider_value;
                     if(size_value == 0) return;
                     total_size += size_value;
@@ -745,10 +720,10 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
             },
             resize: function(allocated_key, allocated){
                 var market = [];
-                var default_key = "au";
+                var default_key = "AU";
                 var left_allocation = 0;
                 var allocation_from_custom;
-                if(allocated_key=="au")default_key="dm";
+                if(allocated_key=="AU")default_key="INT";
 
                 if(allocated<0){
                     this[default_key + "View"].size_slider_value = this[default_key + "View"].size_slider_value - allocated;
@@ -825,7 +800,7 @@ define("views/common/addGoalView", ["jquery", "underscore", "backbone", "common/
                 BMT.modal.show(e);
             },
              save: function() {
-                _.each(this.$regions_dict, function(value, key){
+                _.each(this.model.get("regions_currencies"), function(value, key){
                     this[key + "View"].save();
                 }.bind(this));
                 this.options.parent.block();

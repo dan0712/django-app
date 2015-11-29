@@ -392,6 +392,7 @@ class Firm(models.Model):
                                           blank=True)
     token = models.CharField(max_length=36, editable=False)
     fee = models.PositiveIntegerField(default=0)
+    can_use_ethical_portfolio = models.BooleanField(default=True)
 
     def save(self,
              force_insert=False,
@@ -1349,6 +1350,10 @@ class Goal(models.Model):
         ordering = ['name']
 
     @property
+    def regions_currencies(self):
+        return mark_safe(json.dumps(self.portfolio_set.regions_currencies))
+
+    @property
     def is_custom_size(self):
         if self.custom_regions is None:
             return False
@@ -1368,12 +1373,14 @@ class Goal(models.Model):
         for key in region_sizes.keys():
             if key not in portfolio_set_regions:
                 self.custom_regions = None
+                self.portfolios = None
                 self.save()
                 return False
             total_size += region_sizes["key"]["size"]
 
         if total_size != 1:
             self.custom_regions = None
+            self.portfolios = None
             self.save()
             return False
 
@@ -1432,8 +1439,23 @@ class Goal(models.Model):
 
     @property
     def portfolio_set(self):
+        from portfolios.models import PortfolioSet
+
         if self.custom_portfolio_set is None:
+            if "_ETHICAL" in self.type:
+                if self.account.primary_owner.advisor.firm.can_use_ethical_portfolio:
+                    self.custom_portfolio_set = PortfolioSet.objects.get(name="Ethical")
+                    self.save()
+                    return self.custom_portfolio_set
             return Platform.objects.first().portfolio_set
+
+        # check ethical portfolios
+        if "_ETHICAL" in self.type:
+            if not self.account.primary_owner.advisor.firm.can_use_ethical_portfolio:
+                self.custom_portfolio_set = None
+                self.save()
+                return Platform.objects.first().portfolio_set
+
         return self.custom_portfolio_set
 
     @property

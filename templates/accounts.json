@@ -1,6 +1,7 @@
 {% load app_filters%}[{% for account in profile.accounts.all %}{% for goal in account.goals.all %}{% if forloop.counter == 1 and forloop.parentloop.counter == 1 %}{% else %},{% endif %}
     {
       "id": {{goal.pk}},
+      "regions_currencies": {{goal.regions_currencies}},
       "regions_allocation": {{goal.regions_allocation}},
       "name": "{{goal.name}}",
       "accountNumber": "{{account.pk}}",
@@ -58,9 +59,6 @@
         "averageBalance": "{{goal.life_time_average_balance}}"
       }
     }
-
-
-
     {% endfor %}
   {% endfor %}
 ]
