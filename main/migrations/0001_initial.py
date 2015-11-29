@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
 import django.contrib.auth.models
 import django.core.validators
-import django_localflavor_au.models
 import django.utils.timezone
+import django_localflavor_au.models
 import main.fields
+from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
     ]
 
@@ -21,14 +20,21 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
                 ('password', models.CharField(verbose_name='password', max_length=128)),
                 ('last_login', models.DateTimeField(verbose_name='last login', blank=True, null=True)),
-                ('is_superuser', models.BooleanField(help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status', default=False)),
+                ('is_superuser', models.BooleanField(
+                    help_text='Designates that this user has all permissions without explicitly assigning them.',
+                    verbose_name='superuser status', default=False)),
                 ('first_name', models.CharField(verbose_name='first name', max_length=30)),
                 ('middle_name', models.CharField(verbose_name='middle name', max_length=30, blank=True)),
                 ('last_name', models.CharField(verbose_name='last name', max_length=30)),
                 ('username', models.CharField(editable=False, max_length=30, default='')),
-                ('email', models.EmailField(unique=True, verbose_name='email address', error_messages={'unique': 'A user with that email already exists.'}, max_length=254)),
-                ('is_staff', models.BooleanField(help_text='Designates whether the user can log into this admin site.', verbose_name='staff status', default=False)),
-                ('is_active', models.BooleanField(help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active', default=True)),
+                ('email', models.EmailField(unique=True, verbose_name='email address',
+                                            error_messages={'unique': 'A user with that email already exists.'},
+                                            max_length=254)),
+                ('is_staff', models.BooleanField(help_text='Designates whether the user can log into this admin site.',
+                                                 verbose_name='staff status', default=False)),
+                ('is_active', models.BooleanField(
+                    help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.',
+                    verbose_name='active', default=True)),
                 ('date_joined', models.DateTimeField(verbose_name='date joined', default=django.utils.timezone.now)),
             ],
             options={
@@ -54,15 +60,28 @@ class Migration(migrations.Migration):
                 ('confirmation_key', models.CharField(editable=False, max_length=36, blank=True, null=True)),
                 ('is_confirmed', models.BooleanField(default=False)),
                 ('date_of_birth', models.DateField(verbose_name='Date of birth')),
-                ('gender', models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=20, default='Male')),
+                ('gender',
+                 models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=20, default='Male')),
                 ('address_line_1', models.CharField(max_length=255)),
                 ('address_line_2', models.CharField(max_length=255, blank=True, null=True)),
                 ('city', models.CharField(max_length=255)),
-                ('state', django_localflavor_au.models.AUStateField(choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
+                ('state', django_localflavor_au.models.AUStateField(
+                    choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'),
+                             ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                             ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
                 ('post_code', django_localflavor_au.models.AUPostCodeField(max_length=4)),
                 ('phone_number', django_localflavor_au.models.AUPhoneNumberField(max_length=10)),
-                ('security_question_1', models.CharField(choices=[('What was the name of your elementary school?', 'What was the name of your elementary school?'), ('What was the name of your favorite childhood friend?', 'What was the name of your favorite childhood friend?'), ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], max_length=255)),
-                ('security_question_2', models.CharField(choices=[('What street did you live on in third grade?', 'What street did you live on in third grade?'), ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"), ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')], max_length=255)),
+                ('security_question_1', models.CharField(choices=[
+                    ('What was the name of your elementary school?', 'What was the name of your elementary school?'), (
+                    'What was the name of your favorite childhood friend?',
+                    'What was the name of your favorite childhood friend?'),
+                    ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')],
+                                                         max_length=255)),
+                ('security_question_2', models.CharField(choices=[
+                    ('What street did you live on in third grade?', 'What street did you live on in third grade?'),
+                    ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"),
+                    ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')],
+                                                         max_length=255)),
                 ('security_answer_1', models.CharField(verbose_name='Answer', max_length=255)),
                 ('security_answer_2', models.CharField(verbose_name='Answer', max_length=255)),
                 ('medicare_number', models.CharField(max_length=50)),
@@ -79,7 +98,9 @@ class Migration(migrations.Migration):
             name='AssetClass',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('name', models.CharField(max_length=255, validators=[django.core.validators.RegexValidator(regex='^[0-9a-zA-Z_]+$', message='Invalid character only accept (0-9a-zA-Z_) ')])),
+                ('name', models.CharField(max_length=255, validators=[
+                    django.core.validators.RegexValidator(regex='^[0-9a-zA-Z_]+$',
+                                                          message='Invalid character only accept (0-9a-zA-Z_) ')])),
                 ('display_order', models.PositiveIntegerField()),
                 ('primary_color', main.fields.ColorField(max_length=10)),
                 ('foreground_color', main.fields.ColorField(max_length=10)),
@@ -87,8 +108,17 @@ class Migration(migrations.Migration):
                 ('asset_class_explanation', models.TextField(blank=True, default='')),
                 ('tickers_explanation', models.TextField(blank=True, default='')),
                 ('display_name', models.CharField(max_length=255)),
-                ('investment_type', models.CharField(choices=[('BONDS', 'BONDS'), ('STOCKS', 'STOCKS')], max_length=255)),
-                ('super_asset_class', models.CharField(choices=[('EQUITY_AU', 'EQUITY_AU'), ('EQUITY_US', 'EQUITY_US'), ('EQUITY_EU', 'EQUITY_EU'), ('EQUITY_EM', 'EQUITY_EM'), ('EQUITY_INT', 'EQUITY_INT'), ('EQUITY_UK', 'EQUITY_UK'), ('EQUITY_JAPAN', 'EQUITY_JAPAN'), ('EQUITY_AS', 'EQUITY_AS'), ('EQUITY_CN', 'EQUITY_CN'), ('FIXED_INCOME_AU', 'FIXED_INCOME_AU'), ('FIXED_INCOME_US', 'FIXED_INCOME_US'), ('FIXED_INCOME_EU', 'FIXED_INCOME_EU'), ('FIXED_INCOME_EM', 'FIXED_INCOME_EM'), ('FIXED_INCOME_INT', 'FIXED_INCOME_INT'), ('FIXED_INCOME_UK', 'FIXED_INCOME_UK'), ('FIXED_INCOME_JAPAN', 'FIXED_INCOME_JAPAN'), ('FIXED_INCOME_AS', 'FIXED_INCOME_AS'), ('FIXED_INCOME_CN', 'FIXED_INCOME_CN')], max_length=255)),
+                ('investment_type',
+                 models.CharField(choices=[('BONDS', 'BONDS'), ('STOCKS', 'STOCKS')], max_length=255)),
+                ('super_asset_class', models.CharField(
+                    choices=[('EQUITY_AU', 'EQUITY_AU'), ('EQUITY_US', 'EQUITY_US'), ('EQUITY_EU', 'EQUITY_EU'),
+                             ('EQUITY_EM', 'EQUITY_EM'), ('EQUITY_INT', 'EQUITY_INT'), ('EQUITY_UK', 'EQUITY_UK'),
+                             ('EQUITY_JAPAN', 'EQUITY_JAPAN'), ('EQUITY_AS', 'EQUITY_AS'), ('EQUITY_CN', 'EQUITY_CN'),
+                             ('FIXED_INCOME_AU', 'FIXED_INCOME_AU'), ('FIXED_INCOME_US', 'FIXED_INCOME_US'),
+                             ('FIXED_INCOME_EU', 'FIXED_INCOME_EU'), ('FIXED_INCOME_EM', 'FIXED_INCOME_EM'),
+                             ('FIXED_INCOME_INT', 'FIXED_INCOME_INT'), ('FIXED_INCOME_UK', 'FIXED_INCOME_UK'),
+                             ('FIXED_INCOME_JAPAN', 'FIXED_INCOME_JAPAN'), ('FIXED_INCOME_AS', 'FIXED_INCOME_AS'),
+                             ('FIXED_INCOME_CN', 'FIXED_INCOME_CN')], max_length=255)),
             ],
         ),
         migrations.CreateModel(
@@ -99,15 +129,28 @@ class Migration(migrations.Migration):
                 ('confirmation_key', models.CharField(editable=False, max_length=36, blank=True, null=True)),
                 ('is_confirmed', models.BooleanField(default=False)),
                 ('date_of_birth', models.DateField(verbose_name='Date of birth')),
-                ('gender', models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=20, default='Male')),
+                ('gender',
+                 models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=20, default='Male')),
                 ('address_line_1', models.CharField(max_length=255)),
                 ('address_line_2', models.CharField(max_length=255, blank=True, null=True)),
                 ('city', models.CharField(max_length=255)),
-                ('state', django_localflavor_au.models.AUStateField(choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
+                ('state', django_localflavor_au.models.AUStateField(
+                    choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'),
+                             ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                             ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
                 ('post_code', django_localflavor_au.models.AUPostCodeField(max_length=4)),
                 ('phone_number', django_localflavor_au.models.AUPhoneNumberField(max_length=10)),
-                ('security_question_1', models.CharField(choices=[('What was the name of your elementary school?', 'What was the name of your elementary school?'), ('What was the name of your favorite childhood friend?', 'What was the name of your favorite childhood friend?'), ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], max_length=255)),
-                ('security_question_2', models.CharField(choices=[('What street did you live on in third grade?', 'What street did you live on in third grade?'), ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"), ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')], max_length=255)),
+                ('security_question_1', models.CharField(choices=[
+                    ('What was the name of your elementary school?', 'What was the name of your elementary school?'), (
+                    'What was the name of your favorite childhood friend?',
+                    'What was the name of your favorite childhood friend?'),
+                    ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')],
+                                                         max_length=255)),
+                ('security_question_2', models.CharField(choices=[
+                    ('What street did you live on in third grade?', 'What street did you live on in third grade?'),
+                    ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"),
+                    ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')],
+                                                         max_length=255)),
                 ('security_answer_1', models.CharField(verbose_name='Answer', max_length=255)),
                 ('security_answer_2', models.CharField(verbose_name='Answer', max_length=255)),
                 ('medicare_number', models.CharField(max_length=50)),
@@ -122,7 +165,9 @@ class Migration(migrations.Migration):
             name='AutomaticDeposit',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('frequency', models.CharField(choices=[('MONTHLY', '1/mo'), ('TWICE_A_MONTH', '2/mo'), ('EVERY_OTHER_WEEK', '2/mo'), ('WEEKLY', 'WEEKLY')], max_length=50)),
+                ('frequency', models.CharField(
+                    choices=[('MONTHLY', '1/mo'), ('TWICE_A_MONTH', '2/mo'), ('EVERY_OTHER_WEEK', '2/mo'),
+                             ('WEEKLY', 'WEEKLY')], max_length=50)),
                 ('enabled', models.BooleanField(default=True)),
                 ('amount', models.FloatField()),
                 ('transaction_date_time_1', models.DateTimeField(null=True)),
@@ -135,7 +180,9 @@ class Migration(migrations.Migration):
             name='AutomaticWithdrawal',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('frequency', models.CharField(choices=[('MONTHLY', '1/mo'), ('TWICE_A_MONTH', '2/mo'), ('EVERY_OTHER_WEEK', '2/mo'), ('WEEKLY', 'WEEKLY')], max_length=50)),
+                ('frequency', models.CharField(
+                    choices=[('MONTHLY', '1/mo'), ('TWICE_A_MONTH', '2/mo'), ('EVERY_OTHER_WEEK', '2/mo'),
+                             ('WEEKLY', 'WEEKLY')], max_length=50)),
                 ('enabled', models.BooleanField(default=True)),
                 ('amount', models.FloatField()),
                 ('transaction_date_time_1', models.DateTimeField(null=True)),
@@ -152,27 +199,54 @@ class Migration(migrations.Migration):
                 ('confirmation_key', models.CharField(editable=False, max_length=36, blank=True, null=True)),
                 ('is_confirmed', models.BooleanField(default=False)),
                 ('date_of_birth', models.DateField(verbose_name='Date of birth')),
-                ('gender', models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=20, default='Male')),
+                ('gender',
+                 models.CharField(choices=[('Male', 'Male'), ('Female', 'Female')], max_length=20, default='Male')),
                 ('address_line_1', models.CharField(max_length=255)),
                 ('address_line_2', models.CharField(max_length=255, blank=True, null=True)),
                 ('city', models.CharField(max_length=255)),
-                ('state', django_localflavor_au.models.AUStateField(choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
+                ('state', django_localflavor_au.models.AUStateField(
+                    choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'),
+                             ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                             ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
                 ('post_code', django_localflavor_au.models.AUPostCodeField(max_length=4)),
                 ('phone_number', django_localflavor_au.models.AUPhoneNumberField(max_length=10)),
-                ('security_question_1', models.CharField(choices=[('What was the name of your elementary school?', 'What was the name of your elementary school?'), ('What was the name of your favorite childhood friend?', 'What was the name of your favorite childhood friend?'), ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], max_length=255)),
-                ('security_question_2', models.CharField(choices=[('What street did you live on in third grade?', 'What street did you live on in third grade?'), ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"), ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')], max_length=255)),
+                ('security_question_1', models.CharField(choices=[
+                    ('What was the name of your elementary school?', 'What was the name of your elementary school?'), (
+                    'What was the name of your favorite childhood friend?',
+                    'What was the name of your favorite childhood friend?'),
+                    ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')],
+                                                         max_length=255)),
+                ('security_question_2', models.CharField(choices=[
+                    ('What street did you live on in third grade?', 'What street did you live on in third grade?'),
+                    ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"),
+                    ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')],
+                                                         max_length=255)),
                 ('security_answer_1', models.CharField(verbose_name='Answer', max_length=255)),
                 ('security_answer_2', models.CharField(verbose_name='Answer', max_length=255)),
                 ('medicare_number', models.CharField(max_length=50)),
                 ('create_date', models.DateTimeField(auto_now_add=True)),
                 ('client_agreement', models.FileField(upload_to='')),
                 ('tax_file_number', models.CharField(max_length=50, blank=True, null=True)),
-                ('provide_tfn', models.IntegerField(choices=[(0, 'Yes'), (1, 'I am a non-resident of Australia'), (2, 'I want to claim an exemption'), (3, 'I do not want to quote a Tax File Number or exemption')], verbose_name='Provide TFN?', default=0)),
-                ('associated_to_broker_dealer', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')], verbose_name='You are employed by or associated with a broker dealer.', default=False)),
-                ('ten_percent_insider', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')], verbose_name='You are a 10% shareholder, director, or policy maker of a publicly traded company.', default=False)),
-                ('public_position_insider', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')], verbose_name='Do you or a family member hold a public office position.', default=False)),
-                ('us_citizen', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')], verbose_name='Are you a US citizen/person for the purpose of US Federal Income Tax.', default=False)),
-                ('employment_status', models.CharField(choices=[('FULL_TIME', 'Employed (full-time)'), ('PART_TIME', 'Employed (part-time)'), ('SELF_EMPLOYED', 'Self-employed'), ('STUDENT', 'Student'), ('RETIRED', 'Retired'), ('HOMEMAKER', 'Homemaker'), ('UNEMPLOYED', 'Not employed')], max_length=20)),
+                ('provide_tfn', models.IntegerField(
+                    choices=[(0, 'Yes'), (1, 'I am a non-resident of Australia'), (2, 'I want to claim an exemption'),
+                             (3, 'I do not want to quote a Tax File Number or exemption')], verbose_name='Provide TFN?',
+                    default=0)),
+                ('associated_to_broker_dealer', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')],
+                                                                    verbose_name='You are employed by or associated with a broker dealer.',
+                                                                    default=False)),
+                ('ten_percent_insider', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')],
+                                                            verbose_name='You are a 10% shareholder, director, or policy maker of a publicly traded company.',
+                                                            default=False)),
+                ('public_position_insider', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')],
+                                                                verbose_name='Do you or a family member hold a public office position.',
+                                                                default=False)),
+                ('us_citizen', models.BooleanField(choices=[(False, 'No'), (True, 'Yes')],
+                                                   verbose_name='Are you a US citizen/person for the purpose of US Federal Income Tax.',
+                                                   default=False)),
+                ('employment_status', models.CharField(
+                    choices=[('FULL_TIME', 'Employed (full-time)'), ('PART_TIME', 'Employed (part-time)'),
+                             ('SELF_EMPLOYED', 'Self-employed'), ('STUDENT', 'Student'), ('RETIRED', 'Retired'),
+                             ('HOMEMAKER', 'Homemaker'), ('UNEMPLOYED', 'Not employed')], max_length=20)),
                 ('net_worth', models.FloatField(default=0)),
                 ('income', models.FloatField(default=0)),
                 ('occupation', models.CharField(max_length=255, blank=True, null=True)),
@@ -189,7 +263,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
                 ('custom_fee', models.PositiveIntegerField(default=0)),
-                ('account_type', models.CharField(choices=[('PERSONAL', 'Personal Account')], max_length=20, default='PERSONAL')),
+                ('account_type',
+                 models.CharField(choices=[('PERSONAL', 'Personal Account')], max_length=20, default='PERSONAL')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
@@ -197,7 +272,11 @@ class Migration(migrations.Migration):
             name='CostOfLivingIndex',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('state', django_localflavor_au.models.AUStateField(choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], unique=True, max_length=3)),
+                ('state', django_localflavor_au.models.AUStateField(
+                    choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'),
+                             ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                             ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], unique=True,
+                    max_length=3)),
                 ('value', models.FloatField(default=80.99)),
             ],
         ),
@@ -218,8 +297,12 @@ class Migration(migrations.Migration):
                 ('inviter_id', models.PositiveIntegerField()),
                 ('send_date', models.DateTimeField(auto_now=True)),
                 ('send_count', models.PositiveIntegerField(default=0)),
-                ('status', models.PositiveIntegerField(choices=[(0, 'Pending'), (1, 'Submitted'), (3, 'Active'), (4, 'Closed')], default=0)),
-                ('invitation_type', models.PositiveIntegerField(choices=[(0, 'Advisor'), (1, 'Authorised representative'), (3, 'Client'), (2, 'Supervisor')], default=3)),
+                ('status',
+                 models.PositiveIntegerField(choices=[(0, 'Pending'), (1, 'Submitted'), (3, 'Active'), (4, 'Closed')],
+                                             default=0)),
+                ('invitation_type', models.PositiveIntegerField(
+                    choices=[(0, 'Advisor'), (1, 'Authorised representative'), (3, 'Client'), (2, 'Supervisor')],
+                    default=3)),
             ],
         ),
         migrations.CreateModel(
@@ -288,8 +371,10 @@ class Migration(migrations.Migration):
                 ('dealer_group_number', models.CharField(max_length=50, blank=True, null=True)),
                 ('slug', models.CharField(unique=True, editable=False, max_length=100)),
                 ('logo_url', models.ImageField(verbose_name='White logo', upload_to='', blank=True, null=True)),
-                ('knocked_out_logo_url', models.ImageField(verbose_name='Colored logo', upload_to='', blank=True, null=True)),
-                ('client_agreement_url', models.FileField(verbose_name='Client Agreement (PDF)', upload_to='', blank=True, null=True)),
+                ('knocked_out_logo_url',
+                 models.ImageField(verbose_name='Colored logo', upload_to='', blank=True, null=True)),
+                ('client_agreement_url',
+                 models.FileField(verbose_name='Client Agreement (PDF)', upload_to='', blank=True, null=True)),
                 ('form_adv_part2_url', models.FileField(verbose_name='Form Adv', upload_to='', blank=True, null=True)),
                 ('token', models.CharField(editable=False, max_length=36)),
                 ('fee', models.PositiveIntegerField(default=0)),
@@ -302,20 +387,29 @@ class Migration(migrations.Migration):
                 ('afsl_asic', models.CharField(verbose_name='AFSL/ASIC number', max_length=50)),
                 ('afsl_asic_document', models.FileField(verbose_name='AFSL/ASIC doc.', upload_to='')),
                 ('office_address_line_1', models.CharField(verbose_name='Office address 1', max_length=255)),
-                ('office_address_line_2', models.CharField(verbose_name='Office address 2', max_length=255, blank=True, null=True)),
-                ('office_state', django_localflavor_au.models.AUStateField(choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
+                ('office_address_line_2',
+                 models.CharField(verbose_name='Office address 2', max_length=255, blank=True, null=True)),
+                ('office_state', django_localflavor_au.models.AUStateField(
+                    choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'),
+                             ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                             ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
                 ('office_city', models.CharField(max_length=255)),
                 ('office_post_code', django_localflavor_au.models.AUPostCodeField(max_length=4)),
                 ('postal_address_line_1', models.CharField(verbose_name='Postal address 1', max_length=255)),
-                ('postal_address_line_2', models.CharField(verbose_name='Postal address 2', max_length=255, blank=True, null=True)),
-                ('postal_state', django_localflavor_au.models.AUStateField(choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
+                ('postal_address_line_2',
+                 models.CharField(verbose_name='Postal address 2', max_length=255, blank=True, null=True)),
+                ('postal_state', django_localflavor_au.models.AUStateField(
+                    choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'),
+                             ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                             ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], max_length=3)),
                 ('same_address', models.BooleanField(default=False)),
                 ('postal_city', models.CharField(max_length=255)),
                 ('postal_post_code', django_localflavor_au.models.AUPostCodeField(max_length=4)),
                 ('daytime_phone_number', django_localflavor_au.models.AUPhoneNumberField(max_length=10)),
                 ('mobile_phone_number', django_localflavor_au.models.AUPhoneNumberField(max_length=10)),
                 ('fax_number', django_localflavor_au.models.AUPhoneNumberField(max_length=10)),
-                ('alternate_email_address', models.EmailField(verbose_name='Email address', max_length=254, blank=True, null=True)),
+                ('alternate_email_address',
+                 models.EmailField(verbose_name='Email address', max_length=254, blank=True, null=True)),
                 ('last_change', models.DateField(auto_now=True)),
                 ('fee_bank_account_name', models.CharField(verbose_name='Name', max_length=100)),
                 ('fee_bank_account_branch_name', models.CharField(verbose_name='Branch name', max_length=100)),
@@ -393,7 +487,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
                 ('symbol', models.CharField(max_length=20, blank=True, null=True)),
                 ('name', models.CharField(max_length=100)),
-                ('group', models.CharField(choices=[('STRATEGY', 'STRATEGY'), ('BENCHMARK', 'BENCHMARK'), ('BOND', 'BOND'), ('STOCK', 'STOCK')], max_length=20, default='BENCHMARK')),
+                ('group', models.CharField(
+                    choices=[('STRATEGY', 'STRATEGY'), ('BENCHMARK', 'BENCHMARK'), ('BOND', 'BOND'),
+                             ('STOCK', 'STOCK')], max_length=20, default='BENCHMARK')),
                 ('allocation', models.FloatField(default=0)),
             ],
         ),
@@ -402,7 +498,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
                 ('fee', models.PositiveIntegerField(default=0)),
-                ('api', models.CharField(choices=[('YAHOO', 'YAHOO'), ('GOOGLE', 'GOOGLE')], max_length=20, default='YAHOO')),
+                ('api',
+                 models.CharField(choices=[('YAHOO', 'YAHOO'), ('GOOGLE', 'GOOGLE')], max_length=20, default='YAHOO')),
             ],
         ),
         migrations.CreateModel(
@@ -426,7 +523,8 @@ class Migration(migrations.Migration):
             name='Ticker',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('symbol', models.CharField(max_length=10, validators=[django.core.validators.RegexValidator(regex='^[^ ]+$', message='Invalid symbol format')])),
+                ('symbol', models.CharField(max_length=10, validators=[
+                    django.core.validators.RegexValidator(regex='^[^ ]+$', message='Invalid symbol format')])),
                 ('display_name', models.CharField(max_length=255)),
                 ('description', models.TextField(blank=True, default='')),
                 ('ordering', models.IntegerField(blank=True, default='')),
@@ -440,17 +538,22 @@ class Migration(migrations.Migration):
             name='Transaction',
             fields=[
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
-                ('type', models.CharField(choices=[('REBALANCE', 'REBALANCE'), ('ALLOCATION', 'ALLOCATION'), ('DEPOSIT', 'DEPOSIT'), ('WITHDRAWAL', 'WITHDRAWAL'), ('MARKET_CHANGE', 'MARKET_CHANGE')], max_length=20)),
+                ('type', models.CharField(
+                    choices=[('REBALANCE', 'REBALANCE'), ('ALLOCATION', 'ALLOCATION'), ('DEPOSIT', 'DEPOSIT'),
+                             ('WITHDRAWAL', 'WITHDRAWAL'), ('MARKET_CHANGE', 'MARKET_CHANGE')], max_length=20)),
                 ('amount', models.FloatField(default=0)),
-                ('status', models.CharField(choices=[('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED')], max_length=20, default='PENDING')),
+                ('status', models.CharField(choices=[('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED')], max_length=20,
+                                            default='PENDING')),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('executed_date', models.DateTimeField(null=True)),
                 ('new_balance', models.FloatField(default=0)),
                 ('inversion', models.FloatField(default=0)),
                 ('return_fraction', models.FloatField(default=0)),
                 ('account', models.ForeignKey(related_name='transactions', to='main.Goal')),
-                ('from_account', models.ForeignKey(to='main.ClientAccount', blank=True, null=True, related_name='transactions_from')),
-                ('to_account', models.ForeignKey(to='main.ClientAccount', blank=True, null=True, related_name='transactions_to')),
+                ('from_account',
+                 models.ForeignKey(to='main.ClientAccount', blank=True, null=True, related_name='transactions_from')),
+                ('to_account',
+                 models.ForeignKey(to='main.ClientAccount', blank=True, null=True, related_name='transactions_to')),
             ],
         ),
         migrations.CreateModel(

@@ -1,31 +1,32 @@
-from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _,\
-    UserManager, timezone,\
-    send_mail
-from django.core.validators import RegexValidator, ValidationError, MaxLengthValidator, BaseValidator
-from .fields import ColorField
-from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
-from main.slug import unique_slugify
-from django.conf import settings
+import json
 import uuid
+from datetime import date
+from json.decoder import JSONDecodeError
+
+from django import forms
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, \
+    UserManager, timezone, \
+    send_mail
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
-from django.template.loader import render_to_string
-from django import forms
-from django.contrib.auth.hashers import make_password
-from django.utils.safestring import mark_safe
-from datetime import date
-import json
-from numpy import array
 from django.core import serializers
-import re
-from json.decoder import JSONDecodeError
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import RegexValidator, ValidationError
+from django.db import models
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
+from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
+from main.slug import unique_slugify
+from numpy import array
+from .fields import ColorField
 
 
 def validate_agreement(value):
     if value is False:
         raise ValidationError("You must accept the agreement to continue.")
+
 
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
                   " following a BetaSmartz approval."
@@ -64,7 +65,7 @@ TFN_CHOICES = (
     (TFN_YES, "Yes"),
     (TFN_NON_RESIDENT, "I am a non-resident of Australia"),
     (TFN_CLAIM, "I want to claim an exemption"),
-    (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"), )
+    (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
 
 Q1 = "What was the name of your primary school?"
 Q2 = "What is your mother's maiden name?"
@@ -87,7 +88,7 @@ PERSONAL_DATA_WIDGETS = {
     "gender": forms.RadioSelect(),
     "date_of_birth": forms.TextInput(attrs={"placeholder": "DD-MM-YYYY"}),
     'address_line_1':
-    forms.TextInput(attrs={"placeholder": "House name. Unit/House number"}),
+        forms.TextInput(attrs={"placeholder": "House name. Unit/House number"}),
     "address_line_2": forms.TextInput(
         attrs={"placeholder": "Street address"})
 }
@@ -122,7 +123,6 @@ class BetaSmartzAgreementForm(forms.ModelForm):
 
 
 class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
-
     confirm_password = forms.CharField(max_length=50,
                                        widget=forms.PasswordInput())
     password = forms.CharField(max_length=50, widget=forms.PasswordInput())
@@ -305,7 +305,7 @@ class PersonalData(models.Model):
     @property
     def phone(self):
         return self.work_phone[0:4] + "-" + self.work_phone[
-            4:7] + "-" + self.work_phone[7:10]
+                                            4:7] + "-" + self.work_phone[7:10]
 
     @property
     def email(self):
@@ -595,7 +595,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         if self.pk is not None:
             orig = Advisor.objects.get(pk=self.pk)
             if (orig.is_accepted != self.is_accepted) and (
-                    self.is_accepted is True):
+                        self.is_accepted is True):
                 send_confirmation_mail = True
 
         super(Advisor, self).save(*args, **kw)
@@ -693,7 +693,7 @@ class AccountGroup(models.Model):
 
 PERSONAL_ACCOUNT = "PERSONAL"
 
-ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"), )
+ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"),)
 
 JOINT_ACCOUNT = "joint_account"
 TRUST_ACCOUNT = "trust_account"
@@ -779,7 +779,7 @@ class ClientAccount(models.Model):
                 self.primary_owner.user.first_name)"""
 
         return "{0}'s {1}".format(
-                self.primary_owner.user.first_name, self.get_account_class_display())
+            self.primary_owner.user.first_name, self.get_account_class_display())
 
     @property
     def total_balance(self):
@@ -878,7 +878,6 @@ EMPLOYMENT_STATUS_CHOICES = (
 
 
 class TaxFileNumberValidator(object):
-
     def __call__(self, value):
 
         if len(value) != 9:
@@ -889,7 +888,7 @@ class TaxFileNumberValidator(object):
 
         try:
             for i in range(9):
-                _sum += int(value[i])*weights[i]
+                _sum += int(value[i]) * weights[i]
         except ValueError:
             return False, 'Invalid TFN, check the digits.'
 
@@ -902,7 +901,6 @@ class TaxFileNumberValidator(object):
 
 
 class MedicareNumberValidator(object):
-
     def __call__(self, value):
 
         if len(value) != 11:
@@ -914,7 +912,7 @@ class MedicareNumberValidator(object):
         try:
             check_digit = int(value[8])
             for i in range(8):
-                _sum += int(value[i])*weights[i]
+                _sum += int(value[i]) * weights[i]
         except ValueError:
             return False, 'Invalid Medicare number.'
 
@@ -943,12 +941,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     associated_to_broker_dealer = models.BooleanField(
         verbose_name="Are employed by or associated with "
-        "a broker dealer?",
+                     "a broker dealer?",
         default=False,
         choices=YES_NO)
     ten_percent_insider = models.BooleanField(
         verbose_name="Are you a 10% shareholder, director, or"
-        " policy maker of a publicly traded company?",
+                     " policy maker of a publicly traded company?",
         default=False,
         choices=YES_NO)
 
@@ -959,7 +957,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     us_citizen = models.BooleanField(
         verbose_name="Are you a US citizen/person"
-        " for the purpose of US Federal Income Tax?",
+                     " for the purpose of US Federal Income Tax?",
         default=False,
         choices=YES_NO)
 
@@ -1037,13 +1035,13 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         data["fields"]["id"] = data["pk"]
         del data["fields"]["client"]
         data["fields"]["social_security_percent_expected"] = str(data[
-            "fields"]["social_security_percent_expected"])
+                                                                     "fields"]["social_security_percent_expected"])
         data["fields"]["annual_salary_percent_growth"] = str(data["fields"][
-            "annual_salary_percent_growth"])
+                                                                 "annual_salary_percent_growth"])
         data["fields"]["social_security_percent_expected"] = str(data[
-            "fields"]["social_security_percent_expected"])
+                                                                     "fields"]["social_security_percent_expected"])
         data["fields"]["expected_inflation"] = str(data["fields"][
-            "expected_inflation"])
+                                                       "expected_inflation"])
 
         return mark_safe(json.dumps(data["fields"]))
 
@@ -1168,7 +1166,6 @@ class AssetClass(models.Model):
              force_update=False,
              using=None,
              update_fields=None):
-
         self.name = self.name.upper()
 
         super(AssetClass, self).save(force_insert, force_update, using,
@@ -1224,7 +1221,6 @@ class Ticker(models.Model):
              force_update=False,
              using=None,
              update_fields=None):
-
         self.symbol = self.symbol.upper()
 
         super(Ticker, self).save(force_insert, force_update, using,
@@ -1232,7 +1228,6 @@ class Ticker(models.Model):
 
 
 class EmailInvitation(models.Model):
-
     email = models.EmailField()
     inviter_type = models.ForeignKey(ContentType)
     inviter_id = models.PositiveIntegerField()
@@ -1385,6 +1380,17 @@ class Goal(models.Model):
         return True
 
     @property
+    def regions_allocation(self):
+        if self.is_custom_size:
+            return mark_safe(json.dumps(self.custom_regions))
+        else:
+            regions_allocation = {}
+            sizes = json.loads(self.portfolio_set.default_region_sizes)
+            for k in sizes:
+                regions_allocation[k] = {"size": sizes[k]}
+            return mark_safe(json.dumps(regions_allocation))
+
+    @property
     def region_sizes(self):
         region_sizes = {}
         if self.is_custom_size:
@@ -1435,7 +1441,7 @@ class Goal(models.Model):
         if self.is_custom_size:
             positions = json.loads(self.portfolios)
         else:
-            positions = self.portfolio_set.portfolios
+            positions = json.loads(self.portfolio_set.portfolios)
         return positions["{:.2f}".format(self.allocation)]
 
     @property
@@ -1788,6 +1794,7 @@ class Performer(models.Model):
                              choices=PERFORMER_GROUP_CHOICE,
                              default=BENCHMARK)
     allocation = models.FloatField(default=0)
+    portfolio_set = models.ForeignKey('portfolios.PortfolioSet')
 
 
 class CostOfLivingIndex(models.Model):
@@ -1849,7 +1856,6 @@ class FinancialProfile(models.Model):
 
 
 class MonthlyPrices(models.Model):
-
     symbol = models.CharField(max_length=100)
     price = models.FloatField(default=0)
     date = models.DateField()

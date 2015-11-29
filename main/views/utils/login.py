@@ -3,14 +3,13 @@ __author__ = 'cristian'
 from django.conf import settings
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import (
-    REDIRECT_FIELD_NAME,  login as auth_login
+    REDIRECT_FIELD_NAME, login as auth_login
 )
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.template.response import TemplateResponse
 from django.utils.http import is_safe_url
-
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
@@ -18,7 +17,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from main.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
-
 
 __all__ = ["create_login"]
 

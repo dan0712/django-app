@@ -10,6 +10,10 @@ import calendar
 from bs4 import BeautifulSoup
 from portfolios.models import MarketCap
 import random
+import scipy.interpolate
+import time
+import numpy as np
+from dateutil.relativedelta import relativedelta
 
 
 class YahooApi:
@@ -88,6 +92,16 @@ class YahooApi:
 
     def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
         if ticker_symbol in self.series_cache:
+            return self.series_cache[ticker_symbol]
+
+        if ticker_symbol in ["UBJ", "UBE", "UBP", "UBJ", "UBW", "UBA"]:
+            price_data = TradingRoomApi().get_all_prices(ticker_symbol,
+                                                         period="m",
+                                                         currency="AUD")
+
+            self.series_cache[ticker_symbol] = Series(price_data,
+                                                      index=self.dates,
+                                                      name=ticker_symbol)
             return self.series_cache[ticker_symbol]
 
         if period == "m":
@@ -192,6 +206,69 @@ class YahooApi:
         mp.save()
         self.market_cap_cache[ticker.symbol] = value
         return self.market_cap_cache[ticker.symbol]
+
+
+class TradingRoomApi:
+
+     def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
+
+        url = "http://www.tradingroom.com.au/apps/qt/csv/pricehistory.ac?section=yearly_price_download&code={symbol}" \
+              "&ignore=.csv".format(symbol=ticker_symbol)
+
+        price_data = {}
+        dates = []
+        closes = []
+        min_date = None
+        max_date = None
+        try:
+            with urllib.request.urlopen(url) as response:
+                csv_file = response.read().decode("utf-8").splitlines()
+                line_counter = 0
+                for line in csv_file:
+                    if line_counter == 0:
+                        line_counter += 1
+                        continue
+                    cells = line.split(",")
+                    close = float(cells[4])
+                    if int(close) == 0:
+                        continue
+                    date = time.mktime(datetime.strptime(cells[0], "%d-%b-%Y").timetuple())
+                    if min_date is None:
+                        min_date = date
+                    if max_date is None:
+                        max_date = date
+                    if date > max_date:
+                        max_date = date
+                    if date < min_date:
+                        min_date = date
+                    dates.append(date)
+                    closes.append(close)
+        except urllib.request.HTTPError as e:
+            raise Exception("{0} : {1}".format(e.msg, url))
+        y_interp = scipy.interpolate.interp1d(np.array(dates), np.array(closes), kind='cubic')
+
+        min_datetime = datetime.fromtimestamp(min_date)
+        next_date = min_datetime
+        while True:
+            # get last_date
+            last_day = calendar.monthrange(next_date.year, next_date.month)[1]
+            last_day_date_str = "{year}-{month}-{day}".format(year=next_date.year,
+                                                              month=next_date.month,
+                                                              day=last_day)
+            last_day_date = datetime.strptime(last_day_date_str, "%Y-%m-%d")
+            last_day_time = time.mktime(last_day_date.timetuple())
+            if last_day_time < max_date:
+                price_data[pd.to_datetime(last_day_date_str)] = y_interp(last_day_time)
+            else:
+                break
+
+            next_date = next_date + relativedelta(months=1)
+
+        for date, price in price_data.items():
+            mp, is_new = MonthlyPrices.objects.get_or_create(date=date, symbol=ticker_symbol)
+            mp.price = price
+            mp.save()
+        return price_data
 
 
 class DbApi:

@@ -1,14 +1,13 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from .views import *
-from django.views.decorators.csrf import csrf_exempt
-from main import settings
 from django.shortcuts import HttpResponseRedirect, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
+from main import settings
+from .views import *
 
 
 def ok_response_json(*args, **kwargs):
-
     return HttpResponse("[]", content_type='application/json')
 
 
@@ -86,7 +85,7 @@ urlpatterns = patterns(
 
     url(r'^advisor/support/forms/transfer/single/update/(?P<pk>\d+)$',
         AdvisorSingleInvestorTransferUpdateView.as_view()),
-    
+
     url(r'^advisor/support/forms/transfer/bulk$',
         AdvisorBulkInvestorTransferView.as_view()),
 
@@ -131,7 +130,8 @@ urlpatterns = patterns(
     url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUp.as_view(),
         name='client:sign_up'),
-    url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/(?P<pk>\d+)/(?P<account_token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+    url(
+        r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/(?P<pk>\d+)/(?P<account_token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUpPrepopulated.as_view()),
     url(r'^client/api/account-groups/(?P<pk>\d+)/beneficiaries$',
         CancelableTransactionsView.as_view()),

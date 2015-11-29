@@ -183,7 +183,6 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
     else:
         mw = mw / tm
 
-    print("columns", columns)
     assets_len = len(columns)
     expected_returns = np.array([])
 
@@ -218,10 +217,6 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
 
         if ns > 0:
             constrains.append(create_constrain(super_classes_matrix[0], ns))
-
-        print(constrains)
-        print(assets_len)
-        print(allocation)
 
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
@@ -415,30 +410,29 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
     # calculate covariance matrix
     sk_co_var, co_vars = calculate_co_vars(assets_len, table)
     initial_w = mw
+    if max_allocation == 0:
+        virtual_allocation = 0
+    if min_allocation == 1:
+        virtual_allocation = 1
+
+    # calculate optimal portfolio for different risks 0 - 100
+    new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
+                                          portfolio_set.risk_free_rate, virtual_allocation,
+                                          new_assets_type, views, qs, tau, constrains, mw,
+                                          initial_w, columns)
+    initial_w = new_weights
+    _mean = float("{0:.4f}".format(_mean)) * 100
+    var = float("{0:.4f}".format((var * 100 * 100) ** (1 / 2)))
+    allocations = {}
+
+    for column in old_columns:
+        if column in columns:
+            idx = columns.index(column)
+            allocations[ticker_parent_dict[column]] = float("{0:.4f}".format(new_weights[idx]))
+        else:
+            allocations[ticker_parent_dict[column]] = 0
+
     for allocation in list(np.arange(0, 1.01, 0.01)):
-        if max_allocation == 0:
-            allocation = 0
-        if min_allocation == 1:
-            allocation = 1
-
-        # calculate optimal portfolio for different risks 0 - 100
-        new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
-                                              portfolio_set.risk_free_rate, allocation,
-                                              new_assets_type, views, qs, tau, constrains, mw,
-                                              initial_w, columns)
-
-        initial_w = new_weights
-        _mean = float("{0:.4f}".format(_mean)) * 100
-        var = float("{0:.4f}".format((var * 100 * 100) ** (1 / 2)))
-        allocations = {}
-
-        for column in old_columns:
-            if column in columns:
-                idx = columns.index(column)
-                allocations[ticker_parent_dict[column]] = float("{0:.4f}".format(new_weights[idx]))
-            else:
-                allocations[ticker_parent_dict[column]] = 0
-
         json_portfolios["{0:.2f}".format(allocation)] = {
             "allocations": allocations,
             "risk": allocation,
@@ -460,7 +454,7 @@ def calculate_portfolios():
 
     # calculate portfolios
     for goal in Goal.objects.all():
-        if not goal.use_default_portfolio:
+        if goal.is_custom_size:
             goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal, api=yahoo_api))
             goal.save()
 

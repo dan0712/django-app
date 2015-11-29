@@ -1,19 +1,16 @@
 import json
 import time
 from datetime import datetime, timedelta
-import numpy as np
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.http.response import Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
-from pandas import DataFrame
-from portfolios.api.yahoo import DbApi
 from portfolios.bl_model import OptimizationException
 from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.models import PortfolioSet
 from ..base import ClientView
-from ...models import Transaction, ClientAccount, PENDING, Goal, Platform, ALLOCATION, TransactionMemo, \
+from ...models import Transaction, ClientAccount, PENDING, Goal, ALLOCATION, TransactionMemo, \
     AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
     MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass
@@ -105,12 +102,13 @@ class PortfolioPortfolios(ClientView, TemplateView):
                                         content_type="application/json")
 
         ret = []
-        for portfolio in portfolio_set.risk_profiles.all():
+        portfolios = json.loads(portfolio_set.portfolios)
+        for k in portfolios:
             new_pr = {
-                "risk": portfolio.risk,
-                "expectedReturn": portfolio.expected_return,
-                "volatility": portfolio.volatility,
-                'allocations': json.loads(portfolio.allocations)
+                "risk": int(100 * portfolios[k]["risk"]) / 100,
+                "expectedReturn": portfolios[k]["expectedReturn"],
+                "volatility": portfolios[k]["volatility"],
+                'allocations': portfolios[k]["allocations"]
             }
             ret.append(new_pr)
 

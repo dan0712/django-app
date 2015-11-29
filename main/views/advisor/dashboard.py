@@ -1,28 +1,27 @@
-from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
+from datetime import datetime
+
 from django import forms
+from django.contrib import messages
+from django.contrib.auth import (
+    load_backend, BACKEND_SESSION_KEY, login as auth_login, logout as auth_logout)
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
+from django.http import Http404
+from django.http import HttpResponseRedirect
+from django.template import RequestContext
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import TemplateView
 from django.views.generic import UpdateView
 from django.views.generic import View
-from django.contrib import messages
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseRedirect
-from django.db.models import Q
+from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
 from operator import itemgetter
-from django.http import Http404
 from ..base import AdvisorView, ClientView
-from django.template.loader import render_to_string
 from ...forms import EmailInviteForm
 from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_CLASSES
-from django.utils.safestring import mark_safe
-from django.template import RequestContext
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth import (
-    load_backend, BACKEND_SESSION_KEY, login as auth_login, logout as auth_logout)
-from datetime import datetime
-from django.http import QueryDict
-
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
@@ -214,7 +213,7 @@ class AdvisorCompositeForm:
         if self.object:
             ctx["object"] = self.object
             if "accounts" in ctx:
-                ctx["accounts"] = ctx["accounts"]\
+                ctx["accounts"] = ctx["accounts"] \
                     .exclude(pk__in=list(map(lambda obj: obj.pk, self.object.accounts.all())))
         ctx["name"] = self.request.GET.get("name", "")
         return ctx
@@ -305,7 +304,7 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupDetails, self).get_queryset()\
+        return super(AdvisorAccountGroupDetails, self).get_queryset() \
             .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
@@ -320,7 +319,7 @@ class AdvisorAccountGroupClients(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupClients, self).get_queryset()\
+        return super(AdvisorAccountGroupClients, self).get_queryset() \
             .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
 
     def get_context_data(self, **kwargs):
@@ -335,7 +334,6 @@ class AdvisorAccountGroupClients(DetailView, AdvisorView):
 
 
 class AdvisorAccountGroupSecondaryDetailView(DetailView, AdvisorView):
-
     template_name = "advisor/account_group_sharing_form.html"
     model = AccountGroup
 
@@ -347,7 +345,7 @@ class AdvisorAccountGroupSecondaryDetailView(DetailView, AdvisorView):
 class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
     template_name = "advisor/account_group_sharing_form.html"
     model = AccountGroup
-    fields = ('secondary_advisors', )
+    fields = ('secondary_advisors',)
     secondary_advisor = None
 
     def get_queryset(self):
@@ -627,7 +625,7 @@ class Logout(ImpersonateBase):
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
     model = ClientAccount
-    fields = ('custom_fee', )
+    fields = ('custom_fee',)
     template_name = 'advisor/fee_override.js'
     content_type = 'text/javascript'
 
@@ -645,7 +643,7 @@ class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
         return ctx
 
     def get_queryset(self):
-        return super(AdvisorClientAccountChangeFee, self).get_queryset().distinct()\
+        return super(AdvisorClientAccountChangeFee, self).get_queryset().distinct() \
             .filter(Q(account_group__advisor=self.advisor) | Q(account_group__secondary_advisors__in=[self.advisor]))
 
     def get_form(self, form_class=None):
@@ -675,7 +673,6 @@ USER_DETAILS = ('first_name', 'middle_name', 'last_name', 'email')
 
 
 class PrepopulatedUserForm(forms.ModelForm):
-
     advisor = None
     account_class = ""
 
@@ -915,10 +912,10 @@ class BuildConfirm(AdvisorView, TemplateView):
         user_verbose_names = []
         for key in USER_DETAILS:
             user_verbose_names.append(User._meta.get_field_by_name(key)[
-                0].verbose_name.title())
+                                          0].verbose_name.title())
             user_values.append(getattr(self.object.user,
                                        "get_{0}_display".format(key), getattr(
-                                           self.object.user, key, "")))
+                    self.object.user, key, "")))
         user_dict = dict(zip(user_verbose_names, user_values))
         user_dict["Full Name"] = "{0} {1} {2}".format(
             user_dict.pop("First Name"), user_dict.pop("Middle Name"),
@@ -930,7 +927,7 @@ class BuildConfirm(AdvisorView, TemplateView):
             if key in ("month", "year", "day"):
                 continue
             verbose_names.append(Client._meta.get_field_by_name(key)[
-                0].verbose_name.title())
+                                     0].verbose_name.title())
             values.append(getattr(self.object, "get_{0}_display".format(key),
                                   getattr(self.object.user, key, "")))
 
@@ -940,7 +937,7 @@ class BuildConfirm(AdvisorView, TemplateView):
         values = []
         for key in FINANCIAL_DETAILS:
             verbose_names.append(Client._meta.get_field_by_name(key)[
-                0].verbose_name.title())
+                                     0].verbose_name.title())
             values.append(getattr(self.object, "get_{0}_display".format(key),
                                   getattr(self.object.user, key, "")))
 
@@ -1045,7 +1042,7 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
 class ConfirmClientNewAccountForm(forms.ModelForm):
     class Meta:
         model = ClientAccount
-        fields = ("confirmed", )
+        fields = ("confirmed",)
 
     def clean_confirmed(self):
         confirmed = self.cleaned_data["confirmed"]

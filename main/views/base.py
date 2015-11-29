@@ -1,20 +1,17 @@
 __author__ = 'cristian'
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import View
-from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.contrib import messages
-
 
 __all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
 
 
 def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
-
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "advisor"),
         login_url=login_url,
@@ -23,7 +20,6 @@ def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, 
 
 
 def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
-
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "authorised_representative"),
         login_url=login_url,
@@ -32,7 +28,6 @@ def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, lo
 
 
 def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
-
     return user_passes_test(
         lambda u: u.is_active and hasattr(u, "client"),
         login_url=login_url,
@@ -59,7 +54,6 @@ class AdvisorView(View):
 
 
 class LegalView(View):
-
     def __init__(self, *args, **kwargs):
         self.firm = None
         super(LegalView, self).__init__(*args, **kwargs)

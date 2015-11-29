@@ -3,6 +3,7 @@ from pages.widgets import *
 
 class TinyMceTextArea(Textarea):
     """A RichTextarea widget."""
+
     class Media:
         js = ['tinymce_4/tinymce/tinymce.min.js',
               'tinymce_4/settings/django-filebrowser.js',
@@ -22,5 +23,6 @@ class TinyMceTextArea(Textarea):
     def render(self, name, value, attrs=None, **kwargs):
         rendered = super(TinyMceTextArea, self).render(name, value, attrs)
         return rendered
+
 
 register_widget(TinyMceTextArea)

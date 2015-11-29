@@ -3,14 +3,13 @@ __author__ = 'cristian'
 from django.conf import settings
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import (
-    REDIRECT_FIELD_NAME,  login as auth_login
+    REDIRECT_FIELD_NAME, login as auth_login
 )
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.template.response import TemplateResponse
 from django.utils.http import is_safe_url
-
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
@@ -19,7 +18,6 @@ from main.models import User, AuthorisedRepresentative, Advisor, Client
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.contrib.auth import (logout as auth_logout)
-
 
 __all__ = ["firm_login", "firm_logout"]
 
@@ -33,7 +31,6 @@ firm_class = [Advisor, AuthorisedRepresentative, Client]
 @sensitive_post_parameters()
 def firm_login(request, template_name='registration/login.html', redirect_field_name=REDIRECT_FIELD_NAME,
                authentication_form=AuthenticationForm, current_app=None, extra_context=None):
-
     redirect_to = request.POST.get(redirect_field_name, request.GET.get(redirect_field_name, ''))
 
     if request.method == "POST":
@@ -89,7 +86,7 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
                 # Ensure the user-originating redirection url is safe.
                 if not is_safe_url(url=redirect_to, host=request.get_host()):
                     redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
-                #clear session
+                # clear session
                 request.session.clear()
                 # Okay, security check complete. Log the user in.
                 auth_login(request, form.get_user())
@@ -124,4 +121,3 @@ def firm_logout(request):
     auth_logout(request)
 
     return HttpResponseRedirect('/firm/login')
-

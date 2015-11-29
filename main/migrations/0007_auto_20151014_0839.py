@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
 import django_localflavor_au.models
+from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('main', '0006_user_prepopulated'),
     ]
@@ -55,17 +54,31 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='advisor',
             name='security_question_1',
-            field=models.CharField(max_length=255, choices=[('What was the name of your elementary school?', 'What was the name of your elementary school?'), ('What was the name of your favorite childhood friend?', 'What was the name of your favorite childhood friend?'), ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], default=''),
+            field=models.CharField(max_length=255, choices=[
+                ('What was the name of your elementary school?', 'What was the name of your elementary school?'), (
+                'What was the name of your favorite childhood friend?',
+                'What was the name of your favorite childhood friend?'),
+                ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], default=''),
         ),
         migrations.AlterField(
             model_name='advisor',
             name='security_question_2',
-            field=models.CharField(max_length=255, choices=[('What street did you live on in third grade?', 'What street did you live on in third grade?'), ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"), ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')], default=''),
+            field=models.CharField(max_length=255, choices=[
+                ('What street did you live on in third grade?', 'What street did you live on in third grade?'),
+                ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"),
+                ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')],
+                                   default=''),
         ),
         migrations.AlterField(
             model_name='advisor',
             name='state',
-            field=django_localflavor_au.models.AUStateField(max_length=3, choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], default='QLD'),
+            field=django_localflavor_au.models.AUStateField(max_length=3,
+                                                            choices=[('ACT', 'Australian Capital Territory'),
+                                                                     ('NSW', 'New South Wales'),
+                                                                     ('NT', 'Northern Territory'),
+                                                                     ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                                                                     ('TAS', 'Tasmania'), ('VIC', 'Victoria'),
+                                                                     ('WA', 'Western Australia')], default='QLD'),
         ),
         migrations.AlterField(
             model_name='authorisedrepresentative',
@@ -110,17 +123,31 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='authorisedrepresentative',
             name='security_question_1',
-            field=models.CharField(max_length=255, choices=[('What was the name of your elementary school?', 'What was the name of your elementary school?'), ('What was the name of your favorite childhood friend?', 'What was the name of your favorite childhood friend?'), ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], default=''),
+            field=models.CharField(max_length=255, choices=[
+                ('What was the name of your elementary school?', 'What was the name of your elementary school?'), (
+                'What was the name of your favorite childhood friend?',
+                'What was the name of your favorite childhood friend?'),
+                ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], default=''),
         ),
         migrations.AlterField(
             model_name='authorisedrepresentative',
             name='security_question_2',
-            field=models.CharField(max_length=255, choices=[('What street did you live on in third grade?', 'What street did you live on in third grade?'), ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"), ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')], default=''),
+            field=models.CharField(max_length=255, choices=[
+                ('What street did you live on in third grade?', 'What street did you live on in third grade?'),
+                ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"),
+                ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')],
+                                   default=''),
         ),
         migrations.AlterField(
             model_name='authorisedrepresentative',
             name='state',
-            field=django_localflavor_au.models.AUStateField(max_length=3, choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], default='QLD'),
+            field=django_localflavor_au.models.AUStateField(max_length=3,
+                                                            choices=[('ACT', 'Australian Capital Territory'),
+                                                                     ('NSW', 'New South Wales'),
+                                                                     ('NT', 'Northern Territory'),
+                                                                     ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                                                                     ('TAS', 'Tasmania'), ('VIC', 'Victoria'),
+                                                                     ('WA', 'Western Australia')], default='QLD'),
         ),
         migrations.AlterField(
             model_name='client',
@@ -175,16 +202,30 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='client',
             name='security_question_1',
-            field=models.CharField(max_length=255, choices=[('What was the name of your elementary school?', 'What was the name of your elementary school?'), ('What was the name of your favorite childhood friend?', 'What was the name of your favorite childhood friend?'), ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], default=''),
+            field=models.CharField(max_length=255, choices=[
+                ('What was the name of your elementary school?', 'What was the name of your elementary school?'), (
+                'What was the name of your favorite childhood friend?',
+                'What was the name of your favorite childhood friend?'),
+                ('What was the name of your childhood pet?', 'What was the name of your childhood pet?')], default=''),
         ),
         migrations.AlterField(
             model_name='client',
             name='security_question_2',
-            field=models.CharField(max_length=255, choices=[('What street did you live on in third grade?', 'What street did you live on in third grade?'), ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"), ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')], default=''),
+            field=models.CharField(max_length=255, choices=[
+                ('What street did you live on in third grade?', 'What street did you live on in third grade?'),
+                ("What is your oldest sibling's birth month?", "What is your oldest sibling's birth month?"),
+                ('In what city did your mother and father meet?', 'In what city did your mother and father meet?')],
+                                   default=''),
         ),
         migrations.AlterField(
             model_name='client',
             name='state',
-            field=django_localflavor_au.models.AUStateField(max_length=3, choices=[('ACT', 'Australian Capital Territory'), ('NSW', 'New South Wales'), ('NT', 'Northern Territory'), ('QLD', 'Queensland'), ('SA', 'South Australia'), ('TAS', 'Tasmania'), ('VIC', 'Victoria'), ('WA', 'Western Australia')], default='QLD'),
+            field=django_localflavor_au.models.AUStateField(max_length=3,
+                                                            choices=[('ACT', 'Australian Capital Territory'),
+                                                                     ('NSW', 'New South Wales'),
+                                                                     ('NT', 'Northern Territory'),
+                                                                     ('QLD', 'Queensland'), ('SA', 'South Australia'),
+                                                                     ('TAS', 'Tasmania'), ('VIC', 'Victoria'),
+                                                                     ('WA', 'Western Australia')], default='QLD'),
         ),
     ]

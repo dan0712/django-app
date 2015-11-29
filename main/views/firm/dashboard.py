@@ -1,14 +1,8 @@
 __author__ = 'cristian'
-from ..utils.login import create_login
-from main.models import Advisor, User, EmailInvitation, Firm, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
-    INVITATION_TYPE_DICT
-from django import forms
-from django.views.generic import CreateView, View, TemplateView
-from django.utils import safestring
 from django.contrib import messages
-import uuid
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseRedirect
+from django.views.generic import CreateView, TemplateView
+from main.models import EmailInvitation, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
+    INVITATION_TYPE_DICT
 from ..base import LegalView
 from ...forms import EmailInviteForm
 
@@ -75,4 +69,3 @@ class FirmAdvisorInvites(CreateView, LegalView):
                                                                               inviter_type=firm.content_type,
                                                                               )
         return response
-

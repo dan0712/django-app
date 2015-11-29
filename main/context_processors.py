@@ -1,6 +1,6 @@
 __author__ = 'cristian'
 
-from django.conf import settings # import the settings file
+from django.conf import settings  # import the settings file
 from django.utils.safestring import mark_safe
 
 

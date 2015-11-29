@@ -29,3 +29,4 @@ django-import-export
 tablib
 diff_match_patch
 Pillow
+python-dateutil

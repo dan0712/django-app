@@ -5,7 +5,6 @@ from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('portfolios', '0003_auto_20151007_1446'),
         ('main', '0015_auto_20151127_1305'),

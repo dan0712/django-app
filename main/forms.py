@@ -1,15 +1,14 @@
 __author__ = 'cristian'
 
-from main.models import EmailInvitation
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
+from main.models import EmailInvitation
 
 
 class EmailInviteForm(forms.ModelForm):
-
     class Meta:
         model = EmailInvitation
-        fields = ('email', 'invitation_type', 'inviter_type',  'inviter_id')
+        fields = ('email', 'invitation_type', 'inviter_type', 'inviter_id')
 
     def clean(self):
         cleaned_data = super(EmailInviteForm, self).clean()

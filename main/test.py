@@ -1,8 +1,10 @@
 __author__ = 'cristian'
-from django.views.generic import View
-from django.http import HttpResponse
 import json
+
 from django.db import models
+from django.http import HttpResponse
+from django.views.generic import View
+
 
 # Create your models here.
 
@@ -15,7 +17,6 @@ class Song(models.Model):
 
 # Create your views here.
 class SongView(View):
-
     def get(self, request, *args, **kwargs):
         artist = request.GET.get("artist", None)
         title = request.GET.get("title", None)

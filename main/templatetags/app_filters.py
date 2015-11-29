@@ -1,6 +1,7 @@
 __author__ = 'cristian'
 
 from django import template
+
 register = template.Library()
 
 

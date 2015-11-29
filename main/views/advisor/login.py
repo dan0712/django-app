@@ -1,20 +1,17 @@
 __author__ = 'cristian'
 
-from main.models import Advisor, User, PERSONAL_DATA_FIELDS, PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, \
-    Section, SUCCESS_MESSAGE, Firm, Client
-from django import forms
-from django.views.generic import CreateView, View, UpdateView
-from django.utils import safestring
-from django.contrib import messages
-import uuid
-from django.contrib.auth.hashers import make_password
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseRedirect
-from django.utils.safestring import mark_safe
-from django.http import Http404
 from advisors.models import ChangeDealerGroup, SingleInvestorTransfer, BulkInvestorTransfer
-from ..base import AdvisorView
+from django import forms
+from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
+from django.http import HttpResponseRedirect
 from django.http import QueryDict
+from django.utils.safestring import mark_safe
+from django.views.generic import CreateView, UpdateView
+from main.models import Advisor, User, PERSONAL_DATA_FIELDS, PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, \
+    Section, SUCCESS_MESSAGE, Firm
+from ..base import AdvisorView
 
 __all__ = ["AdvisorSignUpView", "AdvisorChangeDealerGroupView", "AdvisorChangeDealerGroupUpdateView",
            "AdvisorSingleInvestorTransferView", "AdvisorSingleInvestorTransferUpdateView",
@@ -42,7 +39,7 @@ class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
 
     class Meta:
         model = User
-        fields = ('email', 'first_name',  'middle_name', 'last_name', 'password', 'confirm_password')
+        fields = ('email', 'first_name', 'middle_name', 'last_name', 'password', 'confirm_password')
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('label_suffix', '')
@@ -55,11 +52,11 @@ class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
         self.fields.update(self.profile_form.fields)
         self.initial.update(self.profile_form.initial)
 
-        self.field_sections = [{"fields": ('first_name', 'middle_name',  'last_name', 'email', 'password',
+        self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
                                            'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
                                            'address_line_2', 'city', 'state', 'post_code', 'phone_number'),
                                 "header": "Information to establish your account"},
-                               {"fields": ('medicare_number', ),
+                               {"fields": ('medicare_number',),
                                 "header": "Identity verification",
                                 "detail": "We use your Medicare number to verify your identity and protect "
                                           "against fraud."},
@@ -67,7 +64,7 @@ class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
                                            'security_answer_2'),
                                 "header": "Security",
                                 "detail": "We ask for security questions to protect your account."},
-                               {"fields": ('letter_of_authority', ),
+                               {"fields": ('letter_of_authority',),
                                 "header": "Authorization",
                                 "detail": "BetaSmartz requires a Letter of Authority (PDF) from the new Dealer Group"
                                           " which authorises you to act on their behalf. This letter must"
@@ -120,7 +117,6 @@ class AdvisorSignUpView(CreateView):
 
 
 class ChangeDealerGroupForm(forms.ModelForm):
-
     clients = forms.ModelMultipleChoiceField(required=False, widget=forms.SelectMultiple(attrs={"disabled": True}),
                                              queryset=None)
 
@@ -143,22 +139,23 @@ class ChangeDealerGroupForm(forms.ModelForm):
 
         self.field_sections = [{"fields": ('new_firm', 'work_phone', 'new_email'),
                                 "header": "New arrangements"},
-                               {"fields": ('clients', ),
+                               {"fields": ('clients',),
                                 "header": "Your current investors"},
-                               {"fields": ('letter_previous_group', ),
+                               {"fields": ('letter_previous_group',),
                                 "header": "Previous Dealer Group Release Authorization",
                                 "detail": mark_safe("A letter from your previous Dealer Group authorising the release "
                                                     "of your current investors. A template of this letter has been supplied, "
                                                     "This letter must be provided on the previous Dealer Group's "
                                                     "company letterhead. <a target='_blank' href='/static/docs/previous_dealer_group_release_authorization.pdf'>Example</a>")},
-                               {"fields": ('letter_new_group', ),
+                               {"fields": ('letter_new_group',),
                                 "header": "New Dealer Group Acceptance Authorization",
                                 "detail": mark_safe("A letter from the new Dealer Group accepting the transfer of your "
-                                          "current investors. A template of this letter has been supplied. This letter"
-                                          "must be provided on the new Dealer Group's company letterhead. <a target='_blank' href='/static/docs/new_dealer_group_acceptance_authorization.pdf'>Example</a>")},
-                               {"fields": ('signature', ),
+                                                    "current investors. A template of this letter has been supplied. This letter"
+                                                    "must be provided on the new Dealer Group's company letterhead. <a target='_blank' href='/static/docs/new_dealer_group_acceptance_authorization.pdf'>Example</a>")},
+                               {"fields": ('signature',),
                                 "header": "Advisor Signature",
-                                "detail": mark_safe("Please upload a signature approval by an Authorised Signatory of the new Dealer Group. <a target='_blank' href='/static/docs/advisor_signature_change_dealer_group.pdf'>Example</a>"),
+                                "detail": mark_safe(
+                                    "Please upload a signature approval by an Authorised Signatory of the new Dealer Group. <a target='_blank' href='/static/docs/advisor_signature_change_dealer_group.pdf'>Example</a>"),
                                 }
                                ]
         self.fields["new_firm"].queryset = Firm.objects.exclude(pk=self.initial["old_firm"].pk)
@@ -224,7 +221,6 @@ class AdvisorChangeDealerGroupUpdateView(AdvisorView, UpdateView):
 
 
 class SingleInvestorTransferForm(forms.ModelForm):
-
     class Meta:
         model = SingleInvestorTransfer
         fields = ("from_advisor", "to_advisor", "investor", "signatures",)
@@ -241,11 +237,11 @@ class SingleInvestorTransferForm(forms.ModelForm):
 
         super(SingleInvestorTransferForm, self).__init__(*args, **kwargs)
 
-        self.field_sections = [{"fields": ('to_advisor', ),
+        self.field_sections = [{"fields": ('to_advisor',),
                                 "header": "To Advisor"},
-                               {"fields": ('investor', ),
+                               {"fields": ('investor',),
                                 "header": "Investor"},
-                               {"fields": ('signatures', ),
+                               {"fields": ('signatures',),
                                 "header": "Signatures",
                                 "detail": mark_safe("Signatures of the investor and the previous advisor: if this is "
                                                     "for a Joint Account the signature of the second  investor "
@@ -308,7 +304,6 @@ class AdvisorSingleInvestorTransferUpdateView(AdvisorView, UpdateView):
 
 
 class BulkInvestorTransferForm(forms.ModelForm):
-
     class Meta:
         model = BulkInvestorTransfer
         fields = ("from_advisor", "to_advisor", "investors", "signatures",)
@@ -325,12 +320,12 @@ class BulkInvestorTransferForm(forms.ModelForm):
 
         super(BulkInvestorTransferForm, self).__init__(*args, **kwargs)
 
-        self.field_sections = [{"fields": ('to_advisor', ),
+        self.field_sections = [{"fields": ('to_advisor',),
                                 "header": "To Advisor"},
-                               {"fields": ('investors', ),
+                               {"fields": ('investors',),
                                 "detail": "You can select 2 or more investors for transfer",
                                 "header": "Investors"},
-                               {"fields": ('signatures', ),
+                               {"fields": ('signatures',),
                                 "header": "Signatures",
                                 "detail": mark_safe("Signatures of the previous advisor and new advisor."
                                                     " <a target='_blank' href='/static/docs/advisor_bulk_transferer_signatures.pdf'>Example</a>")},
@@ -341,7 +336,7 @@ class BulkInvestorTransferForm(forms.ModelForm):
 
     def clean_investors(self):
         investors = self.cleaned_data["investors"]
-        if len(investors)<2:
+        if len(investors) < 2:
             self._errors["investors"] = "Please select 2 or more investors"
         return investors
 
@@ -375,8 +370,8 @@ class AdvisorBulkInvestorTransferView(AdvisorView, CreateView):
             return HttpResponseRedirect("/advisor/support/forms/transfer/bulk/update/{0}".format(sit.pk))
         except ObjectDoesNotExist:
             return super(AdvisorBulkInvestorTransferView, self).dispatch(request, *args, **kwargs)
-        
-    
+
+
 class AdvisorBulkInvestorTransferUpdateView(AdvisorView, UpdateView):
     template_name = "advisor/firm_form.html"
     success_url = "/advisor/support/forms"

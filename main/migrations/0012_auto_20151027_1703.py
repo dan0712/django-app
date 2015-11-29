@@ -5,7 +5,6 @@ from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('main', '0011_auto_20151026_0645'),
     ]
@@ -14,7 +13,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='clientaccount',
             name='account_class',
-            field=models.CharField(max_length=20, default='trust_account', choices=[('joint_account', 'Personal Account'), ('trust_account', 'SMSF/Trust Account')]),
+            field=models.CharField(max_length=20, default='trust_account',
+                                   choices=[('joint_account', 'Personal Account'),
+                                            ('trust_account', 'SMSF/Trust Account')]),
         ),
         migrations.AlterField(
             model_name='clientaccount',

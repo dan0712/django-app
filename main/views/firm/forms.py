@@ -1,27 +1,27 @@
 __author__ = 'cristian'
 
-from ..base import AdminView
-from ...models import Firm, AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section,\
-    PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR,\
-    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, WITHDRAWAL, DEPOSIT, ALLOCATION, FEE, Position, EXECUTED, PENDING, REBALANCE
-from ...forms import EmailInviteForm
-from django.contrib import messages
-from main.models import Client, Firm, Advisor, User, AuthorisedRepresentative, \
-    FirmData, Transaction, Ticker, Platform, Goal
-from django.views.generic import CreateView, View, TemplateView
-from django import forms
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404
-from django.utils.safestring import mark_safe
-from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
-from ..base import LegalView
-from django.views.generic.edit import ProcessFormView
-from django.contrib.contenttypes.models import ContentType
-from django.core import serializers
 import json
 from datetime import datetime
+
+from django import forms
+from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
+from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
+from django.utils.safestring import mark_safe
+from django.views.generic import CreateView, View, TemplateView
+from django.views.generic.edit import ProcessFormView
+from main.models import Firm, User, AuthorisedRepresentative, \
+    FirmData, Transaction, Ticker, Platform, Goal
 from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, solve_shares_re_balance
-from numpy import array
+from ..base import AdminView
+from ..base import LegalView
+from ...forms import EmailInviteForm
+from ...models import AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section, \
+    PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
+    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, WITHDRAWAL, DEPOSIT, ALLOCATION, FEE, Position, EXECUTED, PENDING, REBALANCE
 
 __all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
            'NewConfirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
@@ -49,7 +49,7 @@ class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
 
     class Meta:
         model = User
-        fields = ('email', 'first_name',  'middle_name', 'last_name', 'password', 'confirm_password')
+        fields = ('email', 'first_name', 'middle_name', 'last_name', 'password', 'confirm_password')
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('label_suffix', '')
@@ -62,11 +62,11 @@ class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
         self.fields.update(self.profile_form.fields)
         self.initial.update(self.profile_form.initial)
 
-        self.field_sections = [{"fields": ('first_name', 'middle_name',  'last_name', 'email', 'password',
+        self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
                                            'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
                                            'address_line_2', 'city', 'state', 'post_code', 'phone_number'),
                                 "header": "Information to establish your account"},
-                               {"fields": ('medicare_number', ),
+                               {"fields": ('medicare_number',),
                                 "header": "Identity verification",
                                 "detail": "We use your Medicare number to verify your identity and protect "
                                           "against fraud."},
@@ -74,7 +74,7 @@ class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
                                            'security_answer_2'),
                                 "header": "Security",
                                 "detail": "We ask for security questions to protect your account."},
-                               {"fields": ('letter_of_authority', ),
+                               {"fields": ('letter_of_authority',),
                                 "header": "Authorization",
                                 "detail": "BetaSmartz requires a Letter of Authority (PDF) from the new Dealer Group"
                                           " which authorises you to act on their behalf. This letter must"
@@ -202,7 +202,6 @@ class AdminInviteSupervisorView(CreateView, AdminView):
 
 
 class FirmDataForm(forms.ModelForm):
-
     class Meta:
         model = FirmData
         fields = "__all__"
@@ -230,15 +229,15 @@ class FirmDataForm(forms.ModelForm):
                                            'fee_bank_account_holder_name'),
                                 "header": "Bank  account for fee payments",
                                 "detail": "Fees will be paid into the following account Name of financial institution"},
-                                {"fields": ('australian_business_number',),
-                                 "header": " Taxation details",
-                                 "detail": "Please provide the Australian Business Number (ABN) "
-                                           "of the Licensee. Fees cannot be paid if an ABN is not supplied."},
-                                {"fields": (),
-                                 "header": "Investor transfer",
-                                 "detail": "If investors are to be transferred to the new dealer group please"
-                                           "complete a Bulk Investor Transfer form or Single Investor Transfer form"
-                                           " available from betasmartz.com"},
+                               {"fields": ('australian_business_number',),
+                                "header": " Taxation details",
+                                "detail": "Please provide the Australian Business Number (ABN) "
+                                          "of the Licensee. Fees cannot be paid if an ABN is not supplied."},
+                               {"fields": (),
+                                "header": "Investor transfer",
+                                "detail": "If investors are to be transferred to the new dealer group please"
+                                          "complete a Bulk Investor Transfer form or Single Investor Transfer form"
+                                          " available from betasmartz.com"},
 
                                ]
 
@@ -253,7 +252,7 @@ class FirmDataForm(forms.ModelForm):
             cleaned_data["postal_state"] = cleaned_data["office_state"]
             cleaned_data["postal_post_code"] = cleaned_data["office_post_code"]
 
-        self.cleaned_data  = cleaned_data
+        self.cleaned_data = cleaned_data
 
     def save(self, *args, **kw):
         try:
@@ -289,7 +288,6 @@ class FirmDataView(CreateView, LegalView):
 
 
 class EmailConfirmationView(View):
-
     def get(self, request, *args, **kwargs):
 
         token = kwargs.get("token")
@@ -364,7 +362,8 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         ctx["amount"] = self.transaction.amount
         ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.account]))[0]["fields"]
         ctx["account"]["owner_full_name"] = self.transaction.account.account.primary_owner.user.get_full_name()
-        ctx["account"]["advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
+        ctx["account"][
+            "advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
         ctx["account"]["firm_name"] = self.transaction.account.account.primary_owner.advisor.firm.name
         ctx["account"]["fee"] = self.transaction.account.account.fee
 
@@ -395,18 +394,19 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             current_shares.append(cs)
         if self.transaction.status == PENDING:
             if self.transaction.type == WITHDRAWAL and \
-                    ((self.transaction.account.total_balance-self.transaction.amount) > 0):
+                    ((self.transaction.account.total_balance - self.transaction.amount) > 0):
                 result_a = list(map(lambda x: -x, solve_shares_wdw(current_shares, tickers_prices,
                                                                    target_allocation, self.transaction.amount)))
 
             if self.transaction.type == DEPOSIT:
                 result_a = solve_shares_deposit(current_shares, tickers_prices, target_allocation,
-                                                self.transaction.amount*(1-self.transaction.account.account.fee/1000))
+                                                self.transaction.amount * (
+                                                1 - self.transaction.account.account.fee / 1000))
 
             if self.transaction.type == ALLOCATION:
                 result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
                 ctx["amount"] = 1
-                ctx["account"]["fee"] = sum(abs(result_a*tickers_prices))*ctx["account"]["fee"]
+                ctx["account"]["fee"] = sum(abs(result_a * tickers_prices)) * ctx["account"]["fee"]
 
         for i in range(len(result_a)):
             result_dict[str(tickers_pk[i])] = result_a[i]
@@ -445,8 +445,8 @@ class AdminExecuteTransaction(TemplateView, AdminView):
                 new_shares.append(new_p.value)
 
         for old_p in self.transaction.account.positions.all():
-                old_amount += old_p.value
-                old_shares.append(old_p.value)
+            old_amount += old_p.value
+            old_shares.append(old_p.value)
 
         amount = abs(new_amount - old_amount)
         # delete old positions
@@ -456,7 +456,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         self.transaction.executed_date = datetime.now()
         if self.transaction.type == WITHDRAWAL:
             fee = amount * self.transaction.account.account.fee / 1000
-            self.transaction.amount = amount*(1-self.transaction.account.account.fee / 1000)
+            self.transaction.amount = amount * (1 - self.transaction.account.account.fee / 1000)
             # save fee transaction
             fee_t = Transaction()
             fee_t.account = self.transaction.account
@@ -503,7 +503,8 @@ class GoalRebalance(TemplateView, AdminView):
         ctx["amount"] = self.transaction.amount
         ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.account]))[0]["fields"]
         ctx["account"]["owner_full_name"] = self.transaction.account.account.primary_owner.user.get_full_name()
-        ctx["account"]["advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
+        ctx["account"][
+            "advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
         ctx["account"]["firm_name"] = self.transaction.account.account.primary_owner.advisor.firm.name
         ctx["account"]["fee"] = self.transaction.account.account.fee
 
@@ -537,7 +538,7 @@ class GoalRebalance(TemplateView, AdminView):
             if self.transaction.type == ALLOCATION:
                 result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
                 ctx["amount"] = 1
-                ctx["account"]["fee"] = sum(abs(result_a*tickers_prices))*ctx["account"]["fee"]
+                ctx["account"]["fee"] = sum(abs(result_a * tickers_prices)) * ctx["account"]["fee"]
 
         for i in range(len(result_a)):
             result_dict[str(tickers_pk[i])] = result_a[i]
@@ -578,8 +579,8 @@ class GoalRebalance(TemplateView, AdminView):
                 new_shares.append(new_p.value)
 
         for old_p in self.transaction.account.positions.all():
-                old_amount += old_p.value
-                old_shares.append(old_p.value)
+            old_amount += old_p.value
+            old_shares.append(old_p.value)
 
         amount = abs(new_amount - old_amount)
         # delete old positions
