@@ -1449,6 +1449,8 @@ class Goal(models.Model):
             if "_ETHICAL" in self.type:
                 if self.account.primary_owner.advisor.firm.can_use_ethical_portfolio:
                     self.custom_portfolio_set = PortfolioSet.objects.get(name="Ethical")
+                    # TODO: be more smart about this
+                    self.allocation = 1
                     self.save()
                     return self.custom_portfolio_set
             return Platform.objects.first().portfolio_set
@@ -1459,6 +1461,10 @@ class Goal(models.Model):
                 self.custom_portfolio_set = None
                 self.save()
                 return Platform.objects.first().portfolio_set
+            else:
+                # TODO: be more smart about this
+                self.allocation = 1
+                self.save()
 
         return self.custom_portfolio_set
 
