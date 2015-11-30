@@ -76,3 +76,36 @@ def markowitz_optimizer(mu, sigma, lam = 1):
     L = p.solve()                           # solve problem 
     return np.array(x.value).flatten()      # return optimal weights 
 
+def markowitz_optimizer_2(mu, sigma, m, alpha, lam = 1):
+    '''
+    Implementation of a long only mean-variance optimizer based on Markowitz's Portfolio
+    Construction method:
+
+    https://en.wikipedia.org/wiki/Modern_portfolio_theory
+
+    This function relies on cvxpy.
+
+    Argument Definitions:
+    mu    -- 1xn numpy array of expected asset returns 
+    sigma -- nxn covariance matrix between asset return time series 
+    m     -- first m  
+    alpha -- percentage of portfolio weight to place in the first m assets
+             note that 1-alpha percent of the portfolio weight will be placed 
+             in (m+1)st through nth asset 
+    lam   -- optional risk tolerance parameter 
+
+    Argument Constraints: 
+    mu    -- expected return bector 
+    sigma -- positive semidefinite symmetric matrix 
+    m     -- m < n
+    alpha -- a float between 0 and 1
+    lam   -- any non-negative float 
+    '''
+
+    x = Variable(len(sigma))   # define variable of weights to be solved for by optimizer 
+    objective = Minimize(quad_form(x,sigma)-lam*mu*x) # define Markowitz mean/variance objective function 
+    constraints = [sum_entries(x[0:m])==alpha, sum_entries(x[m::])==(1-alpha), x>=0] # define long only constraint
+    p = Problem(objective, constraints)     # create optimization problem  
+    L = p.solve()                           # solve problem 
+    return np.array(x.value).flatten()      # return optimal weights 
+

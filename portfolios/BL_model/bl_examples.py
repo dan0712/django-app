@@ -1,4 +1,4 @@
-from bl_model import bl_model, markowitz_optimizer 
+from bl_model import bl_model, markowitz_optimizer, markowitz_optimizer_2 
 import numpy as np 
 
 ## BL model (Meucci's version) 
@@ -34,7 +34,18 @@ n = 1/0.4 # just to match meucci's
 mu, sig = bl_model(sigma, w_tilde, p, v, n)
 wopt = markowitz_optimizer(mu,sig)
 
-## Example 2 (demonstrate overwriting optional arguments) 
+## Example 2
+## Here we demonstrate usage of the second Markowitz type optimizer.  In this example, 
+## we require that the sum of the weights in the first three assets is 25% and 75% 
+## of the total weight is placed in the remainder of the assets.  This is 
+## achieved by having the first 3 entries of the mu vector and first 3 rows of the 
+## covariance matrix sig correspond to the asset that we would like to enforce the
+## additional constraint that they contain 25% of the entire portfolio weight.  
+## One can check this is indeed achieved by noting that the sum of the first 
+## three components of wopt2 is 0.25 and the sum of the last three is 0.75. 
+wopt2 = markowitz_optimizer_2(mu,sig, 3, 0.25)
 
-## Example 3 (no views ... using no views) 
+## Example 3 (demonstrate overwriting optional arguments) 
+
+## Example 4 (no views ... using no views) 
 
