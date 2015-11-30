@@ -107,8 +107,8 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 var allocation = this.model.num("allocation");
                 var stocks_and_bonds = this.model.get("stocks_and_bonds");
                 if (stocks_and_bonds != "both") {disabled=true};
-                if(stocks_and_bonds=="bonds"){allocation = 0;}
-                if(stocks_and_bonds=="stocks"){allocation = 1;}
+                if(stocks_and_bonds=="bonds"){allocation = 0; this.model.set("allocation", 0)}
+                if(stocks_and_bonds=="stocks"){allocation = 1; this.model.set("allocation", 1)}
 
 
                 var e = this.slider(".allocation-slider", {
