@@ -292,7 +292,6 @@ class DbApi:
         return Series(price_data, index=self.dates, name=ticker_symbol)
 
     def market_cap(self, ticker):
-        print(vars(ticker))
         mp = MarketCap.objects.get(ticker=ticker)
         return mp.value
 

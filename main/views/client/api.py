@@ -1,7 +1,7 @@
 import json
 import time
 from datetime import datetime, timedelta
-
+from json.decoder import JSONDecodeError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -67,7 +67,7 @@ class PortfolioPortfolios(ClientView, TemplateView):
     content_type = "application/json"
 
     def get(self, request, *args, **kwargs):
-        portfolio_set = get_object_or_404(PortfolioSet, pk=kwargs["pk"])
+        portfolio_set = Goal().portfolio_set
         goal_pk = kwargs.get("goal_pk", None)
         if goal_pk:
             try:
@@ -76,30 +76,32 @@ class PortfolioPortfolios(ClientView, TemplateView):
             except ObjectDoesNotExist:
                 goal = None
 
-            if goal and goal.is_custom_size:
-                _continue = True
-                if goal.portfolios in [None, "{}", "[]", ""]:
-                    try:
-                        goal.portfolios = json.dumps(
-                            calculate_portfolios_for_goal(goal))
-                        goal.save()
-                    except OptimizationException:
-                        markets = ["usa", "uk", "europe", "japan", "asia",
-                                   "china", "em"]
-                        for m in markets:
-                            setattr(goal, m + "_size", 0)
-                            setattr(goal, m + "_allocation", 0)
-                        goal.au_size = 0.5
-                        goal.dm_size = 0.5
-                        goal.save()
-                    _continue = False
+            if goal:
+                if goal.is_custom_size:
+                    if goal.portfolios in [None, "{}", "[]", ""]:
+                        try:
+                            portfolios = calculate_portfolios_for_goal(goal)
+                            goal.portfolios = json.dumps(portfolios)
+                            goal.save()
+                        except OptimizationException:
+                            goal.custom_regions = None
+                            goal.save()
+                            portfolios = json.loads(goal.portfolio_set.portfolios)
+                    else:
+                        portfolios = json.loads(goal.portfolios)
+                else:
+                    portfolios = json.loads(goal.portfolio_set.portfolios)
 
-                if _continue:
-                    ret = []
-                    for k, v in json.loads(goal.portfolios).items():
-                        ret.append(v)
-                    return HttpResponse(json.dumps(ret),
-                                        content_type="application/json")
+                ret = []
+                for k in portfolios:
+                    new_pr = {
+                        "risk": int(100 * portfolios[k]["risk"]) / 100,
+                        "expectedReturn": portfolios[k]["expectedReturn"],
+                        "volatility": portfolios[k]["volatility"],
+                        'allocations': portfolios[k]["allocations"]
+                    }
+                    ret.append(new_pr)
+                return HttpResponse(json.dumps(ret), content_type="application/json")
 
         ret = []
         portfolios = json.loads(portfolio_set.portfolios)
@@ -477,25 +479,54 @@ class ChangeGoalView(ClientView):
         goal.type = payload["goalType"]
         goal.account_type = payload["accountType"]
         goal.save()
-        markets = ["au", "dm", "usa", "uk", "europe", "japan", "asia", "china",
-                   "em"]
 
         has_changed = False
+        # clear payload
+        region_allocations = payload["regions_allocation"]
 
-        for m in markets:
-            new_size = payload.get(m + "_size", 0)
-            old_size = getattr(goal, m + "_size", 0)
-            has_changed = has_changed or (old_size != new_size)
-            setattr(goal, m + "_size", new_size)
-            setattr(goal, m + "_allocation", payload.get(m + "_allocation", 0))
-            setattr(goal, m + "_currency_hedge", payload.get(
-                m + "_currency_hedge", 0))
+        total_size = 0
+        allocation_keys = region_allocations.keys()
+        new_region_allocations = {}
+        for k in allocation_keys:
+            if int(region_allocations[k]["size"]*100) == 0:
+                continue
+            else:
+                new_region_allocations[k] = {"size": region_allocations[k]["size"]}
+            if "hedge" in region_allocations[k]:
+                if not region_allocations[k]["hedge"]:
+                    pass
+                else:
+                    new_region_allocations[k]["hedge"] = region_allocations[k]["hedge"]
+
+            total_size += int(region_allocations[k]["size"]*100)
+
+        if total_size != 100:
+            region_allocations = None
+        else:
+            region_allocations = new_region_allocations
+
+        if region_allocations:
+            try:
+                custom_regions = json.loads(goal.custom_regions)
+            except (JSONDecodeError, TypeError):
+                custom_regions = {}
+            if len(custom_regions) > 0:
+                if custom_regions == region_allocations:
+                    has_changed = False
+                else:
+                    has_changed = True
+                    goal.custom_regions = json.dumps(region_allocations)
+            else:
+                has_changed = True
+                goal.custom_regions = json.dumps(region_allocations)
+        else:
+            has_changed = False
+        goal.save()
 
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = json.dumps(calculate_portfolios_for_goal(
-                        goal))
+                    goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal))
                 except OptimizationException as e:
                     print(e)
                     return HttpResponse('null',

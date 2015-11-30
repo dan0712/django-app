@@ -26,6 +26,24 @@ class PortfolioSet(models.Model):
     portfolios = models.TextField(editable=False, null=True, blank=True)
 
     @property
+    def stocks_and_bonds(self):
+        has_bonds = False
+        has_stocks = False
+
+        for asset_class in self.asset_classes.all():
+            if "EQUITY_" in asset_class.super_asset_class:
+                has_stocks = True
+            if "FIXED_INCOME_" in asset_class.super_asset_class:
+                has_bonds = True
+
+        if has_bonds and has_stocks:
+            return "both"
+        elif has_stocks:
+            return "stocks"
+        else:
+            return "bonds"
+
+    @property
     def regions(self):
         def get_regions(x):
             return x.replace("EQUITY_", "").replace("FIXED_INCOME_", "")

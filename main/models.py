@@ -1351,7 +1351,11 @@ class Goal(models.Model):
 
     @property
     def regions_currencies(self):
-        return mark_safe(json.dumps(self.portfolio_set.regions_currencies))
+        return mark_safe(json.dumps(self.portfolio_set.regions_currencies, sort_keys=True))
+
+    @property
+    def stocks_and_bonds(self):
+        return self.portfolio_set.stocks_and_bonds
 
     @property
     def is_custom_size(self):
@@ -1376,7 +1380,7 @@ class Goal(models.Model):
                 self.portfolios = None
                 self.save()
                 return False
-            total_size += region_sizes["key"]["size"]
+            total_size += region_sizes[key]["size"]
 
         if total_size != 1:
             self.custom_regions = None
@@ -1389,7 +1393,7 @@ class Goal(models.Model):
     @property
     def regions_allocation(self):
         if self.is_custom_size:
-            return mark_safe(json.dumps(self.custom_regions))
+            return mark_safe(self.custom_regions)
         else:
             regions_allocation = {}
             sizes = json.loads(self.portfolio_set.default_region_sizes)

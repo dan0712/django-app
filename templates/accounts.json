@@ -3,6 +3,7 @@
       "id": {{goal.pk}},
       "regions_currencies": {{goal.regions_currencies}},
       "regions_allocation": {{goal.regions_allocation}},
+      "stocks_and_bonds": "{{goal.stocks_and_bonds}}",
       "name": "{{goal.name}}",
       "accountNumber": "{{account.pk}}",
       "ordering": {{forloop.counter0}},

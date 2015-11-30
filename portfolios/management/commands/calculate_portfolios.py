@@ -92,8 +92,6 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
 
     if int(default_region_size * 100) != 0:
         only_use_this_assets.extend(super_classes_matrix[region_idx])
-        constrain = create_constrain(super_classes_matrix[region_idx], default_region_size)
-        regions_with_bond_and_stock_constrains[default_region] = {"constrain": constrain, "size": default_region_size}
 
     region_idx += 1
 
@@ -115,19 +113,16 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
                     only_use_this_assets.extend(super_classes_matrix[0])
                 constrain = create_constrain(super_classes_matrix[region_idx], custom_size)
                 regions_with_only_stocks_constrains[region] = {"constrain": constrain, "size": custom_size}
-            if region in regions_with_only_bonds:
+            elif region in regions_with_only_bonds:
                 if int(100 * region_sizes.get(default_region, 0)) == 0:
                     only_use_this_assets.extend(super_classes_matrix[0])
                 constrain = create_constrain(super_classes_matrix[region_idx], custom_size)
                 regions_with_only_bonds_constrains[region] = {"constrain": constrain, "size": custom_size}
-            elif region == default_region:
-                default_region_size += custom_size
             else:
                 constrain = create_constrain(super_classes_matrix[region_idx], custom_size)
                 regions_with_bond_and_stock_constrains[region] = {"constrain": constrain, "size": custom_size}
 
         region_idx += 1
-
     # join all the series in a table, drop missing values
     new_assets_type = []
     views_dict = []
@@ -439,6 +434,9 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
             "expectedReturn": _mean,
             "volatility": var
         }
+    if goal.pk:
+        goal.allocation = virtual_allocation
+        goal.save()
     return json_portfolios
 
 

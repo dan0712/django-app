@@ -170,20 +170,22 @@ You can adjust this risk level by updating your time horizon or target allocatio
             </div>
 
             <div class="size-slider"></div><br>
+            <% if (canHedge()) { %>
+                <div class="slider-labels clearfix">
+                    <div class="ma-text left">
+                        Hedge Currency Exposure
+                    </div>
 
-            <div class="slider-labels clearfix">
-                <div class="ma-text left">
-                    Hedge Currency Exposure
+                    <div class="ma-text left" style="margin-left: 30px;">
+                        <input class="tiny-toggle" id="currency-hedge" type= "checkbox">
+
+                    </div>
+                     <div class="currency-help help-icon">
+                            By selecting to hedge currency exposure you are short-selling that currency to create a neutral position. This may incur more cost but potentially reduce risk from exposure to an investment in a different currency.
+                      </div>
                 </div>
+            <% } %>
 
-                <div class="ma-text left" style="margin-left: 30px;">
-                    <input class="tiny-toggle" id="currency-hedge" type= "checkbox">
-
-                </div>
-                 <div class="currency-help help-icon">
-                        By selecting to hedge currency exposure you are short-selling that currency to create a neutral position. This may incur more cost but potentially reduce risk from exposure to an investment in a different currency.
-                  </div>
-            </div>
         </div>
     </div>
 ]]>
