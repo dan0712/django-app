@@ -505,6 +505,8 @@ class ChangeGoalView(ClientView):
         else:
             region_allocations = new_region_allocations
 
+        print(new_region_allocations)
+
         if region_allocations:
             try:
                 custom_regions = json.loads(goal.custom_regions)
@@ -519,8 +521,21 @@ class ChangeGoalView(ClientView):
             else:
                 has_changed = True
                 goal.custom_regions = json.dumps(region_allocations)
-        else:
-            has_changed = False
+
+        # check optimization model
+        optimization_mode = payload["optimization_mode"]
+        if optimization_mode != goal.optimization_mode:
+            goal.custom_optimization_mode = optimization_mode
+            has_changed = True
+
+        # check picked regions
+        picked_regions = list(set(payload["picked_regions"]))
+        if set(picked_regions) != set(json.loads(goal.picked_regions)):
+            goal.custom_picked_regions = json.dumps(picked_regions)
+            has_changed = True
+
+
+
         goal.save()
 
         if has_changed:

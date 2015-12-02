@@ -32,6 +32,13 @@
     -ms-transition:0.8s; text-align:center;
     -o-transition:0.8s; text-align:center;
     transition:0.8s; text-align:center;
+
+}
+
+.auto-mode{
+        margin-top: 0px;
+}
+.weight-mode{
     margin-top: 15px;
 
 }
@@ -101,7 +108,7 @@
 .ma-save-buttons{
     margin-bottom: 5px;
     border-color: #45A018;
-    border-top: 2px solid;
+    /* border-top: 2px solid; */
     padding-top: 7px;
 }
 

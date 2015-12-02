@@ -1344,10 +1344,34 @@ class Goal(models.Model):
                                          verbose_name="total balance")
     custom_portfolio_set = models.ForeignKey('portfolios.PortfolioSet', null=True, blank=True)
     custom_regions = models.TextField(null=True)
+    custom_picked_regions = models.TextField(null=True)
+    custom_optimization_mode = models.IntegerField(choices=[(0, 'None'), (1, 'auto mode'), (2, 'weight mode')], default=0)
     portfolios = models.TextField(null=True)
+    custom_hedges = models.TextField(null=True)
 
     class Meta:
         ordering = ['name']
+
+    @property
+    def hedges(self):
+        if self.custom_hedges is None:
+            return mark_safe('null')
+        else:
+            return mark_safe(self.custom_hedges)
+
+    @property
+    def picked_regions(self):
+        if self.custom_picked_regions is None:
+            return mark_safe(self.portfolio_set.default_picked_regions)
+        else:
+            return mark_safe(self.custom_picked_regions)
+
+    @property
+    def optimization_mode(self):
+        if self.custom_optimization_mode == 0:
+            return self.portfolio_set.default_optimization_mode
+        else:
+            return self.custom_optimization_mode
 
     @property
     def regions_currencies(self):

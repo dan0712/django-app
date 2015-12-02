@@ -678,6 +678,9 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                canHedge: function () {
                    return this.self.canHedge();
                },
+                isAutoMode:function(){
+                    return this.self.options.parent.optimization_mode == 1;
+                }
 
         },
 
@@ -706,14 +709,23 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             return currency_hedge_value;
 
         },
+        isRegionCurrentPicked: function(){
+            var picked_regions = this.model.get("picked_regions");
+            return picked_regions.indexOf(this.options.model_key)>=0;
+        },
         onRender: function () {
+            var self = this;
             this.$(".region-name").text(this.options.title);
-            var region = this.model.get("regions_allocation")[this.options.model_key];
             this.size_slider = this.createSlider();
             if (this.canHedge()) {
                 this.currency_hedge_value = this.currentHedge();
 
-                this.hedge_toggle = this.$(".tiny-toggle").tinyToggle({
+                this.hedge_toggle = this.$(".hedge-toggle").tinyToggle({
+                    onReady: function(){
+                         if (this.currency_hedge_value) {
+                                self.$(this).tinyToggle("check")
+                         };
+                    },
                     onChange: function (checkbox, value) {
                         if (this.currency_hedge_value == value)return;
                         this.currency_hedge_value = value;
@@ -723,14 +735,24 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
 
             }
 
+            this.is_region_picked = this.isRegionCurrentPicked();
+
+            this.region_toggle = this.$(".pick-toggle").tinyToggle({
+                    onReady: function(){
+                        if (self.is_region_picked) {
+                                self.$(this).tinyToggle("check")
+                         };
+
+                    },
+                    onChange: function (checkbox, value) {
+                        if (this.is_region_picked == value)return;
+                        this.is_region_picked = value;
+                        this.options.parent.hasChanged();
+                    }.bind(this),
+                });
 
         },
         onShow: function () {
-            if (this.canHedge()) {
-                if (this.currency_hedge_value) {
-                    this.hedge_toggle.tinyToggle("check")
-                };
-            }
             this.drawSize();
             if (this.size_slider_value > 0) {
                 this.openCard();
@@ -782,6 +804,12 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 }
             }
 
+            var is_region_picked = this.isRegionCurrentPicked();
+
+            if(this.is_region_picked!=is_region_picked){
+                changeObject.has_changed = true;
+                changeObject.changes.is_region_picked = this.is_region_picked;
+            }
             return changeObject
         },
         drawSize: function () {
@@ -801,7 +829,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             this.size_slider_value = size_slider_value;
             this.size_slider.slider("value", this.size_slider_value);
             if(this.canHedge()) {
-                this.currency_hedge_value = this.canHedge();
+                this.currency_hedge_value = this.currentHedge();
                 if (this.currency_hedge_value) {
                     this.hedge_toggle.tinyToggle("check");
                 }
@@ -809,11 +837,37 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     this.hedge_toggle.tinyToggle("uncheck");
                 }
             }
+
+            this.is_region_picked = this.isRegionCurrentPicked();
+            if (this.is_region_picked) {
+                    this.region_toggle.tinyToggle("check");
+                }
+                else {
+                    this.region_toggle.tinyToggle("uncheck");
+                }
+
+
             this.drawSize();
 
         },
         save: function () {
+            var picked_regions;
             var regions = $.extend({}, this.model.get("regions_allocation"));
+            if(this.is_region_picked){
+                picked_regions = $.extend([], this.model.get("picked_regions"));
+                if(picked_regions.indexOf(this.options.model_key)<0){
+                    picked_regions.push(this.options.model_key);
+                    this.model.set("picked_regions", picked_regions);
+                }
+            }
+            else{
+                picked_regions = $.extend([], this.model.get("picked_regions"));
+                if(picked_regions.indexOf(this.options.model_key)>=0){
+                    picked_regions.splice(picked_regions.indexOf(this.options.model_key), 1);
+                    this.model.set("picked_regions", picked_regions);
+                }
+            }
+
             if(!regions[this.options.model_key]){
                 regions[this.options.model_key] = {};
             }
@@ -855,7 +909,17 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     "click .ma-reset-all": "reset",
                     "click .ma-set-all": "preSave"
                 },
+                toolTips: {
+                    ".optimization-mode-help": {
+                        position: {
+                            my: "bottom center",
+                            at: "top center"
+                        }
+                    }
+                },
                 onInitialize: function () {
+                    this.optimization_mode = this.model.num("optimization_mode");
+
                     this.$regions_dict = {
                         AU: "Australia",
                         INT: "Developed Markets",
@@ -873,20 +937,54 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
 
                     }.bind(this));
 
+
                 },
                 onRender: function () {
-                    _.each(this.model.get("regions_currencies"), function (value, key) {
-                        this.$("div#multiAllocationRegion").append("<div id='" + key + "-region'></div>");
-                        this[key + "View"] = new mac({
-                            model: this.model,
-                            parent: this,
-                            model_key: key,
-                            title: this.$regions_dict[key],
-                            "currency": value,
-                        });
-                        this[key + "Region"].show(this[key + "View"]);
+                    var self = this;
+
+
+                    this.mode_toggle = this.$(".tiny-toggle").tinyToggle({
+                        onReady: function(){
+                            var AUTO_MODE = 1;
+                            if (self.optimization_mode==AUTO_MODE) {
+                                    $(this).tinyToggle("check");
+                            };
+                        },
+                        onChange: function (checkbox, value) {
+                            var internal_value;
+                            var AUTO_MODE = 1;
+                            var WEIGHTS_MODE = 2;
+                            if(value)internal_value = AUTO_MODE;
+                            else internal_value = WEIGHTS_MODE;
+                            if (this.optimization_mode == internal_value)return;
+                            this.optimization_mode = internal_value;
+                            this.reRender();
+                            this.hasChanged();
+
+                        }.bind(this),
+                    });
+
+
+                    var regions_currencies = this.model.get("regions_currencies");
+                    _.each(this.$regions_dict, function ($value, key) {
+                        if(key in regions_currencies){
+                            var value = regions_currencies[key];
+                            this.$("div#multiAllocationRegion").append("<div id='" + key + "-region'></div>");
+                            this[key + "View"] = new mac({
+                                model: this.model,
+                                parent: this,
+                                model_key: key,
+                                title: this.$regions_dict[key],
+                                "currency": value,
+                            });
+                            this[key + "Region"].show(this[key + "View"]);
+
+
+                        }
 
                     }.bind(this));
+
+
                 },
                 hasChanged: function () {
                     this.changed = false;
@@ -897,6 +995,10 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                         this.changed = this.changed || changeObject.has_changed;
                     }.bind(this));
 
+                    if(this.optimization_mode!=this.model.get("optimization_mode")){
+                        this.changed = true;
+                    }
+
                     if (this.changed) {
                         buttons.removeClass("ma-hide");
                         buttons.addClass("ma-show");
@@ -905,16 +1007,22 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                         buttons.removeClass("ma-show");
                         buttons.addClass("ma-hide");
                     }
+                    return this.changed;
 
                 },
                 onShow: function () {
+
                 },
                 reset: function () {
+                    this.optimization_mode = this.model.get("optimization_mode");
                     _.each(this.model.get("regions_currencies"), function (value, key) {
                         this[key + "View"].reset();
                     }.bind(this));
-                    this.hasChanged();
 
+                    this.reRender();
+
+
+                    this.hasChanged();
                 },
                 getChanges: function () {
                     var changes = [];
@@ -1029,6 +1137,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     BMT.modal.show(e);
                 },
                 save: function () {
+                    this.model.set("optimization_mode", this.optimization_mode);
                     _.each(this.model.get("regions_currencies"), function (value, key) {
                         this[key + "View"].save();
                     }.bind(this));
