@@ -535,7 +535,21 @@ $ <input type="text" name="amount" money-input />
 <template name="advice/confirmMultiAllocationChanges"><![CDATA[
 <h1>Confirm Changes</h1>
 <table class="multi-allocation-table">
-<thead><tr><th>Market</th><th>Size</th><th>Hedge Currency Exposure</th></tr></thead>
+<thead><tr><th>Optimization mode:</th><th></th><th style="
+    color: #45A018;
+    font-size: 14px;
+"><%= optMode() %></th></tr></thead>
+
+<thead><tr><th>Market</th><th>
+
+    <% if (isAutoMode()) { %>
+    Use
+    <% } else { %>
+    Size
+    <% } %>
+
+
+</th><th>Hedge Currency Exposure</th></tr></thead>
 <tbody>
 </tbody>
 </table>

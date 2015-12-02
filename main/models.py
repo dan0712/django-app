@@ -1369,7 +1369,7 @@ class Goal(models.Model):
     @property
     def optimization_mode(self):
         if self.custom_optimization_mode == 0:
-            return self.portfolio_set.default_optimization_mode
+            return self.portfolio_set.optimization_mode
         else:
             return self.custom_optimization_mode
 

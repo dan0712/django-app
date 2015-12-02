@@ -567,6 +567,20 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 "click .ok": "saveChanges",
                 "click .cancel": "closeModal"
             },
+            templateHelpers: {
+               optMode: function () {
+                   var opt = this.self.options.multiAllocationController.optimization_mode;
+                   if(opt == 1)return "Auto";
+                   return "Custom Weights"
+               },
+               isAutoMode: function () {
+                   return this.self.isAutoMode();
+               },
+            },
+            isAutoMode: function () {
+                   var opt = this.options.multiAllocationController.optimization_mode;
+                   return (opt == 1);
+            },
             onInitialize: function () {
                 this.changes = this.options.multiAllocationController.getChanges();
             },
@@ -575,13 +589,27 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
 
                 for (i in this.changes) {
                     market = this.options.multiAllocationController.$regions_dict[this.changes[i].key];
-                    m_size = parseInt(this.changes[i].size);
-                    if (m_size == null || m_size == undefined) {
-                        m_size = "---"
+
+                    if(this.isAutoMode()){
+                        if(this.changes[i].is_region_picked){
+                            m_size = "Yes";
+                        }
+                        else{
+                            m_size = "No";
+                        }
                     }
-                    else {
-                        m_size = m_size + "% ";
+                    else{
+                        m_size = parseInt(this.changes[i].size);
+                        if (m_size == null || m_size == undefined || isNaN(m_size)) {
+                            m_size = "---"
+                        }
+                        else {
+                            m_size = m_size + "% ";
+                        }
+
                     }
+
+
                     if (this.changes[i].currency_hedge_value == null || this.changes[i].currency_hedge_value == undefined) {
                         currency_hedge = "---"
                     }
@@ -692,19 +720,18 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             return this.options.currency != "AUD";
         },
         currentHedge: function(){
-            var region = this.model.get("regions_allocation")[this.options.model_key];
+            var hedges = this.model.get("hedges");
+            if(!hedges){
+                return false;
+            }
+            var region_hedge = hedges[this.options.model_key];
             var currency_hedge_value;
 
-            if (!region) {
+            if (!region_hedge) {
                 currency_hedge_value = false;
             }
             else {
-                if (!region["hedge"]) {
-                    currency_hedge_value = false;
-                }
-                else {
-                    currency_hedge_value = region["hedge"];
-                    }
+                currency_hedge_value = region_hedge;
             }
             return currency_hedge_value;
 
@@ -722,7 +749,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
 
                 this.hedge_toggle = this.$(".hedge-toggle").tinyToggle({
                     onReady: function(){
-                         if (this.currency_hedge_value) {
+                         if (self.currency_hedge_value) {
                                 self.$(this).tinyToggle("check")
                          };
                     },
@@ -853,6 +880,9 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
         save: function () {
             var picked_regions;
             var regions = $.extend({}, this.model.get("regions_allocation"));
+            var hedges = $.extend({}, this.model.get("hedges"));
+
+
             if(this.is_region_picked){
                 picked_regions = $.extend([], this.model.get("picked_regions"));
                 if(picked_regions.indexOf(this.options.model_key)<0){
@@ -872,8 +902,12 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 regions[this.options.model_key] = {};
             }
             regions[this.options.model_key]["size"] = this.size_slider_value / 100;
-            regions[this.options.model_key]["hedge"] = this.currency_hedge_value;
             this.model.set("regions_allocation", regions);
+
+            //save currency hedge
+            hedges[this.options.model_key] = this.currency_hedge_value;
+            this.model.set("hedges", hedges);
+
 
         },
         openCard: function (e) {
