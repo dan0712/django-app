@@ -487,17 +487,12 @@ class ChangeGoalView(ClientView):
         total_size = 0
         allocation_keys = region_allocations.keys()
         new_region_allocations = {}
+
         for k in allocation_keys:
             if int(region_allocations[k]["size"]*100) == 0:
                 continue
             else:
                 new_region_allocations[k] = {"size": region_allocations[k]["size"]}
-            if "hedge" in region_allocations[k]:
-                if not region_allocations[k]["hedge"]:
-                    pass
-                else:
-                    new_region_allocations[k]["hedge"] = region_allocations[k]["hedge"]
-
             total_size += int(region_allocations[k]["size"]*100)
 
         if total_size != 100:
@@ -519,8 +514,20 @@ class ChangeGoalView(ClientView):
             else:
                 has_changed = True
                 goal.custom_regions = json.dumps(region_allocations)
-        else:
-            has_changed = False
+
+        # check optimization model
+        optimization_mode = payload["optimization_mode"]
+        if optimization_mode != goal.optimization_mode:
+            goal.custom_optimization_mode = optimization_mode
+            has_changed = True
+
+        # check picked regions
+        picked_regions = list(set(payload["picked_regions"]))
+        if set(picked_regions) != set(json.loads(goal.picked_regions)):
+            goal.custom_picked_regions = json.dumps(picked_regions)
+            has_changed = True
+
+        goal.custom_hedges = json.dumps(payload["hedges"])
         goal.save()
 
         if has_changed:

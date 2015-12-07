@@ -24,6 +24,8 @@ class PortfolioSet(models.Model):
     tau = models.FloatField()
     default_region_sizes = models.TextField(default="{}")
     portfolios = models.TextField(editable=False, null=True, blank=True)
+    default_picked_regions = models.TextField(null=True)
+    optimization_mode = models.IntegerField(choices=[(1, 'auto mode'), (2, 'weight mode')], default=2)
 
     @property
     def stocks_and_bonds(self):

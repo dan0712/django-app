@@ -1,6 +1,4 @@
-__author__ = 'cristian'
-
-from numpy import array, ones, dot, append, mean, cov, transpose, sqrt, isnan
+from numpy import dot, cov, transpose, sqrt, isnan
 from numpy.linalg import inv
 import numpy as np
 import scipy.optimize

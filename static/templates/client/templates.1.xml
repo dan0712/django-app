@@ -136,9 +136,21 @@ You can adjust this risk level by updating your time horizon or target allocatio
 
 </template><template name="advice/multiAllocation"><![CDATA[
 <div id="multiAllocationRegion" class="clearfix">
-<div class="ma-save-buttons ma-hide clearfix" >
+    <div class="ma-save-buttons ma-hide clearfix" >
         <button class="ma-set-all">Set All</button>
         <button class="ma-reset-all silver right">Reset All</button>
+    </div>
+    <div>
+        <div class="ma-text left">Auto mode</div>
+
+        <div class="ma-text right" style="margin-left: 30px;">
+            <input class="tiny-toggle" type= "checkbox">
+        </div>
+
+        <div class="optimization-mode-help help-icon">
+            By selecting this option, we will not ask the weights of the regions instead we will ask to pick only the regions that you want to include in your portfolio.  betasmartz will do the rest and find the best portfolio.
+        </div>
+
     </div>
 
 </div>
@@ -147,19 +159,28 @@ You can adjust this risk level by updating your time horizon or target allocatio
 
 </template><template name="advice/multiAllocationCard"><![CDATA[
 <div class="allocation-card">
-        <div class="allocation-card-title">
-            <div class="left">
-                <div class="multi-allocation-toggle ma-open-close open-lg">
+        <div class="allocation-card-title" >
+            <div class="left" >
+                <div class="multi-allocation-toggle ma-open-close open-lg" <%if (isAutoMode()) {%>style="display:none;"<% }%>>
                 </div>
             </div>
 
             <div class="left">
                 <span class="region-name"></span>
             </div>
+
+
+             <div class="ma-text right" style="margin-left: 30px;  <%if (isAutoMode()) {%><% } else { %>display:none;<% }%>" >
+                <input class="pick-toggle" type= "checkbox">
+             </div>
+
         </div>
 
-        <div class="allocation-card-content allocation-content-hide">
-            <div class="slider-labels clearfix">
+
+        <div class="allocation-card-content <%if (isAutoMode()) {%> auto-mode <% } else { %> weight-mode allocation-content-hide<% }%>"
+        <%if (isAutoMode() && (!canHedge())) { %> style="display:none;"<% } %>
+        >
+            <div class="slider-labels clearfix" <%if (isAutoMode()) {%>style="display:none;"<% }%>>
                 <div class="ma-text controls-title left">
                     size within portfolio
                 </div>
@@ -168,8 +189,8 @@ You can adjust this risk level by updating your time horizon or target allocatio
 
                 </div>
             </div>
+            <div class="size-slider" <%if (isAutoMode()) {%>style="display:none;"<% }%>></div><br>
 
-            <div class="size-slider"></div><br>
             <% if (canHedge()) { %>
                 <div class="slider-labels clearfix">
                     <div class="ma-text left">
@@ -177,7 +198,7 @@ You can adjust this risk level by updating your time horizon or target allocatio
                     </div>
 
                     <div class="ma-text left" style="margin-left: 30px;">
-                        <input class="tiny-toggle" id="currency-hedge" type= "checkbox">
+                        <input class="hedge-toggle" type= "checkbox">
 
                     </div>
                      <div class="currency-help help-icon">
@@ -187,6 +208,9 @@ You can adjust this risk level by updating your time horizon or target allocatio
             <% } %>
 
         </div>
+
+
+
     </div>
 ]]>
 
@@ -511,7 +535,21 @@ $ <input type="text" name="amount" money-input />
 <template name="advice/confirmMultiAllocationChanges"><![CDATA[
 <h1>Confirm Changes</h1>
 <table class="multi-allocation-table">
-<thead><tr><th>Market</th><th>Size</th><th>Hedge Currency Exposure</th></tr></thead>
+<thead><tr><th>Optimization mode:</th><th></th><th style="
+    color: #45A018;
+    font-size: 14px;
+"><%= optMode() %></th></tr></thead>
+
+<thead><tr><th>Market</th><th>
+
+    <% if (isAutoMode()) { %>
+    Use
+    <% } else { %>
+    Size
+    <% } %>
+
+
+</th><th>Hedge Currency Exposure</th></tr></thead>
 <tbody>
 </tbody>
 </table>
