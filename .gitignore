@@ -5,7 +5,7 @@
 .Python
 [Bb]in
 [Ii]nclude
-[Ll]ib
+/lib
 [Ss]cripts
 pyvenv.cfg
 
@@ -75,7 +75,6 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
 lib64/
 parts/
 sdist/
