@@ -242,7 +242,8 @@ $(document).ready(function(){
 
         $("#id_medicare_number").mask("9999 99999 9/9");
         $("#id_phone_number").mask("99-9999-9999");
-        $("#id_date_of_birth").mask("99-99-9999");
+        $("#id_date_of_birth").attr("placeholder", "DD-MM-YYYY");
+        $("#id_date_of_birth").mask("99-99-9999", {placeholder: "DD-MM-YYYY"});
 
         var value = $("ul#id_provide_tfn input:radio:checked").val();
         if(value !=0){

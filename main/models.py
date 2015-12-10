@@ -71,7 +71,7 @@ Q1 = "What was the name of your primary school?"
 Q2 = "What is your mother's maiden name?"
 Q3 = "What was the name of your first pet?"
 Q4 = "What was your first car?"
-Q5 = "What was your favorite subject at school?"
+Q5 = "What was your favourite subject at school?"
 Q6 = "In what month was your father born?"
 
 QUESTION_1_CHOICES = ((Q1, Q1), (Q2, Q2), (Q3, Q3))
@@ -88,7 +88,7 @@ PERSONAL_DATA_WIDGETS = {
     "gender": forms.RadioSelect(),
     "date_of_birth": forms.TextInput(attrs={"placeholder": "DD-MM-YYYY"}),
     'address_line_1':
-        forms.TextInput(attrs={"placeholder": "House name. Unit/House number"}),
+        forms.TextInput(attrs={"placeholder": "House name, Unit/House number"}),
     "address_line_2": forms.TextInput(
         attrs={"placeholder": "Street address"})
 }
@@ -321,7 +321,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
 
     first_name = models.CharField(_('first name'), max_length=30)
-    middle_name = models.CharField(_('middle name (s)'), max_length=30, blank=True)
+    middle_name = models.CharField(_('middle name(s)'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30)
     username = models.CharField(max_length=30, editable=False, default='')
     email = models.EmailField(

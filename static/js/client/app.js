@@ -45047,7 +45047,7 @@ var requirejs, require, define;
                 o, u, a = "function",
                 f = this.escapeExpression,
                 l = this;
-            s += '<div class="clearfix">\n    <h1 class="left tab-header">View your account activity</h1>\n    ', o = n["if"].call(t, t && t.isTaxSeason, {
+            s += '<div class="clearfix">\n    <h1 class="tab-header">View your account activity</h1>\n    ', o = n["if"].call(t, t && t.isTaxSeason, {
                 hash: {},
                 inverse: l.noop,
                 fn: l.program(1, c, i)
@@ -48439,7 +48439,7 @@ var requirejs, require, define;
         })
     }), define("components/common/scripts/constants/securityQuestions", [], function() {
         return {
-            securityQuestion1: ["What was the name of your elementary school?", "What was the name of your favorite childhood friend?", "What was the name of your childhood pet?"],
+            securityQuestion1: ["What was the name of your elementary school?", "What was the name of your favourite childhood friend?", "What was the name of your childhood pet?"],
             securityQuestion2: ["What street did you live on in third grade?", "What is your oldest sibling's birth month?", "In what city did your mother and father meet?"]
         }
     }), define("views/signup/securityView", ["underscore", "views/signup/baseSectionView", "components/common/scripts/constants/securityQuestions"], function(e, t, n) {

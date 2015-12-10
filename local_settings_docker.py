@@ -13,9 +13,9 @@ if environment == "prod":
              'PORT': 5432,
          }
     }
-    SITE_URL = "app.betasmartz.com"
+    SITE_URL = "http://app.betasmartz.com"
     DEBUG = False
-    # ALLOWED_HOSTS = ["app.betasmartz.com"]
+    ALLOWED_HOSTS = ["app.betasmartz.com"]
 
 elif environment == "dev":
     DATABASES = {
@@ -28,7 +28,7 @@ elif environment == "dev":
              'PORT': 5432,
          }
     }
-    SITE_URL = "demo.betasmartz.com"
+    SITE_URL = "http://demo.betasmartz.com"
     DEBUG = True
     
     
