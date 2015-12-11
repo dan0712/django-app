@@ -13,7 +13,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.validators import RegexValidator, ValidationError
+from django.core.validators import RegexValidator, ValidationError, MinValueValidator, MaxValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -1115,7 +1115,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
 BONDS = "BONDS"
 STOCKS = "STOCKS"
-INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"))
+MANAGED_FUNDS = "MANAGED_FUNDS"
+INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MANAGED_FUNDS", "MANAGED_FUNDS"))
 
 SUPER_ASSET_CLASSES = (
     # EQUITY
@@ -1137,7 +1138,9 @@ SUPER_ASSET_CLASSES = (
     ("FIXED_INCOME_UK", "FIXED_INCOME_UK"),
     ("FIXED_INCOME_JAPAN", "FIXED_INCOME_JAPAN"),
     ("FIXED_INCOME_AS", "FIXED_INCOME_AS"),
-    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"))
+    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"),
+    # Managed Funds
+    ("MANAGED_FUNDS_AU", "MANAGED_FUNDS_AU"))
 
 
 class AssetClass(models.Model):
@@ -1336,7 +1339,8 @@ class Goal(models.Model):
     income = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     completion_date = models.DateTimeField()
-    allocation = models.FloatField()
+    allocation = models.FloatField() # The proportion of Stocks to use for the ETFs (Core Component) of the instrument mix for this goal
+    satellite_pct = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], default=0.0, null=True) # The proportion of Managed Funds (Active component) to use in the instrument mix for this goal
     account_type = models.CharField(max_length=20, default='INVESTING')
     type = models.CharField(max_length=20, default='RETIREMENT')
     drift = models.FloatField(default=0)

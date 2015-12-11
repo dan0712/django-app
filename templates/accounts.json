@@ -31,8 +31,8 @@
       {% if goal.auto_deposit %}"automaticDeposit": {"transactionDateTime2": {% if goal.auto_deposit.transaction_date_time_2 %}"{{goal.auto_deposit.transaction_date_time_2| c_datetime}}" {% else %} null {% endif %}, "transactionDateTime1": "{{goal.auto_deposit.transaction_date_time_1 | c_datetime}}", "nextTransaction": "{{goal.auto_deposit.next_transaction| c_datetime}}", "lastPlanChange": "{{goal.auto_deposit.last_plan_change| c_datetime}}", "id": {{goal.auto_deposit.pk}}, "frequency": "{{goal.auto_deposit.frequency}}", "amount": "{{goal.auto_deposit.amount}}", "enabled": {{goal.auto_deposit.is_enabled}} },{% endif %}
       "automaticWithdrawalId": {% if goal.auto_withdrawal %}{{goal.auto_withdrawal.pk}}{% else %}null{% endif %},
       {% if goal.auto_withdrawal %}"automaticWithdrawal": {"transactionDateTime2": {% if goal.auto_withdrawal.transaction_date_time_2 %}"{{goal.auto_withdrawal.transaction_date_time_2| c_datetime}}" {% else %} null {% endif %}, "transactionDateTime1": "{{goal.auto_withdrawal.transaction_date_time_1 | c_datetime}}", "nextTransaction": "{{goal.auto_withdrawal.next_transaction| c_datetime}}", "lastPlanChange": "{{goal.auto_withdrawal.last_plan_change| c_datetime}}", "id": {{goal.auto_withdrawal.pk}}, "frequency": "{{goal.auto_withdrawal.frequency}}", "amount": "{{goal.auto_withdrawal.amount}}", "enabled": {{goal.auto_withdrawal.is_enabled}} },{% endif %}
-
       "allocation": {{goal.allocation}},
+      "satelliteAlloc": {{goal.satellite_pct}},
       "canChangeAllocation": true,
       "currentBalance": "{{goal.total_balance}}",
       "availableBalance": "{{goal.available_balance}}",
