@@ -1636,11 +1636,9 @@ class Goal(models.Model):
     def on_track(self):
         current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
         term = self.get_term
-        print(self.total_fees, self.target_portfolio)
         expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees/1000.0 \
                           + self.portfolio_set.risk_free_rate
         expected_value = current_balance * (1 + expected_return) ** term
-        print(self.name, expected_return, current_balance * (1 + expected_return) ** term, current_balance, term)
         if hasattr(self, "auto_deposit"):
             ada = self.auto_deposit.get_annualized
             for i in range(0, term):
@@ -1649,7 +1647,6 @@ class Goal(models.Model):
             ada = self.auto_withdrawal.get_annualized
             for i in range(0, term):
                 expected_value -= ada * (1 + expected_return) ** (term - i - 1)
-        print(self.name, expected_value, term, current_balance)
         return expected_value >= self.target
 
     @property
