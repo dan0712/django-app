@@ -1626,7 +1626,7 @@ class Goal(models.Model):
 
     @property
     def total_fees(self):
-        return 0.0
+        return self.account.fee
 
     @property
     def recharacterized(self):
@@ -1635,18 +1635,21 @@ class Goal(models.Model):
     @property
     def on_track(self):
         current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
-        today = date.today()
-        term = self.completion_date.year - today.year
-        expected_return = self.target_portfolio["expectedReturn"] / 100 + self.portfolio_set.risk_free_rate
+        term = self.get_term
+        print(self.total_fees, self.target_portfolio)
+        expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees/1000.0 \
+                          + self.portfolio_set.risk_free_rate
         expected_value = current_balance * (1 + expected_return) ** term
+        print(self.name, expected_return, current_balance * (1 + expected_return) ** term, current_balance, term)
         if hasattr(self, "auto_deposit"):
             ada = self.auto_deposit.get_annualized
             for i in range(0, term):
-                expected_value += ada * (1 + expected_return) ** (term - i)
+                expected_value += ada * (1 + expected_return) ** (term - i - 1)
         if hasattr(self, "auto_withdrawal"):
             ada = self.auto_withdrawal.get_annualized
             for i in range(0, term):
-                expected_value -= ada * (1 + expected_return) ** (term - i)
+                expected_value -= ada * (1 + expected_return) ** (term - i - 1)
+        print(self.name, expected_value, term, current_balance)
         return expected_value >= self.target
 
     @property
@@ -1701,9 +1704,26 @@ class Goal(models.Model):
         return self.auto_deposit.amount
 
     @property
+    def get_term(self):
+        today = date.today()
+        # check if goal is part of the retirement plan
+        financial_plan_accounts = self.account.primary_owner.financial_plan_accounts.filter(account=self).all()
+        if financial_plan_accounts:
+            retirement_age = self.account.primary_owner.financial_plan.retirement_age
+            current_age = today.year - self.account.primary_owner.date_of_birth.year
+            term = retirement_age - current_age
+            if term > 0:
+                return term
+            return 0
+
+        else:
+            term = self.completion_date.year - today.year
+            return term
+
+    @property
     def auto_term(self):
         today = date.today()
-        return "{0}y".format(self.completion_date.year - today.year)
+        return "{0}y".format(self.get_term)
 
 
 class Position(models.Model):
