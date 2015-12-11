@@ -253,7 +253,13 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 }, this)
             },
             createCardList: function (e) {
-                this.$(".card-lists .next-step").before(i(e))
+                if(e.key==="ethical-investing"){
+                     this.$(".second-card-list .next-step").before(i(e))
+                }
+                else{
+                     this.$(".first-card-list").append(i(e))
+                }
+
             },
             addCardToList: function (e, t) {
                 var n = new a(t);

@@ -761,8 +761,13 @@ Your advisor: <strong><%- advisorName() %> </strong>
 <span class="help-icon choose">We ask you to choose a goal type to frame your investing and allow us to give more tailored advice. You can always change your goal type or add more goals later.</span>
 </h2>
 </div>
-<ul class="card-lists">
+<ul class="card-lists first-card-list">
 <!-- card lists will go here -->
+
+</ul>
+
+
+<ul class="card-lists second-card-list">
 
 <li class="next-step investing highlight">
 <div class="settings-row account-type-row">
@@ -775,7 +780,9 @@ Your advisor: <strong><%- advisorName() %> </strong>
 <%= build_validated_input({ type: 'text', name: 'name' }, { 'class': 'left'}) %>
 </div>
 </li>
+
 </ul>
+
 
 <div class="next-step terms">
 <div class="terms-of-service"></div>
