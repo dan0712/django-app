@@ -98,22 +98,33 @@ We use Goal Type to determine our recommended allocation.
 
 ]]></template><template name="advice/allocationRecommendation"><![CDATA[
 <div class="clearfix">
-<div class="controls-title left">allocation</div>
-<div class="current-value right">
-<input type="text" integer-input /> % Stocks
-</div>
-<div class="existing-value right">
-<%= stockAllocation() %> Stocks
-</div>
+<div class="controls-title left">portfolio allocation <a class="reset-x-icon reset right" data-help-content="Reset"></a></div>
 </div>
 
 <div>
 <div class="allocation-slider"></div>
-<a class="reset-x-icon reset right" data-help-content="Reset"></a>
 </div>
-<div class="slider-labels clearfix">
-<div class="left">Bonds</div>
-<div class="right">Stocks</div>
+
+<div style="display:table; width:100%">
+    <div class="slider-labels clearfix">
+        <div class="">
+             <div class="existing-bonds-value right">
+                <span class="value"><%= bondAllocation() %></span> Bonds
+             </div>
+
+        </div>
+        <div style="text-align: center;">
+             <div class="existing-value right">
+                <span class="value"><%= stockAllocation() %></span> Stocks
+             </div>
+
+        </div>
+        <div style="text-align: right;">
+            <div class="existing-satellite-value right">
+                <span class="value"><%= SatelliteAllocation() %></span> Satellite
+             </div>
+        </div>
+    </div>
 </div>
 <% if (showTaxImpactButton()) { %>
 <% } %>
@@ -289,6 +300,8 @@ You can make this allocation change starting tomorrow.
 <div class="attribute">
 <div class="name">Allocation</div>
 <div class="value"><%= pct(allocationChange().get('allocation')) %> stocks</div>
+<div class="value"><%= pct(1-allocationChange().get('satelliteAlloc')-allocationChange().get('allocation')) %> bonds</div>
+<div class="value"><%= pct(allocationChange().get('satelliteAlloc')) %> satellite</div>
 
 </div>
 <div class="detail">

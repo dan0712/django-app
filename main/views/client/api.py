@@ -434,9 +434,11 @@ class ChangeAllocation(ClientView):
                                  account__primary_owner=self.client)
         payload = json.loads(request.body.decode("utf-8"))
         goal.allocation = payload["allocation"]
+        goal.satellite_pct = payload["satelliteAlloc"]
         new_t = Transaction()
         new_t.account = goal
         new_t.amount = goal.allocation
+        new_t.satelliteAlloc = goal.satellite_pct
         new_t.type = ALLOCATION
         # remove all the pending allocation transactions for this account
         Transaction.objects.filter(account=goal,

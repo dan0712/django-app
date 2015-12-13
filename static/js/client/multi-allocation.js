@@ -2,9 +2,9 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
         return s.extend({
             template: "advice/allocationRecommendation",
             events: {
-                "keyup .current-value input": "changeAllocationFromTextBox",
-                "change .current-value input": "changeAllocationFromInput",
-                "blur .current-value input": "blurAllocationInput",
+               // "keyup .current-value input": "changeAllocationFromTextBox",
+               // "change .current-value input": "changeAllocationFromInput",
+                //"blur .current-value input": "blurAllocationInput",
                 "click .show-tax-impact": "showTaxImpact",
                 "mouseup .ui-slider-handle": "allocationSliderDragged"
             },
@@ -21,7 +21,13 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     return this.self.term
                 },
                 stockAllocation: function() {
-                    return this.pct(this.self.model.num("allocation"))
+                    return this.pct(this.self.model.num("allocation"));
+                },
+                bondAllocation: function() {
+                    return this.pct(1-this.self.model.num("allocation")-this.self.model.num("satelliteAlloc"));
+                },
+                SatelliteAllocation: function(){
+                    return this.pct(this.self.model.num("satelliteAlloc"));
                 },
                 showTaxImpactButton: function() {
                     return !this.self.model.isIRA() && this.self.model.getCurrentBalance() > 0
@@ -34,38 +40,55 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 this.$slider = this.createSlider()
             },
             onShow: function() {
-                this.drawRecommendation(), this.updateAdvice(this.model.num("allocation"))
+                this.drawRecommendation(), this.updateAdvice([this.model.num("allocation"), this.model.num("satelliteAlloc")])
             },
             reset: function() {
-                var e = this.model.num("allocation");
-                this.$slider.slider("value", e), this.taxImpactAnimation && this.taxImpactAnimation.stop(!0), this.$(".show-tax-impact").hide(), this.$(".current-value").hide(), this.$(".existing-value").show(), this.updateAdvice(e), this.trigger("valueChanged", {
-                    allocation: e
-                }), this.trigger("valueReset")
+                // labels
+                var allocation = this.model.num("allocation");
+                var satellite = this.model.num("satelliteAlloc");
+                this.$(".existing-value .value").text((100 * allocation).round(0) + "%");
+                this.$(".existing-bonds-value .value").text((100 * ( 1 -allocation - satellite )).round(0) + "%");
+                this.$(".existing-satellite-value .value").text((100 * satellite).round(0) + "%");
+
+                this.$slider.slider("values", [allocation, 1-satellite]);
+                this.taxImpactAnimation && this.taxImpactAnimation.stop(!0);
+                this.$(".show-tax-impact").hide();
+                this.updateAdvice([allocation, satellite]);
+                this.trigger("valueChanged", {
+                    allocation: allocation,
+                    satellite: satellite
+                });
+                this.trigger("valueReset")
             },
             getModel: function() {
-                var e = Number(this.getValue());
+                var values = this.getValue();
+                var allocation = Number(values[0]);
+                var satellite  = Number(values[1]);
                 return this.model.num("allocation") !== e ? new n({
-                    allocation: e,
+                    allocation: allocation,
+                    satelliteAlloc: satellite,
                     account: this.model
                 }) : null
             },
             getValue: function() {
-                return this.$slider.slider("value")
+                var values = this.$slider.slider("values");
+                values[1]  = 1-values[1];
+                return values;
             },
             refreshAdvice: function(t) {
-                t.termYears && (this.term = t.termYears, this.drawRecommendation()), e.isUndefined(t.allocation) ? this.updateAdvice(this.getValue()) : this.updateAdvice(t.allocation)
+                t.termYears && (this.term = t.termYears, this.drawRecommendation()), e.isUndefined(t.allocation) ? this.updateAdvice(this.getValue()) : this.updateAdvice([t.allocation, t.satellite])
             },
             drawRecommendation: function() {
                 t.drawSliderRecommendation(this.$slider, this.getRecommended())
             },
             allocationSliderDragged: function(e) {
-                var t = this.getValue() * 100;
+               /* var t = this.getValue() * 100;
                 u.track("ElementClicked", {
                     Name: "AllocationChange",
                     Location: "Advice",
                     Type: "Slider",
                     Value: t
-                })
+                })*/
             },
             changeAllocationFromTextBox: function(e) {
                 this.changeAllocationFromInput(e);
@@ -96,10 +119,15 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     Type: "Button",
                     Module: "AllocationChange",
                     Location: "Advice"
-                }), this.taxImpactAnimation = this.$(".show-tax-impact").delay(250).slideDown(50)), this.$(".current-value").show(), this.$(".existing-value").hide(), this.$(".current-value input").val((100 * e).round(0))
+                }), this.taxImpactAnimation = this.$(".show-tax-impact").delay(250).slideDown(50)),
+                this.$(".existing-value .value").text((100 * e[0]).round(0) + "%"),
+                this.$(".existing-bonds-value .value").text((100 * ( 1 - e[0] - (1-e[1]) )).round(0) + "%"),
+                this.$(".existing-satellite-value .value").text((100 * (1-e[1])).round(0) + "%")
+
             },
-            updateAdvice: function(e) {
-                var t = this.getTolerance(e);
+            updateAdvice: function(values) {
+                var allocation = values[0];
+                var t = this.getTolerance(allocation);
                 this.$(".advice-value .risk-level").css("color", t.color).text(t.label), this.$(".advice-value .remaining-term").text(this.term)
             },
             createSlider: function() {
@@ -110,21 +138,24 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 if(stocks_and_bonds=="bonds"){allocation = 0; this.model.set("allocation", 0)}
                 if(stocks_and_bonds=="stocks"){allocation = 1; this.model.set("allocation", 1)}
 
-
                 var e = this.slider(".allocation-slider", {
+                    range: true,
                     min: 0,
                     max: 1,
                     step: .01,
                     disabled: disabled,
-                    value: allocation,
+                    values: [allocation, 1-this.model.num("satelliteAlloc")],
                     slide: function(e, t) {
                         this.trigger("valueChanged", {
-                            allocation: t.value
-                        }), this.updateAllocationDisplay(t.value), t.value === this.model.num("allocation") && (this.trigger("valueReset"), this.taxImpactAnimation && this.taxImpactAnimation.stop(!0), this.$(".show-tax-impact").hide(), this.$(".current-value").hide(), this.$(".existing-value").show())
+                            allocation: t.values[0],
+                            satellite: 1-t.values[1]
+                        });
+                        this.updateAllocationDisplay(t.values);
+                        ((1-t.values[1]).toFixed(2) === this.model.num("satelliteAlloc").toFixed(2)) && (t.values[0] === this.model.num("allocation")) && (this.trigger("valueReset"), this.taxImpactAnimation && this.taxImpactAnimation.stop(!0), this.$(".show-tax-impact").hide())
                     }.bind(this)
                 });
                 return this.bind("valueChanged", function(t) {
-                    (t.allocation || t.allocation === 0) && e.slider("value", t.allocation)
+                    (t.allocation || t.allocation === 0) && (t.satellite || t.satellite === 0) && e.slider("values", [t.allocation, 1-t.satellite])
                 }), e
             },
             getRecommended: function() {
@@ -1288,7 +1319,8 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             }), this.graphRegion.show(this.graphView)
         },
         onValueChange: function (e) {
-            t.extend(this.changes, e), this.notifyBoxes(this.changes)
+            t.extend(this.changes, e);
+            this.notifyBoxes(this.changes);
         },
         showFlyover: function () {
             var e = this.retirementPlan,
@@ -1404,6 +1436,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             return t.filter(this.adviceBoxes, function (e) {
                 return e.isDirty()
             }).length
+
         },
         financialPlan: function () {
             return BMT.user.get("financialPlans").selected()

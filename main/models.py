@@ -1752,6 +1752,8 @@ class Transaction(models.Model):
                                    null=True,
                                    blank=True)
     amount = models.FloatField(default=0)
+    satelliteAlloc = models.FloatField(default=0)
+
     status = models.CharField(max_length=20,
                               choices=TRANSACTION_STATUS_CHOICES,
                               default=PENDING)

@@ -16641,8 +16641,6 @@ var requirejs, require, define;
                     return e = y(e), C(u.points - 1, e.termYears, e.currentBalance, e.monthlyDeposit, e.monthlyReturns, e.monthlyVolatility)
                 },
                 suggestedDeposits: function(e) {
-                    console.log(e.targetBalance, e.termYears, e.currentBalance, e.monthlyDeposit, e.monthlyReturns, e.monthlyVolatility, e.zscore)
-
                     return e = y(e), S(e.targetBalance, e.termYears, e.currentBalance, e.monthlyDeposit, e.monthlyReturns, e.monthlyVolatility, e.zscore)
                 },
                 suggestedTerm: function(e) {

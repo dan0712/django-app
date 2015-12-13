@@ -1335,7 +1335,7 @@
     color: #45a018
 }
 #transfer #upcomingTransfers .upcoming-transfers #pendingDepositsTable .table-contents .row .last-col .cancel-icon:after {
-    content: "â€™";
+    content: "Ã¢â‚¬â„¢";
     font-family: ModernPictogramsPro!important;
     font-size: 200%;
     text-transform: none;
@@ -2847,14 +2847,15 @@
     position: relative
 }
 #advice .sidebar .allocation-region .controls-title {
-    margin-bottom: 15px
+    margin-bottom: 0px;
 }
 #advice .sidebar .allocation-region .slider-labels {
     font-size: 12px;
-    width: 190px
+    /* width: 220px; */
+    display: table-row;
 }
 #advice .sidebar .allocation-region .allocation-slider {
-    width: 190px;
+    width: 100%;
     margin-top: 20px;
     display: inline-block
 }
@@ -2870,7 +2871,7 @@
     text-transform: uppercase;
     white-space: nowrap
 }
-#advice .sidebar .allocation-region .current-value {
+.current-bonds-value.right {
     font-weight: 700;
     font-size: 12px;
     display: none;
@@ -2880,16 +2881,17 @@
 #advice .sidebar .allocation-region .current-value .suffix {
     margin-left: 2px
 }
-#advice .sidebar .allocation-region .existing-value {
+#advice .sidebar .allocation-region .existing-value, #advice .sidebar .allocation-region .existing-bonds-value, #advice .sidebar .allocation-region .existing-satellite-value {
     font-size: 12px;
-    margin-right: 27px;
+    margin-right: 5px;
     position: relative;
     top: -1px;
-    font-weight: 700
+    font-weight: 700;
 }
 #advice .sidebar .allocation-region .reset {
     position: relative;
-    top: 12px
+    top: -6px;
+    left: 3px;
 }
 #advice .sidebar .allocation-region .show-tax-impact {
     display: none;
@@ -7532,4 +7534,9 @@
 #rollover .info .narrative .goal-complete-container .narrative-outline .narrative-inside .next-step button,
 #rollover .info .narrative .fund-income-goals .narrative-outline .narrative-inside .next-step button {
     width: 80px
+}
+
+
+#advice .sidebar .allocation-region .slider-labels > div{
+    display: table-cell;
 }
