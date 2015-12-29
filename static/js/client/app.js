@@ -27553,8 +27553,16 @@ var requirejs, require, define;
             i = function(t, n) {
                 var r = {};
                 e.each(n.data, function(e) {
-                    var n = t[e.assetClass].allocation;
-                    e.allocation = n, e.totalValue = t[e.assetClass].totalValue, r[e.investmentType] = (r[e.investmentType] || 0) + n
+                    if (e.assetClass in t) {
+                        var n = t[e.assetClass].allocation;
+                        var totalValue = t[e.assetClass].totalValue;
+                    } else {
+                        var n = 0
+                        var totalValue = 0
+                    } 
+                    e.allocation = n;
+                    e.totalValue = totalValue;
+                    r[e.investmentType] = (r[e.investmentType] || 0) + n
                 }), e.each(n.aggData, function(e) {
                     e.allocation = r[e.investmentType] || 0
                 })
@@ -46433,69 +46441,6 @@ var requirejs, require, define;
                 return this.highlightDateRange(e.currentTarget), !1
             }
         })
-    }), define("hbs!views/profile/contactInfo", ["hbs", "hbs/handlebars"], function(e, t) {
-        var n = t.template(function(e, t, n, r, i) {
-            function c(e, t) {
-                return '\n        <li>\n            <label>External Accounts</label>\n            <span class="item-content"></span>\n            <button class="blue link-external-accounts">Link</button>\n            <div class="clearfix"></div>\n        </li>\n    '
-            }
-            this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
-            var s = "",
-                o, u, a = "function",
-                f = this.escapeExpression,
-                l = this;
-            s += '<form method="POST" action="#">\n    <section>\n        <label>Name</label>\n        <input type="text" name="firstName" value="', (u = n.firstName) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.firstName, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" readonly />\n        <input type="text" name="middleName" class="middleName" value="', (u = n.middleName) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.middleName, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" maxlength="1" readonly />\n        <input type="text" name="lastName" class="lastName" value="', (u = n.lastName) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.lastName, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" readonly />\n    </section>\n\n    <section>\n        <label>Address 1</label>\n        <input type="text" class="long" name="address1" value="', (u = n.address1) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.address1, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" />\n    </section>\n\n    <section>\n        <label>Address 2</label>\n        <input type="text" class="long" name="address2" value="', (u = n.address2) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.address2, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" />\n    </section>\n\n    <section>\n        <label>City/State</label>\n        <input type="text" name="city" value="', (u = n.city) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.city, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" />\n        ', (u = n.statesDropdown) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.statesDropdown, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '\n        <input type="text" class="zip" name="zip" value="', (u = n.zip) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.zip, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" maxlength="5" />\n    </section>\n\n    <section>\n        <label>Phone</label>\n        <input type="tel" class="long" name="phoneNumber" value="', (u = n.phoneNumber) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.phoneNumber, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" />\n    </section>\n\n    <section>\n        <label>Email</label>\n        <input type="email" class="long" name="userName" value="', (u = n.userName) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.userName, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '" />\n    </section>\n</form>\n\n<button class="update" disabled="disabled">Update info</button>\n\n<hr />\n\n<ul class="stacked-items">\n\n    <li>\n        <label>Password</label>\n        <span class="item-content">**********</span>\n        <button id="changePassword" class="blue">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n          <li class="multi-ag-only">\n        <label>Default Account</label>\n        <span class="item-content">', (u = n.defaultAccountGroupLabel) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.defaultAccountGroupLabel, o = typeof u === a ? u.call(t, {
-                hash: {}
-            }) : u), s += f(o) + '</span>\n        <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeDefaultAccountPrefs" class="blue change-default-account">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    ', o = n["if"].call(t, t && t.hasHnwConsultationFeature, {
-                hash: {},
-                inverse: l.noop,
-                fn: l.program(1, c, i)
-            });
-            if (o || o === 0) s += o;
-            return s += '\n    <li class="retire-guide-preferences"></li>\n</ul>\n', s
-        });
-        return t.registerPartial("views/profile/contactInfo", n), n
     }), define("hbs!views/profile/contactPreferences", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
             function a(e, t) {
@@ -46801,190 +46746,6 @@ var requirejs, require, define;
             return s += '', s
         });
         return t.registerPartial("views/profile/retireGuidePreferences", n), n
-    }), define("views/profile/retireGuidePreferencesView", ["jquery", "underscore", "backbone", "hbs!views/profile/retireGuidePreferences", "common/betterment.views"], function(e, t, n, r, i) {
-        return i.View.extend({
-            template: r,
-            templateHelpers: {
-                retireGuideState: function() {
-                    return this.self.currentState()
-                },
-                clearButtonDisplay: function() {
-                    return this.self.currentState() === "Active" ? "show" : "hidden"
-                },
-                showButtonDisplay: function() {
-                    return this.self.currentState() === "Hidden" ? "show" : "hidden"
-                },
-                hideButtonDisplay: function() {
-                    return this.self.currentState() === "Not Active" ? "show" : "hidden"
-                }
-            },
-            tagName: "span",
-            toolTips: {
-                ".retire-guide-help": {
-                    position: {
-                        my: "bottom center",
-                        at: "top center"
-                    }
-                }
-            },
-            events: {
-                "click button.clear-retire-guide": "clearRetireGuide",
-                "click button.show-retire-guide": "showRetireGuide",
-                "click button.hide-retire-guide": "hideRetireGuide"
-            },
-            onInitialize: function() {
-                this.listenTo(BMT.user, "change:retireGuideEnabled", function() {
-                    BMT.user.is("retireGuideEnabled") ? BMT.flash("RetireSmart has been hidden from your account. Click Show RetireSmart to bring it back at any time.") : BMT.flash('RetireSmart is now available in your account. <a href="#retireGuideSetup"><u>Set up RetireSmart</u></a>.'), this.render()
-                })
-            },
-            currentState: function() {
-                var e = !BMT.user.get("financialPlans").selected().isNew(),
-                    t = BMT.user.is("retireGuideEnabled");
-                if (e && t) return "Active";
-                if (!e && t) return "Not Active";
-                if (!t) return "Hidden"
-            },
-            clearRetireGuide: function() {
-                var e = this;
-                BMT.alert({
-                    body: "You are about to clear the personal data you entered when setting up RetireSmart. This cannot be undone.",
-                    title: "Clear RetireSmart Profile",
-                    buttons: [{
-                        id: "clear-retire-guide-button",
-                        title: "Clear"
-                    }],
-                    handler: function() {
-                        BMT.user.get("financialPlans").selected().destroy({
-                            success: function() {
-                                BMT.flash("RetireSmart profile has been cleared.  <a href=#retireGuideSetup><u>Start your profile over</u></a>, or visit the Advice tab later to set up RetireSmart again."), e.render()
-                            }
-                        })
-                    }
-                })
-            },
-            hideRetireGuide: function() {
-                BMT.user.disableRetireGuide()
-            },
-            showRetireGuide: function() {
-                BMT.user.enableRetireGuide()
-            }
-        })
-    }), define("views/profile/contactInfoView", ["jquery", "underscore", "backbone", "hbs!views/profile/contactInfo", "common/betterment.views", "views/profile/securityQuestionView", "models/user", "models/visitor", "views/profile/contactPreferencesView", "views/profile/changePasswordView", "views/common/flashView", "views/profile/changeDefaultAccountGroupView", "views/profile/externalAccountsView", "models/v1/defaultAccountGroupUpdater", "models/v1/quovoCredentials", "views/profile/retireGuidePreferencesView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v) {
-        var m = new d;
-        return i.View.extend({
-            template: r,
-            tagName: "div",
-            regions: {
-                retireGuidePreferencesRegion: ".retire-guide-preferences"
-            },
-            templateHelpers: {
-                statesDropdown: function() {
-                    return this.build_dropdown_menu(o.states, {
-                        "class": "state-selector",
-                        name: "state",
-                        value: this.self.model.get("state")
-                    })
-                },
-                contactPreferencesStatus: function() {
-                    return this.self.options.contactPreferences.hasDefaultPreferences() ? "Default" : "Custom"
-                },
-                defaultAccountGroupLabel: function() {
-                    return BMT.user.getDefaultAccountGroup().get("name")
-                },
-                hasHnwConsultationFeature: function() {
-                    return u.hasVariation("hnw_consultation_on")
-                }
-            },
-            ui: {
-                inputs: "input[name]:not([readonly])",
-                updateButton: "button.update",
-                phoneNumber: "[name=phoneNumber]"
-            },
-            events: {
-                "keyup @ui.inputs": "inputChanged",
-                "change .state-selector": "inputChanged",
-                "click button#emailPreferences": "contactPreferences",
-                "click button#changePassword": "changePassword",
-                "click button.change-default-account": "changeDefaultAccount",
-                "click button.link-external-accounts": "linkExternalAccounts",
-                "click button.update": "update",
-                "keydown input[name=zip]": function(e) {
-                    return this.restrictLength(e, 5) && this.restrictNumeric(e)
-                }
-            },
-            onInitialize: function() {
-                this.defaultAccountGroupUpdater = new p({
-                    user: BMT.user
-                }), this.listenTo(this.defaultAccountGroupUpdater, "change", function() {
-                    this.defaultAccountGroupUpdater.updateUser(), this.render()
-                }), this.listenTo(this.options.contactPreferences, "change", function() {
-                    this.render()
-                })
-            },
-            getExternalAccountsCredentials: function() {
-                var t = e.Deferred();
-                return m.has("quovoKey") ? t.resolve(m) : m.fetch().done(function() {
-                    t.resolve(m)
-                }), t.promise()
-            },
-            onShow: function() {
-                this.ui.phoneNumber.mask("999-999-9999"), this.ui.updateButton.prop("disabled", !0), this.applyValidation(), this.retireGuidePreferencesRegion.show(new v)
-            },
-            onDestroy: function() {
-                this.defaultAccountGroupUpdater.trigger("destroy", this.defaultAccountGroupUpdater)
-            },
-            contactPreferences: function(e) {
-                BMT.modal.show(new a({
-                    model: this.options.contactPreferences
-                }))
-            },
-            changePassword: function(e) {
-                BMT.modal.show(new f({
-                    model: BMT.user
-                }))
-            },
-            changeDefaultAccount: function(e) {
-                BMT.modal.show(new c({
-                    model: this.defaultAccountGroupUpdater
-                }))
-            },
-            linkExternalAccounts: function() {
-                this.getExternalAccountsCredentials().done(function(e) {
-                    BMT.modal.show(new h({
-                        model: e
-                    }))
-                })
-            },
-            inputChanged: function(t) {
-                var n = this,
-                    r = !1,
-                    i, s, o, u;
-                for (o = 0; o < this.ui.inputs.length; o++) u = e(this.ui.inputs[o]), i = u.attr("name"), s = u.val(), r = r || n.model.get(i) !== s;
-                this.ui.updateButton.prop("disabled", !r)
-            },
-            update: function(e) {
-                var r = this,
-                    i, o = n.Syphon.serialize(this);
-                this.model.validate(o) || BMT.modal.show(i = new s(t.extend({
-                    title: "Confirm Contact Info Update",
-                    body: "To update your info please answer the following security question",
-                    className: "confirm-update-modal securityQuestion",
-                    handler: function(e) {
-                        e && (i.block(), r.model.store(), r.model.save(t.extend(o, e), {
-                            success: function() {
-                                BMT.modal.close(i), BMT.flash("Your info was updated successfully."), s.removeResults(r.model)
-                            },
-                            error: function() {
-                                r.model.restart()
-                            },
-                            complete: function() {
-                                i.unblock()
-                            }
-                        }))
-                    }
-                }, this.model.randomSecurityQuestion())))
-            }
-        })
     }), define("hbs!views/profile/personal", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
             function c(e, t) {
@@ -47174,22 +46935,6 @@ var requirejs, require, define;
                 s = n.target || "_blank";
             return n.brochureUrl ? r = t.brochureHost() + "/" + n.brochureUrl : n.supportUrl && (r = t.getBaseSupportUrl() + "/" + n.supportUrl), r = e.Utils.escapeExpression(r), new e.SafeString('<a target="' + s + '" href="' + r + '">' + i + "</a>")
         })
-    }), define("hbs!views/profile/accountAdministration", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/link"], function(e, t) {
-        var n = t.template(function(e, t, n, r, i) {
-            this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
-            var s = "",
-                o, u, a, f = "function",
-                l = this.escapeExpression,
-                c = n.helperMissing;
-            return s += '<ul>\n      <li>\n        <label>Pricing Plan</label>\n        <span class="advised-user-only item-content">\n            ', (u = n.advisedFeeTypeDisplayAmount) ? o = u.call(t, {
-                hash: {}
-            }) : (u = t && t.advisedFeeTypeDisplayAmount, o = typeof u === f ? u.call(t, {
-                hash: {}
-            }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for BetaSmartz and your Investment Advisor. For more details, please see your respective customer agreements. Your BetaSmartz customer agreements can be found ' + l((u = n.link || t && t.link, a = {
-                hash: {}
-            }, u ? u.call(t, t && t.advisorAgreementLink, a) : c.call(t, "link", t && t.advisorAgreementLink, a))) + '.\n            </div>\n        </span>\n    </li>\n</ul>\n', s
-        });
-        return t.registerPartial("views/profile/accountAdministration", n), n
     }), define("hbs!views/profile/pricingPlan", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
             function p(e, t) {
@@ -64532,8 +64277,10 @@ var requirejs, require, define;
             var n = {},
                 r = {},
                 i;
-            for (i in e) i in t ? n[i] = F(i)(e[i], t[i]) : r[i] = e[i];
-            for (i in t) i in e || (r[i] = t[i]);
+            for (i in e)
+                i in t ? n[i] = F(i)(e[i], t[i]) : r[i] = e[i];
+            for (i in t) 
+                i in e || (r[i] = t[i]);
             return function(e) {
                 for (i in n) r[i] = n[i](e);
                 return r

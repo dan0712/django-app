@@ -1,4 +1,4 @@
-from bl_model import bl_model, markowitz_optimizer, markowitz_optimizer_2 
+from bl_model import bl_model, markowitz_optimizer, markowitz_optimizer_2, markowitz_optimizer_4
 import numpy as np 
 
 ## BL model (Meucci's version) 
@@ -13,8 +13,8 @@ cormat = [[1., 0.54, 0.62, 0.25, 0.41, 0.59],
 
 # construct covariance matrix 
 sigma = np.array(cormat)
-for i in xrange(len(volvec)):
-    for j in xrange(len(volvec)):
+for i in range(len(volvec)):
+    for j in range(len(volvec)):
         sigma[i][j] = cormat[i][j]*volvec[i]*volvec[j]
 
 # Let's write a function for the BL Model 
@@ -44,7 +44,10 @@ wopt = markowitz_optimizer(mu,sig)
 ## One can check this is indeed achieved by noting that the sum of the first 
 ## three components of wopt2 is 0.25 and the sum of the last three is 0.75. 
 wopt2 = markowitz_optimizer_2(mu,sig, 3, 0.25)
+print(wopt2)
 
+wopt4 = markowitz_optimizer_4(mu,sig, [1,3,5], 0.25)
+print(wopt4)
 ## Example 3 (demonstrate overwriting optional arguments) 
 
 ## Example 4 (no views ... using no views) 

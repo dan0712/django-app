@@ -21,6 +21,7 @@ def is_from_region(super_asset_class_of, _ticker: str, _region: str):
 
 
 def create_constrain(_super_classes, _custom_size: float):
+    #print("Creating constrain: {}".format(_super_classes))
     def evaluate(_columns, x):
         _super_class_array = np.array([])
         for _c in _columns:
@@ -60,12 +61,16 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
     only_use_this_assets = []
 
     super_asset_class_of = dict()
+    # 2d array row per region, column per ticker
     super_classes_matrix = []
     for i in range(len(regions)):
         super_classes_matrix.append([])
     # contain the market caps values
     market_cap = dict()
     ticker_parent_dict = {}
+
+    # List of symbols that are actively managed.
+    satellite_syms = []
 
     for asset in all_assets:
         ticker = asset.tickers.filter(ordering=0).first()
@@ -75,6 +80,8 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
         market_cap[ticker.symbol] = api.market_cap(ticker)
+        if not ticker.etf:
+            satellite_syms.append(ticker.symbol)
 
     # save the data in a pandas table for easy manipulation
     table = DataFrame(series)
@@ -84,13 +91,13 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
     regions_with_bond_and_stock_constrains = dict()
     regions_with_only_stocks_constrains = dict()
     regions_with_only_bonds_constrains = dict()
+    
+    # Add the assets for the default region
     region_idx = 0
     default_region_size = region_sizes.get(default_region, 0)
-
     for ticker_idx in range(0, len(old_columns)):
         if is_from_region(super_asset_class_of, old_columns[ticker_idx], default_region):
             super_classes_matrix[region_idx].append(old_columns[ticker_idx])
-
     if int(default_region_size * 100) != 0:
         only_use_this_assets.extend(super_classes_matrix[region_idx])
 
@@ -155,6 +162,7 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
 
     views = []
 
+    # Add any elements in the asset list not found in the portflio sets
     for vd in views_dict:
         new_view = []
         for c in list(table):
@@ -192,7 +200,10 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
     initial_w = mw
     for allocation in list(np.arange(0, 1.01, 0.01)):
         ns = default_region_size
-        constrains = []
+
+        # Create initial constraint for satellite percent
+        constrains = [create_constrain(satellite_syms, goal.satellite_pct)]
+
         # add dual regions
         for cs in regions_with_bond_and_stock_constrains.values():
             constrains.append(cs["constrain"])
@@ -214,6 +225,7 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
         if ns > 0:
             constrains.append(create_constrain(super_classes_matrix[0], ns))
 
+        #print ("Columns: {}".format(columns))
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
                                               portfolio_set.risk_free_rate, allocation,
@@ -255,6 +267,7 @@ def calculate_portfolios_for_goal_auto_weights(goal, api):
     # get all the regions
     all_assets = portfolio_set.asset_classes.all()
 
+    satellite_syms = []
     for asset in all_assets:
         ticker = asset.tickers.filter(ordering=0).first()
         super_asset_class_of[ticker.symbol] = asset.super_asset_class
@@ -262,6 +275,8 @@ def calculate_portfolios_for_goal_auto_weights(goal, api):
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
         market_cap[ticker.symbol] = api.market_cap(ticker)
+        if not ticker.etf:
+            satellite_syms.append(ticker.symbol)
 
     # save the data in a pandas table for easy manipulation
     table = DataFrame(series)
@@ -337,6 +352,9 @@ def calculate_portfolios_for_goal_auto_weights(goal, api):
         er = (1 + np.mean(table[columns[i]].pct_change())) ** 12 - 1
         expected_returns = np.append(expected_returns, er)
 
+    # Make a constraint for the satellite percent
+    constrains = [create_constrain(satellite_syms, goal.satellite_pct)]
+
     # calculate covariance matrix
     sk_co_var, co_vars = calculate_co_vars(assets_len, table)
     initial_w = mw
@@ -346,7 +364,7 @@ def calculate_portfolios_for_goal_auto_weights(goal, api):
             # calculate optimal portfolio for different risks 0 - 100
             new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
                                                   portfolio_set.risk_free_rate, allocation,
-                                                  new_assets_type, views, qs, tau, [], mw,
+                                                  new_assets_type, views, qs, tau, constrains, mw,
                                                   initial_w, columns)
 
             initial_w = new_weights
@@ -377,7 +395,7 @@ def calculate_portfolios_for_goal_auto_weights(goal, api):
         # calculate optimal portfolio for different risks 0 - 100
         new_weights, _mean, var = handle_data(assets_len, expected_returns, sk_co_var, co_vars,
                                               portfolio_set.risk_free_rate, virtual_allocation,
-                                              new_assets_type, views, qs, tau, [], mw,
+                                              new_assets_type, views, qs, tau, constrains, mw,
                                               initial_w, columns)
 
         _mean = float("{0:.4f}".format(_mean)) * 100
@@ -447,7 +465,7 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
         # order region according to assets_count
         dual_regions = list(reversed(sorted(dual_regions, key=lambda x: x[1])))
 
-        # pick first region
+        # pick first region (highest asset count)
         default_region = dual_regions[0][0]
         return calculate_portfolios_dual_region(goal, all_assets, portfolio_set, default_region, regions, api)
 
@@ -475,6 +493,7 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
     market_cap = dict()
     ticker_parent_dict = {}
 
+    satellite_syms = []
     for asset in all_assets:
         ticker = asset.tickers.filter(ordering=0).first()
         asset_name.append(ticker.symbol)
@@ -483,13 +502,16 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
         market_cap[ticker.symbol] = api.market_cap(ticker)
+        if not ticker.etf:
+            satellite_syms.append(ticker.symbol)
 
     # save the data in a pandas table for easy manipulation
     table = DataFrame(series)
     old_columns = list(table)
 
-    # will contain the region custom sizes constrains
-    constrains = []
+    # Initial constraint for satellite percent. Will contain the region custom sizes constrains
+    constrains = [create_constrain(satellite_syms, goal.satellite_pct)]
+
     region_idx = 0
 
     for region in regions.keys():

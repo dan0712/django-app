@@ -90,7 +90,7 @@ PERSONAL_DATA_WIDGETS = {
     'address_line_1':
         forms.TextInput(attrs={"placeholder": "House name, Unit/House number"}),
     "address_line_2": forms.TextInput(
-        attrs={"placeholder": "Street address"})
+            attrs={"placeholder": "Street address"})
 }
 
 ALLOCATION = "ALLOCATION"
@@ -115,9 +115,9 @@ class BetaSmartzAgreementForm(forms.ModelForm):
         cleaned_data = super(BetaSmartzAgreementForm, self).clean()
         if not (cleaned_data["betasmartz_agreement"] is True):
             self._errors['betasmartz_agreement'] = mark_safe(
-                '<ul class="errorlist">'
-                '<li>You must accept the BetaSmartz\'s agreement'
-                ' to continue.</li></ul>')
+                    '<ul class="errorlist">'
+                    '<li>You must accept the BetaSmartz\'s agreement'
+                    ' to continue.</li></ul>')
 
         return cleaned_data
 
@@ -137,7 +137,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
 
         if password1 and (password1 != password2):
             self._errors['confirm_password'] = mark_safe(
-                '<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
+                    '<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
 
         # check if user already exist
         try:
@@ -149,13 +149,13 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
             # confirm password
             if not user.check_password(password1):
                 self._errors['email'] = mark_safe(
-                    u'<ul class="errorlist"><li>User already exists</li></ul>')
+                        u'<ul class="errorlist"><li>User already exists</li></ul>')
             else:
                 if hasattr(user, self.user_profile_type):
                     rupt = self.user_profile_type.replace("_", " ")
                     self._errors['email'] = mark_safe(
-                        u'<ul class="errorlist"><li>User already has an'
-                        u' {0} account</li></ul>'.format(rupt))
+                            u'<ul class="errorlist"><li>User already has an'
+                            u' {0} account</li></ul>'.format(rupt))
 
         cleaned_data["password"] = make_password(password1)
         return cleaned_data
@@ -164,7 +164,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
         # check if user already exist
         try:
             self.instance = User.objects.get(
-                email=self.cleaned_data.get('email'))
+                    email=self.cleaned_data.get('email'))
         except ObjectDoesNotExist:
             pass
         instance = super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
@@ -204,7 +204,7 @@ class NeedApprobation(models.Model):
         account_type = self._meta.verbose_name
 
         subject = "Your BetaSmartz new {0} account have been approved".format(
-            account_type)
+                account_type)
 
         context = {
             'subject': subject,
@@ -244,13 +244,13 @@ class NeedConfirmation(models.Model):
             return None
 
         return settings.SITE_URL + "/confirm_email/{0}/{1}".format(
-            self.content_type, self.confirmation_key)
+                self.content_type, self.confirmation_key)
 
     def send_confirmation_email(self):
         account_type = self._meta.verbose_name
 
         subject = "BetaSmartz new {0} account confirmation".format(
-            account_type)
+                account_type)
 
         context = {
             'subject': subject,
@@ -260,11 +260,11 @@ class NeedConfirmation(models.Model):
         }
 
         send_mail(
-            subject,
-            '',
-            None,
-            [self.email],
-            html_message=render_to_string('email/confirmation.html', context))
+                subject,
+                '',
+                None,
+                [self.email],
+                html_message=render_to_string('email/confirmation.html', context))
 
 
 class PersonalData(models.Model):
@@ -325,22 +325,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_('last name'), max_length=30)
     username = models.CharField(max_length=30, editable=False, default='')
     email = models.EmailField(
-        _('email address'),
-        unique=True,
-        error_messages={
-            'unique': _("A user with that email already exists."),
-        })
+            _('email address'),
+            unique=True,
+            error_messages={
+                'unique': _("A user with that email already exists."),
+            })
 
     is_staff = models.BooleanField(
-        _('staff status'),
-        default=False,
-        help_text=_(
-            'Designates whether the user can log into this admin site.'))
+            _('staff status'),
+            default=False,
+            help_text=_(
+                    'Designates whether the user can log into this admin site.'))
     is_active = models.BooleanField(
-        _('active'),
-        default=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'active. Unselect this instead of deleting accounts.'))
+            _('active'),
+            default=True,
+            help_text=_('Designates whether this user should be treated as '
+                        'active. Unselect this instead of deleting accounts.'))
 
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
     prepopulated = models.BooleanField(default=False)
@@ -384,9 +384,9 @@ class Firm(models.Model):
                                              null=True,
                                              blank=True)
     client_agreement_url = models.FileField(
-        verbose_name="Client Agreement (PDF)",
-        null=True,
-        blank=True)
+            verbose_name="Client Agreement (PDF)",
+            null=True,
+            blank=True)
     form_adv_part2_url = models.FileField(verbose_name="Form Adv",
                                           null=True,
                                           blank=True)
@@ -602,13 +602,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         super(Advisor, self).save(*args, **kw)
         if send_confirmation_mail and (self.confirmation_key is not None):
             self.user.email_user(
-                "BetaSmartz advisor account confirmation",
-                "You advisor account have been approved, "
-                "please confirm your email here: "
-                "{site_url}/advisor/confirm_email/{confirmation_key}/"
-                " \n\n\n  The BetaSmartz Team".format(
-                    confirmation_key=self.confirmation_key,
-                    site_url=settings.SITE_URL))
+                    "BetaSmartz advisor account confirmation",
+                    "You advisor account have been approved, "
+                    "please confirm your email here: "
+                    "{site_url}/advisor/confirm_email/{confirmation_key}/"
+                    " \n\n\n  The BetaSmartz Team".format(
+                            confirmation_key=self.confirmation_key,
+                            site_url=settings.SITE_URL))
 
 
 class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData
@@ -622,8 +622,8 @@ class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData
 class AccountGroup(models.Model):
     advisor = models.ForeignKey(Advisor, related_name="primary_account_groups")
     secondary_advisors = models.ManyToManyField(
-        Advisor,
-        related_name='secondary_account_groups')
+            Advisor,
+            related_name='secondary_account_groups')
     name = models.CharField(max_length=100)
 
     @property
@@ -729,8 +729,8 @@ class ClientAccount(models.Model):
         # get personal group or create it
         group_name = "{0}".format(self.primary_owner.full_name)
         groups = AccountGroup.objects.filter(
-            name=group_name,
-            advisor=self.primary_owner.advisor)
+                name=group_name,
+                advisor=self.primary_owner.advisor)
         if groups:
             group = groups[0]
         else:
@@ -780,7 +780,7 @@ class ClientAccount(models.Model):
                 self.primary_owner.user.first_name)"""
 
         return "{0}'s {1}".format(
-            self.primary_owner.user.first_name, self.get_account_class_display())
+                self.primary_owner.user.first_name, self.get_account_class_display())
 
     @property
     def total_balance(self):
@@ -858,9 +858,9 @@ class ClientAccount(models.Model):
 
     def __str__(self):
         return "{0}:{1}:{2}:({3})".format(
-            self.primary_owner.full_name,
-            self.primary_owner.advisor.first_name,
-            self.primary_owner.advisor.firm.name, self.account_type_name)
+                self.primary_owner.full_name,
+                self.primary_owner.advisor.first_name,
+                self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
 FULL_TIME = "FULL_TIME"
@@ -928,9 +928,9 @@ class MedicareNumberValidator(object):
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
     advisor = models.ForeignKey(Advisor, related_name="all_clients")
     secondary_advisors = models.ManyToManyField(
-        Advisor,
-        related_name='secondary_clients',
-        editable=False)
+            Advisor,
+            related_name='secondary_clients',
+            editable=False)
     create_date = models.DateTimeField(auto_now_add=True)
     client_agreement = models.FileField()
 
@@ -941,26 +941,26 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                       default=TFN_YES)
 
     associated_to_broker_dealer = models.BooleanField(
-        verbose_name="Are employed by or associated with "
-                     "a broker dealer?",
-        default=False,
-        choices=YES_NO)
+            verbose_name="Are employed by or associated with "
+                         "a broker dealer?",
+            default=False,
+            choices=YES_NO)
     ten_percent_insider = models.BooleanField(
-        verbose_name="Are you a 10% shareholder, director, or"
-                     " policy maker of a publicly traded company?",
-        default=False,
-        choices=YES_NO)
+            verbose_name="Are you a 10% shareholder, director, or"
+                         " policy maker of a publicly traded company?",
+            default=False,
+            choices=YES_NO)
 
     public_position_insider = models.BooleanField(
-        verbose_name="Do you or a family member hold a public office position?",
-        default=False,
-        choices=YES_NO)
+            verbose_name="Do you or a family member hold a public office position?",
+            default=False,
+            choices=YES_NO)
 
     us_citizen = models.BooleanField(
-        verbose_name="Are you a US citizen/person"
-                     " for the purpose of US Federal Income Tax?",
-        default=False,
-        choices=YES_NO)
+            verbose_name="Are you a US citizen/person"
+                         " for the purpose of US Federal Income Tax?",
+            default=False,
+            choices=YES_NO)
 
     employment_status = models.CharField(max_length=20,
                                          choices=EMPLOYMENT_STATUS_CHOICES)
@@ -994,7 +994,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         else:
             return "null"
         betasmartz_externals = json.loads(serializers.serialize(
-            "json", self.financial_plan_external_accounts.all()))
+                "json", self.financial_plan_external_accounts.all()))
         external_accounts = []
 
         for be in betasmartz_externals:
@@ -1049,7 +1049,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def external_accounts(self):
         betasmartz_externals = json.loads(serializers.serialize(
-            "json", self.financial_plan_external_accounts.all()))
+                "json", self.financial_plan_external_accounts.all()))
         external_accounts = []
 
         for be in betasmartz_externals:
@@ -1113,10 +1113,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             new_ac.remove_from_group()
 
 
-BONDS = "BONDS"
-STOCKS = "STOCKS"
-MANAGED_FUNDS = "MANAGED_FUNDS"
-INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MANAGED_FUNDS", "MANAGED_FUNDS"))
+BONDS = "BONDS"  # Bonds only Fund
+STOCKS = "STOCKS"  # Stocks only Fund
+MIXED = "MIXED"  # Mixture of stocks and bonds
+INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MIXED", "MIXED"))
 
 SUPER_ASSET_CLASSES = (
     # EQUITY
@@ -1138,17 +1138,15 @@ SUPER_ASSET_CLASSES = (
     ("FIXED_INCOME_UK", "FIXED_INCOME_UK"),
     ("FIXED_INCOME_JAPAN", "FIXED_INCOME_JAPAN"),
     ("FIXED_INCOME_AS", "FIXED_INCOME_AS"),
-    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"),
-    # Managed Funds
-    ("MANAGED_FUNDS_AU", "MANAGED_FUNDS_AU"))
+    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"))
 
 
 class AssetClass(models.Model):
     name = models.CharField(
-        max_length=255,
-        validators=[RegexValidator(
-            regex=r'^[0-9a-zA-Z_]+$',
-            message="Invalid character only accept (0-9a-zA-Z_) ")])
+            max_length=255,
+            validators=[RegexValidator(
+                    regex=r'^[0-9a-zA-Z_]+$',
+                    message="Invalid character only accept (0-9a-zA-Z_) ")])
     display_order = models.PositiveIntegerField()
     primary_color = ColorField()
     foreground_color = ColorField()
@@ -1183,13 +1181,18 @@ class AssetClass(models.Model):
         return self.name
 
 
+class Region(models.Model):
+    name = models.CharField(max_length=127, blank=False, null=False, help_text='Name of the region')
+    description = models.TextField(blank=True, default="", null=False)
+
+
 class Ticker(models.Model):
     symbol = models.CharField(
-        max_length=10,
-        blank=False,
-        null=False,
-        validators=[RegexValidator(regex=r'^[^ ]+$',
-                                   message="Invalid symbol format")])
+            max_length=10,
+            blank=False,
+            null=False,
+            validators=[RegexValidator(regex=r'^[^ ]+$',
+                                       message="Invalid symbol format")])
     display_name = models.CharField(max_length=255, blank=False, null=False)
     description = models.TextField(blank=True, default="", null=False)
     ordering = models.IntegerField(blank=True, default="", null=False)
@@ -1197,6 +1200,11 @@ class Ticker(models.Model):
     unit_price = models.FloatField(default=10)
     asset_class = models.ForeignKey(AssetClass, related_name="tickers")
     currency = models.CharField(max_length=10, default="AUD")
+    ethical = models.BooleanField(default=False,
+                                  help_text='Is this an ethical instrument?')
+    etf = models.BooleanField(default=True,
+                              help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
+    region = models.ForeignKey(Region, null=True)
 
     def __str__(self):
         return self.symbol
@@ -1241,8 +1249,8 @@ class EmailInvitation(models.Model):
     status = models.PositiveIntegerField(choices=EMAIL_INVITATION_STATUSES,
                                          default=INVITATION_PENDING)
     invitation_type = models.PositiveIntegerField(
-        choices=INVITATION_TYPE_CHOICES,
-        default=INVITATION_CLIENT)
+            choices=INVITATION_TYPE_CHOICES,
+            default=INVITATION_CLIENT)
 
     @property
     def get_status_name(self):
@@ -1293,7 +1301,7 @@ class EmailInvitation(models.Model):
                 application_type = itc[1]
 
         subject = "BetaSmartz {application_type} sign up form url".format(
-            application_type=application_type)
+                application_type=application_type)
         inviter_type = self.inviter_object.get_inviter_type()
         inviter_name = self.inviter_object.get_inviter_name()
         invite_url = self.inviter_object.get_invite_url(self.invitation_type, self.email)
@@ -1339,8 +1347,9 @@ class Goal(models.Model):
     income = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
     completion_date = models.DateTimeField()
-    allocation = models.FloatField() # The proportion of Stocks to use for the ETFs (Core Component) of the instrument mix for this goal
-    satellite_pct = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], default=0.0, null=True) # The proportion of Managed Funds (Active component) to use in the instrument mix for this goal
+    allocation = models.FloatField()  # The proportion of Stocks to use for the ETFs (Core Component) of the instrument mix for this goal
+    satellite_pct = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], default=0.0,
+                                      null=True)  # The proportion of Managed Funds (Active component) to use in the instrument mix for this goal
     account_type = models.CharField(max_length=20, default='INVESTING')
     type = models.CharField(max_length=20, default='RETIREMENT')
     drift = models.FloatField(default=0)
@@ -1349,7 +1358,8 @@ class Goal(models.Model):
     custom_portfolio_set = models.ForeignKey('portfolios.PortfolioSet', null=True, blank=True)
     custom_regions = models.TextField(null=True)
     custom_picked_regions = models.TextField(null=True)
-    custom_optimization_mode = models.IntegerField(choices=[(0, 'None'), (1, 'auto mode'), (2, 'weight mode')], default=0)
+    custom_optimization_mode = models.IntegerField(choices=[(0, 'None'), (1, 'auto mode'), (2, 'weight mode')],
+                                                   default=0)
     portfolios = models.TextField(null=True)
     custom_hedges = models.TextField(null=True)
 
@@ -1517,7 +1527,7 @@ class Goal(models.Model):
 
         portfolio_set = self.portfolio_set
         tickers = Ticker.objects.filter(
-            asset_class__in=portfolio_set.asset_classes.all())
+                asset_class__in=portfolio_set.asset_classes.all())
 
         tickers_prices = []
         target_allocation = []
@@ -1526,7 +1536,7 @@ class Goal(models.Model):
         for ticker in tickers:
             tickers_prices.append(ticker.unit_price)
             target_allocation.append(self.target_allocation_dict.get(
-                ticker.asset_class.name, 0))
+                    ticker.asset_class.name, 0))
             positions = Position.objects.filter(goal=self, ticker=ticker).all()
             cs = 0
             if positions:
@@ -1538,7 +1548,7 @@ class Goal(models.Model):
         target_allocation = array(target_allocation)
 
         return float("{0:.2f}".format(sum(abs(
-            current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
+                current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
 
     @property
     def life_time_average_balance(self):

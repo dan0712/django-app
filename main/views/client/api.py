@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from portfolios.bl_model import OptimizationException
 from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
+#from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from portfolios.models import PortfolioSet
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, PENDING, Goal, ALLOCATION, TransactionMemo, \
@@ -211,7 +212,12 @@ class ClientAccountPositions(ClientView, TemplateView):
 
             new_p["totalValue"] = asset_total_value
 
-            new_p["allocation"] = allocations[asset.name]
+            # WE may not have every symbol in our portfolio, just set to 0 if not.
+            if asset.name in allocations:
+                new_p["allocation"] = allocations[asset.name]
+            else:
+                new_p["allocation"] = 0
+
             gtb = goal.total_balance
 
             if gtb != 0:
@@ -434,7 +440,12 @@ class ChangeAllocation(ClientView):
                                  account__primary_owner=self.client)
         payload = json.loads(request.body.decode("utf-8"))
         goal.allocation = payload["allocation"]
-        goal.satellite_pct = payload["satelliteAlloc"]
+        if payload["satelliteAlloc"] != goal.satellite_pct:
+            goal.satellite_pct = payload["satelliteAlloc"]
+            has_changed = True
+        else:
+            has_changed = False
+
         new_t = Transaction()
         new_t.account = goal
         new_t.amount = goal.allocation
@@ -445,6 +456,19 @@ class ChangeAllocation(ClientView):
                                    type=ALLOCATION,
                                    status=PENDING).all().delete()
         new_t.save()
+
+        if has_changed:
+            if goal.is_custom_size:
+                try:
+                    goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal))
+                except OptimizationException as e:
+                    print(e)
+                    return HttpResponse('null',
+                                        content_type="application/json",
+                                        status=500)
+            else:
+                goal.portfolios = None
+
         goal.save()
         return HttpResponse(json.dumps({"transactionId": new_t.pk}),
                             content_type="application/json")
@@ -527,6 +551,10 @@ class ChangeGoalView(ClientView):
         picked_regions = list(set(payload["picked_regions"]))
         if set(picked_regions) != set(json.loads(goal.picked_regions)):
             goal.custom_picked_regions = json.dumps(picked_regions)
+            has_changed = True
+
+        if payload["satelliteAlloc"] != goal.satellite_pct:
+            goal.satellite_pct = payload["satelliteAlloc"]
             has_changed = True
 
         goal.custom_hedges = json.dumps(payload["hedges"])

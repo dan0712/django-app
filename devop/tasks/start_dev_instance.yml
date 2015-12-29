@@ -1,0 +1,13 @@
+- name: start nginx
+  docker:
+    name: dev_betasmartz_app
+    image: betasmartz_app
+    state: reloaded
+    restart_policy: always
+    links:
+      - betasmartz_db:db
+    volumes:
+      - /home/ibmcloud/dev_media:/betasmartz/media
+      - /home/ibmcloud/dev_static:/collected_static
+    env:
+      ENVIRONMENT:dev

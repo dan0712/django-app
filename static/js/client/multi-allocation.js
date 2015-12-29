@@ -24,10 +24,13 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     return this.pct(this.self.model.num("allocation"));
                 },
                 bondAllocation: function() {
-                    return this.pct(1-this.self.model.num("allocation")-this.self.model.num("satelliteAlloc"));
+                    return this.pct(1-this.self.model.num("allocation"));
                 },
-                SatelliteAllocation: function(){
+                satelliteAllocation: function(){
                     return this.pct(this.self.model.num("satelliteAlloc"));
+                },
+                coreAllocation: function(){
+                    return this.pct(1-this.self.model.num("satelliteAlloc"));
                 },
                 showTaxImpactButton: function() {
                     return !this.self.model.isIRA() && this.self.model.getCurrentBalance() > 0
@@ -37,7 +40,9 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 s.prototype.onInitialize.apply(this), this.term = this.options.termYears || this.model.remainingGoalTerm()
             },
             onRender: function() {
-                this.$slider = this.createSlider()
+                this.$allocation_slider = this.createSlider()
+                this.$satellite_slider = this.createSatelliteSlider()
+                this.updateAllocationDisplay([this.model.num("allocation"), this.model.num("satelliteAlloc")])
             },
             onShow: function() {
                 this.drawRecommendation(), this.updateAdvice([this.model.num("allocation"), this.model.num("satelliteAlloc")])
@@ -46,17 +51,22 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 // labels
                 var allocation = this.model.num("allocation");
                 var satellite = this.model.num("satelliteAlloc");
-                this.$(".existing-value .value").text((100 * allocation).round(0) + "%");
-                this.$(".existing-bonds-value .value").text((100 * ( 1 -allocation - satellite )).round(0) + "%");
-                this.$(".existing-satellite-value .value").text((100 * satellite).round(0) + "%");
 
-                this.$slider.slider("values", [allocation, 1-satellite]);
+                this.$(".existing-value .value").text((100 * allocation).round(0) + "%");
+                this.$(".existing-bonds-value .value").text((100 * (1 - allocation)).round(0) + "%");
+
+                this.$(".existing-satellite-value .value").text((100 * satellite).round(0) + "%");
+                this.$(".existing-core-value .value").text((100 * (1 - satellite)).round(0) + "%");
+                
+                this.$allocation_slider.slider("value", allocation);
+                this.$satellite_slider.slider("value", 1-satellite);
+
                 this.taxImpactAnimation && this.taxImpactAnimation.stop(!0);
                 this.$(".show-tax-impact").hide();
                 this.updateAdvice([allocation, satellite]);
                 this.trigger("valueChanged", {
                     allocation: allocation,
-                    satellite: satellite
+                    satelliteAlloc: satellite
                 });
                 this.trigger("valueReset")
             },
@@ -71,15 +81,15 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 }) : null
             },
             getValue: function() {
-                var values = this.$slider.slider("values");
-                values[1]  = 1-values[1];
-                return values;
+                var allocation = this.$allocation_slider.slider("value");
+                var satellite = 1-this.$satellite_slider.slider("value");
+                return [allocation,  satellite];
             },
             refreshAdvice: function(t) {
-                t.termYears && (this.term = t.termYears, this.drawRecommendation()), e.isUndefined(t.allocation) ? this.updateAdvice(this.getValue()) : this.updateAdvice([t.allocation, t.satellite])
+                t.termYears && (this.term = t.termYears, this.drawRecommendation()), e.isUndefined(t.allocation) ? this.updateAdvice(this.getValue()) : this.updateAdvice([t.allocation, t.satelliteAlloc])
             },
             drawRecommendation: function() {
-                t.drawSliderRecommendation(this.$slider, this.getRecommended())
+                t.drawSliderRecommendation(this.$allocation_slider, this.getRecommended())
             },
             allocationSliderDragged: function(e) {
                /* var t = this.getValue() * 100;
@@ -113,16 +123,18 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 var t = $(e.target).intVal() / 100;
                 t === this.model.num("allocation") && this.reset()
             },
-            updateAllocationDisplay: function(e) {
+            updateAllocationDisplay: function(values) {
                 this.$(".show-tax-impact").is(":visible") || (this.$(".existing-value").is(":visible") && u.track("ElementViewed", {
                     Name: "TaxImpact",
                     Type: "Button",
                     Module: "AllocationChange",
                     Location: "Advice"
                 }), this.taxImpactAnimation = this.$(".show-tax-impact").delay(250).slideDown(50)),
-                this.$(".existing-value .value").text((100 * e[0]).round(0) + "%"),
-                this.$(".existing-bonds-value .value").text((100 * ( 1 - e[0] - (1-e[1]) )).round(0) + "%"),
-                this.$(".existing-satellite-value .value").text((100 * (1-e[1])).round(0) + "%")
+                this.$(".existing-value .value").text((100 * values[0]).round(0) + "%"),
+                this.$(".existing-bonds-value .value").text((100 * ( 1 - values[0] )).round(0) + "%"),
+                this.$(".existing-satellite-value .value").text((100 * values[1]).round(0) + "%"),
+                this.$(".existing-core-value .value").text((100 * (1-values[1])).round(0) + "%")
+
 
             },
             updateAdvice: function(values) {
@@ -138,25 +150,51 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 if(stocks_and_bonds=="bonds"){allocation = 0; this.model.set("allocation", 0)}
                 if(stocks_and_bonds=="stocks"){allocation = 1; this.model.set("allocation", 1)}
 
-                var e = this.slider(".allocation-slider", {
-                    range: true,
+                var allocation_slider = this.slider(".allocation-slider", {
                     min: 0,
                     max: 1,
                     step: .01,
                     disabled: disabled,
-                    values: [allocation, 1-this.model.num("satelliteAlloc")],
+                    value: allocation,
                     slide: function(e, t) {
+                        var values = values = [t.value, 1-this.$satellite_slider.slider("value")];
                         this.trigger("valueChanged", {
-                            allocation: t.values[0],
-                            satellite: 1-t.values[1]
+                            allocation: values[0],
+                            satelliteAlloc: values[1]
                         });
-                        this.updateAllocationDisplay(t.values);
-                        ((1-t.values[1]).toFixed(2) === this.model.num("satelliteAlloc").toFixed(2)) && (t.values[0] === this.model.num("allocation")) && (this.trigger("valueReset"), this.taxImpactAnimation && this.taxImpactAnimation.stop(!0), this.$(".show-tax-impact").hide())
+                        this.updateAllocationDisplay(values);
+                        (values[1].toFixed(2) === this.model.num("satelliteAlloc").toFixed(2)) && (values[0] === this.model.num("allocation")) && (this.trigger("valueReset"), this.taxImpactAnimation && this.taxImpactAnimation.stop(!0), this.$(".show-tax-impact").hide())
                     }.bind(this)
                 });
                 return this.bind("valueChanged", function(t) {
-                    (t.allocation || t.allocation === 0) && (t.satellite || t.satellite === 0) && e.slider("values", [t.allocation, 1-t.satellite])
-                }), e
+                    (t.allocation || t.allocation === 0) && allocation_slider.slider("value", t.allocation)
+                }), allocation_slider
+            },
+
+            createSatelliteSlider: function() {
+                // The value of the sat slider is actually the core percent. 
+                var sat_slider = this.slider(".satellite-slider", {
+                    min: 0,
+                    max: 1,
+                    step: .01,
+                    value: 1-this.model.num("satelliteAlloc"),
+                    slide: function(e, t) {
+                        if (t.value < 0.7) {
+                            $(this).slider( "value" , .7 );
+                            return false;
+                        }
+                        var values = [this.$allocation_slider.slider("value"), 1-t.value];
+                        this.trigger("valueChanged", {
+                            allocation: values[0],
+                            satelliteAlloc: values[1]
+                        });
+                        this.updateAllocationDisplay(values);
+                        (values[1].toFixed(2) === this.model.num("satelliteAlloc").toFixed(2)) && (values[0] === this.model.num("allocation")) && (this.trigger("valueReset"), this.taxImpactAnimation && this.taxImpactAnimation.stop(!0), this.$(".show-tax-impact").hide())
+                    }.bind(this)
+                });
+                return this.bind("valueChanged", function(t) {
+                    (t.satelliteAlloc || t.satelliteAlloc === 0) && sat_slider.slider("value", 1-t.satelliteAlloc)
+                }), sat_slider
             },
             getRecommended: function() {
                 return i.getRecommendedAllocation(this.model, {
@@ -1261,6 +1299,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             BMT.analytics.track("PageVisited", {
                 Location: "Advice"
             }), this.preloadStart(), this.loadAccountAndRender().then(this.preloadComplete.bind(this))
+
         },
         onDestroy: function () {
             C.closeFlyover()
@@ -1408,7 +1447,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     this.reRender()
                 }.bind(this)
             };
-            t.extend(e, this.getModelsForSave()), h.go(e)
+            t.extend(e, this.getModelsForSave()), h.go(e);
         },
         resetSettings: function () {
             if (!this.isAnythingDirty()) return;
@@ -1442,4 +1481,314 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             return BMT.user.get("financialPlans").selected()
         }
     })
-});
+}),define("views/profile/contactInfoView", ["jquery", "underscore", "backbone", "hbs!views/profile/contactInfo", "common/betterment.views", "views/profile/securityQuestionView", "models/user", "models/visitor", "views/profile/contactPreferencesView", "views/profile/changePasswordView", "views/common/flashView", "views/profile/changeDefaultAccountGroupView", "views/profile/externalAccountsView", "models/v1/defaultAccountGroupUpdater", "models/v1/quovoCredentials", "views/profile/retireGuidePreferencesView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v) {
+        var m = new d;
+        return i.View.extend({
+            template: r,
+            tagName: "div",
+            regions: {
+                retireGuidePreferencesRegion: ".retire-guide-preferences"
+            },
+            templateHelpers: {
+                statesDropdown: function() {
+                    return this.build_dropdown_menu(o.states, {
+                        "class": "state-selector",
+                        name: "state",
+                        value: this.self.model.get("state")
+                    })
+                },
+                contactPreferencesStatus: function() {
+                    return this.self.options.contactPreferences.hasDefaultPreferences() ? "Default" : "Custom"
+                },
+                defaultAccountGroupLabel: function() {
+                    return BMT.user.getDefaultAccountGroup().get("name")
+                },
+                hasHnwConsultationFeature: function() {
+                    return u.hasVariation("hnw_consultation_on")
+                }
+            },
+            ui: {
+                inputs: "input[name]:not([readonly])",
+                updateButton: "button.update",
+                phoneNumber: "[name=phoneNumber]"
+            },
+            events: {
+                "keyup @ui.inputs": "inputChanged",
+                "change .state-selector": "inputChanged",
+                "click button#emailPreferences": "contactPreferences",
+                "click button#changePassword": "changePassword",
+                "click button.change-default-account": "changeDefaultAccount",
+                "click button.link-external-accounts": "linkExternalAccounts",
+                "click button.update": "update",
+                "keydown input[name=zip]": function(e) {
+                    return this.restrictLength(e, 5) && this.restrictNumeric(e)
+                }
+            },
+            onInitialize: function() {
+                this.defaultAccountGroupUpdater = new p({
+                    user: BMT.user
+                }), this.listenTo(this.defaultAccountGroupUpdater, "change", function() {
+                    this.defaultAccountGroupUpdater.updateUser(), this.render()
+                }), this.listenTo(this.options.contactPreferences, "change", function() {
+                    this.render()
+                })
+            },
+            getExternalAccountsCredentials: function() {
+                var t = e.Deferred();
+                return m.has("quovoKey") ? t.resolve(m) : m.fetch().done(function() {
+                    t.resolve(m)
+                }), t.promise()
+            },
+            onShow: function() {
+                this.ui.phoneNumber.mask("999-999-9999"), this.ui.updateButton.prop("disabled", !0), this.applyValidation(), this.retireGuidePreferencesRegion.show(new v)
+            },
+            onDestroy: function() {
+                this.defaultAccountGroupUpdater.trigger("destroy", this.defaultAccountGroupUpdater)
+            },
+            contactPreferences: function(e) {
+                BMT.modal.show(new a({
+                    model: this.options.contactPreferences
+                }))
+            },
+            changePassword: function(e) {
+                BMT.modal.show(new f({
+                    model: BMT.user
+                }))
+            },
+            changeDefaultAccount: function(e) {
+                BMT.modal.show(new c({
+                    model: this.defaultAccountGroupUpdater
+                }))
+            },
+            linkExternalAccounts: function() {
+                this.getExternalAccountsCredentials().done(function(e) {
+                    BMT.modal.show(new h({
+                        model: e
+                    }))
+                })
+            },
+            inputChanged: function(t) {
+                var n = this,
+                    r = !1,
+                    i, s, o, u;
+                for (o = 0; o < this.ui.inputs.length; o++) u = e(this.ui.inputs[o]), i = u.attr("name"), s = u.val(), r = r || n.model.get(i) !== s;
+                this.ui.updateButton.prop("disabled", !r)
+            },
+            update: function(e) {
+                var r = this,
+                    i, o = n.Syphon.serialize(this);
+                this.model.validate(o) || BMT.modal.show(i = new s(t.extend({
+                    title: "Confirm Contact Info Update",
+                    body: "To update your info please answer the following security question",
+                    className: "confirm-update-modal securityQuestion",
+                    handler: function(e) {
+                        e && (i.block(), r.model.store(), r.model.save(t.extend(o, e), {
+                            success: function() {
+                                BMT.modal.close(i), BMT.flash("Your info was updated successfully."), s.removeResults(r.model)
+                            },
+                            error: function() {
+                                r.model.restart()
+                            },
+                            complete: function() {
+                                i.unblock()
+                            }
+                        }))
+                    }
+                }, this.model.randomSecurityQuestion())))
+            }
+        })
+    }),  define("hbs!views/profile/accountAdministration", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/link"], function(e, t) {
+        var n = t.template(function(e, t, n, r, i) {
+            this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
+            var s = "",
+                o, u, a, f = "function",
+                l = this.escapeExpression,
+                c = n.helperMissing;
+            return s += '<ul>\n    <li>\n        <label>Bank Account</label>\n\n        <span class="item-content">', (u = n.bankAccountDescription) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.bankAccountDescription, o = typeof u === f ? u.call(t, {
+                hash: {}
+            }) : u), s += l(o) + '</span>\n\n        <button class="change-bank-account">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    <li>\n        <label>Pricing Plan</label>\n        <span class="advised-user-only item-content">\n            ', (u = n.advisedFeeTypeDisplayAmount) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.advisedFeeTypeDisplayAmount, o = typeof u === f ? u.call(t, {
+                hash: {}
+            }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for Betasmartz and your Investment Advisor. For more details, please see your respective customer agreements. Your Betasmartz customer agreements can be found <a href="https://www.betterment.com/advisedcustomeragreement">here</a>.\n            </div>\n        </span>\n        <span class="unadvised-user-only">\n            <span class="item-content">', (u = n.feeTypeDisplayName) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.feeTypeDisplayName, o = typeof u === f ? u.call(t, {
+                hash: {}
+            }) : u), s += l(o) + '</span>\n            <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangePricing" class="review-pricing-plan">Review</button>\n        </span>\n\n        <div class="clearfix"></div>\n    </li>\n\n    <li>\n        <label>Account Status</label>\n        <span class="item-content">', (u = n.accountStatus) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.accountStatus, o = typeof u === f ? u.call(t, {
+                hash: {}
+            }) : u), s += l(o) + '</span>\n        <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="CloseAccount" href="#" class="close-account blue">Change</button>\n\n        <section class="info-tip clearfix hide close-info">\n            <div class="arrow"></div>\n            <div class="text trust-ag-only">\n                To close your trust account, amend the trust, or add or remove a trustee, please call our support team at ', (u = n.supportPhoneNumber) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.supportPhoneNumber, o = typeof u === f ? u.call(t, {
+                hash: {}
+            }) : u), s += l(o) + '.\n            </div>\n            <div class="text joint-ag-only">\n                To close your joint account, please call our support team at ', (u = n.supportPhoneNumber) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.supportPhoneNumber, o = typeof u === f ? u.call(t, {
+                hash: {}
+            }) : u), s += l(o) + '.\n            </div>\n        </section>\n\n        <div class="clearfix"></div>\n    </li>\n</ul>\n', s
+        });
+        return t.registerPartial("views/profile/accountAdministration", n), n
+    }),define("hbs!views/profile/retireGuidePreferences", ["hbs", "hbs/handlebars"], function(e, t) {
+        var n = t.template(function(e, t, n, r, i) {
+            this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
+            var s = "",
+                o, u, a = "function",
+                f = this.escapeExpression;
+            return s += '<label>RetireGuide</label>\n<span class="item-content retire-guide-status"> ', (u = n.retireGuideState) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.retireGuideState, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '\n    <span class="retire-guide-help help-icon">\n            RetireGuide is a retirement planning tool available on the Advice tab.\n            RetireGuide requires entering details about your financial profile in order\n            to provide retirement advice.  Once you set up RetireGuide, you have the option to clear\n            your profile. Clearing your profile cannot be undone. If RetireGuide is cleared or has\n            not been set up, you can also hide RetireGuide from your account.\n    </span>\n</span>\n<button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeRetireGuidePrefs" class="blue clear-retire-guide ', (u = n.clearButtonDisplay) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.clearButtonDisplay, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '">Clear</button>\n<button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeRetireGuidePrefs" class="blue hide-retire-guide ', (u = n.hideButtonDisplay) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.hideButtonDisplay, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '">Hide</button>\n<button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeRetireGuidePrefs" class="blue show-retire-guide ', (u = n.showButtonDisplay) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.showButtonDisplay, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '">Show</button>\n<div class="clearfix"></div>\n', s
+        });
+        return t.registerPartial("views/profile/retireGuidePreferences", n), n
+    }), define("views/profile/retireGuidePreferencesView", ["jquery", "underscore", "backbone", "hbs!views/profile/retireGuidePreferences", "common/betterment.views"], function(e, t, n, r, i) {
+        return i.View.extend({
+            template: r,
+            templateHelpers: {
+                retireGuideState: function() {
+                    return this.self.currentState()
+                },
+                clearButtonDisplay: function() {
+                    return this.self.currentState() === "Active" ? "show" : "hidden"
+                },
+                showButtonDisplay: function() {
+                    return this.self.currentState() === "Hidden" ? "show" : "hidden"
+                },
+                hideButtonDisplay: function() {
+                    return this.self.currentState() === "Not Active" ? "show" : "hidden"
+                }
+            },
+            tagName: "span",
+            toolTips: {
+                ".retire-guide-help": {
+                    position: {
+                        my: "bottom center",
+                        at: "top center"
+                    }
+                }
+            },
+            events: {
+                "click button.clear-retire-guide": "clearRetireGuide",
+                "click button.show-retire-guide": "showRetireGuide",
+                "click button.hide-retire-guide": "hideRetireGuide"
+            },
+            onInitialize: function() {
+                this.listenTo(BMT.user, "change:retireGuideEnabled", function() {
+                    BMT.user.is("retireGuideEnabled") ? BMT.flash("RetireGuide has been hidden from your account. Click Show RetireGuide to bring it back at any time.") : BMT.flash('RetireGuide is now available in your account. <a href="#retireGuideSetup"><u>Set up RetireGuide</u></a>.'), this.render()
+                })
+            },
+            currentState: function() {
+                var e = !BMT.user.get("financialPlans").selected().isNew(),
+                    t = BMT.user.is("retireGuideEnabled");
+                if (e && t) return "Active";
+                if (!e && t) return "Not Active";
+                if (!t) return "Hidden"
+            },
+            clearRetireGuide: function() {
+                var e = this;
+                BMT.alert({
+                    body: "You are about to clear the personal data you entered when setting up RetireGuide. This cannot be undone.",
+                    title: "Clear RetireGuide Profile",
+                    buttons: [{
+                        id: "clear-retire-guide-button",
+                        title: "Clear"
+                    }],
+                    handler: function() {
+                        BMT.user.get("financialPlans").selected().destroy({
+                            success: function() {
+                                BMT.flash("RetireGuide profile has been cleared.  <a href=#retireGuideSetup><u>Start your profile over</u></a>, or visit the Advice tab later to set up RetireGuide again."), e.render()
+                            }
+                        })
+                    }
+                })
+            },
+            hideRetireGuide: function() {
+                BMT.user.disableRetireGuide()
+            },
+            showRetireGuide: function() {
+                BMT.user.enableRetireGuide()
+            }
+        })
+    }), define("hbs!views/profile/contactInfo", ["hbs", "hbs/handlebars"], function(e, t) {
+        var n = t.template(function(e, t, n, r, i) {
+            function c(e, t) {
+                return '\n        <li>\n            <label>External Accounts</label>\n            <span class="item-content"></span>\n            <button class="blue link-external-accounts">Link</button>\n            <div class="clearfix"></div>\n        </li>\n    '
+            }
+            this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
+            var s = "",
+                o, u, a = "function",
+                f = this.escapeExpression,
+                l = this;
+            s += '<form method="POST" action="#">\n    <section>\n        <label>Name</label>\n        <input type="text" name="firstName" value="', (u = n.firstName) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.firstName, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" readonly />\n        <input type="text" name="middleName" class="middleName" value="', (u = n.middleName) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.middleName, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" maxlength="1" readonly />\n        <input type="text" name="lastName" class="lastName" value="', (u = n.lastName) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.lastName, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" readonly />\n    </section>\n\n    <section>\n        <label>Address 1</label>\n        <input type="text" class="long" name="address1" value="', (u = n.address1) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.address1, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" />\n    </section>\n\n    <section>\n        <label>Address 2</label>\n        <input type="text" class="long" name="address2" value="', (u = n.address2) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.address2, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" />\n    </section>\n\n    <section>\n        <label>City/State</label>\n        <input type="text" name="city" value="', (u = n.city) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.city, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" />\n        ', (u = n.statesDropdown) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.statesDropdown, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '\n        <input type="text" class="zip" name="zip" value="', (u = n.zip) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.zip, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" maxlength="5" />\n    </section>\n\n    <section>\n        <label>Phone</label>\n        <input type="tel" class="long" name="phoneNumber" value="', (u = n.phoneNumber) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.phoneNumber, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" />\n    </section>\n\n    <section>\n        <label>Email</label>\n        <input type="email" class="long" name="userName" value="', (u = n.userName) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.userName, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '" />\n    </section>\n</form>\n\n<button class="update" disabled="disabled">Update info</button>\n\n<hr />\n\n<ul class="stacked-items">\n\n    <li>\n        <label>Password</label>\n        <span class="item-content">**********</span>\n        <button id="changePassword" class="blue">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    <li>\n        <label>Email Preferences</label>\n        <span class="item-content">', (u = n.contactPreferencesStatus) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.contactPreferencesStatus, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '</span>\n        <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeEmailPrefs" id="emailPreferences" class="blue">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    <li class="multi-ag-only">\n        <label>Default Account</label>\n        <span class="item-content">', (u = n.defaultAccountGroupLabel) ? o = u.call(t, {
+                hash: {}
+            }) : (u = t && t.defaultAccountGroupLabel, o = typeof u === a ? u.call(t, {
+                hash: {}
+            }) : u), s += f(o) + '</span>\n        <button data-track-event="ElementClicked" data-track-location="Profile" data-track-name="ChangeDefaultAccountPrefs" class="blue change-default-account">Change</button>\n        <div class="clearfix"></div>\n    </li>\n\n    ', o = n["if"].call(t, t && t.hasHnwConsultationFeature, {
+                hash: {},
+                inverse: l.noop,
+                fn: l.program(1, c, i)
+            });
+            if (o || o === 0) s += o;
+            return s += '\n    <li class="retire-guide-preferences"></li>\n</ul>\n', s
+        });
+        return t.registerPartial("views/profile/contactInfo", n), n
+    });

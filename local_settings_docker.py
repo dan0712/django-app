@@ -28,6 +28,20 @@ elif environment == "dev":
              'PORT': 5432,
          }
     }
+    SITE_URL = "http://dev.betasmartz.com"
+    DEBUG = True
+
+elif environment == "demo":
+    DATABASES = {
+         'default': {
+             'ENGINE': 'django.db.backends.postgresql_psycopg2',
+             'NAME': "betasmartz_demo",
+             'USER': "postgres",
+             'PASSWORD': os.environ["DB_PASSWORD"],
+             'HOST': os.environ["DB_HOST"],
+             'PORT': 5432,
+         }
+    }
     SITE_URL = "http://demo.betasmartz.com"
     DEBUG = True
     

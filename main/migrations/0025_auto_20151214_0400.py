@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='advisor',
             name='security_question_2',
-            field=models.CharField(default='', max_length=255, choices=[('What was your first car?', 'What was your first car?'), ('What was your favourite subject at school?', 'What was your favourite subject at school?'), ('In what month was your father born?', 'In what month was your father born?')]),
+            field=models.CharField(max_length=255, default='', choices=[('What was your first car?', 'What was your first car?'), ('What was your favourite subject at school?', 'What was your favourite subject at school?'), ('In what month was your father born?', 'In what month was your father born?')]),
         ),
         migrations.AlterField(
             model_name='assetclass',

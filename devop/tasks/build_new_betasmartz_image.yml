@@ -1,0 +1,6 @@
+  - name: Create betasmartz image
+    docker_image: >
+      path=/home/ibmcloud/betasmartz
+      name=betasmartz_app
+      tag=latest
+      state=build

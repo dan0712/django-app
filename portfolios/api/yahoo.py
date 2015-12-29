@@ -187,6 +187,10 @@ class YahooApi:
         return bid*self.to_aud(currency)
 
     def market_cap(self, ticker):
+        '''
+        :param ticker: The name of the symbol.
+        :return: Market capitalisation in AUD
+        '''
         if ticker.symbol in self.market_cap_cache:
             return self.market_cap_cache[ticker.symbol]
         ticker_symbol = self.symbol_dict.get(ticker.symbol, ticker.symbol)

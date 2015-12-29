@@ -108,7 +108,7 @@ We use Goal Type to determine our recommended allocation.
 <div style="display:table; width:100%">
     <div class="slider-labels clearfix">
         <div class="">
-             <div class="existing-bonds-value right">
+             <div class="existing-bonds-value">
                 <span class="value"><%= bondAllocation() %></span> Bonds
              </div>
 
@@ -119,13 +119,38 @@ We use Goal Type to determine our recommended allocation.
              </div>
 
         </div>
-        <div style="text-align: right;">
-            <div class="existing-satellite-value right">
-                <span class="value"><%= SatelliteAllocation() %></span> Satellite
-             </div>
-        </div>
+
     </div>
 </div>
+
+
+
+<div class="clearfix" style="margin-top:15px;">
+<div class="controls-title left">satellite allocation <a class="reset-x-icon reset right" data-help-content="Reset"></a></div>
+</div>
+
+<div>
+<div class="satellite-slider"></div>
+</div>
+
+<div style="display:table; width:100%">
+    <div class="slider-labels clearfix">
+        <div class="">
+             <div class="existing-core-value">
+                <span class="value"><%= coreAllocation() %></span> Core
+             </div>
+
+        </div>
+        <div style="text-align: center;">
+             <div class="existing-satellite-value right">
+                <span class="value"><%= satelliteAllocation() %></span> Satellite
+             </div>
+
+        </div>
+
+    </div>
+</div>
+
 <% if (showTaxImpactButton()) { %>
 <% } %>
 
@@ -300,7 +325,10 @@ You can make this allocation change starting tomorrow.
 <div class="attribute">
 <div class="name">Allocation</div>
 <div class="value"><%= pct(allocationChange().get('allocation')) %> stocks</div>
-<div class="value"><%= pct(1-allocationChange().get('satelliteAlloc')-allocationChange().get('allocation')) %> bonds</div>
+<div class="value"><%= pct(1-allocationChange().get('allocation')) %> bonds</div>
+<hr style="width: 90%;">
+<div class="value"><%= pct(1-allocationChange().get('satelliteAlloc')) %> core</div>
+
 <div class="value"><%= pct(allocationChange().get('satelliteAlloc')) %> satellite</div>
 
 </div>
@@ -1507,7 +1535,7 @@ BetaSmartz is not responsible for incorrect entry or other failure on the part o
 BetaSmartz reserves the right to terminate this offer at any time, to limit the amount of account bonuses you are eligible to receive, and to refuse or recover any promotion award if BetaSmartz determines that it was obtained under wrongful or fraudulent circumstances, that inaccurate or incomplete information was provided in opening the account, or that any terms of the BetaSmartz Account Agreements have been violated.
 In referring friends to open a BetaSmartz account you are offering investment advice on behalf of BetaSmartz and under the supervision and control of BetaSmartz.
 You agree to limit the investment advice you offer to the referral web page and email provided by BetaSmartz.
-You agree that your participation in the BetaSmartz Referral Program will conform to the terms contained herein as well as the provisions of the Investment Advisers Act of 1940, 15 U.S.C. ¬ß 80b-1, and the rules thereunder.
+You agree that your participation in the BetaSmartz Referral Program will conform to the terms contained herein as well as the provisions of the Investment Advisers Act of 1940, 15 U.S.C. Â¬ÃŸ 80b-1, and the rules thereunder.
 </p>
 </div>
 
@@ -2400,10 +2428,10 @@ should be directed to a tax advisor or the IRS.
 
 <div class="panel card" id="welcomeBackPanel">
 <div class="x-close"></div>
-<h2>You’re almost there!</h2>
+<h2>Youâ€™re almost there!</h2>
 <p>We just need a bit more information to sign you up for a full account.</p>
 
-<p class="unadvised-user-only">Give it a go - it’s free for the first 30 days.</p>
+<p class="unadvised-user-only">Give it a go - itâ€™s free for the first 30 days.</p>
 </div>
 
 <div class="uncaught-errors panel">

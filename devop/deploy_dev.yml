@@ -1,0 +1,8 @@
+---
+- name: Deploy dev instance
+  hosts: all
+  tasks:
+    - include: {tasks/stop_betasmartz.yml
+      when: is_updater is not defined
+    - include: tasks/container_deploy.yml
+      when: is_updater is defined

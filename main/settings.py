@@ -47,7 +47,11 @@ INSTALLED_APPS = (
     'filebrowser',
     'django.contrib.admin',
     'django_cron',
+    'test_without_migrations',
+
 )
+
+TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

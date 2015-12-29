@@ -1,0 +1,20 @@
+- name: start nginx
+  docker:
+    name: nginx
+    image: betasmartz_nginx
+    state: reloaded
+    restart_policy: always
+    links:
+      - app_betasmartz_app:app
+      - demo_betasmartz_app:demo
+      - dev_betasmartz_app:dev
+      - wordpress:wp
+    volumes:
+      - /home/ibmcloud/dev_static:/betasmartz/dev/collected_static
+      - /home/ibmcloud/dev_media:/betasmartz/dev/media
+      - /home/ibmcloud/demo_static:/betasmartz/demo/collected_static
+      - /home/ibmcloud/demo_media:/betasmartz/demo/media
+      - /home/ibmcloud/prod_media:/betasmartz/app/media
+      - /home/ibmcloud/prod_static:/betasmartz/app/collected_static
+    ports:
+      - 80:80
