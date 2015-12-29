@@ -5,7 +5,10 @@ __author__ = 'cristian'
 nginx_app_file = open("nginx-app.conf").read()
 wp_file = open("wp-app.conf").read()
 
-# write demo conf
+# The below <APP>_PORT_80_TCP_ADDR & *_PORT environment vars come from docker when starting nginx with
+# the --link specifier to the other containers.
+
+# write demo conf.
 demo = nginx_app_file.format(app_host=os.environ["DEMO_PORT_80_TCP_ADDR"],
                              app_port=os.environ["DEMO_PORT_80_TCP_PORT"],
                              domain="demo")
