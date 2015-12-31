@@ -12,8 +12,8 @@ class ProxyAssetClass(AssetClass):
 class ProxyTicker(Ticker):
     class Meta:
         proxy = True
-        verbose_name_plural = "Ticker"
-        verbose_name = "Tickers"
+        verbose_name_plural = "Tickers"
+        verbose_name = "Ticker"
 
 
 class PortfolioSet(models.Model):

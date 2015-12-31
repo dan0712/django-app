@@ -1,8 +1,11 @@
 import numpy as np
 import numpy.linalg as la
-from cvxpy import Variable, Minimize, quad_form, Problem, sum_entries, norm
-from cvxpy.problems.solvers.cvxopt_intf import CVXOPT
+from cvxpy import Variable, Minimize, quad_form, Problem, sum_entries
+import logging
 
+
+logger = logging.getLogger('betasmartz.bl_model')
+#logger.setLevel(logging.DEBUG)
 
 class OptimizationFailed(Exception):
     pass
@@ -36,6 +39,11 @@ def bl_model(sigma, w_tilde, p, v, n, c=1.0, lambda_bar=1.2):
         c -- any positive float, default to 1 (as in example on page 5)
         lambda_bar -- positive float, default to 1.2 as mentioned after equation (5)
     """
+    '''
+    i_eigvals = np.linalg.eigvals(sigma)
+    if np.any(i_eigvals < 0):
+        logger.debug("Input Matrix: {} not PSD. Eigenvalues: {}".format(sigma, i_eigvals))
+    '''
 
     pi = 2.0 * lambda_bar * np.dot(sigma, w_tilde)  # equation (5)
     tau = 1.0 / float(n)  # equation (8)
@@ -52,7 +60,9 @@ def bl_model(sigma, w_tilde, p, v, n, c=1.0, lambda_bar=1.2):
 
     # The model can leave sig not pos semi definite. If so, fix it.
     if np.any(np.linalg.eigvals(sig_bl) < 0):
+        logger.debug("Output Matrix {} not PSD. Fixing.".format(sig_bl))
         sig_bl = near_psd(sig_bl)
+        logger.debug("New Output Matrix {}".format(sig_bl))
 
     # This BL model can leave sig in a not perfect symmetry, so make it so.
     return mu_bl, (sig_bl + sig_bl.T) / 2

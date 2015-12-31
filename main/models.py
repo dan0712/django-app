@@ -1185,12 +1185,16 @@ class Region(models.Model):
     name = models.CharField(max_length=127, blank=False, null=False, help_text='Name of the region')
     description = models.TextField(blank=True, default="", null=False)
 
+    def __str__(self):
+        return self.name
+
 
 class Ticker(models.Model):
     symbol = models.CharField(
             max_length=10,
             blank=False,
             null=False,
+            unique=True,
             validators=[RegexValidator(regex=r'^[^ ]+$',
                                        message="Invalid symbol format")])
     display_name = models.CharField(max_length=255, blank=False, null=False)
@@ -1204,7 +1208,7 @@ class Ticker(models.Model):
                                   help_text='Is this an ethical instrument?')
     etf = models.BooleanField(default=True,
                               help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
-    region = models.ForeignKey(Region, null=True)
+    region = models.ForeignKey(Region)
 
     def __str__(self):
         return self.symbol

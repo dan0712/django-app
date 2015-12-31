@@ -92,7 +92,7 @@ class PortfolioCalculationTests(TestCase):
         # Check auto allocation mode, non ethical.
         goal1 = Mock(Goal)
         goal1.optimization_mode = 1
-        goal1.picked_regions = ["UK", "AU"]
+        goal1.picked_regions = '["UK", "AU"]'
         goal1.allocation = 0.4
         goal1.satellite_pct = 0.2
         goal1.type = "INVESTING"
@@ -134,7 +134,7 @@ class PortfolioCalculationTests(TestCase):
         goal1 = Mock(Goal)
         goal1.name = "Goal 1"
         goal1.optimization_mode = 1
-        goal1.picked_regions = ["UK", "AU"]
+        goal1.picked_regions = '["UK", "AU"]'
         goal1.allocation = 1.0
         #goal1.allocation = 0.8 # Cannot do 20% bonds, as there are no bonds...
         goal1.satellite_pct = 0.2
@@ -153,7 +153,7 @@ class PortfolioCalculationTests(TestCase):
         goal1 = Mock(Goal)
         goal1.name = "Goal 1"
         goal1.optimization_mode = 1
-        goal1.picked_regions = ["UK", "AU"]
+        goal1.picked_regions = '["UK", "AU"]'
         goal1.allocation = 0.23
         goal1.satellite_pct = 0.2
         goal1.type = "INVESTING"

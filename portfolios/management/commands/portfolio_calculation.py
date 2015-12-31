@@ -90,17 +90,19 @@ def build_instruments(api=DbApi()):
     # Drop the items from the instruments table that were just used to build the masks.
     instruments.drop(['reg', 'eth', 'type', 'etf'], axis=1, inplace=True)
 
+    # Old covariance
     #sk_co_var, co_vars = calculate_co_vars(ctable.shape[1], ctable)
     #co_vars = pd.DataFrame(co_vars, index=instruments.index, columns=instruments.index)
     
     # Drop dates that have nulls for some symbols.
     # TODO: Have some sanity check over the data. Make sure it's recent, gap free and with enough samples.
-    co_vars = ctable.dropna().cov()
+    ptable = ctable.dropna()
 
-    logger.debug("Prices table: {}".format(ctable.values.tolist()))
+    logger.debug("Prices as table: {}".format(ptable.to_dict('list')))
+    logger.debug("Prices as list: {}".format(ptable.values.tolist()))
 
-    # TODO: This number of samples is not equal for all instruments
-    return co_vars, ctable.dropna().shape[0], instruments, masks
+    co_vars = ptable.cov()
+    return co_vars, ptable.shape[0], instruments, masks
 
 
 def get_instruments(api=DbApi()):
