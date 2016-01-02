@@ -29,12 +29,12 @@ gulp.task('compile_dev', function() {
     var tsResult = gulp.src('src/application.ts').pipe(sourcemaps.init()).pipe(ts(tsProject));
 
     return merge([ // Merge the two output streams, so this task is finished when the IO of both operations are done.
-        tsResult.dts.pipe(gulp.dest('dist/definitions')),
+        tsResult.dts.pipe(gulp.dest('public/definitions')),
         tsResult.js.pipe(babel({ presets: ['es2015']}))
             .pipe(insert.prepend(vendors_bundle))
             .pipe(include())
             .pipe(sourcemaps.write('../js'))
-            .pipe(gulp.dest('dist/js'))
+            .pipe(gulp.dest('public/js'))
     ]);
 });
 
@@ -44,7 +44,7 @@ gulp.task('compile_dev', function() {
  * Publish html files
  */
 gulp.task('publish_views', function() {
-    gulp.src(["src/views/**/*"]).pipe(gulp.dest('dist/views'));
+    gulp.src(["src/views/**/*"]).pipe(gulp.dest('public/views'));
 
 });
 

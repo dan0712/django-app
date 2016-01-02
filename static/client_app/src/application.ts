@@ -24,13 +24,13 @@ module App{
               .state('settings', {
                   url: '/settings',
                   abstract: true,
-                  templateUrl: '/static/client_app/dist/views/account_settings/layout.html'
+                  templateUrl: '/static/client_app/public/views/account_settings/layout.html'
               })
               .state('settings.profile', {
                   url: '/profile',
                   views:{
                       'content':{
-                          templateUrl: '/static/client_app/dist/views/account_settings/profile.html',
+                          templateUrl: '/static/client_app/public/views/account_settings/profile.html',
                           controller:'AccountSettingsProfileCtrl'
                       }
                   }

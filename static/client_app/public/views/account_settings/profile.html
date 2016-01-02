@@ -1,0 +1,102 @@
+<div class="settings profile" ng-controller="AccountSettingsProfileCtrl">
+
+    <div class="basic-info clearfix">
+            <h1 class="page-heading">{{user.first_name}} {{user.middle_name}} {{user.last_name}}</h1>
+            <div class="membership-details">
+                <div class="email">
+                    {{user.email}}
+                    |
+                    <a class="edit" href="/app/email_change/new">Change email</a>
+                    |
+                    <a class="edit" href="/app/password_change/new">Change password</a>
+                </div>
+                <div class="member-since">
+                    {{user.date_joined}}
+                </div>
+     </div>
+
+        <div class="left">
+
+            <div class="section personal-info">
+                <h2>
+                    Personal Profile
+                    <a class="button" href="/app/personal_info/edit">Edit</a>
+                </h2>
+
+                <div>
+                    <span>Address 1</span>
+                    <span>{{personalInfo.address_line_1}}</span>
+                </div>
+
+                <div>
+                    <span>Address 2</span>
+                    <span>{{personalInfo.address_line_2}}</span>
+                </div>
+
+                <div>
+                    <span>City</span>
+                    <span>{{personalInfo.city}}</span>
+                </div>
+
+                <div>
+                    <span>State</span>
+                    <span>{{personalInfo.state}}</span>
+                </div>
+
+                <div>
+                    <span>Zip</span>
+                    <span>{{personalInfo.post_code}}</span>
+                </div>
+
+                <div>
+                    <span>Phone</span>
+                    <span>{{personalInfo.phone}}</span>
+                </div>
+
+                <div>
+                    <span>Employment status</span>
+                    <span>{{personalInfo.employment_status}}</span>
+                </div>
+
+
+                <div>
+                    <span>Annual income</span>
+                    <span>{{personalInfo.income}}</span>
+                </div>
+
+                <div>
+                    <span>Estimated investable assets</span>
+                    <span>{{personalInfo.net_worth}}</span>
+                </div>
+
+            </div>
+
+
+        </div>
+
+        <div class="right">
+
+            <div class="section retire-guide">
+                <h2>
+                    RetireGuide
+
+                    <span class="css-tooltip"><span class="css-tooltip-label ">
+                        <span class="help-icon"></span>
+                        <div class="css-tooltip-wrapper">
+                            <span class="css-tooltip-body">
+                            RetireGuide is a retirement planning tool available on the Advice tab.  If you
+                            decide not to use this tool you can disable it which will clear your plan and
+                            hide it from your account.
+                            </span></div></span></span>
+                    <a class="button" data-disable-target=".settings" data-disable="true" data-method="delete" data-remote="true" data-track-event="ElementClicked" data-track-location="Profile" data-track-module="Webapp" data-track-name="DisableRetireGuide" data-track-type="Button" href="/app/retire_guide_status" rel="nofollow">Disable</a>
+                </h2>
+
+                <div>
+                    <span>Status</span>
+                    <span>Available</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
