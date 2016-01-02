@@ -6,10 +6,8 @@ from filebrowser.sites import site
 from main import settings
 from .views import *
 
-
 def ok_response_json(*args, **kwargs):
     return HttpResponse("[]", content_type='application/json')
-
 
 urlpatterns = patterns(
     '',
@@ -127,6 +125,8 @@ urlpatterns = patterns(
     url(r'^client/app',
         ClientApp.as_view(),
         name='client:app'),
+    url(r'^client/2.0/app',
+        ClientApp2.as_view()),
     url(r'^(?P<slug>[\w-]+)/client/signup/(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         ClientSignUp.as_view(),
         name='client:sign_up'),
@@ -234,7 +234,10 @@ urlpatterns = patterns(
     url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         'django.contrib.auth.views.password_reset_confirm',
         {'post_reset_redirect': '/login'},
-        name='password_reset_confirm'))
+        name='password_reset_confirm'),
+
+    url(r'^client/2.0/api/',  include(router.urls)),
+)
 
 if settings.DEBUG:
     urlpatterns += patterns(

@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django_cron',
     'test_without_migrations',
+    'rest_framework'
 
 )
 

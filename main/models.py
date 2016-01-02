@@ -1370,6 +1370,7 @@ class Goal(models.Model):
     class Meta:
         ordering = ['name']
 
+
     @property
     def hedges(self):
         if self.custom_hedges is None:

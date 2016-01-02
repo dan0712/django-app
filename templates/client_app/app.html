@@ -1,0 +1,15 @@
+{% load staticfiles %}
+<!DOCTYPE html >
+<html lang="en" ng-app="BetasmartzClientApp">
+  <head>
+    <title></title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}"/>
+    </head>
+  <body>
+
+    <div ui-view></div>
+
+    <script src="{% static 'client_app/dist/js/application.js' %}"></script>
+
+  </body>
+</html>
