@@ -9,8 +9,8 @@ if environment == "prod":
              'NAME': "betasmartz_prod",
              'USER': "postgres",
              'PASSWORD': os.environ["DB_PASSWORD"],
-             'HOST': os.environ["DB_HOST"],
-             'PORT': 5432,
+             'HOST': os.environ["DB_PORT_5432_TCP_ADDR"],
+             'PORT': os.environ["DB_PORT_5432_TCP_PORT"],
          }
     }
     SITE_URL = "http://app.betasmartz.com"
@@ -24,8 +24,8 @@ elif environment == "dev":
              'NAME': "betasmartz_dev",
              'USER': "postgres",
              'PASSWORD': os.environ["DB_PASSWORD"],
-             'HOST': os.environ["DB_HOST"],
-             'PORT': 5432,
+             'HOST': os.environ["DB_PORT_5432_TCP_ADDR"],
+             'PORT': os.environ["DB_PORT_5432_TCP_PORT"],
          }
     }
     SITE_URL = "http://dev.betasmartz.com"
@@ -38,8 +38,8 @@ elif environment == "demo":
              'NAME': "betasmartz_demo",
              'USER': "postgres",
              'PASSWORD': os.environ["DB_PASSWORD"],
-             'HOST': os.environ["DB_HOST"],
-             'PORT': 5432,
+             'HOST': os.environ["DB_PORT_5432_TCP_ADDR"],
+             'PORT': os.environ["DB_PORT_5432_TCP_PORT"],
          }
     }
     SITE_URL = "http://demo.betasmartz.com"
