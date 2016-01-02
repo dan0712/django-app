@@ -5,7 +5,7 @@
 1. install nodejs
 
 2. install dev dependences
-    npm install --dev
+    ```npm install --dev```
 
 3. build the app
-    gulp build_dev
+    ```gulp build_dev```
