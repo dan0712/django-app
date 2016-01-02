@@ -1,5 +1,5 @@
 /**
- * Common ubterface of objects that can be used in different controllers
+ * Common interfaces of objects that can be used in different controllers
  */
 module App{
 
