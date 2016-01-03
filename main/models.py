@@ -308,6 +308,13 @@ class PersonalData(models.Model):
                                             4:7] + "-" + self.work_phone[7:10]
 
     @property
+    def states_codes(self):
+        states = []
+        for item in self._meta.get_field('state').choices:
+            states.append({"db_value": item[0], "name": item[1]})
+        return states
+
+    @property
     def email(self):
         return self.user.email
 

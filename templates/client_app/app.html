@@ -3,13 +3,17 @@
 <html lang="en" ng-app="BetasmartzClientApp">
   <head>
     <title></title>
-    <link rel="stylesheet" href="{% static 'css/app.css' %}"/>
+
+      <!-- Do not add any more styles here, this is the output of compiling all styles together -->
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tinymce_4/tinymce/plugins/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'client_app/public/css/client_app.css' %}">
     </head>
   <body>
 
     <div ui-view></div>
 
     <script src="{% static 'client_app/public/js/application.js' %}"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
 
   </body>
 </html>

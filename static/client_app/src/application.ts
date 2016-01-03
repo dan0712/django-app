@@ -1,20 +1,24 @@
-/// <reference path='libs/types/angularjs/angular.d.ts' />
-/// <reference path='libs/types/angular-ui-router/angular-ui-router.d.ts' />
-/// <reference path='controllers/account_settings/profile.ts' />
+/// <reference path='all.d.ts' />
 
 module App{
     "use strict";
-    var BetasmartzClientApp = angular.module('BetasmartzClientApp', ['ui.router', 'restangular']);
+    var BetasmartzClientApp = angular.module('BetasmartzClientApp',
+        ['ui.router',
+         'restangular',
+         'ngMaterial',
+         'angularModalService',
+         'ngMask']);
 
     //Add controllers
     BetasmartzClientApp.controller("AccountSettingsProfileCtrl", Controllers.AccountSettings.ProfileCtrl);
+    BetasmartzClientApp.controller("AccountSettingsPersonalInfoModalCtrl", Controllers.AccountSettings.PersonalInfoModalCtrl);
 
     /*
         App Configuration
      */
     class AppConfig{
         constructor(private $stateProvider:angular.ui.IStateProvider,
-                    private $urlRouterProvider:angular.ui.IUrlRouterProvider){
+                    private $urlRouterProvider:angular.ui.IUrlRouterProvider, private $mdThemingProvider){
 
             this.$urlRouterProvider.otherwise("/settings/profile");
             this.$stateProvider
@@ -36,14 +40,18 @@ module App{
                   }
               });
 
+            // Theme
+            $mdThemingProvider.theme('default').primaryPalette('green').accentPalette('teal');
+            $mdThemingProvider.theme('backGreen').backgroundPalette('green').dark();
+
         }
     }
 
     //configure
-    BetasmartzClientApp.config(["$stateProvider", "$urlRouterProvider",
-        ($stateProvider, $urlRouterProvider) =>
+    BetasmartzClientApp.config(["$stateProvider", "$urlRouterProvider", "$mdThemingProvider",
+        ($stateProvider, $urlRouterProvider, $mdThemingProvider) =>
         {
-            return new AppConfig($stateProvider, $urlRouterProvider);
+            return new AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider);
         }
     ]);
 

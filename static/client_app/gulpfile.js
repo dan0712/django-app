@@ -6,6 +6,9 @@ var include  = require("gulp-include");
 var insert = require('gulp-insert');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
+var stylus = require('gulp-stylus');
+var nib = require('nib');
+
 
 
 /*
@@ -14,10 +17,18 @@ var sourcemaps = require('gulp-sourcemaps');
  *  ======================================================================
 */
 
-var vendors_bundle="//=require libs/underscore.js\n\
+var vendors_bundle="//=require utils/mixins.js\n\
+//=require libs/jquery-2.1.4.js\n\
+//=require libs/underscore.js\n\
 //=require libs/angular-1.4.js\n\
+//=require libs/angular-animate.js\n\
+//=require libs/angular-aria.js\n\
+//=require libs/angular-messages.js\n\
 //=require libs/angular-ui-router.js\n\
-//=require libs/restangular.js\n"
+//=require libs/angular-material.js\n\
+//=require libs/ngMask.js\n\
+//=require libs/restangular.js\n\
+//=require libs/angular-modal-service.js\n"
 
 
 var tsProject = ts.createProject('tsconfig.json');
@@ -25,7 +36,7 @@ var tsProject = ts.createProject('tsconfig.json');
 /*
  * Compile betasmartz client app
  */
-gulp.task('compile_dev', function() {
+gulp.task('compile_js_dev', function() {
     var tsResult = gulp.src('src/application.ts').pipe(sourcemaps.init()).pipe(ts(tsProject));
 
     return merge([ // Merge the two output streams, so this task is finished when the IO of both operations are done.
@@ -39,6 +50,23 @@ gulp.task('compile_dev', function() {
 });
 
 
+/*
+ * Compile betasmartz client app (production ready)
+ */
+gulp.task('compile_js_prod', function() {
+    var tsResult = gulp.src('src/application.ts').pipe(sourcemaps.init()).pipe(ts(tsProject));
+
+    return merge([ // Merge the two output streams, so this task is finished when the IO of both operations are done.
+        tsResult.dts.pipe(gulp.dest('public/definitions')),
+        tsResult.js.pipe(babel({ presets: ['es2015']}))
+            .pipe(insert.prepend(vendors_bundle))
+            .pipe(include())
+            .pipe(uglify())
+            .pipe(sourcemaps.write('../js'))
+            .pipe(gulp.dest('public/js'))
+    ]);
+});
+
 
 /*
  * Publish html files
@@ -49,10 +77,26 @@ gulp.task('publish_views', function() {
 });
 
 
+// publish css files
+gulp.task('compile_css_dev', function () {
+    gulp.src('src/stylus/client_app.styl')
+        .pipe(stylus({use:nib(), 'include css': true}))
+        .pipe(gulp.dest('public/css'));
+});
+
+
 /*
- * Build app
+ * Build app (dev)
  */
-gulp.task('build_dev', ['publish_views', 'compile_dev']);
+gulp.task('build_dev', ['publish_views', 'compile_js_dev', 'compile_css_dev']);
+
+
+
+/*
+ * Build app (production ready)
+ */
+gulp.task('build_prod', ['publish_views', 'compile_js_prod']);
+
 
 
 
