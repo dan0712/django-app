@@ -134,4 +134,5 @@ module App.Controllers.AccountSettings{
     applyMixins(PersonalInfoModalCtrl, [PersonalInfoMixin]);
 
 
+
 }

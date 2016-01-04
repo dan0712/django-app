@@ -75681,6 +75681,117 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * Created by cristian on 3/01/16.
+ */
+/// <reference path='../all.d.ts' />
+var App;
+(function (App) {
+    var Observable = (function () {
+        function Observable(name, initialValue) {
+            _classCallCheck(this, Observable);
+
+            this.name = name;
+            // init observables
+            this.__listeners = [];
+            window.$AppObservables = window.$AppObservables || (window.$AppObservables = {});
+            // create observable variable
+            window.$AppObservables[this.name] = window.$AppObservables[this.name] || (window.$AppObservables[this.name] = this);
+            this.__primeObject = window.$AppObservables[this.name];
+            // init state in case that the observable don't exists already
+            if (this.__primeObject == this) {
+                this.__value = initialValue;
+            }
+        }
+        /*
+            Subscribe a new function to the listeners callback, return the function for remove the listener
+            @param listener: the callback function
+            @return: unbind function
+         */
+
+        _createClass(Observable, [{
+            key: "subscribe",
+            value: function subscribe(listener) {
+                var _this = this;
+
+                // in case that is the same object
+                if (this.__primeObject == this) {
+                    this.__listeners.push(listener);
+                    // unbind function
+                    return function () {
+                        _this.__listeners.splice(_this.__listeners.indexOf(listener), 1);
+                    };
+                } else {
+                    return this.__primeObject.subscribe(listener);
+                }
+            }
+            // call all the listeners
+
+        }, {
+            key: "__callListeners",
+            value: function __callListeners() {
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+
+                try {
+                    for (var _iterator = this.__listeners[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var listener = _step.value;
+
+                        listener();
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator.return) {
+                            _iterator.return();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                }
+            }
+            /*
+                set new value
+            */
+
+        }, {
+            key: "set",
+            value: function set(value) {
+                // console.log(this.name, value);
+                // in case that is the same object
+                if (this.__primeObject == this) {
+                    this.__value = value;
+                    this.__callListeners();
+                } else {
+                    this.__primeObject.set(value);
+                }
+            }
+            /*
+                get current value
+             */
+
+        }, {
+            key: "get",
+            value: function get() {
+                // in case that is the same object
+                if (this.__primeObject == this) {
+                    return this.__value;
+                } else {
+                    return this.__primeObject.get();
+                }
+            }
+        }]);
+
+        return Observable;
+    })();
+
+    App.Observable = Observable;
+})(App || (App = {}));
 /// <reference path='../libs/types/jquery/jquery.d.ts' />
 /**
  * Created by cristian on 3/01/16.
@@ -75691,7 +75802,7 @@ var App;
 
     var Modal = (function () {
         function Modal(element, options) {
-            var _this = this;
+            var _this2 = this;
 
             _classCallCheck(this, Modal);
 
@@ -75749,14 +75860,14 @@ var App;
             //listen close event
             var closebt = jQuery(this.modal.find('.closebt').first());
             closebt.on("click", function () {
-                _this.close();
+                _this2.close();
             });
         }
 
         _createClass(Modal, [{
             key: "show",
             value: function show() {
-                var _this2 = this;
+                var _this3 = this;
 
                 jQuery('body, html').css({ 'overflow': 'hidden' });
                 if (this.modal.hasClass(this.modalId + '-off')) {
@@ -75769,7 +75880,7 @@ var App;
                     this.modal.css({ 'opacity': this.settings.opacityIn, 'z-index': this.settings.zIndexIn });
                     this.modal.addClass(this.settings.animatedIn);
                     this.modal.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-                        _this2.afterOpen();
+                        _this3.afterOpen();
                     });
                 }
                 ;
@@ -75777,7 +75888,7 @@ var App;
         }, {
             key: "close",
             value: function close() {
-                var _this3 = this;
+                var _this4 = this;
 
                 jQuery('body, html').css({ 'overflow': 'auto' });
                 this.settings.beforeClose(); //beforeClose
@@ -75789,7 +75900,7 @@ var App;
                     this.modal.removeClass(this.settings.animatedIn);
                     this.modal.addClass(this.settings.animatedOut);
                     this.modal.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-                        _this3.afterClose();
+                        _this4.afterClose();
                     });
                 }
             }
@@ -75829,63 +75940,6 @@ var App;
     "use strict";
 
     App.apiEndpoint = "/client/2.0/api";
-})(App || (App = {}));
-/// <reference path='../all.d.ts' />
-var App;
-(function (App) {
-    /*
-     *   ============================================================
-     *                            User Api
-     *   ============================================================
-     */
-    var userApi = App.apiEndpoint + "/user/";
-
-    var User = function User() {
-        _classCallCheck(this, User);
-    };
-
-    App.User = User;
-    /*
-     * Contains commons function for manage user data
-     */
-
-    var UserMixin = (function () {
-        function UserMixin() {
-            _classCallCheck(this, UserMixin);
-        }
-
-        _createClass(UserMixin, [{
-            key: "loadUser",
-
-            /*
-             Load user data (name, email, join date, etc) of the current client to the app
-             */
-            value: function loadUser() {
-                var _this4 = this;
-
-                var request = this.Restangular.all(userApi).getList();
-                request.then(function (users) {
-                    _this4.$scope.user = users[0];
-                });
-            }
-        }]);
-
-        return UserMixin;
-    })();
-
-    App.UserMixin = UserMixin;
-
-    var RetireSmart = function RetireSmart() {
-        _classCallCheck(this, RetireSmart);
-    };
-
-    App.RetireSmart = RetireSmart;
-
-    var PricingPlan = function PricingPlan() {
-        _classCallCheck(this, PricingPlan);
-    };
-
-    App.PricingPlan = PricingPlan;
 })(App || (App = {}));
 /// <reference path='../all.d.ts' />
 /**
@@ -75936,6 +75990,63 @@ var App;
     })();
 
     App.PersonalInfoMixin = PersonalInfoMixin;
+})(App || (App = {}));
+/// <reference path='../all.d.ts' />
+var App;
+(function (App) {
+    /*
+     *   ============================================================
+     *                            User Api
+     *   ============================================================
+     */
+    var userApi = App.apiEndpoint + "/user/";
+
+    var User = function User() {
+        _classCallCheck(this, User);
+    };
+
+    App.User = User;
+    /*
+     * Contains commons function for manage user data
+     */
+
+    var UserMixin = (function () {
+        function UserMixin() {
+            _classCallCheck(this, UserMixin);
+        }
+
+        _createClass(UserMixin, [{
+            key: "loadUser",
+
+            /*
+             Load user data (name, email, join date, etc) of the current client to the app
+             */
+            value: function loadUser() {
+                var _this6 = this;
+
+                var request = this.Restangular.all(userApi).getList();
+                request.then(function (users) {
+                    _this6.$scope.user = users[0];
+                });
+            }
+        }]);
+
+        return UserMixin;
+    })();
+
+    App.UserMixin = UserMixin;
+
+    var RetireSmart = function RetireSmart() {
+        _classCallCheck(this, RetireSmart);
+    };
+
+    App.RetireSmart = RetireSmart;
+
+    var PricingPlan = function PricingPlan() {
+        _classCallCheck(this, PricingPlan);
+    };
+
+    App.PricingPlan = PricingPlan;
 })(App || (App = {}));
 /// <reference path='../../interfaces/user.ts' />
 /// <reference path='../../interfaces/personal_info.ts' />
@@ -76038,25 +76149,100 @@ var App;
         })(AccountSettings = Controllers.AccountSettings || (Controllers.AccountSettings = {}));
     })(Controllers = App.Controllers || (App.Controllers = {}));
 })(App || (App = {}));
+/**
+ * Created by cristian on 4/01/16.
+ */
+/// <reference path='../../all.d.ts' />
+var App;
+(function (App) {
+    var Controllers;
+    (function (Controllers) {
+        var AccountSettings;
+        (function (AccountSettings) {
+            "use strict";
+            /*
+                controll the side nav on account settings page
+             */
+
+            var SideNavCtrl = function SideNavCtrl($scope) {
+                _classCallCheck(this, SideNavCtrl);
+
+                this.$scope = $scope;
+                //init
+                this.$scope.isOpen = true;
+            };
+
+            SideNavCtrl.$inject = ["$scope"];
+            AccountSettings.SideNavCtrl = SideNavCtrl;
+        })(AccountSettings = Controllers.AccountSettings || (Controllers.AccountSettings = {}));
+    })(Controllers = App.Controllers || (App.Controllers = {}));
+})(App || (App = {}));
+/// <reference path='../all.d.ts' />
+var App;
+(function (App) {
+    var Controllers;
+    (function (Controllers) {
+        "use strict";
+        /*
+            Control when to show the global progressbar
+         */
+
+        var GlobalProgressBarCtrl = function GlobalProgressBarCtrl($scope) {
+            var _this7 = this;
+
+            _classCallCheck(this, GlobalProgressBarCtrl);
+
+            this.$scope = $scope;
+            // init
+            if (!this.$scope.currentRequests) {
+                this.$scope.currentRequests = false;
+            }
+            // listen the global observable
+            var currentRequests = new App.Observable("currentRequests", 0);
+            var unSubscribe = currentRequests.subscribe(function () {
+                _this7.$scope.currentRequests = currentRequests.get() > 0;
+            });
+            //unbind
+            this.$scope.$on("$destroy", function (event) {
+                unSubscribe();
+            });
+        };
+        // $inject annotation.
+        // It provides $injector with information about dependencies to be injected into constructor
+        // it is better to have it close to the constructor, because the parameters must match in count and type.
+
+        GlobalProgressBarCtrl.$inject = ["$scope"];
+        Controllers.GlobalProgressBarCtrl = GlobalProgressBarCtrl;
+    })(Controllers = App.Controllers || (App.Controllers = {}));
+})(App || (App = {}));
 /// <reference path='all.d.ts' />
 var App;
 (function (App) {
     "use strict";
 
-    var BetasmartzClientApp = angular.module('BetasmartzClientApp', ['ui.router', 'restangular', 'ngMaterial', 'angularModalService', 'ngMask']);
-    //Add controllers
+    var BetasmartzClientApp = angular.module('BetasmartzClientApp', ['ui.router', 'ngAnimate', 'restangular', 'ngMaterial', 'ngMessages', 'angularModalService', 'ngMask']);
+    /*
+        ============================================
+                        Add controllers
+        ==============================================
+     */
+    // progress bar
+    BetasmartzClientApp.controller("GlobalProgressBarCtrl", App.Controllers.GlobalProgressBarCtrl);
+    //account settings
+    BetasmartzClientApp.controller("AccountSideNavCtrl", App.Controllers.AccountSettings.SideNavCtrl);
     BetasmartzClientApp.controller("AccountSettingsProfileCtrl", App.Controllers.AccountSettings.ProfileCtrl);
     BetasmartzClientApp.controller("AccountSettingsPersonalInfoModalCtrl", App.Controllers.AccountSettings.PersonalInfoModalCtrl);
     /*
         App Configuration
      */
 
-    var AppConfig = function AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider) {
+    var AppConfig = function AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider, RestangularProvider) {
         _classCallCheck(this, AppConfig);
 
         this.$stateProvider = $stateProvider;
         this.$urlRouterProvider = $urlRouterProvider;
         this.$mdThemingProvider = $mdThemingProvider;
+        this.RestangularProvider = RestangularProvider;
         this.$urlRouterProvider.otherwise("/settings/profile");
         this.$stateProvider.state('settings', {
             url: '/settings',
@@ -76074,11 +76260,34 @@ var App;
         // Theme
         $mdThemingProvider.theme('default').primaryPalette('green').accentPalette('teal');
         $mdThemingProvider.theme('backGreen').backgroundPalette('green').dark();
+        $mdThemingProvider.theme('alternative').primaryPalette('lime');
+        $mdThemingProvider.theme('dark').primaryPalette('grey').accentPalette('green').dark();
+        // ==============================================
+        //  global configuration restangular
+        // ==============================================
+        RestangularProvider.addResponseInterceptor(function (data, operation, what, url, response, deferred) {
+            //When there is a new response decrease the number of current requests
+            var currentRequests = new App.Observable("currentRequests", 0);
+            var currentRequestsLength = currentRequests.get();
+            if (currentRequestsLength > 0) {
+                currentRequestsLength -= 1;
+            }
+            currentRequests.set(currentRequestsLength);
+            return data;
+        });
+        RestangularProvider.addRequestInterceptor(function (element, operation, what, url) {
+            //When there is a new request increase the number of current requests
+            var currentRequests = new App.Observable("currentRequests", 0);
+            var currentRequestsLength = currentRequests.get();
+            currentRequestsLength += 1;
+            currentRequests.set(currentRequestsLength);
+            return element;
+        });
     };
     //configure
 
-    BetasmartzClientApp.config(["$stateProvider", "$urlRouterProvider", "$mdThemingProvider", function ($stateProvider, $urlRouterProvider, $mdThemingProvider) {
-        return new AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider);
+    BetasmartzClientApp.config(["$stateProvider", "$urlRouterProvider", "$mdThemingProvider", "RestangularProvider", function ($stateProvider, $urlRouterProvider, $mdThemingProvider, RestangularProvider) {
+        return new AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider, RestangularProvider);
     }]);
 })(App || (App = {}));
 //# sourceMappingURL=../js/application.js.map

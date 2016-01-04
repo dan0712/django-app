@@ -1,15 +1,28 @@
 /// <reference path='all.d.ts' />
 
+
 module App{
     "use strict";
     var BetasmartzClientApp = angular.module('BetasmartzClientApp',
         ['ui.router',
+         'ngAnimate',
          'restangular',
          'ngMaterial',
+         'ngMessages',
          'angularModalService',
          'ngMask']);
 
-    //Add controllers
+    /*
+        ============================================
+                        Add controllers
+        ==============================================
+     */
+
+    // progress bar
+    BetasmartzClientApp.controller("GlobalProgressBarCtrl", Controllers.GlobalProgressBarCtrl);
+
+    //account settings
+    BetasmartzClientApp.controller("AccountSideNavCtrl", Controllers.AccountSettings.SideNavCtrl);
     BetasmartzClientApp.controller("AccountSettingsProfileCtrl", Controllers.AccountSettings.ProfileCtrl);
     BetasmartzClientApp.controller("AccountSettingsPersonalInfoModalCtrl", Controllers.AccountSettings.PersonalInfoModalCtrl);
 
@@ -18,7 +31,9 @@ module App{
      */
     class AppConfig{
         constructor(private $stateProvider:angular.ui.IStateProvider,
-                    private $urlRouterProvider:angular.ui.IUrlRouterProvider, private $mdThemingProvider){
+                    private $urlRouterProvider:angular.ui.IUrlRouterProvider,
+                    private $mdThemingProvider,
+                    private RestangularProvider:restangular.IProvider){
 
             this.$urlRouterProvider.otherwise("/settings/profile");
             this.$stateProvider
@@ -43,15 +58,45 @@ module App{
             // Theme
             $mdThemingProvider.theme('default').primaryPalette('green').accentPalette('teal');
             $mdThemingProvider.theme('backGreen').backgroundPalette('green').dark();
+            $mdThemingProvider.theme('alternative').primaryPalette('lime');
+            $mdThemingProvider.theme('dark').primaryPalette('grey').accentPalette('green').dark();
+
+
+
+            // ==============================================
+            //  global configuration restangular
+            // ==============================================
+            RestangularProvider.addResponseInterceptor(function(data, operation, what, url, response, deferred) {
+                //When there is a new response decrease the number of current requests
+                let currentRequests = new Observable<number>("currentRequests", 0);
+                let currentRequestsLength = currentRequests.get();
+                if(currentRequestsLength>0){
+                    currentRequestsLength -= 1;
+                }
+                currentRequests.set(currentRequestsLength);
+
+                return data;
+            });
+
+            RestangularProvider.addRequestInterceptor(function(element, operation, what, url) {
+                //When there is a new request increase the number of current requests
+                let currentRequests = new Observable<number>("currentRequests", 0);
+                let currentRequestsLength = currentRequests.get();
+                currentRequestsLength += 1;
+                currentRequests.set(currentRequestsLength);
+
+                return element;
+            })
+
 
         }
     }
 
     //configure
-    BetasmartzClientApp.config(["$stateProvider", "$urlRouterProvider", "$mdThemingProvider",
-        ($stateProvider, $urlRouterProvider, $mdThemingProvider) =>
+    BetasmartzClientApp.config(["$stateProvider", "$urlRouterProvider", "$mdThemingProvider", "RestangularProvider",
+        ($stateProvider, $urlRouterProvider, $mdThemingProvider, RestangularProvider) =>
         {
-            return new AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider);
+            return new AppConfig($stateProvider, $urlRouterProvider, $mdThemingProvider, RestangularProvider);
         }
     ]);
 

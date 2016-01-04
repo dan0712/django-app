@@ -1,84 +1,127 @@
-<div class="settings profile" ng-controller="AccountSettingsProfileCtrl">
+<div class="account-settings account-settings-profile" ng-controller="AccountSettingsProfileCtrl" layout="column">
 
-    <div class="basic-info clearfix">
-            <h1 class="page-heading">{{user.first_name}} {{user.middle_name}} {{user.last_name}}</h1>
-            <div class="membership-details">
-                <div class="email">
-                    {{user.email}}
-                    |
-                    <a class="edit" href="/app/email_change/new">Change email</a>
-                    |
-                    <a class="edit" href="/app/password_change/new">Change password</a>
-                </div>
-                <div class="member-since">
-                    {{user.date_joined}}
-                </div>
-     </div>
+            <div class="card user-info" flex>
+                <div class="content" layout="column">
+                    <h2>{{user.first_name}} {{user.middle_name}} {{user.last_name}}</h2>
+                    <div layout="row">
+                            <md-list>
+                                <md-list-item>{{user.email}}</md-list-item>
+                            </md-list>
+                            <md-divider></md-divider>
+                            <md-list>
+                                <a href="/app/email_change/new">Change email</a>
+                            </md-list>
+                            <md-divider></md-divider>
+                            <md-list>
+                                <a  href="/app/password_change/new">Change password</a>
+                            </md-list>
 
-        <div class="left">
 
-            <div class="section personal-info">
-                <h2>
-                    Personal Profile
-                    <a class="button" href="#null" ng-click="profile.showPersonalInfoEditModal()">Edit</a>
-                </h2>
 
-                <div>
-                    <span>Address 1</span>
-                    <span>{{personalInfo.address_line_1}}</span>
+                    </div>
+
                 </div>
 
-                <div>
-                    <span>Address 2</span>
-                    <span>{{personalInfo.address_line_2}}</span>
+            </div>
+            <div class="content-grid" layout-gt-sm="row">
+                <div class="card personal-info-card" flex>
+                    <div layout="column">
+                        <md-toolbar><span class="md-headline"> Personal Profile</span></md-toolbar>
+
+                        <md-list class="card-content">
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>Address 1</h3>
+                                    <p>{{personalInfo.address_line_1}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>Address 2</h3>
+                                    <p>{{personalInfo.address_line_2}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>City</h3>
+                                    <p>{{personalInfo.city}}</p>
+                                </div>
+                                <md-divider ></md-divider>
+                            </md-list-item>
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>State</h3>
+                                    <p>{{personalInfo.state}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>Zip</h3>
+                                    <p>{{personalInfo.post_code}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>phone</h3>
+                                    <p>{{personalInfo.phone}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>Employment status</h3>
+                                    <p>{{personalInfo.employment_status}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>Annual income</h3>
+                                    <p>{{personalInfo.income}}</p>
+                                </div>
+                                <md-divider></md-divider>
+                            </md-list-item>
+
+                            <md-list-item class="md-3-line">
+                                <div class="md-list-item-text">
+                                    <h3>Estimated investable assets</h3>
+                                    <p>{{personalInfo.net_worth}}</p>
+                                </div>
+                            </md-list-item>
+
+                        </md-list>
+
+                    </div>
                 </div>
+                <div class="card retirement-card" flex>
+                    <div layout="column">
+                        <md-toolbar><span class="md-headline"> RetireSmartz</span></md-toolbar>
 
-                <div>
-                    <span>City</span>
-                    <span>{{personalInfo.city}}</span>
-                </div>
-
-                <div>
-                    <span>State</span>
-                    <span>{{personalInfo.state}}</span>
-                </div>
-
-                <div>
-                    <span>Zip</span>
-                    <span>{{personalInfo.post_code}}</span>
-                </div>
-
-                <div>
-                    <span>Phone</span>
-                    <span>{{personalInfo.phone}}</span>
-                </div>
-
-                <div>
-                    <span>Employment status</span>
-                    <span>{{personalInfo.employment_status}}</span>
-                </div>
-
-
-                <div>
-                    <span>Annual income</span>
-                    <span>{{personalInfo.income}}</span>
-                </div>
-
-                <div>
-                    <span>Estimated investable assets</span>
-                    <span>{{personalInfo.net_worth}}</span>
+                    </div>
                 </div>
 
             </div>
 
+            <!--
+            <md-grid-tile md-colspan="1">
+                <div class="right">
 
-        </div>
-
-        <div class="right">
-
-            <div class="section retire-guide">
-                <h2>
-                    RetireGuide
+                    <div class="section retire-guide">
+                        <h2>
+                            RetireGuide
 
                     <span class="css-tooltip"><span class="css-tooltip-label ">
                         <span class="help-icon"></span>
@@ -88,15 +131,22 @@
                             decide not to use this tool you can disable it which will clear your plan and
                             hide it from your account.
                             </span></div></span></span>
-                    <a class="button" data-disable-target=".settings" data-disable="true" data-method="delete" data-remote="true" data-track-event="ElementClicked" data-track-location="Profile" data-track-module="Webapp" data-track-name="DisableRetireGuide" data-track-type="Button" href="/app/retire_guide_status" rel="nofollow">Disable</a>
-                </h2>
+                            <a class="button" data-disable-target=".settings" data-disable="true" data-method="delete" data-remote="true" data-track-event="ElementClicked" data-track-location="Profile" data-track-module="Webapp" data-track-name="DisableRetireGuide" data-track-type="Button" href="/app/retire_guide_status" rel="nofollow">Disable</a>
+                        </h2>
 
-                <div>
-                    <span>Status</span>
-                    <span>Available</span>
+                        <div>
+                            <span>Status</span>
+                            <span>Available</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </md-grid-tile>
+
+
+        </md-grid-list>-->
+
+
+
+
 
 </div>

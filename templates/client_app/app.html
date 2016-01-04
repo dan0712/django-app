@@ -1,19 +1,43 @@
 {% load staticfiles %}
 <!DOCTYPE html >
 <html lang="en" ng-app="BetasmartzClientApp">
-  <head>
+<head>
     <title></title>
 
-      <!-- Do not add any more styles here, this is the output of compiling all styles together -->
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tinymce_4/tinymce/plugins/fontawesome/css/font-awesome.min.css">
+    <!-- Do not add any more styles here, this is the output of compiling all styles together -->
+    <link rel="stylesheet" type="text/css"
+          href="{{ STATIC_URL }}tinymce_4/tinymce/plugins/fontawesome/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="{% static 'client_app/public/css/client_app.css' %}">
-    </head>
-  <body>
+</head>
+<body>
+<div class="global-progress-bar" ng-controller="GlobalProgressBarCtrl" ng-show="currentRequests">
+    <md-progress-linear md-mode="indeterminate" md-theme="alternative"></md-progress-linear>
+</div>
 
+<!-- Min nav bar -->
+<div class="app-header">
+
+    <md-content md-theme="dark" layout="column">
+            <div style="height: 80px; width: 100%" flex></div>
+            <md-tabs md-center-tabs md-stretch-tabs="never" md-selected="mainSelectedIndex" class="main-nav" flex>
+                <md-tab label="Overview"></md-tab>
+                <md-tab label="Portfolio"></md-tab>
+                <md-tab label="Allocation"></md-tab>
+                <md-tab label="Performance"></md-tab>
+                <md-tab label="Transfer"></md-tab>
+                <md-tab label="Activity"></md-tab>
+            </md-tabs>
+
+
+    </md-content>
+</div>
+
+<div class="app-body">
     <div ui-view></div>
+</div>
 
-    <script src="{% static 'client_app/public/js/application.js' %}"></script>
-    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
-
-  </body>
+<script src="{% static 'client_app/public/js/application.js' %}"></script>
+<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+</body>
 </html>
