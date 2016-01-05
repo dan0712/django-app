@@ -58,24 +58,31 @@
                             </div>
                         </md-input-container>
                     </div>
+                    <md-input-container class="md-block" flex-gt-sm="">
+                        <label>Phone</label>
+                        <input name="Phone" ng-model="personalInfo.phone" placeholder="####-###-###">
+                    </md-input-container>
+
+                    <div layout-gt-sm="row">
+
+                        <md-input-container class="md-block" flex-gt-sm="">
+                            <label>Employment Status</label>
+                            <input name="EmploymentStatus" ng-model="personalInfo.employment_status" placeholder="####-###-###">
+                        </md-input-container>
+
+                        <md-input-container class="md-block" flex-gt-sm="">
+                            <label>Income</label>
+                            <input name="Income" ng-model="personalInfo.income" placeholder="####-###-###">
+                        </md-input-container>
+
+                        <md-input-container class="md-block" flex-gt-sm="">
+                            <label>Estimated Assets </label>
+                            <input name="NetWorth" ng-model="personalInfo.net_worth" placeholder="####-###-###">
+                        </md-input-container>
+
+                    </div>
 
 
-                    <div class="form-input" ng-class="personalInfo.phone?'input-filled':''">
-                        <input id="field_phone" type="text" ng-model="personalInfo.phone" required>
-                        <label for="field_phone"><span class="content">Phone</span></label>
-                    </div>
-                    <div class="form-input" ng-class="personalInfo.employment_status?'input-filled':''">
-                        <input id="field_employment_status" type="text" ng-model="personalInfo.employment_status">
-                        <label for="field_employment_status"><span class="content">Employment Status</span></label>
-                    </div>
-                    <div class="form-input" ng-class="personalInfo.income?'input-filled':''">
-                        <input id="field_income" type="text" ng-model="personalInfo.income">
-                        <label for="field_income"><span class="content">Annual income</span> </label>
-                    </div>
-                    <div class="form-input" ng-class="personalInfo.net_worth?'input-filled':''">
-                        <input id="field_net_worth" type="text" ng-model="personalInfo.net_worth">
-                        <label for="field_net_worth"><span class="content">Estimated Assets </span></label>
-                    </div>
                 </div>
             </form>
         </div>

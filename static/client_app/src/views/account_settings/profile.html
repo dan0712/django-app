@@ -15,9 +15,6 @@
                             <md-list>
                                 <a  href="/app/password_change/new">Change password</a>
                             </md-list>
-
-
-
                     </div>
 
                 </div>
@@ -26,8 +23,12 @@
             <div class="content-grid" layout-gt-sm="row">
                 <div class="card personal-info-card" flex>
                     <div layout="column">
-                        <md-toolbar><span class="md-headline"> Personal Profile</span></md-toolbar>
-
+                        <md-toolbar>
+                            <div class="md-toolbar-tools">
+                                <h3 class="ng-binding">Personal Profile <button ng-click="profile.showPersonalInfoEditModal()" class="md-raised md-button md-ink-ripple" type="button" ng-transclude=""><span class="ng-scope">Edit</span><div class="md-ripple-container" style="background-color: rgba(33, 33, 33, 0.0980392);"><div class="md-ripple md-ripple-placed md-ripple-scaled md-ripple-active" style="left: 56.5px; top: 18px; width: 118.596px; height: 118.596px; border-color: rgb(33, 33, 33); background: rgb(33, 33, 33);"></div></div></button></h3>
+                                <span flex="" class="flex"></span>
+                            </div>
+                        </md-toolbar>
                         <md-list class="card-content">
                             <md-list-item class="md-3-line">
                                 <div class="md-list-item-text">
@@ -108,7 +109,13 @@
                 </div>
                 <div class="card retirement-card" flex>
                     <div layout="column">
-                        <md-toolbar><span class="md-headline"> RetireSmartz</span></md-toolbar>
+                        <md-toolbar>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools">
+                                    <h3 class="ng-binding">RetireSmartz</h3>
+                                    <span flex="" class="flex"></span>
+                                </div>
+                            </md-toolbar>
 
                     </div>
                 </div>
