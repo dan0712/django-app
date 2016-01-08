@@ -11396,7 +11396,7 @@ form .help-icon:after {
     color: #333333;
     font-weight: lighter;
 }
-.composites-index li:first-child, .composites-index li:first-child *, .composites-index .totals .panel h4 {
+.composites-index li:first-child, .composites-index li *, .composites-index .totals .panel h4 {
     letter-spacing: .4px;
     font-size: 1.1rem;
     text-transform: uppercase;
@@ -24289,4 +24289,80 @@ h1 {
     border: 1px solid #45a018;
    color: #fff;
 
+}
+
+.firm-summary-table{
+    width: 100%;
+   
+}
+.firm-summary-table thead>tr{
+        background-color:#f5f5f5;
+       
+    }
+
+.firm-summary-table th{
+    text-align:center;
+    padding-bottom:6px;
+    padding-top:11px;
+
+
+}
+
+.firm-summary-table th a{
+    text-transform:uppercase;
+    letter-spacing: .4px;
+    font-size: 0.8em;
+}
+
+.firm-summary-table td{
+    text-align:center;
+    padding-bottom:14px;
+    padding-top:20px;
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #fff;
+
+
+
+}
+.firm-summary-table tr{
+    cursor:pointer;
+}
+
+.firm-summary-table tr:hover{
+    background: #f5f5f5;
+}
+
+.firm-summary-table h5 span{
+    display: block;
+    color: #686868;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+}
+
+.firm-summary-table h4{
+    text-transform: uppercase;
+}
+
+.firm-summary-table  a.desc:after{
+    content: "/";
+    font-family: "ModernPictogramsPro" !important;
+    font-size: 120%;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: inherit;
+    z-index: 5;
+}
+
+.firm-summary-table  a.asc:after{
+    content: "\002D";
+    font-family: "ModernPictogramsPro" !important;
+    font-size: 120%;
+    text-transform: none;
+    text-decoration: none !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: inherit;
+    z-index: 5;
 }

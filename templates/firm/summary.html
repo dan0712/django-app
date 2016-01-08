@@ -1,12 +1,147 @@
 {% extends "layouts/base.html" %}
 {% load i18n %}
+{% load app_filters %}
 {% block firm_nav_summary %} depressed {% endblock %}
+{% block body_class %}composites index {% endblock %}
 {% block main_content %}
-{% include "advisor/firm-logo.html" %}
-<div id="content-main">
+    {% include "advisor/firm-logo.html" %}
+    <div class="composites-index">
 
-</div>
+        <div class="composites-panel">
+            <div class="header">
+                <h2>Overview</h2>
+            </div>
+            <div class="filters">
+                <div class="composite-grouping">
+                    <div class="selectize-control single">
+                        <div class="selectize-input items not-full" style="visibility: hidden">
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="composite-search">
+                    <input type="search" placeholder="Search" value="{{ search }}">
+                </div>
+            </div>
+            <div class="totals">
+                <div class="panel">
+                    <h4>Total AUM</h4>
+
+                    <p class="total_aum">${{ firm.total_balance  |bs_big_number }}</p>
+                </div>
+                <div class="panel">
+                    <h4>Total fees</h4>
+
+                    <p class="total_composites">${{ firm.total_fees |bs_big_number }}</p>
+                </div>
+                <div class="panel">
+                    <h4>Average balance</h4>
+
+                    <p class="average_balance">${{ firm.average_balance  |bs_big_number }}</p>
+                </div>
+            </div>
+            <div class="body">
+                <div class="loading">
+                    <div class="spinner">
+                        <div class="spinner-bg">
+                            <svg class="svg-circle-spinner" viewBox="0 0 70 70">
+                                <circle cx="35" cy="35" r="20" stroke-width="2.5" class="loading-spinner"></circle>
+                            </svg>
+                            <div class="speedometer-for-ie"></div>
+                        </div>
+                    </div>
+
+                </div>
+                <table class="firm-summary-table">
+                    <thead>
+                    <tr>
+                        <th><a class="{% if sort_col == "name" %}active {{ sort_dir }}{% endif %}" data-pjax="true"
+                               href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=name&amp;sort_dir={{ sort_inverse }}">Name</a>
+                        </th>
+                        <th><a class="{% if sort_col == "cs_number" %}active {{ sort_dir }}{% endif %}" data-pjax="true"
+                               href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=cs_number&amp;sort_dir={{ sort_inverse }}">BS
+                            Number</a></th>
+                        <th><a class="{% if sort_col == "total_balance" %}active {{ sort_dir }}{% endif %}"
+                               data-pjax="true"
+                               href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=total_balance&amp;sort_dir={{ sort_inverse }}">Total
+                            Balance</a></th>
+                        <th><a class="{% if sort_col == "total_return" %}active {{ sort_dir }}{% endif %}"
+                               data-pjax="true"
+                               href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=total_return&amp;sort_dir={{ sort_inverse }}">Total
+                            Return</a></th>
+                        <th><a class="{% if sort_col == "total_fees" %}active {{ sort_dir }}{% endif %}"
+                               data-pjax="true"
+                               href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=total_fees&amp;sort_dir={{ sort_inverse }}">Total
+                            Fee</a></th>
+                        <th><a class="{% if sort_col == "last_action" %}active {{ sort_dir }}{% endif %}"
+                               data-pjax="true"
+                               href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=last_action&amp;sort_dir={{ sort_inverse }}">Last
+                            Action</a></th>
+
+                    </tr>
+
+                    </thead>
+                    <tbody>
+                    {% for advisor in advisors %}
+                        <tr onclick="window.location='/firm/advisor/{{ advisor.0 }}'">
+                            <td><h4 style="color:#45a018;">{{ advisor.2 }}</h4></td>
+                            <td><h4>{{ advisor.0 }}</h4></td>
+                            <td><h4>${{ advisor.3 |bs_big_number }}</h4></td>
+                            <td><h4>{{ advisor.4 |bs_big_number }}%</h4><h5><span>Since</span>{{ advisor.7 | b_date }}
+                            </h5></td>
+                            <td><h4>${{ advisor.5 |bs_big_number }}</h4><h5><span>Since</span>{{ advisor.7 | b_date }}
+                            </h5></td>
+                            <td><h4>{{ advisor.6 |b_date }}</h4></td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <ul id="dashboard">
+
+                    {% for group in groups %}
+                        <li class="composites-table-row" data-composite-id="group.0">
+                            <a data-track-location="Summary" data-track-name="Info" href="/composites/{{ group.0 }}">
+                                <div>
+                                    <div class="composite-icon">
+                                        {% with group.1 as household %}
+                                            {% include "advisor/household-icon.html" %}
+                                        {% endwith %}
+                                    </div>
+                                    <h4>{{ group.2 }}</h4>
+                                    <h5>{{ group.3 }}</h5>
+                                    <h6>{{ group.4 }}</h6>
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if group.5 %}
+                                            <span class="on-track">On track</span>
+                                        {% else %}
+                                            <span class="off-track">Off track</span>
+                                        {% endif %}
+                                    </h4>
+                                </div>
+                                <div>
+                                    <h4>${{ group.6  |bs_big_number }}</h4>
+                                </div>
+                                <div>
+                                    <h4>{{ group.7 }}%</h4>
+                                    <h5><span>Since</span>{{ group.8 |b_date }}</h5>
+                                </div>
+                                <div>
+                                    <h4>{{ group.10 }}% / {{ group.11 }}%</h4>
+                                </div>
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    <div class="pager">
+                    </div>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
-
-
-

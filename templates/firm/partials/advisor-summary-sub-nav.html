@@ -1,0 +1,27 @@
+<div class="composite-header">
+    <div class="return-link">
+        <span class="modern-icon">&#8250;</span>
+        <a href="/firm/summary">Back to Dashboard</a>
+    </div>
+
+    <div class="composite-name">
+
+        <div class="composite-icon">
+            <img alt="Household icon" src="{{ STATIC_URL }}images/household-single.svg"/>
+        </div>
+        <h1 style="text-transform: capitalize;">{{ object.name }}</h1>
+    </div>
+    <nav class="nav-bar composite-subnav">
+        <div>
+            <ul>
+                <li class="{% if tab == "overview" %}depressed{% endif %}">
+                    <a href="/firm/advisor/{{ object.pk }}">Overview</a>
+                </li>
+                <li class="{% if tab == "clients" %}depressed{% endif %}">
+                    <a href="/firm/advisor/{{ object.pk }}/clients">Clients</a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+</div>

@@ -6,6 +6,7 @@ from filebrowser.sites import site
 from main import settings
 from .views import *
 
+
 def ok_response_json(*args, **kwargs):
     return HttpResponse("[]", content_type='application/json')
 
@@ -47,8 +48,14 @@ urlpatterns = patterns(
     url(r'^firm/supervisor_invites', FirmSupervisorInvites.as_view()),
     url(r'^firm/support$', FirmSupport.as_view()),
     url(r'^firm/support/forms$', FirmSupportForms.as_view()),
+    url(r'^firm/support/getting-started$', FirmSupportGettingStarted.as_view()),
+
     url(r'^firm/summary', FirmSummary.as_view()),
     url(r'^firm/change-details$', FirmDataView.as_view()),
+    url(r'^firm/advisor/(?P<pk>\d+)$', FirmAdvisorAccountSummary.as_view()),
+    url(r'^firm/advisor/(?P<pk>\d+)/clients$', FirmAdvisorClients.as_view()),
+    url(r'^firm/advisor/(?P<pk>\d+)/client/(?P<client_id>\d+)$', FirmAdvisorClientDetails.as_view()),
+    url(r'^firm/agreements', FirmAgreements.as_view()),
     # Advisor views
     url(r'^advisor/client_invites$',
         AdvisorClientInvites.as_view(),

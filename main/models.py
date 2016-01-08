@@ -360,6 +360,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
+    @property
+    def full_name(self):
+        return self.get_full_name()
+
     def get_full_name(self):
         """
         Returns the first_name plus the last_name, with a space in between.
@@ -443,6 +447,53 @@ class Firm(models.Model):
             return settings.STATIC_URL + 'images/colored_logo.png'
 
         return settings.MEDIA_URL + self.knocked_out_logo_url.name
+
+    @property
+    def total_revenue(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_revenue
+        return total
+
+    @property
+    def total_invested(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_invested
+        return total
+
+    @property
+    def total_return(self):
+        if self.total_invested > 0:
+            return self.total_revenue / self.total_invested
+        return 0
+
+    @property
+    def total_fees(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_fees
+        return total
+
+    @property
+    def total_balance(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_balance
+        return total
+
+    @property
+    def total_account_groups(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_account_groups
+        return total
+
+    @property
+    def average_balance(self):
+        if self.total_account_groups > 0:
+            return self.total_balance / self.total_account_groups
+        return 0
 
     @property
     def content_type(self):
@@ -535,6 +586,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     letter_of_authority = models.FileField()
     work_phone = AUPhoneNumberField(null=True)
     betasmartz_agreement = models.BooleanField()
+    last_action = models.DateTimeField(auto_now_add=True)
 
     @property
     def dashboard_url(self):
@@ -578,12 +630,46 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return active_households
 
     @property
+    def client_accounts(self):
+        accounts = []
+        for household in self.households:
+            all_accounts = household.accounts.all()
+            accounts.extend(all_accounts)
+        return accounts
+
+    @property
     def total_balance(self):
         b = 0
         for ag in self.households:
             b += ag.total_balance
 
         return b
+
+    @property
+    def primary_clients_size(self):
+        return len(Client.objects.filter(advisor=self, user__prepopulated=False))
+
+    @property
+    def secondary_clients_size(self):
+        return len(Client.objects.filter(secondary_advisors__in=[self], user__prepopulated=False).distinct())
+
+    @property
+    def total_fees(self):
+        return 0
+
+    @property
+    def total_revenue(self):
+        return 0
+
+    @property
+    def total_invested(self):
+        return 0
+
+    @property
+    def total_return(self):
+        if self.total_invested > 0:
+            return self.total_revenue / self.total_invested
+        return 0
 
     @property
     def total_account_groups(self):
@@ -769,6 +855,13 @@ class ClientAccount(models.Model):
         self.primary_owner.rebuild_secondary_advisors()
 
     @property
+    def target(self):
+        total_target = 0
+        for goal in self.goals.all():
+            total_target += goal.target
+        return total_target
+
+    @property
     def fee(self):
         if self.custom_fee != 0:
             return self.custom_fee + Platform.objects.first().fee
@@ -842,6 +935,23 @@ class ClientAccount(models.Model):
         for goal in self.goals.all():
             on_track = on_track and goal.on_track
         return on_track
+
+    @property
+    def goals_length(self):
+        return len(self.goals.all())
+
+    @property
+    def get_term(self):
+        total_term = 0
+        goals_with_term = 0
+        for goal in self.goals.all():
+            goal_term = goal.get_term
+            if goal_term != 0:
+                total_term += goal_term
+                goals_with_term += 1
+        if goals_with_term == 0:
+            return 0
+        return total_term / goals_with_term
 
     @property
     def confirmation_url(self):
@@ -978,6 +1088,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     employer = models.CharField(max_length=255, null=True, blank=True)
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
+    last_action = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.user.get_full_name()
