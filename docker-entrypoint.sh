@@ -6,7 +6,7 @@ if [ "$1" = 'backend' ]; then
 
     # Inserting sleep delay for Bluemix to wait for routing to be set up per recommendation via:
     # https://www.ng.bluemix.net/docs/containers/doc/container_troubleshoot.html
-    sleep 60
+    #sleep 60
 
     python /betasmartz/manage.py migrate main --noinput
     python /betasmartz/manage.py migrate --noinput
