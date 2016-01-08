@@ -1,6 +1,6 @@
 FROM nginx
 RUN apt-get update -y &&\
-    apt-get install -y python vim &&\
+    apt-get install -y python vim less &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 

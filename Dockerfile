@@ -16,3 +16,4 @@ ADD ./devop/id_rsa.pub /root/.ssh/is_rsa.pub
 RUN chmod 400 /root/.ssh/id_rsa
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["backend"]
