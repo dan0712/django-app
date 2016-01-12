@@ -148,8 +148,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
         if (user is not None) and (not user.prepopulated):
             # confirm password
             if not user.check_password(password1):
-                self._errors['email'] = mark_safe(
-                        u'<ul class="errorlist"><li>User already exists</li></ul>')
+                self._errors['email'] = mark_safe(u'<ul class="errorlist"><li>User already exists</li></ul>')
             else:
                 if hasattr(user, self.user_profile_type):
                     rupt = self.user_profile_type.replace("_", " ")
@@ -163,8 +162,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
     def save(self, *args, **kw):
         # check if user already exist
         try:
-            self.instance = User.objects.get(
-                    email=self.cleaned_data.get('email'))
+            self.instance = User.objects.get(email=self.cleaned_data.get('email'))
         except ObjectDoesNotExist:
             pass
         instance = super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
@@ -1110,7 +1108,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         if hasattr(self, 'financial_plan'):
             plan = self.financial_plan
         else:
-            return "null"
+            return ""
+
+        if plan is None:
+            return ""
         betasmartz_externals = json.loads(serializers.serialize(
                 "json", self.financial_plan_external_accounts.all()))
         external_accounts = []
@@ -1487,7 +1488,6 @@ class Goal(models.Model):
 
     class Meta:
         ordering = ['name']
-
 
     @property
     def hedges(self):
@@ -2074,3 +2074,46 @@ class MonthlyPrices(models.Model):
 
     class Meta:
         ordering = ["symbol", "date"]
+
+
+class Supervisor(models.Model):
+    user = models.OneToOneField(User, related_name="supervisor")
+    firm = models.ForeignKey(Firm, related_name="supervisors")
+    # has full authorization to make action in name of advisor and clients
+    can_write = models.BooleanField(default=False,
+                                    verbose_name="Has Full Access?",
+                                    help_text="A supervisor with 'full access' can impersonate advisors and clients "
+                                              "and make any action as them.")
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        is_new_instance = False
+
+        if self.pk is None:
+            is_new_instance = True
+
+        ret = super(Supervisor, self).save(force_insert, force_update, using, update_fields)
+
+        if is_new_instance:
+            self.send_confirmation_email()
+
+        return ret
+
+    def send_confirmation_email(self):
+        account_type = self._meta.verbose_name
+
+        subject = "BetaSmartz new {0} account confirmation".format(account_type)
+
+        context = {
+            'subject': subject,
+            'account_type': account_type,
+            'firm_name': self.firm.name
+        }
+
+        send_mail(
+                subject,
+                '',
+                None,
+                [self.user.email],
+                html_message=render_to_string('email/new_supervisor.html', context))

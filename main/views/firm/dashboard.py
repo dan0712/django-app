@@ -1,41 +1,161 @@
-__author__ = 'cristian'
-from django.contrib import messages
-from django.views.generic import CreateView, TemplateView
-from main.models import EmailInvitation, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
-    INVITATION_TYPE_DICT
-from ..base import LegalView
-from ...forms import EmailInviteForm
-from main.models import Advisor
-from django.db.models import Q
-from datetime import datetime
-
 from django import forms
 from django.contrib import messages
-from django.contrib.auth import (
-    load_backend, BACKEND_SESSION_KEY, login as auth_login, logout as auth_logout)
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.hashers import make_password
 from django.db.models import Q
-from django.http import Http404
-from django.http import HttpResponseRedirect
-from django.template import RequestContext
-from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import TemplateView
 from django.views.generic import UpdateView
-from django.views.generic import View
-from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
+from django.views.generic import DeleteView
+from main.models import Advisor, User, EmailInvitation
+from main.models import INVITATION_ADVISOR, INVITATION_SUPERVISOR
 from operator import itemgetter
-from ..base import AdvisorView, ClientView
+from ..base import LegalView
 from ...forms import EmailInviteForm
-from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_CLASSES
-
+from ...models import INVITATION_TYPE_DICT, Client
+from ...models import Supervisor, BetaSmartzGenericUSerSignupForm
 
 __all__ = ['FirmSummary', 'FirmAdvisorAccountSummary', 'FirmAdvisorClients',
            'FirmSupport', 'FirmAdvisorInvites', 'FirmSupervisorInvites', 'FirmAgreements',
-           'FirmSupportForms', "FirmAdvisorClientDetails", "FirmSupportGettingStarted"]
+           'FirmSupportForms', "FirmAdvisorClientDetails", "FirmSupportGettingStarted",
+           "FirmSupervisors", "FirmSupervisorsNew", "FirmSupervisorsEdit", "FirmSupervisorDelete"]
+
+
+class FirmSupervisorDelete(DeleteView, LegalView):
+    template_name = "firm/supervisor-delete-confirm.html"
+    success_url = "/firm/users"
+    model = User
+
+    def get_success_url(self):
+        messages.success(self.request, "supervisor delete successfully")
+        return super(FirmSupervisorDelete, self).get_success_url()
+
+    pass
+
+
+class SupervisorProfile(forms.ModelForm):
+    class Meta:
+        model = Supervisor
+        fields = ('can_write',)
+
+
+class SupervisorUserForm(BetaSmartzGenericUSerSignupForm):
+    user_profile_type = "supervisor"
+    firm = None
+    betasmartz_agreement = forms.BooleanField(initial=True, widget=forms.HiddenInput)
+
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'middle_name', 'last_name', 'password', 'confirm_password')
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('label_suffix', '')
+        super(SupervisorUserForm, self).__init__(*args, **kwargs)
+        profile_kwargs = kwargs.copy()
+        if 'instance' in kwargs:
+            self.profile = getattr(kwargs['instance'], self.user_profile_type, None)
+            profile_kwargs['instance'] = self.profile
+        self.profile_form = SupervisorProfile(*args, **profile_kwargs)
+        self.fields.update(self.profile_form.fields)
+        self.initial.update(self.profile_form.initial)
+
+    def save(self, *args, **kw):
+        user = super(SupervisorUserForm, self).save(*args, **kw)
+        self.profile = self.profile_form.save(commit=False)
+        self.profile.user = user
+        self.profile.firm = self.firm
+        self.profile.save()
+        return user
+
+
+class SupervisorUserFormEdit(forms.ModelForm):
+    user_profile_type = "supervisor"
+    firm = None
+    password = forms.CharField(max_length=50, widget=forms.PasswordInput(), required=False)
+    confirm_password = forms.CharField(max_length=50, widget=forms.PasswordInput(), required=False)
+    new_password = None
+
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'middle_name', 'last_name')
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('label_suffix', '')
+        super(SupervisorUserFormEdit, self).__init__(*args, **kwargs)
+        profile_kwargs = kwargs.copy()
+        if 'instance' in kwargs:
+            self.profile = getattr(kwargs['instance'], self.user_profile_type, None)
+            profile_kwargs['instance'] = self.profile
+        self.profile_form = SupervisorProfile(*args, **profile_kwargs)
+        self.fields.update(self.profile_form.fields)
+        self.initial.update(self.profile_form.initial)
+
+    def clean(self):
+        cleaned_data = super(SupervisorUserFormEdit, self).clean()
+
+        password1 = cleaned_data.pop('password')
+        password2 = cleaned_data.pop('confirm_password')
+
+        if password1:
+            if password1 != password2:
+                self._errors['confirm_password'] = mark_safe(
+                    '<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
+            else:
+                self.new_password = make_password(password1)
+
+        return cleaned_data
+
+    def save(self, *args, **kw):
+        user = super(SupervisorUserFormEdit, self).save(*args, **kw)
+        if self.new_password is not None:
+            user.password = self.new_password
+            user.save()
+        self.profile = self.profile_form.save()
+        return user
+
+
+class FirmSupervisorsNew(CreateView, LegalView):
+    template_name = "firm/supervisor-form.html"
+    form_class = SupervisorUserForm
+    success_url = "/firm/users"
+
+    def get_success_url(self):
+        messages.success(self.request, "New supervisor created successfully")
+        return super(FirmSupervisorsNew, self).get_success_url()
+
+    def get_form(self, form_class=None):
+        form = super(FirmSupervisorsNew, self).get_form(form_class)
+        form.firm = self.firm
+        return form
+
+
+class FirmSupervisorsEdit(UpdateView, LegalView):
+    template_name = "firm/supervisor-form.html"
+    form_class = SupervisorUserFormEdit
+    success_url = "/firm/users"
+    model = User
+
+    def get_success_url(self):
+        messages.success(self.request, "Supervisor edited successfully")
+        return super(FirmSupervisorsEdit, self).get_success_url()
+
+    def get_form(self, form_class=None):
+        form = super(FirmSupervisorsEdit, self).get_form(form_class)
+        form.firm = self.firm
+        return form
+
+
+class FirmSupervisors(TemplateView, LegalView):
+    template_name = "firm/supervisor-list.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super(FirmSupervisors, self).get_context_data(**kwargs)
+        ctx.update({
+            "supervisors": self.firm.supervisors.all(),
+            "firm": self.firm,
+        })
+        return ctx
 
 
 class FirmAgreements(TemplateView, LegalView):

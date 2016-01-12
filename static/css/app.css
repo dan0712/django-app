@@ -24366,3 +24366,17 @@ h1 {
     line-height: inherit;
     z-index: 5;
 }
+
+
+.input-group{
+    margin-bottom: 10px;
+}
+
+.composite-actions a.warn{
+    border-color:  #C4273A;
+    color: #C4273A;
+}
+
+.composite-actions a.warn:hover{
+    background-color: #C4273A;
+}

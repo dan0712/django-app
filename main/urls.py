@@ -55,7 +55,13 @@ urlpatterns = patterns(
     url(r'^firm/advisor/(?P<pk>\d+)$', FirmAdvisorAccountSummary.as_view()),
     url(r'^firm/advisor/(?P<pk>\d+)/clients$', FirmAdvisorClients.as_view()),
     url(r'^firm/advisor/(?P<pk>\d+)/client/(?P<client_id>\d+)$', FirmAdvisorClientDetails.as_view()),
-    url(r'^firm/agreements', FirmAgreements.as_view()),
+    url(r'^firm/agreements$', FirmAgreements.as_view()),
+    url(r'^firm/users$', FirmSupervisors.as_view()),
+    url(r'^firm/supervisors/new$', FirmSupervisorsNew.as_view()),
+    url(r'^firm/supervisor/(?P<pk>\d+)/edit', FirmSupervisorsEdit.as_view()),
+    url(r'^firm/supervisor/(?P<pk>\d+)/delete', FirmSupervisorDelete.as_view()),
+
+
     # Advisor views
     url(r'^advisor/client_invites$',
         AdvisorClientInvites.as_view(),
