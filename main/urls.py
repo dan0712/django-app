@@ -208,6 +208,8 @@ urlpatterns = patterns(
         csrf_exempt(NewTransactionMemoView.as_view())),
     url(r'^client/api/accounts/(?P<pk>\d+)$',
         csrf_exempt(ChangeGoalView.as_view())),
+    url(r'^client/api/account-groups/(?P<pk>\d+)/tax-loss-harvesting$',
+        csrf_exempt(TaxHarvestingView.as_view())),
     url(r'^automaticDeposit$', csrf_exempt(SetAutoDepositView.as_view())),
     url(r'^automaticWithdrawal$',
         csrf_exempt(SetAutoWithdrawalView.as_view())),

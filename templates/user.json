@@ -72,13 +72,16 @@
         "hasClosedAccounts": false,
         "investingSince": "{{account.created_at | c_datetime}}",
         "accountGroupState": "NORMAL",
-        "taxLossHarvestingStatus": "USER_OFF",
-        "taxLossHarvestingEnabled": false,
-        "taxLossHarvestingConsent": false,
+        "taxLossHarvestingStatus": "{{account.tax_loss_harvesting_status}}",
+        "taxLossHarvestingEnabled": true,
+        "taxLossHarvestingConsent": {% if account.tax_loss_harvesting_consent %}true{% else %}false{% endif %},
         "taxLossHarvestingGateType": "MINIMUM_BALANCE",
         "unrealizedLosses": "0.0",
         "totalLossesHarvested": "0.00",
         "annualHarvestedLosses": [{
+            "taxYear": 2016,
+            "amount": "0.00"}
+        ,{
             "taxYear": 2015,
             "amount": "0.00"
         }, {

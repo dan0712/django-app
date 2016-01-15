@@ -2,19 +2,21 @@ import json
 import time
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from portfolios.bl_model import OptimizationException
 from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
-#from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
+# from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from portfolios.models import PortfolioSet
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, PENDING, Goal, ALLOCATION, TransactionMemo, \
     AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
     MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass
+from django.http.response import Http404
 
 __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisitor', 'ClientAdvisor',
            'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
@@ -23,7 +25,8 @@ __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisit
            'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances',
            'SetAutoWithdrawalView', 'ZipCodes', 'FinancialProfileView',
            'FinancialPlansView', 'FinancialPlansAccountAdditionView', 'FinancialPlansAccountDeletionView',
-           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView']
+           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView',
+           'TaxHarvestingView']
 
 
 class ClientAppData(TemplateView):
@@ -136,6 +139,24 @@ class ClientVisitor(TemplateView):
 class ClientAdvisor(ClientView, TemplateView):
     template_name = "advisors.json"
     content_type = "application/json"
+
+
+class TaxHarvestingView(ClientView):
+    def post(self, request, *args, **kwargs):
+        model = json.loads(request.body.decode('utf8'))
+        try:
+            account = ClientAccount.objects.filter(primary_owner=self.client).get(pk=kwargs["pk"])
+        except ObjectDoesNotExist:
+            raise Http404("Not found")
+
+        account.tax_loss_harvesting_consent = model["taxLossHarvestingConsent"]
+        account.tax_loss_harvesting_status = model["taxLossHarvestingStatus"]
+        account.save()
+        response = {"status": account.tax_loss_harvesting_status,
+                    "consent": account.tax_loss_harvesting_consent,
+                    "gateType": "MINIMUM_BALANCE"}
+        return HttpResponse(json.dumps(response),
+                            content_type="application/json")
 
 
 class ClientAccounts(ClientView, TemplateView):
@@ -515,11 +536,11 @@ class ChangeGoalView(ClientView):
         new_region_allocations = {}
 
         for k in allocation_keys:
-            if int(region_allocations[k]["size"]*100) == 0:
+            if int(region_allocations[k]["size"] * 100) == 0:
                 continue
             else:
                 new_region_allocations[k] = {"size": region_allocations[k]["size"]}
-            total_size += int(region_allocations[k]["size"]*100)
+            total_size += int(region_allocations[k]["size"] * 100)
 
         if total_size != 100:
             region_allocations = None

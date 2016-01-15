@@ -2919,10 +2919,10 @@ Your available balance may be different than your current balance because it acc
 
 ]]></template><template name="taxLossHarvesting/introRibbon"><![CDATA[
 <div class="inner clearfix">
-<h1>Get started with <span class="blue">Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>
+<h1>Get started with <span class="blue">Tax Loss Harvesting</span></h1>
 <div class="clearfix content">
 <div class="left white-box explanation">
-<h3>Tax Loss Harvesting+ can add an estimated <span class="bold-text">0.77%</span> in after-tax returns</h3>
+<h3>Tax Loss Harvesting can add an estimated <span class="bold-text">0.77%</span> in after-tax returns</h3>
 <div class="check-list">
 <div><span class="dark-blue-check icon"></span> Automatically harvest losses to reduce your taxes</div>
 <div><span class="dark-blue-check icon"></span> Maintain your portfolio&#39;s risk and expected returns</div>
@@ -2930,26 +2930,22 @@ Your available balance may be different than your current balance because it acc
 </div>
 </div>
 <div class="right details">
-<div class="white-box short blog open-video">
-<span class="small-box-title">Video</span>
-<div class="right tlh-video-thumbnail"></div>
-<div class="text">How it works</div>
-</div>
+
 <div class="white-box video">
 <span class="small-box-title">Blog</span>
-<a target="_blank" class="text open-blog" href="<%= brochure_url('resources/inside-betterment/product-news/introducing-tax-loss-harvesting/') %>">
-Introducing Tax Loss Harvesting+
+<a target="_blank" class="text open-blog" href="http://www.betasmartz.com/resources/introducing-tax-loss-harvesting/">
+Introducing Tax Loss Harvesting
 </a>
 </div>
 <div class="white-box short white-paper">
 <span class="small-box-title">White paper</span>
-<a class="text open-whitepaper" target="_blank" href="<%= brochure_url('resources/research/tax-loss-harvesting-white-paper/') %>">
-Tax Loss Harvesting+
+<a class="text open-whitepaper" target="_blank" href="http://www.betasmartz.com/resources/tax-loss-harvesting-white-paper">
+Tax Loss Harvesting
 </a>
 </div>
 </div>
 <div class="help-links">
-<a target="_blank" href="<%= supportUrl('customer/portal/topics/670337-tax-loss-harvesting/articles') %>">FAQs</a> &nbsp;|&nbsp; <a target="_blank" href="<%= brochure_url('resources/research/tax-loss-harvesting-white-paper/#alpha') %>">About this estimate</a>
+<a target="_blank" href="http://www.betasmartz.com/resources/tax-loss-harvesting-faqs">FAQs</a> &nbsp;|&nbsp; <a target="_blank" href="http://www.betasmartz.com/resources/tax-loss-harvesting-white-paper">About this estimate</a>
 </div>
 </div>
 <div class="actions">

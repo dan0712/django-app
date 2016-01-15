@@ -806,6 +806,9 @@ class ClientAccount(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
+    tax_loss_harvesting_consent = models.BooleanField(default=False)
+    tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
+                                                                           ("USER_ON", "USER_ON")), default="USER_OFF")
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
