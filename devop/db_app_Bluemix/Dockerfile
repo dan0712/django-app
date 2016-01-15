@@ -1,4 +1,4 @@
-FROM postgres:latest
+FROM postgres:9.5
 
 RUN apt-get update -y &&\
     apt-get install -y vim less &&\

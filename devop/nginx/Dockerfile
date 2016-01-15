@@ -1,4 +1,4 @@
-FROM nginx
+FROM nginx:1.9
 RUN apt-get update -y &&\
     apt-get install -y python vim less &&\
     apt-get clean &&\

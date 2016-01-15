@@ -1,3 +1,4 @@
+import importlib
 import json
 import uuid
 from datetime import date
@@ -9,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, \
     UserManager, timezone, \
     send_mail
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -26,6 +27,14 @@ from .fields import ColorField
 def validate_agreement(value):
     if value is False:
         raise ValidationError("You must accept the agreement to continue.")
+
+
+def validate_module(value):
+    if not value.strip():
+        raise ValidationError("The supplied module: {} cannot be blank.".format(value))
+    module_spec = importlib.util.find_spec(value)
+    if module_spec is None:
+        raise ValidationError("The supplied module: {} could not be found.".format(value))
 
 
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
@@ -1217,6 +1226,16 @@ class Ticker(models.Model):
                               help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
     region = models.ForeignKey(Region)
 
+    data_api = models.CharField(help_text='The module that will be used to get the data for this ticker',
+                                choices=[('portfolios.api.bloomberg', 'Bloomberg')],
+                                max_length=30,
+                                null=True)
+    data_api_param = models.CharField(help_text='Structured parameter string appropriate for the data api. The '
+                                                'first component would probably be id appropriate for the given api',
+                                      unique=True,
+                                      max_length=30,
+                                      null=True)
+
     def __str__(self):
         return self.symbol
 
@@ -1254,7 +1273,7 @@ class EmailInvitation(models.Model):
     email = models.EmailField()
     inviter_type = models.ForeignKey(ContentType)
     inviter_id = models.PositiveIntegerField()
-    inviter_object = generic.GenericForeignKey('inviter_type', 'inviter_id')
+    inviter_object = GenericForeignKey('inviter_type', 'inviter_id')
     send_date = models.DateTimeField(auto_now=True)
     send_count = models.PositiveIntegerField(default=0)
     status = models.PositiveIntegerField(choices=EMAIL_INVITATION_STATUSES,
@@ -1956,10 +1975,31 @@ class FinancialProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class MonthlyPrices(models.Model):
-    symbol = models.CharField(max_length=100)
-    price = models.FloatField(default=0)
+class DailyPrice(models.Model):
+    class Meta:
+        unique_together = ("ticker", "date")
+    ticker = models.ForeignKey(Ticker, db_index=False)
     date = models.DateField()
+    nav = models.FloatField(null=True)
+    aum = models.BigIntegerField(null=True)
 
+
+class MonthlyPrices(models.Model):
     class Meta:
         ordering = ["symbol", "date"]
+        unique_together = ("symbol", "date")
+    symbol = models.CharField(max_length=100)
+    date = models.DateField()  # This will be the last date in the month.
+    price = models.FloatField(default=0)
+
+
+class ExchangeRate(models.Model):
+    """
+    Describes the rate from the first to the second currency
+    """
+    class Meta:
+        unique_together = ("first", "second", "date")
+    first = models.CharField(max_length=3)
+    second = models.CharField(max_length=3)
+    date = models.DateField()
+    rate = models.FloatField()
