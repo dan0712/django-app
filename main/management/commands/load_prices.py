@@ -166,7 +166,12 @@ def set_aum():
         logger.debug("Set AUM entry for symbol: {}".format(mc.ticker.symbol))
 
     for sym, date in dates.items():
-        ticker = Ticker.objects.get(symbol=sym)
+        ticker = Ticker.objects.filter(symbol=sym).first()
+        if ticker is None:
+            emsg = "Found monthly prices for symbol: {}, but there is no corresponding ticker. " \
+                   "Please remove the monthly prices for that symbol"
+            logger.warn(emsg.format(sym))
+            continue
         aum = get_aum(ticker, date)
         if aum is not None:
             MarketCap.objects.create(ticker=ticker, value=aum)
@@ -176,7 +181,7 @@ def set_aum():
 def get_aum(ticker, date):
     aum = DailyPrice.objects.filter(ticker=ticker, date=date).values_list('aum', flat=True)
     if len(aum) == 0:
-        dp = DailyPrice.objects.filter(ticker=ticker).exclude(aum__isnull=True).order_by('-date')[0]
+        dp = DailyPrice.objects.filter(ticker=ticker).exclude(aum__isnull=True).order_by('-date').first()
         if dp is None:
             emsg = 'No daily price containing AUM found for symbol: {}. Cannot set AUM.'
             logger.warn(emsg.format(ticker.symbol))
