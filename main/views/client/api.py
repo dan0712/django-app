@@ -144,7 +144,7 @@ class ClientAccounts(ClientView, TemplateView):
     content_type = "application/json"
 
     def post(self, requests, *args, **kwargs):
-        model = ijson.loads(requests.POST.get("model", '{}'))
+        model = json.loads(requests.POST.get("model", '{}'))
 
         goal = Goal()
         goal.account = self.client.accounts.first()
