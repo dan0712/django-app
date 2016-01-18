@@ -1485,7 +1485,7 @@ class Goal(models.Model):
         return sizes
 
     def __str__(self):
-        return self.name + " : " + self.account.primary_owner.full_name
+        return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     @property
     def get_financial_plan_id(self):
@@ -1566,8 +1566,7 @@ class Goal(models.Model):
 
         for ticker in tickers:
             tickers_prices.append(ticker.unit_price)
-            target_allocation.append(self.target_allocation_dict.get(
-                    ticker.asset_class.name, 0))
+            target_allocation.append(self.target_allocation.get(ticker.asset_class.name, 0))
             positions = Position.objects.filter(goal=self, ticker=ticker).all()
             cs = 0
             if positions:
@@ -1578,8 +1577,7 @@ class Goal(models.Model):
         current_allocation = array(current_allocation)
         target_allocation = array(target_allocation)
 
-        return float("{0:.2f}".format(sum(abs(
-                current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
+        return float("{0:.2f}".format(sum(abs(current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
 
     @property
     def life_time_average_balance(self):

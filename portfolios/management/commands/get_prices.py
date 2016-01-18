@@ -1,30 +1,29 @@
-__author__ = 'cristian'
+import datetime
+import logging
 
-from django.core.management.base import BaseCommand, CommandError
-from ...models import PortfolioSet
-from main.models import Platform, Goal
-from portfolios.api.yahoo import YahooApi
-from pandas import concat, ordered_merge, DataFrame
-from portfolios.bl_model import handle_data
-import json
-import numpy as np
+from django.db.models.aggregates import Max
+from django.core.management.base import BaseCommand
 
+from main.models import Goal, DailyPrice, Ticker
 
-def get_api(api_name):
-    api_dict = {"YAHOO": YahooApi()}
-    return api_dict[api_name]
+logger = logging.getLogger("get_prices")
 
 
-def calculate_prices(portfolio_set):
-    api = get_api(Platform.objects.first().api)
-    # get all the assets
-    for asset in portfolio_set.asset_classes.all():
-        ticker = asset.tickers.filter(ordering=0).first()
-        unit_price = api.get_unit_price(ticker.symbol, ticker.currency)
-        if unit_price is not None:
-            ticker.unit_price = unit_price
-            ticker.save()
+def populate_current_prices():
+    m1w = (datetime.datetime.today() - datetime.timedelta(days=7)).date()
 
+    # Set the unit price to the latest we have in the DB.
+    for price in DailyPrice.objects.exclude(nav__isnull=True).values('ticker').annotate(last=Max('date')):
+        ticker = Ticker.objects.get(pk=price['ticker'])
+        dt = price['last']
+        if dt < m1w:
+            emsg = "The most current NAV for symbol: {} in asset class: {} " \
+                   "is more than one week old ({}). Consider running the 'load_prices' command."
+            logger.warn(emsg.format(ticker.symbol, ticker.asset_class.name, dt))
+        ticker.unit_price = DailyPrice.objects.get(ticker=ticker, date=dt).nav
+        ticker.save()
+
+    # Set the calculated values on the goals using the new ticker navs.
     for goal in Goal.objects.all():
         goal.drift = goal.get_drift
         goal.total_balance_db = goal.total_balance
@@ -32,8 +31,7 @@ def calculate_prices(portfolio_set):
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Populates the unit prices stored on the tickers, then updates the drift and balance on the goals.'
 
     def handle(self, *args, **options):
-        for ps in PortfolioSet.objects.all():
-            calculate_prices(ps)
+        populate_current_prices()

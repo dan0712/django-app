@@ -43394,7 +43394,7 @@ var requirejs, require, define;
                     var t = this.get("financialProfile"),
                         n = this.get("financialPlan"),
                         r = {
-                            contributionLimits: i.getInstance().get("contributionTypes")[(new Date).getFullYear() + ""],
+                            contributionLimits: i.getInstance().get("contributionTypes")[2015 + ""],
                             targetRetirementAmount: this.getRecommendedRetirementAgeAndContributions().targetAdditionalInvestmentBalance,
                             adjustedGrossIncome: t.grossIncome(),
                             age: t.getAge(),

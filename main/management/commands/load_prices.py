@@ -151,8 +151,8 @@ def set_aum():
     We generate the market cap from the date of the last monthly price we have available.
     """
     dates = {}
-    for entry in MonthlyPrices.objects.values('symbol', 'date').annotate(last=Max('date')):
-        dates[entry['symbol']] = entry['date']
+    for entry in MonthlyPrices.objects.values('symbol').annotate(last=Max('date')):
+        dates[entry['symbol']] = entry['last']
 
     for mc in MarketCap.objects.all():
         date = dates.pop(mc.ticker.symbol, None)
@@ -181,7 +181,7 @@ def get_aum(ticker, date):
             emsg = 'No daily price containing AUM found for symbol: {}. Cannot set AUM.'
             logger.warn(emsg.format(ticker.symbol))
             return None
-        emsg = 'No daily price found from last monthly price date: {} for symbol: {}. Using last AUM available: {}'
+        emsg = 'No daily price found from last monthly price date: {} for symbol: {}. Using last AUM available from: {}'
         logger.warn(emsg.format(date, ticker.symbol, dp.date))
         return dp.aum
     else:
