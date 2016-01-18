@@ -27,6 +27,7 @@ __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisit
 
 logger = logging.getLogger("client.api")
 
+
 class ClientAppData(TemplateView):
     template_name = "appData.json"
     content_type = "application/json"
@@ -144,7 +145,7 @@ class ClientAccounts(ClientView, TemplateView):
     content_type = "application/json"
 
     def post(self, requests, *args, **kwargs):
-        model = json.loads(requests.POST.get("model", '{}'))
+        model = ujson.loads(requests.POST.get("model", '{}'))
 
         goal = Goal()
         goal.account = self.client.accounts.first()
