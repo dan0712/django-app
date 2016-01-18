@@ -17,7 +17,8 @@ django-haystack==2.4.1
 django-import-export==0.4.0
 django-localflavor-au-tjh==1.1.2
 django-mptt==0.7.4
-django_nose==1.4.3git+git://github.com/ITCase-django/django-tinymce-4
+django_nose==1.4.3
+git+git://github.com/ITCase-django/django-tinymce-4
 django-page-cms==1.8.1
 django-suit==0.2.15
 django-taggit==0.17.5
@@ -42,6 +43,6 @@ statsmodels==0.6.1
 tablib==0.10.0
 toolz==0.7.4
 tornado==4.3
-ujson=1.34
+ujson==1.34
 uWSGI==2.0.11.2
 Whoosh==2.7.0

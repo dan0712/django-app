@@ -35015,7 +35015,10 @@ var requirejs, require, define;
             sectionSaveOptions: {
                 allocation: {
                     success: function(e) {
-                        e.getAccount().set("allocation", e.get("allocation"))
+                        var account = e.getAccount();
+                        account.set("allocation", e.get("allocation"));
+                        account.set("satelliteAlloc", e.get("satelliteAlloc"));
+
                     }
                 }
             },
