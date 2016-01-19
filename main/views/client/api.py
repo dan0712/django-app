@@ -393,7 +393,7 @@ class NewTransactionsView(ClientView):
                             content_type="application/json")
 
     def post(self, request, *args, **kwargs):
-        model = json.loads(request.POST.get("model", '{}'))
+        model = ujson.loads(request.POST.get("model", '{}'))
         new_transaction = Transaction()
         new_transaction.account = get_object_or_404(
             Goal,
