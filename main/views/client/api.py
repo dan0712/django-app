@@ -398,7 +398,7 @@ class NewTransactionsView(ClientView):
                             content_type="application/json")
 
     def post(self, request, *args, **kwargs):
-        model = json.loads(request.POST.get("model", '{}'))
+        model = ujson.loads(request.POST.get("model", '{}'))
         new_transaction = Transaction()
         new_transaction.account = get_object_or_404(
             Goal,
@@ -467,7 +467,7 @@ class ChangeAllocation(ClientView):
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal))
+                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
                 except OptimizationException as e:
                     logger.exception(e)
                     return HttpResponse('null',
@@ -571,7 +571,7 @@ class ChangeGoalView(ClientView):
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal))
+                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
                 except OptimizationException as e:
                     print(e)
                     return HttpResponse('null',

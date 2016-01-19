@@ -393,8 +393,11 @@ def calculate_portfolio(goal, idata):
     weights, cost = markowitz_optimizer_3(xs, sigma, 1, mu, constraints)
 
     if not weights.any():
+        # TODO: We should be returning Nones here, but the UI needs all values..
         logger.info("Could not find an appropriate allocation for Goal: {}".format(goal))
-        return None, None, None
+        instruments['_weight_'] = 0.0
+        ac_weights = instruments.groupby('ac')['_weight_'].sum()
+        return ac_weights, 0.0, 0.0
     else:
         # Deactivate any instruments that didn't reach at least orderable quantity of 1 and rerun the optimisation.
         inactive = ((weights[0] * goal.total_balance) / goal_instruments['price']) < 1
