@@ -28586,7 +28586,8 @@ var requirejs, require, define;
                     collectionType: v
                 }],
                 getDefaultAccountGroup: function() {
-                    return this.get("defaultAccountGroupId") ? this.get("accountGroups").get(this.get("defaultAccountGroupId")) : this.get("accountGroups").first()
+                    var defaultAccountGroupId =  this.get("defaultAccountGroupId") ? this.get("accountGroups").get(this.get("defaultAccountGroupId")) : this.get("accountGroups").first();
+                    return defaultAccountGroupId;
                 },
                 getPersonalAccountGroup: function() {
                     return this.get("accountGroups").findWhere({

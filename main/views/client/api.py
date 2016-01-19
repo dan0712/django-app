@@ -58,10 +58,15 @@ class PortfolioAssetClasses(ClientView, TemplateView):
     content_type = "application/json"
 
     def get_context_data(self, *args, **kwargs):
-        pk = kwargs["goal_pk"]
-        goal = get_object_or_404(Goal, pk=pk)
+        goal_pk = kwargs.get("goal_pk", None)
         ctx = super(PortfolioAssetClasses, self).get_context_data(*args, **kwargs)
-        ctx["portfolio_set"] = goal.portfolio_set
+
+        if goal_pk:
+            goal = get_object_or_404(Goal, pk=goal_pk)
+            ctx["portfolio_set"] = goal.portfolio_set
+        else:
+            ctx["portfolio_set"] = Goal().portfolio_set
+
         return ctx
 
 
