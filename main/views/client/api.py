@@ -462,7 +462,7 @@ class ChangeAllocation(ClientView):
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal))
+                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
                 except OptimizationException as e:
                     logger.exception(e)
                     return HttpResponse('null',
@@ -566,7 +566,7 @@ class ChangeGoalView(ClientView):
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal))
+                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
                 except OptimizationException as e:
                     print(e)
                     return HttpResponse('null',
