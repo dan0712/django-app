@@ -23,7 +23,7 @@ __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisit
            'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances',
            'SetAutoWithdrawalView', 'ZipCodes', 'FinancialProfileView',
            'FinancialPlansView', 'FinancialPlansAccountAdditionView', 'FinancialPlansAccountDeletionView',
-           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView']
+           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView', 'TaxHarvestingView']
 
 logger = logging.getLogger("client.api")
 
@@ -143,6 +143,24 @@ class ClientVisitor(TemplateView):
 class ClientAdvisor(ClientView, TemplateView):
     template_name = "advisors.json"
     content_type = "application/json"
+
+
+class TaxHarvestingView(ClientView):
+    def post(self, request, *args, **kwargs):
+        model = json.loads(request.body.decode('utf8'))
+        try:
+            account = ClientAccount.objects.filter(primary_owner=self.client).get(pk=kwargs["pk"])
+        except ObjectDoesNotExist:
+            raise Http404("Not found")
+
+        account.tax_loss_harvesting_consent = model["taxLossHarvestingConsent"]
+        account.tax_loss_harvesting_status = model["taxLossHarvestingStatus"]
+        account.save()
+        response = {"status": account.tax_loss_harvesting_status,
+                    "consent": account.tax_loss_harvesting_consent,
+                    "gateType": "MINIMUM_BALANCE"}
+        return HttpResponse(json.dumps(response),
+                            content_type="application/json")
 
 
 class ClientAccounts(ClientView, TemplateView):
