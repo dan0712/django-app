@@ -503,10 +503,10 @@
   "environment": "demo",
   "logentriesToken": "fb9d7a34-f6eb-41a0-9230-0deb1546c31e",
   "tlhMinimumBalance": 50000,
-  "webHost": "https:\/\/demo.betterment.com",
-  "appHost": "https:\/\/demos.betterment.com",
-  "onboardingHost": "https:\/\/onboarding-demo.betterment.qa",
-  "notificationsHost": "https:\/\/notifications-demo.betterment.com",
+  "webHost": "https:\/\/app.betasmartz.com",
+  "appHost": "https:\/\/app.betasmartz.com",
+  "onboardingHost": "https:\/\/onboarding-demo.betasmartz.qa",
+  "notificationsHost": "https:\/\/notifications-demo.betasmartz.com",
   "supportedMobileClients": {
     "IOS": {
       "version": "3.1"

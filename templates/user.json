@@ -125,7 +125,7 @@
     }
 {% endfor %}
 ],
-    "defaultAccountGroupId": null,
+    "defaultAccountGroupId": {{profile.accounts.first.pk}},
     "performerSession": false,
     "advisorSession": {{is_advisor}}
 }

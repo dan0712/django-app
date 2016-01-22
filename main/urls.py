@@ -180,7 +180,7 @@ urlpatterns = patterns(
         name='client:api:accounts:positions'),
     url(r'^client/api/client/api/accounts/(?P<pk>\d+)/withdrawals$',
         csrf_exempt(Withdrawals.as_view())),
-    url(r'^client/api/portfolio-sets/(?P<goal_pk>\d+)/asset-classes',
+    url(r'^client/api/portfolio-sets/(?P<pk>\d+)/asset-classes',
         PortfolioAssetClasses.as_view(),
         name='client:api:portfolio_sets:asset_classes'),
     url(r'^client/api/portfolio-sets/(?P<pk>\d+)/portfolios',

@@ -28584,7 +28584,8 @@ var requirejs, require, define;
                     collectionType: v
                 }],
                 getDefaultAccountGroup: function() {
-                    return this.get("defaultAccountGroupId") ? this.get("accountGroups").get(this.get("defaultAccountGroupId")) : this.get("accountGroups").first()
+                    var defaultAccountGroupId =  this.get("defaultAccountGroupId") ? this.get("accountGroups").get(this.get("defaultAccountGroupId")) : this.get("accountGroups").first();
+                    return defaultAccountGroupId;
                 },
                 getPersonalAccountGroup: function() {
                     return this.get("accountGroups").findWhere({
@@ -35013,7 +35014,10 @@ var requirejs, require, define;
             sectionSaveOptions: {
                 allocation: {
                     success: function(e) {
-                        e.getAccount().set("allocation", e.get("allocation"))
+                        var account = e.getAccount();
+                        account.set("allocation", e.get("allocation"));
+                        account.set("satelliteAlloc", e.get("satelliteAlloc"));
+
                     }
                 }
             },

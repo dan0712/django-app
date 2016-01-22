@@ -1,4 +1,5 @@
-FROM betasmartz/backend_base
+# You need to tag the backend_base build you want to use for the backend build you're going to use to do this build.
+FROM betasmartz/backend_base:backend_build
 
 ENV PYTHONUNBUFFERED 1
 
@@ -16,3 +17,4 @@ ADD ./devop/id_rsa.pub /root/.ssh/is_rsa.pub
 RUN chmod 400 /root/.ssh/id_rsa
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["backend"]

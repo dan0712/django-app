@@ -1,3 +1,4 @@
+import importlib
 import json
 import uuid
 from datetime import date
@@ -9,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, \
     UserManager, timezone, \
     send_mail
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -26,6 +27,14 @@ from .fields import ColorField
 def validate_agreement(value):
     if value is False:
         raise ValidationError("You must accept the agreement to continue.")
+
+
+def validate_module(value):
+    if not value.strip():
+        raise ValidationError("The supplied module: {} cannot be blank.".format(value))
+    module_spec = importlib.util.find_spec(value)
+    if module_spec is None:
+        raise ValidationError("The supplied module: {} could not be found.".format(value))
 
 
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
@@ -109,6 +118,8 @@ EXECUTED = 'EXECUTED'
 
 TRANSACTION_STATUS_CHOICES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
 
+# TODO: Make the system currency a setting for the site
+SYSTEM_CURRENCY = 'AUD'
 
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
@@ -162,7 +173,8 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
     def save(self, *args, **kw):
         # check if user already exist
         try:
-            self.instance = User.objects.get(email=self.cleaned_data.get('email'))
+            self.instance = User.objects.get(
+                    email=self.cleaned_data.get('email'))
         except ObjectDoesNotExist:
             pass
         instance = super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
@@ -1332,6 +1344,16 @@ class Ticker(models.Model):
                               help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
     region = models.ForeignKey(Region)
 
+    data_api = models.CharField(help_text='The module that will be used to get the data for this ticker',
+                                choices=[('portfolios.api.bloomberg', 'Bloomberg')],
+                                max_length=30,
+                                null=True)
+    data_api_param = models.CharField(help_text='Structured parameter string appropriate for the data api. The '
+                                                'first component would probably be id appropriate for the given api',
+                                      unique=True,
+                                      max_length=30,
+                                      null=True)
+
     def __str__(self):
         return self.symbol
 
@@ -1369,7 +1391,7 @@ class EmailInvitation(models.Model):
     email = models.EmailField()
     inviter_type = models.ForeignKey(ContentType)
     inviter_id = models.PositiveIntegerField()
-    inviter_object = generic.GenericForeignKey('inviter_type', 'inviter_id')
+    inviter_object = GenericForeignKey('inviter_type', 'inviter_id')
     send_date = models.DateTimeField(auto_now=True)
     send_count = models.PositiveIntegerField(default=0)
     status = models.PositiveIntegerField(choices=EMAIL_INVITATION_STATUSES,
@@ -1492,6 +1514,7 @@ class Goal(models.Model):
     class Meta:
         ordering = ['name']
 
+
     @property
     def hedges(self):
         if self.custom_hedges is None:
@@ -1580,7 +1603,7 @@ class Goal(models.Model):
         return sizes
 
     def __str__(self):
-        return self.name + " : " + self.account.primary_owner.full_name
+        return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     @property
     def get_financial_plan_id(self):
@@ -1652,8 +1675,7 @@ class Goal(models.Model):
             return 0
 
         portfolio_set = self.portfolio_set
-        tickers = Ticker.objects.filter(
-                asset_class__in=portfolio_set.asset_classes.all())
+        tickers = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
         tickers_prices = []
         target_allocation = []
@@ -1661,8 +1683,7 @@ class Goal(models.Model):
 
         for ticker in tickers:
             tickers_prices.append(ticker.unit_price)
-            target_allocation.append(self.target_allocation_dict.get(
-                    ticker.asset_class.name, 0))
+            target_allocation.append(self.target_allocation.get(ticker.asset_class.name, 0))
             positions = Position.objects.filter(goal=self, ticker=ticker).all()
             cs = 0
             if positions:
@@ -1673,8 +1694,7 @@ class Goal(models.Model):
         current_allocation = array(current_allocation)
         target_allocation = array(target_allocation)
 
-        return float("{0:.2f}".format(sum(abs(
-                current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
+        return float("{0:.2f}".format(sum(abs(current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
 
     @property
     def life_time_average_balance(self):
@@ -2070,13 +2090,34 @@ class FinancialProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class MonthlyPrices(models.Model):
-    symbol = models.CharField(max_length=100)
-    price = models.FloatField(default=0)
+class DailyPrice(models.Model):
+    class Meta:
+        unique_together = ("ticker", "date")
+    ticker = models.ForeignKey(Ticker, db_index=False)
     date = models.DateField()
+    nav = models.FloatField(null=True)
+    aum = models.BigIntegerField(null=True)
 
+
+class MonthlyPrices(models.Model):
     class Meta:
         ordering = ["symbol", "date"]
+        unique_together = ("symbol", "date")
+    symbol = models.CharField(max_length=100)
+    date = models.DateField()  # This will be the last date in the month.
+    price = models.FloatField(default=0)
+
+
+class ExchangeRate(models.Model):
+    """
+    Describes the rate from the first to the second currency
+    """
+    class Meta:
+        unique_together = ("first", "second", "date")
+    first = models.CharField(max_length=3)
+    second = models.CharField(max_length=3)
+    date = models.DateField()
+    rate = models.FloatField()
 
 
 class Supervisor(models.Model):

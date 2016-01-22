@@ -1,14 +1,17 @@
 import json
+import logging
 from typing import List, Dict
-
 import numpy as np
-from django.core.management.base import BaseCommand
-from main.models import Goal, AssetClass
 from pandas import DataFrame
+
+from django.core.management.base import BaseCommand
+
+from main.models import Goal, AssetClass
 from portfolios.api.yahoo import YahooApi, DbApi
 from portfolios.bl_model import handle_data, calculate_co_vars
 from ...models import PortfolioSet
 
+logger = logging.getLogger("calculate_portfolios")
 
 def get_api(api_name):
     api_dict = {"YAHOO": YahooApi()}
@@ -74,6 +77,9 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
 
     for asset in all_assets:
         ticker = asset.tickers.filter(ordering=0).first()
+        if ticker is None:
+            logger.warn("Could not find tickers for asset class: {}".format(asset.name))
+            continue
         asset_name.append(ticker.symbol)
         super_asset_class_of[ticker.symbol] = asset.super_asset_class
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)

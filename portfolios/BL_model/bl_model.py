@@ -1,3 +1,4 @@
+from statsmodels.stats.correlation_tools import cov_nearest
 import numpy as np
 import numpy.linalg as la
 from cvxpy import Variable, Minimize, quad_form, Problem, sum_entries
@@ -39,11 +40,6 @@ def bl_model(sigma, w_tilde, p, v, n, c=1.0, lambda_bar=1.2):
         c -- any positive float, default to 1 (as in example on page 5)
         lambda_bar -- positive float, default to 1.2 as mentioned after equation (5)
     """
-    '''
-    i_eigvals = np.linalg.eigvals(sigma)
-    if np.any(i_eigvals < 0):
-        logger.debug("Input Matrix: {} not PSD. Eigenvalues: {}".format(sigma, i_eigvals))
-    '''
 
     pi = 2.0 * lambda_bar * np.dot(sigma, w_tilde)  # equation (5)
     tau = 1.0 / float(n)  # equation (8)
@@ -58,27 +54,13 @@ def bl_model(sigma, w_tilde, p, v, n, c=1.0, lambda_bar=1.2):
     mu_bl = pi + np.dot(m1, m2)
     sig_bl = (1.0 + tau) * sigma - tau * np.dot(m1, m3)
 
-    # The model can leave sig not pos semi definite. If so, fix it.
-    if np.any(np.linalg.eigvals(sig_bl) < 0):
-        logger.debug("Output Matrix {} not PSD. Fixing.".format(sig_bl))
-        sig_bl = near_psd(sig_bl)
-        logger.debug("New Output Matrix {}".format(sig_bl))
+    # Make the matrix symmetric
+    sym_bl = (sig_bl + sig_bl.T) / 2
 
-    # This BL model can leave sig in a not perfect symmetry, so make it so.
-    return mu_bl, (sig_bl + sig_bl.T) / 2
+    # The cov matrix may have not been strictly pos semi definite due to rounding etc. Make sure it is.
+    psd_bl = cov_nearest(sym_bl)
 
-
-# From http://stackoverflow.com/questions/10939213/how-can-i-calculate-the-nearest-positive-semi-definite-matrix
-def near_psd(A, epsilon=0):
-    n = A.shape[0]
-    eigval, eigvec = np.linalg.eig(A)
-    val = np.matrix(np.maximum(eigval, epsilon))
-    vec = np.matrix(eigvec)
-    T = 1/(np.multiply(vec, vec) * val.T)
-    T = np.matrix(np.sqrt(np.diag(np.array(T).reshape(n))))
-    B = T * vec * np.diag(np.array(np.sqrt(val)).reshape(n))
-    out = B*B.T
-    return out
+    return mu_bl, psd_bl
 
 
 def markowitz_optimizer(mu, sigma, lam=1):
@@ -131,7 +113,7 @@ def markowitz_optimizer_2(mu, sigma, m, alpha, lam=1):
     sigma -- positive semidefinite symmetric matrix
     m     -- m < n
     alpha -- a float between 0 and 1
-    lam   -- any non-negative float 
+    lam   -- any non-negative float
     """
 
     x = Variable(len(sigma))  # define variable of weights to be solved for by optimizer
@@ -144,19 +126,34 @@ def markowitz_optimizer_2(mu, sigma, m, alpha, lam=1):
 
 
 def markowitz_optimizer_3(xs, sigma, lam, mu, constraints):
+    """
+    Optimise against a set of pre-constructed constraints
+    :param xs: The variables to optimise
+    :param sigma: nxn covariance matrix between asset return time series
+    :param lam: Risk tolerance factor
+    :param mu: 1xn numpy array of expected asset returns
+    :param constraints: List of constrains to optimise with respect to.
+    :return: (weights, cost)
+             - weights: The calculated weight of each asset
+             - cost: The total cost of this portfolio. Useful for ranking optimisation outputs
+    """
     objective = Minimize(quad_form(xs, sigma) - lam * mu * xs)  # define Markowitz mean/variance objective function
     p = Problem(objective, constraints)  # create optimization problem
     res = p.solve()  # solve problem
     # If it was not solvable, fail
     if type(res) == str:
         raise OptimizationFailed(res)
-    return np.array(xs.value).flatten()  # return optimal weights
+    return np.array(xs.value).T, res  # return optimal weights and the cost.
 
-def markowitz_optimizer_4(mu, sigma, elems, alpha, lam=1):
 
-    x = Variable(len(sigma))  # define variable of weights to be solved for by optimizer
-    objective = Minimize(quad_form(x, sigma) - lam * mu * x)  # define Markowitz mean/variance objective function
-    constraints = [sum_entries(x[elems]) == alpha, sum_entries(x) == 1, x >= 0]  # define long only constraint
-    p = Problem(objective, constraints)  # create optimization problem
-    L = p.solve()  # solve problem
-    return np.array(x.value).flatten()  # return optimal weights
+def markowitz_cost(ws, sigma, lam, mu):
+    """
+    Calculate the markowitz cost of a particular portfolio configuration
+    :param ws: A 1xn numpy array of the weights of each asset.
+    :param sigma: nxn covariance matrix between asset return time series
+    :param lam: Risk tolerance factor
+    :param mu: 1xn numpy array of expected asset returns
+    :return: The cost of this particular configuration
+    real(x'*Q*x) or x'*((Q+Q'/2))*x
+    """
+    return (ws.dot(sigma).dot(ws.T).real - np.dot(lam, mu).dot(ws.T))[0, 0]

@@ -2,7 +2,7 @@ FROM python:3.5.0
 ENV PYTHONUNBUFFERED 1
 # install requirements
 RUN apt-get update -y &&\
-    apt-get install -y gfortran libopenblas-dev liblapack-dev git cron supervisor &&\
+    apt-get install -y gfortran libopenblas-dev liblapack-dev git cron supervisor vim less &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 ADD requirements.txt .

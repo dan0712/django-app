@@ -1,22 +1,20 @@
-import json
+import logging
+import ujson
 import time
 from datetime import datetime, timedelta
-from json.decoder import JSONDecodeError
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from portfolios.bl_model import OptimizationException
-from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
-# from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
+#from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
+from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from portfolios.models import PortfolioSet
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, PENDING, Goal, ALLOCATION, TransactionMemo, \
     AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
     MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass
-from django.http.response import Http404
 
 __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisitor', 'ClientAdvisor',
            'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
@@ -25,8 +23,9 @@ __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisit
            'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances',
            'SetAutoWithdrawalView', 'ZipCodes', 'FinancialProfileView',
            'FinancialPlansView', 'FinancialPlansAccountAdditionView', 'FinancialPlansAccountDeletionView',
-           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView',
-           'TaxHarvestingView']
+           'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView']
+
+logger = logging.getLogger("client.api")
 
 
 class ClientAppData(TemplateView):
@@ -59,10 +58,15 @@ class PortfolioAssetClasses(ClientView, TemplateView):
     content_type = "application/json"
 
     def get_context_data(self, *args, **kwargs):
-        pk = kwargs["goal_pk"]
-        goal = get_object_or_404(Goal, pk=pk)
+        goal_pk = kwargs.get("goal_pk", None)
         ctx = super(PortfolioAssetClasses, self).get_context_data(*args, **kwargs)
-        ctx["portfolio_set"] = goal.portfolio_set
+
+        if goal_pk:
+            goal = get_object_or_404(Goal, pk=goal_pk)
+            ctx["portfolio_set"] = goal.portfolio_set
+        else:
+            ctx["portfolio_set"] = Goal().portfolio_set
+
         return ctx
 
 
@@ -85,16 +89,16 @@ class PortfolioPortfolios(ClientView, TemplateView):
                     if goal.portfolios in [None, "{}", "[]", ""]:
                         try:
                             portfolios = calculate_portfolios_for_goal(goal)
-                            goal.portfolios = json.dumps(portfolios)
+                            goal.portfolios = ujson.dumps(portfolios, double_precision=2)
                             goal.save()
                         except OptimizationException:
                             goal.custom_regions = None
                             goal.save()
-                            portfolios = json.loads(goal.portfolio_set.portfolios)
+                            portfolios = ujson.loads(goal.portfolio_set.portfolios)
                     else:
-                        portfolios = json.loads(goal.portfolios)
+                        portfolios = ujson.loads(goal.portfolios)
                 else:
-                    portfolios = json.loads(goal.portfolio_set.portfolios)
+                    portfolios = ujson.loads(goal.portfolio_set.portfolios)
 
                 ret = []
                 for k in portfolios:
@@ -105,10 +109,10 @@ class PortfolioPortfolios(ClientView, TemplateView):
                         'allocations': portfolios[k]["allocations"]
                     }
                     ret.append(new_pr)
-                return HttpResponse(json.dumps(ret), content_type="application/json")
+                return HttpResponse(ujson.dumps(ret), content_type="application/json")
 
         ret = []
-        portfolios = json.loads(portfolio_set.portfolios)
+        portfolios = ujson.loads(portfolio_set.portfolios)
         for k in portfolios:
             new_pr = {
                 "risk": int(100 * portfolios[k]["risk"]) / 100,
@@ -118,7 +122,7 @@ class PortfolioPortfolios(ClientView, TemplateView):
             }
             ret.append(new_pr)
 
-        return HttpResponse(json.dumps(ret), content_type="application/json")
+        return HttpResponse(ujson.dumps(ret), content_type="application/json")
 
 
 class PortfolioRiskFreeRates(TemplateView):
@@ -141,30 +145,12 @@ class ClientAdvisor(ClientView, TemplateView):
     content_type = "application/json"
 
 
-class TaxHarvestingView(ClientView):
-    def post(self, request, *args, **kwargs):
-        model = json.loads(request.body.decode('utf8'))
-        try:
-            account = ClientAccount.objects.filter(primary_owner=self.client).get(pk=kwargs["pk"])
-        except ObjectDoesNotExist:
-            raise Http404("Not found")
-
-        account.tax_loss_harvesting_consent = model["taxLossHarvestingConsent"]
-        account.tax_loss_harvesting_status = model["taxLossHarvestingStatus"]
-        account.save()
-        response = {"status": account.tax_loss_harvesting_status,
-                    "consent": account.tax_loss_harvesting_consent,
-                    "gateType": "MINIMUM_BALANCE"}
-        return HttpResponse(json.dumps(response),
-                            content_type="application/json")
-
-
 class ClientAccounts(ClientView, TemplateView):
     template_name = "accounts.json"
     content_type = "application/json"
 
     def post(self, requests, *args, **kwargs):
-        model = json.loads(requests.POST.get("model", '{}'))
+        model = ujson.loads(requests.POST.get("model", '{}'))
 
         goal = Goal()
         goal.account = self.client.accounts.first()
@@ -183,7 +169,7 @@ class ClientAccounts(ClientView, TemplateView):
             goal.target = 0
         goal.income = model.get("income", False)
         goal.save()
-        return HttpResponse(json.dumps({"id": goal.pk}),
+        return HttpResponse(ujson.dumps({"id": goal.pk}),
                             content_type='application/json')
 
 
@@ -252,7 +238,7 @@ class ClientAccountPositions(ClientView, TemplateView):
             positions.append(new_p)
 
         # calculate drift and allocations
-        return HttpResponse(json.dumps(positions),
+        return HttpResponse(ujson.dumps(positions),
                             content_type='application/json')
 
 
@@ -408,11 +394,11 @@ class NewTransactionsView(ClientView):
                                 tr["change"], tr["balance"], tr["fullTime"])
 
             return HttpResponse(csv, content_type="text/csv")
-        return HttpResponse(json.dumps(new_list),
+        return HttpResponse(ujson.dumps(new_list),
                             content_type="application/json")
 
     def post(self, request, *args, **kwargs):
-        model = json.loads(request.POST.get("model", '{}'))
+        model = ujson.loads(request.POST.get("model", '{}'))
         new_transaction = Transaction()
         new_transaction.account = get_object_or_404(
             Goal,
@@ -450,7 +436,7 @@ class NewTransactionsView(ClientView):
         if new_transaction.to_account:
             nt_return["toAccount"] = new_transaction.to_account
 
-        return HttpResponse(json.dumps(nt_return),
+        return HttpResponse(ujson.dumps(nt_return),
                             content_type='application/json')
 
 
@@ -459,7 +445,7 @@ class ChangeAllocation(ClientView):
         goal = get_object_or_404(Goal,
                                  pk=kwargs["pk"],
                                  account__primary_owner=self.client)
-        payload = json.loads(request.body.decode("utf-8"))
+        payload = ujson.loads(request.body.decode("utf-8"))
         goal.allocation = payload["allocation"]
         if payload["satelliteAlloc"] != goal.satellite_pct:
             goal.satellite_pct = payload["satelliteAlloc"]
@@ -481,9 +467,9 @@ class ChangeAllocation(ClientView):
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal))
+                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
                 except OptimizationException as e:
-                    print(e)
+                    logger.exception(e)
                     return HttpResponse('null',
                                         content_type="application/json",
                                         status=500)
@@ -491,7 +477,7 @@ class ChangeAllocation(ClientView):
                 goal.portfolios = None
 
         goal.save()
-        return HttpResponse(json.dumps({"transactionId": new_t.pk}),
+        return HttpResponse(ujson.dumps({"transactionId": new_t.pk}),
                             content_type="application/json")
 
 
@@ -500,7 +486,7 @@ class NewTransactionMemoView(ClientView):
         return HttpResponse("[]", content_type="application/json")
 
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode("utf-8"))
+        payload = ujson.loads(request.body.decode("utf-8"))
         tr = get_object_or_404(
             Transaction,
             pk=payload["user_transaction_id"].replace("f", ""))
@@ -510,7 +496,7 @@ class NewTransactionMemoView(ClientView):
         trm.comment = payload["comment"]
         trm.transaction_type = payload["transaction_type"]
         trm.save()
-        return HttpResponse(json.dumps({"success": "ok"}),
+        return HttpResponse(ujson.dumps({"success": "ok"}),
                             content_type="application/json")
 
 
@@ -519,7 +505,7 @@ class ChangeGoalView(ClientView):
         goal = get_object_or_404(Goal,
                                  pk=kwargs["pk"],
                                  account__primary_owner=self.client)
-        payload = json.loads(request.body.decode("utf-8"))
+        payload = ujson.loads(request.body.decode("utf-8"))
         goal.name = payload["name"]
         goal.completion_date = datetime.strptime(payload["goalCompletionDate"],
                                                  '%Y%m%d%H%M%S')
@@ -536,11 +522,11 @@ class ChangeGoalView(ClientView):
         new_region_allocations = {}
 
         for k in allocation_keys:
-            if int(region_allocations[k]["size"] * 100) == 0:
+            if int(region_allocations[k]["size"]*100) == 0:
                 continue
             else:
                 new_region_allocations[k] = {"size": region_allocations[k]["size"]}
-            total_size += int(region_allocations[k]["size"] * 100)
+            total_size += int(region_allocations[k]["size"]*100)
 
         if total_size != 100:
             region_allocations = None
@@ -549,18 +535,19 @@ class ChangeGoalView(ClientView):
 
         if region_allocations:
             try:
-                custom_regions = json.loads(goal.custom_regions)
-            except (JSONDecodeError, TypeError):
+                custom_regions = ujson.loads(goal.custom_regions)
+            except (ValueError, TypeError):
+                logger.exception("Error decoding custom regions.")
                 custom_regions = {}
             if len(custom_regions) > 0:
                 if custom_regions == region_allocations:
                     has_changed = False
                 else:
                     has_changed = True
-                    goal.custom_regions = json.dumps(region_allocations)
+                    goal.custom_regions = ujson.dumps(region_allocations)
             else:
                 has_changed = True
-                goal.custom_regions = json.dumps(region_allocations)
+                goal.custom_regions = ujson.dumps(region_allocations)
 
         # check optimization model
         optimization_mode = payload["optimization_mode"]
@@ -570,21 +557,21 @@ class ChangeGoalView(ClientView):
 
         # check picked regions
         picked_regions = list(set(payload["picked_regions"]))
-        if set(picked_regions) != set(json.loads(goal.picked_regions)):
-            goal.custom_picked_regions = json.dumps(picked_regions)
+        if set(picked_regions) != set(ujson.loads(goal.picked_regions)):
+            goal.custom_picked_regions = ujson.dumps(picked_regions)
             has_changed = True
 
         if payload["satelliteAlloc"] != goal.satellite_pct:
             goal.satellite_pct = payload["satelliteAlloc"]
             has_changed = True
 
-        goal.custom_hedges = json.dumps(payload["hedges"])
+        goal.custom_hedges = ujson.dumps(payload["hedges"])
         goal.save()
 
         if has_changed:
             if goal.is_custom_size:
                 try:
-                    goal.portfolios = json.dumps(calculate_portfolios_for_goal(goal))
+                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
                 except OptimizationException as e:
                     print(e)
                     return HttpResponse('null',
@@ -608,7 +595,7 @@ class ChangeGoalView(ClientView):
 
 class SetAutoDepositView(ClientView):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.POST.get("model"))
+        payload = ujson.loads(request.POST.get("model"))
         pk = payload["account"]
         goal = get_object_or_404(Goal,
                                  pk=pk,
@@ -636,13 +623,13 @@ class SetAutoDepositView(ClientView):
             '%Y%m%d%H%M%S')
         payload["amount"] = str(ad.amount)
 
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")
 
 
 class SetAutoWithdrawalView(ClientView):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.POST.get("model"))
+        payload = ujson.loads(request.POST.get("model"))
         pk = payload["account"]
         goal = get_object_or_404(Goal,
                                  pk=pk,
@@ -670,13 +657,13 @@ class SetAutoWithdrawalView(ClientView):
             '%Y%m%d%H%M%S')
         payload["amount"] = str(ad.amount)
 
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")
 
 
 class Withdrawals(ClientView):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf8'))
+        payload = ujson.loads(request.body.decode('utf8'))
         goal = get_object_or_404(Goal,
                                  pk=kwargs["pk"],
                                  account__primary_owner=self.client)
@@ -695,7 +682,7 @@ class Withdrawals(ClientView):
             "amount": new_transaction.amount
         }
 
-        return HttpResponse(json.dumps(nt_return),
+        return HttpResponse(ujson.dumps(nt_return),
                             content_type="application/json")
 
 
@@ -719,7 +706,7 @@ class AnalysisBalances(ClientView):
 
                 ret.append(r_obj)
 
-        return HttpResponse(json.dumps(ret), content_type="application/json")
+        return HttpResponse(ujson.dumps(ret), content_type="application/json")
 
 
 class AnalysisReturns(ClientView):
@@ -802,7 +789,7 @@ class AnalysisReturns(ClientView):
 
                 ret.append(obj)
 
-        return HttpResponse(json.dumps(ret), content_type="application/json")
+        return HttpResponse(ujson.dumps(ret), content_type="application/json")
 
 
 class ZipCodes(ClientView):
@@ -816,7 +803,7 @@ class ZipCodes(ClientView):
             "cost_of_living_index": "{0}".format(col.value)
         }
 
-        return HttpResponse(json.dumps(ret), content_type="application/json")
+        return HttpResponse(ujson.dumps(ret), content_type="application/json")
 
 
 class FinancialPlansView(ClientView):
@@ -828,7 +815,7 @@ class FinancialPlansView(ClientView):
         return self.post(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = ujson.loads(request.body.decode('utf-8'))
 
         if hasattr(self.client, 'financial_plan'):
             plan = self.client.financial_plan
@@ -839,13 +826,13 @@ class FinancialPlansView(ClientView):
             setattr(plan, k, v)
         plan.save()
         payload["id"] = plan.pk
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")
 
 
 class FinancialPlansAccountAdditionView(ClientView):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = ujson.loads(request.body.decode('utf-8'))
         goal = get_object_or_404(Goal,
                                  pk=payload["account_id"].strip("f"),
                                  account__primary_owner=self.client)
@@ -859,13 +846,13 @@ class FinancialPlansAccountAdditionView(ClientView):
         payload["id"] = fp_account.pk
         payload["bettermentdb_account_id"] = goal.pk
         del payload["account_id"]
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")
 
 
 class FinancialPlansAccountDeletionView(ClientView):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = ujson.loads(request.body.decode('utf-8'))
         goal = get_object_or_404(Goal,
                                  pk=payload["account_id"].strip("f"),
                                  account__primary_owner=self.client)
@@ -888,19 +875,19 @@ class FinancialPlansExternalAccountAdditionView(ClientView):
                             content_type="application/json")
 
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = ujson.loads(request.body.decode('utf-8'))
         external_account = FinancialPlanExternalAccount(client=self.client)
         for k, v in payload.items():
             setattr(external_account, k, v)
         external_account.save()
         payload["id"] = external_account.id
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")
 
 
 class FinancialPlansExternalAccountDeletionView(ClientView):
     def put(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = ujson.loads(request.body.decode('utf-8'))
         del payload["client"]
         del payload["id"]
         pk = kwargs["pk"]
@@ -912,7 +899,7 @@ class FinancialPlansExternalAccountDeletionView(ClientView):
             setattr(fp_external, k, v)
 
         payload["id"] = fp_external.pk
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")
 
     def delete(self, request, *args, **kwargs):
@@ -933,7 +920,7 @@ class FinancialProfileView(ClientView):
         return self.put(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = ujson.loads(request.body.decode('utf-8'))
         spouse_retired = payload.get("spouse_retired", None)
         if spouse_retired is None:
             payload["spouse_retired"] = False
@@ -947,5 +934,5 @@ class FinancialProfileView(ClientView):
             setattr(profile, k, v)
         profile.save()
         payload["id"] = profile.pk
-        return HttpResponse(json.dumps(payload),
+        return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")

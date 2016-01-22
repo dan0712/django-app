@@ -4,9 +4,11 @@ if [ "$1" = 'backend' ]; then
     # save env vars
     printenv > /all.envs
 
+    python3.5 /betasmartz/startup_utils.py create_db
+
     # Inserting sleep delay for Bluemix to wait for routing to be set up per recommendation via:
     # https://www.ng.bluemix.net/docs/containers/doc/container_troubleshoot.html
-    sleep 60
+    #sleep 60
 
     python /betasmartz/manage.py migrate main --noinput
     python /betasmartz/manage.py migrate --noinput
