@@ -282,11 +282,14 @@ class DbApi:
     def __init__(self):
         today = datetime.today()
         self.today_year = today.year
-        self.today_month = today.month - 1
+        self.today_month = today.month
         self.today_day = today.day
 
     def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
-        self.dates = pd.date_range('2010-01', '{0}-{1}'.format(self.today_year, self.today_month+1), freq='M')
+        self.dates = pd.date_range('{}-{}'.format(self.today_year-(2 if self.today_month == 1 else 1),
+                                                  12 if self.today_month == 1 else self.today_month-1),
+                                   '{}-{}'.format(self.today_year, self.today_month),
+                                   freq='M')
 
         prices = MonthlyPrices.objects.filter(symbol=ticker_symbol).all()
         price_data = {}

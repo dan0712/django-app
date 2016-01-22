@@ -6,16 +6,13 @@ import math
 from django.core.management.base import BaseCommand
 from django.db.models.aggregates import Max
 
-from main.models import Ticker, DailyPrice, MonthlyPrices, ExchangeRate
+from main.models import Ticker, DailyPrice, MonthlyPrices, ExchangeRate, SYSTEM_CURRENCY
 from portfolios.api.bloomberg import get_fund_hist_data as bl_getter, get_fx_rates
 from portfolios.models import MarketCap
 
 logger = logging.getLogger("load_prices")
 
 api_map = {'portfolios.api.bloomberg': bl_getter}
-
-# TODO: Make the system currency a setting for the site
-SYSTEM_CURRENCY = 'AUD'
 
 # Module level cache of currency data.
 currency_cache = {}
@@ -52,14 +49,34 @@ def load_fx_rates(begin_date, end_date):
 def fx_convert(val, date, currency):
     if currency == SYSTEM_CURRENCY:
         return val
+
+    def make_weekday(date):
+        if date.weekday() > 4:
+            new_date = date - datetime.timedelta(days=date.weekday() - 4)
+            msg = "Not attempting currency conversion for weekend day: {}. Trying previous workday: {}."
+            logger.info(msg.format(date.date(), new_date.date()))
+            date = new_date
+        return date
+
+    date = make_weekday(date)
     rate = currency_cache.get((currency, date), None)
     if rate is None:
         rate = ExchangeRate.objects.filter(first=SYSTEM_CURRENCY,
                                            second=currency,
                                            date=date).values_list('rate', flat=True)
-        if len(rate) == 0:
-            msg = "Cannot convert currency: {} for date: {} as I don't have the exchange rate. maybe run load_fx_rates?"
-            raise Exception(msg.format(currency, date))
+        #if len(rate) == 0 or not rate[0] or not rate[0][0] or not math.isfinite(rate[0][0]):
+        if len(rate) == 0 or not rate[0] or not math.isfinite(rate[0]):
+            old_dt = date
+            date = make_weekday(date - datetime.timedelta(days=1))
+            msg = "Cannot convert currency: {} for date: {} as I don't have the exchange rate. Maybe run load_fx_rates?"
+            msg2 = " Trying the previous workday: {}."
+            logger.warn((msg + msg2).format(currency, old_dt.date(), date.date()))
+            rate = ExchangeRate.objects.filter(first=SYSTEM_CURRENCY,
+                                               second=currency,
+                                               date=date).values_list('rate', flat=True)
+            if len(rate) == 0 or not rate[0] or not math.isfinite(rate[0]):
+                raise Exception(msg.format(currency, date))
+        #print(rate[0])
         rate = rate[0]
 
     return val / rate
@@ -107,8 +124,11 @@ def load_ticker_data(begin_date, end_date):
 
             # Generate the monthly prices from the frame.
             # We were throwing a segfault here on empty frame, so we don't do it now.
-            if frame['nav'].size > 0:
-                monthly_navs.append((frame['nav'].resample('M', how='last', closed='right', label='right'), ticker))
+            if frame['nav'].dropna().size > 0:
+                # monthly_navs.append((frame['nav'].dropna().resample('M', how='last', closed='right', label='right'), ticker))
+                mnav = frame['nav'].dropna().astype(float).resample('M', how='ohlc')['close'].dropna()
+                monthly_navs.append((mnav, ticker))
+                #print(monthly_navs[-1])
             else:
                 emsg = "Not generating prices for symbol: {} as there is no data to use."
                 logger.warn(emsg.format(ticker.symbol))
@@ -117,11 +137,14 @@ def load_ticker_data(begin_date, end_date):
             DailyPrice.objects.filter(ticker=ticker).filter(date__range=(begin_date, end_date)).delete()
 
             # Insert the new prices
-            prices = [DailyPrice(ticker=ticker,
-                                 date=dt,
-                                 nav=nan_none(fx_convert(nav, dt, ticker.currency)),
-                                 aum=nan_none(fx_convert(aum, dt, ticker.currency))) for dt, nav, aum in
-                      frame.itertuples()]
+            prices = []
+            for dt, nav, aum in frame.itertuples():
+                prices.append(DailyPrice(ticker=ticker,
+                                         date=dt,
+                                         nav=nan_none(fx_convert(nav, dt, ticker.currency)),
+                                         aum=nan_none(fx_convert(aum, dt, ticker.currency))))
+                #print("Appended {} from sym: {}, dt: {}, nav: {}".format(prices[-1].nav, key, dt, nav))
+
             DailyPrice.objects.bulk_create(prices)
 
     # Load the MonthlyPrices table from the daily prices
@@ -203,8 +226,17 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('begin_date', type=parse_date, help='Inclusive start date to load the data for. (YYYYMMDD)')
         parser.add_argument('end_date', type=parse_date, help='Inclusive end date to load the data for. (YYYYMMDD)')
+        #parser.add_argument('--verbose', '-v', action='count', help='Increase logging verbosity')
 
     def handle(self, *args, **options):
+
+        if options['verbosity'] == 0:
+            logger.setLevel(min(logging.WARN, logger.level))
+        elif options['verbosity'] == 1:
+            logger.setLevel(min(logging.INFO, logger.level))
+        elif options['verbosity'] >= 2:
+            logger.setLevel(min(logging.DEBUG, logger.level))
+
         load_fx_rates(options['begin_date'], options['end_date'])
         load_ticker_data(options['begin_date'], options['end_date'])
         set_aum()

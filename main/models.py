@@ -118,6 +118,8 @@ EXECUTED = 'EXECUTED'
 
 TRANSACTION_STATUS_CHOICES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
 
+# TODO: Make the system currency a setting for the site
+SYSTEM_CURRENCY = 'AUD'
 
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
@@ -1557,8 +1559,7 @@ class Goal(models.Model):
             return 0
 
         portfolio_set = self.portfolio_set
-        tickers = Ticker.objects.filter(
-                asset_class__in=portfolio_set.asset_classes.all())
+        tickers = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
         tickers_prices = []
         target_allocation = []

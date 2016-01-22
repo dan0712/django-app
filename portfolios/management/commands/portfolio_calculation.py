@@ -1,9 +1,11 @@
 from collections import defaultdict
 # Use ujson as normal json doesn't support setting float precision
 import ujson
+import sys
+import math
 
-from main.models import Ticker, Region, INVESTMENT_TYPES, STOCKS
-from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3
+from main.models import Ticker, Region, INVESTMENT_TYPES, STOCKS, SYSTEM_CURRENCY
+from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
 from portfolios.api.yahoo import DbApi
 from portfolios.bl_model import calculate_co_vars
 from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
@@ -16,14 +18,28 @@ from cvxpy import sum_entries, Variable
 import logging
 import pandas as pd
 import numpy as np
-import json
-
 
 TYPE_MASK_PREFIX = 'TYPE_'
 ETHICAL_MASK_NAME = 'ETHICAL'
 REGION_MASK_PREFIX = 'REGION_'
 PORTFOLIO_SET_MASK_PREFIX = 'PORTFOLIO-SET_'
 ETF_MASK_NAME = 'ETF'
+
+# The Markowitz risk tolerance lambda we want to use.
+RISK_TOLERANCE = 1.0
+
+# Acceptable modulo multiplier of the unit price for ordering.
+ORDERING_ALIGNMENT_TOLERANCE = 0.01
+
+# Minimum percentage of a portfolio that an individual fund can make up. (0.01 = 1%)
+# We round to 2 decimal places in the portfolio, so that's why 0.01 is used ATM.
+MIN_PORTFOLIO_PCT = 0.01
+
+# Amount we suggest we boost a budget by to make all funds with an original allocation over this amount orderable.
+LMT_PORTFOLIO_PCT = 0.05
+
+# How many pricing samples do we need to make the statistics valid?
+MINIMUM_PRICE_SAMPLES = 12
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
 #logger.setLevel(logging.DEBUG)
@@ -32,6 +48,13 @@ logger.setLevel(logging.INFO)
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
 
+
+def months_between(date1, date2):
+    if date1 > date2:
+        date1, date2 = date2, date1
+    m1 = date1.year*12 + date1.month
+    m2 = date2.year*12 + date2.month
+    return m2 - m1
 
 def build_instruments(api=DbApi()):
     """
@@ -72,18 +95,25 @@ def build_instruments(api=DbApi()):
     for ticker in tickers:
         # TODO: Get the current price from the daily prices table, not monthly.
         prices = api.get_all_prices(ticker.symbol, currency=ticker.currency).dropna()
-        if num_prices is None:
-            num_prices = prices.size
-        elif num_prices != prices.size:
-            # TODO: Put the warning back
-            #logger.warn("All prices not the same for all instruments. Last len: {}, Prices: {}".format(num_prices, prices))
-            # raise Exception("All prices not available for all instruments.")
-            pass
-        if prices.size < 5:
-            emsg = "Symbol: {} has only {} available prices. Removing from candidates."
+
+        # Make sure we have enough prices to make the statistics meaningful.
+        if prices.size < MINIMUM_PRICE_SAMPLES:
+            emsg = "Symbol: {} has only {} available prices."
             logger.warn(emsg.format(ticker.symbol, prices.size))
+            # TODO: Put the exception back
+            # raise Exception(emsg.format(ticker.symbol, prices.size))
+
+        # We need there to be no gaps in the prices, so our expected return calculation is correct.
+        mbtw = months_between(prices.index[0], prices.index[-1])
+        if (mbtw + 1) != prices.size:
+            emsg = "Removing symbol: {} from candidates as it has {} prices available, but there are {} months " \
+                   "between the first price on {} and last price on {}. As such, there should be {} prices available."
+            logger.warn(emsg.format(ticker.symbol, prices.size, mbtw, prices.index[0], prices.index[-1], mbtw+1))
             continue
+
+        # Data good, so add the symbol
         ccols.append(prices)
+
         # Build annualised expected return
         er = (1 + ccols[-1].pct_change().mean()) ** 12 - 1
         irows.append((ticker.symbol,
@@ -132,10 +162,10 @@ def build_instruments(api=DbApi()):
     # Drop the items from the instruments table that were just used to build the masks.
     instruments.drop(['reg', 'eth', 'type', 'etf'], axis=1, inplace=True)
 
-    # Old covariance
+    # For now we are using the old covariance method as some funds do not have 12 months data.
     sk_co_var, co_vars = calculate_co_vars(ctable.shape[1], ctable)
     co_vars = pd.DataFrame(co_vars, index=instruments.index, columns=instruments.index)
-    samples = 6
+    samples = 12
     
     # Drop dates that have nulls for some symbols.
     # TODO: Have some sanity check over the data. Make sure it's recent, gap free and with enough samples.
@@ -165,7 +195,7 @@ def get_goal_masks(goal, masks):
     goal_mask = np.array([False] * len(masks))
     if goal.optimization_mode == 1:
         # TODO: This json should go. We should simply get the region (min,max) percentage constraints from the model
-        region_coll = json.loads(goal.picked_regions)
+        region_coll = ujson.loads(goal.picked_regions)
     else:
         assert goal.optimization_mode == 2
         region_coll = goal.region_sizes.keys()
@@ -256,22 +286,6 @@ def get_allocation_constraints(goal, cvx_masks, xs, slippage=0):
         raise Exception(estr.format(etf_pct, goal.name))
 
     return constraints
-
-
-def get_ordering_constraint(xs, instruments):
-    """
-    Adds the allocation constraints to be used by cvxpy coming from the allocation percentages for this goal.
-    :param goal: Details of the goal you want the constraints for
-    :param masks: A pandas dataframe of all the goal-specific masks for each group in the system. Indexed on symbol.
-    :param xs: The list of cvxpy variables we are optimising
-    :param instruments: A Pandas DataFrame with all the instrument data.
-    :return: A List of constraints
-        - xs: The list of cvxpy variables that we will optimise for. Length is count of trues in goal_mask
-        - constraints: The constraints suitable for cvxpy
-    """
-    # TODO: If we're not aggregating orders, or in the US where we can order partials, add constraints for ordering sizes
-    # - i.e. we cannot order 1.2 of an instrument. This doesn't work as % is not supported by cvx
-    return [xs % 0.01 == 0]
 
 
 def get_initial_weights(instruments):
@@ -390,7 +404,7 @@ def calculate_portfolio(goal, idata):
     logger.debug("Got mu: {}, covars: {} and sigma: {}".format(mu, lcovars, sigma))
 
     # Optimise for the instrument weights given the constraints
-    weights, cost = markowitz_optimizer_3(xs, sigma, 1, mu, constraints)
+    weights, cost = markowitz_optimizer_3(xs, sigma, RISK_TOLERANCE, mu, constraints)
 
     if not weights.any():
         # TODO: We should be returning Nones here, but the UI needs all values..
@@ -398,29 +412,21 @@ def calculate_portfolio(goal, idata):
         instruments['_weight_'] = 0.0
         ac_weights = instruments.groupby('ac')['_weight_'].sum()
         return ac_weights, 0.0, 0.0
+
+    # Find the optimal orderable weights.
+    original_cost = cost
+    original_weights = weights
+    budget = goal.total_balance + goal.cash_balance + goal.pending_deposits + goal.pending_withdrawals
+    weights, cost = make_orderable(weights[0], xs, sigma, mu, constraints, budget, goal_instruments['price'])
+    if not weights.any():
+        logger.info("Could not find an appropriate allocation given ordering constraints for goal: {} ".format(goal))
+        logger.info("Reinstating unorderable portfolio for now")
+        weights = original_weights
+        #return None, None, None
     else:
-        # Deactivate any instruments that didn't reach at least orderable quantity of 1 and rerun the optimisation.
-        inactive = ((weights[0] * goal.total_balance) / goal_instruments['price']) < 1
-        inactive |= weights[0] < .01  # We only return things over 2 dec pl as we round to that in the portfolio.
-        inactive_ilocs = inactive.nonzero()[0].tolist()
-        if len(inactive_ilocs) > 0:
-            constraints.append(xs[inactive_ilocs] == 0)
-
-            # Optimise again given the new constraints
-            original_cost = cost
-            original_weights = weights
-            weights, cost = markowitz_optimizer_3(xs, sigma, 1, mu, constraints)
-            if not weights.any():
-                logger.info("Could not find an appropriate allocation given ordering constraints for goal: {} ".format(goal))
-                logger.info("Reinstating old portfolio for now")
-                weights = original_weights
-                #return None, None, None
-            else:
-                logger.info('Ordering cost for goal {}: {}, pre-ordering val: {}'.format(goal.id, cost-original_cost, original_cost))
-
-    # TODO: Now round each allocation to both the above and below unit, and optimise across all combinations to
-    # TODO: find the best allocation in terms of cost, slippage from desired constraints, and cost delta vs portfolio
-    # TODO: balance.
+        logger.info('Ordering cost for goal {}: {}, pre-ordering val: {}'.format(goal.id,
+                                                                                 cost-original_cost,
+                                                                                 original_cost))
 
     # Get the totals per asset class, portfolio expected return and portfolio variance
     instruments['_weight_'] = 0.0
@@ -432,6 +438,112 @@ def calculate_portfolio(goal, idata):
     variance = weights.dot(lcovars).dot(weights.T)
 
     return ac_weights, er[0], variance[0][0]
+
+
+def make_orderable(weights, xs, sigma, mu, constraints, budget, prices):
+    """
+    Turn the raw weights into orderable units
+    There are three costs here:
+    - Markowitz cost
+    - Variation from budget
+    - Variation from constraints
+    For now we just minimize the Markowitz cost, but we can be smarter.
+
+    :param weights: A 1xn numpy array of the weights we need to peturbate to fit into orderable units.
+    :param xs: The cvxpy variables (length n) we can feed to the optimizer
+    :param sigma: A nxn numpy array of the covariances matrix between assets
+    :param mu: A 1xn numpy array of the expected returns per asset
+    :param constraints: The existing constraints we must adhere to
+    :param budget: The amount we have to spend on the portfolio
+    :param prices: The prices of each asset.
+    :return: (weights, cost)
+        - weights are the new symbol weights that should align to orderable units given the passed prices.
+          This will be an empty array if no orderable portfolio could be found.
+        - cost is the new Markowitz cost
+    """
+    def aligned(i):
+        """
+        Returns true if the weight at index ix produces an order qty with remainder within 1% of the orderable qty.
+        :param i: THe index into the weights and prices arrays
+        """
+        rem = (weights[i] * budget) % prices[i]
+        return (rem < prices[i] * ORDERING_ALIGNMENT_TOLERANCE) or (rem > prices[i] * (1 - ORDERING_ALIGNMENT_TOLERANCE))
+
+    def bordering(i):
+        """
+        Returns the two orderable weights for this index
+        - The one rounded down, and the one rounded up from the input weight.
+        :param i: The index of interest
+        """
+        qty = (weights[i] * budget) // prices[i]
+        return ((qty * prices[i]) / budget), (((qty + 1) * prices[i]) / budget)
+
+    # We only ever want weights over The MIN_PORTFOLIO_PCT.
+    inactive = weights < MIN_PORTFOLIO_PCT
+
+    # Deactivate any instruments that didn't reach at least orderable quantity of 1.
+    # TODO: BB-26: Take into account minimum current holdings of each stock and minimum holding qty and minimum orderable qty.
+    inactive_unit = inactive | (((weights * budget) / prices) < 1)
+
+    # If some are not at orderable levels, but are over our acceptable inclusion limit, find the budget required to get
+    # all assets that over LMT_PORTFOLIO_PCT to orderable levels.
+    if (inactive != inactive_unit).any():
+        interested = weights > LMT_PORTFOLIO_PCT
+        ovr_lmt = weights[interested]
+        req_mult = np.min(ovr_lmt)
+        req_units = np.zeros_like(weights)
+        req_units[interested] = np.ceil(ovr_lmt * req_mult)
+        # TODO: Figure out the ordering costs of the assets for this customer at this point based on currrent holdings,
+        # TODO: costs per asset and units to purchase. Notify these costs to the user.
+        req_budget = np.sum(req_units * prices)
+
+        # If our budget is over the minimum required, keep trying the optimisation, otherwise, return nothing.
+        if budget < req_budget:
+            emsg = "The budget of {} is insufficient to purchase all the assets in the portfolio with allocated " \
+                   "proportions over {}%. Please increase the budget to at least {} {} to purchase a portfolio."
+            logger.warn(emsg.format(budget, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget), SYSTEM_CURRENCY))
+            return np.array([]), 0
+
+    inactive_ilocs = inactive.nonzero()[0].tolist()
+    if len(inactive_ilocs) > 0:
+        constraints.append(xs[inactive_ilocs] == 0)
+        # Optimise again given the new constraints
+        weights, cost = markowitz_optimizer_3(xs, sigma, RISK_TOLERANCE, mu, constraints)
+        # If we don't get an orderable amount here, there's nothing left to do.
+        if not weights.any():
+            return weights, cost
+        weights = weights[0]
+
+    # Create a collection of all instruments that are to be included, but the weights are currently not on an orderable
+    # quantity.
+    # Find the minimum Markowitz cost off all the potential portfolio combinations that could be generated from a round
+    # up and round down of each fund involved to orderable quantities.
+    # TODO: We could also weight results with distance of portfolio from the budget.
+    indicies = []
+    tweights = []
+    for ix in range(len(weights)):
+        if inactive[ix] or aligned(ix):
+            continue
+        indicies.append(ix)
+        tweights.append(bordering(ix))
+
+    elems = len(indicies)
+    wts = np.expand_dims(weights, axis=0)
+    if elems > 0:
+        rounds = 2 ** elems
+        min_cost = sys.float_info.max
+        # TODO: This could be done parallel
+        for mask in range(rounds):
+            # Set the weights for this round
+            for pos, tweight in enumerate(tweights):
+                wts[0, indicies[pos]] = tweight[(mask & (1 << pos)) > 0]
+            new_cost = markowitz_cost(wts, sigma, RISK_TOLERANCE, mu)
+            if new_cost < min_cost:
+                mcw = np.copy(wts)
+                min_cost = new_cost
+        wts = mcw
+
+    return wts, min_cost
 
 
 def get_all_optimal_portfolios():
@@ -454,7 +566,7 @@ def get_all_optimal_portfolios():
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Calculate all the optimal portfolios for all the goals in the system.'
 
     def handle(self, *args, **options):
         get_all_optimal_portfolios()

@@ -144,3 +144,16 @@ def markowitz_optimizer_3(xs, sigma, lam, mu, constraints):
     if type(res) == str:
         raise OptimizationFailed(res)
     return np.array(xs.value).T, res  # return optimal weights and the cost.
+
+
+def markowitz_cost(ws, sigma, lam, mu):
+    """
+    Calculate the markowitz cost of a particular portfolio configuration
+    :param ws: A 1xn numpy array of the weights of each asset.
+    :param sigma: nxn covariance matrix between asset return time series
+    :param lam: Risk tolerance factor
+    :param mu: 1xn numpy array of expected asset returns
+    :return: The cost of this particular configuration
+    real(x'*Q*x) or x'*((Q+Q'/2))*x
+    """
+    return (ws.dot(sigma).dot(ws.T).real - np.dot(lam, mu).dot(ws.T))[0, 0]
