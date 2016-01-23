@@ -121,6 +121,7 @@ TRANSACTION_STATUS_CHOICES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
 # TODO: Make the system currency a setting for the site
 SYSTEM_CURRENCY = 'AUD'
 
+
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(BetaSmartzAgreementForm, self).clean()
@@ -596,7 +597,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     letter_of_authority = models.FileField()
     work_phone = AUPhoneNumberField(null=True)
     betasmartz_agreement = models.BooleanField()
-    last_action = models.DateTimeField(auto_now_add=True)
+    last_action = models.DateTimeField(null=True)
 
     @property
     def dashboard_url(self):
@@ -821,6 +822,10 @@ class ClientAccount(models.Model):
     tax_loss_harvesting_consent = models.BooleanField(default=False)
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
                                                                            ("USER_ON", "USER_ON")), default="USER_OFF")
+
+    @property
+    def goals(self):
+        return self.all_goals.filter(archived=False)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1101,7 +1106,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     employer = models.CharField(max_length=255, null=True, blank=True)
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
-    last_action = models.DateTimeField(auto_now_add=True)
+    last_action = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -1489,7 +1494,7 @@ class Platform(models.Model):
 
 
 class Goal(models.Model):
-    account = models.ForeignKey(ClientAccount, related_name="goals")
+    account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
     target = models.FloatField(default=0)
     income = models.BooleanField(default=False)
@@ -1510,10 +1515,11 @@ class Goal(models.Model):
                                                    default=0)
     portfolios = models.TextField(null=True)
     custom_hedges = models.TextField(null=True)
+    archived = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ['name']
-
 
     @property
     def hedges(self):
@@ -1882,7 +1888,7 @@ class Goal(models.Model):
 class Position(models.Model):
     goal = models.ForeignKey(Goal, related_name='positions')
     ticker = models.ForeignKey(Ticker)
-    share = models.FloatField()
+    share = models.FloatField(default=0)
 
     @property
     def is_stock(self):
@@ -1897,13 +1903,13 @@ class Position(models.Model):
 
 
 class Transaction(models.Model):
-    account = models.ForeignKey(Goal, related_name="transactions")
-    type = models.CharField(max_length=20, choices=TRANSACTION_CHOICES)
-    from_account = models.ForeignKey(ClientAccount,
+    account = models.ForeignKey(Goal, related_name="transactions", null=True)
+    type = models.CharField(max_length=255, choices=TRANSACTION_CHOICES)
+    from_account = models.ForeignKey(Goal,
                                      related_name="transactions_from",
                                      null=True,
                                      blank=True)
-    to_account = models.ForeignKey(ClientAccount,
+    to_account = models.ForeignKey(Goal,
                                    related_name="transactions_to",
                                    null=True,
                                    blank=True)

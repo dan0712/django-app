@@ -26388,7 +26388,7 @@ var requirejs, require, define;
                         });
                         a.push({
                             value: s,
-                            label: i
+                            label: "Withdrawal"
                         }), u = this.build_dropdown_menu(a, {
                             "class": "account-selector",
                             name: o,
@@ -26424,6 +26424,10 @@ var requirejs, require, define;
                 t ? this.model.set("transferAllTo", e.intVal()) : this.model.unset("transferAllTo")
             },
             onOK: function(e) {
+                var e = this.$("[name=targetAccountId]");
+                console.log(e, e.val());
+                this.model.set("transferAllTo", e.val());
+                console.log(this.model);
                 var n = this,
                     r = function() {
                         function e() {
@@ -29449,15 +29453,15 @@ var requirejs, require, define;
                             action: !0
                         })*/
                     }
-                    return BMT.accounts().size() > 1 && !BMT.accountGroup.isSuspended() /*&& r.push({
+                    return BMT.accounts().size() > 1 && !BMT.accountGroup.isSuspended() && r.push({
                         value: "delete",
                         label: "Delete goal",
                         action: !0
-                    })*/, BMT.accounts().numInvestingAccount() > 1 && !e.isIRA() && e.num("currentBalance") > 0 /*&& r.push({
+                    }), BMT.accounts().numInvestingAccount() > 1 && !e.isIRA() && e.num("currentBalance") > 0 && r.push({
                         value: "transfer",
                         label: "Transfer to another goal",
                         action: !0
-                    })*/, e.isIRA() && r.push({
+                    }), e.isIRA() && r.push({
                         value: "rollover",
                         label: "Roll over money from IRA/401(k)",
                         action: !0

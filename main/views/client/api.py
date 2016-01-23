@@ -14,7 +14,9 @@ from ..base import ClientView
 from ...models import Transaction, ClientAccount, PENDING, Goal, ALLOCATION, TransactionMemo, \
     AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
     MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
-    FinancialPlanExternalAccount, AssetClass
+    FinancialPlanExternalAccount, AssetClass, Position
+
+from django.http.response import Http404
 
 __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisitor', 'ClientAdvisor',
            'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
@@ -147,7 +149,7 @@ class ClientAdvisor(ClientView, TemplateView):
 
 class TaxHarvestingView(ClientView):
     def post(self, request, *args, **kwargs):
-        model = json.loads(request.body.decode('utf8'))
+        model = ujson.loads(request.body.decode('utf8'))
         try:
             account = ClientAccount.objects.filter(primary_owner=self.client).get(pk=kwargs["pk"])
         except ObjectDoesNotExist:
@@ -159,7 +161,7 @@ class TaxHarvestingView(ClientView):
         response = {"status": account.tax_loss_harvesting_status,
                     "consent": account.tax_loss_harvesting_consent,
                     "gateType": "MINIMUM_BALANCE"}
-        return HttpResponse(json.dumps(response),
+        return HttpResponse(ujson.dumps(response),
                             content_type="application/json")
 
 
@@ -167,9 +169,57 @@ class ClientAccounts(ClientView, TemplateView):
     template_name = "accounts.json"
     content_type = "application/json"
 
-    def post(self, requests, *args, **kwargs):
-        model = ujson.loads(requests.POST.get("model", '{}'))
+    def delete(self, request, *args, **kwargs):
+        model = ujson.loads(request.POST.get("model", '{}'))
+        goal = get_object_or_404(Goal,
+                                 pk=model["id"],
+                                 account__primary_owner=self.client)
+        goal.archived = True
+        # remove from financial plan
+        FinancialPlanAccount.objects.filter(account=goal).delete()
+        # remove automatic deposit and wdw
+        AutomaticWithdrawal.objects.filter(account=goal).delete()
+        AutomaticDeposit.objects.filter(account=goal).delete()
 
+        # move shares
+        if goal.total_balance > 0:
+            if "transferAllTo" in model and model["transferAllTo"] != "bank":
+                to_account = int(model["transferAllTo"])
+                transfer_transaction = Transaction()
+                transfer_transaction.type = "ACCOUNT_TRANSFER_FROM"
+                transfer_transaction.from_account = goal
+                transfer_transaction.to_account = get_object_or_404(Goal, pk=to_account,
+                                                                    account__primary_owner=self.client)
+                transfer_transaction.amount = goal.total_balance
+                # transfer shares to the other account
+                for p in Position.objects.filter(goal=transfer_transaction.from_account).all():
+                    new_position, is_new = Position.objects.get_or_create(goal=transfer_transaction.to_account,
+                                                                          ticker=p.ticker)
+                    new_position.share += p.share
+                    new_position.save()
+                    p.delete()
+
+                transfer_transaction.status = EXECUTED
+                transfer_transaction.executed_date = datetime.now()
+                transfer_transaction.save()
+
+            else:
+                # wdw all the money
+                wdw_transaction = Transaction()
+                wdw_transaction.account = goal
+                wdw_transaction.type = WITHDRAWAL
+                wdw_transaction.amount = goal.total_balance
+                wdw_transaction.save()
+        goal.save()
+        return HttpResponse('null', content_type="application/json")
+
+    def post(self, requests, *args, **kwargs):
+
+        if "HTTP_X_HTTP_METHOD_OVERRIDE" in requests.META:
+            if requests.META["HTTP_X_HTTP_METHOD_OVERRIDE"] == "DELETE":
+                return self.delete(requests, *args, **kwargs)
+
+        model = ujson.loads(requests.POST.get("model", '{}'))
         goal = Goal()
         goal.account = self.client.accounts.first()
         goal.name = model.get("name")
@@ -187,8 +237,7 @@ class ClientAccounts(ClientView, TemplateView):
             goal.target = 0
         goal.income = model.get("income", False)
         goal.save()
-        return HttpResponse(ujson.dumps({"id": goal.pk}),
-                            content_type='application/json')
+        return HttpResponse(ujson.dumps({"id": goal.pk}), content_type='application/json')
 
 
 class ClientAccountPositions(ClientView, TemplateView):
@@ -418,10 +467,12 @@ class NewTransactionsView(ClientView):
     def post(self, request, *args, **kwargs):
         model = ujson.loads(request.POST.get("model", '{}'))
         new_transaction = Transaction()
-        new_transaction.account = get_object_or_404(
-            Goal,
-            pk=model['account'],
-            account__primary_owner=self.client)
+        if model['account']:
+            new_transaction.account = get_object_or_404(
+                Goal,
+                pk=model['account'],
+                account__primary_owner=self.client)
+
         new_transaction.from_account = None
         new_transaction.to_account = None
         new_transaction.type = model["type"]
@@ -429,30 +480,49 @@ class NewTransactionsView(ClientView):
 
         if model["fromAccount"]:
             new_transaction.from_account = get_object_or_404(
-                ClientAccount,
+                Goal,
                 pk=model['fromAccount'],
-                primary_owner=self.client)
+                account__primary_owner=self.client)
 
         if model["toAccount"]:
             new_transaction.to_account = get_object_or_404(
-                ClientAccount,
+                Goal,
                 pk=model['toAccount'],
-                primary_owner=self.client)
+                account__primary_owner=self.client)
 
         new_transaction.save()
 
+        if new_transaction.type == "ACCOUNT_TRANSFER_FROM":
+            # transfer shares to the other account
+            total_balance = new_transaction.from_account.total_balance
+            transaction_amount = float(new_transaction.amount)
+            for p in Position.objects.filter(goal=new_transaction.from_account).all():
+                transfer_share_size = (p.value/total_balance) * transaction_amount / p.ticker.unit_price
+                p.share -= transfer_share_size
+                p.save()
+                new_position, is_new = Position.objects.get_or_create(goal=new_transaction.to_account, ticker=p.ticker)
+                new_position.share += transfer_share_size
+                new_position.save()
+            new_transaction.status = EXECUTED
+            new_transaction.executed_date = datetime.now()
+            new_transaction.save()
+
+        if not new_transaction.account:
+            return HttpResponse("null", content_type='application/json')
+
         nt_return = {
             "id": new_transaction.pk,
-            "account": new_transaction.account.pk,
             "type": new_transaction.type,
             "amount": new_transaction.amount
         }
+        if new_transaction.account:
+            nt_return["account"] = new_transaction.account.pk
 
         if new_transaction.from_account:
-            nt_return["fromAccount"] = new_transaction.from_account
+            nt_return["fromAccount"] = new_transaction.from_account.pk
 
         if new_transaction.to_account:
-            nt_return["toAccount"] = new_transaction.to_account
+            nt_return["toAccount"] = new_transaction.to_account.pk
 
         return HttpResponse(ujson.dumps(nt_return),
                             content_type='application/json')
@@ -519,6 +589,8 @@ class NewTransactionMemoView(ClientView):
 
 
 class ChangeGoalView(ClientView):
+
+
     def put(self, request, *args, **kwargs):
         goal = get_object_or_404(Goal,
                                  pk=kwargs["pk"],

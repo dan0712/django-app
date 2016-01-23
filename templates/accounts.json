@@ -38,6 +38,7 @@
       "availableBalance": "{{goal.available_balance}}",
       "availableBalanceForWithdrawal": "{{goal.available_balance}}",
       "pendingDeposits": "{{goal.pending_deposits}}",
+      "transferAllTo": null,
       "pendingWithdrawals": "{{goal.pending_withdrawals}}",
       "pendingConversions": "{{goal.pending_conversions}}",
       "recharacterized": "{{goal.recharacterized}}",

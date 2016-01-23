@@ -2817,7 +2817,7 @@ Are you sure you want to delete your <%= name + (ira() ? '' : ' goal') %>?
 <div class="lightbulb-tip-icon"></div>
 </div>
 <div class="text">
-Transfers may cause a sale of securities, which may result in taxes. <a href="" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="GoalTransferModal" data-track-name="TaxImpact">See the tax impact &gt;</a>
+Transfers may cause a sale of securities, which may result in taxes. <!--<a href="" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="GoalTransferModal" data-track-name="TaxImpact">See the tax impact &gt;</a>-->
 </div>
 </div>
 <%}%>
@@ -2883,7 +2883,7 @@ $<input type="number" name="amount"/>
 <div class="lightbulb-tip-icon"></div>
 </div>
 <div class="text">
-Transfers may cause a sale of securities, which may result in taxes. <a href="" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="GoalTransferModal" data-track-name="TaxImpact">See the tax impact &gt;</a>
+Transfers may cause a sale of securities, which may result in taxes. <!--<a href="" class="show-tax-impact" data-track-event="ElementClicked" data-track-location="GoalTransferModal" data-track-name="TaxImpact">See the tax impact &gt;</a>-->
 </div>
 </div>
 </form>
