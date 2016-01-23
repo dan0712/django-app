@@ -1372,6 +1372,15 @@ class Platform(models.Model):
         return "BetaSmartz"
 
 
+class Dividend(models.Model):
+    instrument = models.ForeignKey(Ticker)
+    record_date = models.DateTimeField()
+    amount = models.FloatField(validators=[MinValueValidator(0.0)],
+                               help_text="Amount of the dividend in system currency")
+    franking = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+                                 help_text="Franking percent. 0.01 = 1% of the dividend was franked.")
+
+
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="goals")
     name = models.CharField(max_length=100)

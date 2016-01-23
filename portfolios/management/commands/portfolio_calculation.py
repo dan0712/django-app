@@ -56,6 +56,7 @@ def months_between(date1, date2):
     m2 = date2.year*12 + date2.month
     return m2 - m1
 
+
 def build_instruments(api=DbApi()):
     """
     Builds all the instruments know about in the system.
@@ -162,7 +163,9 @@ def build_instruments(api=DbApi()):
     # Drop the items from the instruments table that were just used to build the masks.
     instruments.drop(['reg', 'eth', 'type', 'etf'], axis=1, inplace=True)
 
-    # For now we are using the old covariance method as some funds do not have 12 months data.
+    # For now we are using the old covariance method as some funds do not have 12 months data, and the old way allows
+    # differing sample lengths..
+    # TODO: Get rid of this and use the standard pandas covariance method.
     sk_co_var, co_vars = calculate_co_vars(ctable.shape[1], ctable)
     co_vars = pd.DataFrame(co_vars, index=instruments.index, columns=instruments.index)
     samples = 12
