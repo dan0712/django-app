@@ -14,7 +14,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.validators import RegexValidator, ValidationError, MinValueValidator, MaxValueValidator
+from django.core.validators import RegexValidator, ValidationError, MinValueValidator, MaxValueValidator, \
+    MinLengthValidator, MaxLengthValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -118,9 +119,26 @@ EXECUTED = 'EXECUTED'
 
 TRANSACTION_STATUS_CHOICES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
 
+ASSET_FEE_EVENTS = ((0, 'Day End'),
+                    (1, 'Complete Day'),
+                    (2, 'Month End'),
+                    (3, 'Complete Month'),
+                    (4, 'Fiscal Month End'),
+                    (5, 'Entry Order'),
+                    (6, 'Entry Order Item'),
+                    (7, 'Exit Order'),
+                    (8, 'Exit Order Item'),
+                    (9, 'Transaction'))
+
+ASSET_FEE_UNITS = ((0, 'Asset Value'), # total value of the asset
+                   (1, 'Asset Qty'), # how many units of an asset
+                   (2, 'NAV Performance')) # % positive change in the NAV
+
+ASSET_FEE_LEVEL_TYPES = ((0, 'Add'), # Once the next level is reached, the amount form that band is added to lower bands
+                         (1, 'Replace')) # Once the next level is reached, the value from that level is used for the entire amount
+
 # TODO: Make the system currency a setting for the site
 SYSTEM_CURRENCY = 'AUD'
-
 
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
@@ -328,6 +346,18 @@ class PersonalData(models.Model):
     @property
     def email(self):
         return self.user.email
+
+
+class AssetFeePlan(models.Model):
+    """
+    To calculate the fees for an asset and client, get the AssetFeePlan for the account, then lookup on the AssetFee
+    model for all the fees applicable for the Asset and Plan.
+    """
+    name = models.CharField(max_length=127, unique=True)
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -822,6 +852,7 @@ class ClientAccount(models.Model):
     tax_loss_harvesting_consent = models.BooleanField(default=False)
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
                                                                            ("USER_ON", "USER_ON")), default="USER_OFF")
+    asset_fee_plan = models.ForeignKey(AssetFeePlan, null=True)
 
     @property
     def goals(self):
@@ -1493,6 +1524,57 @@ class Platform(models.Model):
         return "BetaSmartz"
 
 
+class Dividend(models.Model):
+    class Meta:
+        unique_together = ("instrument", "record_date")
+
+    instrument = models.ForeignKey(Ticker)
+    record_date = models.DateTimeField()
+    amount = models.FloatField(validators=[MinValueValidator(0.0)],
+                               help_text="Amount of the dividend in system currency")
+    franking = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+                                 help_text="Franking percent. 0.01 = 1% of the dividend was franked.")
+
+
+class FiscalYear(models.Model):
+    name = models.CharField(max_length=127)
+    year = models.IntegerField()
+    begin_date = models.DateField(help_text="Inclusive begin date for this fiscal year")
+    end_date = models.DateField(help_text="Inclusive end date for this fiscal year")
+    month_ends = models.CommaSeparatedIntegerField(max_length=35,
+                                                   validators=[MinLengthValidator(23)],
+                                                   help_text="Comma separated month end days each month of the year. First element is January.")
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=127)
+    fiscal_years = models.ManyToManyField(FiscalYear)
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+
+
+_asset_fee_ht = "List of level transition points and the new values after that transition. Eg. '0: 0.001, 10000: 0.0'"
+
+
+class AssetFee(models.Model):
+    name = models.CharField(max_length=127)
+    plan = models.ForeignKey(AssetFeePlan)
+    collector = models.ForeignKey(Company)
+    asset = models.ForeignKey(Ticker)
+    applied_per = models.IntegerField(choices=ASSET_FEE_EVENTS)
+    fixed_level_unit = models.IntegerField(choices=ASSET_FEE_UNITS)
+    fixed_level_type = models.IntegerField(choices=ASSET_FEE_LEVEL_TYPES)
+    fixed_levels = models.TextField(help_text=_asset_fee_ht)
+    prop_level_unit = models.IntegerField(choices=ASSET_FEE_UNITS)
+    prop_apply_unit = models.IntegerField(choices=ASSET_FEE_UNITS)
+    prop_level_type = models.IntegerField(choices=ASSET_FEE_LEVEL_TYPES)
+    prop_levels = models.TextField(help_text=_asset_fee_ht)
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+
+
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
@@ -1520,6 +1602,7 @@ class Goal(models.Model):
 
     class Meta:
         ordering = ['name']
+
 
     @property
     def hedges(self):
@@ -1883,6 +1966,26 @@ class Goal(models.Model):
     def auto_term(self):
         today = date.today()
         return "{0}y".format(self.get_term)
+
+
+class AssetGroup(models.Model):
+    name = models.CharField(max_length=127, unique=True)
+    assets = models.ManyToManyField(Ticker, related_name='asset_groups')
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+    pass
+
+
+class GoalMetric(models.Model):
+    goal = models.ForeignKey(Goal, related_name='metrics')
+    type = models.IntegerField(choices=((0, 'Portfolio Mix'), (1, 'RiskScore')))
+    group = models.ForeignKey(AssetGroup, null=True)
+    rebalance_type = models.IntegerField(choices=((0, 'Absolute'), (1, 'Relative')),
+                                         help_text='Is the rebalance threshold an absolute threshold or relative (percentage difference) threshold?')
+    rebalance_thr = models.FloatField(help_text='The difference between configured and measured value at which a rebalance will be recommended.')
+    configured_val = models.FloatField(help_text='The value of the metric that was configured.')
+    measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
 
 
 class Position(models.Model):

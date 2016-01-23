@@ -8,7 +8,7 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from main.models import Firm, Advisor, User, Performer, \
     AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, \
-    TransactionMemo, DataApiDict, CostOfLivingIndex
+    TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend
 from portfolios.management.commands.get_historical_returns import \
     get_historical_returns as internal_get_historical_returns
 from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View
@@ -317,6 +317,7 @@ admin.site.register(Performer, PerformerAdmin)
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
+admin.site.register(Dividend)
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)
