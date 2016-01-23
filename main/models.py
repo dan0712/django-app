@@ -178,8 +178,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
         if (user is not None) and (not user.prepopulated):
             # confirm password
             if not user.check_password(password1):
-                self._errors['email'] = mark_safe(
-                        u'<ul class="errorlist"><li>User already exists</li></ul>')
+                self._errors['email'] = mark_safe(u'<ul class="errorlist"><li>User already exists</li></ul>')
             else:
                 if hasattr(user, self.user_profile_type):
                     rupt = self.user_profile_type.replace("_", " ")
@@ -402,6 +401,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
+    @property
+    def full_name(self):
+        return self.get_full_name()
+
     def get_full_name(self):
         """
         Returns the first_name plus the last_name, with a space in between.
@@ -485,6 +488,53 @@ class Firm(models.Model):
             return settings.STATIC_URL + 'images/colored_logo.png'
 
         return settings.MEDIA_URL + self.knocked_out_logo_url.name
+
+    @property
+    def total_revenue(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_revenue
+        return total
+
+    @property
+    def total_invested(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_invested
+        return total
+
+    @property
+    def total_return(self):
+        if self.total_invested > 0:
+            return self.total_revenue / self.total_invested
+        return 0
+
+    @property
+    def total_fees(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_fees
+        return total
+
+    @property
+    def total_balance(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_balance
+        return total
+
+    @property
+    def total_account_groups(self):
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_account_groups
+        return total
+
+    @property
+    def average_balance(self):
+        if self.total_account_groups > 0:
+            return self.total_balance / self.total_account_groups
+        return 0
 
     @property
     def content_type(self):
@@ -577,6 +627,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     letter_of_authority = models.FileField()
     work_phone = AUPhoneNumberField(null=True)
     betasmartz_agreement = models.BooleanField()
+    last_action = models.DateTimeField(null=True)
 
     @property
     def dashboard_url(self):
@@ -620,12 +671,46 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return active_households
 
     @property
+    def client_accounts(self):
+        accounts = []
+        for household in self.households:
+            all_accounts = household.accounts.all()
+            accounts.extend(all_accounts)
+        return accounts
+
+    @property
     def total_balance(self):
         b = 0
         for ag in self.households:
             b += ag.total_balance
 
         return b
+
+    @property
+    def primary_clients_size(self):
+        return len(Client.objects.filter(advisor=self, user__prepopulated=False))
+
+    @property
+    def secondary_clients_size(self):
+        return len(Client.objects.filter(secondary_advisors__in=[self], user__prepopulated=False).distinct())
+
+    @property
+    def total_fees(self):
+        return 0
+
+    @property
+    def total_revenue(self):
+        return 0
+
+    @property
+    def total_invested(self):
+        return 0
+
+    @property
+    def total_return(self):
+        if self.total_invested > 0:
+            return self.total_revenue / self.total_invested
+        return 0
 
     @property
     def total_account_groups(self):
@@ -764,7 +849,14 @@ class ClientAccount(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
+    tax_loss_harvesting_consent = models.BooleanField(default=False)
+    tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
+                                                                           ("USER_ON", "USER_ON")), default="USER_OFF")
     asset_fee_plan = models.ForeignKey(AssetFeePlan, null=True)
+
+    @property
+    def goals(self):
+        return self.all_goals.filter(archived=False)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -810,6 +902,13 @@ class ClientAccount(models.Model):
                 old_account_group.delete()
 
         self.primary_owner.rebuild_secondary_advisors()
+
+    @property
+    def target(self):
+        total_target = 0
+        for goal in self.goals.all():
+            total_target += goal.target
+        return total_target
 
     @property
     def fee(self):
@@ -885,6 +984,23 @@ class ClientAccount(models.Model):
         for goal in self.goals.all():
             on_track = on_track and goal.on_track
         return on_track
+
+    @property
+    def goals_length(self):
+        return len(self.goals.all())
+
+    @property
+    def get_term(self):
+        total_term = 0
+        goals_with_term = 0
+        for goal in self.goals.all():
+            goal_term = goal.get_term
+            if goal_term != 0:
+                total_term += goal_term
+                goals_with_term += 1
+        if goals_with_term == 0:
+            return 0
+        return total_term / goals_with_term
 
     @property
     def confirmation_url(self):
@@ -1021,6 +1137,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     employer = models.CharField(max_length=255, null=True, blank=True)
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
+    last_action = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -1042,7 +1159,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         if hasattr(self, 'financial_plan'):
             plan = self.financial_plan
         else:
-            return "null"
+            return ""
+
+        if plan is None:
+            return ""
         betasmartz_externals = json.loads(serializers.serialize(
                 "json", self.financial_plan_external_accounts.all()))
         external_accounts = []
@@ -1456,7 +1576,7 @@ class AssetFee(models.Model):
 
 
 class Goal(models.Model):
-    account = models.ForeignKey(ClientAccount, related_name="goals")
+    account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
     target = models.FloatField(default=0)
     income = models.BooleanField(default=False)
@@ -1477,6 +1597,8 @@ class Goal(models.Model):
                                                    default=0)
     portfolios = models.TextField(null=True)
     custom_hedges = models.TextField(null=True)
+    archived = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ['name']
@@ -1869,7 +1991,7 @@ class GoalMetric(models.Model):
 class Position(models.Model):
     goal = models.ForeignKey(Goal, related_name='positions')
     ticker = models.ForeignKey(Ticker)
-    share = models.FloatField()
+    share = models.FloatField(default=0)
 
     @property
     def is_stock(self):
@@ -1884,13 +2006,13 @@ class Position(models.Model):
 
 
 class Transaction(models.Model):
-    account = models.ForeignKey(Goal, related_name="transactions")
-    type = models.CharField(max_length=20, choices=TRANSACTION_CHOICES)
-    from_account = models.ForeignKey(ClientAccount,
+    account = models.ForeignKey(Goal, related_name="transactions", null=True)
+    type = models.CharField(max_length=255, choices=TRANSACTION_CHOICES)
+    from_account = models.ForeignKey(Goal,
                                      related_name="transactions_from",
                                      null=True,
                                      blank=True)
-    to_account = models.ForeignKey(ClientAccount,
+    to_account = models.ForeignKey(Goal,
                                    related_name="transactions_to",
                                    null=True,
                                    blank=True)
@@ -2105,3 +2227,46 @@ class ExchangeRate(models.Model):
     second = models.CharField(max_length=3)
     date = models.DateField()
     rate = models.FloatField()
+
+
+class Supervisor(models.Model):
+    user = models.OneToOneField(User, related_name="supervisor")
+    firm = models.ForeignKey(Firm, related_name="supervisors")
+    # has full authorization to make action in name of advisor and clients
+    can_write = models.BooleanField(default=False,
+                                    verbose_name="Has Full Access?",
+                                    help_text="A supervisor with 'full access' can impersonate advisors and clients "
+                                              "and make any action as them.")
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        is_new_instance = False
+
+        if self.pk is None:
+            is_new_instance = True
+
+        ret = super(Supervisor, self).save(force_insert, force_update, using, update_fields)
+
+        if is_new_instance:
+            self.send_confirmation_email()
+
+        return ret
+
+    def send_confirmation_email(self):
+        account_type = self._meta.verbose_name
+
+        subject = "BetaSmartz new {0} account confirmation".format(account_type)
+
+        context = {
+            'subject': subject,
+            'account_type': account_type,
+            'firm_name': self.firm.name
+        }
+
+        send_mail(
+                subject,
+                '',
+                None,
+                [self.user.email],
+                html_message=render_to_string('email/new_supervisor.html', context))

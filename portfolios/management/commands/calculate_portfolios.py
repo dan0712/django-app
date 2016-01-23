@@ -637,7 +637,7 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
 
 def calculate_portfolios():
     # calculate default portfolio
-    yahoo_api = DbApi()#get_api("YAHOO")
+    yahoo_api = get_api("YAHOO")
 
     for ps in PortfolioSet.objects.all():
         goal = Goal()

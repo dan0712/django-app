@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% load app_filters %}
+{% block firm_nav_users %}depressed {% endblock %}
+{% block body_class %}composite_clients index{% endblock %}
+{% block main_content %}
+
+    <div class="composite-clients-index">
+
+        {% include "advisor/firm-logo.html" %}
+        <div class="header">
+            <h2>Your Company Supervisors
+                <div class="composite-actions" style=" width: 165px; float: right">
+                    <a class="create-supervisor" href="/firm/supervisors/new" style="width: 162px;">Add New User</a>
+                </div>
+            </h2>
+        </div>
+
+        <div class="composite-clients-panel">
+            <div class="body">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Authorization</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for supervisor in supervisors %}
+                        <tr>
+                            <td>{{ supervisor.user.full_name }}</td>
+                            <td><a href="{{ supervisor.user.email }}">{{ supervisor.user.email }}</a></td>
+                            <td>{% if supervisor.can_write %} Full Access {% else %} Read Only {% endif %}</td>
+                            <td class="composite-actions">
+                                <a href="/firm/supervisor/{{ supervisor.user.pk }}/edit">Edit Profile</a>
+                                <a class="warn" href="/firm/supervisor/{{ supervisor.user.pk }}/delete">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

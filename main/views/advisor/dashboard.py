@@ -178,7 +178,32 @@ class AdvisorClients(TemplateView, AdvisorView):
 
 
 class AdvisorAgreements(TemplateView, AdvisorView):
-    template_name = "advisor/agreements.html"
+    template_name = "commons/agreements.html"
+
+    def __init__(self, *args, **kwargs):
+        super(AdvisorAgreements, self).__init__(*args, **kwargs)
+        self.search = ""
+
+    def get(self, request, *args, **kwargs):
+        self.search = request.GET.get("search", self.search)
+        return super(AdvisorAgreements, self).get(request, *args, **kwargs)
+
+    @property
+    def clients(self):
+        clients = self.advisor.clients
+        if self.search:
+            sq = Q(user__first_name__icontains=self.search)
+            clients = clients.filter(sq)
+        return clients.all()
+
+    def get_context_data(self, **kwargs):
+        ctx = super(AdvisorAgreements, self).get_context_data(**kwargs)
+        ctx.update({
+            "clients": self.clients,
+            "search": self.search,
+            "firm": self.advisor.firm,
+        })
+        return ctx
 
 
 class AdvisorSupport(TemplateView, AdvisorView):

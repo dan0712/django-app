@@ -12358,7 +12358,7 @@ var requirejs, require, define;
             },
             r = function(e) {
                 var t = n(e),
-                    r = t.hostname.match(/\.betterment\..+$/),
+                    r = t.hostname.match(/\.betasmartz\..+$/),
                     i = r ? r[0] : ".betasmartz.com";
                 return i
             };
@@ -12377,7 +12377,7 @@ var requirejs, require, define;
             },
             getBaseDomain: r,
             getBaseSupportUrl: function() {
-                return "http://support.betaSmartz.com"
+                return "http://www.betasmartz.com"
             },
             getNotificationsUrl: function() {
                 return e.getInstance().get("notificationsHost")
@@ -13607,9 +13607,9 @@ var requirejs, require, define;
             }
 
             function w(e, t) {
-                /*var r = "",
+                var r = "",
                     i, s, o;
-                r += '\n                        <div class="tlh-status">\n                            <p>\n                                <a href="#" class="open-tlh-config">\n                                    <span class="losses-label">\n                                        <span>Tax Loss Harvesting+</span>\n                                        <span>', i = n["if"].call(e, e && e.tlhEnabled, {
+                r += '\n                        <div class="tlh-status">\n                            <p>\n                                <a href="#" class="open-tlh-config">\n                                    <span class="losses-label">\n                                        <span>Tax Loss Harvesting</span>\n                                        <span>', i = n["if"].call(e, e && e.tlhEnabled, {
                     hash: {},
                     inverse: h.program(17, S, t),
                     fn: h.program(15, E, t)
@@ -13626,8 +13626,6 @@ var requirejs, require, define;
                 });
                 if (i || i === 0) r += i;
                 return r += "\n                                </div>\n                            </div>\n                        </div>\n                    ", r
-            */
-            return "";
             }
 
             function E(e, t) {
@@ -26390,7 +26388,7 @@ var requirejs, require, define;
                         });
                         a.push({
                             value: s,
-                            label: i
+                            label: "Withdrawal"
                         }), u = this.build_dropdown_menu(a, {
                             "class": "account-selector",
                             name: o,
@@ -26426,6 +26424,10 @@ var requirejs, require, define;
                 t ? this.model.set("transferAllTo", e.intVal()) : this.model.unset("transferAllTo")
             },
             onOK: function(e) {
+                var e = this.$("[name=targetAccountId]");
+                console.log(e, e.val());
+                this.model.set("transferAllTo", e.val());
+                console.log(this.model);
                 var n = this,
                     r = function() {
                         function e() {
@@ -29451,15 +29453,15 @@ var requirejs, require, define;
                             action: !0
                         })*/
                     }
-                    return BMT.accounts().size() > 1 && !BMT.accountGroup.isSuspended() /*&& r.push({
+                    return BMT.accounts().size() > 1 && !BMT.accountGroup.isSuspended() && r.push({
                         value: "delete",
                         label: "Delete goal",
                         action: !0
-                    })*/, BMT.accounts().numInvestingAccount() > 1 && !e.isIRA() && e.num("currentBalance") > 0 /*&& r.push({
+                    }), BMT.accounts().numInvestingAccount() > 1 && !e.isIRA() && e.num("currentBalance") > 0 && r.push({
                         value: "transfer",
                         label: "Transfer to another goal",
                         action: !0
-                    })*/, e.isIRA() && r.push({
+                    }), e.isIRA() && r.push({
                         value: "rollover",
                         label: "Roll over money from IRA/401(k)",
                         action: !0
@@ -50309,7 +50311,7 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.inviterFirstName, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '\'s invitation.  Please note, we will turn off Tax Loss Harvesting+ if you have enabled it in your personal account.</p>\n    <form class="login-form">\n        <div class="input-width-adjust">\n            <input class="full-width" type="email" name="userName" placeholder="Email" />\n            <input class="full-width" type="password" name="password" placeholder="Password" />\n            <div class="terms-of-service"></div>\n        </div>\n        <button class="full-width">Log in</button>\n        <div class="full-width forgot-password">\n            <a href="#forgotPassword" target="_blank">Forgot your password?</a>\n        </div>\n        <input type="hidden" name="inviteCode" value="', (u = n.inviteCode) ? o = u.call(t, {
+            }) : u), s += f(o) + '\'s invitation.  Please note, we will turn off Tax Loss Harvesting if you have enabled it in your personal account.</p>\n    <form class="login-form">\n        <div class="input-width-adjust">\n            <input class="full-width" type="email" name="userName" placeholder="Email" />\n            <input class="full-width" type="password" name="password" placeholder="Password" />\n            <div class="terms-of-service"></div>\n        </div>\n        <button class="full-width">Log in</button>\n        <div class="full-width forgot-password">\n            <a href="#forgotPassword" target="_blank">Forgot your password?</a>\n        </div>\n        <input type="hidden" name="inviteCode" value="', (u = n.inviteCode) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.inviteCode, o = typeof u === a ? u.call(t, {
                 hash: {}
@@ -54446,23 +54448,11 @@ var requirejs, require, define;
                 o, u, a, f = "function",
                 l = this.escapeExpression,
                 c = n.helperMissing;
-            return s += '<div class="inner">\n    <h1>Check your eligibility for <span class="blue">Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>\n\n    <div class="clearfix content">\n        <div class="step1 white-box">\n            <h3>\n                <span class="blue">Step 1:</span> Spousal Account\n                <div class="spouse-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting+ if your spouse has a BetaSmartz account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </div>\n            </h3>\n            <p>Do you have a spouse who currently has a funded BetaSmartz account or IRA?</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-spouse" value="yes" id="haveSpouseYes" />\n                <label for="haveSpouseYes">Yes</label>\n                <input type="radio" name="have-spouse" value="no" id="haveSpouseNo" />\n                <label for="haveSpouseNo">No</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting+ if your spouse has a BetaSmartz account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n\n        <div class="step2 white-box">\n            <h3>\n                <span class="blue">Step 2:</span> Other Accounts\n                <div class="joint-acct-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss Harvesting+ if you have other accounts at Betterment.\n                </div>\n            </h3>\n            <p>', (u = n.accountGroupText) ? o = u.call(t, {
+            return s += '<div class="inner">\n    <h1>Check your eligibility for <span class="blue">Tax Loss Harvesting</span> </h1>\n\n    <div class="clearfix content">\n        <div class="step1 white-box">\n            <h3>\n                <span class="blue">Step 1:</span> Spousal Account\n                <div class="spouse-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting if your spouse has a BetaSmartz account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </div>\n            </h3>\n            <p>Do you have a spouse who currently has a funded BetaSmartz account or SMF?</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-spouse" value="yes" id="haveSpouseYes" />\n                <label for="haveSpouseYes">Yes</label>\n                <input type="radio" name="have-spouse" value="no" id="haveSpouseNo" />\n                <label for="haveSpouseNo">No</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss\n                    Harvesting if your spouse has a BetaSmartz account.  We will notify you when\n                    we offer this service for spousal accounts.\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n\n        <div class="step2 white-box">\n            <h3>\n                <span class="blue">Step 2:</span> Other Accounts\n                <div class="joint-acct-help help-icon">\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss Harvesting if you have other accounts at BetaSmartz.\n                </div>\n            </h3>\n            <p>', (u = n.accountGroupText) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.accountGroupText, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '</p>\n            <div class="answer-area">\n                <input type="radio" name="have-joint-acct" value="yes" id="haveJointAcctYes" />\n                <label for="haveJointAcctYes">Yes</label>\n                <input type="radio" name="have-joint-acct" value="no" id="haveJointAcctNo" />\n                <label for="haveJointAcctNo">No</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss Harvesting+ if you have other accounts at Betterment.\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n\n        <div class="step3 white-box">\n            <h3>\n                <span class="blue">Step 3:</span> Overlapping Securities\n                <div class="etf-help help-icon">\n                    Tax Loss Harvesting+ relies on avoiding wash sales. If you purchase or sell these same\n                    securities elsewhere you may inadvertently trigger a wash sale which could reduce or\n                    eliminate any tax benefit.\n                </div>\n            </h3>\n            <p>Do you or your spouse hold or plan on buying or selling any securities that overlap with\n            <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a))) + '" target="_blank">Betterment&#39;s portfolio</a>?\n            Think about your 401(k), IRAs, and brokerage accounts.</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-etfs" value="yes" id="haveEtfsYes" />\n                <label for="haveEtfsYes">Yes</label>\n                <input type="radio" name="have-etfs" value="no" id="haveEtfsNo" />\n                <label for="haveEtfsNo">No</label>\n                <input type="radio" name="have-etfs" value="dont-know" id="haveEtfsDontKnow" />\n                <label for="haveEtfsDontKnow">I don&#39;t know</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    You can avoid tax conflicts by replacing the overlapping securities with others,\n                    or by holding (not buying or selling) them.  Moving investments\n                    to Betterment, including IRAs, allows us to most effectively tax loss harvest for you.\n                    <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "customer/portal/articles/1595496-how-do-i-safely-use-tlh-if-i-have-external-accounts-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-how-do-i-safely-use-tlh-if-i-have-external-accounts-", a))) + '" target="_blank">Learn more &gt;</a>\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="dont-know">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Compare the BetaSmartz portfolio securities to the securities on your other\n                    investment account statements.\n                </p>\n                <a href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a) : c.call(t, "supportUrl", "customer/portal/articles/1595496-can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities-", a))) + '" target="_blank" class="learn-more">Learn about overlapping securities</a>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n    </div>\n\n    <div class="support">\n        <p>\n            Questions? <a target="_blank" href="' + l((u = n.supportUrl || t && t.supportUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "customer/portal/topics/670337-tax-loss-harvesting", a) : c.call(t, "supportUrl", "customer/portal/topics/670337-tax-loss-harvesting", a))) + '">Read our FAQs.</a>\n        </p>\n    </div>\n\n    <div class="agreement">\n        <input type="checkbox" name="agreement" id="userAgreement" />\n        <label for="userAgreement">\n            I have read and agree to the Tax Loss Harvesting+ <a href="' + l((u = n.cdnUrl || t && t.cdnUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "documents/Tax-Loss-Harvesting%2B-Disclosure.pdf", a) : c.call(t, "cdnUrl", "documents/Tax-Loss-Harvesting%2B-Disclosure.pdf", a))) + '" target="_blank">Disclosure</a> and\n            updated <a href="' + l((u = n.brochureUrl || t && t.brochureUrl, a = {
-                hash: {}
-            }, u ? u.call(t, "customeragreement", a) : c.call(t, "brochureUrl", "customeragreement", a))) + '" target="_blank">Customer Agreement</a>.\n        </label>\n    </div>\n\n    <div class="actions">\n        <a class="back"><span class="chevron-left icon"></span> Back</a>\n        <button class="confirm" disabled="disabled">Enable Tax Loss Harvesting+</button>\n        <button class="check-back">OK</button>\n        <button class="silver cancel white-hover">Not right now</button>\n    </div>\n</div>\n', s
+            }) : u), s += l(o) + '</p>\n            <div class="answer-area">\n                <input type="radio" name="have-joint-acct" value="yes" id="haveJointAcctYes" />\n                <label for="haveJointAcctYes">Yes</label>\n                <input type="radio" name="have-joint-acct" value="no" id="haveJointAcctNo" />\n                <label for="haveJointAcctNo">No</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Due to the tax reporting requirements across accounts, we do not recommend Tax Loss Harvesting if you have other accounts at BetaSmartz.\n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n\n        <div class="step3 white-box">\n            <h3>\n                <span class="blue">Step 3:</span> Overlapping Securities\n                <div class="etf-help help-icon">\n                    Tax Loss Harvesting relies on avoiding wash sales. If you purchase or sell these same\n                    securities elsewhere you may inadvertently trigger a wash sale which could reduce or\n                    eliminate any tax benefit.\n                </div>\n            </h3>\n            <p>Do you or your spouse hold or plan on buying or selling any securities that overlap with\n            <a href="http://www.betasmartz.com/resources/can-i-still-use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities" target="_blank">BetaSmartz&#39;s portfolio</a>?\n            Think about your SMFs and brokerage accounts.</p>\n\n            <div class="answer-area">\n                <input type="radio" name="have-etfs" value="yes" id="haveEtfsYes" />\n                <label for="haveEtfsYes">Yes</label>\n                <input type="radio" name="have-etfs" value="no" id="haveEtfsNo" />\n                <label for="haveEtfsNo">No</label>\n                <input type="radio" name="have-etfs" value="dont-know" id="haveEtfsDontKnow" />\n                <label for="haveEtfsDontKnow">I don&#39;t know</label>\n            </div>\n\n            <div class="not-eligible">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    You can avoid tax conflicts by replacing the overlapping securities with others,\n                    or by holding (not buying or selling) them.  Moving investments\n                    to BetaSmartz, including SMFs, allows us to most effectively tax loss harvest for you.\n                    \n                </p>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="dont-know">\n                <h2>OUR ADVICE</h2>\n                <p>\n                    Compare the BetaSmartz portfolio securities to the securities on your other\n                    investment account statements.\n                </p>\n                <a href="http://www.betasmartz.com/resources/use-tax-loss-harvesting-if-i-have-overlapping-securities-in-other-accounts-what-are-those-overlapping-securities" target="_blank" class="learn-more">Learn about overlapping securities</a>\n                <a class="change-selection">&lt; Change my selection</a>\n            </div>\n\n            <div class="scrim"></div>\n        </div>\n    </div>\n\n    <div class="support">\n        <p>\n            Questions? <a target="_blank" href="http://www.betasmartz.com/resources/tax-loss-harvesting-faqs">Read our FAQs.</a>\n        </p>\n    </div>\n\n    <div class="agreement">\n        <input type="checkbox" name="agreement" id="userAgreement" />\n        <label for="userAgreement">\n            I have read and agree to the Tax Loss Harvesting <a href="http://www.betasmartz.com/documents/Tax-Loss-Harvesting%2B-Disclosure.pdf" target="_blank">Disclosure</a> and\n            updated <a href="/static/docs/Mock_Client_Agreement.pdf" target="_blank">Customer Agreement</a>.\n        </label>\n    </div>\n\n    <div class="actions">\n        <a class="back"><span class="chevron-left icon"></span> Back</a>\n        <button class="confirm" disabled="disabled">Enable Tax Loss Harvesting</button>\n        <button class="check-back">OK</button>\n        <button class="silver cancel white-hover">Not right now</button>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/taxLossHarvesting/consentRibbon", n), n
     }), define("views/taxLossHarvesting/consentRibbonView", ["views/taxLossHarvesting/baseTlhRibbonView", "views/common/supportView", "services/taxLossHarvestingService", "components/common/scripts/services/domainService", "components/common/scripts/util/handlebarsHelpers", "hbs!views/taxLossHarvesting/consentRibbon"], function(e, t, n, r, i, s) {
@@ -54473,7 +54463,7 @@ var requirejs, require, define;
             templateHelpers: {
                 accountGroupText: function() {
                     var e;
-                    return BMT.accountGroup.isTrust() ? e = "In addition to your trust account, do you have a funded personal account, IRA, or joint account?" : BMT.accountGroup.isJointAccount() ? e = "In addition to your joint account, do you have a funded personal account, IRA, or trust account?" : e = "In addition to your personal account, do you have a funded joint account or trust account?", i.s(e)
+                    return BMT.accountGroup.isTrust() ? e = "In addition to your trust account, do you have a funded personal account, SMF, or joint account?" : BMT.accountGroup.isJointAccount() ? e = "In addition to your joint account, do you have a funded personal account, SMF, or trust account?" : e = "In addition to your personal account, do you have a funded joint account or trust account?", i.s(e)
                 }
             },
             events: {
@@ -54584,12 +54574,13 @@ var requirejs, require, define;
         })
     }), define("hbs!views/taxLossHarvesting/completeRibbon", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="inner">\n    <h1>Success! <span class="blue">You have enabled Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>\n    <div class="content pinch clearfix">\n        <div class="left success-messages">\n            <div class="success-detail">\n                <div class="checkbox-headline">\n                    <span class="light-blue-check icon"></span> Enjoy a more tax-efficient portfolio\n                </div>\n                <div class="text">\n                    Your account will be transitioned to a new, more tax-efficient portfolio\n                    designed for Tax Loss Harvesting+. <span class="bold-text">You may not see\n                    changes to your portfolio immediately</span> because we avoid\n                    short-term capital gains so your account is transitioned in a tax-efficient\n                    manner.\n                </div>\n            </div>\n            <div class="success-detail">\n                <div class="checkbox-headline">\n                    <span class="light-blue-check icon"></span> Losses will be harvested automatically\n                </div>\n                <div class="text">\n                    <ul>\n                        <li>\n                            Every day, Tax Loss Harvesting+ will actively look for opportunities to\n                            reduce your taxes.\n                        </li>\n                        <li>\n                            At tax time, file your return as usual with Betterment&#39;s 1099-B.\n                        </li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n        <div class="white-box clearfix tip right">\n            <div class="icon">\n                <div class="lightbulb-tip-icon"></div>\n            </div>\n            <div class="text">\n                Turning on automatic deposits increases your opportunities to harvest losses.\n            </div>\n            <button class="secondary green deposit-settings" style="display:none">Deposit Settings</button>\n        </div>\n    </div>\n\n    <div class="actions">\n        <button class="confirm">Great! Got it.</button>\n        <p class="turn-off-text">\n            Didn\'t mean to enable this feature?\n            <a class="turn-off">Turn off Tax Loss Harvesting+</a>\n        </p>\n    </div>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="inner">\n    <h1>Success! <span class="blue">You have enabled Tax Loss Harvesting</span> </h1>\n    <div class="content pinch clearfix">\n        <div class="left success-messages">\n            <div class="success-detail">\n                <div class="checkbox-headline">\n                    <span class="light-blue-check icon"></span> Enjoy a more tax-efficient portfolio\n                </div>\n                <div class="text">\n                    Your account will be transitioned to a new, more tax-efficient portfolio\n                    designed for Tax Loss Harvesting. <span class="bold-text">You may not see\n                    changes to your portfolio immediately</span> because we avoid\n                    short-term capital gains so your account is transitioned in a tax-efficient\n                    manner.\n                </div>\n            </div>\n            <div class="success-detail">\n                <div class="checkbox-headline">\n                    <span class="light-blue-check icon"></span> Losses will be harvested automatically\n                </div>\n                <div class="text">\n                    <ul>\n                        <li>\n                            Every day, Tax Loss Harvesting will actively look for opportunities to\n                            reduce your taxes.\n                        </li>\n                        <li>\n                            At tax time, file your return as usual.\n                        </li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n        <div class="white-box clearfix tip right">\n            <div class="icon">\n                <div class="lightbulb-tip-icon"></div>\n            </div>\n            <div class="text">\n                Turning on automatic deposits increases your opportunities to harvest losses.\n            </div>\n            <button class="secondary green deposit-settings" style="display:none">Deposit Settings</button>\n        </div>\n    </div>\n\n    <div class="actions">\n        <button class="confirm">Great! Got it.</button>\n        <p class="turn-off-text">\n            Didn\'t mean to enable this feature?\n            <a class="turn-off">Turn off Tax Loss Harvesting</a>\n        </p>\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/taxLossHarvesting/completeRibbon", n), n
     }), define("hbs!views/taxLossHarvesting/completeFlyover", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h2><span class="tlh-leaf-icon"></span> Tax Loss Harvesting+ <span class="tlh-status">ON</span></h2>\n<p>\n    You&#39;re all set. Your harvested losses will be tracked here and you\n    don&#39;t need to do anything more. Our algorithm will continue to\n    check your account for losses and help you save on taxes.\n</p>\n<button class="dismiss-flyover">OK</button>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h2>' +
+            'Tax Loss Harvesting <span class="tlh-status">ON</span></h2>\n<p>\n    You&#39;re all set. Your harvested losses will be tracked here and you\n    don&#39;t need to do anything more. Our algorithm will continue to\n    check your account for losses and help you save on taxes.\n</p>\n<button class="dismiss-flyover">OK</button>\n'
         });
         return t.registerPartial("views/taxLossHarvesting/completeFlyover", n), n
     }), define("views/taxLossHarvesting/completeRibbonView", ["views/taxLossHarvesting/baseTlhRibbonView", "hbs!views/taxLossHarvesting/completeRibbon", "hbs!views/taxLossHarvesting/completeFlyover", "services/taxLossHarvestingService", "services/flyoverService", "models/notification", "views/notifications/dismissibleFlyoverView"], function(e, t, n, r, i, s, o) {
@@ -54623,7 +54614,7 @@ var requirejs, require, define;
                 this.$(".turn-off").prop("disabled", !0), r.disableForAccountGroup(BMT.accountGroup).then(function() {
                     BMT.analytics.track("TLHDisabled", {
                         Location: "TLHRibbon"
-                    }), BMT.flash("Tax Loss Harvesting+ has been disabled."), BMT.vent.trigger("taxLossHarvesting:update"), BMT.vent.trigger("closeDrawer")
+                    }), BMT.flash("Tax Loss Harvesting has been disabled."), BMT.vent.trigger("taxLossHarvesting:update"), BMT.vent.trigger("closeDrawer")
                 }).fail(function() {
                     this.$(".turn-off").removeAttr("disabled")
                 }.bind(this))
@@ -54637,7 +54628,7 @@ var requirejs, require, define;
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
                 o, u, a, f = n.helperMissing;
-            s += '<div class="inner">\n    <h1>Learn about <span class="blue">Tax Loss Harvesting+</span> <span class="icon tlh-leaf-large-icon"></span></h1>\n    <div class="clearfix content">\n        <div class="white-box how-it-works">\n            <div class="top-image"></div>\n            <h2 class="blue">How It Works</h2>\n            <p>Securities with material losses are sold and replaced with similar securities.\n            Total losses harvested are displayed on Summary, and transaction details on Activity.</p>\n        </div>\n\n        <div class="white-box what-to-expect">\n            <div class="top-image"></div>\n            <h2 class="blue">What to Expect</h2>\n            <p>Current holdings, including replacement securities, are displayed on the Portfolio page.\n            Transactions rebalance your portfolio which saves you taxes later.</p>\n        </div>\n\n        <div class="white-box your-tax-return">\n            <div class="top-image"></div>\n            <h2 class="blue">Your Tax Return</h2>\n            <p>The benefits of Tax Loss Harvesting+ will appear on your tax return when you file as\n            usual using Betterment&#39;s tax forms. ', o = (u = n.link || t && t.link, a = {
+            s += '<div class="inner">\n    <h1>Learn about <span class="blue">Tax Loss Harvesting</span> </h1>\n    <div class="clearfix content">\n        <div class="white-box how-it-works">\n            <div class="top-image"></div>\n            <h2 class="blue">How It Works</h2>\n            <p>Securities with material losses are sold and replaced with similar securities.\n            Total losses harvested are displayed on Summary, and transaction details on Activity.</p>\n        </div>\n\n        <div class="white-box what-to-expect">\n            <div class="top-image"></div>\n            <h2 class="blue">What to Expect</h2>\n            <p>Current holdings, including replacement securities, are displayed on the Portfolio page.\n            Transactions rebalance your portfolio which saves you taxes later.</p>\n        </div>\n\n        <div class="white-box your-tax-return">\n            <div class="top-image"></div>\n            <h2 class="blue">Your Tax Return</h2>\n            <p>The benefits of Tax Loss Harvesting will appear on your tax return when you file as\n            usual using Betterment&#39;s tax forms. ', o = (u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.learnMoreLink, a) : f.call(t, "link", t && t.learnMoreLink, a));
             if (o || o === 0) s += o;
@@ -54649,7 +54640,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, t && t.whitePaperLink, a) : f.call(t, "link", t && t.whitePaperLink, a));
             if (o || o === 0) s += o;
-            return s += '\n    </div>\n    <div class="actions">\n        <button class="flat confirm">Close</button>\n        <button class="silver white-hover turn-off">Turn off Tax Loss Harvesting+</button>\n    </div>\n</div>\n', s
+            return s += '\n    </div>\n    <div class="actions">\n        <button class="flat confirm">Close</button>\n        <button class="silver white-hover turn-off">Turn off Tax Loss Harvesting</button>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/taxLossHarvesting/whatToExpectRibbon", n), n
     }), define("views/taxLossHarvesting/whatToExpectRibbonView", ["views/taxLossHarvesting/baseTlhRibbonView", "hbs!views/taxLossHarvesting/whatToExpectRibbon", "services/taxLossHarvestingService"], function(e, t, n) {
@@ -54670,7 +54661,7 @@ var requirejs, require, define;
                     text: "FAQs"
                 },
                 whitePaperLink: {
-                    brochureUrl: "resources/tax-loss-harvesting-white-paper/",
+                    supportUrl: "resources/tax-loss-harvesting-white-paper/",
                     text: "White Paper"
                 }
             },
@@ -54681,7 +54672,7 @@ var requirejs, require, define;
                 this.$(".turn-off").prop("disabled", !0), n.disableForAccountGroup(BMT.accountGroup).then(function() {
                     BMT.analytics.track("TLHDisabled", {
                         Location: "TLHRibbon"
-                    }), BMT.flash("Tax Loss Harvesting+ has been disabled."), BMT.vent.trigger("taxLossHarvesting:update"), BMT.vent.trigger("closeDrawer")
+                    }), BMT.flash("Tax Loss Harvesting has been disabled."), BMT.vent.trigger("taxLossHarvesting:update"), BMT.vent.trigger("closeDrawer")
                 }).fail(function() {
                     this.$(".turn-off").removeAttr("disabled")
                 }.bind(this))
@@ -54736,7 +54727,7 @@ var requirejs, require, define;
             }
 
             function f(e, t) {
-                return '\n        <p class="retitle-warning error">\n            Unfortunately, we currently can\'t add an owner if you have an IRA.\n        </p>\n    '
+                return '\n        <p class="retitle-warning error">\n            Unfortunately, we currently can\'t add an owner if you have an SMF.\n        </p>\n    '
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",

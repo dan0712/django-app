@@ -6,6 +6,7 @@ from filebrowser.sites import site
 from main import settings
 from .views import *
 
+
 def ok_response_json(*args, **kwargs):
     return HttpResponse("[]", content_type='application/json')
 
@@ -47,8 +48,20 @@ urlpatterns = patterns(
     url(r'^firm/supervisor_invites', FirmSupervisorInvites.as_view()),
     url(r'^firm/support$', FirmSupport.as_view()),
     url(r'^firm/support/forms$', FirmSupportForms.as_view()),
+    url(r'^firm/support/getting-started$', FirmSupportGettingStarted.as_view()),
+
     url(r'^firm/summary', FirmSummary.as_view()),
     url(r'^firm/change-details$', FirmDataView.as_view()),
+    url(r'^firm/advisor/(?P<pk>\d+)$', FirmAdvisorAccountSummary.as_view()),
+    url(r'^firm/advisor/(?P<pk>\d+)/clients$', FirmAdvisorClients.as_view()),
+    url(r'^firm/advisor/(?P<pk>\d+)/client/(?P<client_id>\d+)$', FirmAdvisorClientDetails.as_view()),
+    url(r'^firm/agreements$', FirmAgreements.as_view()),
+    url(r'^firm/users$', FirmSupervisors.as_view()),
+    url(r'^firm/supervisors/new$', FirmSupervisorsNew.as_view()),
+    url(r'^firm/supervisor/(?P<pk>\d+)/edit', FirmSupervisorsEdit.as_view()),
+    url(r'^firm/supervisor/(?P<pk>\d+)/delete', FirmSupervisorDelete.as_view()),
+
+
     # Advisor views
     url(r'^advisor/client_invites$',
         AdvisorClientInvites.as_view(),
@@ -195,6 +208,8 @@ urlpatterns = patterns(
         csrf_exempt(NewTransactionMemoView.as_view())),
     url(r'^client/api/accounts/(?P<pk>\d+)$',
         csrf_exempt(ChangeGoalView.as_view())),
+    url(r'^client/api/account-groups/(?P<pk>\d+)/tax-loss-harvesting$',
+        csrf_exempt(TaxHarvestingView.as_view())),
     url(r'^automaticDeposit$', csrf_exempt(SetAutoDepositView.as_view())),
     url(r'^automaticWithdrawal$',
         csrf_exempt(SetAutoWithdrawalView.as_view())),

@@ -4327,7 +4327,7 @@ div.ghost-form .pane.benefits-pane h4 {
     top: -50px
 }
 .ribbon-drawer>div {
-    background-color: rgba(51, 129, 208, .85);
+    background-color: #eee;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center top;
@@ -4352,7 +4352,7 @@ div.ghost-form .pane.benefits-pane h4 {
     position: relative;
     width: 978px;
     margin: 0 auto;
-    color: #686868
+    color: #686868;
 }
 .ribbon-drawer .drawer-ribbon-region .inner a {
     color: #A3C745

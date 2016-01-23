@@ -1,0 +1,94 @@
+ {% extends "layouts/base.html" %}
+ {% load i18n %}
+ {% block nav_clients %}depressed {% endblock %}
+ {% block body_class %}composites show{% endblock %}
+ {% block main_content %}
+ {% load app_filters %}
+<div class="composites-show">
+
+        {% with tab="overview" %}
+            {% include 'firm/partials/advisor-summary-sub-nav.html' %}
+        {% endwith %}
+
+
+    <div class="composite-overview">
+        <div class="account-group-details">
+            <div class="panel">
+                <h4>Total Balance</h4>
+                <p>${{ object.total_balance  |bs_big_number}}</p>
+            </div>
+            <div class="panel">
+                <h4>Total Returns</h4>
+                <p>{{ object.total_return |bs_big_number }}%</p>
+            </div>
+            <div class="panel">
+                <h4>Number of Clients</h4>
+                <p>{{ object.primary_clients_size }} <span>Primary</span> {{ object.secondary_clients_size }} <span>Secondary</span></p>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<div class="composite-account-groups">
+   <div class="composite-account-group-panel">
+      <div class="account-group-info">
+         <div class="account-group-name">
+            <h2>Client Accounts</h2>
+         </div>
+      </div>
+
+       <div class="goal-details body">
+                 <table>
+                    <thead>
+                       <tr>
+                          <th>Client Name</th>
+                          <th>Goals</th>
+                          <th>Status</th>
+                          <th>Balance</th>
+                          <th>Return</th>
+                          <th>Stocks/Bonds</th>
+                          <th>Fee Plan(bps)</th>
+                          <th>Average Term</th>
+                          <th>Average Target</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                    {% for account in object.client_accounts %}
+                       <tr>
+                          <td>
+                             {{ account.primary_owner.user.full_name }}
+                          </td>
+                        <td>
+                             {{ account.goals_length }}
+                          </td>
+                          <td>
+                             {% if account.on_track %}
+                                <span class="on-track">On track</span>
+                              {% else %}
+                                 <span class="off-track">Off track</span>
+                              {% endif %}
+                          </td>
+                          <td>${{ account.total_balance |bs_big_number}}</td>
+                          <td>{{ account.total_returns }}%</td>
+                          <td>
+                              {{ account.stocks_percentage }}% / {{ account.bonds_percentage }}%
+                          </td>
+                          <td>{{ account.fee }}</td>
+                          <td>{{ account.get_term |bs_big_number}}y</td>
+                          <td>${{ account.target |bs_big_number }}</td>
+                       </tr>
+                    {% endfor %}
+
+                    </tbody>
+                 </table>
+              </div>
+   </div>
+</div>
+
+
+    <div id="allocationChangeModal">
+    </div>
+</div>
+ {% endblock %}
