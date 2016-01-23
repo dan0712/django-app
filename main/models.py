@@ -354,7 +354,7 @@ class AssetFeePlan(models.Model):
     To calculate the fees for an asset and client, get the AssetFeePlan for the account, then lookup on the AssetFee
     model for all the fees applicable for the Asset and Plan.
     """
-    name = models.CharField(max_length=127)
+    name = models.CharField(max_length=127, unique=True)
     description = models.TextField(null=True)
 
     def __str__(self):
@@ -1844,6 +1844,26 @@ class Goal(models.Model):
     def auto_term(self):
         today = date.today()
         return "{0}y".format(self.get_term)
+
+
+class AssetGroup(models.Model):
+    name = models.CharField(max_length=127, unique=True)
+    assets = models.ManyToManyField(Ticker, related_name='asset_groups')
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+    pass
+
+
+class GoalMetric(models.Model):
+    goal = models.ForeignKey(Goal, related_name='metrics')
+    type = models.IntegerField(choices=((0, 'Portfolio Mix'), (1, 'RiskScore')))
+    group = models.ForeignKey(AssetGroup, null=True)
+    rebalance_type = models.IntegerField(choices=((0, 'Absolute'), (1, 'Relative')),
+                                         help_text='Is the rebalance threshold an absolute threshold or relative (percentage difference) threshold?')
+    rebalance_thr = models.FloatField(help_text='The difference between configured and measured value at which a rebalance will be recommended.')
+    configured_val = models.FloatField(help_text='The value of the metric that was configured.')
+    measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
 
 
 class Position(models.Model):
