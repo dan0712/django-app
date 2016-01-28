@@ -6,6 +6,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
+
+from main.models import AssetFeature
 from portfolios.bl_model import OptimizationException
 #from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
@@ -22,7 +24,7 @@ __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisit
            'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
            'ClientAccountPositions', 'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView',
            'ChangeAllocation', 'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView',
-           'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances',
+           'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances', 'AssetFeaturesView',
            'SetAutoWithdrawalView', 'ZipCodes', 'FinancialProfileView',
            'FinancialPlansView', 'FinancialPlansAccountAdditionView', 'FinancialPlansAccountDeletionView',
            'FinancialPlansExternalAccountAdditionView', 'FinancialPlansExternalAccountDeletionView', 'TaxHarvestingView']
@@ -307,6 +309,25 @@ class ClientAccountPositions(ClientView, TemplateView):
         # calculate drift and allocations
         return HttpResponse(ujson.dumps(positions),
                             content_type='application/json')
+
+
+class AssetFeaturesView(ClientView):
+
+    def get(self, request, *args, **kwargs):
+        res = {
+            af.id: {
+                "name": af.name,
+                "description": af.description,
+                "values": {
+                    v.id: {
+                        "name": v.name,
+                        "description": v.description
+                    } for v in af.values.all()
+                }
+            } for af in AssetFeature.objects.all()
+        }
+
+        return HttpResponse(ujson.dumps(res), content_type="application/json")
 
 
 class CancelableTransactionsView(ClientView, TemplateView):

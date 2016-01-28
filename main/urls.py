@@ -4,6 +4,7 @@ from django.shortcuts import HttpResponseRedirect, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
 from main import settings
+from main.views.client.api import AssetFeaturesView
 from .views import *
 
 
@@ -178,6 +179,9 @@ urlpatterns = patterns(
     url(r'^client/api/accounts/(?P<pk>\d+)/positions',
         ClientAccountPositions.as_view(),
         name='client:api:accounts:positions'),
+    url(r'^client/api/asset_features',
+        AssetFeaturesView.as_view(),
+        name='client:api:asset_features'),
     url(r'^client/api/client/api/accounts/(?P<pk>\d+)/withdrawals$',
         csrf_exempt(Withdrawals.as_view())),
     url(r'^client/api/portfolio-sets/(?P<pk>\d+)/asset-classes',
