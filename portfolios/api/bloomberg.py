@@ -88,11 +88,12 @@ def get_fund_hist_data(ids, begin_date, end_date):
                                                 end_date.strftime('%Y%m%d')),
                     'DATEFORMAT': 'ddmmyyyy'}
 
-    hist_fields = ['FUND_NET_ASSET_VAL',
+    hist_fields = ['PX_LAST',
                    'FUND_TOTAL_ASSETS']
 
     '''
         Other fund-applicable history fields that may be of interest in the future:
+        FUND_NET_ASSET_VAL
         DVD_SH_LAST
         PX_OPEN
         PX_HIGH

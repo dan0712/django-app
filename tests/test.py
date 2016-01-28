@@ -83,10 +83,10 @@ class PortfolioCalculationTests(TestCase):
 
     def test_get_initial_weights(self):
         # Test all active
-        self.assertListEqual(get_initial_weights(self._instruments[[True, True, True, True]]).values.tolist(),
+        self.assertListEqual(get_market_caps(self._instruments[[True, True, True, True]]).values.tolist(),
                              [0.20130932896890344, 0.7463175122749591, 0.019639934533551555, 0.03273322422258593])
         # Test Mask. Make sure index and values are good.
-        w = get_initial_weights(self._instruments[[True, False, True, False]])
+        w = get_market_caps(self._instruments[[True, False, True, False]])
         self.assertListEqual(w.index.tolist(), ['ASS', 'USB1'])
         self.assertListEqual(w.values.tolist(), [0.9111111111111111, 0.08888888888888889])
 

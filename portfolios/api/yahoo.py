@@ -299,7 +299,7 @@ class DbApi:
         return Series(price_data, index=self.dates, name=ticker_symbol)
 
     def market_cap(self, ticker):
-        mp = MarketCap.objects.get(ticker=ticker)
-        return mp.value
+        mp = MarketCap.objects.filter(ticker=ticker).first()
+        return None if mp is None else mp.value
 
 

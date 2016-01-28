@@ -9,5 +9,6 @@ class CalculatePortfoliosCron(CronJobBase):
     code = 'portfolios.cron.calculate_portfolios'   # a unique code
 
     def do(self):
-        get_all_optimal_portfolios()
+        pass
+        # get_all_optimal_portfolios()
 

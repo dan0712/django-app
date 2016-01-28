@@ -134,7 +134,7 @@ def markowitz_optimizer_3(xs, sigma, lam, mu, constraints):
     :param mu: 1xn numpy array of expected asset returns
     :param constraints: List of constrains to optimise with respect to.
     :return: (weights, cost)
-             - weights: The calculated weight of each asset
+             - weights: The calculated weight vector of each asset
              - cost: The total cost of this portfolio. Useful for ranking optimisation outputs
     """
     objective = Minimize(quad_form(xs, sigma) - lam * mu * xs)  # define Markowitz mean/variance objective function
@@ -143,7 +143,12 @@ def markowitz_optimizer_3(xs, sigma, lam, mu, constraints):
     # If it was not solvable, fail
     if type(res) == str:
         raise OptimizationFailed(res)
-    return np.array(xs.value).T, res  # return optimal weights and the cost.
+
+    weights = np.array(xs.value).T
+    if weights.any():
+        return weights[0], res  # return optimal weights and the cost.
+    else:
+        return weights, res
 
 
 def markowitz_cost(ws, sigma, lam, mu):

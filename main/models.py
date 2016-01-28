@@ -1351,6 +1351,12 @@ class AssetClass(models.Model):
         return self.name
 
 
+class MarkowitzScale(models.Model):
+    date = models.DateField(unique=True)
+    min = models.FloatField()
+    max = models.FloatField()
+
+
 class Region(models.Model):
     name = models.CharField(max_length=127, blank=False, null=False, help_text='Name of the region')
     description = models.TextField(blank=True, default="", null=False)
@@ -1968,9 +1974,22 @@ class Goal(models.Model):
         return "{0}y".format(self.get_term)
 
 
-class AssetGroup(models.Model):
-    name = models.CharField(max_length=127, unique=True)
-    assets = models.ManyToManyField(Ticker, related_name='asset_groups')
+class AssetFeature(models.Model):
+    name = models.CharField(max_length=127, unique=True, help_text="This should be a noun such as 'Region'.")
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+    pass
+
+
+class AssetFeatureValue(models.Model):
+    name = models.CharField(max_length=127, unique=True, help_text="This should be an adjective.")
+    description = models.TextField(blank=True, null=True, help_text="A clarification of what this value means.")
+    feature = models.ForeignKey(AssetFeature,
+                                related_name='values',
+                                help_text="The asset feature this is one value for.")
+    assets = models.ManyToManyField(Ticker, related_name='features')
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
@@ -1978,17 +1997,54 @@ class AssetGroup(models.Model):
 
 
 class GoalMetric(models.Model):
+    """
+    A goal metric can currently be used to:
+     - Specify what percentage of assets in a goal should have a particular feature, or -
+     - Specify what risk score is desired for a goal. This is the normalised risk score range (0-1)
+    For example:
+        "Minimum 30% of my portfolio should be Australian, and rebalance whenever it becomes proportionally 5% different"
+        {
+            type: 0 (Portfolio Mix)
+            feature: 1 (or whatever the ID is for the "Australian" feature value),
+            comparison: 0 (Minimum),
+            rebalance_type: 1,
+            rebalance_thr: 0.05,
+            configured_val: 0.3
+        }
+    """
+    TYPE_PORTFOLIO_MIX = 0
+    TYPE_RISK_SCORE = 1
+    metric_types = {TYPE_PORTFOLIO_MIX: 'Portfolio Mix', TYPE_RISK_SCORE: 'RiskScore'}
+    comparisons = {0: 'Minimum', 1: 'Exactly', 2: 'Maximum'}
+    rebalance_types = {0: 'Absolute', 1: 'Relative'}
+
     goal = models.ForeignKey(Goal, related_name='metrics')
-    type = models.IntegerField(choices=((0, 'Portfolio Mix'), (1, 'RiskScore')))
-    group = models.ForeignKey(AssetGroup, null=True)
-    rebalance_type = models.IntegerField(choices=((0, 'Absolute'), (1, 'Relative')),
+    type = models.IntegerField(choices=metric_types.items())
+    feature = models.ForeignKey(AssetFeatureValue, null=True)
+    comparison = models.IntegerField(default=1, choices=comparisons.items())
+    rebalance_type = models.IntegerField(choices=rebalance_types.items(),
                                          help_text='Is the rebalance threshold an absolute threshold or relative (percentage difference) threshold?')
     rebalance_thr = models.FloatField(help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
     measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
 
+    def __str__(self):
+        if self.type == 0:
+            return "[{}] {} {}% {} for Goal: {}".format(self.id,
+                                                        self.comparisons[self.comparison],
+                                                        self.configured_val * 100,
+                                                        self.feature.name,
+                                                        self.goal)
+        else:
+            return "[{}] Risk Score {} {} for Goal: {}".format(self.id,
+                                                               self.comparisons[self.comparison],
+                                                               1 + self.configured_val * 99,
+                                                               self.goal)
+
 
 class Position(models.Model):
+    class Meta:
+        unique_together = ('goal', 'ticker')
     goal = models.ForeignKey(Goal, related_name='positions')
     ticker = models.ForeignKey(Ticker)
     share = models.FloatField(default=0)

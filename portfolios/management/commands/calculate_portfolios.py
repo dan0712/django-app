@@ -85,7 +85,8 @@ def calculate_portfolios_dual_region(goal: Goal, all_assets: List[AssetClass], p
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
-        market_cap[ticker.symbol] = api.market_cap(ticker)
+        mc = api.market_cap(ticker)
+        market_cap[ticker.symbol] = 0 if mc is None else mc
         if not ticker.etf:
             satellite_syms.append(ticker.symbol)
 
@@ -280,7 +281,8 @@ def calculate_portfolios_for_goal_auto_weights(goal, api):
         series[ticker.symbol] = api.get_all_prices(ticker.symbol)
         ticker_parent_dict[ticker.symbol] = asset.name
         asset_type[ticker.symbol] = 0 if asset.investment_type == 'BONDS' else 1
-        market_cap[ticker.symbol] = api.market_cap(ticker)
+        mc = api.market_cap(ticker)
+        market_cap[ticker.symbol] = 0 if mc is None else mc
         if not ticker.etf:
             satellite_syms.append(ticker.symbol)
 
