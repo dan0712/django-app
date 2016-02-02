@@ -4,6 +4,7 @@ import numpy as np
 
 from cvxpy import mul_elemwise
 from django.core.management.base import BaseCommand
+from scipy.optimize.minpack import curve_fit
 
 from main.models import MarkowitzScale
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3
@@ -83,7 +84,21 @@ def get_extremes():
     min_lambda = round(mval, 3)
     logger.info("Found MIN_LAMBDA: {}".format(min_lambda))
 
-    MarkowitzScale.objects.create(date=datetime.datetime.today(), min=min_lambda, max=max_lambda)
+    x = [-50, 0, 50]
+    y = [min_lambda, 1.2, max_lambda]
+
+    def func(x, a, b, c):
+        return a * np.power(b, x) + c
+
+    vals, _ = curve_fit(func, x, y)
+    logger.info("Found function fit using params: {}".format(vals))
+
+    MarkowitzScale.objects.create(date=datetime.datetime.today(),
+                                  min=min_lambda,
+                                  max=max_lambda,
+                                  a=vals[0],
+                                  b=vals[1],
+                                  c=vals[2])
 
 
 class Command(BaseCommand):

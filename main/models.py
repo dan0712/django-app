@@ -1352,9 +1352,17 @@ class AssetClass(models.Model):
 
 
 class MarkowitzScale(models.Model):
+    """
+    We convert the max and min Markowitz to an exponential function in the form a * b^x + c passing through the points:
+    [(-50, min), (0, 1.2), (50, max)]
+    So the risk slider is exponential.
+    """
     date = models.DateField(unique=True)
     min = models.FloatField()
     max = models.FloatField()
+    a = models.FloatField(null=True)
+    b = models.FloatField(null=True)
+    c = models.FloatField(null=True)
 
 
 class Region(models.Model):

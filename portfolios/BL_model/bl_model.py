@@ -6,7 +6,7 @@ import logging
 
 
 logger = logging.getLogger('betasmartz.bl_model')
-#logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 class OptimizationFailed(Exception):
     pass
@@ -40,6 +40,7 @@ def bl_model(sigma, w_tilde, p, v, n, c=1.0, lambda_bar=1.2):
         c -- any positive float, default to 1 (as in example on page 5)
         lambda_bar -- positive float, default to 1.2 as mentioned after equation (5)
     """
+    logger.debug("Running BL with sigma:\n{}\nw_tilde:\n{}\np:\n{}\nv:\n{}\nn:{}".format(sigma, w_tilde, p, v, n))
 
     pi = 2.0 * lambda_bar * np.dot(sigma, w_tilde)  # equation (5)
     tau = 1.0 / float(n)  # equation (8)
@@ -144,7 +145,11 @@ def markowitz_optimizer_3(xs, sigma, lam, mu, constraints):
     if type(res) == str:
         raise OptimizationFailed(res)
 
-    weights = np.array(xs.value).T
+    if xs.get_data()[0] == 1:
+        weights = np.array([[xs.value]])
+    else:
+        weights = np.array(xs.value).T
+
     if weights.any():
         return weights[0], res  # return optimal weights and the cost.
     else:

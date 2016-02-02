@@ -286,7 +286,7 @@ class DbApi:
         self.today_day = today.day
 
     def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
-        self.dates = pd.date_range('{}-{}'.format(self.today_year-(2 if self.today_month == 1 else 1),
+        self.dates = pd.date_range('{}-{}'.format(self.today_year-(6 if self.today_month == 1 else 5),
                                                   12 if self.today_month == 1 else self.today_month-1),
                                    '{}-{}'.format(self.today_year, self.today_month),
                                    freq='M')

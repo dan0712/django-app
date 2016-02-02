@@ -91,35 +91,45 @@ def build_instruments(api=DbApi()):
     # Much faster building the dataframes once, not appending on iteration.
     irows = []
     ccols = []
+
+    # the minimum index that has data for all symbols.
+    minix = 0
+
     for ticker in tickers:
         # TODO: Get the current price from the daily prices table, not monthly.
-        prices = api.get_all_prices(ticker.symbol, currency=ticker.currency).dropna()
+        prices = api.get_all_prices(ticker.symbol, currency=ticker.currency)
+        if not minix:
+            minix = -prices.shape[0]
 
-        # Make sure we have enough prices to make the statistics meaningful.
-        if prices.size != MINIMUM_PRICE_SAMPLES:
-            emsg = "Removing symbol: {} from candidates as it has only {} available prices."
-            logger.warn(emsg.format(ticker.symbol, prices.size))
+        # Make sure we have the minimum data to make the statistics meaningful.
+        isnulls = pd.isnull(prices)
+        if isnulls.iloc[-MINIMUM_PRICE_SAMPLES:].any():
+            emsg = "Removing symbol: {} from candidates as it has only {} available prices in the last {} samples."
+            logger.warn(emsg.format(ticker.symbol, prices.iloc[-MINIMUM_PRICE_SAMPLES:].count(), MINIMUM_PRICE_SAMPLES))
             continue
-
-        # We need there to be no gaps in the prices, so our expected return calculation is correct.
-        mbtw = months_between(prices.index[0], prices.index[-1])
-        if (mbtw + 1) != prices.size:
-            emsg = "Removing symbol: {} from candidates as it has {} prices available, but there are {} months " \
-                   "between the first price on {} and last price on {}. As such, there should be {} prices available."
-            logger.warn(emsg.format(ticker.symbol, prices.size, mbtw, prices.index[0], prices.index[-1], mbtw+1))
-            continue
-
         mc = api.market_cap(ticker)
         if mc is None:
             emsg = "Removing symbol: {} from candidates as it has no market cap available"
             logger.warn(emsg.format(ticker.symbol))
             continue
 
+        # Build annualised expected return
+        first_valid = isnulls.argmin()
+        mths = months_between(first_valid, prices.index[-1]) + 1
+        er = (((prices.iloc[-1] - prices[first_valid]) / prices[first_valid]) / (mths / 12))
+        logger.debug("Built expected return {} for {} using {} months of data.".format(er, ticker.symbol, mths))
+        #er = (1 + ccols[-1].pct_change().mean()) ** 12 - 1
+
+        # We need there to be no gaps in the prices, so our covariance calculation is correct. So find the min index
+        # that is common to all symbols.
+        for i in range(-(MINIMUM_PRICE_SAMPLES-1), minix-1, -1):
+            if pd.isnull(prices[i]):
+                minix = max(minix, i+1)
+                break
+
         # Data good, so add the symbol
         ccols.append(prices)
 
-        # Build annualised expected return
-        er = (1 + ccols[-1].pct_change().mean()) ** 12 - 1
         irows.append((ticker.symbol,
                       er,
                       mc,
@@ -128,7 +138,9 @@ def build_instruments(api=DbApi()):
                       ticker.features.values_list('id', flat=True),
                       ac_ps[ticker.asset_class.id]))
 
-    ctable = pd.concat(ccols, axis=1)
+    # Filter the table to be only complete.
+    ctable = pd.concat(ccols, axis=1).iloc[minix:, :]
+
     # For some reason once I added the exclude arg below, the index arg was ignored, so I have to do it manually after.
     instruments = pd.DataFrame.from_records(irows,
                                             columns=['symbol', 'exp_ret', 'mkt_cap', 'ac', 'price', 'features', 'pids'],
@@ -154,7 +166,7 @@ def build_instruments(api=DbApi()):
     sk_co_var, co_vars = calculate_co_vars(ctable.shape[1], ctable)
     co_vars = pd.DataFrame(co_vars, index=instruments.index, columns=instruments.index)
     #samples = 12
-    
+
     # Drop dates that have nulls for some symbols.
     # TODO: Have some sanity check over the data. Make sure it's recent, gap free and with enough samples.
     #ptable = ctable.dropna()
@@ -291,7 +303,7 @@ def risk_score_to_lambda(risk_score):
         raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
     if scale.date < (datetime.datetime.today() - datetime.timedelta(days=7)).date():
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return ((scale.max - scale.min) * risk_score) + scale.min
+    return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
 
 
 def lambda_to_risk_score(lam):
@@ -301,7 +313,7 @@ def lambda_to_risk_score(lam):
         raise Exception("No Markowitz limits available. Cannot convert The Markowitz lambda into a risk score.")
     if scale.date < (datetime.datetime.today() - datetime.timedelta(days=7)).date():
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return (lam - scale.min) / (scale.max - scale.min)
+    return (math.log((lam - scale.c)/scale.a, scale.b) + 50) / 100
 
 
 def get_market_caps(instruments):
@@ -450,7 +462,6 @@ def calc_opt_inputs(goal, idata, metric_overrides=None):
 
     # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
     lcovars = covars.iloc[goal_symbol_ixs, goal_symbol_ixs]
-    logger.debug("Running BL with covars: {}\nmarket_caps: {}".format(lcovars, market_caps))
     mu, sigma = bl_model(lcovars.values,
                          market_caps.values,
                          views,
