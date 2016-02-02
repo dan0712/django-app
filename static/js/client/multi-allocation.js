@@ -213,12 +213,12 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     allocation: this.getValue(),
                     account: this.model
                 });
-                BMT.modal.show(new o({
+                BS.modal.show(new o({
                     model: t
                 }))
             }
         })
-    }),define("views/common/addGoalView", ["services/firmFetcher", "jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/common/addGoal/cardRow", "modules/modelStrategyBuilder", "models/account", "models/rolloverFollowup", "views/common/addGoal/addGoalCardView", "views/common/addGoal/addGoalCardDefinitions", "views/profile/editBeneficiariesView", "views/advice/goalCompleteView", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "components/account/scripts/services/goalTypeService", "components/common/scripts/services/domainService", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/analytics/analytics", "services/financialPlanUpdater", "views/common/termsOfServiceView", "components/account/scripts/constants/accountTypes"], function (firm, e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
+    }),define("views/common/addGoalView", ["services/firmFetcher", "jquery", "underscore", "backbone", "common/betasmartz.views", "hbs!views/common/addGoal/cardRow", "modules/modelStrategyBuilder", "models/account", "models/rolloverFollowup", "views/common/addGoal/addGoalCardView", "views/common/addGoal/addGoalCardDefinitions", "views/profile/editBeneficiariesView", "views/advice/goalCompleteView", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "components/account/scripts/services/goalTypeService", "components/common/scripts/services/domainService", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/analytics/analytics", "services/financialPlanUpdater", "views/common/termsOfServiceView", "components/account/scripts/constants/accountTypes"], function (firm, e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
     var E = {
             fixed: !0,
             delay: 250
@@ -277,7 +277,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 accountTypeSelector: function () {
                     var e = {};
                     return e[w.INVESTING] = "Regular (Taxable)", t.each(w.getIRATypes(), function (t) {
-                        (!this.model() || this.model().isNew()) && !BMT.accounts().hasAccountWithType(t) && BMT.accountGroup.isPersonal() && (e[t] = w.getDisplayName(t))
+                        (!this.model() || this.model().isNew()) && !BS.accounts().hasAccountWithType(t) && BS.accountGroup.isPersonal() && (e[t] = w.getDisplayName(t))
                     }, this), this.build_dropdown_menu(e, {
                         name: "accountType",
                         "class": "account-type-selector",
@@ -365,11 +365,11 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 this.$nextStepInvesting.is(":visible") ? this.$accountTypeRow[e ? "slideUp" : "slideDown"]() : this.$accountTypeRow.toggle(!e)
             },
             showOrHideAgreements: function (e, t) {
-                if (!this._isNew() || this._isRollover() || !BMT.user.isFull()) {
+                if (!this._isNew() || this._isRollover() || !BS.user.isFull()) {
                     this.$nextStepTerms.hide();
                     return
                 }
-                var n = x(e) && BMT.accounts().hasInvestingAccount();
+                var n = x(e) && BS.accounts().hasInvestingAccount();
                 if (t || !e || n) {
                     this.$nextStepTerms.slideUp();
                     return
@@ -383,14 +383,14 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 e.is(".selected") || (this.$(".goal-card").removeClass("selected"), e.addClass("selected"))
             },
             onBack: function (e) {
-                e && e.preventDefault(), BMT.refreshAccounts(), BMT.modal.close(this)
+                e && e.preventDefault(), BS.refreshAccounts(), BS.modal.close(this)
             },
             onOK: function (e) {
                 var n = this.getSelectedCard(),
                     r = n.isRollover(),
                     i = n.getAccountType();
                 if (!this.model && r) {
-                    BMT.router.navigate("rollover", !0), BMT.modal.close(this);
+                    BS.router.navigate("rollover", !0), BS.modal.close(this);
                     return
                 }
                 i || (i = this.$(".account-type-selector").val());
@@ -400,7 +400,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                         name: s ? n.getGoalName() : this.$nameInput.val(),
                         accountType: i,
                         income: n.isIncome(),
-                        rollover: !BMT.user.isFull() && r
+                        rollover: !BS.user.isFull() && r
                     };
                 this.termsOfServiceRegion.currentView && t.extend(u, this.termsOfServiceRegion.currentView.getAgreementValues());
                 var a = this.model || o.Model.buildGhost();
@@ -412,17 +412,17 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     this.updateFieldValidation(this.$nameInput, "Goal name exists. Choose a different name.");
                     return
                 }
-                n.onSelect(a), a.set("accountGroup", BMT.accountGroup, {
+                n.onSelect(a), a.set("accountGroup", BS.accountGroup, {
                     silent: !0
-                }), a.isNew() ? this._processNewGoal(a, u, r) : a.get("goalType") === u.goalType && a.isIncome() === u.income ? BMT.modal.close(this) : this._processExistingGoal(a, u)
+                }), a.isNew() ? this._processNewGoal(a, u, r) : a.get("goalType") === u.goalType && a.isIncome() === u.income ? BS.modal.close(this) : this._processExistingGoal(a, u)
             },
             _continueAfterUpdate: function (e, t) {
                 var n = !this.model,
                     r = t ? "rollover" : "goalSetup";
-                n || BMT.currentPage !== r ? (BMT.selectedAccount = e, BMT.router.navigate(r, !0)) : this.options.callback && this.options.callback(), BMT.modal.close(this)
+                n || BS.currentPage !== r ? (BS.selectedAccount = e, BS.router.navigate(r, !0)) : this.options.callback && this.options.callback(), BS.modal.close(this)
             },
             _nameIsTaken: function (e) {
-                return BMT.accounts().reduce(function (t, n) {
+                return BS.accounts().reduce(function (t, n) {
                     return t || this.model !== n && e.toLowerCase() === n.get("name").toLowerCase()
                 }, !1, this)
             },
@@ -432,7 +432,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             _processExistingGoal: function (e, t) {
                 this.block(), e.save(t, {
                     success: function () {
-                        BMT.analytics.track("GoalUpdated", {
+                        BS.analytics.track("GoalUpdated", {
                             Location: "GoalModal",
                             GoalId: e.get("id"),
                             GoalType: e.get("goalType"),
@@ -453,13 +453,13 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                             var n = p.getDefaultTermForContext({
                                 goalType: e.get("goalType"),
                                 income: e.get("income"),
-                                isRetired: BMT.user.isRetired(),
-                                age: BMT.user.getAge(),
+                                isRetired: BS.user.isRetired(),
+                                age: BS.user.getAge(),
                                 isPersonal: e.get("accountGroup").isPersonal()
                             });
                             e.setGoalTerm(n);
                             var r = this._createGoal(e).then(function () {
-                                BMT.analytics.track("GoalAdded", {
+                                BS.analytics.track("GoalAdded", {
                                     Location: "GoalModal",
                                     GoalId: e.get("id"),
                                     GoalType: e.get("goalType"),
@@ -473,12 +473,12 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                             }.bind(this)) : r.then(this._launchCompleteGoalModal.bind(this, e))
                         } else {
                             var i = "Your goal type has been updated to " + e.getGoalTypeLabel() + ".";
-                            e.isRetirement() && h.canGiveRetireeAdvice(BMT.user) && (i += " Please review your goal strategy, allocation and plan-to age."), this._flashAndGoToAdvice(e, i)
+                            e.isRetirement() && h.canGiveRetireeAdvice(BS.user) && (i += " Please review your goal strategy, allocation and plan-to age."), this._flashAndGoToAdvice(e, i)
                         }
                     }.bind(this);
 
                 return (new s).when("goalType", ["BUILD_WEALTH", "BUILD_WEALTH_ETHICAL"], n).when("goalType", ["RETIREMENT", "RETIREMENT_ETHICAL"], function (r) {
-                    this.getSelectedPlan().is("complete") && !r.isIncome() ? n(r, !0) : !e && (h.canGiveRetireeAdvice(BMT.user) || r.isIncome()) ? n(r) : t(r)
+                    this.getSelectedPlan().is("complete") && !r.isIncome() ? n(r, !0) : !e && (h.canGiveRetireeAdvice(BS.user) || r.isIncome()) ? n(r) : t(r)
                 }.bind(this)).otherwise(t)
             },
             _createGoal: function (e) {
@@ -487,7 +487,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     n = e.save({
                         allocation: t
                     }).then(function () {
-                        return BMT.refreshAccounts()
+                        return BS.refreshAccounts()
                     }).then(function () {
                         return this.trigger("goalCreated", e), m.loadPortfolioSetForAccount(e)
                     }.bind(this));
@@ -504,27 +504,27 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 }.bind(this))
             },
             _launchCompleteGoalModal: function (e) {
-                this._goToDestination("advice", e), BMT.modal.replaceWith(new c({
+                this._goToDestination("advice", e), BS.modal.replaceWith(new c({
                     isRollover: !1,
                     model: e
                 }))
             },
             _flashAndGoToAdvice: function (e, t) {
-                BMT.flash(t), this._goToDestination("advice", e), BMT.modal.close(this)
+                BS.flash(t), this._goToDestination("advice", e), BS.modal.close(this)
             },
             _goToDestination: function (e, t) {
-                BMT.selectedAccount = t, BMT.vent.trigger("addGoal:saved", t), this.options.inPlace || BMT.router.navigate(e, {
+                BS.selectedAccount = t, BS.vent.trigger("addGoal:saved", t), this.options.inPlace || BS.router.navigate(e, {
                     trigger: !0
                 })
             },
             getSelectedPlan: function () {
-                return BMT.user.get("financialPlans").selected()
+                return BS.user.get("financialPlans").selected()
             },
             defaultCardLists: function () {
                 var firmModel = firm.get();
                 var e = [],
-                    t = BMT.accountGroup.allowsIRAs() && (this._isNew() || this.model.isIRA() || !BMT.user.isFull()),
-                    n = this.model && this.model.isInvestingAccount() || this._isNew() && !BMT.accounts().maxedOutInvestmentGoals(),
+                    t = BS.accountGroup.allowsIRAs() && (this._isNew() || this.model.isIRA() || !BS.user.isFull()),
+                    n = this.model && this.model.isInvestingAccount() || this._isNew() && !BS.accounts().maxedOutInvestmentGoals(),
                     canUseEthical = firmModel.get("can_use_ethical_portfolio");
 
                 return t && e.push({
@@ -555,7 +555,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     e["ethical-investing"] = [f.get("EMERGENCY_ETHICAL"), f.get("BUILD_WEALTH_ETHICAL"), f.get("RETIREMENT_ETHICAL"), f.get("RETIREMENT_INCOME_ETHICAL")]
                 }
                 return e["tax-advantage"] = t.reduce(w.getIRATypes(), function (e, t) {
-                    var n = !this._isRollover() && this.model && this.model.isAccountType(t) || !BMT.accounts().hasAccountWithType(t),
+                    var n = !this._isRollover() && this.model && this.model.isAccountType(t) || !BS.accounts().hasAccountWithType(t),
                         r = f.inherit(t, {
                             enabled: n,
                             checked: !n
@@ -566,13 +566,13 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
         }),
         C = N.show;
     return N.show = function (e) {
-        return e = e || {}, !e.model && BMT.accounts().maxedOutGoals() ? BMT.alert({
+        return e = e || {}, !e.model && BS.accounts().maxedOutGoals() ? BS.alert({
             title: "Cannot Create New Goal",
             icon: "warning",
             body: "Sorry, at this time you can only have a maximum of ten regular investing goals and two IRA goals. Let us know if you're interested in having more goals by sending an email to support@betasmartz.com."
         }) : C.call(N, e)
     }, N
-}), define("models/withheldBonus", ["jquery", "underscore", "backbone", "common/betterment.models"], function (e, t, n, r) {
+}), define("models/withheldBonus", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function (e, t, n, r) {
     return r.RelationalModel.extend({
         doesWithdrawalPushBonusBelowThreshold: function (e) {
             return e > this.num("maxWithdrawalToKeepBonus") && this.num("withholdingDaysRemaining") > 0
@@ -634,7 +634,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
         VALID_ACCOUNT_TYPES: n
     };
     return t.RelationalModel.extend(r, i)
-}), define("views/advice/multiAllocationModalView", ["jquery", "underscore", "common/betterment.views"], function ($, _, n) {
+}), define("views/advice/multiAllocationModalView", ["jquery", "underscore", "common/betasmartz.views"], function ($, _, n) {
     return n.ModalView.extend({
             template: "advice/confirmMultiAllocationChanges",
             className: "multi-allocation-modal",
@@ -762,7 +762,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             return r.isIRA(e) ? this.getDefaultIraPortfolioSetId() : this.getDefaultInvestingPortfolioSetId()
         }
     }
-}), define("views/advice/multiAllocationCardView", ["underscore", "common/slider", "services/allocationService", "common/betterment.views", "jquery", "tinyToggle"], function (_, slider, allocationService, bt, $, tinyToggle) {
+}), define("views/advice/multiAllocationCardView", ["underscore", "common/slider", "services/allocationService", "common/betasmartz.views", "jquery", "tinyToggle"], function (_, slider, allocationService, bt, $, tinyToggle) {
     return bt.View.extend({
         template: "advice/multiAllocationCard",
         events: {
@@ -1010,7 +1010,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
 }),
 
     define("views/advice/multiAllocationView",
-        ["underscore", "common/betterment.views", "views/advice/multiAllocationCardView", "components/portfolio/scripts/services/portfolioSetService", "views/advice/multiAllocationModalView"],
+        ["underscore", "common/betasmartz.views", "views/advice/multiAllocationCardView", "components/portfolio/scripts/services/portfolioSetService", "views/advice/multiAllocationModalView"],
         function (_, bt, mac, pss, bsm) {
             return bt.View.extend({
                 template: "advice/multiAllocation",
@@ -1235,15 +1235,15 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                         custom_size = custom_size + this[key + "View"].size_slider_value;
                     }.bind(this));
                     if (custom_size != 100) {
-                        BMT.alert({
+                        BS.alert({
                             title: "Error",
                             body: "Your portfolio allocation currently exceeds 100%, please adjust the allocation amounts to set your revised allocation.",
                             icon: "error"
                         });
                         return;
                     }
-                    var e = new bsm({multiAllocationController: this, modal: BMT.modal});
-                    BMT.modal.show(e);
+                    var e = new bsm({multiAllocationController: this, modal: BS.modal});
+                    BS.modal.show(e);
                 },
                 save: function () {
                     this.model.set("optimization_mode", this.optimization_mode);
@@ -1263,7 +1263,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     }.bind(this));
                 },
             })
-        }), define("views/advice/adviceView", ["jquery", "underscore", "common/betterment.views", "hbs!views/advice/advice", "hbs!views/advice/noTargetFlyover", "hbs!views/advice/targetFlyover", "components/common/scripts/constants/accountStatus", "services/accountService", "viewHelpers/accountViewHelpers", "views/common/tabHeaderView", "components/portfolio/scripts/views/targetPortfolioDonutView", "views/common/questionsView", "views/advice/batchSettingsController", "views/advice/allocationRecommendationView", "views/advice/autoTransactionRecommendationView", "views/advice/depositRecommendationView", "views/advice/termRecommendationView", "views/advice/planRetirementAgeView", "components/advice/scripts/adviceGraphView", "views/advice/marketPerformanceView", "models/notification", "models/v2/retirementPlan", "views/notifications/adviceRetirementIncomeView", "views/notifications/dismissibleFlyoverView", "views/advice/planStartSavingView", "views/advice/planHeaderView", "services/flyoverService", "components/common/scripts/modules/async", "views/advice/multiAllocationView", "components/portfolio/scripts/services/portfolioSetService"], function (e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w, E, S, x, T, N, C, k, mav, pss) {
+        }), define("views/advice/adviceView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/advice/advice", "hbs!views/advice/noTargetFlyover", "hbs!views/advice/targetFlyover", "components/common/scripts/constants/accountStatus", "services/accountService", "viewHelpers/accountViewHelpers", "views/common/tabHeaderView", "components/portfolio/scripts/views/targetPortfolioDonutView", "views/common/questionsView", "views/advice/batchSettingsController", "views/advice/allocationRecommendationView", "views/advice/autoTransactionRecommendationView", "views/advice/depositRecommendationView", "views/advice/termRecommendationView", "views/advice/planRetirementAgeView", "components/advice/scripts/adviceGraphView", "views/advice/marketPerformanceView", "models/notification", "models/v2/retirementPlan", "views/notifications/adviceRetirementIncomeView", "views/notifications/dismissibleFlyoverView", "views/advice/planStartSavingView", "views/advice/planHeaderView", "services/flyoverService", "components/common/scripts/modules/async", "views/advice/multiAllocationView", "components/portfolio/scripts/services/portfolioSetService"], function (e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w, E, S, x, T, N, C, k, mav, pss) {
     return n.View.extend({
         template: r,
         id: "advice",
@@ -1285,7 +1285,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             "click .reset-all": "resetSettings"
         },
         onInitialize: function () {
-            this.model = BMT.selectedAccount, this.listenTo(BMT.vent, "addGoal:saved", function () {
+            this.model = BS.selectedAccount, this.listenTo(BS.vent, "addGoal:saved", function () {
                 this.reRender()
             })
         },
@@ -1293,10 +1293,10 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             this.$settingsRow = this.$(".settings-row"), C.closeFlyover()
         },
         reRender: function () {
-            this.block(), C.closeFlyover(), this.model = BMT.selectedAccount, this.loadAccountAndRender().then(this.unblock.bind(this))
+            this.block(), C.closeFlyover(), this.model = BS.selectedAccount, this.loadAccountAndRender().then(this.unblock.bind(this))
         },
         onShow: function () {
-            BMT.analytics.track("PageVisited", {
+            BS.analytics.track("PageVisited", {
                 Location: "Advice"
             }), this.preloadStart(), this.loadAccountAndRender().then(this.preloadComplete.bind(this))
 
@@ -1309,7 +1309,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 r = a.preloadSelectedAccount().then(function (t) {
                     var r = e.Deferred();
                     return n.model.isInPlan() ? E.create({
-                        financialProfile: BMT.user.getFinancialProfile(),
+                        financialProfile: BS.user.getFinancialProfile(),
                         financialPlan: n.model.get("financialPlan")
                     }).then(function (e) {
                         r.resolve(t, e)
@@ -1349,10 +1349,10 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
         renderGraph: function () {
             this.graphView = new y({
                 model: this.model,
-                age: BMT.user.getAge(),
+                age: BS.user.getAge(),
                 termYears: this.model.remainingGoalTerm(),
-                totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                defaultFeeRate: BS.accountGroup.defaultFeeRate()
             }), this.listenTo(this.graphView, "projectionChanged", function (e) {
                 this.marketPerformanceView.update(e)
             }), this.graphRegion.show(this.graphView)
@@ -1483,10 +1483,10 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
 
         },
         financialPlan: function () {
-            return BMT.user.get("financialPlans").selected()
+            return BS.user.get("financialPlans").selected()
         }
     })
-}),define("views/profile/contactInfoView", ["jquery", "underscore", "backbone", "hbs!views/profile/contactInfo", "common/betterment.views", "views/profile/securityQuestionView", "models/user", "models/visitor", "views/profile/contactPreferencesView", "views/profile/changePasswordView", "views/common/flashView", "views/profile/changeDefaultAccountGroupView", "views/profile/externalAccountsView", "models/v1/defaultAccountGroupUpdater", "models/v1/quovoCredentials", "views/profile/retireGuidePreferencesView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v) {
+}),define("views/profile/contactInfoView", ["jquery", "underscore", "backbone", "hbs!views/profile/contactInfo", "common/betasmartz.views", "views/profile/securityQuestionView", "models/user", "models/visitor", "views/profile/contactPreferencesView", "views/profile/changePasswordView", "views/common/flashView", "views/profile/changeDefaultAccountGroupView", "views/profile/externalAccountsView", "models/v1/defaultAccountGroupUpdater", "models/v1/quovoCredentials", "views/profile/retireGuidePreferencesView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v) {
         var m = new d;
         return i.View.extend({
             template: r,
@@ -1506,7 +1506,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                     return this.self.options.contactPreferences.hasDefaultPreferences() ? "Default" : "Custom"
                 },
                 defaultAccountGroupLabel: function() {
-                    return BMT.user.getDefaultAccountGroup().get("name")
+                    return BS.user.getDefaultAccountGroup().get("name")
                 },
                 hasHnwConsultationFeature: function() {
                     return u.hasVariation("hnw_consultation_on")
@@ -1531,7 +1531,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             },
             onInitialize: function() {
                 this.defaultAccountGroupUpdater = new p({
-                    user: BMT.user
+                    user: BS.user
                 }), this.listenTo(this.defaultAccountGroupUpdater, "change", function() {
                     this.defaultAccountGroupUpdater.updateUser(), this.render()
                 }), this.listenTo(this.options.contactPreferences, "change", function() {
@@ -1551,23 +1551,23 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 this.defaultAccountGroupUpdater.trigger("destroy", this.defaultAccountGroupUpdater)
             },
             contactPreferences: function(e) {
-                BMT.modal.show(new a({
+                BS.modal.show(new a({
                     model: this.options.contactPreferences
                 }))
             },
             changePassword: function(e) {
-                BMT.modal.show(new f({
-                    model: BMT.user
+                BS.modal.show(new f({
+                    model: BS.user
                 }))
             },
             changeDefaultAccount: function(e) {
-                BMT.modal.show(new c({
+                BS.modal.show(new c({
                     model: this.defaultAccountGroupUpdater
                 }))
             },
             linkExternalAccounts: function() {
                 this.getExternalAccountsCredentials().done(function(e) {
-                    BMT.modal.show(new h({
+                    BS.modal.show(new h({
                         model: e
                     }))
                 })
@@ -1582,14 +1582,14 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             update: function(e) {
                 var r = this,
                     i, o = n.Syphon.serialize(this);
-                this.model.validate(o) || BMT.modal.show(i = new s(t.extend({
+                this.model.validate(o) || BS.modal.show(i = new s(t.extend({
                     title: "Confirm Contact Info Update",
                     body: "To update your info please answer the following security question",
                     className: "confirm-update-modal securityQuestion",
                     handler: function(e) {
                         e && (i.block(), r.model.store(), r.model.save(t.extend(o, e), {
                             success: function() {
-                                BMT.modal.close(i), BMT.flash("Your info was updated successfully."), s.removeResults(r.model)
+                                BS.modal.close(i), BS.flash("Your info was updated successfully."), s.removeResults(r.model)
                             },
                             error: function() {
                                 r.model.restart()
@@ -1617,7 +1617,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 hash: {}
             }) : (u = t && t.advisedFeeTypeDisplayAmount, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for Betasmartz and your Investment Advisor. For more details, please see your respective customer agreements. Your Betasmartz customer agreements can be found <a href="https://www.betterment.com/advisedcustomeragreement">here</a>.\n            </div>\n        </span>\n        <span class="unadvised-user-only">\n            <span class="item-content">', (u = n.feeTypeDisplayName) ? o = u.call(t, {
+            }) : u), s += l(o) + '\n            <div id="advisedFeeHelp" class="help-icon">\n                This is the combined fee for Betasmartz and your Investment Advisor. For more details, please see your respective customer agreements. Your Betasmartz customer agreements can be found <a href="https://www.betasmartz.com/advisedcustomeragreement">here</a>.\n            </div>\n        </span>\n        <span class="unadvised-user-only">\n            <span class="item-content">', (u = n.feeTypeDisplayName) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.feeTypeDisplayName, o = typeof u === f ? u.call(t, {
                 hash: {}
@@ -1661,7 +1661,7 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
             }) : u), s += f(o) + '">Show</button>\n<div class="clearfix"></div>\n', s
         });
         return t.registerPartial("views/profile/retireGuidePreferences", n), n
-    }), define("views/profile/retireGuidePreferencesView", ["jquery", "underscore", "backbone", "hbs!views/profile/retireGuidePreferences", "common/betterment.views"], function(e, t, n, r, i) {
+    }), define("views/profile/retireGuidePreferencesView", ["jquery", "underscore", "backbone", "hbs!views/profile/retireGuidePreferences", "common/betasmartz.views"], function(e, t, n, r, i) {
         return i.View.extend({
             template: r,
             templateHelpers: {
@@ -1693,20 +1693,20 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                 "click button.hide-retire-guide": "hideRetireGuide"
             },
             onInitialize: function() {
-                this.listenTo(BMT.user, "change:retireGuideEnabled", function() {
-                    BMT.user.is("retireGuideEnabled") ? BMT.flash("RetireGuide has been hidden from your account. Click Show RetireGuide to bring it back at any time.") : BMT.flash('RetireGuide is now available in your account. <a href="#retireGuideSetup"><u>Set up RetireGuide</u></a>.'), this.render()
+                this.listenTo(BS.user, "change:retireGuideEnabled", function() {
+                    BS.user.is("retireGuideEnabled") ? BS.flash("RetireGuide has been hidden from your account. Click Show RetireGuide to bring it back at any time.") : BS.flash('RetireGuide is now available in your account. <a href="#retireGuideSetup"><u>Set up RetireGuide</u></a>.'), this.render()
                 })
             },
             currentState: function() {
-                var e = !BMT.user.get("financialPlans").selected().isNew(),
-                    t = BMT.user.is("retireGuideEnabled");
+                var e = !BS.user.get("financialPlans").selected().isNew(),
+                    t = BS.user.is("retireGuideEnabled");
                 if (e && t) return "Active";
                 if (!e && t) return "Not Active";
                 if (!t) return "Hidden"
             },
             clearRetireGuide: function() {
                 var e = this;
-                BMT.alert({
+                BS.alert({
                     body: "You are about to clear the personal data you entered when setting up RetireGuide. This cannot be undone.",
                     title: "Clear RetireGuide Profile",
                     buttons: [{
@@ -1714,19 +1714,19 @@ define("views/advice/allocationRecommendationView", ["underscore", "common/slide
                         title: "Clear"
                     }],
                     handler: function() {
-                        BMT.user.get("financialPlans").selected().destroy({
+                        BS.user.get("financialPlans").selected().destroy({
                             success: function() {
-                                BMT.flash("RetireGuide profile has been cleared.  <a href=#retireGuideSetup><u>Start your profile over</u></a>, or visit the Advice tab later to set up RetireGuide again."), e.render()
+                                BS.flash("RetireGuide profile has been cleared.  <a href=#retireGuideSetup><u>Start your profile over</u></a>, or visit the Advice tab later to set up RetireGuide again."), e.render()
                             }
                         })
                     }
                 })
             },
             hideRetireGuide: function() {
-                BMT.user.disableRetireGuide()
+                BS.user.disableRetireGuide()
             },
             showRetireGuide: function() {
-                BMT.user.enableRetireGuide()
+                BS.user.enableRetireGuide()
             }
         })
     }), define("hbs!views/profile/contactInfo", ["hbs", "hbs/handlebars"], function(e, t) {

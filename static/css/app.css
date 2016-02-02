@@ -1710,7 +1710,7 @@ form .help-icon:after {
 }
 body.ie .speedometer-for-ie {
     display: block;
-    background: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/loading_bar-ca8d7b8e57634616241e0010ff360d2d.gif);
+    /*background: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/loading_bar-ca8d7b8e57634616241e0010ff360d2d.gif);*/
     width: 215px;
     height: 20px;
     position: absolute;
@@ -1723,69 +1723,69 @@ body.ie .speedometer-for-ie {
 body.ie .svg-circle-spinner {
     display: none;
 }
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 300;
-    font-style: normal;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_light.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-748dceac9dfded0ae32bf86a0070d854.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 300;
-    font-style: italic;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-3bd33aab031e087ea36b4826bfd0aae9.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-3bd33aab031e087ea36b4826bfd0aae9.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-c61b2b5f1f3587ab43c1f04957777142.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-201e4608cf26b22021f0af45a70d0fc6.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 500;
-    font-style: normal;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_regular.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-78940352fc85b24079645659dfd7bf74.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 500;
-    font-style: italic;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_regular.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-e09b3910841f087a44afda12fb7375b3.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 700;
-    font-style: normal;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_bold.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-1cb67da3ac80ce2306bee28797e505f4.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 700;
-    font-style: italic;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-1fb477c43d6639a25a2a5da7f746df1d.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-1fb477c43d6639a25a2a5da7f746df1d.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-285949c46f3b725d818bb331895ab314.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-9444d449fa67b9d605459748c1332ff7.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 900;
-    font-style: normal;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-c681b83c1eaa3e58c7f08691ee14b35e.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-c681b83c1eaa3e58c7f08691ee14b35e.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-05453d45077f26a88a1537f2f907403e.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-34ccfe1e501d0760ee8e9e7de81dbd0c.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'MuseoSans';
-    font-weight: 900;
-    font-style: italic;
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-75d872edd0b6d97b7d2c03af5336cf5c.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-75d872edd0b6d97b7d2c03af5336cf5c.eot?#iefix) format("embedded-opentype"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-70c3a5ce316ceae75ee1f8204e0051a9.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-d0bcd2f24e4b2928a9d3a2a39a3320ee.ttf) format("truetype");
-}
-@font-face {
-    font-family: 'ModernPictogramsPro';
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot);
-    src: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/modernpictogramspro_2-webfont.woff) format("woff"), url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-c3f8bb4579244b5146385076a03fef5f.ttf) format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 300;*/
+    /*font-style: normal;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-fb95fb2123ebea20b861bb12d2ef42e4.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_light.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light-748dceac9dfded0ae32bf86a0070d854.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 300;*/
+    /*font-style: italic;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-3bd33aab031e087ea36b4826bfd0aae9.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-3bd33aab031e087ea36b4826bfd0aae9.eot?#iefix) format("embedded-opentype"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-c61b2b5f1f3587ab43c1f04957777142.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_light_italic-201e4608cf26b22021f0af45a70d0fc6.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 500;*/
+    /*font-style: normal;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-11686208ff52bc79278651db838364ec.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_regular.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular-78940352fc85b24079645659dfd7bf74.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 500;*/
+    /*font-style: italic;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-d47287519b3a355a3bcadb1fad89a838.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_regular.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_regular_italic-e09b3910841f087a44afda12fb7375b3.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 700;*/
+    /*font-style: normal;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-4dee9ef9d23cb2608ec5c3a2b313ec2c.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/museo_bold.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold-1cb67da3ac80ce2306bee28797e505f4.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 700;*/
+    /*font-style: italic;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-1fb477c43d6639a25a2a5da7f746df1d.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-1fb477c43d6639a25a2a5da7f746df1d.eot?#iefix) format("embedded-opentype"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-285949c46f3b725d818bb331895ab314.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_bold_italic-9444d449fa67b9d605459748c1332ff7.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 900;*/
+    /*font-style: normal;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-c681b83c1eaa3e58c7f08691ee14b35e.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-c681b83c1eaa3e58c7f08691ee14b35e.eot?#iefix) format("embedded-opentype"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-05453d45077f26a88a1537f2f907403e.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy-34ccfe1e501d0760ee8e9e7de81dbd0c.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'MuseoSans';*/
+    /*font-weight: 900;*/
+    /*font-style: italic;*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-75d872edd0b6d97b7d2c03af5336cf5c.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-75d872edd0b6d97b7d2c03af5336cf5c.eot?#iefix) format("embedded-opentype"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-70c3a5ce316ceae75ee1f8204e0051a9.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/museo_sans/museo_heavy_italic-d0bcd2f24e4b2928a9d3a2a39a3320ee.ttf) format("truetype");*/
+/*}*/
+/*@font-face {*/
+    /*font-family: 'ModernPictogramsPro';*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot);*/
+    /*src: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-85d535c33d747b5b3ba32d70a29419b1.eot?#iefix) format("embedded-opentype"), url(../css/fonts/woff/modernpictogramspro_2-webfont.woff) format("woff"), url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/modern_pictograms/modernpictogramspro_234-c3f8bb4579244b5146385076a03fef5f.ttf) format("truetype");*/
+    /*font-weight: normal;*/
+    /*font-style: normal;*/
+/*}*/
 html {
     font-size: 10px;
     line-height: 200%}
@@ -14093,7 +14093,7 @@ form .help-icon:after {
     width: 300px;
     max-height: 75px;
 }
-footer.footer .fineprint .betterment-logo, footer.footer .fineprint figcaption {
+footer.footer .fineprint .betasmartz-logo, footer.footer .fineprint figcaption {
     text-align: center;
     margin-right: auto;
     margin-left: auto;
@@ -14105,7 +14105,7 @@ footer.footer .fineprint a {
 footer.footer .fineprint a:hover {
     color: #45a018;
 }
-footer.footer .fineprint .betterment-logo, footer.footer .fineprint figcaption {
+footer.footer .fineprint .betasmartz-logo, footer.footer .fineprint figcaption {
     text-align: center;
     margin-right: auto;
     margin-left: auto;
@@ -14129,7 +14129,7 @@ footer.footer .fineprint p, footer.footer .fineprint a {
 footer.footer .fineprint .pad {
     margin: 20px 0;
 }
-footer.footer .fineprint .betterment-logo {
+footer.footer .fineprint .betasmartz-logo {
     margin-bottom: 5px;
     width: 42px;
     height: 36px;
@@ -18574,20 +18574,20 @@ body.style-guide .my-modal-class .modal-body {
     background-color: rgba(51, 129, 208, 0.95);
 }
 .user-links .user-menu a.switch {
-    background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_black-ffdd988cf5e20897fdd050c6c7756475.png);
+    /*background-image: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_black-ffdd988cf5e20897fdd050c6c7756475.png);*/
 }
 .user-links .user-menu a.switch:hover {
-    background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_blue-ccabe5650ea261147ecff94087e8986e.png);
+    /*background-image: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_blue-ccabe5650ea261147ecff94087e8986e.png);*/
 }
 .user-links .user-menu a.switch:active {
-    background-image: url(https://betterment-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_white-bb5f3702243910f968731069b5cfd10b.png);
+    /*background-image: url(https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/drop_down_menu/switch_white-bb5f3702243910f968731069b5cfd10b.png);*/
 }
 .user-links .user-menu a.logout {
     background-image: url(../images/sign-out_1a1c1b_64.png);
 }
 .user-links .user-menu a.logout:hover {
     background-image: url(../images/sign-out_1b926c_64.png);
-}
+}WWW
 .user-links .user-menu a.logout:active {
     background-image: url(../images/sign-out_1b926c_64.png);
 }

@@ -12380,7 +12380,8 @@ var requirejs, require, define;
                 return "http://www.betasmartz.com"
             },
             getNotificationsUrl: function() {
-                return e.getInstance().get("notificationsHost")
+                //@bilal - disabled notifications.
+               // return e.getInstance().get("notificationsHost")
             },
             getCustomerAgreementUrl: function() {
                 return this.brochureHost() + "/customeragreement"
@@ -12458,7 +12459,7 @@ var requirejs, require, define;
         return {
             getSupportNumber: function(t) {
                 var n;
-                return "BMT" in window && BMT.user && BMT.user.isAdvised() && (n = i), n = r, e.isString(t) && (n = n.replace(/-/g, t)), n
+                return "BS" in window && BS.user && BS.user.isAdvised() && (n = i), n = r, e.isString(t) && (n = n.replace(/-/g, t)), n
             },
             getSuspendedSupportNumber: function() {
                 return s
@@ -12467,7 +12468,7 @@ var requirejs, require, define;
                 return i
             },
             getSupportEmail: function() {
-                return "BMT" in window && BMT.user && BMT.user.is("advisorSession") ? n : t
+                return "BS" in window && BS.user && BS.user.is("advisorSession") ? n : t
             }
         }
     }),
@@ -12619,7 +12620,7 @@ var requirejs, require, define;
                         return c.getSupportNumber()
                     },
                     user: function() {
-                        return BMT.user
+                        return BS.user
                     }
                 },
                 initialize: function() {
@@ -12725,7 +12726,7 @@ var requirejs, require, define;
                         o = e.parent().is(".validated-input");
                     o && (e = e.parent());
                     var u = "validation-tooltip";
-                    if (n && !s) e.addClass("invalid"), e.hasClass("better-spinner-input") && e.siblings(".spinner-buttons").addClass("invalid"), o ? e.find(".error").html(n) : e.qtip(t.extend({
+                    if (n && !s) e.addClass("invalid"), e.hasClass("betasmartz-spinner-input") && e.siblings(".spinner-buttons").addClass("invalid"), o ? e.find(".error").html(n) : e.qtip(t.extend({
                         content: n,
                         show: {
                             event: !1,
@@ -12750,7 +12751,7 @@ var requirejs, require, define;
                         }
                     }, r || {})).qtip("show");
                     else if (!s) {
-                        e.removeClass("invalid"), e.hasClass("better-spinner-input") && e.siblings(".spinner-buttons").removeClass("invalid");
+                        e.removeClass("invalid"), e.hasClass("betasmartz-spinner-input") && e.siblings(".spinner-buttons").removeClass("invalid");
                         var a = e.data("qtip");
                         !o && a && a.elements.tooltip && a.elements.tooltip.hasClass(u) && e.qtip("destroy")
                     }
@@ -12996,7 +12997,7 @@ var requirejs, require, define;
             CollectionView: w,
             CompositeView: E
         }
-    }), define("common/betterment.views", ["underscore", "components/common/scripts/util/handlebarsHelpers", "components/common/scripts/views/baseViews", "components/common/scripts/models/appData"], function(e, t, n, r) {
+    }), define("common/betasmartz.views", ["underscore", "components/common/scripts/util/handlebarsHelpers", "components/common/scripts/views/baseViews", "components/common/scripts/models/appData"], function(e, t, n, r) {
         var i = {
                 globalEvents: e.defaults({
                     mousedown: "refreshSession"
@@ -13016,7 +13017,7 @@ var requirejs, require, define;
                     }
                 }, n.View.prototype.globalTemplateHelpers),
                 refreshSession: function(e) {
-                    BMT.hasSession() && BMT.refreshSession(), e.stopImmediatePropagation()
+                    BS.hasSession() && BS.refreshSession(), e.stopImmediatePropagation()
                 }
             },
             s = n.View.extend(i),
@@ -13051,7 +13052,7 @@ var requirejs, require, define;
             });
         return o.show = function(e) {
             var t = new this.prototype.constructor(e);
-            return BMT.modal.show(t, e), t
+            return BS.modal.show(t, e), t
         }, {
             View: s,
             CollectionView: n.CollectionView.extend(i),
@@ -13067,11 +13068,11 @@ var requirejs, require, define;
         return e.extend(t, {
             handleErrors: function() {
                 this.on("error", function(e, t, n) {
-                    (!n || !n.skipErrorAlert) && BMT.vent.trigger("error", e, t, n)
+                    (!n || !n.skipErrorAlert) && BS.vent.trigger("error", e, t, n)
                 })
             }
         })
-    }), define("common/betterment.models", ["jquery", "underscore", "backbone", "components/common/scripts/services/dateService", "models/modelMixins", "backboneRelational", "backboneValidation"], function(e, t, n, r, i) {
+    }), define("common/betasmartz.models", ["jquery", "underscore", "backbone", "components/common/scripts/services/dateService", "models/modelMixins", "backboneRelational", "backboneValidation"], function(e, t, n, r, i) {
         function s(s) {
             var o = s.extend(t.extend({}, i, n.Validation.mixin, {
                 initialize: function() {
@@ -13159,7 +13160,7 @@ var requirejs, require, define;
             RelationalModel: u,
             Collection: a
         }
-    }), define("models/session", ["jquery", "underscore", "common/betterment.models"], function(e, t, n) {
+    }), define("models/session", ["jquery", "underscore", "common/betasmartz.models"], function(e, t, n) {
         var r = 1e4,
             i = 54e4,
             s = 6e4,
@@ -13202,7 +13203,7 @@ var requirejs, require, define;
                         t.resolve(this.get("tokens"))
                     }.bind(this), function() {
                         var e = "could not refresh fresh tokens";
-                        BMT.logError(e), t.reject(e)
+                        BS.logError(e), t.reject(e)
                     }), t.promise()
                 },
                 getToken: function(e) {
@@ -13215,19 +13216,19 @@ var requirejs, require, define;
                 refreshTimeout: function() {
                     var e = this;
                     this.clearTimeout(), this._pingServer(), this.startTime = (new Date).getTime(), this.warning = setInterval(function() {
-                        if (BMT.hasSession() && (new Date).getTime() - e.startTime >= i) {
+                        if (BS.hasSession() && (new Date).getTime() - e.startTime >= i) {
                             var t;
                             e.clearTimeout();
-                            var n = BMT.alert({
+                            var n = BS.alert({
                                 title: "Session Timeout",
                                 body: 'As a security measure, BetaSmartz logs you out after a time with little activity.  Click "OK" to stay logged in.',
                                 icon: "warning",
                                 handler: function(e) {
-                                    BMT.analytics.track("AutoLogoutStopped"), clearInterval(t), u.refreshTimeout()
+                                    BS.analytics.track("AutoLogoutStopped"), clearInterval(t), u.refreshTimeout()
                                 }
                             });
                             t = setInterval(function() {
-                                clearInterval(t), BMT.vent.trigger("logout", {
+                                clearInterval(t), BS.vent.trigger("logout", {
                                     timeout: !0,
                                     alert: n
                                 })
@@ -13236,11 +13237,11 @@ var requirejs, require, define;
                     }, r)
                 },
                 _pingServer: t.throttle(function() {
-                    BMT.hasSession() && BMT.session.save()
+                    BS.hasSession() && BS.session.save()
                 }, o)
             });
         return u
-    }), define("views/login/loginView", ["jquery", "backbone", "common/betterment.views", "hbs!views/login/login", "models/session", "components/common/scripts/services/domainService"], function(e, t, n, r, i, s) {
+    }), define("views/login/loginView", ["jquery", "backbone", "common/betasmartz.views", "hbs!views/login/login", "models/session", "components/common/scripts/services/domainService"], function(e, t, n, r, i, s) {
         return n.View.extend({
             template: r,
             tagName: "div",
@@ -13255,13 +13256,13 @@ var requirejs, require, define;
                 setResponsiveLayout: !0
             },
             onInitialize: function() {
-                this.model = BMT.session
+                this.model = BS.session
             },
             onShow: function() {
-                this.options.errorCode && BMT.vent.trigger("errorCode", this.options.errorCode), this.applyValidation(), this.form = this.$("form"), this.userName = this.$("input[name=userName]"), this.rememberEmail = this.$("input#rememberEmail");
-                var t = e.cookie(BMT.saveEmailCookieKey);
+                this.options.errorCode && BS.vent.trigger("errorCode", this.options.errorCode), this.applyValidation(), this.form = this.$("form"), this.userName = this.$("input[name=userName]"), this.rememberEmail = this.$("input#rememberEmail");
+                var t = e.cookie(BS.saveEmailCookieKey);
                 t && (this.userName.val(t), this.rememberEmail.attr("checked", !0));
-                var n = e.cookie(BMT.userNameCookieKey);
+                var n = e.cookie(BS.userNameCookieKey);
                 n && this.userName.val(n)
             },
             login: function(n) {
@@ -13271,9 +13272,9 @@ var requirejs, require, define;
                 this.model.validate(i) || (this.block(this.$(".panel")), this.model.save(i, {
                     silent: !0,
                     success: function() {
-                        r.saveEmail(), BMT.user.fetch({
+                        r.saveEmail(), BS.user.fetch({
                             success: function() {
-                                BMT.vent.trigger("login")
+                                BS.vent.trigger("login")
                             }
                         })
                     },
@@ -13281,7 +13282,7 @@ var requirejs, require, define;
                         r.unblock()
                     },
                     complete: function() {
-                        e.cookie(BMT.userNameCookieKey, null, {
+                        e.cookie(BS.userNameCookieKey, null, {
                             domain: location.host === "localhost" ? "localhost" : "betasmartz.com",
                             path: "/"
                         })
@@ -13289,11 +13290,11 @@ var requirejs, require, define;
                 }))
             },
             saveEmail: function(t) {
-                this.rememberEmail.is(":checked") ? e.cookie(BMT.saveEmailCookieKey, this.userName.val(), {
+                this.rememberEmail.is(":checked") ? e.cookie(BS.saveEmailCookieKey, this.userName.val(), {
                     expires: 90,
-                    domain: BMT.isProd() ? ".betasmartz.com" : ".betterment.qa",
+                    domain: BS.isProd() ? ".betasmartz.com" : ".betasmartz.qa",
                     path: "/"
-                }) : e.cookie(BMT.saveEmailCookieKey, null)
+                }) : e.cookie(BS.saveEmailCookieKey, null)
             },
             goToSignup: function(e) {
                 e && e.preventDefault(), window.location.href = s.getResponsiveSignupUrl()
@@ -13333,7 +13334,7 @@ var requirejs, require, define;
         }
 
         function t() {
-            return e() ? window.localStorage.mixpanelApiEnabled === "true" ? !0 : window.localStorage.mixpanelApiEnabled === "false" ? !1 : !window.BMT || !window.BMT.isLocal() : !0
+            return e() ? window.localStorage.mixpanelApiEnabled === "true" ? !0 : window.localStorage.mixpanelApiEnabled === "false" ? !1 : !window.BS || !window.BS.isLocal() : !0
         }
 
         function n() {
@@ -13476,7 +13477,7 @@ var requirejs, require, define;
                     var s = t.cookie("polaris", {
                         path: "/"
                     });
-                    n.setRequestHeader("X-BMT-Polaris", s)
+                    n.setRequestHeader("X-BS-Polaris", s)
                 }
             })*/
         }
@@ -13498,7 +13499,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="modal-wrapper">\n    <div class="modal-content"></div>\n\n    <div class="close"></div>\n</div>\n'
         });
         return t.registerPartial("templates/modals", n), n
-    }), define("layouts/modalsLayout", ["common/betterment.views", "hbs!templates/modals"], function(e, t) {
+    }), define("layouts/modalsLayout", ["common/betasmartz.views", "hbs!templates/modals"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "modal-layout",
@@ -13530,10 +13531,10 @@ var requirejs, require, define;
                 });
                 i.on("close", this.close.bind(this)), n.show(i), n.$el.show(0, function() {
                     n.$el.addClass("up")
-                }), BMT.setResponsiveLayout(!0)
+                }), BS.setResponsiveLayout(!0)
             },
             close: function() {
-                $.fn.qtip.zindex -= r, n.$el.removeClass("up"), n.$el.hide(), n.empty(), BMT.setResponsiveLayout(!1)
+                $.fn.qtip.zindex -= r, n.$el.removeClass("up"), n.$el.hide(), n.empty(), BS.setResponsiveLayout(!1)
             }
         }
     }), define("components/common/scripts/templateHelpers/money", ["underscore", "hbs/handlebars", "components/common/scripts/util/formatter"], function(e, t, n) {
@@ -13910,7 +13911,7 @@ var requirejs, require, define;
                     this.handleErrors(), r.apply(this, arguments)
                 },
                 sync: function(e, t, n) {
-                    return e !== "read" && (n.url = t.url() + "?accountGroupId=" + BMT.accountGroup.get("id")), i.call(this, e, t, n)
+                    return e !== "read" && (n.url = t.url() + "?accountGroupId=" + BS.accountGroup.get("id")), i.call(this, e, t, n)
                 }
             },
             s = e.extend({}, t, s);
@@ -14008,7 +14009,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '"></div>\n', s
         });
         return t.registerPartial("views/summary/speedometer", n), n
-    }), define("views/summary/speedometerView", ["common/betterment.views", "hbs!views/summary/speedometer"], function(e, t) {
+    }), define("views/summary/speedometerView", ["common/betasmartz.views", "hbs!views/summary/speedometer"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "speedometer-view",
@@ -14140,7 +14141,7 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, t && t.marketChanges, a) : h.call(t, "money", t && t.marketChanges, a))) + '</div>\n</li>\n<li class="sub earned">\n    <div>Dividends</div>\n    <div>' + l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.dividends, a) : h.call(t, "money", t && t.dividends, a))) + '</div>\n</li>\n<li class="sub earned">\n    <div><span class="unadvised-user-only">Betterment&#39;s fees</span><span class="advised-user-only">Fees</span></div>\n    <div>' + l((u = n.money || t && t.money, a = {
+            }, u ? u.call(t, t && t.dividends, a) : h.call(t, "money", t && t.dividends, a))) + '</div>\n</li>\n<li class="sub earned">\n    <div><span class="unadvised-user-only">Betasmartz&#39;s fees</span><span class="advised-user-only">Fees</span></div>\n    <div>' + l((u = n.money || t && t.money, a = {
                 hash: {}
             }, u ? u.call(t, t && t.fees, a) : h.call(t, "money", t && t.fees, a))) + '</div>\n</li>\n\n<hr />\n\n<li class="personal-return">\n    <div>\n        Earnings %\n        <div class="account-returns-help help-icon">\n            Your earnings include the impact of all cash flows, allocation changes and transfers you’ve made over the selected time. Earnings is calculated\n            by dividing your earnings (including market changes, dividends, and fees) by your net deposits or your average balance.\n  This return cannot be compared with other investments since the cashflows will be different.\n        </div>\n    </div>\n    <div>\n        ', o = (u = n.personalReturn || t && t.personalReturn, a = {
                 hash: {}
@@ -14159,7 +14160,7 @@ var requirejs, require, define;
             }, u ? u.call(t, o, 1, a) : h.call(t, "pct", o, 1, a))) + "\n    </div>\n</li>\n", s
         });
         return t.registerPartial("views/summary/accountReturn", n), n
-    }), define("models/experience", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/experience", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({
                 url: "/dynamicExperience",
                 isActualExperience: function() {
@@ -14176,7 +14177,7 @@ var requirejs, require, define;
                     })
                 },
                 save: function(e, n, i) {
-                    if (!this.isActualExperience()) BMT.logWarn("splittest_expired Expired experiment: " + this.get("experimentName") + ", variation: " + this.get("variationName") + " code path still Active in WebApp.");
+                    if (!this.isActualExperience()) BS.logWarn("splittest_expired Expired experiment: " + this.get("experimentName") + ", variation: " + this.get("variationName") + " code path still Active in WebApp.");
                     else if (this.hasChanged()) return this.trigger("change"), t.isObject(e) || t.isUndefined(e) || t.isNull(e) ? n = t.extend(n || {}, {
                         forceSave: !0
                     }) : i = t.extend(i || {}, {
@@ -14220,7 +14221,7 @@ var requirejs, require, define;
             Model: i,
             Collection: s
         }
-    }), define("models/visitor", ["jquery", "backbone", "common/betterment.models", "models/experience"], function(e, t, n, r) {
+    }), define("models/visitor", ["jquery", "backbone", "common/betasmartz.models", "models/experience"], function(e, t, n, r) {
         var i, s, o = n.RelationalModel.extend({
             url: "/client/api/visitor",
             relations: [{
@@ -14235,7 +14236,7 @@ var requirejs, require, define;
                 return s ? s : (i = new o, s = i.fetch({
                     skipErrorAlert: !0,
                     success: function(e) {
-                        BMT.analytics.registerProperties({
+                        BS.analytics.registerProperties({
                             VisitorKey: e.get("visitorKey")
                         });
                         var t = e.get("experiences").map(function(e) {
@@ -14244,7 +14245,7 @@ var requirejs, require, define;
                                 variationName: e.get("variationName")
                             }
                         });
-                        BMT.logDebug("Visitor: " + e.get("visitorKey")), BMT.logDebug(t)
+                        BS.logDebug("Visitor: " + e.get("visitorKey")), BS.logDebug(t)
                     }
                 }), s)
             },
@@ -14255,10 +14256,10 @@ var requirejs, require, define;
                 return this.getExperiences().hasVariation(e)
             },
             getExperiences: function() {
-                return i ? i.get("experiences") : (BMT.logError("Tried to get experiences before the visitor was fetched."), new r.Collection)
+                return i ? i.get("experiences") : (BS.logError("Tried to get experiences before the visitor was fetched."), new r.Collection)
             }
         }
-    }), define("views/summary/accountReturnView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/summary/accountReturn", "hbs!views/tooltips/negativeReturns", "common/constants/returnsConstants", "models/visitor", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/summary/accountReturnView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/summary/accountReturn", "hbs!views/tooltips/negativeReturns", "common/constants/returnsConstants", "models/visitor", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a) {
         return r.View.extend({
             template: i,
             tagName: "ul",
@@ -14354,14 +14355,14 @@ var requirejs, require, define;
                     if (!u.hasVariation("negative_returns_tooltip_on")) return !1;
                     var e = o.NEGATIVE_RETURNS_PERCENTAGE_THRESHOLD / 100,
                         t = o.NEGATIVE_RETURNS_AGE_THRESHOLD_IN_YEARS.years().ago(),
-                        n = BMT.accountGroup.meetsNegativeReturnsPercentageThreshold(e) && BMT.accountGroup.meetsNegativeReturnsAgeThreshold(t);
-                    if (this.self.options.isOverview) return n && BMT.analytics.track("ElementViewed", {
+                        n = BS.accountGroup.meetsNegativeReturnsPercentageThreshold(e) && BS.accountGroup.meetsNegativeReturnsAgeThreshold(t);
+                    if (this.self.options.isOverview) return n && BS.analytics.track("ElementViewed", {
                         Type: "ToolTip",
                         Name: "NegativeReturns",
                         Location: "Overview"
                     }), n;
                     var r = !n && this.self.model.account().meetsNegativeReturnsPercentageThreshold(e) && this.self.model.account().meetsNegativeReturnsAgeThreshold(t);
-                    return r && BMT.analytics.track("ElementViewed", {
+                    return r && BS.analytics.track("ElementViewed", {
                         Type: "ToolTip",
                         Name: "NegativeReturns",
                         Location: "GoalPanel"
@@ -14430,18 +14431,18 @@ var requirejs, require, define;
                 }.bind(this))
             },
             fireNegativeReturnsHoverMixpanelEvent: function() {
-                this.options.isOverview ? BMT.analytics.track("ElementViewed", {
+                this.options.isOverview ? BS.analytics.track("ElementViewed", {
                     Type: "ToolTip",
                     Name: "NegativeReturnsHover",
                     Location: "Overview"
-                }) : BMT.analytics.track("ElementViewed", {
+                }) : BS.analytics.track("ElementViewed", {
                     Type: "ToolTip",
                     Name: "NegativeReturnsHover",
                     Location: "GoalPanel"
                 })
             }
         })
-    }), define("views/summary/overviewView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/summary/overview", "hbs!views/tooltips/negativeReturns", "services/taxService", "services/taxLossHarvestingService", "common/constants/returnsConstants", "views/summary/speedometerView", "views/summary/accountReturnView", "components/common/scripts/models/appData", "models/visitor", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/summary/overviewView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/summary/overview", "hbs!views/tooltips/negativeReturns", "services/taxService", "services/taxLossHarvestingService", "common/constants/returnsConstants", "views/summary/speedometerView", "views/summary/accountReturnView", "components/common/scripts/models/appData", "models/visitor", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         return r.View.extend({
             template: i,
             regions: {
@@ -14460,19 +14461,19 @@ var requirejs, require, define;
                     return this.self.model.is("investingSince") && (e = this.self.model.date("investingSince")), e
                 },
                 currentBalance: function() {
-                    return BMT.accounts().totalBalanceWithPending()
+                    return BS.accounts().totalBalanceWithPending()
                 },
                 pendingDeposits: function() {
-                    return BMT.accounts().totalPendingDeposits()
+                    return BS.accounts().totalPendingDeposits()
                 },
                 hasPendingDeposits: function() {
                     return this.pendingDeposits() > 0
                 },
                 lifetimeReturn: function() {
-                    return BMT.accountGroup.getAccountReturn().num("lifetimeReturn")
+                    return BS.accountGroup.getAccountReturn().num("lifetimeReturn")
                 },
                 lifetimeEarned: function() {
-                    return BMT.accountGroup.getAccountReturn().earned()
+                    return BS.accountGroup.getAccountReturn().earned()
                 },
                 hasGain: function() {
                     return this.lifetimeEarned() >= 0
@@ -14485,8 +14486,8 @@ var requirejs, require, define;
                 },
                 showNegativeReturnsToolTip: function() {
                     if (!h.hasVariation("negative_returns_tooltip_on")) return !1;
-                    var e = BMT.accountGroup.meetsNegativeReturnsPercentageThreshold(a.NEGATIVE_RETURNS_PERCENTAGE_THRESHOLD / 100) && BMT.accountGroup.meetsNegativeReturnsAgeThreshold(a.NEGATIVE_RETURNS_AGE_THRESHOLD_IN_YEARS.years().ago());
-                    return e && BMT.analytics.track("ElementViewed", {
+                    var e = BS.accountGroup.meetsNegativeReturnsPercentageThreshold(a.NEGATIVE_RETURNS_PERCENTAGE_THRESHOLD / 100) && BS.accountGroup.meetsNegativeReturnsAgeThreshold(a.NEGATIVE_RETURNS_AGE_THRESHOLD_IN_YEARS.years().ago());
+                    return e && BS.analytics.track("ElementViewed", {
                         Type: "ToolTip",
                         Name: "NegativeReturns",
                         Location: "Overview"
@@ -14499,25 +14500,25 @@ var requirejs, require, define;
                     }))
                 },
                 tlhAvailable: function() {
-                    return !u.isNotAvailable(BMT.accountGroup) && BMT.accounts().hasInvestingAccount()
+                    return !u.isNotAvailable(BS.accountGroup) && BS.accounts().hasInvestingAccount()
                 },
                 totalLossesHarvested: function() {
-                    return u.lossesHarvested(BMT.accountGroup)
+                    return u.lossesHarvested(BS.accountGroup)
                 },
                 harvestedLossesThisYear: function() {
-                    return u.lossesHarvestedThisYear(BMT.accountGroup)
+                    return u.lossesHarvestedThisYear(BS.accountGroup)
                 },
                 hasHarvestedLossesInPriorYears: function() {
                     return this.harvestedLossesPriorYears() && this.harvestedLossesPriorYears().length > 0
                 },
                 harvestedLossesPriorYears: function() {
-                    return u.lossesHarvestedPriorYears(BMT.accountGroup)
+                    return u.lossesHarvestedPriorYears(BS.accountGroup)
                 },
                 currentYear: function() {
                     return Date.now().getFullYear()
                 },
                 unrealizedLosses: function() {
-                    return u.unrealizedLosses(BMT.accountGroup)
+                    return u.unrealizedLosses(BS.accountGroup)
                 },
                 hasUnrealizedLosses: function() {
                     return this.unrealizedLosses() > 0
@@ -14526,10 +14527,10 @@ var requirejs, require, define;
                     return this.totalLossesHarvested() === 0
                 },
                 averageBondAllocation: function() {
-                    return 1 - BMT.accountGroup.num("averageAllocation")
+                    return 1 - BS.accountGroup.num("averageAllocation")
                 },
                 averageStockAllocation: function() {
-                    return BMT.accountGroup.num("averageAllocation")
+                    return BS.accountGroup.num("averageAllocation")
                 },
                 taxesSaved: function() {
                     return o.taxesSavedFromHarvestedAmount(this.harvestedLossesThisYear()).toFixed(0)
@@ -14594,14 +14595,14 @@ var requirejs, require, define;
                         e.expanded && this.snapAllocation(e.model.num("averageAllocation"))
                     }
                 })), this.accountReturnRegion && this.accountReturnRegion.show(this.accountReturnView = new l({
-                    model: this.accountReturnView ? this.accountReturnView.model : BMT.accountGroup.getAccountReturn(),
+                    model: this.accountReturnView ? this.accountReturnView.model : BS.accountGroup.getAccountReturn(),
                     investedOpen: this.accountReturnView && this.accountReturnView.options.investedOpen,
                     earnedOpen: this.accountReturnView && this.accountReturnView.options.earnedOpen,
                     isOverview: !0
                 }))
             },
             onShow: function() {
-                this.listenTo(this.model.get("accounts"), "change reset", this.render), this.listenTo(BMT.vent, "taxLossHarvesting:update", this.render)
+                this.listenTo(this.model.get("accounts"), "change reset", this.render), this.listenTo(BS.vent, "taxLossHarvesting:update", this.render)
             },
             allowOpenCloseClick: function() {
                 return !this.animating
@@ -14638,13 +14639,13 @@ var requirejs, require, define;
                 }.bind(this))
             },
             openTlhConfig: function(e) {
-                e.preventDefault(), this.tlhEnabled() ? BMT.vent.trigger("openDrawer:showTlhRibbon", "whatToExpect") : BMT.vent.trigger("openDrawer:showTlhRibbon", "learnMore")
+                e.preventDefault(), this.tlhEnabled() ? BS.vent.trigger("openDrawer:showTlhRibbon", "whatToExpect") : BS.vent.trigger("openDrawer:showTlhRibbon", "learnMore")
             },
             tlhEnabled: function() {
-                return u.isUserOn(BMT.accountGroup)
+                return u.isUserOn(BS.accountGroup)
             },
             fireNegativeReturnsHoverMixpanelEvent: function() {
-                BMT.analytics.track("ElementViewed", {
+                BS.analytics.track("ElementViewed", {
                     Type: "ToolTip",
                     Name: "NegativeReturnsHover",
                     Location: "Overview"
@@ -14962,20 +14963,20 @@ var requirejs, require, define;
             }
         };
         return i
-    }), define("common/errorHandler", ["underscore", "common/betterment.models", "components/common/scripts/util/errorHandler", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r) {
+    }), define("common/errorHandler", ["underscore", "common/betasmartz.models", "components/common/scripts/util/errorHandler", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r) {
         return e.extend(n.errors, {
             NOT_LOGGED_IN: {
                 icon: "warning",
                 title: "We thought you left!",
                 body: "We hadn't heard from you for about 20 minutes, so for your security we logged you out of your account. Log back in to continue.",
                 handler: function(e) {
-                    BMT.vent.trigger("logout")
+                    BS.vent.trigger("logout")
                 }
             },
             PENDING_CONFIRMATION: {
                 title: "Email Address Not Confirmed",
                 body: function() {
-                    return "For your security, you must confirm your email address before you can continue.  Please check for a confirmation link in your email account" + (BMT.user.isFull() ? " " + BMT.user.get("userName") : "") + "."
+                    return "For your security, you must confirm your email address before you can continue.  Please check for a confirmation link in your email account" + (BS.user.isFull() ? " " + BS.user.get("userName") : "") + "."
                 },
                 buttons: [{
                     id: "ok",
@@ -14994,13 +14995,13 @@ var requirejs, require, define;
                         }))).save({}, {
                             forceSave: !0,
                             success: function() {
-                                BMT.flash("Your welcome email has been resent. Please check your inbox.")
+                                BS.flash("Your welcome email has been resent. Please check your inbox.")
                             },
                             complete: function() {
-                                n.unblock(), BMT.modal.close(n)
+                                n.unblock(), BS.modal.close(n)
                             }
                         })
-                    } else BMT.modal.close(this)
+                    } else BS.modal.close(this)
                 }
             },
             LOCKED_FROM_CHALLENGE_ATTEMPTS: {
@@ -15009,7 +15010,7 @@ var requirejs, require, define;
                     return ["Unfortunately the answer to your security question does not match what we have on file.  For your security we have locked your account.  Please call customer support at", r.getSupportNumber(), "and we will get you going again."].join(" ")
                 },
                 handler: function() {
-                    BMT.vent.trigger("logout")
+                    BS.vent.trigger("logout")
                 }
             }
         }), n
@@ -15208,7 +15209,7 @@ var requirejs, require, define;
             ROLLOVER_MAXIMUM: 6e5,
             WITHDRAW_ALL_THRESHOLD: .98
         }
-    }), define("models/automaticTransaction", ["jquery", "underscore", "backbone", "common/betterment.models", "components/transaction/scripts/constants/transactionConstants", "components/common/scripts/util/formatter"], function(e, t, n, r, i, s) {
+    }), define("models/automaticTransaction", ["jquery", "underscore", "backbone", "common/betasmartz.models", "components/transaction/scripts/constants/transactionConstants", "components/common/scripts/util/formatter"], function(e, t, n, r, i, s) {
         var o = "ANNUALLY",
             u = "FIRST_TUESDAY_OF_THE_MONTH",
             a = "MONTHLY",
@@ -15434,7 +15435,7 @@ var requirejs, require, define;
                 }
             });
         return d
-    }), define("views/transfer/automaticTransactionSettingsModalView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/automaticTransaction"], function(e, t, n, r, i) {
+    }), define("views/transfer/automaticTransactionSettingsModalView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/automaticTransaction"], function(e, t, n, r, i) {
         var s = r.ModalView.extend({
             template: "transfer/automaticTransactionSettingsModal",
             className: "automatic-transaction-settings",
@@ -15463,7 +15464,7 @@ var requirejs, require, define;
             },
             onRender: function() {
                 this.settingsRegion.show(this.settingsView), this.listenTo(this.settingsView, "completeDeposit", function() {
-                    BMT.modal.close(this)
+                    BS.modal.close(this)
                 }.bind(this))
             },
             toggleActiveAutomaticTransaction: function() {
@@ -15492,7 +15493,7 @@ var requirejs, require, define;
                         SettingsViewClass: e,
                         settingsViewOptions: o
                     });
-                return BMT.modal.show(u), u
+                return BS.modal.show(u), u
             }
         });
         return s
@@ -15510,7 +15511,7 @@ var requirejs, require, define;
             }, {
                 MIN_BUILDER_PLAN_AUTO_DEPOSIT: r,
                 totalMonthlyDeposits: function() {
-                    return BMT.accounts().reduce(function(e, t) {
+                    return BS.accounts().reduce(function(e, t) {
                         return e + t.monthlyDepositAmount()
                     }, 0, this)
                 }
@@ -15564,7 +15565,7 @@ var requirejs, require, define;
         function i(t) {
             var n = e.keys(t)[0],
                 r = t[n];
-            return /^(bettermentdb|institutional)([A-Z][a-z0-9]+)*Id$/.test(n) ? "f" + r : r
+            return /^(betasmartzdb|institutional)([A-Z][a-z0-9]+)*Id$/.test(n) ? "f" + r : r
         }
 
         function s(n) {
@@ -15711,8 +15712,8 @@ var requirejs, require, define;
                 var n = {};
                 return t.id ? n = {
                     id: t.id
-                } : (t.bettermentdbAccountId || t.bettermentdb_account_id) && (n = {
-                    bettermentdbAccountId: (t.bettermentdbAccountId || t.bettermentdb_account_id)
+                } : (t.betasmartzdbAccountId || t.betasmartzdb_account_id) && (n = {
+                    betasmartzdbAccountId: (t.betasmartzdbAccountId || t.betasmartzdb_account_id)
                 }), e.findWhere(this.get("accounts"), n)
             },
             getAnnualContributionByIdParams: function(e) {
@@ -15790,7 +15791,7 @@ var requirejs, require, define;
             transactionType: r
         }, {
             totalMonthlyWithdrawals: function() {
-                return t.reduce(BMT.accounts().models, function(e, t) {
+                return t.reduce(BS.accounts().models, function(e, t) {
                     return e + t.monthlyWithdrawalAmount()
                 }, 0, this)
             },
@@ -15801,7 +15802,7 @@ var requirejs, require, define;
                 }).length
             }
         })
-    }), define("models/accountReturn", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/accountReturn", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({
             urlRoot: "/accountReturns",
             url: function() {
@@ -15903,7 +15904,7 @@ var requirejs, require, define;
                 MIN_BANK_BALANCE_CENTS: o
             };
         return r.RelationalModel.extend(u, a)
-    }), define("models/contribution", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/contribution", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({}),
             s = r.Collection.extend({
                 model: i,
@@ -15915,7 +15916,7 @@ var requirejs, require, define;
             Model: i,
             Collection: s
         }
-    }), define("models/taxYearContributions", ["jquery", "underscore", "backbone", "common/betterment.models", "models/contribution"], function(e, t, n, r, i) {
+    }), define("models/taxYearContributions", ["jquery", "underscore", "backbone", "common/betasmartz.models", "models/contribution"], function(e, t, n, r, i) {
         var s = r.RelationalModel.extend({
                 relations: [{
                     type: n.HasMany,
@@ -19810,7 +19811,7 @@ var requirejs, require, define;
                 color: e.RISK_TOLERANCE.TOO_AGGRESSIVE
             }
         }
-    }), define("models/account", ["jquery", "underscore", "backbone", "common/betterment.models", "models/v2/financialPlan", "models/automaticDeposit", "models/automaticWithdrawal", "models/accountReturn", "models/v2/smartDepositConfig", "models/taxYearContributions", "components/account/scripts/models/position", "components/account/scripts/models/positionCollection", "components/common/scripts/models/appData", "projector", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalTypeService", "components/account/scripts/constants/accountConstants", "common/constants/riskTolerance", "components/transaction/scripts/constants/transactionConstants", "components/account/scripts/constants/accountTypes", "components/account/scripts/constants/retirementConstants"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
+    }), define("models/account", ["jquery", "underscore", "backbone", "common/betasmartz.models", "models/v2/financialPlan", "models/automaticDeposit", "models/automaticWithdrawal", "models/accountReturn", "models/v2/smartDepositConfig", "models/taxYearContributions", "components/account/scripts/models/position", "components/account/scripts/models/positionCollection", "components/common/scripts/models/appData", "projector", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalTypeService", "components/account/scripts/constants/accountConstants", "common/constants/riskTolerance", "components/transaction/scripts/constants/transactionConstants", "components/account/scripts/constants/accountTypes", "components/account/scripts/constants/retirementConstants"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
         var E = ["RETIREMENT", "BUILD_WEALTH", "RETIREMENT_ETHICAL", "BUILD_WEALTH_ETHICAL"],
             S = function(e, n, i) {
                 var s = (i.goalType === "RETIREMENT")||(i.goalType === "RETIREMENT_ETHICAL"),
@@ -19924,7 +19925,7 @@ var requirejs, require, define;
                     },
                     userAgreement: {
                         required: function(e, t, n) {
-                            return b.isInvesting(n.accountType) && !BMT.accounts().hasInvestingAccount()
+                            return b.isInvesting(n.accountType) && !BS.accounts().hasInvestingAccount()
                         },
                         acceptance: !0
                     },
@@ -19981,12 +19982,12 @@ var requirejs, require, define;
                         var r = ["id", "allocation", "availableBalance", "availableBalanceForWithdrawal", "bondBalance", "cashBalance", "currentBalance", "ordering", "stockBalance", "totalInvested", "totalEarned", "pendingDeposits", "averageBalance", "lifetimeAverageBalance"];
                         t.each(r, function(t) {
                             e[t] = parseFloat(e[t])
-                        }), BMT.accountGroup.is("demo") && this.attributes && this.has("automaticDeposit") && delete e.automaticDeposit, this.attributes && this.has("accountReturn") && delete e.accountReturn
+                        }), BS.accountGroup.is("demo") && this.attributes && this.has("automaticDeposit") && delete e.automaticDeposit, this.attributes && this.has("accountReturn") && delete e.accountReturn
                     }
                     return e
                 },
                 getIdOrCid: function() {
-                    return BMT.hasSession() ? this.num("id") : this.cid
+                    return BS.hasSession() ? this.num("id") : this.cid
                 },
                 getUser: function() {
                     return this.get("accountGroup").get("parentUser")
@@ -20022,7 +20023,7 @@ var requirejs, require, define;
                 },
                 getIdParams: function() {
                     return {
-                        bettermentdbAccountId: this.id
+                        betasmartzdbAccountId: this.id
                     }
                 },
                 getGoalTypeLabel: function() {
@@ -20258,8 +20259,8 @@ var requirejs, require, define;
                     return p.recommendedAllocation({
                         termYears: e,
                         goalType: t.get("goalType"),
-                        employmentStatus: n || BMT.user.get("employmentStatus"),
-                        age: BMT.user.getAge()
+                        employmentStatus: n || BS.user.get("employmentStatus"),
+                        age: BS.user.getAge()
                     }).allocation
                 },
                 getAllocationRange: function(e) {
@@ -20292,7 +20293,7 @@ var requirejs, require, define;
                     return new Date(t.getTime() + e * Date.MS_PER_YEAR)
                 },
                 convertAgeToDate: function(e) {
-                    var t = BMT.user.dateOfBirth();
+                    var t = BS.user.dateOfBirth();
                     return new Date(t.getTime() + e * Date.MS_PER_YEAR)
                 },
                 buildGhost: function(e) {
@@ -20323,7 +20324,7 @@ var requirejs, require, define;
                     e = e || {}, e.url = "/accounts", r.Collection.prototype.save.call(this, e)
                 },
                 getByIdParams: function(e) {
-                    return this.get(e.bettermentdbAccountId || e.bettermentdb_account_id)
+                    return this.get(e.betasmartzdbAccountId || e.betasmartzdb_account_id)
                 },
                 comparator: function(e, t) {
                     return e.num("accountGroupId") < t.num("accountGroupId") ? -1 : e.num("accountGroupId") > t.num("accountGroupId") ? 1 : e.num("ordering") < t.num("ordering") ? -1 : e.num("ordering") > t.num("ordering") ? 1 : 0
@@ -20439,17 +20440,17 @@ var requirejs, require, define;
                     })
                 },
                 numInvestingAccount: function() {
-                    return t.size(BMT.accounts().filter(function(e) {
+                    return t.size(BS.accounts().filter(function(e) {
                         return e.isInvestingAccount()
                     }))
                 },
                 numIRA: function() {
-                    return t.size(BMT.accounts().filter(function(e) {
+                    return t.size(BS.accounts().filter(function(e) {
                         return e.isIRA()
                     }))
                 },
                 maxedOutGoals: function() {
-                    return BMT.user.isFull() ? this.size() >= C.MAX_IRAS + C.MAX_GOALS : this.size() > 0
+                    return BS.user.isFull() ? this.size() >= C.MAX_IRAS + C.MAX_GOALS : this.size() > 0
                 },
                 maxedOutInvestmentGoals: function() {
                     return this.numInvestingAccount() >= C.MAX_GOALS
@@ -20608,7 +20609,7 @@ var requirejs, require, define;
                     forceUpdate: !0
                 }).then(function() {
                     r.each(function(e) {
-                        e.set("accountGroup", BMT.user.get("accountGroups").get(e.get("accountGroupId")))
+                        e.set("accountGroup", BS.user.get("accountGroups").get(e.get("accountGroupId")))
                     }), n.resolve(r)
                 }, n.reject).always(function() {
                     i = null
@@ -20623,7 +20624,7 @@ var requirejs, require, define;
                 return r
             }
         }
-    }), define("views/transfer/calendarView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/automaticDeposit"], function(e, t, n, r, i) {
+    }), define("views/transfer/calendarView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/automaticDeposit"], function(e, t, n, r, i) {
         return r.View.extend({
             tagName: "div",
             onRender: function() {
@@ -20659,7 +20660,7 @@ var requirejs, require, define;
                 return this.model && this.model.get("enabled") && this.model.isValidForScheduling() && (e.getDate() === 1 && !this.next && (this.next = this.model.estimatedNextTransactionDateFrom(new Date(e.getFullYear(), e.getMonth(), 1), this.options.holidays)), this.next && e.isSameDay(this.next) && (r = this.next.isBeforeToday() ? n : "selected-future", this.next = this.model.estimatedNextTransactionDateFrom(this.next.addDays(1), this.options.holidays))), e.isToday() && this.next && (r += " today"), [this.enabled(e), r]
             }
         })
-    }), define("views/transfer/automaticTransactionSettingsView", ["jquery", "underscore", "backbone", "models/automaticTransaction", "common/betterment.views", "services/accountService", "views/transfer/calendarView", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/transfer/automaticTransactionSettingsView", ["jquery", "underscore", "backbone", "models/automaticTransaction", "common/betasmartz.views", "services/accountService", "views/transfer/calendarView", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u) {
         return i.View.extend({
             className: "automatic-deposit-settings",
             toolTips: {
@@ -20716,7 +20717,7 @@ var requirejs, require, define;
                     return this.self.model.has(e) ? this.formatDate(t, this.self.model.date(e)) : ""
                 },
                 build_goal_list: function() {
-                    return !!this.self.options.multiAccount && BMT.accounts().length <= 1 ? '<h4 class="single-goal">' + BMT.accounts().at(0).get("name") + "</h4>" : this.build_dropdown_menu(BMT.accounts().forSelect(), {
+                    return !!this.self.options.multiAccount && BS.accounts().length <= 1 ? '<h4 class="single-goal">' + BS.accounts().at(0).get("name") + "</h4>" : this.build_dropdown_menu(BS.accounts().forSelect(), {
                         name: "account",
                         "class": "account-selector"
                     })
@@ -20737,7 +20738,7 @@ var requirejs, require, define;
             onInitialize: function() {
                 this.onAutoTransactionUpdateComplete = this.options.onAutoTransactionUpdateComplete || function() {}, this.templateHelpers = t.extend({}, this.templateHelpers, this._templateHelpers), this.events = t.extend({}, this.events, this.additionalEvents), this._delegateDOMEvents();
                 if (this.options.multiAccount) {
-                    var e = this.$accountSelector ? BMT.accounts().get(this.$accountSelector.val()) : BMT.accounts().at(0);
+                    var e = this.$accountSelector ? BS.accounts().get(this.$accountSelector.val()) : BS.accounts().at(0);
                     this.options.account = e, this.model = e.get(this.getClass().transactionType), this.model || (this.model = this.getClass().getModelInstance()), this.model.isNew() && (this.options.recommended = e.recommendedMonthlyDeposit(), this.model.set("account", e), this.model.set("frequency", this.model.constructor.MONTHLY))
                 }
                 this.model.store(), this.modelConstructor = this.model.constructor, this.model.set("enabledOnInitialize", this.model.is("enabled"), {
@@ -20903,7 +20904,7 @@ var requirejs, require, define;
                 } else this.$(".summary").html("")
             },
             refreshAccountAndClose: function() {
-                this.trigger("completeDeposit"), BMT.vent.trigger("refresh:transfer"), BMT.refreshAccounts()
+                this.trigger("completeDeposit"), BS.vent.trigger("refresh:transfer"), BS.refreshAccounts()
             },
             onOK: function() {
                 throw new Error("onOK is not implemented")
@@ -20912,7 +20913,7 @@ var requirejs, require, define;
                 throw new Error("onCancel is not implemented")
             }
         })
-    }), define("views/common/alertView", ["jquery", "underscore", "backbone", "common/betterment.views", "common/betterment.models"], function(e, t, n, r, i) {
+    }), define("views/common/alertView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "common/betasmartz.models"], function(e, t, n, r, i) {
         return r.ModalView.extend({
             template: "common/alert",
             tagName: "div",
@@ -20924,10 +20925,10 @@ var requirejs, require, define;
             },
             action: function(t) {
                 var n = e(t.currentTarget).attr("id");
-                n && this.model && (this.model.get("noClose") || BMT.modal.close(this), this.model.get("handler") && this.model.get("handler").call(this, n))
+                n && this.model && (this.model.get("noClose") || BS.modal.close(this), this.model.get("handler") && this.model.get("handler").call(this, n))
             }
         })
-    }), define("views/common/inheritedIRAWarningView", ["jquery", "underscore", "views/common/alertView", "common/betterment.models"], function(e, t, n, r) {
+    }), define("views/common/inheritedIRAWarningView", ["jquery", "underscore", "views/common/alertView", "common/betasmartz.models"], function(e, t, n, r) {
         return n.extend({
             onInitialize: function() {
                 this.model = new r.Model({
@@ -21046,7 +21047,7 @@ var requirejs, require, define;
             confirmSettingsChange: function(e) {
                 var t = 0,
                     n = 0;
-                e || (t = parseFloat(this.model.get("amount")), n = this.modelConstructor.monthlyize(this.model.get("frequency"), t)), BMT.accounts().each(function(e) {
+                e || (t = parseFloat(this.model.get("amount")), n = this.modelConstructor.monthlyize(this.model.get("frequency"), t)), BS.accounts().each(function(e) {
                     e.get("id") !== this.account().get("id") && e.get("automaticDeposit") && (n += e.get("automaticDeposit").monthlyAmount())
                 }, this), this.validateAndSave()
             },
@@ -21058,7 +21059,7 @@ var requirejs, require, define;
                     success: function(e) {
                         var t = e.get("frequency"),
                             n = this.formatter.removeCommas(e.get("amount"));
-                        BMT.analytics.track("AutoDepositUpdated", {
+                        BS.analytics.track("AutoDepositUpdated", {
                             Location: "Transfer",
                             GoalId: this.account().get("id"),
                             GoalType: this.account().get("goalType"),
@@ -21066,7 +21067,7 @@ var requirejs, require, define;
                             OldValue: this.modelConstructor.monthlyize(this.previousFrequency, this.previousDepositAmount),
                             IsEnabled: e.get("enabled"),
                             Frequence: t
-                        }), this.model.set("account", this.account()), this.trigger("save"), this.refreshAccountAndClose(), this.model.is("enabled") ? BMT.flash("Your automatic deposits will happen " + this.model.frequencyText()) : BMT.flash("Your automatic deposit has been turned off."), this.onAutoTransactionUpdateComplete(this.model)
+                        }), this.model.set("account", this.account()), this.trigger("save"), this.refreshAccountAndClose(), this.model.is("enabled") ? BS.flash("Your automatic deposits will happen " + this.model.frequencyText()) : BS.flash("Your automatic deposit has been turned off."), this.onAutoTransactionUpdateComplete(this.model)
                     }.bind(this),
                     error: function() {
                         this.triggerAllValidation()
@@ -21300,7 +21301,7 @@ var requirejs, require, define;
             }
 
             function c(e, t) {
-                return "Betterment"
+                return "Betasmartz"
             }
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
@@ -21316,7 +21317,7 @@ var requirejs, require, define;
             return s += ' automatically.</h3>\n</div>\n\n<div class="how-it-works">\n    <div class="one-third balance">\n        <div class="icon smart-deposits-bank"></div>\n        <div class="copy">\n            Tell us the maximum balance you need in your bank account.\n        </div>\n    </div>\n    <div class="one-third savings">\n        <div class="icon smart-deposits-calendar"></div>\n        <div class="copy">We&apos;ll check your bank balance at least once a week and calculate an amount to invest based on your settings.</div>\n    </div>\n    <div class="one-third growth">\n        <div class="icon smart-deposits-notification"></div>\n        <div class="copy">We&apos;ll notify you by email before every investment and we&apos;ll never invest more than you want.</div>\n    </div>\n</div>\n\n<div class="buttons secondary-button">\n    <button class="next blue">Continue to Setup</button>\n</div>\n', s
         });
         return t.registerPartial("views/transfer/smartDeposits/splash", n), n
-    }), define("views/transfer/smartDeposits/splashView", ["jquery", "underscore", "components/common/scripts/analytics/analytics", "common/betterment.views", "hbs!views/transfer/smartDeposits/splash"], function(e, t, n, r, i) {
+    }), define("views/transfer/smartDeposits/splashView", ["jquery", "underscore", "components/common/scripts/analytics/analytics", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/splash"], function(e, t, n, r, i) {
         return r.View.extend({
             className: "smart-deposits-splash",
             template: i,
@@ -21349,7 +21350,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header">\n    <h1>Permission to securely view your bank balance</h1>\n    <h3>We need to periodically view your bank balance to determine if you have excess cash.</h3>\n</div>\n\n<div class="secondary-button">\n    <button class="next blue">Grant Permission</button>\n</div>\n'
         });
         return t.registerPartial("views/transfer/smartDeposits/bankAccount", n), n
-    }), define("views/transfer/smartDeposits/bankAccountView", ["components/common/scripts/analytics/analytics", "common/betterment.views", "hbs!views/transfer/smartDeposits/bankAccount"], function(e, t, n) {
+    }), define("views/transfer/smartDeposits/bankAccountView", ["components/common/scripts/analytics/analytics", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/bankAccount"], function(e, t, n) {
         return t.View.extend({
             className: "smart-deposits-bank-account",
             template: n,
@@ -22055,7 +22056,7 @@ var requirejs, require, define;
                 this.isValid() ? e.isFunction(this.options.onSubmit) && this.options.onSubmit.call(this.view) : e.isFunction(this.options.onInvalid) && this.options.onInvalid.call(this.view)
             }
         })
-    }), define("views/transfer/smartDeposits/chooseGoalView", ["components/common/scripts/analytics/analytics", "components/common/scripts/models/v2/baseModels", "common/betterment.views", "hbs!views/transfer/smartDeposits/chooseGoal", "components/common/scripts/behaviors/editableForm"], function(e, t, n, r, i) {
+    }), define("views/transfer/smartDeposits/chooseGoalView", ["components/common/scripts/analytics/analytics", "components/common/scripts/models/v2/baseModels", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/chooseGoal", "components/common/scripts/behaviors/editableForm"], function(e, t, n, r, i) {
         var s = t.Model.extend({
             validation: {
                 accountId: {
@@ -22087,11 +22088,11 @@ var requirejs, require, define;
                 this.model = new s
             },
             getSelectedAccount: function() {
-                return BMT.accounts().get(this.model.get("accountId"))
+                return BS.accounts().get(this.model.get("accountId"))
             },
             serializeData: function() {
                 return {
-                    eligibleAccounts: BMT.accounts().withSmartDepositEligible().map(function(e) {
+                    eligibleAccounts: BS.accounts().withSmartDepositEligible().map(function(e) {
                         return {
                             value: e.id,
                             label: e.get("name"),
@@ -22167,7 +22168,7 @@ var requirejs, require, define;
             }
         };
         return e.Model.extend(t)
-    }), define("views/transfer/smartDeposits/minBankBalanceView", ["components/common/scripts/analytics/analytics", "hbs!views/transfer/smartDeposits/minBankBalance", "common/betterment.views", "components/common/scripts/behaviors/editableForm", "models/v2/smartDepositConfig", "models/v2/zipCode", "models/visitor", "projector"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/transfer/smartDeposits/minBankBalanceView", ["components/common/scripts/analytics/analytics", "hbs!views/transfer/smartDeposits/minBankBalance", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm", "models/v2/smartDepositConfig", "models/v2/zipCode", "models/visitor", "projector"], function(e, t, n, r, i, s, o, u) {
         return n.View.extend({
             className: "smart-deposits-min-bank-balance",
             ui: {
@@ -22205,14 +22206,14 @@ var requirejs, require, define;
             },
             loadZipData: function() {
                 this.zipCode = new s({
-                    zip: BMT.user.get("zip")
+                    zip: BS.user.get("zip")
                 }), this.zipCode.fetch()
             },
             showInitialState: function() {
                 if (o.hasVariation("show_bank_balance_advice")) {
-                    var t = BMT.user.num("annualIncome");
+                    var t = BS.user.num("annualIncome");
                     if (!!t) {
-                        var n = u.consumptionPerMonth(t, BMT.user.get("state"), this.zipCode.num("costOfLivingIndex"));
+                        var n = u.consumptionPerMonth(t, BS.user.get("state"), this.zipCode.num("costOfLivingIndex"));
                         this.ui.minBankBalanceCents.val(n).blur(), this.ui.defaultMinBankBalanceWrapper.show(), e.track("ElementViewed", {
                             Location: "SmartDeposit",
                             Name: "BalanceRecommended",
@@ -22242,7 +22243,7 @@ var requirejs, require, define;
             }, o ? o.call(t, "Set Max Deposit", u) : a.call(t, "submitButton", "Set Max Deposit", u))) + "\n</form>\n", s
         });
         return t.registerPartial("views/transfer/smartDeposits/maxDeposit", n), n
-    }), define("views/transfer/smartDeposits/maxDepositView", ["components/common/scripts/analytics/analytics", "hbs!views/transfer/smartDeposits/maxDeposit", "common/betterment.views", "components/common/scripts/behaviors/editableForm"], function(e, t, n, r) {
+    }), define("views/transfer/smartDeposits/maxDepositView", ["components/common/scripts/analytics/analytics", "hbs!views/transfer/smartDeposits/maxDeposit", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm"], function(e, t, n, r) {
         return n.View.extend({
             className: "smart-deposits-max-deposit",
             template: t,
@@ -22288,7 +22289,7 @@ var requirejs, require, define;
             }, o ? o.call(t, "Complete Setup", u) : a.call(t, "submitButton", "Complete Setup", u))) + "\n</form>\n", s
         });
         return t.registerPartial("views/transfer/smartDeposits/confirmation", n), n
-    }), define("views/transfer/smartDeposits/confirmationView", ["underscore", "components/common/scripts/analytics/analytics", "hbs!views/transfer/smartDeposits/confirmation", "common/betterment.views", "components/common/scripts/behaviors/editableForm"], function(e, t, n, r, i) {
+    }), define("views/transfer/smartDeposits/confirmationView", ["underscore", "components/common/scripts/analytics/analytics", "hbs!views/transfer/smartDeposits/confirmation", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm"], function(e, t, n, r, i) {
         return r.View.extend({
             className: "smart-deposits-confirmation",
             template: n,
@@ -22322,7 +22323,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header">\n    <h1>You’ve set up SmartDeposit</h1>\n    <h3>For your first SmartDeposit, here&apos;s what to expect.</h3>\n</div>\n\n<div class="one-third first">\n    <div class="icon smart-deposits-calendar"></div>\n    <div class="copy">We&apos;ll check your bank balance at least once a week and calculate an amount to invest based on your settings.</div>\n</div>\n\n<div class="one-third second">\n    <div class="icon smart-deposits-notification"></div>\n    <div class="copy">We&apos;ll send you an email with your SmartDeposit amount. You&apos;ll have until 10 p.m. ET the following day to cancel.</div>\n</div>\n\n<div class="one-third third">\n    <div class="icon smart-deposits-change"></div>\n    <div class="copy">You can change your SmartDeposit settings at any time by logging into your account.</div>\n</div>\n\n<div class="secondary-button">\n    <button class="finish blue">Great, got it</button>\n</div>\n'
         });
         return t.registerPartial("views/transfer/smartDeposits/congrats", n), n
-    }), define("views/transfer/smartDeposits/congratsView", ["components/common/scripts/analytics/analytics", "common/betterment.views", "hbs!views/transfer/smartDeposits/congrats"], function(e, t, n) {
+    }), define("views/transfer/smartDeposits/congratsView", ["components/common/scripts/analytics/analytics", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/congrats"], function(e, t, n) {
         return t.View.extend({
             className: "smart-deposits-congrats",
             template: n,
@@ -22341,7 +22342,7 @@ var requirejs, require, define;
                 }), this.trigger("finish")
             }
         })
-    }), define("views/transfer/smartDeposits/setupView", ["underscore", "backbone", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/transfer/smartDeposits/setup", "hbs!views/transfer/smartDeposits/bankLogo", "components/progressNav/scripts/progressNavView", "components/bubble/scripts/balanceBubbleView", "models/v2/bankAccountBalance", "views/transfer/smartDeposits/splashView", "views/transfer/smartDeposits/bankAccountView", "views/transfer/smartDeposits/chooseGoalView", "views/transfer/smartDeposits/minBankBalanceView", "views/transfer/smartDeposits/maxDepositView", "views/transfer/smartDeposits/confirmationView", "views/transfer/smartDeposits/congratsView", "components/common/scripts/util/formatter"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
+    }), define("views/transfer/smartDeposits/setupView", ["underscore", "backbone", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/setup", "hbs!views/transfer/smartDeposits/bankLogo", "components/progressNav/scripts/progressNavView", "components/bubble/scripts/balanceBubbleView", "models/v2/bankAccountBalance", "views/transfer/smartDeposits/splashView", "views/transfer/smartDeposits/bankAccountView", "views/transfer/smartDeposits/chooseGoalView", "views/transfer/smartDeposits/minBankBalanceView", "views/transfer/smartDeposits/maxDepositView", "views/transfer/smartDeposits/confirmationView", "views/transfer/smartDeposits/congratsView", "components/common/scripts/util/formatter"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
         return r.View.extend({
             className: "smart-deposits-setup",
             template: i,
@@ -22393,7 +22394,7 @@ var requirejs, require, define;
                 label: "Congrats"
             }],
             onInitialize: function() {
-                this.model ? this.removeChooseGoalStep() : BMT.accounts().withSmartDepositEligible().length === 1 && (this.model = BMT.accounts().withSmartDepositEligible()[0].get("smartDepositConfig"), this.removeChooseGoalStep())
+                this.model ? this.removeChooseGoalStep() : BS.accounts().withSmartDepositEligible().length === 1 && (this.model = BS.accounts().withSmartDepositEligible()[0].get("smartDepositConfig"), this.removeChooseGoalStep())
             },
             onRender: function() {
                 var t = this.options.skipSplashAndConfirmBank ? 2 : 0;
@@ -22402,10 +22403,10 @@ var requirejs, require, define;
                         return e.showProgressBar
                     })
                 }), this.listenTo(this.progressView, "back", this.showPreviousStep), this.progressRegion.show(this.progressView), this.bubbleView = new u({
-                    topContent: n.s(s(BMT.user.bankAccount().attributes)),
-                    color: BMT.user.bankAccount().get("colorHex")
+                    topContent: n.s(s(BS.user.bankAccount().attributes)),
+                    color: BS.user.bankAccount().get("colorHex")
                 }), this.sidebarRegion.show(this.bubbleView), this.bankAccountBalance = a.fromIdParams({
-                    bettermentdbBankAccountId: BMT.user.bankAccount().get("id")
+                    betasmartzdbBankAccountId: BS.user.bankAccount().get("id")
                 }), this.bankAccountBalancePromise = this.bankAccountBalance.save(), this.showStep(this.flow[t])
             },
             transition: function(e, t, n) {
@@ -22431,8 +22432,8 @@ var requirejs, require, define;
                         this.showNextStep(e, n)
                     }.bind(this)), this.trigger("save")
                 }), this.listenTo(n, "finish", function() {
-                    BMT.flash("Your SmartDeposit settings have been saved."), BMT.user.fetch({
-                        success: BMT.refreshBanners
+                    BS.flash("Your SmartDeposit settings have been saved."), BS.user.fetch({
+                        success: BS.refreshBanners
                     }), this.trigger("finish close", this.model)
                 })
             },
@@ -22472,7 +22473,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<svg viewBox="0 0 100 100" class="unlink-bank-account-logo"><g transform="translate(20.000000, 17.000000)"> <path d="M15.025 20.756C14.407 20.756 13.866 21.3 13.866 21.919L13.866 43.687C13.866 44.307 14.407 44.85 15.025 44.85 15.641 44.85 16.183 44.307 16.183 43.687L16.183 21.919C16.183 21.3 15.641 20.756 15.025 20.756M9.302 20.902C8.939 20.697 8.527 20.708 8.169 20.927 7.817 21.146 7.598 21.568 7.598 22.031L7.598 43.575C7.598 44.038 7.817 44.461 8.169 44.679 8.355 44.793 8.556 44.851 8.758 44.851 8.943 44.851 9.129 44.803 9.303 44.705 9.674 44.495 9.915 44.096 9.915 43.687L9.915 21.919C9.915 21.511 9.674 21.111 9.302 20.902M31.444 20.756C30.827 20.756 30.286 21.3 30.286 21.919L30.286 43.687C30.286 44.307 30.827 44.85 31.444 44.85 32.061 44.85 32.603 44.307 32.603 43.687L32.603 21.919C32.603 21.3 32.061 20.756 31.444 20.756M25.176 20.756C24.56 20.756 24.018 21.3 24.018 21.919L24.018 43.687C24.018 44.307 24.56 44.85 25.176 44.85 25.794 44.85 26.335 44.307 26.335 43.687L26.335 21.919C26.335 21.3 25.794 20.756 25.176 20.756M52.097 16.193L28.869 0.247C28.554 0.009 28.081 0.006 27.689 0.243L4.389 16.26C3.905 16.584 3.711 17.063 3.853 17.561 3.933 18.046 4.411 18.428 4.942 18.428L51.543 18.428C52.14 18.428 52.69 17.913 52.77 17.264 52.77 16.804 52.469 16.338 52.097 16.193L52.097 16.193ZM9.121 16.032L28.242 2.577 47.297 16.032 9.121 16.032 9.121 16.032ZM42.618 21.919C42.618 21.3 42.077 20.756 41.46 20.756 40.843 20.756 40.302 21.3 40.302 21.919L40.302 41.99C41.025 41.453 41.8 40.983 42.618 40.588L42.618 21.919M48.886 21.919C48.886 21.3 48.345 20.756 47.728 20.756 47.111 20.756 46.569 21.3 46.569 21.919L46.569 39.337C47.324 39.215 48.097 39.149 48.886 39.149L48.886 21.919M4.942 47.178C4.324 47.178 3.783 47.722 3.783 48.342 3.783 48.962 4.324 49.505 4.942 49.505L35.033 49.505C35.274 48.698 35.583 47.92 35.954 47.178L4.942 47.178M1.467 51.353C0.849 51.353 0.308 51.898 0.308 52.517 0.308 53.137 0.849 53.682 1.467 53.682L34.423 53.682C34.423 52.888 34.492 52.112 34.615 51.353L1.467 51.353M48.886 41.896C42.408 41.896 37.156 47.172 37.156 53.682 37.156 60.191 42.408 65.467 48.886 65.467 55.365 65.467 60.617 60.191 60.617 53.682 60.617 47.172 55.365 41.896 48.886 41.896L48.886 41.896ZM47.288 58.176C46.328 59.141 44.752 59.139 43.763 58.187 42.761 57.223 42.811 55.623 43.752 54.635L43.752 54.625 46.082 52.285C46.562 51.803 47.201 51.564 47.839 51.564 48.477 51.564 49.122 51.809 49.616 52.285L48.92 53.006C48.311 52.419 47.359 52.422 46.788 52.995L44.47 55.335C43.882 55.952 43.864 56.893 44.46 57.466 45.068 58.052 46.009 58.04 46.581 57.466L47.911 56.129 48.618 56.839 47.288 58.176 47.288 58.176ZM47.424 54.5L48.15 53.647C49.379 54.741 50.161 54.391 50.741 53.745L52.375 50.889C52.377 50.885 52.38 50.881 52.382 50.876 52.78 50.13 52.551 49.224 51.832 48.829 51.093 48.422 50.184 48.671 49.781 49.374L48.954 50.821 48.091 50.313 48.915 48.874C49.252 48.282 49.798 47.888 50.414 47.72 51.03 47.553 51.717 47.621 52.317 47.95 53.535 48.619 53.903 50.177 53.249 51.377L51.607 54.246C50.217 56.283 48.43 55.491 47.424 54.5L47.424 54.5ZM54.34 54.845L54.25 55.824 52.071 55.619 52.162 54.641 54.34 54.845 54.34 54.845ZM50.412 59.73L49.662 57.666 50.581 57.328 51.331 59.393 50.412 59.73 50.412 59.73ZM54.305 58.741L51.298 57.226 51.737 56.347 54.744 57.862 54.305 58.741 54.305 58.741Z"/> </g></svg>\n'
         });
         return t.registerPartial("views/transfer/smartDeposits/unlinkBankAccountLogo", n), n
-    }), define("views/transfer/smartDeposits/unlinkBankAccountView", ["components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/transfer/smartDeposits/unlinkBankAccount", "hbs!views/transfer/smartDeposits/unlinkBankAccountLogo", "components/bubble/scripts/balanceBubbleView"], function(e, t, n, r, i) {
+    }), define("views/transfer/smartDeposits/unlinkBankAccountView", ["components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/unlinkBankAccount", "hbs!views/transfer/smartDeposits/unlinkBankAccountLogo", "components/bubble/scripts/balanceBubbleView"], function(e, t, n, r, i) {
         return t.View.extend({
             className: "smart-deposits-unlink-bank-account",
             template: n,
@@ -22494,7 +22495,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="sidebar">\n</div>\n\n<div class="content">\n\n    <div class="header">\n        <h1>Unable to link bank at this time</h1>\n        <h3>We\'re sorry. We\'re working on making SmartDeposit compatible with more banks in the future. We will notify you when we add more banks to our growing list.</h3>\n    </div>\n\n    <div class="secondary-button">\n        <button class="next blue">Close</button>\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/transfer/smartDeposits/ineligibleBank", n), n
-    }), define("views/transfer/smartDeposits/ineligibleBankView", ["components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/transfer/smartDeposits/ineligibleBank", "hbs!views/transfer/smartDeposits/unlinkBankAccountLogo", "components/bubble/scripts/balanceBubbleView"], function(e, t, n, r, i) {
+    }), define("views/transfer/smartDeposits/ineligibleBankView", ["components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/ineligibleBank", "hbs!views/transfer/smartDeposits/unlinkBankAccountLogo", "components/bubble/scripts/balanceBubbleView"], function(e, t, n, r, i) {
         return t.View.extend({
             className: "smart-deposits-unlink-bank-account",
             template: n,
@@ -22683,7 +22684,7 @@ var requirejs, require, define;
                 return this.model.get("handler") && this.model.get("handler")(this.getResults()), !1
             },
             onCancel: function(e) {
-                return this.model.get("inline") || BMT.modal.close(this), this.model.get("handler") && this.model.get("handler")(null), !1
+                return this.model.get("inline") || BS.modal.close(this), this.model.get("handler") && this.model.get("handler")(null), !1
             },
             remove: function() {
                 var e = this.model.get("inline") ? r.ItemView : i;
@@ -22706,7 +22707,7 @@ var requirejs, require, define;
                 }))
             }
         }
-    }), define("views/linkBankAccount/chooseAccountView", ["jquery", "underscore", "hbs!views/linkBankAccount/chooseAccount", "common/betterment.views", "components/common/scripts/behaviors/editableForm", "components/common/scripts/util/formatter", "views/profile/securityQuestionView", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/linkBankAccount/chooseAccountView", ["jquery", "underscore", "hbs!views/linkBankAccount/chooseAccount", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm", "components/common/scripts/util/formatter", "views/profile/securityQuestionView", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o, u) {
         return r.View.extend({
             className: "choose-account",
             template: n,
@@ -22762,18 +22763,18 @@ var requirejs, require, define;
                     handler: function(t) {
                         t && (this.securityQuestionView.block(), e(t))
                     }.bind(this)
-                }, BMT.user.randomSecurityQuestion())), BMT.modal.show(this.securityQuestionView)
+                }, BS.user.randomSecurityQuestion())), BS.modal.show(this.securityQuestionView)
             },
             submitDepositoryAccountInfo: function(e) {
                 this.hasAskedSecurityQuestion = !!e, this.model.save(e)
             },
             clearSecurityQuestions: function() {
-                this.hasAskedSecurityQuestion && (o.removeResults(this.model), BMT.modal.close(this.securityQuestionView)), this.trigger("unblock")
+                this.hasAskedSecurityQuestion && (o.removeResults(this.model), BS.modal.close(this.securityQuestionView)), this.trigger("unblock")
             },
             trackSuccess: function() {
                 u.track("BankUpdateSucceeded", t.extend({}, this.getAnalytics(), {
                     BankName: this.model.get("bankAuthentication").get("type")
-                })), BMT.vent.trigger("linkBankAccount:bankSaved")
+                })), BS.vent.trigger("linkBankAccount:bankSaved")
             },
             fetchBankAccountAndContinue: function() {
                 var e = this.getAccountGroup().get("bankAccount");
@@ -22984,7 +22985,7 @@ var requirejs, require, define;
                 }
             }
         }
-    }), define("views/linkBankAccount/chooseBankView", ["underscore", "hbs!views/linkBankAccount/chooseBank", "common/betterment.views", "services/plaidService", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i) {
+    }), define("views/linkBankAccount/chooseBankView", ["underscore", "hbs!views/linkBankAccount/chooseBank", "common/betasmartz.views", "services/plaidService", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i) {
         return n.View.extend({
             className: "choose-bank",
             template: t,
@@ -23077,14 +23078,14 @@ var requirejs, require, define;
                     a = s ? Math.abs(u) < s.num("requirementAmount") : undefined;
                 if (a && !i.is("funded") && o.isActiveAndConfirmed()) {
                     var f = s.isReferral(),
-                        l = "Are you sure you want to authorize a deposit of " + t.money(u) + " from your " + e.e(o.get("description")) + " account to your account at Betterment?<br /><br />",
+                        l = "Are you sure you want to authorize a deposit of " + t.money(u) + " from your " + e.e(o.get("description")) + " account to your account at Betasmartz?<br /><br />",
                         c = "It looks like you signed up using a ";
                     return f ? c += "referral link from a friend" : c += "promotional link", c += ". In order for you to get your signup bonus of " + s.get("prizeDescription") + (f ? ", and your friend to be rewarded," : "") + " you must make an initial deposit of " + t.money(s.num("requirementAmount")) + " or more.", l += c + " Would you like to enter a larger initial deposit?", n.longMessage ? e.s(l) : e.s(c)
                 }
                 return !1
             }
         }
-    }), define("views/linkBankAccount/confirmDepositView", ["jquery", "underscore", "hbs!views/linkBankAccount/confirmDeposit", "common/betterment.views", "components/common/scripts/util/formatter", "services/initialDepositBonusService", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o) {
+    }), define("views/linkBankAccount/confirmDepositView", ["jquery", "underscore", "hbs!views/linkBankAccount/confirmDeposit", "common/betasmartz.views", "components/common/scripts/util/formatter", "services/initialDepositBonusService", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o) {
         return r.View.extend({
             className: "confirm-deposit",
             template: n,
@@ -23315,7 +23316,7 @@ var requirejs, require, define;
             }
         };
         return n.RelationalModel.extend(s)
-    }), define("views/linkBankAccount/depositView", ["jquery", "underscore", "hbs!views/linkBankAccount/deposit", "common/betterment.views", "components/common/scripts/behaviors/editableForm", "models/v1/deposit", "components/common/scripts/models/appData", "components/common/scripts/util/formatter", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/linkBankAccount/depositView", ["jquery", "underscore", "hbs!views/linkBankAccount/deposit", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm", "models/v1/deposit", "components/common/scripts/models/appData", "components/common/scripts/util/formatter", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o, u, a) {
         return r.View.extend({
             className: "link-bank-account-deposit",
             HIGH_BALANCE_THRESHOLD: 5e4,
@@ -23346,7 +23347,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 accountIdOptions: function() {
-                    var e = BMT.accounts().forSelect(),
+                    var e = BS.accounts().forSelect(),
                         n = {};
                     return t.each(e, function(e, t) {
                         n[parseInt(e.value, 10)] = e.label
@@ -23389,7 +23390,7 @@ var requirejs, require, define;
                 "change:account": "onAccountChange"
             },
             showSingleAccount: function() {
-                return BMT.accounts().length === 1
+                return BS.accounts().length === 1
             },
             shouldShowDepositAnchors: function() {
                 var e = this.options.bankBalance;
@@ -23421,7 +23422,7 @@ var requirejs, require, define;
             },
             onAccountChange: function() {
                 var e = this.model.get("account");
-                e.isIRA() ? this.ui.contributionSelect.slideDown() : this.ui.contributionSelect.slideUp(), BMT.selectedAccount = e
+                e.isIRA() ? this.ui.contributionSelect.slideDown() : this.ui.contributionSelect.slideUp(), BS.selectedAccount = e
             },
             onSkipDepositClick: function() {
                 a.track("ElementClicked", t.extend({}, this.getAnalytics(), {
@@ -23456,7 +23457,7 @@ var requirejs, require, define;
                 }
             }
         })
-    }), define("views/linkBankAccount/fundingLayout", ["underscore", "common/betterment.views", "hbs!views/linkBankAccount/fundingViews", "views/linkBankAccount/confirmDepositView", "views/linkBankAccount/depositView", "models/v1/deposit"], function(e, t, n, r, i, s) {
+    }), define("views/linkBankAccount/fundingLayout", ["underscore", "common/betasmartz.views", "hbs!views/linkBankAccount/fundingViews", "views/linkBankAccount/confirmDepositView", "views/linkBankAccount/depositView", "models/v1/deposit"], function(e, t, n, r, i, s) {
         return t.View.extend({
             className: "funding-layout",
             regions: {
@@ -23465,7 +23466,7 @@ var requirejs, require, define;
             template: n,
             onRender: function() {
                 this.depositModel || (this.depositModel = new s({
-                    accountId: BMT.selectedAccount.get("id")
+                    accountId: BS.selectedAccount.get("id")
                 })), this.listenTo(this, "back", this.routeBackClick), this.showDepositView()
             },
             shouldGoBack: function() {
@@ -23504,7 +23505,7 @@ var requirejs, require, define;
                 }.bind(this))
             },
             closeWithFlash: function(e, t) {
-                this.trigger("close", t), BMT.flash(e)
+                this.trigger("close", t), BS.flash(e)
             },
             getAnalytics: function() {
                 return this.analytics
@@ -23523,7 +23524,7 @@ var requirejs, require, define;
             return s += '</div>\n    <h1>We will invest your deposit today!</h1>\n</div>\n<div class="main">\n    <p class="body">This deposit qualifies for immediate investment and will trade today. We work hard to provide you with the industry\'s fastest transfers.</p>\n    <p class="body">Note &mdash; funds will be withdrawn from your bank account the next business day.</p>\n    <div class="buttons">\n        <div class="submit-button">\n            <button type="button">Great, got it</button>\n        </div>\n    </div>\n</div>', s
         });
         return t.registerPartial("views/linkBankAccount/instantDeposit", n), n
-    }), define("views/linkBankAccount/instantDepositView", ["underscore", "hbs!views/linkBankAccount/instantDeposit", "common/betterment.views", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r) {
+    }), define("views/linkBankAccount/instantDepositView", ["underscore", "hbs!views/linkBankAccount/instantDeposit", "common/betasmartz.views", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r) {
         return n.View.extend({
             className: "instant-deposit",
             template: t,
@@ -23586,7 +23587,7 @@ var requirejs, require, define;
                     }), e
                 },
                 save: function(n, r) {
-                    return BMT.user.bankAccount() && BMT.user.bankAccount().needsAuthUpdate() && (r = e.extend(r || {}, {
+                    return BS.user.bankAccount() && BS.user.bankAccount().needsAuthUpdate() && (r = e.extend(r || {}, {
                         type: "PATCH"
                     })), t.Model.prototype.save.call(this, n, r)
                 }
@@ -23615,7 +23616,7 @@ var requirejs, require, define;
                     }), e
                 },
                 save: function(n, r) {
-                    return BMT.user.bankAccount() && BMT.user.bankAccount().needsAuthUpdate() && (r = e.extend(r || {}, {
+                    return BS.user.bankAccount() && BS.user.bankAccount().needsAuthUpdate() && (r = e.extend(r || {}, {
                         type: "PATCH"
                     })), t.Model.prototype.save.call(this, n, r)
                 },
@@ -23752,7 +23753,7 @@ var requirejs, require, define;
                 fn: c.program(5, v, i)
             });
             if (o || o === 0) s += o;
-            s += '\n    <div class="learn-more-data">\n        How is this information used?\n    </div>\n    <div class="help-content">\n        By using this service, we will retrieve your account and routing numbers from your bank via Plaid, a third-party service. By using Plaid, you agree to the terms <a href="http://support.betasmartz.com/customer/portal/articles/1625876-linking-bank-account-to-betterment-with-plaid" target="_blank">here</a> and in your client agreements.\n    </div>\n    <div class="buttons">\n        ' + l((u = n.submitButton || t && t.submitButton, a = {
+            s += '\n    <div class="learn-more-data">\n        How is this information used?\n    </div>\n    <div class="help-content">\n        By using this service, we will retrieve your account and routing numbers from your bank via Plaid, a third-party service. By using Plaid, you agree to the terms <a href="http://support.betasmartz.com/customer/portal/articles/1625876-linking-bank-account-to-betasmartz-with-plaid" target="_blank">here</a> and in your client agreements.\n    </div>\n    <div class="buttons">\n        ' + l((u = n.submitButton || t && t.submitButton, a = {
                 hash: {}
             }, u ? u.call(t, "Connect bank", a) : f.call(t, "submitButton", "Connect bank", a))) + "\n        ", o = n.unless.call(t, t && t.isRelink, {
                 hash: {},
@@ -23763,7 +23764,7 @@ var requirejs, require, define;
             return s += "\n    </div>\n</form>\n", s
         });
         return t.registerPartial("views/linkBankAccount/linkBank", n), n
-    }), define("views/linkBankAccount/linkBankView", ["underscore", "hbs!views/linkBankAccount/linkBank", "common/betterment.views", "services/plaidService", "components/common/scripts/behaviors/editableForm", "common/errorHandler", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o) {
+    }), define("views/linkBankAccount/linkBankView", ["underscore", "hbs!views/linkBankAccount/linkBank", "common/betasmartz.views", "services/plaidService", "components/common/scripts/behaviors/editableForm", "common/errorHandler", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o) {
         return n.View.extend({
             className: "link-bank",
             ui: {
@@ -23847,7 +23848,7 @@ var requirejs, require, define;
                     BankName: this.model.get("type")
                 })), this.trigger("unblock");
                 var i = s.getErrorCodeIfExists(n);
-                if (i) BMT.alert(s.getErrorContentForCode(i));
+                if (i) BS.alert(s.getErrorContentForCode(i));
                 else {
                     var u = this.getJsonFromResponse(n),
                         a = r.getErrorDetailsFromPlaidErrorResponse(u, !this.hasSeenUnknownError, this.isRelink());
@@ -23875,7 +23876,7 @@ var requirejs, require, define;
                     }.bind(this), this.hasSeenUnknownError = !0), o.track("ElementViewed", {
                         Location: this.getAnalytics().Location + "AlertModal",
                         BankName: this.model.get("type")
-                    }), BMT.alert(a.alertOptions)
+                    }), BS.alert(a.alertOptions)
                 }
             },
             getJsonFromResponse: function(e) {
@@ -23925,7 +23926,7 @@ var requirejs, require, define;
             }, u ? u.call(t, "Verify bank", a) : c.call(t, "submitButton", "Verify bank", a))) + "\n    </div>\n</form>", s
         });
         return t.registerPartial("views/linkBankAccount/verification", n), n
-    }), define("views/linkBankAccount/verificationView", ["jquery", "underscore", "hbs!views/linkBankAccount/verification", "common/betterment.views", "components/common/scripts/behaviors/editableForm", "services/plaidService", "common/errorHandler", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/linkBankAccount/verificationView", ["jquery", "underscore", "hbs!views/linkBankAccount/verification", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm", "services/plaidService", "common/errorHandler", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o, u) {
         return r.View.extend({
             className: "verification",
             template: n,
@@ -23982,7 +23983,7 @@ var requirejs, require, define;
                     BankName: this.bankAuthentication().get("type")
                 })), this.trigger("unblock");
                 var r = o.getErrorCodeIfExists(n);
-                if (r) BMT.alert(o.getErrorContentForCode(r));
+                if (r) BS.alert(o.getErrorContentForCode(r));
                 else {
                     var i = this.getJsonFromResponse(n),
                         a = s.getErrorDetailsFromPlaidErrorResponse(i, !this.hasSeenUnknownError);
@@ -24010,7 +24011,7 @@ var requirejs, require, define;
                     }.bind(this)), u.track("ElementViewed", {
                         Location: this.getAnalytics().Location + "AlertModal",
                         BankName: this.bankAuthentication().get("type")
-                    }), BMT.alert(a.alertOptions)
+                    }), BS.alert(a.alertOptions)
                 }
             },
             submitMfa: function(e) {
@@ -24035,7 +24036,7 @@ var requirejs, require, define;
                 }
             }
         })
-    }), define("views/linkBankAccount/linkBankLayout", ["hbs!views/linkBankAccount/linkBankViews", "common/betterment.views", "models/v1/bankAuthentication", "models/v1/mfaAnswer", "views/linkBankAccount/linkBankView", "views/linkBankAccount/verificationView"], function(e, t, n, r, i, s) {
+    }), define("views/linkBankAccount/linkBankLayout", ["hbs!views/linkBankAccount/linkBankViews", "common/betasmartz.views", "models/v1/bankAuthentication", "models/v1/mfaAnswer", "views/linkBankAccount/linkBankView", "views/linkBankAccount/verificationView"], function(e, t, n, r, i, s) {
         return t.View.extend({
             className: "link-bank-layout",
             regions: {
@@ -24133,7 +24134,7 @@ var requirejs, require, define;
             }, o ? o.call(t, "Connect bank", u) : a.call(t, "submitButton", "Connect bank", u))) + '\n        <a href="#" class="plaid-link">Have a bank username and password?</a>\n    </div>\n</form>', s
         });
         return t.registerPartial("views/linkBankAccount/manualLinkBank", n), n
-    }), define("views/linkBankAccount/manualLinkBankView", ["underscore", "hbs!views/linkBankAccount/manualLinkBank", "common/betterment.views", "components/common/scripts/behaviors/editableForm", "views/profile/securityQuestionView", "common/errorHandler", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o) {
+    }), define("views/linkBankAccount/manualLinkBankView", ["underscore", "hbs!views/linkBankAccount/manualLinkBank", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm", "views/profile/securityQuestionView", "common/errorHandler", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r, i, s, o) {
         return n.View.extend({
             className: "manual-link-bank",
             template: t,
@@ -24178,13 +24179,13 @@ var requirejs, require, define;
                     handler: function(e) {
                         e && (this.securityQuestionView.block(), t(e))
                     }.bind(this)
-                }, BMT.user.randomSecurityQuestion())), BMT.modal.show(this.securityQuestionView)
+                }, BS.user.randomSecurityQuestion())), BS.modal.show(this.securityQuestionView)
             },
             submitRoutingAccountInfo: function(e) {
                 this.hasAskedSecurityQuestion = !!e, this.model.save(e)
             },
             clearSecurityQuestions: function() {
-                this.hasAskedSecurityQuestion && (i.removeResults(this.model), BMT.modal.close(this.securityQuestionView)), this.trigger("unblock")
+                this.hasAskedSecurityQuestion && (i.removeResults(this.model), BS.modal.close(this.securityQuestionView)), this.trigger("unblock")
             },
             handleError: function(t, n, r) {
                 o.track("ElementClicked", e.extend({}, this.getAnalytics(), {
@@ -24198,10 +24199,10 @@ var requirejs, require, define;
             trackSuccess: function() {
                 o.track("BankUpdateSucceeded", e.extend({}, this.getAnalytics(), {
                     BankName: this.options.selectedBankKey
-                })), BMT.vent.trigger("linkBankAccount:bankSaved")
+                })), BS.vent.trigger("linkBankAccount:bankSaved")
             },
             fetchBankAccount: function() {
-                this.listenToOnce(BMT.user, "sync", this.goToNext), BMT.user.fetch()
+                this.listenToOnce(BS.user, "sync", this.goToNext), BS.user.fetch()
             },
             goToNext: function() {
                 this.trigger("next")
@@ -24248,7 +24249,7 @@ var requirejs, require, define;
             return s += '.</p>\n    <p class="body">You will receive a reminder to verify the amounts <nobr>from support@betasmartz.com</nobr></p>\n    <div class="buttons">\n        <div class="submit-button">\n            <button type="button">Great, got it</button>\n        </div>\n    </div>\n</div>', s
         });
         return t.registerPartial("views/linkBankAccount/manualVerification", n), n
-    }), define("views/linkBankAccount/manualVerificationView", ["underscore", "hbs!views/linkBankAccount/manualVerification", "common/betterment.views", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r) {
+    }), define("views/linkBankAccount/manualVerificationView", ["underscore", "hbs!views/linkBankAccount/manualVerification", "common/betasmartz.views", "views/linkBankAccount/analytics/linkBankAnalytics"], function(e, t, n, r) {
         return n.View.extend({
             className: "manual-verification",
             ui: {
@@ -24284,7 +24285,7 @@ var requirejs, require, define;
                 }
             }
         })
-    }), define("models/bankAccount", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/bankAccount", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({
             methodUrls: {
                 read: function() {
@@ -24339,7 +24340,7 @@ var requirejs, require, define;
             }
         }, {});
         return i
-    }), define("views/linkBankAccount/setupView", ["underscore", "backbone", "hbs!views/linkBankAccount/setup", "hbs!views/linkBankAccount/bankLogo", "common/betterment.views", "models/v1/depositoryAccountSelection", "components/progressNav/scripts/progressNavView", "components/bubble/scripts/balanceBubbleView", "views/linkBankAccount/chooseAccountView", "views/linkBankAccount/chooseBankView", "views/linkBankAccount/fundingLayout", "views/linkBankAccount/instantDepositView", "views/linkBankAccount/linkBankLayout", "views/linkBankAccount/manualLinkBankView", "views/linkBankAccount/manualVerificationView", "services/plaidService", "components/common/scripts/util/formatter", "views/linkBankAccount/analytics/linkBankAnalytics", "models/bankAccount"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
+    }), define("views/linkBankAccount/setupView", ["underscore", "backbone", "hbs!views/linkBankAccount/setup", "hbs!views/linkBankAccount/bankLogo", "common/betasmartz.views", "models/v1/depositoryAccountSelection", "components/progressNav/scripts/progressNavView", "components/bubble/scripts/balanceBubbleView", "views/linkBankAccount/chooseAccountView", "views/linkBankAccount/chooseBankView", "views/linkBankAccount/fundingLayout", "views/linkBankAccount/instantDepositView", "views/linkBankAccount/linkBankLayout", "views/linkBankAccount/manualLinkBankView", "views/linkBankAccount/manualVerificationView", "services/plaidService", "components/common/scripts/util/formatter", "views/linkBankAccount/analytics/linkBankAnalytics", "models/bankAccount"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
         var b = {
             label: "Choose bank",
             showProgressBar: !0,
@@ -24424,7 +24425,7 @@ var requirejs, require, define;
                 this.trigger("manualFlow"), this.loadFlow(this.manualFlow, 1), this.updateBubble()
             },
             loadRelinkFlow: function() {
-                this.model.set("selectedBankKey", BMT.user.bankAccount().get("plaidBankType").toUpperCase()), this.loadFlow(this.relinkFlow, 0), this.updateBubble()
+                this.model.set("selectedBankKey", BS.user.bankAccount().get("plaidBankType").toUpperCase()), this.loadFlow(this.relinkFlow, 0), this.updateBubble()
             },
             transition: function(e, t, n) {
                 this.contentRegion.$el.animate({
@@ -24455,7 +24456,7 @@ var requirejs, require, define;
                 }), this.listenTo(i, "close", this.closeFlow), this.listenTo(i, "plaidFlow", this.loadPlaidFlow), this.listenTo(i, "manualFlow", this.loadManualFlow), this.listenTo(i, "next", function(e) {
                     this.model.set(e), this.showNextStep(t, i)
                 }), this.listenTo(i, "restart", this.loadPlaidFlow), this.listenTo(i, "selectPlaid", function(e) {
-                    this.isRelink() && (BMT.flash("Your bank account has been relinked successfully."), this.listenTo(BMT.user, "sync", BMT.refreshBanners), BMT.user.fetch(), this.closeFlow())
+                    this.isRelink() && (BS.flash("Your bank account has been relinked successfully."), this.listenTo(BS.user, "sync", BS.refreshBanners), BS.user.fetch(), this.closeFlow())
                 }), this.listenTo(i, "accountSelected", function(e) {
                     this.options.skipFundingStep && this.closeFlow()
                 }), this.transition(i, t.showProgressBar, t.showSidebar)
@@ -24504,10 +24505,10 @@ var requirejs, require, define;
                 e && e.userInitiated ? this.trackUserInitiatedClose() : this.trackFlowComplete(), this.trigger("close"), this.refreshTransfer()
             },
             onModalClose: function() {
-                this.trackUserInitiatedClose(), this.refreshTransfer(), this.hasLinkedBankAccount() && this.hasChangedBankAccount() && !this.isRelink() && BMT.flash("Your bank account has been linked successfully.")
+                this.trackUserInitiatedClose(), this.refreshTransfer(), this.hasLinkedBankAccount() && this.hasChangedBankAccount() && !this.isRelink() && BS.flash("Your bank account has been linked successfully.")
             },
             refreshTransfer: function() {
-                BMT.currentPage === "transfer" && this.hasLinkedBankAccount() && BMT.vent.trigger("refresh:transfer")
+                BS.currentPage === "transfer" && this.hasLinkedBankAccount() && BS.vent.trigger("refresh:transfer")
             },
             hasLinkedBankAccount: function() {
                 return this.getAccountGroup().get("bankAccount").is("active")
@@ -24549,7 +24550,7 @@ var requirejs, require, define;
                 this.transitionRegions = function() {}
             }
         })
-    }), define("views/transfer/smartDeposits/setupWithPlaidView", ["underscore", "backbone", "common/betterment.views", "hbs!views/transfer/smartDeposits/setupWithPlaid", "services/accountService", "components/progressNav/scripts/progressNavView", "views/transfer/smartDeposits/splashView", "views/transfer/smartDeposits/unlinkBankAccountView", "views/transfer/smartDeposits/ineligibleBankView", "views/transfer/smartDeposits/setupView", "views/linkBankAccount/setupView"], function(e, t, n, r, i, s, o, u, a, f, l) {
+    }), define("views/transfer/smartDeposits/setupWithPlaidView", ["underscore", "backbone", "common/betasmartz.views", "hbs!views/transfer/smartDeposits/setupWithPlaid", "services/accountService", "components/progressNav/scripts/progressNavView", "views/transfer/smartDeposits/splashView", "views/transfer/smartDeposits/unlinkBankAccountView", "views/transfer/smartDeposits/ineligibleBankView", "views/transfer/smartDeposits/setupView", "views/linkBankAccount/setupView"], function(e, t, n, r, i, s, o, u, a, f, l) {
         return n.View.extend({
             className: "smart-deposits-master",
             template: r,
@@ -24575,7 +24576,7 @@ var requirejs, require, define;
                 }), this.listenTo(this.progressView, "back", this.showPreviousStep), this.progressRegion.show(this.progressView), this.stepIndex = 0, this.showSplash()
             },
             hasAccountReady: function() {
-                return this.model || BMT.accounts().withSmartDepositEligible().length === 1
+                return this.model || BS.accounts().withSmartDepositEligible().length === 1
             },
             removeChooseGoalProgressStep: function() {
                 var t = e.findIndex(this.progressSteps, function(e) {
@@ -24587,7 +24588,7 @@ var requirejs, require, define;
                 var e = new o({
                     model: this.model
                 });
-                BMT.user.bankAccount() && BMT.user.bankAccount().is("active") ? this.listenToOnce(e, "next", this.showUnlinkBankAccountStep) : this.listenToOnce(e, "next", this.showPlaidFlow), this.mainRegion.show(e)
+                BS.user.bankAccount() && BS.user.bankAccount().is("active") ? this.listenToOnce(e, "next", this.showUnlinkBankAccountStep) : this.listenToOnce(e, "next", this.showPlaidFlow), this.mainRegion.show(e)
             },
             showUnlinkBankAccountStep: function() {
                 this.progressView.setActiveStep(this.stepIndex), this.progressRegion.$el.addClass("shown");
@@ -24599,7 +24600,7 @@ var requirejs, require, define;
                 var e = new l({
                     skipFundingStep: !0,
                     alwaysHideProgress: !0,
-                    accountGroup: BMT.accountGroup
+                    accountGroup: BS.accountGroup
                 });
                 this.listenToOnce(e, "manualFlow", this.showIneligibleBankStep), this.listenTo(e, "block", function() {
                     this.trigger("block")
@@ -24612,7 +24613,7 @@ var requirejs, require, define;
                 this.listenToOnce(e, "next", this.finish), this.mainRegion.show(e)
             },
             refreshCurrentUserAndStartSmartDepositsFlow: function() {
-                this.listenTo(BMT.user, "sync", this.startSmartDepositsFlow), BMT.user.fetch()
+                this.listenTo(BS.user, "sync", this.startSmartDepositsFlow), BS.user.fetch()
             },
             startSmartDepositsFlow: function() {
                 this.advanceProgressMeter();
@@ -24630,8 +24631,8 @@ var requirejs, require, define;
                 this.progressRegion.$el.removeClass("shown")
             },
             finish: function() {
-                BMT.refreshAccounts(), BMT.user.fetch({
-                    success: BMT.refreshBanners
+                BS.refreshAccounts(), BS.user.fetch({
+                    success: BS.refreshBanners
                 }), this.trigger("close finish")
             }
         })
@@ -24665,7 +24666,7 @@ var requirejs, require, define;
             }) : u), s += l(o) + ">Turn Off SmartDeposit</button>\n</form>\n", s
         });
         return t.registerPartial("views/transfer/smartDeposits/editSettings", n), n
-    }), define("views/transfer/smartDeposits/editSettingsView", ["hbs!views/transfer/smartDeposits/editSettings", "common/betterment.views", "components/common/scripts/behaviors/editableForm"], function(e, t, n) {
+    }), define("views/transfer/smartDeposits/editSettingsView", ["hbs!views/transfer/smartDeposits/editSettings", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm"], function(e, t, n) {
         return t.View.extend({
             template: e,
             className: "smart-deposits-edit-settings",
@@ -24674,7 +24675,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 disableInput: function() {
-                    return BMT.user.is("advisorSession") ? "disabled" : ""
+                    return BS.user.is("advisorSession") ? "disabled" : ""
                 }
             },
             behaviors: {
@@ -24692,7 +24693,7 @@ var requirejs, require, define;
                     },
                     onSubmit: function() {
                         this.block(), this.model.save().then(function() {
-                            BMT.flash("Your SmartDeposit settings have been saved."), this.trigger("finish close")
+                            BS.flash("Your SmartDeposit settings have been saved."), this.trigger("finish close")
                         }.bind(this)).always(function() {
                             this.unblock()
                         }.bind(this))
@@ -24701,7 +24702,7 @@ var requirejs, require, define;
             },
             turnOffSmartDeposits: function(e) {
                 e.preventDefault(), this.block(), this.model.destroy().then(function() {
-                    this.model.set("enabled", !1), BMT.flash("SmartDeposits successfully disabled."), this.trigger("finish close")
+                    this.model.set("enabled", !1), BS.flash("SmartDeposits successfully disabled."), this.trigger("finish close")
                 }.bind(this)).always(function() {
                     this.unblock()
                 }.bind(this))
@@ -24709,7 +24710,7 @@ var requirejs, require, define;
         })
     }), define("views/common/smartDepositSettingsView", ["views/transfer/smartDeposits/setupView", "views/transfer/smartDeposits/setupWithPlaidView", "views/transfer/smartDeposits/editSettingsView"], function(e, t, n) {
         var r = function() {
-            var n = BMT.user.bankAccount();
+            var n = BS.user.bankAccount();
             return n && n.isPlaidEnabled() ? e : t
         };
         return {
@@ -24724,7 +24725,7 @@ var requirejs, require, define;
                 return new e
             }
         }
-    }), define("views/summary/transactionStatusView", ["common/errorHandler", "common/betterment.views", "hbs!views/summary/transactionStatus", "models/visitor", "modules/modals", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "views/common/smartDepositSettingsView", ""], function(e, t, n, r, i, s, o, u) {
+    }), define("views/summary/transactionStatusView", ["common/errorHandler", "common/betasmartz.views", "hbs!views/summary/transactionStatus", "models/visitor", "modules/modals", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "views/common/smartDepositSettingsView", ""], function(e, t, n, r, i, s, o, u) {
         return t.View.extend({
             template: n,
             toolTips: {
@@ -24789,7 +24790,7 @@ var requirejs, require, define;
             },
             openSmartDepositModal: function() {
                 var t = u.withConfig(this.smartDepositConfig);
-                BMT.user.is("advisorSession") && this.smartDepositConfig.not("enabled") ? BMT.alert(e.getErrorContentForCode("UNAUTHORIZED")) : i.show(t)
+                BS.user.is("advisorSession") && this.smartDepositConfig.not("enabled") ? BS.alert(e.getErrorContentForCode("UNAUTHORIZED")) : i.show(t)
             }
         })
     }), define("hbs!views/common/accountStatus", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -24988,7 +24989,7 @@ var requirejs, require, define;
                 return Math.max(this.getEffectiveSpouseRetirementAge(e, t) + 1, e.num("spouseLifeExpectancy"))
             }
         }
-    }), define("views/common/accountStatusView", ["underscore", "common/betterment.views", "hbs!views/common/accountStatus", "components/common/scripts/constants/accountStatus", "components/common/scripts/services/domainService", "components/common/scripts/services/projectorService", "components/common/scripts/constants/colors"], function(e, t, n, r, i, s, o) {
+    }), define("views/common/accountStatusView", ["underscore", "common/betasmartz.views", "hbs!views/common/accountStatus", "components/common/scripts/constants/accountStatus", "components/common/scripts/services/domainService", "components/common/scripts/services/projectorService", "components/common/scripts/constants/colors"], function(e, t, n, r, i, s, o) {
         var u = function() {
                 return ''
             },
@@ -25045,17 +25046,17 @@ var requirejs, require, define;
                 },
                 onInitialize: function() {
                     this.goalStatus = s.getGoalStatus(this.model, {
-                        totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                        defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                        totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                        defaultFeeRate: BS.accountGroup.defaultFeeRate()
                     })
                 },
                 goToAdvice: function() {
-                    BMT.selectedAccount = this.model, BMT.router.navigate("advice", !0), this.trigger("goalStatusClicked", this.goalStatus)
+                    BS.selectedAccount = this.model, BS.router.navigate("advice", !0), this.trigger("goalStatusClicked", this.goalStatus)
                 }
             },
             l = t.View.extend(f);
         return l
-    }), define("views/summary/frontPanelView", ["jquery", "underscore", "common/betterment.views", "hbs!views/summary/frontPanel", "hbs!views/tooltips/negativeReturns", "common/constants/returnsConstants", "views/summary/speedometerView", "views/summary/transactionStatusView", "views/common/accountStatusView", "models/account", "models/visitor", "components/common/scripts/services/projectorService"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
+    }), define("views/summary/frontPanelView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/summary/frontPanel", "hbs!views/tooltips/negativeReturns", "common/constants/returnsConstants", "views/summary/speedometerView", "views/summary/transactionStatusView", "views/common/accountStatusView", "models/account", "models/visitor", "components/common/scripts/services/projectorService"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
         return n.View.extend({
             template: r,
             templateHelpers: {
@@ -25064,8 +25065,8 @@ var requirejs, require, define;
                 },
                 goalStatus: function() {
                     return c.getGoalStatus(this.self.model, {
-                        totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                        defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                        totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                        defaultFeeRate: BS.accountGroup.defaultFeeRate()
                     })
                 },
                 showHelpText: function() {
@@ -25095,9 +25096,9 @@ var requirejs, require, define;
                     if (!l.hasVariation("negative_returns_tooltip_on")) return !1;
                     var e = s.NEGATIVE_RETURNS_PERCENTAGE_THRESHOLD / 100,
                         t = s.NEGATIVE_RETURNS_AGE_THRESHOLD_IN_YEARS.years().ago(),
-                        n = BMT.accountGroup.meetsNegativeReturnsPercentageThreshold(e) && BMT.accountGroup.meetsNegativeReturnsAgeThreshold(t),
+                        n = BS.accountGroup.meetsNegativeReturnsPercentageThreshold(e) && BS.accountGroup.meetsNegativeReturnsAgeThreshold(t),
                         r = !n && this.self.model.meetsNegativeReturnsPercentageThreshold(e) && this.self.model.meetsNegativeReturnsAgeThreshold(t);
-                    return r && BMT.analytics.track("ElementViewed", {
+                    return r && BS.analytics.track("ElementViewed", {
                         Type: "ToolTip",
                         Name: "NegativeReturns",
                         Location: "GoalPanel"
@@ -25191,12 +25192,12 @@ var requirejs, require, define;
                 this._gotoTab(e, "transfer")
             },
             _gotoTab: function(e, t) {
-                e && e.preventDefault(), BMT.selectedAccount = this.model, BMT.scrollToTop({
+                e && e.preventDefault(), BS.selectedAccount = this.model, BS.scrollToTop({
                     duration: 0
-                }), BMT.router.navigate(t, !0)
+                }), BS.router.navigate(t, !0)
             },
             fireNegativeReturnsHoverMixpanelEvent: function() {
-                BMT.analytics.track("ElementViewed", {
+                BS.analytics.track("ElementViewed", {
                     Type: "ToolTip",
                     Name: "NegativeReturnsHover",
                     Location: "GoalPanel"
@@ -25228,7 +25229,7 @@ var requirejs, require, define;
                     })
                 },
                 willIncurDistributionPenalty: function() {
-                    return this.account().isIRA() && BMT.user.age() < r.MIN_WITHDRAWAL_AGE
+                    return this.account().isIRA() && BS.user.age() < r.MIN_WITHDRAWAL_AGE
                 }
             },
             onOK: function(e) {
@@ -25239,14 +25240,14 @@ var requirejs, require, define;
                 }, {
                     wait: !0,
                     success: function(e) {
-                        BMT.analytics.track("AutoWithdrawalUpdated", {
+                        BS.analytics.track("AutoWithdrawalUpdated", {
                             Location: "Transfer",
                             GoalId: this.account().get("id"),
                             GoalType: this.account().get("goalType"),
                             Value: this.formatter.removeCommas(e.get("amount")),
                             IsEnabled: e.get("enabled"),
                             Frequence: e.get("frequency")
-                        }), this.model.set("account", this.account()), this.trigger("save"), BMT.vent.trigger("automaticWithdrawal:update"), this.refreshAccountAndClose(), this.model.is("enabled") ? BMT.flash("Automatic withdrawals will initiate " + this.model.frequencyText() + ".  Please allow 4-5 business days for transfers to complete.") : BMT.flash("Your automatic withdrawal has been turned off."), this.onAutoTransactionUpdateComplete(this.model)
+                        }), this.model.set("account", this.account()), this.trigger("save"), BS.vent.trigger("automaticWithdrawal:update"), this.refreshAccountAndClose(), this.model.is("enabled") ? BS.flash("Automatic withdrawals will initiate " + this.model.frequencyText() + ".  Please allow 4-5 business days for transfers to complete.") : BS.flash("Your automatic withdrawal has been turned off."), this.onAutoTransactionUpdateComplete(this.model)
                     }.bind(this),
                     error: function() {
                         this.triggerAllValidation()
@@ -25266,7 +25267,7 @@ var requirejs, require, define;
                 return new s
             }
         })
-    }), define("views/summary/backPanelView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/summary/speedometerView", "views/common/accountStatusView", "models/account", "views/summary/accountReturnView", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "views/transfer/automaticWithdrawalSettingsView", "views/summary/transactionStatusView", "components/common/scripts/services/projectorService", "components/common/scripts/constants/accountStatus"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/summary/backPanelView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/summary/speedometerView", "views/common/accountStatusView", "models/account", "views/summary/accountReturnView", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "views/transfer/automaticWithdrawalSettingsView", "views/summary/transactionStatusView", "components/common/scripts/services/projectorService", "components/common/scripts/constants/accountStatus"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         return r.View.extend({
             template: "summary/backPanel",
             templateHelpers: {
@@ -25287,8 +25288,8 @@ var requirejs, require, define;
                 },
                 goalStatus: function() {
                     return h.getGoalStatus(this.self.model, {
-                        totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                        defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                        totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                        defaultFeeRate: BS.accountGroup.defaultFeeRate()
                     })
                 },
                 showHelpText: function() {
@@ -25375,9 +25376,9 @@ var requirejs, require, define;
                 this._gotoTab(e, "transfer")
             },
             _gotoTab: function(e, t) {
-                e && e.preventDefault(), BMT.selectedAccount = this.model, BMT.scrollToTop({
+                e && e.preventDefault(), BS.selectedAccount = this.model, BS.scrollToTop({
                     duration: 0
-                }), BMT.router.navigate(t, !0)
+                }), BS.router.navigate(t, !0)
             },
             editGoalAmount: function(t) {
                 var n = t && t.target;
@@ -25396,7 +25397,7 @@ var requirejs, require, define;
                         goalAmount: n
                     }, {
                         complete: function() {
-                            BMT.analytics.track("GoalUpdated", {
+                            BS.analytics.track("GoalUpdated", {
                                 Name: "GoalTarget",
                                 Value: n,
                                 Location: "Summary/BackPanel",
@@ -25408,7 +25409,7 @@ var requirejs, require, define;
                 }
             },
             showAutoDepositModal: function(e) {
-                e && e.preventDefault(), BMT.analytics.track("ElementClicked", {
+                e && e.preventDefault(), BS.analytics.track("ElementClicked", {
                     Name: "AutoDepositSettings",
                     Type: "Link",
                     Location: "Summary"
@@ -25417,7 +25418,7 @@ var requirejs, require, define;
                 this.listenTo(t, "destroy", this.render)
             },
             showAutoWithdrawalModal: function(e) {
-                e && e.preventDefault(), BMT.analytics.track("ElementClicked", {
+                e && e.preventDefault(), BS.analytics.track("ElementClicked", {
                     Name: "AutoWithdrawalSettings",
                     Type: "Link",
                     Location: "Summary"
@@ -25426,7 +25427,7 @@ var requirejs, require, define;
                 this.listenTo(t, "destroy", this.render)
             }
         })
-    }), define("models/transaction", ["jquery", "underscore", "backbone", "common/betterment.models", "models/account", "components/common/scripts/util/formatter", "components/transaction/scripts/constants/transactionConstants"], function(e, t, n, r, i, s, o) {
+    }), define("models/transaction", ["jquery", "underscore", "backbone", "common/betasmartz.models", "models/account", "components/common/scripts/util/formatter", "components/transaction/scripts/constants/transactionConstants"], function(e, t, n, r, i, s, o) {
         var u = r.RelationalModel.extend({
                 url: "/transactions",
                 relations: [{
@@ -25450,7 +25451,7 @@ var requirejs, require, define;
                     var s = this._handleSaveArguments(e, n, i),
                         o = t.extend({}, s.options, {
                             success: function(e) {
-                                e.get("type") === "DEPOSIT" && BMT.vent.trigger("deposit:save", e), s.options.success && s.options.success(e)
+                                e.get("type") === "DEPOSIT" && BS.vent.trigger("deposit:save", e), s.options.success && s.options.success(e)
                             }
                         });
                     return r.RelationalModel.prototype.save.call(this, s.attrs, o)
@@ -25466,7 +25467,7 @@ var requirejs, require, define;
                 },
                 getIdParams: function() {
                     return {
-                        bettermentdbUserTransactionId: this.num("id")
+                        betasmartzdbUserTransactionId: this.num("id")
                     }
                 },
                 validation: {
@@ -25484,7 +25485,7 @@ var requirejs, require, define;
                             d = n.type === "ACCOUNT_TRANSFER_FROM",
                             v = n.contributionType,
                             m = d ? n.fromAccount : this.get("account"),
-                            g = BMT.user.isFull();
+                            g = BS.user.isFull();
                         if (h) {
                             g || (i += m.getTotalPendingDeposits());
                             if (m.isIRA())
@@ -25559,7 +25560,7 @@ var requirejs, require, define;
             Model: u,
             Collection: a
         }
-    }), define("views/summary/transferFundsView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "backbone", "common/betterment.views", "models/transaction", "models/account"], function(e, t, n, r, i, s, o) {
+    }), define("views/summary/transferFundsView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "backbone", "common/betasmartz.views", "models/transaction", "models/account"], function(e, t, n, r, i, s, o) {
         return i.ModalView.extend({
             template: "summary/transferFunds",
             className: "transfer-funds",
@@ -25589,13 +25590,13 @@ var requirejs, require, define;
                 }
             },
             onInitialize: function() {
-                this.accounts = BMT.accounts(), this.model = new s.Model({
+                this.accounts = BS.accounts(), this.model = new s.Model({
                     type: "ACCOUNT_TRANSFER_FROM"
                 }), this.fromAccounts = t.filter(this.accounts.forSelect(), function(e) {
                     var t = this.accounts.get(e.value);
                     return !t.isIRA() && t.num("currentBalance") > 0
                 }, this), this.fromChange(), this.toChange(), this.on("destroy", function() {
-                    this.pausing || BMT.refreshAccounts()
+                    this.pausing || BS.refreshAccounts()
                 })
             },
             onRender: function() {
@@ -25604,7 +25605,7 @@ var requirejs, require, define;
                 })
             },
             onShow: function() {
-                BMT.analytics.track("ElementViewed", {
+                BS.analytics.track("ElementViewed", {
                     Type: "Modal",
                     Name: "Transfer",
                     Location: "Summary",
@@ -25641,7 +25642,7 @@ var requirejs, require, define;
                 if (!this.model.validate(t)) {
                     var n = parseFloat(t.amount),
                         i = this;
-                    this.model.get("fromAccount").shouldAmountTriggerWithdrawAll(n) ? BMT.alert({
+                    this.model.get("fromAccount").shouldAmountTriggerWithdrawAll(n) ? BS.alert({
                         width: 400,
                         title: "Transfer Everything From Your Goal?",
                         icon: "warning",
@@ -25666,7 +25667,7 @@ var requirejs, require, define;
                 var t = this;
                 this.trigger("proceed", this), this.block(), this.model.save(e, {
                     success: function() {
-                        BMT.analytics.track("TransferSubmitted", {
+                        BS.analytics.track("TransferSubmitted", {
                             Location: "Summary/Transfer",
                             Value: t.formatter.removeCommas(t.$amount.val()),
                             FromGoalId: t.model.get("fromAccount").get("id"),
@@ -25674,8 +25675,8 @@ var requirejs, require, define;
                             ToGoalId: t.model.get("toAccount").get("id"),
                             ToGoalType: t.model.get("toAccount").get("goalType")
                         }), t.pausing = !0, setTimeout(function() {
-                            BMT.refreshAccounts()
-                        }, 6e5), BMT.modal.close(t), BMT.flash("Your transfer was initiated successfully.")
+                            BS.refreshAccounts()
+                        }, 6e5), BS.modal.close(t), BS.flash("Your transfer was initiated successfully.")
                     },
                     complete: function() {
                         t.unblock()
@@ -25683,7 +25684,7 @@ var requirejs, require, define;
                 })
             },
             onCancel: function(e) {
-                this.trigger("cancel", this), BMT.modal.close(this)
+                this.trigger("cancel", this), BS.modal.close(this)
             },
             showTaxImpact: function(e) {
                 e.preventDefault();
@@ -26022,7 +26023,7 @@ var requirejs, require, define;
             return s += "\n        </dl>\n    </div>\n</div>\n", s
         });
         return t.registerPartial("views/taxImpact/taxImpactBreakdown", n), n
-    }), define("views/taxImpact/taxImpactBreakdownView", ["common/betterment.views", "hbs!views/taxImpact/taxImpactBreakdown"], function(e, t) {
+    }), define("views/taxImpact/taxImpactBreakdownView", ["common/betasmartz.views", "hbs!views/taxImpact/taxImpactBreakdown"], function(e, t) {
         var n = {
             template: t,
             templateHelpers: {
@@ -26091,7 +26092,7 @@ var requirejs, require, define;
             }
         };
         return e.View.extend(n)
-    }), define("views/taxImpact/taxImpactDetailsView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/taxImpact/taxImpactLoss", "hbs!views/taxImpact/taxImpactGain", "hbs!views/taxImpact/lossesWashed", "hbs!views/taxImpact/pendingTransaction", "components/common/scripts/templateHelpers/formatTaxes", "services/taxImpactCalculator", "views/taxImpact/taxImpactBreakdownView", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
+    }), define("views/taxImpact/taxImpactDetailsView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/taxImpact/taxImpactLoss", "hbs!views/taxImpact/taxImpactGain", "hbs!views/taxImpact/lossesWashed", "hbs!views/taxImpact/pendingTransaction", "components/common/scripts/templateHelpers/formatTaxes", "services/taxImpactCalculator", "views/taxImpact/taxImpactBreakdownView", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
         function p(e, t) {
             var n = e.get("type");
             return h[n] ? h[n][t] : ""
@@ -26185,7 +26186,7 @@ var requirejs, require, define;
             v = {},
             m = r.View.extend(d, v);
         return m
-    }), define("views/taxImpact/taxImpactView", ["jquery", "underscore", "common/betterment.views", "hbs!views/taxImpact/taxImpact", "views/taxImpact/taxImpactDetailsView"], function(e, t, n, r, i) {
+    }), define("views/taxImpact/taxImpactView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/taxImpact/taxImpact", "views/taxImpact/taxImpactDetailsView"], function(e, t, n, r, i) {
         return n.ModalView.extend({
             className: "tax-impact",
             template: r,
@@ -26205,7 +26206,7 @@ var requirejs, require, define;
                 "click a.existing-transactions": "hideModal"
             },
             hideModal: function() {
-                this.trigger("navigateAway"), BMT.modal.close(this)
+                this.trigger("navigateAway"), BS.modal.close(this)
             },
             onShow: function() {
                 this.block(!1, "tax-impact-spinner"), this.model.save().then(this.onDataLoaded.bind(this, this.model))
@@ -26218,7 +26219,7 @@ var requirejs, require, define;
             },
             onAction: function(t) {
                 var n = e(t.target).data("trigger");
-                BMT.modal.close(this), n && this.trigger(n)
+                BS.modal.close(this), n && this.trigger(n)
             }
         })
     }), define("models/v1/baseTaxImpact", ["models/v1/baseModels"], function(e) {
@@ -26279,10 +26280,10 @@ var requirejs, require, define;
                     sourceAccount: this.sourceAccount,
                     toAccount: this.toAccount
                 });
-                this.listenTo(e, "proceed", this.onProceed), this.listenTo(e, "showTaxImpact", this.showTaxImpact, this), this.listenTo(e, "cancel", this.onCancel), BMT.modal.show(e)
+                this.listenTo(e, "proceed", this.onProceed), this.listenTo(e, "showTaxImpact", this.showTaxImpact, this), this.listenTo(e, "cancel", this.onCancel), BS.modal.show(e)
             },
             showTaxImpact: function(e) {
-                BMT.modal.close(e), this.amount = e.$amount.numberVal(), this.sourceAccount = e.model.get("fromAccount"), this.toAccount = e.model.get("toAccount");
+                BS.modal.close(e), this.amount = e.$amount.numberVal(), this.sourceAccount = e.model.get("fromAccount"), this.toAccount = e.model.get("toAccount");
                 var t = new r({
                         amount: this.amount,
                         sourceAccount: this.sourceAccount,
@@ -26306,7 +26307,7 @@ var requirejs, require, define;
                             }
                         }]
                     });
-                this.listenTo(i, "cancel navigateAway", this.onCancel), this.listenTo(i, "showConfirm", this.showConfirm), BMT.modal.show(i)
+                this.listenTo(i, "cancel navigateAway", this.onCancel), this.listenTo(i, "showConfirm", this.showConfirm), BS.modal.show(i)
             },
             onCancel: function(e) {
                 this.trigger("cancel", e)
@@ -26350,7 +26351,7 @@ var requirejs, require, define;
                 }
             }
         }
-    }), define("views/summary/deleteAccountView", ["jquery", "underscore", "backbone", "common/betterment.views", "components/common/scripts/models/appData", "services/financialPlanUpdater"], function(e, t, n, r, i, s) {
+    }), define("views/summary/deleteAccountView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "components/common/scripts/models/appData", "services/financialPlanUpdater"], function(e, t, n, r, i, s) {
         return r.ModalView.extend({
             template: "summary/deleteAccount",
             className: "delete-account",
@@ -26371,15 +26372,15 @@ var requirejs, require, define;
                 },
                 account_selector: function() {
                     var e = this,
-                        n = BMT.accounts().filter(function(t) {
+                        n = BS.accounts().filter(function(t) {
                             return t.getIdOrCid() !== e.self.model.getIdOrCid() && !t.isIRA()
                         }),
                         r = !this.ira() && n.length,
-                        i = BMT.accountGroup.get("bankAccount").get("description"),
+                        i = BS.accountGroup.get("bankAccount").get("description"),
                         s = "bank",
                         o = "targetAccountId",
                         u;
-                    if (r && BMT.accountGroup.get("bankAccount").is("confirmed")) {
+                    if (r && BS.accountGroup.get("bankAccount").is("confirmed")) {
                         var a = t.map(n, function(e) {
                             return {
                                 value: e.getIdOrCid(),
@@ -26399,7 +26400,7 @@ var requirejs, require, define;
                     return u
                 },
                 distributionSelector: function() {
-                    return this.build_dropdown_menu(i.getInstance().distributionsForSelect(BMT.user), {
+                    return this.build_dropdown_menu(i.getInstance().distributionsForSelect(BS.user), {
                         name: "distributionType",
                         "class": "distribution-type-selector",
                         style: "width: 260px;"
@@ -26434,20 +26435,20 @@ var requirejs, require, define;
                             n.model.destroy({
                                 wait: !0,
                                 success: function() {
-                                    n.options.callback && n.options.callback(), BMT.flash("Your " + t.escape(n.model.get("name")) + " goal has been deleted."), BMT.modal.close(n), BMT.refreshAccounts()
+                                    n.options.callback && n.options.callback(), BS.flash("Your " + t.escape(n.model.get("name")) + " goal has been deleted."), BS.modal.close(n), BS.refreshAccounts()
                                 },
                                 error: function() {
-                                    BMT.modal.close(n)
+                                    BS.modal.close(n)
                                 },
                                 complete: function() {
                                     n.unblock()
                                 }
                             })
                         }
-                        n.trigger("proceed", n), n.block(), BMT.selectedAccount = BMT.accounts().find(function(e) {
+                        n.trigger("proceed", n), n.block(), BS.selectedAccount = BS.accounts().find(function(e) {
                             return e.get("id") !== n.model.get("id")
                         }), n.updateModelDestinationAccount();
-                        var r = BMT.user.get("financialPlans").selected();
+                        var r = BS.user.get("financialPlans").selected();
                         r.hasPlanAccount(n.model.getIdParams()) ? s.getStateSynchronizer({
                             account: n.model,
                             financialPlan: r,
@@ -26465,7 +26466,7 @@ var requirejs, require, define;
                     if (u || a) {
                         var f = u ? "Beneficiary" : "Disability",
                             l = u ? "certified copy of the account holder's death certificate." : "copy of a physician's statement or letter from the Age Pension office confirming your disability.";
-                        BMT.alert({
+                        BS.alert({
                             width: 450,
                             icon: "warning",
                             title: "Extra Documentation Required",
@@ -26481,14 +26482,14 @@ var requirejs, require, define;
                                 }
                             }],
                             handler: function(e) {
-                                e === "yes" ? r() : BMT.modal.close(this)
+                                e === "yes" ? r() : BS.modal.close(this)
                             }
                         })
                     } else r()
                 } else r()
             },
             onCancel: function(e) {
-                this.trigger("cancel", this), BMT.refreshAccounts(), BMT.modal.close(this)
+                this.trigger("cancel", this), BS.refreshAccounts(), BS.modal.close(this)
             },
             showTaxImpact: function(e) {
                 e.preventDefault(), this.updateModelDestinationAccount(), this.trigger("showTaxImpact", this)
@@ -26521,7 +26522,7 @@ var requirejs, require, define;
                 this.listenTo(e, "proceed", this.onProceed), this.listenTo(e, "showTaxImpact", this.showTaxImpact), this.listenTo(e, "cancel", this.onCancel)
             },
             showTaxImpact: function(e) {
-                BMT.modal.close(e), this.toAccountId = e.model.get("transferAllTo");
+                BS.modal.close(e), this.toAccountId = e.model.get("transferAllTo");
                 var t, s = this.sourceAccount.get("availableBalanceForWithdrawal");
                 this.toAccountId ? t = new r({
                     sourceAccount: this.sourceAccount,
@@ -26549,7 +26550,7 @@ var requirejs, require, define;
                         }
                     }]
                 });
-                this.listenTo(o, "cancel navigateAway", this.onCancel), this.listenTo(o, "showConfirm", this.showConfirm), BMT.modal.show(o)
+                this.listenTo(o, "cancel navigateAway", this.onCancel), this.listenTo(o, "showConfirm", this.showConfirm), BS.modal.show(o)
             },
             onCancel: function(e) {
                 this.trigger("cancel", e)
@@ -26558,7 +26559,7 @@ var requirejs, require, define;
                 this.trigger("proceed", e)
             }
         })
-    }), define("views/common/iraRecharacterizationView", ["jquery", "underscore", "backbone", "common/betterment.views", "common/betterment.models", "models/account"], function(e, t, n, r, i, s) {
+    }), define("views/common/iraRecharacterizationView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "common/betasmartz.models", "models/account"], function(e, t, n, r, i, s) {
         var o = i.RelationalModel.extend({
             url: "/iraRecharacterization",
             validation: {
@@ -26589,7 +26590,7 @@ var requirejs, require, define;
                     return this.formatDate("m/dd/yy", i.Model.date(e))
                 },
                 has_traditional_ira: function() {
-                    return BMT.accounts().hasTraditionalIRA()
+                    return BS.accounts().hasTraditionalIRA()
                 }
             },
             toolTips: {
@@ -26653,11 +26654,11 @@ var requirejs, require, define;
                     var r = this;
                     this.block(), this.model.save(t, {
                         success: function() {
-                            BMT.user.fetch({
+                            BS.user.fetch({
                                 success: function() {
-                                    BMT.refreshAccounts()
+                                    BS.refreshAccounts()
                                 }
-                            }), BMT.flash("IRA Recharacterization initiated.<br />You will receive a confirmation email shortly."), BMT.modal.close(r)
+                            }), BS.flash("IRA Recharacterization initiated.<br />You will receive a confirmation email shortly."), BS.modal.close(r)
                         },
                         complete: function() {
                             r.unblock()
@@ -26666,7 +26667,7 @@ var requirejs, require, define;
                 } else this.triggerAllValidation(t)
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             _fullAmount: function() {
                 var e = this.selectedConversion;
@@ -26768,7 +26769,7 @@ var requirejs, require, define;
                 return n ? n.handler(t) : this.fallback && this.fallback(t)
             }
         }), t
-    }), define("models/rolloverFollowup", ["jquery", "underscore", "backbone", "common/betterment.models", "models/account", "components/common/scripts/models/appData"], function(e, t, n, r, i, s) {
+    }), define("models/rolloverFollowup", ["jquery", "underscore", "backbone", "common/betasmartz.models", "models/account", "components/common/scripts/models/appData"], function(e, t, n, r, i, s) {
         var o = r.RelationalModel.extend({
             url: "/rolloverFollowup",
             defaults: {
@@ -26811,7 +26812,7 @@ var requirejs, require, define;
         return {
             Model: o
         }
-    }), define("views/common/addGoal/addGoalCardView", ["underscore", "common/betterment.views"], function(e, t) {
+    }), define("views/common/addGoal/addGoalCardView", ["underscore", "common/betasmartz.views"], function(e, t) {
         return t.View.extend({
             template: "common/addGoal/addGoalCard",
             className: "goal-card",
@@ -26964,7 +26965,7 @@ var requirejs, require, define;
         }), s.SEP_IRA = r(s.BASE, {
             cardTitle: "SEP IRA",
             extraClass: "sep-ira",
-            tooltip: "Betterment’s SEP IRA is intended for self-employed individuals.  SEP IRA contributions may be tax deductible, and you defer paying taxes on gains until you withdraw in retirement.  Consult your tax advisor to see if your contributions are deductible.",
+            tooltip: "Betasmartz’s SEP IRA is intended for self-employed individuals.  SEP IRA contributions may be tax deductible, and you defer paying taxes on gains until you withdraw in retirement.  Consult your tax advisor to see if your contributions are deductible.",
             disabledTooltip: "Great job, you already have a SEP IRA. To simplify your retirement saving we allow you to just have one SEP IRA. ",
             goalName: "SEP IRA",
             goalType: "RETIREMENT",
@@ -27138,7 +27139,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '" />\n</div>\n\n<div class="left delete-icon"></div>', s
         });
         return t.registerPartial("views/profile/editBeneficiary", n), n
-    }), define("views/profile/editBeneficiaryView", ["jquery", "underscore", "common/betterment.views", "components/common/scripts/models/appData", "hbs!views/profile/editBeneficiary", "components/common/scripts/services/dateService"], function(e, t, n, r, i, s) {
+    }), define("views/profile/editBeneficiaryView", ["jquery", "underscore", "common/betasmartz.views", "components/common/scripts/models/appData", "hbs!views/profile/editBeneficiary", "components/common/scripts/services/dateService"], function(e, t, n, r, i, s) {
         return n.View.extend({
             template: i,
             className: "edit-beneficiary",
@@ -27251,7 +27252,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="header">\n    <label class="left note name">Name</label>\n    <label class="left note relationship">Relationship</label>\n    <label class="left note dateOfBirth">Birth date</label>\n    <label class="left note">Share</label>\n</div>\n\n<div class="contents"></div>\n\n<button class="add silver">Add Another Beneficiary</button>\n<h2 class="right shareTotal"></h2>\n'
         });
         return t.registerPartial("views/profile/editBeneficiaryComposite", n), n
-    }), define("views/profile/editBeneficiaryCompositeView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/profile/editBeneficiaryView", "modules/basisPointConverter", "models/v1/beneficiary", "hbs!views/profile/editBeneficiaryComposite"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/profile/editBeneficiaryCompositeView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/profile/editBeneficiaryView", "modules/basisPointConverter", "models/v1/beneficiary", "hbs!views/profile/editBeneficiaryComposite"], function(e, t, n, r, i, s, o, u) {
         return r.CompositeView.extend({
             template: u,
             className: "beneficiaries-table",
@@ -27314,7 +27315,7 @@ var requirejs, require, define;
                 return this.updateFieldValidation(this.ui.shareTotal, t), e || t
             }
         })
-    }), define("views/profile/editBeneficiariesView", ["hbs!views/profile/editBeneficiaries", "common/betterment.views", "views/profile/editBeneficiaryCompositeView"], function(e, t, n) {
+    }), define("views/profile/editBeneficiariesView", ["hbs!views/profile/editBeneficiaries", "common/betasmartz.views", "views/profile/editBeneficiaryCompositeView"], function(e, t, n) {
         return t.ModalView.extend({
             template: e,
             className: "edit-beneficiaries",
@@ -27346,13 +27347,13 @@ var requirejs, require, define;
             onOK: function(e) {
                 if (this.primaryBeneficiariesView.hasErrors() || this.contingentBeneficiariesView.hasErrors()) return;
                 this.block(), this.collection.save().then(function() {
-                    BMT.modal.close(this), BMT.flash("Your beneficiaries were updated successfully"), this.collection.reset(this.collection.models), this.collection.trigger("sync")
+                    BS.modal.close(this), BS.flash("Your beneficiaries were updated successfully"), this.collection.reset(this.collection.models), this.collection.trigger("sync")
                 }.bind(this)).always(function() {
                     this.unblock()
                 }.bind(this))
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("components/portfolio/scripts/views/donutView", ["jquery", "underscore", "components/common/scripts/views/baseViews", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/constants/colors", "components/common/scripts/util/ie"], function(e, t, n, r, i, s) {
@@ -27613,7 +27614,7 @@ var requirejs, require, define;
             },
             i = e.extend(r);
         return i
-    }), define("views/advice/goalCompleteView", ["jquery", "underscore", "common/betterment.views", "components/portfolio/scripts/views/targetPortfolioDonutView", "components/common/scripts/services/projectorService"], function(e, t, n, r, i) {
+    }), define("views/advice/goalCompleteView", ["jquery", "underscore", "common/betasmartz.views", "components/portfolio/scripts/views/targetPortfolioDonutView", "components/common/scripts/services/projectorService"], function(e, t, n, r, i) {
         return n.ModalView.extend({
             className: "goal-complete",
             template: "advice/goalComplete",
@@ -27627,7 +27628,7 @@ var requirejs, require, define;
                     return this.is_retiree_with_retirement_goal() ? "Since you are age " + this.user_age() + " and retired," : this.self.model.isRetirementGoalDisplayedAsAge() ? "You want to retire at the age of " + this.self.model.goalAge() + ", so" : this.self.model.isEmergency() ? "You want to have a wealth protection, so" : "You want to invest for " + this.term() + ", so"
                 },
                 build_wealth_text: function() {
-                    return BMT.accountGroup.isPersonal() ? "Based on your age and goal to build wealth, we set up a portfolio of " + this.allocation_breakdown() + " to maximize your money's potential growth and reduce potential losses." : "Based on your goal type, we set up a portfolio of " + this.allocation_breakdown() + " to maximize your money's potential growth and reduce potential losses. You can customize this on the next screen."
+                    return BS.accountGroup.isPersonal() ? "Based on your age and goal to build wealth, we set up a portfolio of " + this.allocation_breakdown() + " to maximize your money's potential growth and reduce potential losses." : "Based on your goal type, we set up a portfolio of " + this.allocation_breakdown() + " to maximize your money's potential growth and reduce potential losses. You can customize this on the next screen."
                 },
                 term: function() {
                     var e = this.self.model.goalTerm();
@@ -27644,8 +27645,8 @@ var requirejs, require, define;
                 },
                 show_target_amount: function() {
                     return i.getGoalStatus(this.self.model, {
-                        totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                        defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                        totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                        defaultFeeRate: BS.accountGroup.defaultFeeRate()
                     }).name !== "NO_TARGET"
                 },
                 show_term: function() {
@@ -27676,10 +27677,10 @@ var requirejs, require, define;
                 })), this.model.isBuildWealth() && this.$el.addClass("build-wealth")
             },
             handleClose: function(e) {
-                e && e.preventDefault(), BMT.modal.close(this)
+                e && e.preventDefault(), BS.modal.close(this)
             },
             goToAdvice: function(e) {
-                BMT.modal.close(this), BMT.router.navigate("advice", {
+                BS.modal.close(this), BS.router.navigate("advice", {
                     trigger: !0
                 })
             }
@@ -27727,7 +27728,7 @@ var requirejs, require, define;
                     hash: {}
                 }) : (s = e && e.firmClientAgreementUrl, i = typeof s === a ? s.call(e, {
                     hash: {}
-                }) : s), r += f(i) + '" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor\'s Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betterment).<br/><br/>\n\n            You understand and agree that this is solely an agreement between you and your advisor, and that BetaSmartz and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that BetaSmartz has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify BetaSmartz and its affiliates in connection with any content in your advisory agreement with your advisor.<br/><br/>\n\n            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. BetaSmartz will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br/><br/>\n\n            By checking the above box and clicking submit below, you agree to be legally bound by your advisor\'s advisory agreement\'s terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor\'s advisory agreement by hand.\n        </div>\n        <div class="agreement-error-client agreement-error conversation-text">\n            <span class="bad">You must accept the advisor\'s agreement to continue.</span>\n        </div>\n\n        <hr/>\n    </div>\n', r
+                }) : s), r += f(i) + '" target="_blank">advisory agreement</a>, and acknowledge receiving and reviewing a copy of your advisor\'s Form ADV Part 2 and initial privacy disclosure also contained therein (should your advisor have included their Form ADV Part 2 and initial privacy disclosure to Betasmartz).<br/><br/>\n\n            You understand and agree that this is solely an agreement between you and your advisor, and that BetaSmartz and its affiliates are not by any means acquiring any obligation or legal duties by permitting you and your advisor to execute the advisory agreement between you and your advisor. You understand that BetaSmartz has not reviewed the advisory agreement between you and your advisor. You further agree to hold harmless and indemnify BetaSmartz and its affiliates in connection with any content in your advisory agreement with your advisor.<br/><br/>\n\n            You consent to receive these documents in electronic form via this webpage. If you are unable to download and view these PDF documents, or do not consent to electronic delivery, you cannot submit your application using this application form. BetaSmartz will not charge you a fee access this ​one ​webpage, but you could incur expenses from your Internet service provider when you access information online. Your consent applies only to this transaction.<br/><br/>\n\n            By checking the above box and clicking submit below, you agree to be legally bound by your advisor\'s advisory agreement\'s terms and conditions. You understand that checking the above box and clicking submit below is the legal equivalent of signing your advisor\'s advisory agreement by hand.\n        </div>\n        <div class="agreement-error-client agreement-error conversation-text">\n            <span class="bad">You must accept the advisor\'s agreement to continue.</span>\n        </div>\n\n        <hr/>\n    </div>\n', r
             }
 
             function h(e, t) {
@@ -27794,7 +27795,7 @@ var requirejs, require, define;
                 fn: l.program(3, h, i)
             });
             if (o || o === 0) s += o;
-            s += '\n\n\n<div class="tos betterment-agreement">\n    ', o = n["if"].call(t, t && t.showClientAgreement, {
+            s += '\n\n\n<div class="tos betasmartz-agreement">\n    ', o = n["if"].call(t, t && t.showClientAgreement, {
                 hash: {},
                 inverse: l.noop,
                 fn: l.program(5, p, i)
@@ -27897,7 +27898,7 @@ var requirejs, require, define;
                 }) : n = null
             }
         }
-    }), define("views/common/termsOfServiceView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/termsOfService", "components/common/scripts/util/handlebarsHelpers", "services/firmFetcher", "components/account/scripts/constants/accountTypes", "components/common/scripts/analytics/analytics", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/common/termsOfServiceView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/termsOfService", "components/common/scripts/util/handlebarsHelpers", "services/firmFetcher", "components/account/scripts/constants/accountTypes", "components/common/scripts/analytics/analytics", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o, u, a) {
         var f = 96;
         return n.View.extend({
             template: r,
@@ -28022,8 +28023,8 @@ var requirejs, require, define;
             showClientAgreementError: function() {
                 this.ui.checkboxClientAgreement.prop("checked", !1), this.options.hideErrors || this.ui.agreementErrorClient.slideDown()
             },
-            showBettermentAgreement: function() {
-                this.$(".betterment-agreement").slideDown()
+            showBetasmartzAgreement: function() {
+                this.$(".betasmartz-agreement").slideDown()
             },
             hideUserAgreementError: function() {
                 this.checkboxUserAgreement().prop("checked", !0), this.ui.agreementErrorUser.slideUp()
@@ -28040,8 +28041,8 @@ var requirejs, require, define;
             hideSEPEmployeeError: function() {
                 this.ui.sepEmployeesError.slideUp()
             },
-            hideBettermentAgreement: function() {
-                this.$(".betterment-agreement").slideUp(), this.$("[type=checkbox]").prop("checked", !1)
+            hideBetasmartzAgreement: function() {
+                this.$(".betasmartz-agreement").slideUp(), this.$("[type=checkbox]").prop("checked", !1)
             },
             checkboxUserAgreement: function() {
                 return this.$('input[type=checkbox][name="' + this.agreementFieldName() + '"]')
@@ -28111,16 +28112,16 @@ var requirejs, require, define;
                     Name: "NumberOfSEPParticipants",
                     Value: this.getSEPEmployeesVal() === "false" ? ">=2" : "1",
                     Type: "Radio"
-                }), this.getSEPEmployeesVal() === "false" ? (this.ui.sepMultipleEmployeesError.slideDown(), this.hideBettermentAgreement()) : (this.ui.sepMultipleEmployeesError.slideUp(), this.showBettermentAgreement())
+                }), this.getSEPEmployeesVal() === "false" ? (this.ui.sepMultipleEmployeesError.slideDown(), this.hideBetasmartzAgreement()) : (this.ui.sepMultipleEmployeesError.slideUp(), this.showBetasmartzAgreement())
             }
         })
-    }),  define("models/potentialBonus", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }),  define("models/potentialBonus", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         return r.RelationalModel.extend({
             isReferral: function() {
                 return this.is("isReferral")
             }
         })
-    }), define("models/trust", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/trust", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({
             url: "/trust",
             needsDocuments: function() {
@@ -28142,7 +28143,7 @@ var requirejs, require, define;
             }
         };
         return t.extend(n)
-    }), define("models/accountGroup", ["jquery", "underscore", "backbone", "common/betterment.models", "models/accountReturn", "models/bankAccount", "models/account", "models/automaticWithdrawal", "models/withheldBonus", "models/potentialBonus", "models/trust", "components/common/scripts/models/appData", "models/v1/jointAccountPendingInviteCollection"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
+    }), define("models/accountGroup", ["jquery", "underscore", "backbone", "common/betasmartz.models", "models/accountReturn", "models/bankAccount", "models/account", "models/automaticWithdrawal", "models/withheldBonus", "models/potentialBonus", "models/trust", "components/common/scripts/models/appData", "models/v1/jointAccountPendingInviteCollection"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
         var p = {
                 getFeePct: function(e) {
                     var t = [{
@@ -28332,13 +28333,13 @@ var requirejs, require, define;
             }
         });
         return p.Collection = v, p
-    }), define("models/referralProgram", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/referralProgram", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         return r.RelationalModel.extend({
             isMoney: function() {
                 return this.get("prizeType") === "money"
             }
         })
-    }), define("models/rothLimit", ["underscore", "common/betterment.models", "components/common/scripts/models/appData"], function(e, t, n) {
+    }), define("models/rothLimit", ["underscore", "common/betasmartz.models", "components/common/scripts/models/appData"], function(e, t, n) {
         return t.RelationalModel.extend({
             url: "/rothLimit",
             contributionLimit: function(e, t) {
@@ -28398,8 +28399,8 @@ var requirejs, require, define;
                     case "builder_paying_monthly":
                     case "builder":
                         return "Builder";
-                    case "better":
-                        return "Better";
+                    case "betasmartz":
+                        return "Betasmartz";
                     case "best":
                         return "Best";
                     case "classic":
@@ -28506,7 +28507,7 @@ var requirejs, require, define;
                 return ["ACT", "QLD", "NSW", "NT",  "SA", "TAS", "VIC", "WA"]
             }
         }
-    }), define("models/user", ["jquery", "underscore", "backbone", "common/betterment.models", "components/account/scripts/constants/retirementConstants", "components/account/scripts/constants/accountTypes", "models/accountGroup", "models/referralProgram", "models/rothLimit", "models/v2/retireGuideEnablement", "models/v2/pricingSummary", "models/v2/financialProfile", "models/v2/financialPlan", "models/v2/financialPlanCollection", "models/v2/externalAccount", "models/v2/externalAccountCollection", "components/common/scripts/models/appData", "components/common/scripts/services/dateService", "components/common/scripts/constants/addressConstants"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
+    }), define("models/user", ["jquery", "underscore", "backbone", "common/betasmartz.models", "components/account/scripts/constants/retirementConstants", "components/account/scripts/constants/accountTypes", "models/accountGroup", "models/referralProgram", "models/rothLimit", "models/v2/retireGuideEnablement", "models/v2/pricingSummary", "models/v2/financialProfile", "models/v2/financialPlan", "models/v2/financialPlanCollection", "models/v2/externalAccount", "models/v2/externalAccountCollection", "components/common/scripts/models/appData", "components/common/scripts/services/dateService", "components/common/scripts/constants/addressConstants"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
         var b = {
                 required: !0,
                 minLength: 8
@@ -28597,7 +28598,7 @@ var requirejs, require, define;
                     })
                 },
                 bankAccount: function() {
-                    return BMT.accountGroup.get("bankAccount")
+                    return BS.accountGroup.get("bankAccount")
                 },
                 isLoggedIn: function() {
                     return !this.isNew()
@@ -28769,7 +28770,7 @@ var requirejs, require, define;
                 SSN_MASK: w
             });
         return E
-    }), define("models/iraConversion", ["underscore", "backbone", "common/betterment.models", "models/user", "models/account"], function(e, t, n, r, i) {
+    }), define("models/iraConversion", ["underscore", "backbone", "common/betasmartz.models", "models/user", "models/account"], function(e, t, n, r, i) {
         return n.RelationalModel.extend({
             url: "/iraConversion",
             relations: [{
@@ -28825,7 +28826,7 @@ var requirejs, require, define;
                 return t.destinationAccountId || delete t.destinationAccountId, t
             },
             needsRoth: function() {
-                return !BMT.accounts().hasRothIRA()
+                return !BS.accounts().hasRothIRA()
             },
             remainingRMD: function() {
                 return this.get("sourceAccount").num("remainingRMD")
@@ -28838,7 +28839,7 @@ var requirejs, require, define;
                 return e.availableForConversion(this.is("rmd") ? this.remainingRMD() : 0)
             }
         })
-    }), define("views/common/iraConversion/createRothIRAView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/common/termsOfServiceView"], function(e, t, n, r, i) {
+    }), define("views/common/iraConversion/createRothIRAView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/common/termsOfServiceView"], function(e, t, n, r, i) {
         return r.ModalView.extend({
             template: "common/iraConversion/createRothIRA",
             className: "ira-conversion create-roth-ira",
@@ -28863,10 +28864,10 @@ var requirejs, require, define;
             },
             onNext: function(e) {
                 var t = n.Syphon.serialize(this);
-                this.model.validate(t) ? this.triggerAllValidation(t) : (this.model.set(t), BMT.modal.close(this), this.options.nextAlert())
+                this.model.validate(t) ? this.triggerAllValidation(t) : (this.model.set(t), BS.modal.close(this), this.options.nextAlert())
             },
             onCancel: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("hbs!views/common/iraConversion/chooseRothIRA", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -28971,7 +28972,7 @@ var requirejs, require, define;
             return s += "\n</ul>\n", s
         });
         return t.registerPartial("views/common/dropdown/dropdown", n), n
-    }), define("views/common/dropdown/dropdownView", ["underscore", "common/betterment.views", "hbs!views/common/dropdown/dropdown"], function(e, t, n) {
+    }), define("views/common/dropdown/dropdownView", ["underscore", "common/betasmartz.views", "hbs!views/common/dropdown/dropdown"], function(e, t, n) {
         var r = t.View.extend({
             className: "btn-group",
             template: n,
@@ -28995,7 +28996,7 @@ var requirejs, require, define;
             onSelected: e.noop
         });
         return r
-    }), define("views/common/iraConversion/chooseRothIRAView", ["common/betterment.views", "hbs!views/common/iraConversion/chooseRothIRA", "views/common/dropdown/dropdownView"], function(e, t, n) {
+    }), define("views/common/iraConversion/chooseRothIRAView", ["common/betasmartz.views", "hbs!views/common/iraConversion/chooseRothIRA", "views/common/dropdown/dropdownView"], function(e, t, n) {
         return e.ModalView.extend({
             template: t,
             className: "ira-conversion choose-roth-ira",
@@ -29026,11 +29027,11 @@ var requirejs, require, define;
             onRender: function() {
                 this.accountSelector = new n({
                     items: this.accountSelectorOptions(),
-                    selectedValue: BMT.accounts().getRothIRAs()[0].id
+                    selectedValue: BS.accounts().getRothIRAs()[0].id
                 }), this.accountSelectorRegion.show(this.accountSelector)
             },
             accountSelectorOptions: function() {
-                return BMT.accounts().getRothIRAs().map(function(e) {
+                return BS.accounts().getRothIRAs().map(function(e) {
                     var t = e.get("name") + " (balance " + this.formatter.money(e.getCurrentBalanceWithPending()) + ")";
                     return {
                         name: t,
@@ -29039,13 +29040,13 @@ var requirejs, require, define;
                 }.bind(this))
             },
             onNext: function() {
-                this.model.set("destinationAccount", BMT.accounts().get(this.accountSelector.getValue())), BMT.modal.close(this), this.options.nextAlert()
+                this.model.set("destinationAccount", BS.accounts().get(this.accountSelector.getValue())), BS.modal.close(this), this.options.nextAlert()
             },
             onCancel: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
-    }), define("views/common/iraConversion/remainingRMDView", ["jquery", "underscore", "common/betterment.views"], function(e, t, n) {
+    }), define("views/common/iraConversion/remainingRMDView", ["jquery", "underscore", "common/betasmartz.views"], function(e, t, n) {
         return n.ModalView.extend({
             template: "common/iraConversion/remainingRMD",
             className: "ira-conversion remaining-rmd",
@@ -29069,16 +29070,16 @@ var requirejs, require, define;
                 this.applyValidation()
             },
             onBack: function(e) {
-                BMT.modal.close(this), this.options.prevAlert()
+                BS.modal.close(this), this.options.prevAlert()
             },
             onNext: function(e) {
-                this.model.set("rmd", this.$("input[name=rmd]:checked").val() === "true"), BMT.modal.close(this), this.options.nextAlert()
+                this.model.set("rmd", this.$("input[name=rmd]:checked").val() === "true"), BS.modal.close(this), this.options.nextAlert()
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
-    }), define("views/common/iraConversion/conversionAmountView", ["jquery", "underscore", "backbone", "common/betterment.views"], function(e, t, n, r) {
+    }), define("views/common/iraConversion/conversionAmountView", ["jquery", "underscore", "backbone", "common/betasmartz.views"], function(e, t, n, r) {
         return r.ModalView.extend({
             template: "#common/iraConversion/conversionAmount",
             className: "ira-conversion conversion-amount",
@@ -29118,17 +29119,17 @@ var requirejs, require, define;
                 r.val(n ? this.model.availableAmount().toFixed(2) : ""), n && this.updateFieldValidation(r, null)
             },
             onBack: function(e) {
-                BMT.modal.close(this), this.options.prevAlert()
+                BS.modal.close(this), this.options.prevAlert()
             },
             onNext: function(e) {
                 var t = n.Syphon.serialize(this);
-                delete t[""], this.model.validate(t) ? this.triggerAllValidation(t) : (this.model.set(t), BMT.modal.close(this), this.options.nextAlert())
+                delete t[""], this.model.validate(t) ? this.triggerAllValidation(t) : (this.model.set(t), BS.modal.close(this), this.options.nextAlert())
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
-    }), define("views/common/iraConversion/taxImplicationsView", ["jquery", "underscore", "backbone", "common/betterment.views"], function(e, t, n, r) {
+    }), define("views/common/iraConversion/taxImplicationsView", ["jquery", "underscore", "backbone", "common/betasmartz.views"], function(e, t, n, r) {
         return r.ModalView.extend({
             template: "common/iraConversion/taxImplications",
             className: "ira-conversion tax-implications",
@@ -29146,7 +29147,7 @@ var requirejs, require, define;
                 this.applyValidation()
             },
             onBack: function(e) {
-                BMT.modal.close(this), this.options.prevAlert()
+                BS.modal.close(this), this.options.prevAlert()
             },
             onSubmit: function(e) {
                 var t = n.Syphon.serialize(this);
@@ -29155,13 +29156,13 @@ var requirejs, require, define;
                     var r = this;
                     this.model.save({}, {
                         success: function() {
-                            BMT.user.fetch({
+                            BS.user.fetch({
                                 success: function() {
-                                    BMT.refreshAccounts()
+                                    BS.refreshAccounts()
                                 }
                             });
                             var e = r.model.needsRoth() ? "SMSF created and " : "";
-                            e += "IRA Conversion initiated.", e += r.model.is("rmd") ? " RMD sent." : "", e += " You will receive a confirmation email shortly.", BMT.flash(e), BMT.modal.close(r)
+                            e += "IRA Conversion initiated.", e += r.model.is("rmd") ? " RMD sent." : "", e += " You will receive a confirmation email shortly.", BS.flash(e), BS.modal.close(r)
                         },
                         complete: function() {
                             r.unblock()
@@ -29170,7 +29171,7 @@ var requirejs, require, define;
                 } else this.triggerAllValidation(t)
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("common/iraConversionChain", ["jquery", "underscore", "models/iraConversion", "models/user", "components/common/scripts/services/domainService", "views/common/iraConversion/createRothIRAView", "views/common/iraConversion/chooseRothIRAView", "views/common/iraConversion/remainingRMDView", "views/common/iraConversion/conversionAmountView", "views/common/iraConversion/taxImplicationsView"], function(e, t, n, r, i, s, o, u, a, f) {
@@ -29192,7 +29193,7 @@ var requirejs, require, define;
         }
 
         function g() {
-            BMT.alert({
+            BS.alert({
                 title: "IRA Conversion",
                 bodyAttrs: {
                     style: "width: 100%;"
@@ -29261,26 +29262,26 @@ var requirejs, require, define;
         return {
             start: function(e) {
                 h = new n({
-                    parentUser: BMT.user,
+                    parentUser: BS.user,
                     sourceAccount: e
                 }), c = [g];
-                var t = BMT.accounts().getRothIRAs();
+                var t = BS.accounts().getRothIRAs();
                 t.length === 0 ? c.push(y) : t.length === 1 ? h.set("destinationAccount", t[0]) : c.push(b), h.hasRemainingRMD() ? c.push(w) : h.set("rmd", !1), c.push(E, S), l = -1, p()
             }
         }
-    }), define("views/common/accountSettingsView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/common/accountSettings", "services/accountService", "modules/modals", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "views/transfer/automaticWithdrawalSettingsView", "views/summary/transferFundsController", "views/summary/deleteAccountController", "views/common/iraRecharacterizationView", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/common/smartDepositSettingsView", "common/iraConversionChain", "models/visitor", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
+    }), define("views/common/accountSettingsView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/common/accountSettings", "services/accountService", "modules/modals", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "views/transfer/automaticWithdrawalSettingsView", "views/summary/transferFundsController", "views/summary/deleteAccountController", "views/common/iraRecharacterizationView", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/common/smartDepositSettingsView", "common/iraConversionChain", "models/visitor", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
         var b = {
             target: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "ChangeGoalTarget",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 }), this.trigger("editGoalAmount")
             },
             "goal-type": function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "ChangeGoalType",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 });
                 var e = this,
@@ -29301,27 +29302,27 @@ var requirejs, require, define;
                 p.show(n)
             },
             advice: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "AllocationChange",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
-                }), BMT.selectedAccount = this.model, BMT.scrollToTop({
+                }), BS.selectedAccount = this.model, BS.scrollToTop({
                     duration: 0
-                }), BMT.router.navigate("advice", !0)
+                }), BS.router.navigate("advice", !0)
             },
             "deposit-withdraw": function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "DepositWithdraw",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
-                }), BMT.selectedAccount = this.model, BMT.scrollToTop({
+                }), BS.selectedAccount = this.model, BS.scrollToTop({
                     duration: 0
-                }), BMT.router.navigate("transfer", !0)
+                }), BS.router.navigate("transfer", !0)
             },
             "auto-deposit": function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "AutoDepositSettings",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 });
                 var e = u.openForAccount(a, this.model);
@@ -29330,9 +29331,9 @@ var requirejs, require, define;
                 }.bind(this))
             },
             "auto-withdrawal": function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "AutoWithdrawalSettings",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 });
                 var e = u.openForAccount(f, this.model);
@@ -29342,12 +29343,12 @@ var requirejs, require, define;
             },
             "smart-deposit": function() {
                 var e = v.withConfig(this.model.get("smartDepositConfig"));
-                this.listenTo(e, "close", BMT.refreshAccounts), this.listenTo(s.getAllAccounts(), "sync", this.trigger.bind(this, "renderSummary")), o.show(e)
+                this.listenTo(e, "close", BS.refreshAccounts), this.listenTo(s.getAllAccounts(), "sync", this.trigger.bind(this, "renderSummary")), o.show(e)
             },
             "delete": function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "DeleteGoal",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 });
                 var e = new c({
@@ -29360,9 +29361,9 @@ var requirejs, require, define;
                 }.bind(this)), e.go()
             },
             transfer: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "GoalTransfer",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 });
                 var e = new l({
@@ -29373,25 +29374,25 @@ var requirejs, require, define;
                 }), e.go()
             },
             rollover: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "StartRollover",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
-                }), BMT.router.navigate("rollover", !0, {
-                    prevPage: BMT.currentPage
+                }), BS.router.navigate("rollover", !0, {
+                    prevPage: BS.currentPage
                 })
             },
             convert: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "ConvertIRA",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 }), m.start(this.model)
             },
             recharacterize: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "RecharacterizeIRA",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Dropdown"
                 }), h.show({
                     account: this.model
@@ -29436,7 +29437,7 @@ var requirejs, require, define;
                         label: o,
                         action: !0
                     });
-                    if (BMT.accountGroup.isEligibleForAutoWithdrawals() && e.isAllowedAutoWithdrawals()) {
+                    if (BS.accountGroup.isEligibleForAutoWithdrawals() && e.isAllowedAutoWithdrawals()) {
                         var u = e.get("automaticWithdrawal"),
                             a = u && u.is("enabled") ? "Auto withdrawal settings" : "Set up auto withdrawal";
                         r.push({
@@ -29453,11 +29454,11 @@ var requirejs, require, define;
                             action: !0
                         })*/
                     }
-                    return BMT.accounts().size() > 1 && !BMT.accountGroup.isSuspended() && r.push({
+                    return BS.accounts().size() > 1 && !BS.accountGroup.isSuspended() && r.push({
                         value: "delete",
                         label: "Delete goal",
                         action: !0
-                    }), BMT.accounts().numInvestingAccount() > 1 && !e.isIRA() && e.num("currentBalance") > 0 && r.push({
+                    }), BS.accounts().numInvestingAccount() > 1 && !e.isIRA() && e.num("currentBalance") > 0 && r.push({
                         value: "transfer",
                         label: "Transfer to another goal",
                         action: !0
@@ -29494,28 +29495,28 @@ var requirejs, require, define;
         }
         return {
             getTotalAnnualContributions: function(e) {
-                return e.getAnnualExternalAccountContributions() + this.getAnnualBettermentContributions(e)
+                return e.getAnnualExternalAccountContributions() + this.getAnnualBetasmartzContributions(e)
             },
-            getAnnualBettermentContributions: function(t) {
+            getAnnualBetasmartzContributions: function(t) {
                 return e.reduce(t.get("accounts"), function(i, s) {
                     var o = t.getAnnualContributionByIdParams(s);
                     if (e.isNull(o)) {
-                        var u = r().get(s.bettermentdbAccountId || s.bettermentdb_account_id);
+                        var u = r().get(s.betasmartzdbAccountId || s.betasmartzdb_account_id);
                         o = n.netYearlyTransactionAmount(u)
                     }
                     return i + o
                 }, 0)
             },
             getTotalBalance: function(e) {
-                return e.getTotalExternalAccountBalance() + this.getTotalBettermentAccountBalance(e)
+                return e.getTotalExternalAccountBalance() + this.getTotalBetasmartzAccountBalance(e)
             },
-            getTotalBettermentAccountBalance: function(t) {
+            getTotalBetasmartzAccountBalance: function(t) {
                 return e.reduce(t.get("accounts"), function(e, t) {
                     return e + r().getByIdParams(t).getCurrentBalance()
                 }, 0)
             }
         }
-    }), define("views/summary/accountView", ["jquery", "underscore", "common/betterment.views", "views/summary/frontPanelView", "views/summary/backPanelView", "views/summary/transferFundsView", "views/common/accountSettingsView", "models/rolloverFollowup", "models/visitor", "services/retirementPlanService", "components/common/scripts/services/domainService", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
+    }), define("views/summary/accountView", ["jquery", "underscore", "common/betasmartz.views", "views/summary/frontPanelView", "views/summary/backPanelView", "views/summary/transferFundsView", "views/common/accountSettingsView", "models/rolloverFollowup", "models/visitor", "services/retirementPlanService", "components/common/scripts/services/domainService", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
         var h = [];
         return n.View.extend({
             template: "summary/account",
@@ -29591,7 +29592,7 @@ var requirejs, require, define;
                 var t = new o({
                     model: this.model,
                     additionalActions: function(e, t) {
-                        BMT.user.not("demo") && !this.model.isIRA() && (e.unshift({
+                        BS.user.not("demo") && !this.model.isIRA() && (e.unshift({
                             value: "name",
                             label: "Change goal name",
                             action: !0
@@ -29618,7 +29619,7 @@ var requirejs, require, define;
                         }.bind(this), 0)
                     }.bind(this);
                     this.flipped ? e() : this.flipOpen(null, null, e)
-                } else BMT.selectedAccount = this.model, BMT.router.navigate("advice", !0), BMT.scrollToTop()
+                } else BS.selectedAccount = this.model, BS.router.navigate("advice", !0), BS.scrollToTop()
             },
             showFront: function(e) {
                 this.frontPanel = new r({
@@ -29657,19 +29658,19 @@ var requirejs, require, define;
                 return this.editing = !0, this.$goalName = this.getVisibleGoalName(), this.$nameInput = this.$goalName.find("input[name=name]"), this.$goalName.find("button").css("visibility", "hidden"), this.$nameInput.show().val(this.model.get("name")), this.blocking || this.$nameInput.focus(), this.$nameInput.blur(this.saveName), !1
             },
             financialPlan: function() {
-                return BMT.user.get("financialPlans").selected()
+                return BS.user.get("financialPlans").selected()
             },
             inRetirementPlan: function() {
                 return this.model.isInPlan()
             },
             showRetirementPlanButton: function() {
-                return BMT.user.is("retireGuideEnabled") && (this.inRetirementPlan() || this.model.isRetirement() && !this.model.isIncome())
+                return BS.user.is("retireGuideEnabled") && (this.inRetirementPlan() || this.model.isRetirement() && !this.model.isIncome())
             },
             retirementPlanButtonText: function() {
                 return this.financialPlan().is("complete") ? "Edit plan" : "Set up plan"
             },
             goToRetirementPlan: function() {
-                this.financialPlan().is("complete") ? BMT.router.navigate("retireGuide", !0) : BMT.router.navigate("retireGuideStart", !0)
+                this.financialPlan().is("complete") ? BS.router.navigate("retireGuide", !0) : BS.router.navigate("retireGuideStart", !0)
             },
             getVisibleGoalName: function() {
                 var e = this.isOpen() ? this.regions.backPanelRegion : this.regions.frontPanelRegion;
@@ -29680,7 +29681,7 @@ var requirejs, require, define;
                     name: this.$nameInput.val() || this.model.get("name")
                 }, {
                     complete: t.bind(function() {
-                        this.$nameInput.hide(), this.$goalName.find("button").css("visibility", ""), this.unblock(), this.editing = !1, BMT.refreshAccounts()
+                        this.$nameInput.hide(), this.$goalName.find("button").css("visibility", ""), this.unblock(), this.editing = !1, BS.refreshAccounts()
                     }, this)
                 }))
             },
@@ -29692,7 +29693,7 @@ var requirejs, require, define;
             BACK_HEIGHT: 340,
             PANEL_MARGIN: 12
         })
-    }), define("views/summary/accountsCollectionView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/summary/accountView"], function(e, t, n, r, i) {
+    }), define("views/summary/accountsCollectionView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/summary/accountView"], function(e, t, n, r, i) {
         return r.CollectionView.extend({
             getChildView: function() {
                 return i
@@ -29769,7 +29770,7 @@ var requirejs, require, define;
                     n.collection.save({
                         skipErrorAlert: !0,
                         complete: function() {
-                            BMT.refreshAccounts()
+                            BS.refreshAccounts()
                         }
                     })
                 }, 4e3)
@@ -30002,7 +30003,7 @@ var requirejs, require, define;
             return s += '\n                        </span>\n                        and immediately withdraw them. When you receive the deposits, please come back and tell us those amounts to verify your account. You will receive a reminder to verify the amounts from <a href="mailto:support@betasmartz.com">support@betasmartz.com</a>.\n                    </p>\n            </div>\n        </div>\n        <div class="banner-close" data-dismiss="banner"></div>\n    </div>\n</div>', s
         });
         return t.registerPartial("views/linkBankAccount/linkWithRoutingConfirmationBanner", n), n
-    }), define("views/linkBankAccount/linkWithRoutingConfirmationBannerView", ["common/betterment.views", "hbs!views/linkBankAccount/linkWithRoutingConfirmationBanner"], function(e, t) {
+    }), define("views/linkBankAccount/linkWithRoutingConfirmationBannerView", ["common/betasmartz.views", "hbs!views/linkBankAccount/linkWithRoutingConfirmationBanner"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "banner-view manual-link-confirmation-banner",
@@ -30021,7 +30022,7 @@ var requirejs, require, define;
                 this.$el.slideUp(300)
             }
         })
-    }), define("views/profile/changeBankAccountView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/bankAccount", "views/profile/securityQuestionView", "views/linkBankAccount/linkWithRoutingConfirmationBannerView"], function(e, t, n, r, i, s, o) {
+    }), define("views/profile/changeBankAccountView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/bankAccount", "views/profile/securityQuestionView", "views/linkBankAccount/linkWithRoutingConfirmationBannerView"], function(e, t, n, r, i, s, o) {
         return r.ModalView.extend({
             template: "profile/changeBankAccount",
             className: "change-bank-account-modal",
@@ -30057,9 +30058,9 @@ var requirejs, require, define;
                         a = this.securityQuestionView.getResults();
                     a && (this.block(), s.save(t.extend(r, a), {
                         success: function() {
-                            BMT.user.fetch().always(function() {
-                                BMT.modal.close(u), u.trigger("accountChanged"), BMT.bankAccountBannerContent.show(new o({
-                                    expectedVerificationDepositDate: BMT.accountGroup.get("bankAccount").date("expectedVerificationDepositDate")
+                            BS.user.fetch().always(function() {
+                                BS.modal.close(u), u.trigger("accountChanged"), BS.bankAccountBannerContent.show(new o({
+                                    expectedVerificationDepositDate: BS.accountGroup.get("bankAccount").date("expectedVerificationDepositDate")
                                 }))
                             })
                         },
@@ -30070,7 +30071,7 @@ var requirejs, require, define;
                 } else this.triggerAllValidation(r)
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             showRoutingHalf: function(e) {
                 this.checkImage.attr("class", "half-routing")
@@ -30108,7 +30109,7 @@ var requirejs, require, define;
 
         function y() {
             return v().is("active") ? !1 : function(e) {
-                BMT.alert({
+                BS.alert({
                     title: "Link Your Bank Account",
                     bodyAttrs: {
                         style: "width: 100%;"
@@ -30135,7 +30136,7 @@ var requirejs, require, define;
 
         function b() {
             return v().is("confirmed") ? !1 : function(e) {
-                BMT.alert({
+                BS.alert({
                     title: "Confirm Your Bank Account",
                     body: "<p>To add or withdraw money, you'll need to confirm your bank account.</p><p>On the Transfer tab, enter the values of the two small deposits and withdrawals we made in your checking account.</p>",
                     bodyAttrs: {
@@ -30152,7 +30153,7 @@ var requirejs, require, define;
                         }
                     }],
                     handler: function(e) {
-                        e === "yes" && BMT.router.navigate("transfer", !0)
+                        e === "yes" && BS.router.navigate("transfer", !0)
                     }
                 })
             }
@@ -30194,7 +30195,7 @@ var requirejs, require, define;
                 longMessage: !0
             });
             return e ? function(t) {
-                BMT.alert({
+                BS.alert({
                     width: 450,
                     icon: "warning",
                     title: "Please Confirm Transfer",
@@ -30219,7 +30220,7 @@ var requirejs, require, define;
 
         function S() {
             return function(e) {
-                BMT.alert({
+                BS.alert({
                     title: p.goalSetup ? "Confirm Initial Deposit" : "Please Confirm Deposit",
                     body: (p.goalSetup ? '<span class="bold-text">Do you want to make this initial deposit?</span><br />' : "") + "Deposit amount: " + n.money(l.amount) + "<br />" + 'To: <span class="bold-text multi-ag-only">' + t.escape(d().get("accountGroup").get("name")) + ' - </span> <span class="bold-text">' + t.escape(d().get("name")) + "</span>" + "<br />" + (d().isIRA() ? 'Contribution Type: <span class="bold-text">' + o.getInstance().get("contributionTypes")[l.contributionType].label + "</span><br />" : "") ,
                     bodyAttrs: {
@@ -30246,7 +30247,7 @@ var requirejs, require, define;
         return {
             start: function(e, t, n, r, i) {
                 f = e, l = t, c = n, p = r || {}, h = i || function(e) {
-                    e && BMT.modal.close(e)
+                    e && BS.modal.close(e)
                 }, g()
             }
         }
@@ -30261,7 +30262,7 @@ var requirejs, require, define;
         }, t.maxACHTransferAmount = function(t, n) {
             return t.isIRA() && n === "ROLL" ? e.ROLLOVER_MAXIMUM : e.DEPOSIT_MAXIMUM
         }, t
-    }), define("views/transfer/rothLimitView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/rothLimit", "components/common/scripts/models/appData"], function(e, t, n, r, i, s) {
+    }), define("views/transfer/rothLimitView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/rothLimit", "components/common/scripts/models/appData"], function(e, t, n, r, i, s) {
         return r.ModalView.extend({
             template: "transfer/rothLimit",
             tagName: "div",
@@ -30304,7 +30305,7 @@ var requirejs, require, define;
             onInitialize: function() {
                 this.model = this.model || new i({
                     ignore: !1,
-                    parentUser: BMT.user
+                    parentUser: BS.user
                 })
             },
             onRender: function() {
@@ -30324,7 +30325,7 @@ var requirejs, require, define;
             },
             onYes: function(e) {
                 this.listenToOnce(this.model, "sync", function() {
-                    BMT.analytics.track("AdviceFollowed", {
+                    BS.analytics.track("AdviceFollowed", {
                         Name: "UseRothLimit",
                         Location: "Transfer"
                     })
@@ -30342,8 +30343,8 @@ var requirejs, require, define;
                 return this.block(), this.listenToOnce(this.model, "sync", this.refreshAccountsAndClose), this.listenToOnce(this.model, "error", this.unblock), this.model.save(e)
             },
             refreshAccountsAndClose: function() {
-                BMT.refreshAccounts().then(function() {
-                    this.unblock(), this.trigger("updated"), BMT.modal.close(this)
+                BS.refreshAccounts().then(function() {
+                    this.unblock(), this.trigger("updated"), BS.modal.close(this)
                 }.bind(this))
             }
         })
@@ -30373,7 +30374,7 @@ var requirejs, require, define;
                 }), i.promise()
             }
         }
-    }), define("views/transfer/wireInstructionsView", ["jquery", "underscore", "backbone", "common/betterment.views", "components/transaction/scripts/constants/transactionConstants", "services/wireInstructionsEmailer"], function(e, t, n, r, i, s) {
+    }), define("views/transfer/wireInstructionsView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "components/transaction/scripts/constants/transactionConstants", "services/wireInstructionsEmailer"], function(e, t, n, r, i, s) {
         return r.ModalView.extend({
             className: "wire-instructions",
             template: "transfer/wireInstructions",
@@ -30395,7 +30396,7 @@ var requirejs, require, define;
                     return this.account().get("accountNumber")
                 },
                 accountUserName: function() {
-                    return BMT.accountGroup.isTrust() ? BMT.accountGroup.get("name") : BMT.user.fullName()
+                    return BS.accountGroup.isTrust() ? BS.accountGroup.get("name") : BS.user.fullName()
                 },
                 isIRADeposit: function() {
                     return this.account().isIRA()
@@ -30424,7 +30425,7 @@ var requirejs, require, define;
             },
             onShow: function() {
                 var e = this.model.get("account");
-                BMT.analytics.track("ElementViewed", {
+                BS.analytics.track("ElementViewed", {
                     Name: "WireInstructions",
                     Type: "Modal",
                     Location: this.getLocation(),
@@ -30435,7 +30436,7 @@ var requirejs, require, define;
                 })
             },
             onCancel: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             getLocation: function() {
                 var e = location.hash;
@@ -30445,7 +30446,7 @@ var requirejs, require, define;
                 var e = this.model.get("account"),
                     t = this.options.amount;
                 this.block(), s.sendToAccountForAmount(e, t).done(function() {
-                    BMT.analytics.track("ElementClicked", {
+                    BS.analytics.track("ElementClicked", {
                         Name: "EmailWireInstructions",
                         Type: "Button",
                         Location: this.getLocation(),
@@ -30453,9 +30454,9 @@ var requirejs, require, define;
                         GoalId: e.get("id"),
                         GoalType: e.get("goalType"),
                         IsTaxable: e.isInvestingAccount()
-                    }), BMT.modal.close(this);
+                    }), BS.modal.close(this);
                     var t = "Wire instructions emailed successfully.";
-                    this.options.flashMessage && (t += " " + this.options.flashMessage), BMT.flash(t)
+                    this.options.flashMessage && (t += " " + this.options.flashMessage), BS.flash(t)
                 }.bind(this)).fail(function() {
                     this.unblock()
                 }.bind(this))
@@ -30478,7 +30479,7 @@ var requirejs, require, define;
                 })
             }
         }
-    }), define("views/transfer/depositView", ["jquery", "underscore", "backbone", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/transfer/deposit", "models/visitor", "components/common/scripts/models/appData", "common/depositAlertChain", "components/transaction/scripts/services/transactionProperties", "views/common/inheritedIRAWarningView", "views/transfer/rothLimitView", "views/transfer/wireInstructionsView", "views/transfer/pendingTrustAlert"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/transfer/depositView", ["jquery", "underscore", "backbone", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/transfer/deposit", "models/visitor", "components/common/scripts/models/appData", "common/depositAlertChain", "components/transaction/scripts/services/transactionProperties", "views/common/inheritedIRAWarningView", "views/transfer/rothLimitView", "views/transfer/wireInstructionsView", "views/transfer/pendingTrustAlert"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         return i.View.extend({
             template: s,
             tagName: "div",
@@ -30573,7 +30574,7 @@ var requirejs, require, define;
             },
             options: {
                 onDepositComplete: function(e) {
-                    e.get("isTradingToday") ? BMT.flash("This deposit qualifies for immediate investment and will trade today.") : BMT.flash("Your deposit was initiated successfully."), BMT.vent.trigger("deposit:create")
+                    e.get("isTradingToday") ? BS.flash("This deposit qualifies for immediate investment and will trade today.") : BS.flash("Your deposit was initiated successfully."), BS.vent.trigger("deposit:create")
                 },
                 analyticsLocation: "Transfer"
             },
@@ -30581,16 +30582,16 @@ var requirejs, require, define;
                 return this.model.get("account")
             },
             onInitialize: function() {
-                this.onDepositComplete = this.onDepositComplete || this.options.onDepositComplete || !1, this.afterOnRender = this.options.afterOnRender || this.afterOnRender || !1, this.afterOnShow = this.options.afterOnShow || this.afterOnShow || !1, this.listenTo(BMT.vent, "deposit:refresh", this.render, this);
+                this.onDepositComplete = this.onDepositComplete || this.options.onDepositComplete || !1, this.afterOnRender = this.options.afterOnRender || this.afterOnRender || !1, this.afterOnShow = this.options.afterOnShow || this.afterOnShow || !1, this.listenTo(BS.vent, "deposit:refresh", this.render, this);
                 var e = this;
-                this.listenTo(BMT.vent, "initialDeposit", function(n) {
+                this.listenTo(BS.vent, "initialDeposit", function(n) {
                     var r = t.extend({
                         type: "DEPOSIT"
                     }, n);
                     this._promiseDeposit(r).done(function() {
                         e.onDepositComplete(e.model)
                     })
-                }, this), this.listenTo(BMT.vent, "transfer:refreshDepositView", function(e) {
+                }, this), this.listenTo(BS.vent, "transfer:refreshDepositView", function(e) {
                     this.render()
                 }, this)
             },
@@ -30642,19 +30643,19 @@ var requirejs, require, define;
                 }
             },
             showRothLimitModal: function(e) {
-                e.preventDefault(), BMT.analytics.track("ElementClicked", {
+                e.preventDefault(), BS.analytics.track("ElementClicked", {
                     Name: "CalcRothLimits",
                     Location: this.options.analyticsLocation
                 });
                 var t = new c({
-                    model: BMT.user.get("rothLimit"),
+                    model: BS.user.get("rothLimit"),
                     taxYear: this.model.get("contributionType"),
                     account: this.account()
                 });
-                BMT.modal.show(t), this.listenTo(t, "updated", function() {
+                BS.modal.show(t), this.listenTo(t, "updated", function() {
                     var e = this.getSelectedContributionType(),
                         t = this.formatter.money(this.model.get("account").contributionLimit(e));
-                    BMT.flash("Your Roth Limit has been updated to " + t + "."), this.render();
+                    BS.flash("Your Roth Limit has been updated to " + t + "."), this.render();
                     var n = this.$(".dropdown-menu li a[data-value='" + e + "']")[0];
                     this.$(n).click()
                 }, this)
@@ -30668,7 +30669,7 @@ var requirejs, require, define;
                     r = f.maxACHTransferAmount(this.account(), this.model.get("contributionType")),
                     i = t.amount;
                 if (this.shouldInterruptDeposit(i)) {
-                    BMT.analytics.track("InputSubmitted", {
+                    BS.analytics.track("InputSubmitted", {
                         Name: "DepositAmountOverLimit",
                         Type: "Field",
                         Location: this.options.analyticsLocation,
@@ -30705,16 +30706,16 @@ var requirejs, require, define;
                     n;
                 a.start(t.model, e, function(r, i) {
                     i && i.block(), n = t._promiseDeposit(e), n.done(function() {
-                        BMT.analytics.track("DepositSubmitted", {
+                        BS.analytics.track("DepositSubmitted", {
                             Value: t.formatter.removeCommas(t.$("input").val()),
                             Location: t.options.analyticsLocation,
                             GoalId: t.model.get("account").get("id"),
                             GoalType: t.model.get("account").get("goalType")
-                        }), BMT.refreshAccounts().then(function() {
-                            t.$("input").val(""), t.onDepositComplete(t.model), i && BMT.modal.close(i), t.render()
+                        }), BS.refreshAccounts().then(function() {
+                            t.$("input").val(""), t.onDepositComplete(t.model), i && BS.modal.close(i), t.render()
                         })
                     }), n.fail(function(e, t, n) {
-                        i && BMT.modal.close(i)
+                        i && BS.modal.close(i)
                     })
                 })
             },
@@ -30736,7 +30737,7 @@ var requirejs, require, define;
                 var n;
                 this.isPendingTrust() ? n = p.create() : n = new h(t.extend({
                     model: this.model
-                }, e)), BMT.modal.show(n)
+                }, e)), BS.modal.show(n)
             }
         })
     }), define("views/summary/accountSelectorDepositView", ["underscore", "models/transaction", "components/common/scripts/util/moneyHandler", "splitTests/anchorInitialDepositSplitTest", "views/transfer/depositView"], function(e, t, n, r, i) {
@@ -30759,15 +30760,15 @@ var requirejs, require, define;
                     return this.self.netWorthSuggestion()
                 },
                 pricingPlanMessage: function() {
-                    var e = BMT.user.num("netWorth"),
+                    var e = BS.user.num("netWorth"),
                         t;
-                    return e < 1e4 ? t = "Users with your reported net worth usually deposit at least " + this.money(1500, 0) : e < 5e4 ? t = "Deposit at least " + this.money(1e4, 0) + ' and get the <a target="_blank" href="' + this.brochure_url("pricing") + '">Better pricing plan</a>' : t = "Deposit " + this.money(1e5, 0) + ' and get the <a target="_blank" href="' + this.brochure_url("pricing") + '">Best pricing plan</a>', t
+                    return e < 1e4 ? t = "Users with your reported net worth usually deposit at least " + this.money(1500, 0) : e < 5e4 ? t = "Deposit at least " + this.money(1e4, 0) + ' and get the <a target="_blank" href="' + this.brochure_url("pricing") + '">Betasmartz pricing plan</a>' : t = "Deposit " + this.money(1e5, 0) + ' and get the <a target="_blank" href="' + this.brochure_url("pricing") + '">Best pricing plan</a>', t
                 },
                 presetAmount: function() {
                     return this.self.options.preset_amount || null
                 },
                 accountSelector: function() {
-                    return this.build_dropdown_menu(BMT.accounts().forSelect(), {
+                    return this.build_dropdown_menu(BS.accounts().forSelect(), {
                         "class": "right account-selector",
                         value: this.self.model.get("account").id
                     })
@@ -30775,7 +30776,7 @@ var requirejs, require, define;
             }, i.prototype.templateHelpers),
             options: {
                 onDepositComplete: function(e) {
-                    e.get("isTradingToday") ? BMT.flash("This deposit qualifies for immediate investment and will trade today.") : BMT.flash("Your deposit was initiated successfully."), BMT.vent.trigger("deposit:create"), BMT.analytics.track("ElementClicked", {
+                    e.get("isTradingToday") ? BS.flash("This deposit qualifies for immediate investment and will trade today.") : BS.flash("Your deposit was initiated successfully."), BS.vent.trigger("deposit:create"), BS.analytics.track("ElementClicked", {
                         Name: "Confirm",
                         Type: "Button",
                         Location: "Summary/AccountSelector/DepositDropdown"
@@ -30796,14 +30797,14 @@ var requirejs, require, define;
             refreshForAccount: function(i) {
                 var s = $(i.currentTarget).val();
                 this.model = new t.Model({
-                    account: e.first(BMT.accounts().where({
+                    account: e.first(BS.accounts().where({
                         id: parseInt(s, 10)
                     })),
                     type: "DEPOSIT"
                 }), this.options.preset_amount = n.toNumber(this.$("input.monetary").val()), this.render(), r.viewExperienceForAccount(this.account())
             },
             fillInSuggestion: function(e) {
-                this.$("input[name=amount]").val(this.netWorthSuggestion()), BMT.analytics.track("ElementClicked", {
+                this.$("input[name=amount]").val(this.netWorthSuggestion()), BS.analytics.track("ElementClicked", {
                     Type: "Button",
                     Location: "Summary",
                     Name: "DepositHint",
@@ -30811,7 +30812,7 @@ var requirejs, require, define;
                 })
             },
             netWorthSuggestion: function() {
-                return r.netWorthSuggestion(BMT.user)
+                return r.netWorthSuggestion(BS.user)
             }
         })
     }), define("models/v1/bankAccountClone", ["models/v1/baseModels"], function(e) {
@@ -30853,25 +30854,25 @@ var requirejs, require, define;
             },
             copyPersonalBankAccount: function(e, n, r) {
                 var i = new t({
-                    sourceAccountGroup: BMT.user.getPersonalAccountGroup(),
+                    sourceAccountGroup: BS.user.getPersonalAccountGroup(),
                     targetAccountGroup: n
                 });
                 return i.save({}, r || {})
             },
             shouldShowLinkAccount: function() {
-                return !BMT.accounts().isEmpty() && BMT.accounts().hasActiveAccount() && BMT.accountGroup.get("bankAccount").not("active") && !BMT.accountGroup.isClosed() && !e.contains(["signup", "trust-signup"], BMT.currentPage) && !BMT.user.isSuspended() && !BMT.accountGroup.isSuspended() && !n.getLinkAccountForceHide()
+                return !BS.accounts().isEmpty() && BS.accounts().hasActiveAccount() && BS.accountGroup.get("bankAccount").not("active") && !BS.accountGroup.isClosed() && !e.contains(["signup", "trust-signup"], BS.currentPage) && !BS.user.isSuspended() && !BS.accountGroup.isSuspended() && !n.getLinkAccountForceHide()
             },
             shouldShowVerifyAccount: function() {
-                return !BMT.accountGroup.isClosed() && BMT.accountGroup.get("bankAccount").is("active") && BMT.accountGroup.get("bankAccount").not("confirmed") && !BMT.accounts().isEmpty() && BMT.accounts().oldest().date("createdDate").daysBetween(Date.now()) >= 1 && !e.contains(["transfer", "signup", "trust-signup"], BMT.currentPage) && !n.getVerifyAccountForceHide()
+                return !BS.accountGroup.isClosed() && BS.accountGroup.get("bankAccount").is("active") && BS.accountGroup.get("bankAccount").not("confirmed") && !BS.accounts().isEmpty() && BS.accounts().oldest().date("createdDate").daysBetween(Date.now()) >= 1 && !e.contains(["transfer", "signup", "trust-signup"], BS.currentPage) && !n.getVerifyAccountForceHide()
             }
         }
-    }), define("views/summary/accountSummaryView", ["jquery", "underscore", "backbone", "marionette", "modules/modals", "common/betterment.views", "views/summary/overviewView", "views/summary/accountsCollectionView", "views/common/addGoalView", "views/summary/accountSelectorDepositView", "splitTests/anchorInitialDepositSplitTest", "models/transaction", "services/bankAccountService", "components/common/scripts/analytics/qualaroo"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/summary/accountSummaryView", ["jquery", "underscore", "backbone", "marionette", "modules/modals", "common/betasmartz.views", "views/summary/overviewView", "views/summary/accountsCollectionView", "views/common/addGoalView", "views/summary/accountSelectorDepositView", "splitTests/anchorInitialDepositSplitTest", "models/transaction", "services/bankAccountService", "components/common/scripts/analytics/qualaroo"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         var d = !1,
             v = function() {
                 if (d) return;
                 d = !0;
                 var e = "user_heat",
-                    t = BMT.user.num("id") % 13 + 1;
+                    t = BS.user.num("id") % 13 + 1;
                 p.setProperties({
                     surveySlug: e,
                     surveyVersion: t
@@ -30883,13 +30884,13 @@ var requirejs, require, define;
             id: "summary",
             templateHelpers: {
                 accountGroupName: function() {
-                    return BMT.accountGroup.get("name")
+                    return BS.accountGroup.get("name")
                 },
                 addGoalText: function() {
-                    return BMT.accountGroup.allowsIRAs() ? "Add Goal or IRA" : "Add Goal"
+                    return BS.accountGroup.allowsIRAs() ? "Add Goal or IRA" : "Add Goal"
                 },
                 showRolloverButton: function() {
-                    return BMT.accountGroup.allowsIRAs()
+                    return BS.accountGroup.allowsIRAs()
                 }
             },
             toolTips: {
@@ -30917,38 +30918,38 @@ var requirejs, require, define;
                 "click .deposit-menu button.deposit-button": "toggleDepositMenu"
             },
             onInitialize: function() {
-                this.model = BMT.accountGroup
+                this.model = BS.accountGroup
             },
             openRibbon: function() {
-                this.options.showTlhIntroRibbon ? BMT.vent.trigger("openDrawer:showTlhRibbon", "learnMore") : this.options.showJointAccountRibbon && BMT.vent.trigger("openDrawer:showJointAccountSignup", "splash")
+                this.options.showTlhIntroRibbon ? BS.vent.trigger("openDrawer:showTlhRibbon", "learnMore") : this.options.showJointAccountRibbon && BS.vent.trigger("openDrawer:showJointAccountSignup", "splash")
             },
             onShow: function() {
-                BMT.needToShowTrustDocumentBanner() ? this.listenTo(BMT.vent, "banner:emailTrustDocumentsBanner:hidden", this.openRibbon) : this.openRibbon(), this.overview.show(new o({
+                BS.needToShowTrustDocumentBanner() ? this.listenTo(BS.vent, "banner:emailTrustDocumentsBanner:hidden", this.openRibbon) : this.openRibbon(), this.overview.show(new o({
                     model: this.model
                 })), this.accounts.show(new u({
                     collection: this.model.get("accounts").sort()
                 })), this.showDepositMenu(), v()
             },
             showAddGoalModal: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "AddGoal",
                     Type: "Button",
                     Location: "Summary"
                 }), a.show()
             },
             gotoRollover: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "Rollover",
                     Type: "Button",
                     Location: "Summary"
-                }), BMT.router.navigate("rollover", !0, {
-                    prevPage: BMT.currentPage
+                }), BS.router.navigate("rollover", !0, {
+                    prevPage: BS.currentPage
                 })
             },
             showDepositMenu: function() {
                 var e = new f({
                     model: new c.Model({
-                        account: BMT.accounts().at(0),
+                        account: BS.accounts().at(0),
                         type: "DEPOSIT"
                     })
                 });
@@ -30964,7 +30965,7 @@ var requirejs, require, define;
                     var n = this.depositMenu.currentView.account();
                     l.viewExperienceForAccount(n)
                 }
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "Deposit",
                     Type: "Button",
                     Location: "Summary"
@@ -30976,7 +30977,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="welcome-box">\n    <h1>Welcome to BetaSmartz!</h1>\n    <h2>Create a goal to begin</h2>\n\n    <p><button class="create-goal">Create a goal</button></p>\n</div>\n'
         });
         return t.registerPartial("views/summary/noAccounts", n), n
-    }), define("views/summary/noAccountsView", ["common/betterment.views", "hbs!views/summary/noAccounts", "components/common/scripts/analytics/analytics", "views/common/addGoalView"], function(e, t, n, r) {
+    }), define("views/summary/noAccountsView", ["common/betasmartz.views", "hbs!views/summary/noAccounts", "components/common/scripts/analytics/analytics", "views/common/addGoalView"], function(e, t, n, r) {
         return e.View.extend({
             template: t,
             className: "no-accounts",
@@ -31021,7 +31022,7 @@ var requirejs, require, define;
             return s += "\n		</div>\n	</div>\n</div>\n", s
         });
         return t.registerPartial("views/summary/welcomeBanner", n), n
-    }), define("views/summary/welcomeBannerView", ["common/betterment.views", "hbs!views/summary/welcomeBanner", "components/common/scripts/analytics/analytics", "modules/modals", "views/linkBankAccount/setupView", "models/visitor"], function(e, t, n, r, i, s) {
+    }), define("views/summary/welcomeBannerView", ["common/betasmartz.views", "hbs!views/summary/welcomeBanner", "components/common/scripts/analytics/analytics", "modules/modals", "views/linkBankAccount/setupView", "models/visitor"], function(e, t, n, r, i, s) {
         return e.View.extend({
             template: t,
             ui: {
@@ -31035,13 +31036,13 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 taskTitle: function() {
-                    return BMT.user.isAdvised() ? "Welcome, " + BMT.user.get("firstName") + "." : "Welcome to Betterment, " + BMT.user.get("firstName") + "."
+                    return BS.user.isAdvised() ? "Welcome, " + BS.user.get("firstName") + "." : "Welcome to Betasmartz, " + BS.user.get("firstName") + "."
                 },
                 taskBody: function() {
-                    return BMT.user.isAdvised() || !s.getExperiences().hasVariation("banklink_rollover") ? "Get started investing today by linking a bank account or transferring an IRA or old 401(k)." : "Get started investing today by linking to your bank account."
+                    return BS.user.isAdvised() || !s.getExperiences().hasVariation("banklink_rollover") ? "Get started investing today by linking a bank account or transferring an IRA or old 401(k)." : "Get started investing today by linking to your bank account."
                 },
                 showRolloverButton: function() {
-                    return BMT.user.isAdvised() || !s.getExperiences().hasVariation("banklink_rollover")
+                    return BS.user.isAdvised() || !s.getExperiences().hasVariation("banklink_rollover")
                 }
             },
             onRender: function() {
@@ -31049,7 +31050,7 @@ var requirejs, require, define;
                     Location: "SummaryView",
                     Name: "WelcomeBanner",
                     Module: "InAppGuide"
-                }), BMT.user.isAdvised() || s.getExperiences().getExperimentAndMarkViewed("welcome_banner"), this.listenTo(BMT.vent, "linkBankAccount:bankSaved", this.hide)
+                }), BS.user.isAdvised() || s.getExperiences().getExperimentAndMarkViewed("welcome_banner"), this.listenTo(BS.vent, "linkBankAccount:bankSaved", this.hide)
             },
             onClickLinkButton: function() {
                 n.track("ElementClicked", {
@@ -31058,7 +31059,7 @@ var requirejs, require, define;
                     Type: "Button",
                     Module: "InAppGuide"
                 }), r.show(new i({
-                    accountGroup: BMT.accountGroup
+                    accountGroup: BS.accountGroup
                 }))
             },
             onClickTransferButton: function() {
@@ -31067,15 +31068,15 @@ var requirejs, require, define;
                     Name: "TransferIRAOr401kIntent",
                     Type: "Button",
                     Module: "InAppGuide"
-                }), BMT.router.navigate("rollover", !0, {
-                    prevPage: BMT.currentPage
+                }), BS.router.navigate("rollover", !0, {
+                    prevPage: BS.currentPage
                 })
             },
             hide: function() {
                 this.$el.slideUp(300)
             }
         })
-    }), define("views/summary/summaryView", ["common/betterment.views", "hbs!views/summary/summary", "components/common/scripts/analytics/analytics", "views/summary/accountSummaryView", "views/summary/noAccountsView", "services/bankAccountService", "views/summary/welcomeBannerView"], function(e, t, n, r, i, s, o) {
+    }), define("views/summary/summaryView", ["common/betasmartz.views", "hbs!views/summary/summary", "components/common/scripts/analytics/analytics", "views/summary/accountSummaryView", "views/summary/noAccountsView", "services/bankAccountService", "views/summary/welcomeBannerView"], function(e, t, n, r, i, s, o) {
         return e.View.extend({
             template: t,
             regions: {
@@ -31083,7 +31084,7 @@ var requirejs, require, define;
                 banner: ".banner-region"
             },
             onInitialize: function() {
-                BMT.accounts().isEmpty() && (this.showInRegion = BMT.unboundedContent)
+                BS.accounts().isEmpty() && (this.showInRegion = BS.unboundedContent)
             },
             onRender: function() {
                 this.shouldShowWelcomeBanner() && this.banner.show(new o)
@@ -31091,10 +31092,10 @@ var requirejs, require, define;
             onShow: function() {
                 n.track("PageVisited", {
                     Location: "Summary"
-                }), BMT.accounts().isEmpty() ? this.summary.show(new i(this.options)) : this.summary.show(new r(this.options))
+                }), BS.accounts().isEmpty() ? this.summary.show(new i(this.options)) : this.summary.show(new r(this.options))
             },
             shouldShowWelcomeBanner: function() {
-                return s.shouldShowLinkAccount() && BMT.accountGroup.not("funded") && !BMT.needToShowTrustDocumentBanner()
+                return s.shouldShowLinkAccount() && BS.accountGroup.not("funded") && !BS.needToShowTrustDocumentBanner()
             }
         })
     }), define("hbs!views/transfer/transfer", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -31120,7 +31121,7 @@ var requirejs, require, define;
             return s += '\n    </div>\n\n    <div class="panel body">\n        <div class="bank-account-not-ready">\n            <div class="message"></div>\n        </div>\n        <div id="top" class="clearfix">\n            <div id="deposit"></div><div id="automaticDeposit"></div>\n        </div>\n        <div id="bottom" class="clearfix">\n            <div id="withdraw"></div><div id="automaticWithdrawal"></div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/transfer/transfer", n), n
-    }), define("views/transfer/manualNetIncomeView", ["jquery", "underscore", "backbone", "common/betterment.views", "common/betterment.models", "models/account"], function(e, t, n, r, i, s) {
+    }), define("views/transfer/manualNetIncomeView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "common/betasmartz.models", "models/account"], function(e, t, n, r, i, s) {
         return r.ModalView.extend({
             template: "#transfer/manualNetIncome",
             className: "manual-net-income",
@@ -31168,7 +31169,7 @@ var requirejs, require, define;
                 }), !!t
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             _totalAmount: function() {
                 return this.options.params.amount
@@ -31196,8 +31197,8 @@ var requirejs, require, define;
                 var i = e.extend({
                     termYears: n.remainingGoalTerm(),
                     goalType: n.get("goalType"),
-                    employmentStatus: BMT.user.get("employmentStatus"),
-                    age: BMT.user.getAge()
+                    employmentStatus: BS.user.get("employmentStatus"),
+                    age: BS.user.getAge()
                 }, r);
                 return t.recommendedAllocation(i).allocation
             },
@@ -31251,7 +31252,7 @@ var requirejs, require, define;
                     return e < t.max
                 });
                 if (!r) {
-                    BMT.logError("Missing step for ticks: " + e);
+                    BS.logError("Missing step for ticks: " + e);
                     return
                 }
                 return (e - r.min) * r.step + r.base
@@ -31261,13 +31262,13 @@ var requirejs, require, define;
                     return n === t.last(i) ? !0 : e < i[r + 1].base
                 });
                 if (!r) {
-                    BMT.logError("Missing step for value: " + e);
+                    BS.logError("Missing step for value: " + e);
                     return
                 }
                 return (e - r.base) / r.step + r.min
             }
         }
-    }), define("views/transfer/withdrawalAlternativeView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/v1/allocationChange", "components/portfolio/scripts/views/targetPortfolioDonutView", "common/slider"], function(e, t, n, r, i, s, o) {
+    }), define("views/transfer/withdrawalAlternativeView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/v1/allocationChange", "components/portfolio/scripts/views/targetPortfolioDonutView", "common/slider"], function(e, t, n, r, i, s, o) {
         return r.ModalView.extend({
             template: "transfer/withdrawalAlternative",
             className: "withdrawal-alternative-modal",
@@ -31316,7 +31317,7 @@ var requirejs, require, define;
                 setTimeout(n, 500)
             },
             changeAllocation: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "Transfer/CashEquivalentModal",
                     Type: "Button",
                     Name: "ChangeAllocation",
@@ -31328,28 +31329,28 @@ var requirejs, require, define;
                     allocation: 0
                 });
                 t.save().done(function() {
-                    this.model.set("allocation", 0), BMT.flash("Your allocation has been updated.")
+                    this.model.set("allocation", 0), BS.flash("Your allocation has been updated.")
                 }.bind(this)).complete(function() {
-                    BMT.router.navigate("portfolio", !0), BMT.modal.close(this)
+                    BS.router.navigate("portfolio", !0), BS.modal.close(this)
                 }.bind(this))
             },
             onCancel: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "Transfer/CashEquivalentModal",
                     Type: "Button",
                     Name: "StayPut",
                     Variation: "withdrawal_cash_option_teaser_show_safety_tip",
                     Value: this.options.amount
-                }), BMT.modal.close(this)
+                }), BS.modal.close(this)
             },
             onTryDifferent: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "Transfer/CashEquivalentModal",
                     Type: "Link",
                     Name: "TryDifferentAllocation",
                     Variation: "withdrawal_cash_option_teaser_show_safety_tip",
                     Value: this.options.amount
-                }), e.preventDefault(), BMT.router.navigate("advice", !0), BMT.modal.close(this)
+                }), e.preventDefault(), BS.router.navigate("advice", !0), BS.modal.close(this)
             }
         })
     }), define("services/withdrawalService", ["components/transaction/scripts/constants/transactionConstants"], function(e) {
@@ -31361,7 +31362,7 @@ var requirejs, require, define;
                 return this.isWithdrawAll(e, t) ? e.num("availableBalance") : t
             }
         }
-    }), define("views/common/confirmWithdrawalView", ["jquery", "underscore", "common/betterment.views", "components/account/scripts/constants/accountConstants", "components/transaction/scripts/constants/transactionConstants", "services/withdrawalService"], function(e, t, n, r, i, s) {
+    }), define("views/common/confirmWithdrawalView", ["jquery", "underscore", "common/betasmartz.views", "components/account/scripts/constants/accountConstants", "components/transaction/scripts/constants/transactionConstants", "services/withdrawalService"], function(e, t, n, r, i, s) {
         return n.ModalView.extend({
             template: "common/confirmWithdrawal",
             className: "withdrawal-confirmation",
@@ -31400,7 +31401,7 @@ var requirejs, require, define;
                     return this.self.account.get("name")
                 },
                 bankAccountName: function() {
-                    return BMT.accountGroup.get("bankAccount").get("description")
+                    return BS.accountGroup.get("bankAccount").get("description")
                 },
                 isIRA: function() {
                     return this.self.account.isIRA()
@@ -31427,7 +31428,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h1>Wait! You have non-covered positions!</h1>\n\n<div class="modal-body">\n    This transaction may sell securities which were transferred in<br/>\n    from an external account with incomplete information.<br/>\n    BetaSmartz will not be able to properly report gains or losses<br/>\n    on the sale of these non-covered securities. Consult your<br/>\n    tax advisor, as you could have additional reporting<br/>\n    obligations on your tax return. Please confirm you wish to<br/>\n    continue with this transaction.<br/>\n</div>\n\n<div class="modal-buttons">\n    <button class="ok">Continue</button>\n    <button class="cancel">Cancel</button>\n</div>'
         });
         return t.registerPartial("views/common/noncoveredAlert", n), n
-    }), define("views/common/noncoveredAlertView", ["common/betterment.views", "hbs!views/common/noncoveredAlert"], function(e, t) {
+    }), define("views/common/noncoveredAlertView", ["common/betasmartz.views", "hbs!views/common/noncoveredAlert"], function(e, t) {
         return e.ModalView.extend({
             template: t,
             className: "withdrawal-confirmation",
@@ -31439,33 +31440,33 @@ var requirejs, require, define;
                 "click button.cancel": "onCancel"
             },
             onOK: function() {
-                this.trigger("proceed", this), BMT.modal.close(this)
+                this.trigger("proceed", this), BS.modal.close(this)
             },
             onCancel: function() {
-                this.trigger("cancel", this), BMT.modal.close(this)
+                this.trigger("cancel", this), BS.modal.close(this)
             }
         })
     }), define("views/transfer/confirmWithdrawalController", ["marionette", "views/common/confirmWithdrawalView", "views/common/noncoveredAlertView", "views/taxImpact/taxImpactView", "models/v1/withdrawalTaxImpact"], function(e, t, n, r, i) {
         return e.Controller.extend({
             initialize: function(e) {
-                this.model = e.model, this.account = BMT.selectedAccount
+                this.model = e.model, this.account = BS.selectedAccount
             },
             go: function() {
-                this.account.isIRA() && BMT.accountGroup.hasNonCoveredIRALots() || this.account.isInvestingAccount() && BMT.accountGroup.hasNonCoveredTaxableLots() ? this.showNonCoveredWarning() : this.showConfirm()
+                this.account.isIRA() && BS.accountGroup.hasNonCoveredIRALots() || this.account.isInvestingAccount() && BS.accountGroup.hasNonCoveredTaxableLots() ? this.showNonCoveredWarning() : this.showConfirm()
             },
             showNonCoveredWarning: function() {
                 var e = new n;
-                this.listenTo(e, "proceed", this.showConfirm), this.listenTo(e, "cancel", this.onCancel), BMT.modal.show(e)
+                this.listenTo(e, "proceed", this.showConfirm), this.listenTo(e, "cancel", this.onCancel), BS.modal.show(e)
             },
             showConfirm: function() {
                 var e = new t({
                     model: this.model,
                     account: this.account
                 });
-                this.listenTo(e, "proceed", this.onProceed), this.listenTo(e, "showTaxImpact", this.showTaxImpact, this), this.listenTo(e, "cancel", this.onCancel), BMT.modal.show(e)
+                this.listenTo(e, "proceed", this.onProceed), this.listenTo(e, "showTaxImpact", this.showTaxImpact, this), this.listenTo(e, "cancel", this.onCancel), BS.modal.show(e)
             },
             showTaxImpact: function(e) {
-                BMT.modal.close(e);
+                BS.modal.close(e);
                 var t = new i({
                         amount: this.model.get("amount"),
                         account: this.account
@@ -31488,7 +31489,7 @@ var requirejs, require, define;
                             }
                         }]
                     });
-                this.listenTo(n, "cancel navigateAway", this.onCancel), this.listenTo(n, "showConfirm", this.showConfirm), BMT.modal.show(n)
+                this.listenTo(n, "cancel navigateAway", this.onCancel), this.listenTo(n, "showConfirm", this.showConfirm), BS.modal.show(n)
             },
             onCancel: function(e) {
                 this.trigger("cancel", e)
@@ -31566,7 +31567,7 @@ var requirejs, require, define;
                 }
             };
         return e.Model.extend(r)
-    }), define("views/transactionMemo/transactionMemoModalView", ["backbone", "common/betterment.views", "hbs!views/transactionMemo/transactionMemoModal", "models/v2/transactionMemo", "models/visitor"], function(e, t, n, r, i) {
+    }), define("views/transactionMemo/transactionMemoModalView", ["backbone", "common/betasmartz.views", "hbs!views/transactionMemo/transactionMemoModal", "models/v2/transactionMemo", "models/visitor"], function(e, t, n, r, i) {
         var s = {
             WITHDRAWAL: {
                 title: "Withdrawal Confirmed",
@@ -31613,17 +31614,17 @@ var requirejs, require, define;
                 this.model = new r({
                     transactionType: this.options.transactionType
                 }), this.model.setIdParam("userTransactionId", {
-                    bettermentdbUserTransactionId: this.options.transactionId
+                    betasmartzdbUserTransactionId: this.options.transactionId
                 })
             },
             optOut: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             onCancel: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             onSave: function() {
-                this.block(), this.model.save(e.Syphon.serialize(this)), BMT.modal.close(this)
+                this.block(), this.model.save(e.Syphon.serialize(this)), BS.modal.close(this)
             }
         })
     }), define("models/v1/withdrawal", ["backbone", "models/v1/baseModels", "components/common/scripts/util/formatter", "components/transaction/scripts/constants/transactionConstants"], function(e, t, n, r) {
@@ -31653,7 +31654,7 @@ var requirejs, require, define;
             }
         };
         return t.Model.extend(i)
-    }), define("views/transfer/withdrawView", ["jquery", "underscore", "backbone", "common/betterment.views", "common/betterment.models", "views/transfer/manualNetIncomeView", "common/betterment.models", "models/contribution", "components/common/scripts/models/appData", "views/common/alertView", "views/transfer/withdrawalAlternativeView", "models/visitor", "views/transfer/confirmWithdrawalController", "views/taxImpact/taxImpactView", "models/v1/withdrawalTaxImpact", "components/common/scripts/analytics/analytics", "views/transactionMemo/transactionMemoModalView", "models/v1/withdrawal", "services/withdrawalService"], function(e, t, n, r, i, s, i, o, u, a, f, l, c, h, p, d, v, m, g) {
+    }), define("views/transfer/withdrawView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "common/betasmartz.models", "views/transfer/manualNetIncomeView", "common/betasmartz.models", "models/contribution", "components/common/scripts/models/appData", "views/common/alertView", "views/transfer/withdrawalAlternativeView", "models/visitor", "views/transfer/confirmWithdrawalController", "views/taxImpact/taxImpactView", "models/v1/withdrawalTaxImpact", "components/common/scripts/analytics/analytics", "views/transactionMemo/transactionMemoModalView", "models/v1/withdrawal", "services/withdrawalService"], function(e, t, n, r, i, s, i, o, u, a, f, l, c, h, p, d, v, m, g) {
         var y = 500,
             b = .9,
             w = "Indirect rollovers must be completed within 60 days. See IRS Publication 590 for more details.",
@@ -31694,7 +31695,7 @@ var requirejs, require, define;
                     return this.self.account()
                 },
                 build_distribution_selector: function() {
-                    var e = u.getInstance().distributionsForSelect(BMT.user);
+                    var e = u.getInstance().distributionsForSelect(BS.user);
                     return this.build_dropdown_menu(e, {
                         name: "distributionType",
                         "class": "distribution-type-selector"
@@ -31769,7 +31770,7 @@ var requirejs, require, define;
                     model: this.model,
                     amount: e
                 });
-                BMT.modal.show(t)
+                BS.modal.show(t)
             },
             transfer: function(e) {
                 var t = this.getWithdrawalAmount();
@@ -31793,7 +31794,7 @@ var requirejs, require, define;
                         if (e >= n.length) i ? r.sendWithdrawal(r.withdrawal, t) : (n.push(r.getPleaseConfirmModal), i = !0, s(e));
                         else {
                             var o = n[e++](r.withdrawal.attributes);
-                            o ? (t && BMT.modal.close(t), i = !0, o(function(t) {
+                            o ? (t && BS.modal.close(t), i = !0, o(function(t) {
                                 s(e, t)
                             })) : s(e, t)
                         }
@@ -31804,12 +31805,12 @@ var requirejs, require, define;
                 return this.ui.amountInput.numberVal() || 0
             },
             getPrematureBonusWithdrawalModal: function(e) {
-                var t = BMT.accountGroup.get("withheldBonus"),
+                var t = BS.accountGroup.get("withheldBonus"),
                     n = g.getActualWithdrawalAmount(this.model, this.getWithdrawalAmount());
                 return t && t.doesWithdrawalPushBonusBelowThreshold(n) ? function(n) {
                     var r = this.formatter.money,
-                        i = "Are you sure you want to authorize a withdrawal of " + r(e.amount) + ' from <span class="single-ag-only">your BetaSmartz account</span><span class="multi-ag-only">' + BMT.accountGroup.get("name") + "</span> to your account at " + BMT.accountGroup.get("bankAccount").get("description") + "?<br /><br />In order to keep your signup bonus of " + t.get("prizeDescription") + " you must maintain " + r(t.num("requirementAmount")) + " of your initial deposit for another " + t.num("withholdingDaysRemaining") + " days." + (e.distributionType === "ROLL" ? "<br /><br />" + w : "");
-                    BMT.alert({
+                        i = "Are you sure you want to authorize a withdrawal of " + r(e.amount) + ' from <span class="single-ag-only">your BetaSmartz account</span><span class="multi-ag-only">' + BS.accountGroup.get("name") + "</span> to your account at " + BS.accountGroup.get("bankAccount").get("description") + "?<br /><br />In order to keep your signup bonus of " + t.get("prizeDescription") + " you must maintain " + r(t.num("requirementAmount")) + " of your initial deposit for another " + t.num("withholdingDaysRemaining") + " days." + (e.distributionType === "ROLL" ? "<br /><br />" + w : "");
+                    BS.alert({
                         icon: "warning",
                         title: "Please Confirm Transfer",
                         body: i,
@@ -31825,7 +31826,7 @@ var requirejs, require, define;
                         }],
                         noClose: !0,
                         handler: function(e) {
-                            e === "yes" ? n(this) : BMT.modal.close(this)
+                            e === "yes" ? n(this) : BS.modal.close(this)
                         }
                     })
                 }.bind(this) : !1
@@ -31838,7 +31839,7 @@ var requirejs, require, define;
                         })[0],
                         r = n.calculateAmountWithNetIncome(e.amount);
                     return function(t) {
-                        BMT.alert({
+                        BS.alert({
                             icon: "warning",
                             title: "Withdraw Excess Contributions",
                             body: "Since you first made this contribution, the amount has " + (r >= e.amount ? "increased" : "decreased") + " to " + this.formatter.money(r) + " due to market changes. The excess contribution " + "returned to your linked account will be " + this.formatter.money(r) + ". " + "Any income will be taxable in the year of the original contribution. " + "For more information, see IRS Publication 590 or speak with a tax advisor.",
@@ -31854,7 +31855,7 @@ var requirejs, require, define;
                             }],
                             noClose: !0,
                             handler: function(n) {
-                                n === "ok" ? (e.delta = parseFloat((r - e.amount).toFixed(2)), t(this)) : BMT.modal.close(this)
+                                n === "ok" ? (e.delta = parseFloat((r - e.amount).toFixed(2)), t(this)) : BS.modal.close(this)
                             }
                         })
                     }.bind(this)
@@ -31878,7 +31879,7 @@ var requirejs, require, define;
                 return this.account().isIRA() && (n || r) ? function(e) {
                     var t = n ? "Beneficiary" : "Disability",
                         r = n ? "certified copy of the account holder's death certificate." : "copy of a physician's statement or letter from the Age Pension office confirming your disability.";
-                    BMT.alert({
+                    BS.alert({
                         width: 450,
                         icon: "warning",
                         title: "Extra Documentation Required",
@@ -31895,7 +31896,7 @@ var requirejs, require, define;
                         }],
                         noClose: !0,
                         handler: function(t) {
-                            t === "yes" ? e(this) : BMT.modal.close(this)
+                            t === "yes" ? e(this) : BS.modal.close(this)
                         }
                     })
                 } : !1
@@ -31910,7 +31911,7 @@ var requirejs, require, define;
                             model: n
                         });
                     r.on("cancel", function(e) {
-                        BMT.modal.close(e), r.destroy()
+                        BS.modal.close(e), r.destroy()
                     }), r.on("proceed", function(e) {
                         t(e), r.destroy()
                     }), r.go()
@@ -31923,17 +31924,17 @@ var requirejs, require, define;
                         Value: e.amount,
                         GoalId: this.account().get("id"),
                         GoalType: this.account().get("goalType")
-                    }), BMT.refreshAccounts(function() {
+                    }), BS.refreshAccounts(function() {
                         var e = function() {
-                            this.off("render", e), this.distributionTypeChanged(), t && BMT.modal.close(t)
+                            this.off("render", e), this.distributionTypeChanged(), t && BS.modal.close(t)
                         }.bind(this);
-                        this.on("render", e), this.render(), BMT.vent.trigger("transfer:refreshDepositView")
+                        this.on("render", e), this.render(), BS.vent.trigger("transfer:refreshDepositView")
                     }.bind(this)), this.$("input").val(""), v.show({
                         transactionType: "WITHDRAWAL",
                         transactionId: e.transactionId
                     })
                 }.bind(this)).fail(function() {
-                    t && BMT.modal.close(t)
+                    t && BS.modal.close(t)
                 })
             },
             _shouldShowMarketTimingProTip: function(e) {
@@ -31974,7 +31975,7 @@ var requirejs, require, define;
                         amount: e,
                         account: this.account()
                     });
-                BMT.modal.show(new h({
+                BS.modal.show(new h({
                     model: t
                 }))
             }
@@ -32030,7 +32031,7 @@ var requirejs, require, define;
             return s += '\n\n            <form action="#" method="POST" class="inputs clearfix left">\n                <div class="deposit left">\n                    $0.<input  type="text" maxlength="2" name="verDep1"/>\n                </div>\n                <div class="deposit left">\n                    $0.<input  type="text" maxlength="2" name="verDep2"/>\n                </div>\n                <button class="blue left verify-account">Verify</button>\n            </form>\n        </div>\n    </div>\n    \n</div>\n', s
         });
         return t.registerPartial("views/transfer/confirmBankAccount", n), n
-    }), define("views/transfer/confirmBankAccountView", ["jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/transfer/confirmBankAccount", "models/bankAccount"], function(e, t, n, r, i, s) {
+    }), define("views/transfer/confirmBankAccountView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "hbs!views/transfer/confirmBankAccount", "models/bankAccount"], function(e, t, n, r, i, s) {
         return r.View.extend({
             template: i,
             tagName: "div",
@@ -32070,17 +32071,17 @@ var requirejs, require, define;
                     success: function(e, t) {
                         r.removeExtraAttributes(), r.model.set("confirmed", !0, {
                             forceUpdate: !0
-                        }), BMT.firePixel(t.pixel), BMT.analytics.track("BankConfirmSucceeded", {
+                        }), BS.firePixel(t.pixel), BS.analytics.track("BankConfirmSucceeded", {
                             Location: "Transfer"
                         });
                         var n = "Congratulations, the link to your " + r.model.get("description") + " account is now active!";
-                        BMT.flash(n), r.trigger("complete")
+                        BS.flash(n), r.trigger("complete")
                     },
                     complete: function() {
                         r.unblock()
                     },
                     error: function() {
-                        BMT.analytics.track("BankConfirmFailed", {
+                        BS.analytics.track("BankConfirmFailed", {
                             Location: "Transfer"
                         })
                     }
@@ -32235,7 +32236,7 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/transfer/automaticDeposit", n), n
-    }), define("views/transfer/automaticTransactionView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/automaticDeposit", "views/transfer/automaticTransactionSettingsModalView"], function(e, t, n, r, i, s) {
+    }), define("views/transfer/automaticTransactionView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/automaticDeposit", "views/transfer/automaticTransactionSettingsModalView"], function(e, t, n, r, i, s) {
         return r.View.extend({
             templateHelpers: {
                 autoTransactionEnabled: function() {
@@ -32274,11 +32275,11 @@ var requirejs, require, define;
                 return !!e && e.get("enabled")
             },
             showSettingsModal: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: this.model.transactionType.capitalize() + "Settings",
                     Type: "Button",
                     Location: "Transfer"
-                }), BMT.modal.show(this.getAutomaticTransactionSettingsView())
+                }), BS.modal.show(this.getAutomaticTransactionSettingsView())
             },
             getAutomaticTransactionSettingsView: function() {
                 var e = this.model.get("account"),
@@ -32307,7 +32308,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<iframe width="560" height="315" src="//www.youtube.com/embed/AKppcRZYo6w?modestbranding=1&rel=0&showinfo=0&autoplay=1&autohide=1" frameborder="0" allowfullscreen></iframe>\n<div class="actions">\n    <button>Set up SmartDeposit</button>\n</div>\n'
         });
         return t.registerPartial("views/transfer/smartDepositVideoModal", n), n
-    }), define("views/transfer/smartDepositVideoModalView", ["common/betterment.views", "hbs!views/transfer/smartDepositVideoModal", "models/visitor"], function(e, t, n) {
+    }), define("views/transfer/smartDepositVideoModalView", ["common/betasmartz.views", "hbs!views/transfer/smartDepositVideoModal", "models/visitor"], function(e, t, n) {
         return e.ModalView.extend({
             className: "tlh-video-modal",
             template: t,
@@ -32315,16 +32316,16 @@ var requirejs, require, define;
                 "click button": "setupSmartDeposit"
             },
             onInitialize: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "SmartDepositVideo",
                     Location: "Transfer"
                 }), n.getExperiences().getExperimentAndMarkViewed("smart_deposit_video_teaser")
             },
             setupSmartDeposit: function() {
-                this.trigger("setupSmartDeposit"), BMT.modal.close(this)
+                this.trigger("setupSmartDeposit"), BS.modal.close(this)
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("views/transfer/automaticDepositView", ["underscore", "common/errorHandler", "modules/modals", "hbs!views/transfer/automaticDeposit", "services/accountService", "models/automaticDeposit", "models/visitor", "views/transfer/automaticTransactionView", "views/transfer/automaticDepositSettingsView", "views/common/smartDepositSettingsView", "views/transfer/smartDepositVideoModalView"], function(e, t, n, r, i, s, o, u, a, f, l) {
@@ -32372,7 +32373,7 @@ var requirejs, require, define;
                         my: "bottom center",
                         at: "top center"
                     }
-                }), this.infoTipVersion() === "smart_deposit" && BMT.analytics.track("ElementViewed", {
+                }), this.infoTipVersion() === "smart_deposit" && BS.analytics.track("ElementViewed", {
                     Name: "SmartDepositVideoTeaser",
                     Location: "Transfer"
                 })
@@ -32380,7 +32381,7 @@ var requirejs, require, define;
             showSmartDepositVideo: function(e) {
                 e.preventDefault();
                 var t = new l;
-                this.listenTo(t, "setupSmartDeposit", this.showSmartDepositsModal), BMT.modal.show(t)
+                this.listenTo(t, "setupSmartDeposit", this.showSmartDepositsModal), BS.modal.show(t)
             },
             getAccount: function() {
                 return this.model.get("account")
@@ -32393,7 +32394,7 @@ var requirejs, require, define;
             },
             showSmartDepositsModal: function() {
                 var e = this.getAccount().get("smartDepositConfig");
-                BMT.user.is("advisorSession") && e.not("enabled") ? BMT.alert(t.getErrorContentForCode("UNAUTHORIZED")) : (this.listenToOnce(e, "change:enabled", BMT.refreshAccounts), n.show(f.withConfig(e)))
+                BS.user.is("advisorSession") && e.not("enabled") ? BS.alert(t.getErrorContentForCode("UNAUTHORIZED")) : (this.listenToOnce(e, "change:enabled", BS.refreshAccounts), n.show(f.withConfig(e)))
             },
             hasSmartDepositsFeature: function() {
                 return o.hasVariation("smart_deposits_setup_enabled")
@@ -32485,7 +32486,7 @@ var requirejs, require, define;
                 return new n
             }
         })
-    }), define("views/transfer/iraInfoTipsView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/common/addGoalView", "components/common/scripts/models/appData", "components/common/scripts/services/dateService"], function(e, t, n, r, i, s, o) {
+    }), define("views/transfer/iraInfoTipsView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/common/addGoalView", "components/common/scripts/models/appData", "components/common/scripts/services/dateService"], function(e, t, n, r, i, s, o) {
         return r.View.extend({
             template: "transfer/iraInfoTips",
             id: "iraInfoTips",
@@ -32499,15 +32500,15 @@ var requirejs, require, define;
                         t = new Date <= s.getInstance().date("taxDay"),
                         n = (new Date).getFullYear(),
                         r = n - 1;
-                    return e.isIRA() ? t ? "You can still contribute to your SMSF for " + r + ". You can also make contributions for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + " IRA contribution deadline has passed, but you can still contribute for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : !e.isIRA() && BMT.accountGroup.hasIRAGoal() ? t ? "You can still contribute to your SMSF for " + r + '. You can also make contributions to <a href="#" class="bold-text open-ira-goal">your SMSF</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + ' IRA contribution deadline has passed, but you can still contribute to <a href="#" class="bold-text open-ira-goal">your SMSF</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : t ? "Save taxes by making IRA Contributions for " + r + " and " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.' : "Save taxes by making an IRA Contribution for " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.'
+                    return e.isIRA() ? t ? "You can still contribute to your SMSF for " + r + ". You can also make contributions for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + " IRA contribution deadline has passed, but you can still contribute for " + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : !e.isIRA() && BS.accountGroup.hasIRAGoal() ? t ? "You can still contribute to your SMSF for " + r + '. You can also make contributions to <a href="#" class="bold-text open-ira-goal">your SMSF</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : "The " + r + ' IRA contribution deadline has passed, but you can still contribute to <a href="#" class="bold-text open-ira-goal">your SMSF</a> for ' + n + '. <a href="' + this.brochure_url("resources/retirement/401ks-and-iras/the-early-bird-gets-705-more/") + '" target="_blank">Read why</a> you shouldn\'t wait.' : t ? "Save taxes by making IRA Contributions for " + r + " and " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.' : "Save taxes by making an IRA Contribution for " + n + '. <a href="#" class="bold-text create-ira">Open an IRA</a> now.'
                 }
             },
             openIRAGoal: function() {
-                var e = BMT.accounts().getIRAs()[0];
+                var e = BS.accounts().getIRAs()[0];
                 this.trigger("changeAccount", e.num("id"))
             },
             createIRA: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "AddGoal",
                     Type: "Button",
                     Location: "Transfer/IRAInfoTips"
@@ -32925,7 +32926,7 @@ var requirejs, require, define;
             },
             n = e.Model.extend(t);
         return n
-    }), define("views/activity/transactionView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/activity/transaction", "models/transaction", "models/v1/rolloverDocument", "models/v2/transactionMemo"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/activity/transactionView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/activity/transaction", "models/transaction", "models/v1/rolloverDocument", "models/v2/transactionMemo"], function(e, t, n, r, i, s, o, u) {
         var a = r.CompositeView.extend({
             template: i,
             className: "alternating-row",
@@ -33009,7 +33010,7 @@ var requirejs, require, define;
                     var e = this.formatDate("yy-mm-dd", this.self.model.date("date")),
                         t = this.accountID ? "account=" + this.accountID : "",
                         n = "hash=" + this.documentHash;
-                    return "/document/Betterment_" + this.formatTitle(this.type) + "_" + e + ".pdf?" + t + "&" + n
+                    return "/document/Betasmartz_" + this.formatTitle(this.type) + "_" + e + ".pdf?" + t + "&" + n
                 },
                 printRolloverDocumentLink: function() {
                     var e = new o({
@@ -33041,7 +33042,7 @@ var requirejs, require, define;
                     return !!(this.pending && e && !this.isAllocation)
                 },
                 feeTooltipText: function() {
-                    return BMT.user.isAdvised() ? "Your fee is prorated for the amount of time since your last billing." : "BetaSmartz's fee is prorated for the amount of time since your last billing. For more information about pricing and how to lower your fees, click the Pricing Plan button on your Account Settings page."
+                    return BS.user.isAdvised() ? "Your fee is prorated for the amount of time since your last billing." : "BetaSmartz's fee is prorated for the amount of time since your last billing. For more information about pricing and how to lower your fees, click the Pricing Plan button on your Account Settings page."
                 },
                 showFeeTooltip: function() {
                     return this.isOfType("FEE")
@@ -33092,7 +33093,7 @@ var requirejs, require, define;
             fireDocumentMixpanel: function(e) {
                 if (this.model.get("type") === "ANNUAL_TAX_STATEMENT") {
                     var t = this.model.getTransactionYear() - 1;
-                    BMT.analytics.track("ElementClicked", {
+                    BS.analytics.track("ElementClicked", {
                         Location: "Activity",
                         Type: "Link",
                         Name: "TaxPDF",
@@ -33102,7 +33103,7 @@ var requirejs, require, define;
             }
         });
         return a
-    }), define("views/activity/transactionTableView", ["jquery", "underscore", "common/betterment.views", "hbs!views/activity/transactionTable", "hbs!views/activity/emptyTable", "views/activity/transactionView"], function(e, t, n, r, i, s) {
+    }), define("views/activity/transactionTableView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/activity/transactionTable", "hbs!views/activity/emptyTable", "views/activity/transactionView"], function(e, t, n, r, i, s) {
         return n.CompositeView.extend({
             template: r,
             getChildView: function() {
@@ -33210,12 +33211,12 @@ var requirejs, require, define;
             cancelTransaction: function() {
                 var e = this,
                     t = e.model.get("transactionType") === "deposit" ? "deposit" : e.model.get("transactionDescription");
-                BMT.analytics.track("TransactionCanceled", {
+                BS.analytics.track("TransactionCanceled", {
                     Name: e.model.get("transactionDescription"),
                     Location: "Transfer",
                     GoalId: e.model.get("accountID"),
                     Value: e.model.get("change")
-                }), BMT.alert({
+                }), BS.alert({
                     icon: "warning",
                     title: "Please Confirm Cancellation",
                     body: "Are you sure you want to cancel your " + e.formatter.moneyCents(e.model.get("displayAmountCents")) + " " + t + " into your " + e.model.get("accountName") + " goal?",
@@ -33230,14 +33231,14 @@ var requirejs, require, define;
                         }
                     }],
                     handler: function(t) {
-                        t === "ok" && (BMT.vent.trigger("deposit:destroy:start"), e.$el.slideUp(300, function() {
+                        t === "ok" && (BS.vent.trigger("deposit:destroy:start"), e.$el.slideUp(300, function() {
                             e.model.destroy({
                                 wait: !0,
                                 success: function() {
-                                    BMT.vent.trigger("deposit:destroy:success")
+                                    BS.vent.trigger("deposit:destroy:success")
                                 },
                                 error: function() {
-                                    BMT.vent.trigger("deposit:destroy:error"), e.$el.slideDown(300)
+                                    BS.vent.trigger("deposit:destroy:error"), e.$el.slideDown(300)
                                 }
                             })
                         }))
@@ -33301,7 +33302,7 @@ var requirejs, require, define;
             return s += '"></span> <span class="pending-label">Pending deposits</span>\n        </h3>\n    </div>\n    <div id="pendingDepositsTable"></div>\n</div>', s
         });
         return t.registerPartial("views/transfer/upcomingTransfers", n), n
-    }), define("views/transfer/upcomingTransfersView", ["components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "views/transfer/pendingDepositsTableView", "models/v2/cancelableTransaction", "hbs!views/transfer/upcomingTransfers"], function(e, t, n, r, i) {
+    }), define("views/transfer/upcomingTransfersView", ["components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "views/transfer/pendingDepositsTableView", "models/v2/cancelableTransaction", "hbs!views/transfer/upcomingTransfers"], function(e, t, n, r, i) {
         return t.View.extend({
             template: i,
             collection: new r.Collection,
@@ -33317,9 +33318,9 @@ var requirejs, require, define;
                 }
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "deposit:destroy:start", this.block), this.listenTo(BMT.vent, "deposit:destroy:error", this.unblock), this.listenTo(BMT.vent, "deposit:destroy:success", function() {
-                    this.unblock(), BMT.flash("Your deposit was canceled successfully."), this.collection.length || this.render(), BMT.refreshAccounts(function() {
-                        BMT.vent.trigger("deposit:refresh")
+                this.listenTo(BS.vent, "deposit:destroy:start", this.block), this.listenTo(BS.vent, "deposit:destroy:error", this.unblock), this.listenTo(BS.vent, "deposit:destroy:success", function() {
+                    this.unblock(), BS.flash("Your deposit was canceled successfully."), this.collection.length || this.render(), BS.refreshAccounts(function() {
+                        BS.vent.trigger("deposit:refresh")
                     })
                 })
             },
@@ -33339,7 +33340,7 @@ var requirejs, require, define;
                 this.$("#pendingDepositsTable").slideDown()
             }
         })
-    }), define("views/transfer/bankVerificationInfoView", ["jquery", "underscore", "common/betterment.views"], function(e, t, n) {
+    }), define("views/transfer/bankVerificationInfoView", ["jquery", "underscore", "common/betasmartz.views"], function(e, t, n) {
         return n.View.extend({
             template: "#transfer/bankVerificationInfo",
             tagName: "div",
@@ -33353,10 +33354,10 @@ var requirejs, require, define;
                 "click button.silver": "refreshTransfer"
             },
             goToSummary: function() {
-                BMT.router.navigate("summary", !0)
+                BS.router.navigate("summary", !0)
             },
             refreshTransfer: function() {
-                BMT.vent.trigger("refresh:transfer"), BMT.analytics.track("InputSubmitted", {
+                BS.vent.trigger("refresh:transfer"), BS.analytics.track("InputSubmitted", {
                     Name: "VerifyDeposits",
                     Type: "Button",
                     Location: "Transfer"
@@ -33365,7 +33366,7 @@ var requirejs, require, define;
         })
     }), define("views/common/dropdown/goalSelectorView", ["underscore", "backbone", "views/common/dropdown/dropdownView", "views/common/addGoalView"], function(e, t, n, r) {
         function i() {
-            return BMT.accounts().map(function(e) {
+            return BS.accounts().map(function(e) {
                 return {
                     name: e.get("name"),
                     value: e.get("id"),
@@ -33376,7 +33377,7 @@ var requirejs, require, define;
         var s = n.extend({
             className: "btn-group goal-selector",
             onInitialize: function() {
-                n.prototype.onInitialize.apply(this, arguments), this.options.selectedValue ? this.selectedValue = this.options.selectedValue : BMT.selectedAccount && (this.selectedValue = BMT.selectedAccount.get("id"))
+                n.prototype.onInitialize.apply(this, arguments), this.options.selectedValue ? this.selectedValue = this.options.selectedValue : BS.selectedAccount && (this.selectedValue = BS.selectedAccount.get("id"))
             },
             onSelected: function(e) {
                 e.preventDefault();
@@ -33384,10 +33385,10 @@ var requirejs, require, define;
                     n = t.data("value"),
                     i = t.data("actionName"),
                     s = t.data("eventName");
-                i ? i === "add-goal" && (r.show(), BMT.analytics.track("ElementClicked", {
+                i ? i === "add-goal" && (r.show(), BS.analytics.track("ElementClicked", {
                     Name: "AddGoalDropDown",
-                    Location: BMT.currentPage.capitalize()
-                })) : BMT.selectedAccount = BMT.accounts().get(n), s && this.trigger(s, {
+                    Location: BS.currentPage.capitalize()
+                })) : BS.selectedAccount = BS.accounts().get(n), s && this.trigger(s, {
                     value: n,
                     actionName: i
                 })
@@ -33398,7 +33399,7 @@ var requirejs, require, define;
                 return e.includeAddGoal && (t = t.concat([{
                     divider: !0
                 }, {
-                    name: BMT.accountGroup.allowsIRAs() ? "Add Goal or IRA" : "Add Goal",
+                    name: BS.accountGroup.allowsIRAs() ? "Add Goal or IRA" : "Add Goal",
                     action: "add-goal"
                 }])), e.prepend && (t = e.prepend.concat(t)), new s({
                     selectedValue: e.selectedValue,
@@ -33407,7 +33408,7 @@ var requirejs, require, define;
             }
         });
         return s
-    }), define("views/transfer/transferView", ["jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/transfer/transfer", "models/automaticDeposit", "models/transaction", "views/common/addGoalView", "views/transfer/depositView", "views/transfer/withdrawView", "views/transfer/confirmBankAccountView", "views/transfer/automaticDepositView", "views/transfer/automaticWithdrawalView", "views/transfer/iraInfoTipsView", "views/transfer/upcomingTransfersView", "views/transfer/bankVerificationInfoView", "views/common/dropdown/goalSelectorView", "models/rolloverFollowup", "views/common/smartDepositSettingsView", "modules/modals", "views/linkBankAccount/setupView", "services/bankAccountService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w, E) {
+    }), define("views/transfer/transferView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "hbs!views/transfer/transfer", "models/automaticDeposit", "models/transaction", "views/common/addGoalView", "views/transfer/depositView", "views/transfer/withdrawView", "views/transfer/confirmBankAccountView", "views/transfer/automaticDepositView", "views/transfer/automaticWithdrawalView", "views/transfer/iraInfoTipsView", "views/transfer/upcomingTransfersView", "views/transfer/bankVerificationInfoView", "views/common/dropdown/goalSelectorView", "models/rolloverFollowup", "views/common/smartDepositSettingsView", "modules/modals", "views/linkBankAccount/setupView", "services/bankAccountService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w, E) {
         return r.View.extend({
             template: i,
             id: "transfer",
@@ -33425,14 +33426,14 @@ var requirejs, require, define;
                     return this.self.model.get("accountGroup").get("name")
                 },
                 show_rollover_button: function() {
-                    return BMT.accountGroup.allowsIRAs()
+                    return BS.accountGroup.allowsIRAs()
                 }
             },
             events: {
                 "click button.rollover": "startRollover"
             },
             onInitialize: function() {
-                this.model = BMT.selectedAccount = BMT.selectedAccount || BMT.accounts().at(0), this.listenTo(BMT.vent, "refresh:transfer", this.reRender), this.listenTo(BMT.vent, "automaticWithdrawal:update", this.reRender), this.listenTo(BMT.vent, "deposit:create", this.showUpcomingTransfers), this.listenTo(BMT.vent, "bankAccount:linkStarted", this.showBankAccountLinkStarted)
+                this.model = BS.selectedAccount = BS.selectedAccount || BS.accounts().at(0), this.listenTo(BS.vent, "refresh:transfer", this.reRender), this.listenTo(BS.vent, "automaticWithdrawal:update", this.reRender), this.listenTo(BS.vent, "deposit:create", this.showUpcomingTransfers), this.listenTo(BS.vent, "bankAccount:linkStarted", this.showBankAccountLinkStarted)
             },
             showBankAccountLinkStarted: function() {
                 this.checkingAccountOperations.show(new v({
@@ -33447,14 +33448,14 @@ var requirejs, require, define;
                         includeAddGoal: !0
                     });
                 this.listenTo(n, "accountChanged", function() {
-                    this.model = BMT.selectedAccount, this.render()
+                    this.model = BS.selectedAccount, this.render()
                 }), this.goalSelectorRegion.show(n), this.deposit.show(new a({
                     model: new o.Model({
                         account: this.model,
                         type: "DEPOSIT"
                     }),
                     amount: parseFloat(this.options.depositAmount) || null,
-                    accountGroup: BMT.accountGroup
+                    accountGroup: BS.accountGroup
                 })), this.withdraw.show(new f({
                     model: this.model,
                     disabled: !this.model.get("accountGroup").get("parentUser").isFull()
@@ -33464,14 +33465,14 @@ var requirejs, require, define;
                     account: this.model
                 });
                 this.listenTo(r, "accountChanged", function() {
-                    this.model = BMT.selectedAccount, this.render()
+                    this.model = BS.selectedAccount, this.render()
                 }), this.automaticDeposit.show(r);
                 if (this.model.get("accountGroup").isEligibleForAutoWithdrawals() && this.model.isAllowedAutoWithdrawals()) this.automaticWithdrawal.show(new h({
                     model: this.model.get("automaticWithdrawal"),
                     account: this.model
                 }));
                 else if (!this.model.get("accountGroup").get("parentUser").isFull() || t)
-                    if (BMT.accountGroup.allowsIRAs()) {
+                    if (BS.accountGroup.allowsIRAs()) {
                         var i = new p({
                             model: this.model
                         });
@@ -33483,7 +33484,7 @@ var requirejs, require, define;
                     if (t) this.showUpcomingTransfers();
                     else if (e.not("active")) !this.options.showSmartDepositsModal && E.shouldShowLinkAccount() && b.show(new w({
                     relink: !1,
-                    accountGroup: BMT.accountGroup
+                    accountGroup: BS.accountGroup
                 })), this.$(".bank-account-not-ready").show().find(".message").text("You can deposit or withdraw after you link your checking account.");
                 else {
                     var s = new l({
@@ -33491,36 +33492,36 @@ var requirejs, require, define;
                         account: this.model
                     });
                     this.listenTo(s, "complete", function() {
-                        BMT.vent.trigger("refresh:transfer"), this.checkingAccountOperations.empty()
+                        BS.vent.trigger("refresh:transfer"), this.checkingAccountOperations.empty()
                     }), this.$(".bank-account-not-ready").show().find(".message").text("You can deposit or withdraw after you verify your checking account."), this.checkingAccountOperations.show(s)
                 }
                 this.showSmartDepositsModal()
             },
             onShow: function() {
-                BMT.analytics.track("PageVisited", {
+                BS.analytics.track("PageVisited", {
                     Location: "Transfer"
                 })
             },
             startRollover: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "Transfer",
                     Name: "Rollover",
                     Type: "Button"
-                }), BMT.router.navigate("rollover", !0, {
-                    prevPage: BMT.currentPage
+                }), BS.router.navigate("rollover", !0, {
+                    prevPage: BS.currentPage
                 })
             },
             showSmartDepositsModal: function() {
-                var e = this.options.showSmartDepositsModal && !BMT.accounts().withSmartDepositEnabled().length && !BMT.user.isSuspended() && !BMT.accountGroup.isSuspended() && BMT.accounts().withSmartDepositEligible().length;
+                var e = this.options.showSmartDepositsModal && !BS.accounts().withSmartDepositEnabled().length && !BS.user.isSuspended() && !BS.accountGroup.isSuspended() && BS.accounts().withSmartDepositEligible().length;
                 if (e) {
                     var t = y.withoutConfig();
                     this.listenTo(t, "finish", function(e) {
-                        this.model = BMT.selectedAccount = e.get("account"), this.render()
+                        this.model = BS.selectedAccount = e.get("account"), this.render()
                     }), b.show(t), this.options.showSmartDepositsModal = !1
                 }
             },
             changeAccount: function(e) {
-                this.model = BMT.selectedAccount = BMT.accounts().get(e), this.render()
+                this.model = BS.selectedAccount = BS.accounts().get(e), this.render()
             },
             showUpcomingTransfers: function() {
                 this.upcomingTransfers.show(new d)
@@ -33531,7 +33532,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="row dark no-invites">\n    No invites yet.\n</div>\n'
         });
         return t.registerPartial("views/invite/emptyInviteTable", n), n
-    }), define("models/invite", ["jquery", "underscore", "backbone", "common/betterment.models", "models/visitor"], function(e, t, n, r, i) {
+    }), define("models/invite", ["jquery", "underscore", "backbone", "common/betasmartz.models", "models/visitor"], function(e, t, n, r, i) {
         var s = r.Model.extend({
                 url: "/invites",
                 labels: {
@@ -33566,7 +33567,7 @@ var requirejs, require, define;
             Model: s,
             Collection: o
         }
-    }), define("views/invite/sentInviteView", ["jquery", "underscore", "backbone", "marionette", "common/betterment.views", "models/visitor"], function(e, t, n, r, i, s) {
+    }), define("views/invite/sentInviteView", ["jquery", "underscore", "backbone", "marionette", "common/betasmartz.views", "models/visitor"], function(e, t, n, r, i, s) {
         return i.View.extend({
             template: "#invite/sentInvite",
             className: "alternating-row",
@@ -33579,7 +33580,7 @@ var requirejs, require, define;
                 }
             },
             resendInvite: function(t) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "ResendInvite",
                     Type: "Button",
                     Location: "Invite"
@@ -33591,12 +33592,12 @@ var requirejs, require, define;
             sendEmailInvite: function(t) {
                 var n = new e.Deferred;
                 return t.model.save().then(function() {
-                    BMT.analytics.track("InviteSubmitted", {
+                    BS.analytics.track("InviteSubmitted", {
                         Type: "Email",
                         Location: "EmailInvite",
                         Module: "Invite",
-                        PromotionId: BMT.user.get("referralProgram").get("promotionId")
-                    }), t.callback && t.callback(), BMT.vent.trigger("updateInvites", t.model), BMT.vent.trigger("incrementMeterInvites"), n.resolve(t)
+                        PromotionId: BS.user.get("referralProgram").get("promotionId")
+                    }), t.callback && t.callback(), BS.vent.trigger("updateInvites", t.model), BS.vent.trigger("incrementMeterInvites"), n.resolve(t)
                 }, function() {
                     n.reject()
                 }), n.promise()
@@ -33613,39 +33614,39 @@ var requirejs, require, define;
                     return t === n ? e = " and " : e = ", ", e
                 },
                 isTimePrize: function() {
-                    return BMT.user.get("referralProgram").get("prizeType") === "time"
+                    return BS.user.get("referralProgram").get("prizeType") === "time"
                 },
                 linkDisplayName: function() {
                     var e = 12;
-                    return BMT.user.get("personalReferralLink").slice(e)
+                    return BS.user.get("personalReferralLink").slice(e)
                 },
                 senderPrize: function() {
-                    return BMT.user.get("referralProgram").get("senderPrize")
+                    return BS.user.get("referralProgram").get("senderPrize")
                 },
                 senderPrizeAmount: function() {
-                    return BMT.user.get("referralProgram").num("senderPrizeAmount")
+                    return BS.user.get("referralProgram").num("senderPrizeAmount")
                 },
                 receiverPrize: function() {
-                    return BMT.user.get("referralProgram").get("receiverPrize")
+                    return BS.user.get("referralProgram").get("receiverPrize")
                 },
                 receiverPrizeAmount: function() {
-                    return BMT.user.get("referralProgram").num("receiverPrizeAmount")
+                    return BS.user.get("referralProgram").num("receiverPrizeAmount")
                 },
                 meterSenderPrize: function() {
-                    return BMT.user.get("referralProgram").get("meterSenderPrize")
+                    return BS.user.get("referralProgram").get("meterSenderPrize")
                 },
                 minimumDeposit: function() {
-                    return this.money(BMT.user.get("referralProgram").num("minimumDeposit"), 2)
+                    return this.money(BS.user.get("referralProgram").num("minimumDeposit"), 2)
                 },
                 hasMinimumDeposit: function() {
-                    return BMT.user.get("referralProgram").num("minimumDeposit") > 0
+                    return BS.user.get("referralProgram").num("minimumDeposit") > 0
                 },
                 expirationDays: function() {
-                    return BMT.user.get("referralProgram").get("expirationDays")
+                    return BS.user.get("referralProgram").get("expirationDays")
                 }
             }
         }
-    }), define("views/invite/meteredInviteLinkAreaView", ["jquery", "underscore", "backbone", "common/betterment.views", "models/invite", "models/visitor", "components/common/scripts/services/browserService", "components/common/scripts/services/domainService", "viewHelpers/inviteViewHelpers"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/invite/meteredInviteLinkAreaView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "models/invite", "models/visitor", "components/common/scripts/services/browserService", "components/common/scripts/services/domainService", "viewHelpers/inviteViewHelpers"], function(e, t, n, r, i, s, o, u, a) {
         return r.View.extend({
             template: "invite/meteredInviteLinkArea",
             className: "metered-invite-box",
@@ -33653,7 +33654,7 @@ var requirejs, require, define;
                 "click #emailInviteButton": "addEmailInvite"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "incrementMeterInvites", function() {
+                this.listenTo(BS.vent, "incrementMeterInvites", function() {
                     this.hideAllValidation(!1), this.incrementMeterInvites()
                 }, this), this.meterCompleteCount = 0
             },
@@ -33705,13 +33706,13 @@ var requirejs, require, define;
                     return e.model.set("email", e.email), a.sendEmailInvite(e)
                 }, this);
                 this.block(), e.when.apply(this, o).done(function() {
-                    this.unblock(), r.length > 1 ? BMT.flash("Your invites have been sent. You can track them below.") : BMT.flash("An invite has been sent to " + r[0].email + ". You can track it below.")
+                    this.unblock(), r.length > 1 ? BS.flash("Your invites have been sent. You can track them below.") : BS.flash("An invite has been sent to " + r[0].email + ". You can track it below.")
                 }.bind(this)).fail(function() {
                     this.unblock()
                 }.bind(this))
             }
         })
-    }), define("views/invite/inviteView", ["common/betterment.views", "hbs!views/invite/emptyInviteTable", "models/invite", "models/visitor", "views/invite/sentInviteView", "views/invite/meteredInviteLinkAreaView", "viewHelpers/inviteViewHelpers"], function(e, t, n, r, i, s, o) {
+    }), define("views/invite/inviteView", ["common/betasmartz.views", "hbs!views/invite/emptyInviteTable", "models/invite", "models/visitor", "views/invite/sentInviteView", "views/invite/meteredInviteLinkAreaView", "viewHelpers/inviteViewHelpers"], function(e, t, n, r, i, s, o) {
         return e.View.extend({
             template: "invite/invite",
             tagName: "div",
@@ -33730,7 +33731,7 @@ var requirejs, require, define;
             },
             templateHelpers: o.templateHelpers,
             onInitialize: function() {
-                this.inviteCollection = new n.Collection, this.listenTo(BMT.vent, "updateInvites", function(e) {
+                this.inviteCollection = new n.Collection, this.listenTo(BS.vent, "updateInvites", function(e) {
                     this.inviteCollection.unshift(e, {
                         silent: !0
                     }), this.showPendingInvites()
@@ -33756,7 +33757,7 @@ var requirejs, require, define;
                 })))
             },
             onShow: function() {
-                BMT.analytics.track("PageVisited", {
+                BS.analytics.track("PageVisited", {
                     Location: "Invite"
                 });
                 var e = this;
@@ -33817,18 +33818,18 @@ var requirejs, require, define;
     }), define("services/userService", [], function() {
         return {
             getCurrentUser: function() {
-                return BMT.user
+                return BS.user
             }
         }
     }), define("viewHelpers/accountViewHelpers", ["services/accountService", "components/portfolio/scripts/services/portfolioSetService", "services/userService"], function(e, t, n) {
         return {
             getSelectedAccountIdParams: function() {
-                return BMT.selectedAccount.getIdParams()
+                return BS.selectedAccount.getIdParams()
             },
             preloadSelectedAccount: function() {
-                var t = BMT.accounts().get(BMT.selectedAccount.get("id"));
-                return t ? e.loadDependenciesForAccount(t) : BMT.refreshAccounts().then(function(t) {
-                    return e.loadDependenciesForAccount(t.get(BMT.selectedAccount.get("id")))
+                var t = BS.accounts().get(BS.selectedAccount.get("id"));
+                return t ? e.loadDependenciesForAccount(t) : BS.refreshAccounts().then(function(t) {
+                    return e.loadDependenciesForAccount(t.get(BS.selectedAccount.get("id")))
                 })
             },
             goalTermAsAge: function(e) {
@@ -34019,7 +34020,7 @@ var requirejs, require, define;
         var s = {
                 className: "btn-group goal-selector plan-selector",
                 onInitialize: function() {
-                    n.prototype.onInitialize.apply(this, arguments), this.selectedValue = this.options.selectedValue || BMT.selectedAccount.get("id")
+                    n.prototype.onInitialize.apply(this, arguments), this.selectedValue = this.options.selectedValue || BS.selectedAccount.get("id")
                 },
                 onSelected: function(e) {
                     e.preventDefault();
@@ -34027,7 +34028,7 @@ var requirejs, require, define;
                         n = t.data("value"),
                         i = t.data("actionName"),
                         s = t.data("eventName");
-                    i ? i === "go-to-plan" ? BMT.router.navigate("retireGuide", !0) : i === "go-to-plan-setup" ? BMT.user.get("financialPlans").selected().isNew() ? BMT.router.navigate("retireGuideStart", !0) : BMT.router.navigate("retireGuideSetup", !0) : i === "add-goal" && r.show() : BMT.selectedAccount = BMT.accounts().get(n), s && this.trigger(s, {
+                    i ? i === "go-to-plan" ? BS.router.navigate("retireGuide", !0) : i === "go-to-plan-setup" ? BS.user.get("financialPlans").selected().isNew() ? BS.router.navigate("retireGuideStart", !0) : BS.router.navigate("retireGuideSetup", !0) : i === "add-goal" && r.show() : BS.selectedAccount = BS.accounts().get(n), s && this.trigger(s, {
                         value: n,
                         actionName: i
                     })
@@ -34036,11 +34037,11 @@ var requirejs, require, define;
             o = {
                 create: function(t) {
                     t = t || {};
-                    var n = BMT.user.get("financialPlans").selected(),
+                    var n = BS.user.get("financialPlans").selected(),
                         r = [],
                         i = [],
                         s = [];
-                    return BMT.accounts().each(function(e) {
+                    return BS.accounts().each(function(e) {
                         var t = {
                             name: e.get("name"),
                             value: e.get("id"),
@@ -34064,7 +34065,7 @@ var requirejs, require, define;
                         action: "go-to-plan-setup",
                         value: "plan-setup"
                     }), r.push({
-                        name: BMT.accountGroup.allowsIRAs() ? "Add Goal or IRA" : "Add Goal",
+                        name: BS.accountGroup.allowsIRAs() ? "Add Goal or IRA" : "Add Goal",
                         action: "add-goal"
                     }), new u(e.extend({
                         items: r
@@ -34073,7 +34074,7 @@ var requirejs, require, define;
             },
             u = n.extend(s, o);
         return u
-    }), define("views/common/tabHeaderView", ["jquery", "underscore", "modules/modals", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "components/common/scripts/util/formatter", "components/common/scripts/constants/accountStatus", "hbs!views/common/tabHeader", "views/common/addGoalView", "views/common/accountSettingsView", "views/common/accountStatusView", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticWithdrawalSettingsView", "views/transfer/automaticDepositSettingsView", "viewHelpers/automaticTransactionViewHelpers", "components/common/scripts/services/projectorService", "components/automaticTransaction/scripts/services/automaticTransactionService", "components/account/scripts/services/goalTypeService", "views/common/dropdown/goalSelectorView", "views/common/dropdown/planGoalSelectorView", "views/common/smartDepositSettingsView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
+    }), define("views/common/tabHeaderView", ["jquery", "underscore", "modules/modals", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "components/common/scripts/util/formatter", "components/common/scripts/constants/accountStatus", "hbs!views/common/tabHeader", "views/common/addGoalView", "views/common/accountSettingsView", "views/common/accountStatusView", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticWithdrawalSettingsView", "views/transfer/automaticDepositSettingsView", "viewHelpers/automaticTransactionViewHelpers", "components/common/scripts/services/projectorService", "components/automaticTransaction/scripts/services/automaticTransactionService", "components/account/scripts/services/goalTypeService", "views/common/dropdown/goalSelectorView", "views/common/dropdown/planGoalSelectorView", "views/common/smartDepositSettingsView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
         var E = {
                 template: u,
                 id: "tabHeader",
@@ -34091,7 +34092,7 @@ var requirejs, require, define;
                 },
                 templateHelpers: {
                     goalTypeName: function() {
-                        return g.getLabelForAccount(BMT.selectedAccount)
+                        return g.getLabelForAccount(BS.selectedAccount)
                     },
                     isIncome: function() {
                         return this.self.model.is("income")
@@ -34168,11 +34169,11 @@ var requirejs, require, define;
                     }.bind(this))
                 },
                 onRender: function() {
-                    var e = BMT.currentPage === "advice" ? b.create() : y.create({
+                    var e = BS.currentPage === "advice" ? b.create() : y.create({
                         includeAddGoal: !0
                     });
                     this.listenTo(e, "accountChanged", function() {
-                        this.trigger("changeAccount", BMT.selectedAccount)
+                        this.trigger("changeAccount", BS.selectedAccount)
                     }), this.goalSelectorRegion.show(e);
                     var t = new f({
                         model: this.model
@@ -34185,8 +34186,8 @@ var requirejs, require, define;
                 },
                 renderAccountStatus: function() {
                     var e = v.getGoalStatus(this.model, {
-                        totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                        defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                        totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                        defaultFeeRate: BS.accountGroup.defaultFeeRate()
                     });
                     if (e !== o.NO_TARGET) {
                         var t = new l({
@@ -34214,7 +34215,7 @@ var requirejs, require, define;
                         goalAmount: n
                     }, {
                         complete: function() {
-                            this.unblock(), this.renderAccountStatus(), this.updateGoalTargetPlaceholder(e), BMT.analytics.track("GoalUpdated", {
+                            this.unblock(), this.renderAccountStatus(), this.updateGoalTargetPlaceholder(e), BS.analytics.track("GoalUpdated", {
                                 Name: "GoalTarget",
                                 Value: n,
                                 OldValue: t,
@@ -34252,7 +34253,7 @@ var requirejs, require, define;
             S = {},
             x = i.View.extend(E, S);
         return x
-    }), define("views/portfolio/assetClassItemView", ["jquery", "underscore", "common/betterment.views", "components/common/scripts/util/formatter", "components/common/scripts/constants/colors", "components/common/scripts/models/v1/assetClassMetadata"], function(e, t, n, r, i, s) {
+    }), define("views/portfolio/assetClassItemView", ["jquery", "underscore", "common/betasmartz.views", "components/common/scripts/util/formatter", "components/common/scripts/constants/colors", "components/common/scripts/models/v1/assetClassMetadata"], function(e, t, n, r, i, s) {
         return n.View.extend({
             template: "portfolio/assetClassItem",
             className: "asset-class",
@@ -34454,7 +34455,7 @@ var requirejs, require, define;
                 this.updateDriftBar()
             }
         })
-    }), define("views/portfolio/positionsTableView", ["common/betterment.views", "views/portfolio/assetClassItemView"], function(e, t) {
+    }), define("views/portfolio/positionsTableView", ["common/betasmartz.views", "views/portfolio/assetClassItemView"], function(e, t) {
         return e.CompositeView.extend({
             template: "portfolio/positionsTable",
             getChildView: function() {
@@ -34520,7 +34521,7 @@ var requirejs, require, define;
             }, u ? u.call(t, t && t.targetAllocation, a) : c.call(t, "pctTrimZeros", t && t.targetAllocation, a))) + ' stocks</div>\n    </div>\n</div>\n<button class="secondary light-blue change-allocation">Adjust target allocation &gt;</button>\n', s
         });
         return t.registerPartial("views/portfolio/allocationInfo", n), n
-    }), define("views/portfolio/allocationInfoView", ["hbs!views/portfolio/allocationInfo", "common/betterment.views", "services/allocationService"], function(e, t, n) {
+    }), define("views/portfolio/allocationInfoView", ["hbs!views/portfolio/allocationInfo", "common/betasmartz.views", "services/allocationService"], function(e, t, n) {
         return t.View.extend({
             template: e,
             events: {
@@ -34535,11 +34536,11 @@ var requirejs, require, define;
                 }
             },
             onChangeAllocation: function() {
-                return BMT.analytics.track("ElementClicked", {
+                return BS.analytics.track("ElementClicked", {
                     Name: "ChangeAlloc",
                     Type: "Button",
                     Location: "Portfolio"
-                }), BMT.router.navigate("advice", !0), !1
+                }), BS.router.navigate("advice", !0), !1
             },
             serializeData: function() {
                 return {
@@ -34566,7 +34567,7 @@ var requirejs, require, define;
             },
             i = t.extend(r);
         return i
-    }), define("views/common/questionsView", ["common/betterment.views"], function(e) {
+    }), define("views/common/questionsView", ["common/betasmartz.views"], function(e) {
         return e.View.extend({
             tagName: "ul",
             className: "question-boxes",
@@ -34577,7 +34578,7 @@ var requirejs, require, define;
                 var t = $(e.currentTarget),
                     n = t.find(".question").text(),
                     r = t.find(".content").html();
-                BMT.alert({
+                BS.alert({
                     title: n,
                     body: r,
                     width: 700,
@@ -34587,7 +34588,7 @@ var requirejs, require, define;
                 })
             }
         })
-    }), define("views/portfolio/rebalancingView", ["common/betterment.views", "components/transaction/scripts/constants/transactionConstants", "common/constants/driftStatus", "services/positionService"], function(e, t, n, r) {
+    }), define("views/portfolio/rebalancingView", ["common/betasmartz.views", "components/transaction/scripts/constants/transactionConstants", "common/constants/driftStatus", "services/positionService"], function(e, t, n, r) {
         var i = .3;
         return e.View.extend({
             template: "portfolio/rebalancing",
@@ -34651,7 +34652,7 @@ var requirejs, require, define;
                 this.$(".drift-bar").css("width", r + "px")
             }
         })
-    }), define("views/portfolio/portfolioView", ["jquery", "underscore", "common/betterment.views", "hbs!views/portfolio/portfolio", "components/account/scripts/models/positionCollection", "components/portfolio/scripts/services/portfolioSetService", "services/positionService", "components/portfolio/scripts/services/donutService", "viewHelpers/accountViewHelpers", "views/common/tabHeaderView", "views/portfolio/positionsTableView", "views/portfolio/allocationInfoView", "components/portfolio/scripts/views/targetPortfolioDonutView", "components/portfolio/scripts/views/positionsDonutView", "views/common/questionsView", "views/portfolio/rebalancingView", "components/common/scripts/models/v1/assetClassMetadata"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
+    }), define("views/portfolio/portfolioView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/portfolio/portfolio", "components/account/scripts/models/positionCollection", "components/portfolio/scripts/services/portfolioSetService", "services/positionService", "components/portfolio/scripts/services/donutService", "viewHelpers/accountViewHelpers", "views/common/tabHeaderView", "views/portfolio/positionsTableView", "views/portfolio/allocationInfoView", "components/portfolio/scripts/views/targetPortfolioDonutView", "components/portfolio/scripts/views/positionsDonutView", "views/common/questionsView", "views/portfolio/rebalancingView", "components/common/scripts/models/v1/assetClassMetadata"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
         return n.View.extend({
             template: r,
             id: "portfolio",
@@ -34664,7 +34665,7 @@ var requirejs, require, define;
                 questionsRegion: ".questions-region"
             },
             onInitialize: function() {
-                BMT.selectedAccount = BMT.selectedAccount || BMT.accounts().first(), this.assetClassMetadata = m.get()
+                BS.selectedAccount = BS.selectedAccount || BS.accounts().first(), this.assetClassMetadata = m.get()
             },
             onRender: function() {
                 this.preloadStart(), this.loadAndRenderAccount().then(this.preloadComplete.bind(this))
@@ -34673,7 +34674,7 @@ var requirejs, require, define;
                 this.block(), this.loadAndRenderAccount().then(this.unblock.bind(this))
             },
             onShow: function() {
-                BMT.analytics.track("PageVisited", {
+                BS.analytics.track("PageVisited", {
                     Location: "Portfolio"
                 })
             },
@@ -34779,7 +34780,7 @@ var requirejs, require, define;
                 var r = new e.Deferred;
                 if (n) return r.resolve(n), r.promise();
                 var i = new t({
-                    id: BMT.user.get("advisorId")
+                    id: BS.user.get("advisorId")
                 });
                 return i.fetch({
                     success: function() {
@@ -34791,9 +34792,9 @@ var requirejs, require, define;
                 }), r.promise()
             }
         }
-    }), define("views/advice/batchSettingsModalView", ["jquery", "underscore", "common/betterment.views", "components/common/scripts/constants/iraConstants", "models/automaticTransaction", "models/automaticDeposit", "models/v1/allocationChangeTaxImpact", "components/common/scripts/models/appData", "components/transaction/scripts/services/transactionProperties", "views/transfer/calendarView", "views/transfer/wireInstructionsView", "views/taxImpact/taxImpactView", "viewHelpers/phoneNumberFormatter", "services/iraService", "services/advisorFetcher", "components/account/scripts/services/goalService", "components/common/scripts/services/projectorService", "components/common/scripts/analytics/analytics", "views/transactionMemo/transactionMemoModalView", "components/common/scripts/viewHelpers/customerSupport", "views/transfer/pendingTrustAlert"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
+    }), define("views/advice/batchSettingsModalView", ["jquery", "underscore", "common/betasmartz.views", "components/common/scripts/constants/iraConstants", "models/automaticTransaction", "models/automaticDeposit", "models/v1/allocationChangeTaxImpact", "components/common/scripts/models/appData", "components/transaction/scripts/services/transactionProperties", "views/transfer/calendarView", "views/transfer/wireInstructionsView", "views/taxImpact/taxImpactView", "viewHelpers/phoneNumberFormatter", "services/iraService", "services/advisorFetcher", "components/account/scripts/services/goalService", "components/common/scripts/services/projectorService", "components/common/scripts/analytics/analytics", "views/transactionMemo/transactionMemoModalView", "components/common/scripts/viewHelpers/customerSupport", "views/transfer/pendingTrustAlert"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w) {
         function E() {
-            return BMT.accountGroup.get("bankAccount")
+            return BS.accountGroup.get("bankAccount")
         }
         return n.ModalView.extend({
             template: "advice/batchSettingsModal",
@@ -34815,7 +34816,7 @@ var requirejs, require, define;
                     return this.self.account()
                 },
                 goalCompleteAge: function() {
-                    return v.convertTermToAge(this.self.options.term, BMT.user.dateOfBirth())
+                    return v.convertTermToAge(this.self.options.term, BS.user.dateOfBirth())
                 },
                 automaticDeposit: function() {
                     return this.self.options.automaticDeposit
@@ -34878,23 +34879,23 @@ var requirejs, require, define;
                     return a.maxACHTransferAmount(this.account())
                 },
                 showBonusWarning: function() {
-                    var e = BMT.accountGroup.get("potentialBonus");
+                    var e = BS.accountGroup.get("potentialBonus");
                     return e && this.oneTimeDepositAmount() < e.num("requirementAmount")
                 },
                 signupBonusPrize: function() {
-                    return BMT.accountGroup.get("potentialBonus").get("prizeDescription")
+                    return BS.accountGroup.get("potentialBonus").get("prizeDescription")
                 },
                 isReferralBonus: function() {
-                    return BMT.accountGroup.get("potentialBonus").isReferral()
+                    return BS.accountGroup.get("potentialBonus").isReferral()
                 },
                 oneTimeDepositAmount: function() {
                     return this.oneTimeDeposit().get("amount")
                 },
                 minimumInitialDepositForBonus: function() {
-                    return BMT.accountGroup.get("potentialBonus").num("requirementAmount")
+                    return BS.accountGroup.get("potentialBonus").num("requirementAmount")
                 },
                 accountGroupName: function() {
-                    return BMT.accountGroup.get("name")
+                    return BS.accountGroup.get("name")
                 },
                 goalName: function() {
                     return this.account().get("name")
@@ -34910,7 +34911,7 @@ var requirejs, require, define;
                     })
                 },
                 needsBuilderPlanWarning: function() {
-                    if (BMT.user.get("pricingSummary").isBuilder()) return !1;
+                    if (BS.user.get("pricingSummary").isBuilder()) return !1;
                     var e = this.self.options.automaticDeposit;
                     return e ? s.totalMonthlyDeposits() < i.MIN_BUILDER_PLAN_DEPOSIT : !1
                 },
@@ -34928,7 +34929,7 @@ var requirejs, require, define;
                     return this.self.showMaximizeIRA(this.account())
                 },
                 willIncurDistributionPenalty: function() {
-                    return this.account().isIRA() && BMT.user.age() < r.MIN_WITHDRAWAL_AGE
+                    return this.account().isIRA() && BS.user.age() < r.MIN_WITHDRAWAL_AGE
                 },
                 hasValidChanges: function() {
                     return this.self.hasValidChanges()
@@ -34940,7 +34941,7 @@ var requirejs, require, define;
                     return this.self.allocationChangeIsInvalid()
                 },
                 isRetireeWithRetirementGoal: function() {
-                    return this.account().isRetirementGoalDisplayedAsAge() && BMT.user.isRetired()
+                    return this.account().isRetirementGoalDisplayedAsAge() && BS.user.isRetired()
                 },
                 advisorName: function() {
                     return d.get() && d.get().get("name")
@@ -35055,14 +35056,14 @@ var requirejs, require, define;
                     var t = this._shouldSaveSection(this.$(".section.one-time-deposit")),
                         n = "Your goal has been updated successfully.",
                         r = m.isAccountOnTrack(this.account(), {
-                            totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                            defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                            totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                            defaultFeeRate: BS.accountGroup.defaultFeeRate()
                         });
-                    r && (n += " Your goal is on track."), t && (n += " Your one-time deposit will take 1 business day."), this._getUnstagedSections().length && this.trigger("reset", this._getUnstagedSections()), BMT.vent.trigger("advice:saved", {
+                    r && (n += " Your goal is on track."), t && (n += " Your one-time deposit will take 1 business day."), this._getUnstagedSections().length && this.trigger("reset", this._getUnstagedSections()), BS.vent.trigger("advice:saved", {
                         account: this.account()
-                    }), BMT.vent.trigger("portfolio:saved", {
+                    }), BS.vent.trigger("portfolio:saved", {
                         account: this.account()
-                    }), this.trackEvents(), this.options.onSuccess && this.options.onSuccess(), this.trigger("closed"), BMT.modal.close(this);
+                    }), this.trackEvents(), this.options.onSuccess && this.options.onSuccess(), this.trigger("closed"), BS.modal.close(this);
                     if (this.shouldInterruptDeposit() && !this.isPendingTrust()) this.showDepositInterruptModal({
                         flashMessage: n
                     });
@@ -35071,17 +35072,17 @@ var requirejs, require, define;
                         i.length === 1 && i[0] === "allocation" ? y.show({
                             transactionType: "ALLOCATION_CHANGE",
                             transactionId: e.transactionId
-                        }) : BMT.flash(n)
+                        }) : BS.flash(n)
                     }
                 }.bind(this)).always(function() {
                     this.unblock()
                 }.bind(this)))
             },
             onCancel: function() {
-                this.account().has("automaticDeposit") && this.account().get("automaticDeposit").isNew() && this.account().unset("automaticDeposit"), this.account().has("automaticWithdrawal") && this.account().get("automaticWithdrawal").isNew() && this.account().unset("automaticWithdrawal"), this.trigger("closed"), BMT.modal.close(this)
+                this.account().has("automaticDeposit") && this.account().get("automaticDeposit").isNew() && this.account().unset("automaticDeposit"), this.account().has("automaticWithdrawal") && this.account().get("automaticWithdrawal").isNew() && this.account().unset("automaticWithdrawal"), this.trigger("closed"), BS.modal.close(this)
             },
             onDestroy: function() {
-                BMT.refreshAccounts()
+                BS.refreshAccounts()
             },
             showTaxImpact: function() {
                 this.trigger("showTaxImpact", this)
@@ -35091,7 +35092,7 @@ var requirejs, require, define;
                     amount: this.options.depositTransaction.num("amount"),
                     model: this.options.depositTransaction
                 }, e || {}));
-                BMT.modal.show(n)
+                BS.modal.show(n)
             },
             allocationChangeIsInvalid: function() {
                 var e = this.proposedChanges(),
@@ -35135,7 +35136,7 @@ var requirejs, require, define;
                     s = Boolean(t.contains(e, "allocation") && this.account().get("canChangeAllocation")),
                     o = Boolean(t.contains(e, "goal-term")),
                     u = t.compact([n, r, i, s, o]).length;
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "BatchSettingsSaved",
                     Location: "AdviceDrawer",
                     AutoDepositUpdated: n,
@@ -35144,14 +35145,14 @@ var requirejs, require, define;
                     AllocationUpdated: s,
                     GoalUpdated: o,
                     NumChanges: u
-                }), n && BMT.analytics.track("AutoDepositUpdated", {
+                }), n && BS.analytics.track("AutoDepositUpdated", {
                     Location: "AdviceDrawer",
                     Value: this.automaticTransaction().get("amount"),
                     Freq: this.automaticTransaction().get("frequency"),
                     GoalId: this.automaticTransaction().getAccount().get("id"),
                     GoalAmount: this.automaticTransaction().getAccount().get("goalAmount"),
                     GoalType: this.automaticTransaction().getAccount().get("goalType")
-                }), r && BMT.analytics.track("AutoWithdrawalUpdated", {
+                }), r && BS.analytics.track("AutoWithdrawalUpdated", {
                     Location: "AdviceDrawer",
                     Value: this.automaticTransaction().get("amount"),
                     Freq: this.automaticTransaction().get("frequency"),
@@ -35161,7 +35162,7 @@ var requirejs, require, define;
                 });
                 if (i) {
                     var a = this.options.depositTransaction;
-                    BMT.analytics.track("DepositSubmitted", {
+                    BS.analytics.track("DepositSubmitted", {
                         Location: "AdviceDrawer",
                         Value: a.get("amount"),
                         GoalId: a.getAccount().get("id"),
@@ -35171,7 +35172,7 @@ var requirejs, require, define;
                 }
                 if (s) {
                     var f = this.options.allocationChangeTransaction;
-                    BMT.analytics.track("AllocationUpdated", {
+                    BS.analytics.track("AllocationUpdated", {
                         Location: "AdviceDrawer",
                         Value: f.get("allocation"),
                         OldValue: this.previousAllocation,
@@ -35182,7 +35183,7 @@ var requirejs, require, define;
                 }
                 if (o) {
                     var l = this.account();
-                    BMT.analytics.track("GoalUpdated", {
+                    BS.analytics.track("GoalUpdated", {
                         Name: "Term",
                         Location: "AdviceDrawer",
                         Value: l.goalTerm(),
@@ -35402,7 +35403,7 @@ var requirejs, require, define;
                 this.updateFieldValidation(r, o), this.updateFieldValidation(i, u)
             },
             closeModal: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("views/advice/batchSettingsController", ["marionette", "views/advice/batchSettingsModalView", "views/common/noncoveredAlertView", "views/taxImpact/taxImpactView", "models/v1/allocationChangeTaxImpact"], function(e, t, n, r, i) {
@@ -35411,16 +35412,16 @@ var requirejs, require, define;
                     var e = new n;
                     this.listenTo(e, "proceed", this.showSetAll), this.listenTo(e, "cancel", function() {
                         this.trigger("closed")
-                    }), BMT.modal.show(e)
+                    }), BS.modal.show(e)
                 },
                 showSetAll: function() {
                     var e = new t(this.options);
                     this.listenTo(e, "showTaxImpact", this.showTaxImpact), this.listenTo(e, "closed", function() {
                         this.trigger("closed")
-                    }), BMT.modal.show(e)
+                    }), BS.modal.show(e)
                 },
                 showTaxImpact: function(e) {
-                    BMT.modal.close(e);
+                    BS.modal.close(e);
                     var t = new i({
                             allocation: this.options.allocationChangeTransaction.num("allocation"),
                             account: this.options.account
@@ -35429,8 +35430,8 @@ var requirejs, require, define;
                             model: t
                         });
                     this.listenTo(n, "cancel", this.showSetAll), this.listenTo(n, "navigateAway", function() {
-                        this.trigger("closed"), BMT.modal.close(e)
-                    }), BMT.modal.show(n)
+                        this.trigger("closed"), BS.modal.close(e)
+                    }), BS.modal.show(n)
                 }
             },
             o = {
@@ -35438,7 +35439,7 @@ var requirejs, require, define;
                     var t = new u(e);
                     t.on("closed", function() {
                         t.destroy()
-                    }), t.options.allocationChangeTransaction && (t.options.account.isIRA() && BMT.accountGroup.hasNonCoveredIRALots() || t.options.account.isInvestingAccount() && BMT.accountGroup.hasNonCoveredTaxableLots()) ? t.showNonCoveredWarning() : t.showSetAll()
+                    }), t.options.allocationChangeTransaction && (t.options.account.isIRA() && BS.accountGroup.hasNonCoveredIRALots() || t.options.account.isInvestingAccount() && BS.accountGroup.hasNonCoveredTaxableLots()) ? t.showNonCoveredWarning() : t.showSetAll()
                 }
             },
             u = e.Controller.extend(s, o);
@@ -35469,7 +35470,7 @@ var requirejs, require, define;
                 return o.expectedReturn = l.expectedReturn, o.volatility = l.volatility, o.riskFreeRates = f.getExtendedRiskFreeRates(c), o.boundingReturns = f.getBoundingReturns(), i.isIncome() && (o.zscore = t.C.zSafePct, o.inflation = t.C.inflation), o
             }
         }
-    }), define("views/advice/baseRecommendationView", ["underscore", "common/betterment.views", "components/common/scripts/services/projectorService", "components/advice/scripts/adviceViewHelpers"], function(e, t, n, r) {
+    }), define("views/advice/baseRecommendationView", ["underscore", "common/betasmartz.views", "components/common/scripts/services/projectorService", "components/advice/scripts/adviceViewHelpers"], function(e, t, n, r) {
         return t.View.extend({
             onInitialize: function() {
                 this.events = e.extend(this.events || {}, {
@@ -41964,19 +41965,19 @@ var requirejs, require, define;
                 this._setOption("max", this.options.max), this._setOption("min", this.options.min), this._setOption("step", this.options.step), this._draw(), this._bindEvents(), this._enableDisableButtons()
             },
             _draw: function() {
-                var e = this.betterSpinner = this.element.addClass("better-spinner-input").wrap('<span class="better-spinner ui-widget ui-widget-content"></span>').parent().append(this._buttonHtml());
-                this.buttons = e.find(".better-spinner-button").attr("tabIndex", -1).button()
+                var e = this.betasmartzSpinner = this.element.addClass("betasmartz-spinner-input").wrap('<span class="betasmartz-spinner ui-widget ui-widget-content"></span>').parent().append(this._buttonHtml());
+                this.buttons = e.find(".betasmartz-spinner-button").attr("tabIndex", -1).button()
             },
             _bindEvents: function() {
-                this.betterSpinner.on("click", ".better-spinner-up", t.bind(this._increment, this)), this.betterSpinner.on("click", ".better-spinner-down", t.bind(this._decrement, this)), this.betterSpinner.on("change input", "input", t.bind(this._enableDisableButtons, this))
+                this.betasmartzSpinner.on("click", ".betasmartz-spinner-up", t.bind(this._increment, this)), this.betasmartzSpinner.on("click", ".betasmartz-spinner-down", t.bind(this._decrement, this)), this.betasmartzSpinner.on("change input", "input", t.bind(this._enableDisableButtons, this))
             },
             _buttonHtml: function() {
-                return '<div class="spinner-buttons"><a class="better-spinner-button better-spinner-up"></a><a class="better-spinner-button better-spinner-down"></a></div>'
+                return '<div class="spinner-buttons"><a class="betasmartz-spinner-button betasmartz-spinner-up"></a><a class="betasmartz-spinner-button betasmartz-spinner-down"></a></div>'
             },
             _enableDisableButtons: function() {
                 var e = this.options.min === this._getValue() || this._isBelowMin(),
                     t = this.options.max === this._getValue() || this._isAboveMax();
-                this.betterSpinner.find(".better-spinner-down").toggleClass("disabled", e), this.betterSpinner.find(".better-spinner-up").toggleClass("disabled", t)
+                this.betasmartzSpinner.find(".betasmartz-spinner-down").toggleClass("disabled", e), this.betasmartzSpinner.find(".betasmartz-spinner-up").toggleClass("disabled", t)
             },
             _increment: function() {
                 if (this._isAboveMax()) return;
@@ -41999,7 +42000,7 @@ var requirejs, require, define;
                 return this.element.val() ? e = this.element.numberVal() : e = 0, t.isNaN(e) && (e = 0), e
             },
             _setValue: function(e) {
-                t.isNaN(e) && (e = 0, BMT.logError("NaN value set in number spinner."));
+                t.isNaN(e) && (e = 0, BS.logError("NaN value set in number spinner."));
                 var n = this.options.precision || this.options.precision === 0;
                 n && t.isNumber(e) && (e = e.toFixed(this.options.precision));
                 var r = this.element.val();
@@ -42158,8 +42159,8 @@ var requirejs, require, define;
             getRecommended: function() {
                 var e = o.getRecommendedMonthlyDepositForAccount(this.model, {
                         context: this.context || {},
-                        totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                        defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                        totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                        defaultFeeRate: BS.accountGroup.defaultFeeRate()
                     }),
                     t = s.netMonthlyTransactionAmount(this.model);
     
@@ -42250,8 +42251,8 @@ var requirejs, require, define;
             getRecommended: function(e) {
                 var t = s.getRecommendedOneTimeDepositForAccount(this.model, {
                     context: this.context || {},
-                    totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                    defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                    totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                    defaultFeeRate: BS.accountGroup.defaultFeeRate()
                 });
                 return t + this.getValue()
             },
@@ -42397,8 +42398,8 @@ var requirejs, require, define;
             getRecommended: function() {
                 return s.getRecommendedTermForAccount(this.model, {
                     context: this.context || {},
-                    totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                    defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                    totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                    defaultFeeRate: BS.accountGroup.defaultFeeRate()
                 })
             },
             setRecommended: function(e) {
@@ -42452,7 +42453,7 @@ var requirejs, require, define;
                 return o.isAccountDisplayedAsAge(this.model)
             },
             editPlanAge: function(e) {
-                e.preventDefault(), BMT.router.navigate("retireGuideSetup/3", !0)
+                e.preventDefault(), BS.router.navigate("retireGuideSetup/3", !0)
             }
         })
     }), define("hbs!views/advice/planRetirementAge", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -43070,7 +43071,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<li>\n    <h4>average market performance</h4>\n    <h1 class="avg-market"></h1>\n</li>\n\n<li>\n    <h4>poor market performance</h4>\n    <h1 class="poor-market"></h1>\n</li>\n'
         });
         return t.registerPartial("views/advice/marketPerformance", n), n
-    }), define("views/advice/marketPerformanceView", ["common/betterment.views", "hbs!views/advice/marketPerformance"], function(e, t) {
+    }), define("views/advice/marketPerformanceView", ["common/betasmartz.views", "hbs!views/advice/marketPerformance"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "market-performance",
@@ -43081,7 +43082,7 @@ var requirejs, require, define;
                 this.$(".avg-market").html(this.formatter.money(t, 0)), this.$(".poor-market").html(this.formatter.money(n, 0))
             }
         })
-    }), define("views/notifications/iraDeadlineNotificationView", ["underscore", "common/betterment.views"], function(e, t) {
+    }), define("views/notifications/iraDeadlineNotificationView", ["underscore", "common/betasmartz.views"], function(e, t) {
         var n = 2013;
         return t.View.extend({
             template: "notifications/iraDeadline2013",
@@ -43098,34 +43099,34 @@ var requirejs, require, define;
                 "click .cta-link": "clickedCallToAction"
             },
             onShow: function() {
-                BMT.analytics.track("ElementViewed", {
+                BS.analytics.track("ElementViewed", {
                     Type: "Notification",
                     Location: "IRA/DeadlineNotification",
                     Name: this.hasAvailableIRA() ? n + "-IRA-HasIRA" : n + "-IRA-NoIRA"
                 })
             },
             onDestroy: function() {
-                window.localStorage.closedIRANotification = "true", BMT.analytics.track("ElementClicked", {
+                window.localStorage.closedIRANotification = "true", BS.analytics.track("ElementClicked", {
                     Type: "Button",
                     Name: "Close",
                     Location: "IRA/DeadlineNotification"
                 })
             },
             hasAvailableIRA: function() {
-                return BMT.accounts().hasIRA() && e.any(BMT.accounts().getIRAs(), function(e) {
+                return BS.accounts().hasIRA() && e.any(BS.accounts().getIRAs(), function(e) {
                     return e.remainingContributionAmount(n) > 0
                 })
             },
             clickedCallToAction: function() {
                 var e = n + "-IRA-" + (this.hasAvailableIRA() ? "MakeContribution" : "Rollover");
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Type: "Link",
                     Name: e,
                     Location: "IRA/DeadlineNotification"
                 })
             }
         })
-    }), define("models/notification", ["jquery", "underscore", "backbone", "common/betterment.views", "views/notifications/iraDeadlineNotificationView"], function(e, t, n, r, i) {
+    }), define("models/notification", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/notifications/iraDeadlineNotificationView"], function(e, t, n, r, i) {
         var s = n.Model.extend({
             initialize: function(e, n) {
                 this.options = this.options || {}, t.extend(this.options, n)
@@ -43244,7 +43245,7 @@ var requirejs, require, define;
                     return this.getRecommendedSavingsByAccount().futureTaxRate
                 },
                 getAnnualFeeRate: function() {
-                    return BMT.accountGroup.isAdvised() ? BMT.accountGroup.num("feeAmount") : s.ASSUMED_FEE_RATE
+                    return BS.accountGroup.isAdvised() ? BS.accountGroup.num("feeAmount") : s.ASSUMED_FEE_RATE
                 },
                 getPreRetirementAllocation: function() {
                     return u.getRecommendedAllocation({
@@ -43296,7 +43297,7 @@ var requirejs, require, define;
                         individual_taxable: "taxable"
                     };
                     return e.each(this.get("financialPlan").get("accounts"), function(e) {
-			var i = p().get(e.bettermentdbAccountId || e.bettermentdb_account_id),
+			var i = p().get(e.betasmartzdbAccountId || e.betasmartzdb_account_id),
                             s = i.get("currentBalance"),
                             o = r[i.get("accountType")];
                         t[o] += s, n[o] += f.netYearlyTransactionAmount(i)
@@ -43465,7 +43466,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h2>Retirement Income - Getting Started</h2>\n<ul>\n    <li>Try entering a sample initial deposit to see Safe Withdrawal advice.</li>\n    <li>Play with your withdrawal amount, allocation, time horizon to see the impact over time.</li>\n    <li>Use "Set" and "Reset" to save or undo any changes.</li>\n</ul>\n<button>Great! Got it.</button>\n'
         });
         return t.registerPartial("views/notifications/adviceRetirementIncome", n), n
-    }), define("views/notifications/adviceRetirementIncomeView", ["common/betterment.views", "hbs!views/notifications/adviceRetirementIncome", "components/transaction/scripts/constants/transactionConstants"], function(e, t, n) {
+    }), define("views/notifications/adviceRetirementIncomeView", ["common/betasmartz.views", "hbs!views/notifications/adviceRetirementIncome", "components/transaction/scripts/constants/transactionConstants"], function(e, t, n) {
         return e.View.extend({
             template: t,
             templateHelpers: {
@@ -43480,7 +43481,7 @@ var requirejs, require, define;
                 this.trigger("closeFlyover")
             }
         })
-    }), define("views/notifications/dismissibleFlyoverView", ["common/betterment.views"], function(e, t) {
+    }), define("views/notifications/dismissibleFlyoverView", ["common/betasmartz.views"], function(e, t) {
         return e.View.extend({
             events: {
                 "click .dismiss-flyover": "onCloseClick"
@@ -43506,7 +43507,7 @@ var requirejs, require, define;
             }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + "</strong>. Or, you\ncan make one-time deposits.\n</p>\n\n<button>Great! Got it.</button>\n", s
         });
         return t.registerPartial("views/advice/planStartSaving", n), n
-    }), define("views/advice/planStartSavingView", ["common/betterment.views", "hbs!views/advice/planStartSaving"], function(e, t) {
+    }), define("views/advice/planStartSavingView", ["common/betasmartz.views", "hbs!views/advice/planStartSaving"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "plan-start-saving-flyover",
@@ -43547,7 +43548,7 @@ var requirejs, require, define;
             }) : u), s += l(o) + '\n        </p>\n    </div>\n    <button class="edit-plan right secondary banner-button">See Plan</button>\n</div>\n', s
         });
         return t.registerPartial("views/advice/planHeader", n), n
-    }), define("views/advice/planHeaderView", ["common/betterment.views", "hbs!views/advice/planHeader"], function(e, t) {
+    }), define("views/advice/planHeaderView", ["common/betasmartz.views", "hbs!views/advice/planHeader"], function(e, t) {
         return e.View.extend({
             template: t,
             templateHelpers: {
@@ -43568,7 +43569,7 @@ var requirejs, require, define;
                 "click @ui.editPlan": "goToPlan"
             },
             goToPlan: function() {
-                BMT.router.navigate("retireGuide", {
+                BS.router.navigate("retireGuide", {
                     trigger: !0
                 })
             }
@@ -43578,7 +43579,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<a class="close-button close-gray" href="javascript:;"></a>\n<div class="flyover-body"></div>\n'
         });
         return t.registerPartial("views/common/flyover", n), n
-    }), define("views/common/flyoverView", ["common/betterment.views", "hbs!views/common/flyover"], function(e, t) {
+    }), define("views/common/flyoverView", ["common/betasmartz.views", "hbs!views/common/flyover"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "flyover",
@@ -43608,13 +43609,13 @@ var requirejs, require, define;
                 var s = new n(i);
                 return this.listenTo(s, "closeFlyover", function() {
                     this.closeFlyover()
-                }), r.beforeShow && r.beforeShow(s), BMT.flyoverRegion.show(s), s
+                }), r.beforeShow && r.beforeShow(s), BS.flyoverRegion.show(s), s
             },
             closeFlyover: function() {
-                BMT.flyoverRegion.empty()
+                BS.flyoverRegion.empty()
             }
         })
-    }),  define("views/advice/adviceAccountView", ["common/betterment.views", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/summary/deleteAccountView", "components/account/scripts/services/goalTypeService", "components/account/scripts/services/retirementService", "components/common/scripts/services/projectorService", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u) {
+    }),  define("views/advice/adviceAccountView", ["common/betasmartz.views", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/summary/deleteAccountView", "components/account/scripts/services/goalTypeService", "components/account/scripts/services/retirementService", "components/common/scripts/services/projectorService", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u) {
         var a = {
             my: "bottom center",
             at: "top center",
@@ -43649,7 +43650,7 @@ var requirejs, require, define;
                     return i.getLabelForAccount(this.self.model)
                 },
                 showDeleteAccount: function() {
-                    return !BMT.accountGroup.isSuspended()
+                    return !BS.accountGroup.isSuspended()
                 }
             },
             toolTips: {
@@ -43691,7 +43692,7 @@ var requirejs, require, define;
                 "click .blue-x": "showDeleteGoalModal"
             },
             onInitialize: function() {
-                this.bindToGoalAmount(this.model), this.listenTo(BMT.vent, "advice:saved", this.updateStatus, this), this.listenTo(BMT.vent, "adviceAccount:changedAccount", this.refresh, this)
+                this.bindToGoalAmount(this.model), this.listenTo(BS.vent, "advice:saved", this.updateStatus, this), this.listenTo(BS.vent, "adviceAccount:changedAccount", this.refresh, this)
             },
             onRender: function() {
                 this.$el.attr("id", this.model.getIdOrCid() || 0), this.$goalName = this.$(".goal-name"), this.$nameInput = this.$goalName.find("input[name=name]"), this.$goalAmount = this.$(".goal-amount"), this.$goalAmountInput = this.$goalAmount.find("input[name=goalAmount]")
@@ -43707,8 +43708,8 @@ var requirejs, require, define;
             },
             goalStatus: function() {
                 return o.getGoalStatus(this.model, {
-                    totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                    defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                    totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                    defaultFeeRate: BS.accountGroup.defaultFeeRate()
                 })
             },
             updateStatus: function(e) {
@@ -43723,7 +43724,7 @@ var requirejs, require, define;
             restoreField: function(e, t, n) {
                 t.hide(), e.find(".name").css("display", "").text(n), this.updateStatus({
                     account: this.model
-                }), BMT.vent.trigger("advice:selectGoal", {
+                }), BS.vent.trigger("advice:selectGoal", {
                     account: this.model
                 }), this.editing = !1
             },
@@ -43756,7 +43757,7 @@ var requirejs, require, define;
                     this.updateGoal({
                         goalAmount: n
                     }, function() {
-                        BMT.analytics.track("InputSubmitted", {
+                        BS.analytics.track("InputSubmitted", {
                             Name: "GoalTarget",
                             Value: n,
                             Type: "Field",
@@ -43778,7 +43779,7 @@ var requirejs, require, define;
                         isRollover: this.options.isRollover || this.model.is("rollover"),
                         callback: function() {
                             var e = r.model.get("goalType") === i && r.model.get("accountType") === s && r.model.is("rollover") === o;
-                            r.render(), BMT.vent.trigger("advice:selectGoal", {
+                            r.render(), BS.vent.trigger("advice:selectGoal", {
                                 account: r.model,
                                 isSameType: e
                             })
@@ -43807,12 +43808,12 @@ var requirejs, require, define;
                 r.show({
                     model: this.model,
                     callback: function() {
-                        BMT.router.navigate("advice", !0)
+                        BS.router.navigate("advice", !0)
                     }
                 })
             }
         })
-    }), define("views/advice/adviceGoalSelectionView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/advice/adviceAccountView", "models/account", "components/common/scripts/services/projectorService"], function(e, t, n, r, i, s, o) {
+    }), define("views/advice/adviceGoalSelectionView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/advice/adviceAccountView", "models/account", "components/common/scripts/services/projectorService"], function(e, t, n, r, i, s, o) {
         return r.CollectionView.extend({
             getChildView: function() {
                 return i
@@ -43824,8 +43825,8 @@ var requirejs, require, define;
             },
             onInitialize: function() {
                 this.childViewOptions = this.options.childViewOptions || {}, this.listenTo(this.collection, "remove", function() {
-                    this.options.selectedAccount = BMT.selectedAccount, this.activateGoal()
-                }), this.listenTo(BMT.vent, "addGoal:saved", function(e) {
+                    this.options.selectedAccount = BS.selectedAccount, this.activateGoal()
+                }), this.listenTo(BS.vent, "addGoal:saved", function(e) {
                     this.options.selectedAccount = e, this.reRender(), this.activateGoal()
                 })
             },
@@ -43842,12 +43843,12 @@ var requirejs, require, define;
                 this.highlightSelectedGoal(n);
                 if (t) {
                     var r = o.getGoalStatus(n, {
-                            totalCurrentBalance: BMT.accounts().totalCurrentBalance(),
-                            defaultFeeRate: BMT.accountGroup.defaultFeeRate()
+                            totalCurrentBalance: BS.accounts().totalCurrentBalance(),
+                            defaultFeeRate: BS.accountGroup.defaultFeeRate()
                         }).name,
                         i = n.getIdOrCid(),
                         s = n.getGoalTypeLabel();
-                    BMT.analytics.track("ElementClicked", {
+                    BS.analytics.track("ElementClicked", {
                         Name: "GoalAdvice",
                         GoalId: i,
                         GoalStatus: r,
@@ -43856,12 +43857,12 @@ var requirejs, require, define;
                         Type: "Link"
                     })
                 }
-                BMT.vent.trigger("advice:selectGoal", {
+                BS.vent.trigger("advice:selectGoal", {
                     account: n
                 })
             }
         })
-    }), define("views/advice/narrativeView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "models/transaction", "components/common/scripts/models/appData", "common/depositAlertChain", "models/account", "components/account/scripts/services/goalTypeService", "components/portfolio/scripts/services/portfolioSetService", "services/accountService", "services/wireInstructionsEmailer", "components/account/scripts/constants/accountConstants", "components/transaction/scripts/services/transactionProperties", "components/account/scripts/constants/accountTypes", "components/common/scripts/viewHelpers/customerSupport", "views/transfer/pendingTrustAlert"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
+    }), define("views/advice/narrativeView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "models/transaction", "components/common/scripts/models/appData", "common/depositAlertChain", "models/account", "components/account/scripts/services/goalTypeService", "components/portfolio/scripts/services/portfolioSetService", "services/accountService", "services/wireInstructionsEmailer", "components/account/scripts/constants/accountConstants", "components/transaction/scripts/services/transactionProperties", "components/account/scripts/constants/accountTypes", "components/common/scripts/viewHelpers/customerSupport", "views/transfer/pendingTrustAlert"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
         function g() {
             return {
                 position: {
@@ -44018,7 +44019,7 @@ var requirejs, require, define;
                     else if (r.isBuildWealth()) e = "I would like to start investing with an initial deposit of $" + s + ".";
                     else {
                         var o = "";
-                        BMT.accountGroup.isPersonal() && (o = "From my current savings "), e = o + "I could deposit $" + s + " initially."
+                        BS.accountGroup.isPersonal() && (o = "From my current savings "), e = o + "I could deposit $" + s + " initially."
                     }
                     return this.text_wrapper(e)
                 },
@@ -44128,10 +44129,10 @@ var requirejs, require, define;
                     name: n
                 }, {
                     forceUpdate: !0
-                }), BMT.vent.trigger("adviceAccount:changedAccount", this.model)
+                }), BS.vent.trigger("adviceAccount:changedAccount", this.model)
             },
             _shouldShowInitialDeposit: function() {
-                var e = BMT.accountGroup.get("bankAccount"),
+                var e = BS.accountGroup.get("bankAccount"),
                     t = e && e.isActiveAndConfirmed();
                 return this.model.isNew() && !this._hasRollover() && t
             },
@@ -44197,11 +44198,11 @@ var requirejs, require, define;
                         })
                     };
                 u ? (this.initialDeposit.set(i), this.shouldInterruptDeposit(s) ? this.showDepositInterruptModal(s, l) : o.start(this.initialDeposit, this.initialDeposit.attributes, function(e, t) {
-                    t && BMT.modal.close(t), l()
+                    t && BS.modal.close(t), l()
                 }, {
                     goalSetup: !0
                 }, function(e) {
-                    e && BMT.modal.close(e), setTimeout(function() {
+                    e && BS.modal.close(e), setTimeout(function() {
                         f.$initialDepositInput.focus()
                     }, 0)
                 })) : l()
@@ -44214,9 +44215,9 @@ var requirejs, require, define;
                     var s = t[i];
                     s ? s.call(n, function() {
                         r(i + 1)
-                    }, e) : (BMT.vent.trigger("goalSetup:goalSaved", {
+                    }, e) : (BS.vent.trigger("goalSetup:goalSaved", {
                         isNew: e.isNew
-                    }), BMT.analytics.track(e.isNew ? "GoalAdded" : "GoalUpdated", {
+                    }), BS.analytics.track(e.isNew ? "GoalAdded" : "GoalUpdated", {
                         Location: "GoalNarrative",
                         GoalType: n.model.get("goalType"),
                         IncomeGoal: n.model.is("income")
@@ -44227,7 +44228,7 @@ var requirejs, require, define;
                 var n = this;
                 this.model.save(t.attributes, {
                     success: function() {
-                        t.isNew ? (BMT.accounts().add(n.model), BMT.refreshAccounts(e)) : e()
+                        t.isNew ? (BS.accounts().add(n.model), BS.refreshAccounts(e)) : e()
                     },
                     error: function() {
                         n.unblock()
@@ -44242,7 +44243,7 @@ var requirejs, require, define;
             saveInitialDeposit: function(e, t) {
                 t.hasInitialDeposit && t.isNew ? this.shouldInterruptDeposit(this.initialDeposit.get("amount")) && !this.isPendingTrust() ? (this.sendWireInstructionsEmail(this.initialDeposit), e()) : this.initialDeposit.save({}, {
                     success: function(e) {
-                        BMT.flash("Your deposit was initiated successfully.")
+                        BS.flash("Your deposit was initiated successfully.")
                     },
                     complete: e
                 }) : e()
@@ -44259,14 +44260,14 @@ var requirejs, require, define;
                 return e > n && t && !t.isIRA()
             },
             isPendingTrust: function() {
-                return BMT.accountGroup.isPendingTrust()
+                return BS.accountGroup.isPendingTrust()
             },
             showDepositInterruptModal: function(e, t) {
                 if (this.isPendingTrust()) {
-                    BMT.modal.show(m.create(t));
+                    BS.modal.show(m.create(t));
                     return
                 }
-                BMT.alert({
+                BS.alert({
                     title: "Wire transfer required",
                     body: "Your deposit of " + this.formatter.money(e) + " is over our electronic transfer limit. We will email you instructions on how to complete a wire transfer.",
                     buttons: [{
@@ -44283,15 +44284,15 @@ var requirejs, require, define;
                 var e = this.initialDeposit.get("amount"),
                     t = this.initialDeposit.get("account");
                 c.sendToAccountForAmount(t, e).done(function() {
-                    BMT.flash("Wire instructions emailed successfully.")
+                    BS.flash("Wire instructions emailed successfully.")
                 })
             },
             cancel: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "Cancel",
                     Location: "GoalSetup",
                     Type: "Button"
-                }), BMT.router.navigate("advice", !0)
+                }), BS.router.navigate("advice", !0)
             }
         })
     }), define("hbs!views/common/loadingModal", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -44307,7 +44308,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + "</h2>\n", s
         });
         return t.registerPartial("views/common/loadingModal", n), n
-    }), define("views/common/loadingModalView", ["common/betterment.views", "hbs!views/common/loadingModal"], function(e, t) {
+    }), define("views/common/loadingModalView", ["common/betasmartz.views", "hbs!views/common/loadingModal"], function(e, t) {
         return e.ModalView.extend({
             template: t,
             className: "loading-modal",
@@ -44324,7 +44325,7 @@ var requirejs, require, define;
             onInitialize: function() {
                 var e = this;
                 this.superClassName = "thin-panel", this.message = this.options.message || "", this.duration = this.options.duration || 2e3, this.next = this.options.next || function() {
-                    BMT.modal.close(e)
+                    BS.modal.close(e)
                 }
             },
             onShow: function() {
@@ -44347,7 +44348,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '</h1>\n<div class="panel card body clearfix">\n    <div class="controls">\n        <div id="goalSelection"></div>\n    </div>\n    <div class="info">\n        <div>\n            <div class="narrative"></div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/advice/goalSetup", n), n
-    }), define("views/advice/goalSetupView", ["underscore", "models/account", "common/betterment.views", "views/advice/adviceGoalSelectionView", "views/advice/narrativeView", "views/common/loadingModalView", "views/advice/goalCompleteView", "hbs!views/advice/goalSetup"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/advice/goalSetupView", ["underscore", "models/account", "common/betasmartz.views", "views/advice/adviceGoalSelectionView", "views/advice/narrativeView", "views/common/loadingModalView", "views/advice/goalCompleteView", "hbs!views/advice/goalSetup"], function(e, t, n, r, i, s, o, u) {
         return n.View.extend({
             id: "goalSetup",
             template: u,
@@ -44362,19 +44363,19 @@ var requirejs, require, define;
                 narrative: ".narrative"
             },
             onInitialize: function() {
-                this.model = BMT.selectedAccount, this.listenTo(BMT.vent, "advice:selectGoal", this.showGoalInfo, this), this.listenTo(BMT.vent, "goalSetup:goalSaved", this.showGoalCompletion, this)
+                this.model = BS.selectedAccount, this.listenTo(BS.vent, "advice:selectGoal", this.showGoalInfo, this), this.listenTo(BS.vent, "goalSetup:goalSaved", this.showGoalCompletion, this)
             },
             onShow: function() {
                 if (!this.model) {
-                    BMT.router.navigate("summary", !0);
+                    BS.router.navigate("summary", !0);
                     return
                 }
-                this.model.isNew() && this.model.set("accountGroup", BMT.accountGroup, {
+                this.model.isNew() && this.model.set("accountGroup", BS.accountGroup, {
                     silent: !0
                 }), this.showSelector()
             },
             onDestroy: function() {
-                this.model && this.model.isNew() && !this.model.isComplete() && this.model.set("accountGroup", null), BMT.refreshAccounts()
+                this.model && this.model.isNew() && !this.model.isComplete() && this.model.set("accountGroup", null), BS.refreshAccounts()
             },
             showSelector: function() {
                 var e = new t.Collection([this.model]);
@@ -44387,33 +44388,33 @@ var requirejs, require, define;
                 }))
             },
             showGoalInfo: function(e) {
-                this.model = BMT.selectedAccount = e.account, this.narrative.show(new i({
+                this.model = BS.selectedAccount = e.account, this.narrative.show(new i({
                     model: this.model,
                     rollover: this.options.rollover
                 }))
             },
             showGoalCompletion: function(t) {
-                if (t.isNew) BMT.modal.show(new s({
+                if (t.isNew) BS.modal.show(new s({
                     message: "Customizing a portfolio for you.",
                     duration: 3e3,
                     next: function() {
-                        var e = BMT.selectedAccount;
-                        BMT.modal.replaceWith(new o({
+                        var e = BS.selectedAccount;
+                        BS.modal.replaceWith(new o({
                             isRollover: !!this.options.rollover,
                             model: e
-                        })), BMT.router.navigate("advice", !0), this.options.rollover && BMT.flash("Rollover request sent. Check your email for detailed instructions.")
+                        })), BS.router.navigate("advice", !0), this.options.rollover && BS.flash("Rollover request sent. Check your email for detailed instructions.")
                     }.bind(this)
                 }));
                 else {
                     var n = "Your " + e.escape(this.model.get("name")) + " goal has been updated.";
-                    BMT.navigateWithFlash("summary", n)
+                    BS.navigateWithFlash("summary", n)
                 }
             }
         })
-    }), define("views/common/addGoalEmptyPageView", ["common/betterment.views", "views/common/addGoalView"], function(e, t) {
+    }), define("views/common/addGoalEmptyPageView", ["common/betasmartz.views", "views/common/addGoalView"], function(e, t) {
         return e.View.extend({
             onShow: function() {
-                BMT.router.navigate("summary", !0), t.show()
+                BS.router.navigate("summary", !0), t.show()
             }
         })
     }), define("hbs!views/advice/rolloverSetup", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -44490,7 +44491,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_default_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m rolling over an account with approximately\n                        $<input type="text" class="blank-line money" name="approximateValue" data-help-content="This can be an estimate." money-input />.\n                    </span>\n\n                    <span class="madlib-section" data-show="view:show_direct_transfer_flow_text < view.selectedRollover view.selectedProvider">\n                        I&#39;m ready to begin a direct transfer now.\n                    </span>\n\n                </span>\n\n                <div class="clear-left tos-area" data-show="view:should_create_account < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    <p>Since you are adding an IRA, we need you to agree to the IRA terms below.</p>\n                    <div class="terms-of-service"></div>\n                </div>\n            </div>\n            <div class="next-step">\n                <div class="vertical-align">\n                    <span class="next-step-text">\n\n                        <!-- if the rollover type requires matched/unmatched show the checkbox for that -->\n                        <span class="match-line" data-show="view:show_matched < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <input type="checkbox" name="matched" />\n                            My employer has matched my contributions to my\n                            <span data-html="view:rollover_label < view.selectedRollover"></span>\n                        </span>\n\n                        <!-- if the rollover type Does NOT require matched/unmatched, show a FAQ link -->\n                        <span data-hide="view:hide_help < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            Not sure which plan you currently have?\n                            \n                        </span>\n\n                        <span data-show="view:show_fund_type_both < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support both">\n                                Having mixed Traditional and Roth funds is a special case, so we ask that you call us at <strong class="bold-text">888.428.9482</strong> or email <a href="mailto:support@betasmartz.com">support@betasmartz.com</a> so we can walk you through the process.\n                            </span>\n                        </span>\n\n                        <span data-show="view:show_fund_type_not_sure < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                            <span class="contact-support not-sure">\n                                Generally, if you deducted your contributions from your income, they are Traditional funds.  If your employer made contributions, such as a match, they are Traditional funds.  Roth funds are post-tax.\n                                <br />\n                                <br />\n                                If you still are not sure, call your plan provider.  For further assistance, call us at <strong class="bold-text">888.428.9482</strong>.\n                            </span>\n                        </span>\n\n                    </span>\n                    <button class="right orange ok"\n                        data-enabled="view:enable_button < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider view.approximateValue view.termsAcceptance"\n                        data-text="view:button_text < view.selectedRollover view.selectedFundType view.selectedAccountType view.selectedProvider"\n                        data-class="view:button_class < view.selectedRollover view.selectedFundType view.selectedAccountType">\n                    </button>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/advice/rolloverNarrative", n), n
-    }), define("views/advice/rolloverNarrativeView", ["jquery", "underscore", "common/betterment.views", "components/portfolio/scripts/services/portfolioSetService", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "models/rolloverFollowup", "models/account", "components/common/scripts/models/appData", "views/common/inheritedIRAWarningView", "views/common/termsOfServiceView", "views/advice/rolloverAccountSelectorView", "hbs!views/advice/rolloverNarrative", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/advice/rolloverNarrativeView", ["jquery", "underscore", "common/betasmartz.views", "components/portfolio/scripts/services/portfolioSetService", "components/account/scripts/services/retirementService", "components/account/scripts/services/goalService", "models/rolloverFollowup", "models/account", "components/common/scripts/models/appData", "views/common/inheritedIRAWarningView", "views/common/termsOfServiceView", "views/advice/rolloverAccountSelectorView", "hbs!views/advice/rolloverNarrative", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         function y() {
             return {
                 position: {
@@ -44632,7 +44633,7 @@ var requirejs, require, define;
                 return this.options.account
             },
             _setSelectedAccount: function(e) {
-                this.options.account = BMT.selectedAccount = e
+                this.options.account = BS.selectedAccount = e
             },
             onInitialize: function() {
                 this.listenTo(this, "change:selectedFundType", this._populateAccount, this), this.listenTo(this, "change:selectedAccountType", this._populateAccount, this), this.listenTo(this, "change:selectedFundType", this.hideAllValidation, this), this.listenTo(this, "change:selectedAccountType", this.hideAllValidation, this), p.UNKNOWN = "-", this.FundTypes = v = t.extend({}, a.getInstance().get("fundTypes"), {
@@ -44651,7 +44652,7 @@ var requirejs, require, define;
                     showIraAgreement: !0,
                     expandHeight: 80,
                     hideErrors: !0
-                })), BMT.analytics.track("PageVisited", {
+                })), BS.analytics.track("PageVisited", {
                     Location: "RolloverNarrative"
                 }), this.allowValidation = !1, rivets.bind(this.$(".narrative-inside"), {
                     view: this
@@ -44663,7 +44664,7 @@ var requirejs, require, define;
                     value: r
                 }).first().value(), this.selectedAccountType = null, this.selectedFundType = null, this.termsOfServiceRegion.currentView.setAccountType(this.selectedAccountType), this.trigger("change:selectedAccountType"), t.contains(this.selectedRollover.accountTypes, p.UNKNOWN) ? this.fundTypeChanged() : this.show_account_selector() ? this.renderAccountSelector() : this.show_rollover_account_type() && this.accountChanged({
                     accountType: this.selectedRollover.accountTypes[0]
-                }), this.$(".ira-name").text(this._getName()).removeClass("grey").addClass("blue"), this.trigger("change:selectedRollover"), BMT.analytics.track("InputSubmitted", {
+                }), this.$(".ira-name").text(this._getName()).removeClass("grey").addClass("blue"), this.trigger("change:selectedRollover"), BS.analytics.track("InputSubmitted", {
                     Name: "RolloverAccountType",
                     Type: "Field",
                     Location: "RolloverNarrative"
@@ -44694,11 +44695,11 @@ var requirejs, require, define;
                 }), this.accountSelectorRegion.show(this.accountSelectorView)
             },
             _getOrCreateAccount: function(e, t) {
-                var n = BMT.accounts().where({
+                var n = BS.accounts().where({
                     accountType: t,
                     id: e
                 })[0];
-                return n && !n.is("inherited") ? BMT.accounts().where({
+                return n && !n.is("inherited") ? BS.accounts().where({
                     accountType: t,
                     inherited: !1,
                     id: e
@@ -44713,7 +44714,7 @@ var requirejs, require, define;
                     s = i === d;
                 this.selectedProvider = i, r[(s ? "add" : "remove") + "Class"]("other"), this.trigger("change:selectedProvider"), s && setTimeout(t.bind(function() {
                     this.$previousProviderInput.focus()
-                }, this), 0), BMT.analytics.track("InputSubmitted", {
+                }, this), 0), BS.analytics.track("InputSubmitted", {
                     Name: "PreviousProvider",
                     Type: "Field",
                     Location: "RolloverNarrative"
@@ -44723,7 +44724,7 @@ var requirejs, require, define;
                 this.trigger("change:selectedProvider")
             },
             approximateValueChange: function(e) {
-                this.trigger("change:approximateValue"), BMT.analytics.track("InputSubmitted", {
+                this.trigger("change:approximateValue"), BS.analytics.track("InputSubmitted", {
                     Name: "ApproximateValue",
                     Type: "Field",
                     Location: "RolloverNarrative"
@@ -44766,7 +44767,7 @@ var requirejs, require, define;
                     t = this._getName(),
                     n = null;
                 if (this._isRealAccountType()) {
-                    n = BMT.accounts().where({
+                    n = BS.accounts().where({
                         accountType: e,
                         inherited: !1
                     });
@@ -44780,13 +44781,13 @@ var requirejs, require, define;
                     var i = this._fundTypeToAccountType(v.TRADITIONAL);
                     this._setSelectedAccount(u.Model.buildIRA("IRA", i))
                 }
-                BMT.vent.trigger("adviceAccount:changedAccount", this._account())
+                BS.vent.trigger("adviceAccount:changedAccount", this._account())
             },
             _canDirectTransfer: function() {
                 return this._isIraSourceType()
             },
             _hasMultipleIRAsForSourceType: function(e) {
-                return BMT.accounts().where({
+                return BS.accounts().where({
                     inherited: !1
                 }).filter(function(n) {
                     return t.contains(e.accountTypes, n.get("accountType"))
@@ -44795,7 +44796,7 @@ var requirejs, require, define;
             _getAccountsForSelector: function() {
                 var e = [];
                 return t.each(this.selectedRollover.accountTypes, function(t) {
-                    var n = BMT.accounts().where({
+                    var n = BS.accounts().where({
                         inherited: !1,
                         accountType: t
                     });
@@ -44863,7 +44864,7 @@ var requirejs, require, define;
                 return this._account() && this._account().isNew() && this._isRealFundOrAccountType()
             },
             quit: function() {
-                this.options.callback ? this.options.callback() : BMT.router.navigate(this.options.prevPage || "summary", !0)
+                this.options.callback ? this.options.callback() : BS.router.navigate(this.options.prevPage || "summary", !0)
             },
             next: function() {
                 var e = this._account();
@@ -44876,7 +44877,7 @@ var requirejs, require, define;
                     return
                 }
                 var n = this.should_create_account(),
-                    u = i.canGiveRetireeAdvice(BMT.user) || this._canDirectTransfer(),
+                    u = i.canGiveRetireeAdvice(BS.user) || this._canDirectTransfer(),
                     a = t.extend({
                         name: this._getName(),
                         accountType: this._getAccountType()
@@ -44904,12 +44905,12 @@ var requirejs, require, define;
                     if (n) {
                         e.set(a);
                         if (u) {
-                            e.set("accountGroup", BMT.accountGroup);
+                            e.set("accountGroup", BS.accountGroup);
                             var m = s.getDefaultTermForContext({
                                 goalType: e.get("goalType"),
                                 income: e.get("income"),
-                                isRetired: BMT.user.isRetired(),
-                                age: BMT.user.getAge(),
+                                isRetired: BS.user.isRetired(),
+                                age: BS.user.getAge(),
                                 isPersonal: e.get("accountGroup").isPersonal()
                             });
                             e.setGoalTerm(m), e.set("allocation", e.allocationRecommendation()), this.block();
@@ -44917,24 +44918,24 @@ var requirejs, require, define;
                                 return r.loadPortfolioSetForAccount(e)
                             });
                             this._canDirectTransfer() ? (g.then(function() {
-                                BMT.router.navigate("rollover-request", !0, {
+                                BS.router.navigate("rollover-request", !0, {
                                     rollover: c,
                                     nextFlow: "advice"
                                 })
                             }).always(this.unblock.bind(this)), this._recordDirectTransferFlow()) : (g.then(function() {
                                 c.save().then(this._callbackOrNavigate("advice")).always(this.unblock.bind(this))
                             }.bind(this)).always(this.unblock.bind(this)), this._recordManualFlow())
-                        } else BMT.router.navigate("goalSetup", !0, {
+                        } else BS.router.navigate("goalSetup", !0, {
                             rollover: c
                         }), this._recordManualFlow()
-                    } else this.block(), this._canDirectTransfer() ? BMT.router.navigate("rollover-request", !0, {
+                    } else this.block(), this._canDirectTransfer() ? BS.router.navigate("rollover-request", !0, {
                         rollover: c,
                         nextFlow: "advice"
                     }) : (c.save().then(this._callbackOrNavigate("summary")).always(this.unblock.bind(this)), this._recordManualFlow())
                 } else this.allowValidation = !0, this.termsOfServiceRegion.currentView.checkAgreements(), this.triggerAllValidation(), this.allowValidation = !1
             },
             _recordManualFlow: function() {
-                BMT.analytics.track("InfoRequested", {
+                BS.analytics.track("InfoRequested", {
                     Location: "RolloverNarrative",
                     Subject: "Rollover",
                     SourceType: this.selectedRollover.value,
@@ -44946,7 +44947,7 @@ var requirejs, require, define;
                 })
             },
             _recordDirectTransferFlow: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "RolloverNarrative",
                     Name: "BeginDirectTransfer",
                     Type: "Button"
@@ -44960,16 +44961,16 @@ var requirejs, require, define;
                 return function() {
                     var n = "Rollover Request Sent.",
                         r = "Check your email for detailed instructions.";
-                    t ? BMT.alert({
+                    t ? BS.alert({
                         icon: "accept",
                         title: n,
                         body: r,
                         handler: t
-                    }) : BMT.navigateWithFlash(e, n + " " + r)
+                    }) : BS.navigateWithFlash(e, n + " " + r)
                 }
             }
         })
-    }), define("views/advice/rolloverSetupView", ["components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/advice/rolloverSetup", "models/account", "views/advice/adviceGoalSelectionView", "views/advice/rolloverNarrativeView", "models/rolloverFollowup", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/advice/rolloverSetupView", ["components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/advice/rolloverSetup", "models/account", "views/advice/adviceGoalSelectionView", "views/advice/rolloverNarrativeView", "models/rolloverFollowup", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u) {
         return t.View.extend({
             id: "rollover",
             template: n,
@@ -44991,7 +44992,7 @@ var requirejs, require, define;
                 "click a.back-link": "goBack"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "advice:selectGoal", this.showGoalInfo, this)
+                this.listenTo(BS.vent, "advice:selectGoal", this.showGoalInfo, this)
             },
             onShow: function() {
                 var e = r.Model.buildIRA("IRA", u.TRADITIONAL_IRA);
@@ -45006,15 +45007,15 @@ var requirejs, require, define;
                 }))
             },
             onDestroy: function() {
-                BMT.refreshAccounts()
+                BS.refreshAccounts()
             },
             showGoalInfo: function(e) {
-                BMT.selectedAccount = e.account, e.isSameType || this.narrative.show(new s({
+                BS.selectedAccount = e.account, e.isSameType || this.narrative.show(new s({
                     callback: this.options.callback
                 }))
             },
             goBack: function(e) {
-                e && e.preventDefault(), this.options.callback ? this.options.callback() : BMT.router.navigate(this.options.prevPage || "summary", !0)
+                e && e.preventDefault(), this.options.callback ? this.options.callback() : BS.router.navigate(this.options.prevPage || "summary", !0)
             }
         })
     }), define("hbs!views/activity/activity", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -45129,7 +45130,7 @@ var requirejs, require, define;
             function h(e, t) {
                 var r = "",
                     i, s, o;
-                return r += '\n                    <a href="/document/Betterment-' + a((s = n.dasherize || e && e.dasherize, o = {
+                return r += '\n                    <a href="/document/Betasmartz-' + a((s = n.dasherize || e && e.dasherize, o = {
                     hash: {}
                 }, s ? s.call(e, (i = e && e.statement, i == null || i === !1 ? i : i.title), o) : u.call(e, "dasherize", (i = e && e.statement, i == null || i === !1 ? i : i.title), o))) + ".pdf?hash=" + a((i = (i = e && e.statement, i == null || i === !1 ? i : i.hash), typeof i === f ? i.apply(e) : i)) + '" target="_blank" class="tax-download-icon"><span class="pdf-small-icon"></span></a>\n                    <a href="/taxStatement?format=csv&accountGroupID=' + a((i = (i = e && e.accountGroup, i == null || i === !1 ? i : i.id), typeof i === f ? i.apply(e) : i)) + '" target="_blank" class="tax-download-icon"><span class="excel-small-icon"></span></a>\n                ', r
             }
@@ -45141,7 +45142,7 @@ var requirejs, require, define;
             function d(e, t) {
                 var r = "",
                     i, s, o;
-                return r += '\n                    <a class="download-pdf" target="_blank" href="/document/Betterment-' + a((s = n.dasherize || e && e.dasherize, o = {
+                return r += '\n                    <a class="download-pdf" target="_blank" href="/document/Betasmartz-' + a((s = n.dasherize || e && e.dasherize, o = {
                     hash: {}
                 }, s ? s.call(e, (i = e && e.statement, i == null || i === !1 ? i : i.title), o) : u.call(e, "dasherize", (i = e && e.statement, i == null || i === !1 ? i : i.title), o))) + ".pdf?hash=" + a((i = (i = e && e.statement, i == null || i === !1 ? i : i.hash), typeof i === f ? i.apply(e) : i)) + '">' + a((i = e && e.accountName, typeof i === f ? i.apply(e) : i)) + " Tax Form</a>\n                ", r
             }
@@ -45203,7 +45204,7 @@ var requirejs, require, define;
             function w(e, t) {
                 var r = "",
                     i, s, o;
-                return r += '\n                        <a href="/document/Betterment-' + a((s = n.dasherize || e && e.dasherize, o = {
+                return r += '\n                        <a href="/document/Betasmartz-' + a((s = n.dasherize || e && e.dasherize, o = {
                     hash: {}
                 }, s ? s.call(e, (i = e && e.statement, i == null || i === !1 ? i : i.title), o) : u.call(e, "dasherize", (i = e && e.statement, i == null || i === !1 ? i : i.title), o))) + ".pdf?hash=" + a((i = (i = e && e.statement, i == null || i === !1 ? i : i.hash), typeof i === f ? i.apply(e) : i)) + '" target="_blank" class="tax-download-icon"><span class="pdf-small-icon"></span></a>\n                    ', r
             }
@@ -45215,7 +45216,7 @@ var requirejs, require, define;
             function S(e, t) {
                 var r = "",
                     i, s, o;
-                return r += '\n                        <a class="download-pdf" target="_blank" href="/document/Betterment-' + a((s = n.dasherize || e && e.dasherize, o = {
+                return r += '\n                        <a class="download-pdf" target="_blank" href="/document/Betasmartz-' + a((s = n.dasherize || e && e.dasherize, o = {
                     hash: {}
                 }, s ? s.call(e, (i = e && e.statement, i == null || i === !1 ? i : i.title), o) : u.call(e, "dasherize", (i = e && e.statement, i == null || i === !1 ? i : i.title), o))) + ".pdf?hash=" + a((i = (i = e && e.statement, i == null || i === !1 ? i : i.hash), typeof i === f ? i.apply(e) : i)) + '">' + a((i = e && e.accountName, typeof i === f ? i.apply(e) : i)) + " IRA Tax Form</a>\n                    ", r
             }
@@ -45264,7 +45265,7 @@ var requirejs, require, define;
             return s += '\n\n    <hr />\n\n    <h3 class="subtitle">Also Available for Automatic Import</h3>\n\n    <div class="form-type horizontal">\n        <div class="icon">\n            <span class="turbotax-large-icon"></span>\n        </div>\n        <article>\n            <h2>TurboTax<sup>&reg;</sup> Import</h2>\n            <p>Import your tax information automatically through TurboTax by selecting "Import from my bank or brokerage."</p>\n        </article>\n    </div>\n\n    <div class="form-type horizontal">\n        <div class="icon">\n            <span class="hr-block-large-icon"></span>\n        </div>\n        <article>\n            <h2>H&amp;R Block<sup>&trade;</sup> Import</h2>\n            <p>Import your tax information automatically through H&amp;R Block Tax Software by selecting Financial Institution import when entering income information.</p>\n        </article>\n    </div>\n    <div class="form-type horizontal">\n        <div class="icon">\n            <span class="taxact-large-icon"></span>\n        </div>\n        <article>\n            <h2>TaxACT<sup>&trade;</sup> Import</h2>\n            <p>Import your tax information automatically through TaxACT by selecting &quot;Stock Data Import&quot; when entering investment income information.</p>\n        </article>\n    </div>\n</div>\n\n<div class="modal-buttons">\n    <button id="cancel" class="cancel">Done</button>\n</div>\n', s
         });
         return t.registerPartial("views/activity/taxForms", n), n
-    }), define("views/activity/taxFormsView", ["jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/activity/taxForms"], function(e, t, n, r, i) {
+    }), define("views/activity/taxFormsView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "hbs!views/activity/taxForms"], function(e, t, n, r, i) {
         return r.ModalView.extend({
             template: i,
             templateHelpers: {
@@ -45277,13 +45278,13 @@ var requirejs, require, define;
                 "click .download-pdf": "onDownloadPDF"
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             onInitialize: function() {
                 this.taxableStatements = this.options.taxStatements.getTaxableStatements(), this.iraStatements = this.options.taxStatements.getIraStatements()
             },
             onDownloadPDF: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "PDF",
                     Location: "TaxModal",
                     Type: "Link",
@@ -45291,7 +45292,7 @@ var requirejs, require, define;
                 })
             }
         })
-    }), define("models/taxStatements", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/taxStatements", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         function s() {
             var e = Date.now();
             return e.isAfter(i)
@@ -45360,7 +45361,7 @@ var requirejs, require, define;
                 }
             });
         return u
-    }), define("views/activity/activityView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "hbs!views/activity/activity", "backbone", "marionette", "common/betterment.models", "models/transaction", "models/v2/transactionMemoCollection", "common/betterment.views", "views/activity/transactionTableView", "views/activity/taxFormsView", "views/common/dropdown/goalSelectorView", "components/common/scripts/analytics/analytics", "models/taxStatements"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d) {
+    }), define("views/activity/activityView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "hbs!views/activity/activity", "backbone", "marionette", "common/betasmartz.models", "models/transaction", "models/v2/transactionMemoCollection", "common/betasmartz.views", "views/activity/transactionTableView", "views/activity/taxFormsView", "views/common/dropdown/goalSelectorView", "components/common/scripts/analytics/analytics", "models/taxStatements"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d) {
         var v;
         return f.View.extend({
             template: r,
@@ -45426,16 +45427,16 @@ var requirejs, require, define;
                     })
                 },
                 showCsvLink: function() {
-                    return BMT.user.isFull()
+                    return BS.user.isFull()
                 }
             },
             onInitialize: function() {
                 this.taxStatements = new d({
-                    accountGroups: BMT.user.get("accountGroups")
-                }), BMT.selectedAccount = BMT.selectedAccount || BMT.accounts().at(0), v || (v = new u.Collection), v.accountID = BMT.selectedAccount && BMT.selectedAccount.getIdOrCid() || "", v.accountGroupId = BMT.accountGroup.get("id"), BMT.accountGroup.isClosed() ? (v.startDaysAgo = "", v.typeFilter = "STATEMENT") : v.startDaysAgo = v.startDaysAgo === "" ? "" : v.startDaysAgo || "365"
+                    accountGroups: BS.user.get("accountGroups")
+                }), BS.selectedAccount = BS.selectedAccount || BS.accounts().at(0), v || (v = new u.Collection), v.accountID = BS.selectedAccount && BS.selectedAccount.getIdOrCid() || "", v.accountGroupId = BS.accountGroup.get("id"), BS.accountGroup.isClosed() ? (v.startDaysAgo = "", v.typeFilter = "STATEMENT") : v.startDaysAgo = v.startDaysAgo === "" ? "" : v.startDaysAgo || "365"
             },
             onRender: function() {
-                (BMT.accounts().length > 1 || BMT.user.is("hasClosedAccounts")) && this.renderGoalSelector()
+                (BS.accounts().length > 1 || BS.user.is("hasClosedAccounts")) && this.renderGoalSelector()
             },
             onShow: function() {
                 p.track("PageVisited", {
@@ -45454,7 +45455,7 @@ var requirejs, require, define;
                     },
                     t = h.create(e);
                 this.listenTo(t, "accountChanged", function() {
-                    v.accountID = BMT.selectedAccount.get("id"), this.fetchTransactions()
+                    v.accountID = BS.selectedAccount.get("id"), this.fetchTransactions()
                 }), this.listenTo(t, "allGoalsSelected", function() {
                     v.accountID = null, this.fetchTransactions()
                 }), this.goalSelectorRegion.show(t)
@@ -45464,13 +45465,13 @@ var requirejs, require, define;
                     Name: "GetTaxInfo",
                     Location: "Activity",
                     Type: "Link"
-                }), BMT.modal.show(new c({
+                }), BS.modal.show(new c({
                     taxYear: this.templateHelpers.taxYear(),
                     taxStatements: this.taxStatements
                 }))
             },
             onTypeChange: function(t) {
-                if (!BMT.user.isFull()) return;
+                if (!BS.user.isFull()) return;
                 v.typeFilter = e(t.currentTarget).val(), this.fetchTransactions(), this.$csvDownload.css("display", v.typeFilter === "STATEMENT" ? "none" : "block")
             },
             onStatementDownload: function(t) {
@@ -45510,7 +45511,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h1 class="tab-header">Review and compare performance</h1>\n\n<div class="card">\n\n    <div class="header-region clearfix"></div>\n\n    <div class="panel body clearfix">\n\n        <div class="controls">\n            <div class="sidebar">\n\n                <!-- Sidebar Selector Region -->\n                <div id="sidebarSelector"></div>\n\n            </div>\n        </div>\n\n        <div class="info">\n            <div class="filter-bar">\n                <ul class="time-range-selector button-filters right">\n                    <li><a href="#" data-range="180">6m</a></li>\n                    <li><a href="#" data-range="360">1y</a></li>\n                    <li class="year-to-date" data-help-content="Year To Date"><a href="#" data-range="ytd">YTD</a></li>\n                    <li><a href="#" data-range="all">All</a></li>\n                </ul>\n            </div>\n\n            <!-- Graph Region -->\n            <div id="performanceGraph"></div>\n\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/performance/performance", n), n
-    }), define("models/analysisReturn", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/analysisReturn", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({
                 url: "/analysisReturns",
                 idAttribute: "lineID"
@@ -45545,12 +45546,12 @@ var requirejs, require, define;
                 url: "/analysisReturns",
                 parse: function(e, n) {
                     if (e.length === 0) {
-                        BMT.logError("Expected Analysis Returns data from server.");
+                        BS.logError("Expected Analysis Returns data from server.");
                         return
                     }
                     this.availableColors = i.POSITION_COLORS;
                     var r = this,
-                        o = BMT.getCookie(s),
+                        o = BS.getCookie(s),
                         u = o ? o.split(",") : [],
                         a = !1,
                         f = t.reduce(e, function(e, t) {
@@ -45570,7 +45571,7 @@ var requirejs, require, define;
                         t.each(e.returns, function(e) {
                             i = typeof e.ac == "undefined" ? i : e.ac, e.ac = i, e.d = new Date(Number(e.d))
                         })
-                    }), a || (BMT.logError("Expected default values from /analysisReturns"), e[0].initial = !0, e[0].color = this.availableColors.shift()), e
+                    }), a || (BS.logError("Expected default values from /analysisReturns"), e[0].initial = !0, e[0].color = this.availableColors.shift()), e
                 },
                 activate: function(e) {
                     e.set({
@@ -45635,7 +45636,7 @@ var requirejs, require, define;
             Model: i,
             Collection: o
         }
-    }), define("models/analysisBalance", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/analysisBalance", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         var i = r.RelationalModel.extend({
                 dated: function() {
                     return this.date("d")
@@ -45687,7 +45688,7 @@ var requirejs, require, define;
             return s += '\n<div class="graph-type-selector-container">\n    <ul class="graph-type-selector button-filters left">\n        <li><a href="#" data-type="returns">% Returns</a></li>\n        <li><a href="#" data-type="balances">$ Values</a></li>\n    </ul>\n</div>\n', s
         });
         return t.registerPartial("views/performance/performanceHeader", n), n
-    }), define("views/performance/performanceHeaderView", ["jquery", "underscore", "common/betterment.views", "hbs!views/performance/performanceHeader", "common/constants/returnsConstants", "models/visitor", "components/common/scripts/util/formatter"], function(e, t, n, r, i, s, o) {
+    }), define("views/performance/performanceHeaderView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/performance/performanceHeader", "common/constants/returnsConstants", "models/visitor", "components/common/scripts/util/formatter"], function(e, t, n, r, i, s, o) {
         var u = {
                 template: r,
                 className: "performanceHeader panel",
@@ -45703,13 +45704,13 @@ var requirejs, require, define;
                         if (f.tipHidden) return !1;
                         var e = i.NEGATIVE_RETURNS_PERCENTAGE_THRESHOLD / 100,
                             t = i.NEGATIVE_RETURNS_AGE_THRESHOLD_IN_YEARS.years().ago();
-                        return BMT.accountGroup.meetsNegativeReturnsPercentageThreshold(e) && BMT.accountGroup.meetsNegativeReturnsAgeThreshold(t) ? (BMT.analytics.track("ElementViewed", {
+                        return BS.accountGroup.meetsNegativeReturnsPercentageThreshold(e) && BS.accountGroup.meetsNegativeReturnsAgeThreshold(t) ? (BS.analytics.track("ElementViewed", {
                             Type: "ProTip",
                             Name: "NegativeReturnsProTip",
                             Location: "Performance",
                             Path: "#performance"
-                        }), !0) : BMT.accounts().any(function(n) {
-                            return n.meetsNegativeReturnsPercentageThreshold(e) && n.meetsNegativeReturnsAgeThreshold(t) ? (BMT.analytics.track("ElementViewed", {
+                        }), !0) : BS.accounts().any(function(n) {
+                            return n.meetsNegativeReturnsPercentageThreshold(e) && n.meetsNegativeReturnsAgeThreshold(t) ? (BS.analytics.track("ElementViewed", {
                                 Type: "ProTip",
                                 Name: "NegativeReturnsProTip",
                                 Location: "Performance",
@@ -45733,7 +45734,7 @@ var requirejs, require, define;
             },
             f = n.View.extend(u, a);
         return f
-    }), define("views/performance/performanceReturnsSelectorView", ["jquery", "underscore", "backbone", "marionette", "common/betterment.views", "models/analysisReturn"], function(e, t, n, r, i, s) {
+    }), define("views/performance/performanceReturnsSelectorView", ["jquery", "underscore", "backbone", "marionette", "common/betasmartz.views", "models/analysisReturn"], function(e, t, n, r, i, s) {
         var o = "performance_returns_comparisons",
             u = 6;
         return i.View.extend({
@@ -45772,20 +45773,20 @@ var requirejs, require, define;
                 var t = this.$(e.currentTarget).val(),
                     n = this.collection.get(t);
                 if (n) {
-                    if (n.get("group") === "ACCOUNT") BMT.analytics.track("GoalComparisonAdded", {
+                    if (n.get("group") === "ACCOUNT") BS.analytics.track("GoalComparisonAdded", {
                         Location: "Analysis",
                         Group: "Account"
                     });
                     else if (n.get("group") === "STRATEGY") {
                         var r = n.get("name").match(/(\d{1,3})%.+\/\s*?(\d{1,3})%/);
-                        BMT.analytics.track("GoalComparisonAdded", {
+                        BS.analytics.track("GoalComparisonAdded", {
                             Location: "Analysis",
                             Group: "Strategy",
                             Comparison: r[1] + "-" + r[2]
                         })
                     } else if (n.get("group") === "BENCHMARK") {
                         var i = n.get("name").match(/\(([\^\.A-Z]+)\)/);
-                        BMT.analytics.track("GoalComparisonAdded", {
+                        BS.analytics.track("GoalComparisonAdded", {
                             Location: "Analysis",
                             Group: "Benchmark",
                             Comparison: i[1]
@@ -45801,7 +45802,7 @@ var requirejs, require, define;
                     i = new n.Collection(this.collection.where({
                         initial: !0
                     }));
-                return i.length === 1 ? BMT.alert({
+                return i.length === 1 ? BS.alert({
                     title: "Can't Remove Comparison",
                     body: "You must have at least one comparison selected. In order to remove this one you must add another one.",
                     icon: "warning"
@@ -45811,13 +45812,13 @@ var requirejs, require, define;
                 var e = new n.Collection(this.collection.where({
                     initial: !0
                 }));
-                BMT.setCookie(o, e.pluck("lineID").join(",")), !e.length || e.length >= u ? (this.$comparisonSelector.attr({
+                BS.setCookie(o, e.pluck("lineID").join(",")), !e.length || e.length >= u ? (this.$comparisonSelector.attr({
                     title: "Maximum of 6 comparisons allowed. Remove some comparisons in order to add new ones.",
                     disabled: "disabled"
                 }), this.$maxComparisons.show()) : (this.$comparisonSelector.prop("disabled", !1).attr("title", ""), this.$maxComparisons.hide())
             }
         })
-    }), define("views/performance/performanceBalancesSelectorView", ["jquery", "underscore", "backbone", "marionette", "common/betterment.views"], function(e, t, n, r, i) {
+    }), define("views/performance/performanceBalancesSelectorView", ["jquery", "underscore", "backbone", "marionette", "common/betasmartz.views"], function(e, t, n, r, i) {
         var s = "performance_balances_account",
             o = "performance_show_contributions";
         return i.View.extend({
@@ -45833,21 +45834,21 @@ var requirejs, require, define;
                 }
             },
             onInitialize: function() {
-                var e = BMT.getCookie(o);
-                this.showContributions = e === null ? !0 : e === "true", this.initialAccount = BMT.getCookie(s)
+                var e = BS.getCookie(o);
+                this.showContributions = e === null ? !0 : e === "true", this.initialAccount = BS.getCookie(s)
             },
             onRender: function() {
                 var e;
                 this.$accountSelector = this.$(".toggle-views"), this.initialAccount ? e = this.$accountSelector.find('a.toggle-row[data-account="' + this.initialAccount + '"]') : e = this.$accountSelector.find("a.toggle-row:first"), e && e.length && e.trigger("click")
             },
             onToggleContributions: function(e) {
-                return this.showContributions = !this.showContributions, this.$(e.currentTarget).find(".toggle-legend").html(this.showContributions ? "Hide" : "Show"), BMT.setCookie(o, this.showContributions), BMT.vent.trigger("change:performanceContributions", this.showContributions), !1
+                return this.showContributions = !this.showContributions, this.$(e.currentTarget).find(".toggle-legend").html(this.showContributions ? "Hide" : "Show"), BS.setCookie(o, this.showContributions), BS.vent.trigger("change:performanceContributions", this.showContributions), !1
             },
             onAccountSelected: function(e) {
                 var t = this.$(e.currentTarget);
                 if (!t.hasClass("active")) {
                     var n = t.data("account");
-                    this.$accountSelector.find("a.active").removeClass("active"), t.addClass("active"), BMT.setCookie(s, n), BMT.vent.trigger("change:loadingAccount", n)
+                    this.$accountSelector.find("a.active").removeClass("active"), t.addClass("active"), BS.setCookie(s, n), BS.vent.trigger("change:loadingAccount", n)
                 }
                 return !1
             }
@@ -45882,7 +45883,7 @@ var requirejs, require, define;
             })
         };
         return n
-    }), define("views/performance/performanceReturnsGraphView", ["jquery", "underscore", "common/betterment.views", "hbs!views/performance/performanceReturnsGraph", "components/common/scripts/util/formatter", "models/analysisReturn", "views/performance/allocationPieGraph", "components/common/scripts/constants/colors", "components/common/scripts/services/domainService"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/performance/performanceReturnsGraphView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/performance/performanceReturnsGraph", "components/common/scripts/util/formatter", "models/analysisReturn", "views/performance/allocationPieGraph", "components/common/scripts/constants/colors", "components/common/scripts/services/domainService"], function(e, t, n, r, i, s, o, u, a) {
         var f = 500,
             l = function(e) {
                 return e.lineID
@@ -45895,11 +45896,11 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 timeWeightedReturnsLink: function() {
-                    return a.brochureHost() + "/resources/investment-strategy/portfolio-management/betterment-calculate-investment-returns/"
+                    return a.brochureHost() + "/resources/investment-strategy/portfolio-management/betasmartz-calculate-investment-returns/"
                 }
             },
             onInitialize: function(e) {
-                this.listenTo(BMT.vent, "change:performanceRange", this.setRange), this.listenTo(this.collection, "reset change", this.render)
+                this.listenTo(BS.vent, "change:performanceRange", this.setRange), this.listenTo(this.collection, "reset change", this.render)
             },
             onShow: function() {
                 this.initializeGraph()
@@ -46136,7 +46137,7 @@ var requirejs, require, define;
             onRangeChanged: function(e) {
                 var t = this.brush.empty() ? this.x2.domain() : this.brush.extent(),
                     n = e ? null : (this.x2.domain()[1] - t[0].getTime()) / 864e5;
-                this.options.range = n, BMT.vent.trigger("clear:performanceRange", n)
+                this.options.range = n, BS.vent.trigger("clear:performanceRange", n)
             },
             setRange: function(e) {
                 this.options.range = e;
@@ -46180,7 +46181,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="performance-graph">\n    <svg class="graph"></svg>\n\n    <div class="zero-tooltip ui-tooltip qtip ui-tooltip-default ui-tooltip-rounded ui-tooltip-focus">\n        There&#39;s not enough history in your account to graph. Please check out this section again once there is money in your account.\n    </div>\n\n    <!-- Tooltip -->\n    <div class="hover-tooltip ui-tooltip qtip ui-tooltip-default ui-tooltip-rounded ui-tooltip-pos-rc ui-tooltip-focus">\n        <table class="chart-details balances-graph" border="0">\n            <tr>\n                <td><h3 class="tooltip-date"></h3></td>\n                <td></td>\n            </tr>\n            <tr>\n                <td><span class="balance">Balance</span></td>\n                <td><span class="balance-value"></span></td>\n            </tr>\n            <tr>\n                <td><span class="invested">What you&#39;ve invested</span></td>\n                <td><span class="invested-value"></span></td>\n            </tr>\n            <tr>\n                <td><span class="earned">What you&#39;ve earned</span></td>\n                <td><span class="earned-value"></span></td>\n            </tr>\n        </table>\n    </div>\n\n    <div class="graph-helper">\n        <div class="helper-group">\n            <a class="view-about right" href="#">About this data</a>\n        </div>\n    </div>\n</div>\n\n<div id="aboutDataCopy">\n    <p><strong>About the data</strong></p>\n    <p>This graph shows your account or goal value over time, along with the contributions you have made.  Hover over the line to see values at each point.</p>\n</div>\n'
         });
         return t.registerPartial("views/performance/performanceBalancesGraph", n), n
-    }), define("views/performance/performanceBalancesGraphView", ["jquery", "common/betterment.views", "hbs!views/performance/performanceBalancesGraph", "components/common/scripts/util/formatter", "models/analysisBalance", "components/common/scripts/constants/colors"], function(e, t, n, r, i, s) {
+    }), define("views/performance/performanceBalancesGraphView", ["jquery", "common/betasmartz.views", "hbs!views/performance/performanceBalancesGraph", "components/common/scripts/util/formatter", "models/analysisBalance", "components/common/scripts/constants/colors"], function(e, t, n, r, i, s) {
         var o = 500;
         return t.View.extend({
             template: n,
@@ -46189,7 +46190,7 @@ var requirejs, require, define;
                 "click .view-about": "onToggleAboutData"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "change:performanceRange", this.setRange), this.listenTo(BMT.vent, "change:performanceContributions", this.toggleContributions), this.listenTo(BMT.vent, "change:loadingAccount", this.showAccount)
+                this.listenTo(BS.vent, "change:performanceRange", this.setRange), this.listenTo(BS.vent, "change:performanceContributions", this.toggleContributions), this.listenTo(BS.vent, "change:loadingAccount", this.showAccount)
             },
             onRender: function() {
                 this.collection.length && (this.initializeGraph(), this.drawData())
@@ -46341,7 +46342,7 @@ var requirejs, require, define;
             onRangeChanged: function(e) {
                 var t = this.brush.empty() ? this.x2.domain() : this.brush.extent(),
                     n = e ? null : (this.x2.domain()[1] - t[0].getTime()) / 864e5;
-                this.options.range = n, BMT.vent.trigger("clear:performanceRange", n)
+                this.options.range = n, BS.vent.trigger("clear:performanceRange", n)
             },
             setRange: function(e) {
                 this.options.range = e;
@@ -46364,7 +46365,7 @@ var requirejs, require, define;
                 this.options.showContributions = e, this.focus.selectAll(".area.above").transition().duration(o).style("display", t), this.focus.selectAll(".area.below").transition().duration(o).style("display", t), this.focus.selectAll(".focus-line").transition().duration(o).style("display", t), this.focus.selectAll(".contribution-line").transition().duration(o).style("display", t), this.focus.selectAll(".contribution-area").transition().duration(o).style("display", t)
             }
         })
-    }), define("views/performance/performanceView", ["common/betterment.views", "hbs!views/performance/performance", "models/analysisReturn", "models/analysisBalance", "views/performance/performanceHeaderView", "views/performance/performanceReturnsSelectorView", "views/performance/performanceBalancesSelectorView", "views/performance/performanceReturnsGraphView", "views/performance/performanceBalancesGraphView"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/performance/performanceView", ["common/betasmartz.views", "hbs!views/performance/performance", "models/analysisReturn", "models/analysisBalance", "views/performance/performanceHeaderView", "views/performance/performanceReturnsSelectorView", "views/performance/performanceBalancesSelectorView", "views/performance/performanceReturnsGraphView", "views/performance/performanceBalancesGraphView"], function(e, t, n, r, i, s, o, u, a) {
         var f = "performance_graph_type",
             l = "performance_graph_range",
             c = "analysis_show_contributions";
@@ -46390,7 +46391,7 @@ var requirejs, require, define;
                 }
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "clear:performanceRange", this.clearRange), BMT.user.returnsCollection || (BMT.user.returnsCollection = new n.Collection, BMT.user.returnsCollection.fetch({
+                this.listenTo(BS.vent, "clear:performanceRange", this.clearRange), BS.user.returnsCollection || (BS.user.returnsCollection = new n.Collection, BS.user.returnsCollection.fetch({
                     force: !0,
                     reset: !0
                 })), this.balancesCollection = new r.Collection
@@ -46399,20 +46400,20 @@ var requirejs, require, define;
                 this.headerRegion.show(new i)
             },
             onShow: function() {
-                BMT.analytics.track("PageVisited", {
+                BS.analytics.track("PageVisited", {
                     Location: "Analysis"
-                }), this.$typeSelector = this.$(".graph-type-selector"), this.$dateSelector = this.$(".time-range-selector"), this.highlightDateRange(BMT.getCookie(l) || "all", !0), this.highlightGraphType(BMT.getCookie(f) || "returns")
+                }), this.$typeSelector = this.$(".graph-type-selector"), this.$dateSelector = this.$(".time-range-selector"), this.highlightDateRange(BS.getCookie(l) || "all", !0), this.highlightGraphType(BS.getCookie(f) || "returns")
             },
             showReturnsView: function() {
                 this.performanceGraph.show(new u({
-                    collection: BMT.user.returnsCollection,
+                    collection: BS.user.returnsCollection,
                     range: this.currentRange
                 })), this.sidebarSelector.show(new s({
-                    collection: BMT.user.returnsCollection
+                    collection: BS.user.returnsCollection
                 }))
             },
             showBalancesView: function() {
-                var e = BMT.getCookie(c);
+                var e = BS.getCookie(c);
                 e = e === null ? !0 : e === "true", this.performanceGraph.show(new a({
                     collection: this.balancesCollection,
                     range: this.currentRange,
@@ -46423,11 +46424,11 @@ var requirejs, require, define;
             },
             highlightGraphType: function(e) {
                 var t = typeof e == "string" ? this.$typeSelector.find('a[data-type="' + e + '"]') : this.$(e);
-                t.hasClass("active") || (this.currentType = t.data("type"), this.$typeSelector.find("a.active").removeClass("active"), t.addClass("active"), BMT.setCookie(f, this.currentType), this.currentType === "returns" ? (BMT.analytics.track("ElementViewed", {
+                t.hasClass("active") || (this.currentType = t.data("type"), this.$typeSelector.find("a.active").removeClass("active"), t.addClass("active"), BS.setCookie(f, this.currentType), this.currentType === "returns" ? (BS.analytics.track("ElementViewed", {
                     Name: "PercentReturns",
                     Type: "Chart",
                     Location: "Analysis"
-                }), this.showReturnsView()) : (BMT.analytics.track("ElementViewed", {
+                }), this.showReturnsView()) : (BS.analytics.track("ElementViewed", {
                     Name: "DollarValues",
                     Type: "Chart",
                     Location: "Analysis"
@@ -46437,11 +46438,11 @@ var requirejs, require, define;
                 return this.highlightGraphType(e.currentTarget), !1
             },
             clearRange: function(e) {
-                this.$dateSelector.find("a.active").removeClass("active"), BMT.setCookie(l, e)
+                this.$dateSelector.find("a.active").removeClass("active"), BS.setCookie(l, e)
             },
             highlightDateRange: function(e, t) {
                 var n = typeof e == "string" ? this.$dateSelector.find('a[data-range="' + e + '"]') : this.$(e);
-                this.currentRange = e, n.length && !n.hasClass("active") && (this.currentRange = n.data("range"), this.$dateSelector.find("a.active").removeClass("active"), n.addClass("active"), BMT.setCookie(l, this.currentRange), t || BMT.vent.trigger("change:performanceRange", this.currentRange))
+                this.currentRange = e, n.length && !n.hasClass("active") && (this.currentRange = n.data("range"), this.$dateSelector.find("a.active").removeClass("active"), n.addClass("active"), BS.setCookie(l, this.currentRange), t || BS.vent.trigger("change:performanceRange", this.currentRange))
             },
             onDateRangeChange: function(e) {
                 return this.highlightDateRange(e.currentTarget), !1
@@ -46488,7 +46489,7 @@ var requirejs, require, define;
             return s += ' />\n                <label>Premium Offers (e.g., bonus for depositing or inviting friends)</label>\n            </li>\n        </ul>\n    </section>\n</form>\n\n<div class="modal-buttons">\n    <button class="update-preferences">Update preferences</button>\n    <button class="cancel">Cancel</button>\n</div>\n', s
         });
         return t.registerPartial("views/profile/contactPreferences", n), n
-    }), define("views/profile/contactPreferencesView", ["jquery", "components/common/scripts/util/handlebarsHelpers", "hbs!views/profile/contactPreferences", "backbone", "common/betterment.views"], function(e, t, n, r, i) {
+    }), define("views/profile/contactPreferencesView", ["jquery", "components/common/scripts/util/handlebarsHelpers", "hbs!views/profile/contactPreferences", "backbone", "common/betasmartz.views"], function(e, t, n, r, i) {
         return i.ModalView.extend({
             template: n,
             events: {
@@ -46503,7 +46504,7 @@ var requirejs, require, define;
                 });
                 this.model.save(t, {
                     success: function() {
-                        BMT.modal.close(this), BMT.flash("Your email preferences were updated successfully.")
+                        BS.modal.close(this), BS.flash("Your email preferences were updated successfully.")
                     }.bind(this),
                     complete: function() {
                         this.unblock()
@@ -46515,7 +46516,7 @@ var requirejs, require, define;
                 n.prop("disabled") || (n.is(":checked") ? n.removeAttr("checked") : n.prop("checked", !0))
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("hbs!views/profile/changePassword", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -46523,7 +46524,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<h1>Edit Password</h1>\n<form method="POST" class="changePassword" action="#">\n    <section>\n        <label>Current Password</label>\n        <input type="password" name="oldPassword" />\n    </section>\n    <section>\n        <label>New password</label>\n        <input type="password" name="newPassword" />\n    </section>\n</form>\n\n<div class="security-question">\n</div>\n\n<div class="modal-buttons">\n    <button class="ok">Change password</button>\n    <button class="cancel">Cancel</button>\n</div>\n'
         });
         return t.registerPartial("views/profile/changePassword", n), n
-    }), define("views/profile/changePasswordView", ["jquery", "underscore", "backbone", "hbs!views/profile/changePassword", "common/betterment.views", "views/profile/securityQuestionView"], function(e, t, n, r, i, s) {
+    }), define("views/profile/changePasswordView", ["jquery", "underscore", "backbone", "hbs!views/profile/changePassword", "common/betasmartz.views", "views/profile/securityQuestionView"], function(e, t, n, r, i, s) {
         return i.ModalView.extend({
             template: r,
             regions: {
@@ -46546,7 +46547,7 @@ var requirejs, require, define;
                         s = this.securityQuestionView.getResults();
                     s && (this.block(), i.model.save(t.extend(r, s), {
                         success: function() {
-                            BMT.modal.close(i), BMT.flash("Your password was changed successfully.")
+                            BS.modal.close(i), BS.flash("Your password was changed successfully.")
                         },
                         complete: function() {
                             i.unblock(), i.removeExtraAttributes()
@@ -46562,7 +46563,7 @@ var requirejs, require, define;
                 }), s.removeResults(this.model)
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("hbs!views/common/flash", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -46579,7 +46580,7 @@ var requirejs, require, define;
             return s += '</div>\n        <div id="flash-close"></div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/common/flash", n), n
-    }), define("views/common/flashView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/flash"], function(e, t, n, r) {
+    }), define("views/common/flashView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/flash"], function(e, t, n, r) {
         var i = e("header").outerHeight() + e("nav").outerHeight() + 1;
         return n.View.extend({
             template: r,
@@ -46588,7 +46589,7 @@ var requirejs, require, define;
                 "click #flash": "fadeClose"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "goto", this.destroy)
+                this.listenTo(BS.vent, "goto", this.destroy)
             },
             onShow: function() {
                 this.scrollFlash(), this.$("#flash").hide(), this.$("#flash").slideDown(), e(window).scroll(this.scrollFlash), this.closeTimeout = setTimeout(this.fadeClose.bind(this), 1e4)
@@ -46652,7 +46653,7 @@ var requirejs, require, define;
             return s += '\n    </ul>\n</form>\n\n<div class="modal-buttons">\n    <button class="ok">Update preferences</button>\n    <button class="cancel">Cancel</button>\n</div>\n', s
         });
         return t.registerPartial("views/profile/changeDefaultAccountGroup", n), n
-    }), define("views/profile/changeDefaultAccountGroupView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "hbs!views/profile/changeDefaultAccountGroup", "backbone", "common/betterment.views"], function(e, t, n, r, i, s) {
+    }), define("views/profile/changeDefaultAccountGroupView", ["jquery", "underscore", "components/common/scripts/util/handlebarsHelpers", "hbs!views/profile/changeDefaultAccountGroup", "backbone", "common/betasmartz.views"], function(e, t, n, r, i, s) {
         return s.ModalView.extend({
             template: r,
             className: "change-default-account",
@@ -46662,8 +46663,8 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 accountGroups: function() {
-                    var e = BMT.user.getDefaultAccountGroup().id,
-                        n = BMT.user.get("accountGroups").models;
+                    var e = BS.user.getDefaultAccountGroup().id,
+                        n = BS.user.get("accountGroups").models;
                     return t.map(n, function(t, n) {
                         var r = e === t.id ? 'checked="checked"' : "";
                         return {
@@ -46676,13 +46677,13 @@ var requirejs, require, define;
             },
             onOK: function(e) {
                 this.block(), this.model.save(i.Syphon.serialize(this)).then(function() {
-                    BMT.modal.close(this), BMT.flash("Your default account was changed successfully.")
+                    BS.modal.close(this), BS.flash("Your default account was changed successfully.")
                 }.bind(this), function() {
                     this.unblock()
                 }.bind(this))
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("hbs!views/profile/externalAccounts", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -46691,14 +46692,14 @@ var requirejs, require, define;
             var s = "",
                 o, u, a = "function",
                 f = this.escapeExpression;
-            return s += '<h1>Link External Accounts</h1>\n<div class="description">\n    Link all accounts to get the most accurate advice during your consultation. Service provided by Quovo.\n    <div class="quovo-tip help-icon">\n        This functionality is provided by Quovo, a third party service with which BetaSmartz has\n        partnered. Use of Quovo is completely optional. By using this service and thereby Quovo,\n        you understand that you are sending your personal data to a third party that BetaSmartz\n        cannot control, agree to do so, and accept all the associated risks. By using this functionality\n        and Quovo through Betterment, you agree to hold BetaSmartz harmless from losses of any kind\n        that may result from Quovo\'s use, misuse, or loss of your personal information. You also agree\n        to abide by Quovo\'s <a href="https://www.quovo.com/splash/terms.php" target="_blank">Terms of Use</a>.\n    </div>\n</div>\n<div class="clearfix"></div>\n\n<iframe src="', (u = n.quovoIframeUrl) ? o = u.call(t, {
+            return s += '<h1>Link External Accounts</h1>\n<div class="description">\n    Link all accounts to get the most accurate advice during your consultation. Service provided by Quovo.\n    <div class="quovo-tip help-icon">\n        This functionality is provided by Quovo, a third party service with which BetaSmartz has\n        partnered. Use of Quovo is completely optional. By using this service and thereby Quovo,\n        you understand that you are sending your personal data to a third party that BetaSmartz\n        cannot control, agree to do so, and accept all the associated risks. By using this functionality\n        and Quovo through Betasmartz, you agree to hold BetaSmartz harmless from losses of any kind\n        that may result from Quovo\'s use, misuse, or loss of your personal information. You also agree\n        to abide by Quovo\'s <a href="https://www.quovo.com/splash/terms.php" target="_blank">Terms of Use</a>.\n    </div>\n</div>\n<div class="clearfix"></div>\n\n<iframe src="', (u = n.quovoIframeUrl) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.quovoIframeUrl, o = typeof u === a ? u.call(t, {
                 hash: {}
             }) : u), s += f(o) + '" />\n\n<div class="modal-buttons">\n    <button class="ok">Done Linking Accounts</button>\n</div>\n', s
         });
         return t.registerPartial("views/profile/externalAccounts", n), n
-    }), define("views/profile/externalAccountsView", ["hbs!views/profile/externalAccounts", "common/betterment.views"], function(e, t) {
+    }), define("views/profile/externalAccountsView", ["hbs!views/profile/externalAccounts", "common/betasmartz.views"], function(e, t) {
         return t.ModalView.extend({
             template: e,
             className: "link-external-accounts",
@@ -46719,11 +46720,11 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 quovoIframeUrl: function() {
-                    return "https://www.quovo.com/?action=remoteaccess&u=" + BMT.user.id + "&k=" + encodeURIComponent(this.self.model.get("quovoKey"))
+                    return "https://www.quovo.com/?action=remoteaccess&u=" + BS.user.id + "&k=" + encodeURIComponent(this.self.model.get("quovoKey"))
                 }
             },
             onOK: function() {
-                BMT.modal.close(this), BMT.flash("Your external account holdings are now available for our portfolio team.  We'll contact you soon.")
+                BS.modal.close(this), BS.flash("Your external account holdings are now available for our portfolio team.  We'll contact you soon.")
             }
         })
     }), define("models/v1/defaultAccountGroupUpdater", ["models/v1/baseModels"], function(e) {
@@ -46825,7 +46826,7 @@ var requirejs, require, define;
             return s += '\n    </section>\n</form>\n\n<button class="update" disabled="true">Update info</button>\n', s
         });
         return t.registerPartial("views/profile/personal", n), n
-    }), define("views/profile/personalView", ["jquery", "underscore", "backbone", "hbs!views/profile/personal", "common/betterment.views", "views/profile/securityQuestionView"], function(e, t, n, r, i, s) {
+    }), define("views/profile/personalView", ["jquery", "underscore", "backbone", "hbs!views/profile/personal", "common/betasmartz.views", "views/profile/securityQuestionView"], function(e, t, n, r, i, s) {
         return i.View.extend({
             template: r,
             tagName: "div",
@@ -46914,14 +46915,14 @@ var requirejs, require, define;
             update: function(e) {
                 var r = this,
                     i, o = n.Syphon.serialize(this);
-                this.model.validate(o) ? this.triggerAllValidation(o) : BMT.modal.show(i = new s(t.extend({
+                this.model.validate(o) ? this.triggerAllValidation(o) : BS.modal.show(i = new s(t.extend({
                     title: "Confirm Personal Info Update",
                     body: "To update your info please answer the following security question",
                     className: "confirm-update-modal securityQuestion",
                     handler: function(e) {
                         e && (i.block(), r.model.store(), r.model.save(t.extend(o, e), {
                             success: function() {
-                                BMT.modal.close(i), BMT.flash("Your info was updated successfully."), s.removeResults(r.model)
+                                BS.modal.close(i), BS.flash("Your info was updated successfully."), s.removeResults(r.model)
                             },
                             error: function() {
                                 r.model.restart()
@@ -46978,7 +46979,7 @@ var requirejs, require, define;
                 if (i || i === 0) r += i;
                 r += "</td>\n                    <td>", i = (s = n.highlightPlan || e && e.highlightPlan, o = {
                     hash: {}
-                }, s ? s.call(e, "better", o) : c.call(e, "highlightPlan", "better", o)), i = n["if"].call(e, i, {
+                }, s ? s.call(e, "betasmartz", o) : c.call(e, "highlightPlan", "betasmartz", o)), i = n["if"].call(e, i, {
                     hash: {},
                     inverse: h.noop,
                     fn: h.program(5, m, t)
@@ -47041,9 +47042,9 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.builderFeeRate, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '% per year</h2>\n\n                <p class="explanation">\n                    With a balance of less than<br/>', o = (u = n.betterMinimumBalance || t && t.betterMinimumBalance, a = {
+            }) : u), s += l(o) + '% per year</h2>\n\n                <p class="explanation">\n                    With a balance of less than<br/>', o = (u = n.betasmartzMinimumBalance || t && t.betasmartzMinimumBalance, a = {
                 hash: {}
-            }, u ? u.call(t, a) : c.call(t, "betterMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
+            }, u ? u.call(t, a) : c.call(t, "betasmartzMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
             }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' and at least $100/month <br/>\n                    <span class="dotted-underline" id="builderHelp">\n                        automatic deposit\n                        <span class="help-content">You may select different auto deposit amounts and frequencies as long as they add up to at least ', o = (u = n.builderAutoDepositMinimum || t && t.builderAutoDepositMinimum, a = {
                 hash: {}
@@ -47057,13 +47058,13 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, a) : c.call(t, "builderFlatFee", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
-            }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' per month</h2>\n                <p class="explanation">\n                    With a balance of less than<br/>', o = (u = n.betterMinimumBalance || t && t.betterMinimumBalance, a = {
+            }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' per month</h2>\n                <p class="explanation">\n                    With a balance of less than<br/>', o = (u = n.betasmartzMinimumBalance || t && t.betasmartzMinimumBalance, a = {
                 hash: {}
-            }, u ? u.call(t, a) : c.call(t, "betterMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
+            }, u ? u.call(t, a) : c.call(t, "betasmartzMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
             }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' and no auto deposit.\n                </p>\n\n            </td>\n            <td class="', o = (u = n.highlightPlan || t && t.highlightPlan, a = {
                 hash: {}
-            }, u ? u.call(t, "better", a) : c.call(t, "highlightPlan", "better", a)), o = n["if"].call(t, o, {
+            }, u ? u.call(t, "betasmartz", a) : c.call(t, "highlightPlan", "betasmartz", a)), o = n["if"].call(t, o, {
                 hash: {},
                 inverse: h.noop,
                 fn: h.program(7, g, i)
@@ -47073,13 +47074,13 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.centerPanelBorderClass, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '">\n                <h2 class="plan-type">Better</h2>\n                <div class="icon pricing-better"></div>\n                <h2>0.', (u = n.betterFeeRate) ? o = u.call(t, {
+            }) : u), s += l(o) + '">\n                <h2 class="plan-type">Betasmartz</h2>\n                <div class="icon pricing-betasmartz"></div>\n                <h2>0.', (u = n.betasmartzFeeRate) ? o = u.call(t, {
                 hash: {}
-            }) : (u = t && t.betterFeeRate, o = typeof u === f ? u.call(t, {
+            }) : (u = t && t.betasmartzFeeRate, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '% per year</h2>\n\n                <p class="explanation">With a balance of ', o = (u = n.betterMinimumBalance || t && t.betterMinimumBalance, a = {
+            }) : u), s += l(o) + '% per year</h2>\n\n                <p class="explanation">With a balance of ', o = (u = n.betasmartzMinimumBalance || t && t.betasmartzMinimumBalance, a = {
                 hash: {}
-            }, u ? u.call(t, a) : c.call(t, "betterMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
+            }, u ? u.call(t, a) : c.call(t, "betasmartzMinimumBalance", a)), s += l((u = n.money || t && t.money, a = {
                 hash: {}
             }, u ? u.call(t, o, 0, a) : c.call(t, "money", o, 0, a))) + ' or more</p>\n            </td>\n            <td class="', o = (u = n.highlightPlan || t && t.highlightPlan, a = {
                 hash: {}
@@ -47123,7 +47124,7 @@ var requirejs, require, define;
                     AUTO_DEPOSIT: 100,
                     FLAT_FEE: 3
                 },
-                BETTER: {
+                BETASMARTZ: {
                     BASIS_POINTS: 25,
                     MINIMUM_BALANCE: 1e4
                 },
@@ -47136,16 +47137,16 @@ var requirejs, require, define;
                 PERSONAL_CONSULTATION: 5e5
             },
             shouldBeBuilder: function(e) {
-                return e < this.PLANS.BETTER.MINIMUM_BALANCE
+                return e < this.PLANS.BETASMARTZ.MINIMUM_BALANCE
             },
-            shouldBeBetter: function(e) {
-                return e >= this.PLANS.BETTER.MINIMUM_BALANCE && e < this.PLANS.BEST.MINIMUM_BALANCE
+            shouldBeBetasmartz: function(e) {
+                return e >= this.PLANS.BETASMARTZ.MINIMUM_BALANCE && e < this.PLANS.BEST.MINIMUM_BALANCE
             },
             shouldBeBest: function(e) {
                 return e >= this.PLANS.BEST.MINIMUM_BALANCE
             }
         }
-    }), define("views/profile/pricingPlanView", ["jquery", "underscore", "backbone", "common/betterment.views", "hbs!views/profile/pricingPlan", "hbs!views/profile/planChevron", "modules/pricingPlans"], function(e, t, n, r, i, s, o) {
+    }), define("views/profile/pricingPlanView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "hbs!views/profile/pricingPlan", "hbs!views/profile/planChevron", "modules/pricingPlans"], function(e, t, n, r, i, s, o) {
         return r.ModalView.extend({
             template: i,
             className: "pricing-plan",
@@ -47174,14 +47175,14 @@ var requirejs, require, define;
                 builderFeeRate: function() {
                     return o.PLANS.BUILDER.BASIS_POINTS
                 },
-                betterFeeRate: function() {
-                    return o.PLANS.BETTER.BASIS_POINTS
+                betasmartzFeeRate: function() {
+                    return o.PLANS.BETASMARTZ.BASIS_POINTS
                 },
                 bestFeeRate: function() {
                     return o.PLANS.BEST.BASIS_POINTS
                 },
-                betterMinimumBalance: function() {
-                    return o.PLANS.BETTER.MINIMUM_BALANCE
+                betasmartzMinimumBalance: function() {
+                    return o.PLANS.BETASMARTZ.MINIMUM_BALANCE
                 },
                 builderAutoDepositMinimum: function() {
                     return o.PLANS.BUILDER.AUTO_DEPOSIT
@@ -47196,7 +47197,7 @@ var requirejs, require, define;
                     return o.FEATURE_MINIMUM_BALANCES.PERSONAL_CONSULTATION
                 },
                 builderIraMessage: function() {
-                    return BMT.accounts().hasIRA() ? "or by maxing out your SMSF contribution" : ""
+                    return BS.accounts().hasIRA() ? "or by maxing out your SMSF contribution" : ""
                 },
                 showAlternativeFeeSummary: function() {
                     return this.self.model.isClassic() || this.self.model.isEmployer()
@@ -47208,17 +47209,17 @@ var requirejs, require, define;
                     return s()
                 },
                 centerPanelBorderClass: function() {
-                    return this.highlightPlan("better") ? "" : this.highlightPlan("builder") ? "border-right" : this.highlightPlan("best") ? "border-left" : "border-right border-left"
+                    return this.highlightPlan("betasmartz") ? "" : this.highlightPlan("builder") ? "border-right" : this.highlightPlan("best") ? "border-left" : "border-right border-left"
                 }
             },
             events: {
                 "click button#ok": "onOK"
             },
             onOK: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
-    }), define("views/profile/closeAccountView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/profile/securityQuestionView", "common/betterment.models"], function(e, t, n, r, i, s) {
+    }), define("views/profile/closeAccountView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/profile/securityQuestionView", "common/betasmartz.models"], function(e, t, n, r, i, s) {
         var o = s.Model.extend({
             urlRoot: "/hypotheticalWithdrawAll"
         });
@@ -47270,15 +47271,15 @@ var requirejs, require, define;
                         var o = i.model.get("whyClosing") === "Other";
                         o && i.model.set("whyClosing", "Other: " + this.$("input#otherReason").val().substring(0, 200)), i.model.destroy({
                             success: function() {
-                                BMT.alert({
+                                BS.alert({
                                     title: "Close account successful",
                                     body: "You have successfully closed your account. " + (i.hypotheticalWithdrawAll.is("delayed") ? i.hypotheticalWithdrawAll.get("message") : ""),
                                     icon: "accept",
                                     className: "close-account-success",
                                     handler: function(e) {
-                                        BMT.vent.trigger("logout", {
+                                        BS.vent.trigger("logout", {
                                             timeout: !1
-                                        }), BMT.modal.close(i)
+                                        }), BS.modal.close(i)
                                     }
                                 })
                             },
@@ -47298,14 +47299,14 @@ var requirejs, require, define;
                 }), i.removeResults(this.model)
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             onToggle: function(e) {
                 var t = n.Syphon.serialize(this).whyClosing === "Other";
                 this.$("div.whyClosingReason")[t ? "slideDown" : "hide"]()
             }
         })
-    }), define("views/profile/accountAdministrationView", ["jquery", "underscore", "backbone", "hbs!views/profile/accountAdministration", "common/betterment.views", "views/profile/changeBankAccountView", "views/profile/pricingPlanView", "views/profile/closeAccountView", "models/automaticDeposit", "components/common/scripts/viewHelpers/customerSupport", "modules/modals", "views/linkBankAccount/setupView"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
+    }), define("views/profile/accountAdministrationView", ["jquery", "underscore", "backbone", "hbs!views/profile/accountAdministration", "common/betasmartz.views", "views/profile/changeBankAccountView", "views/profile/pricingPlanView", "views/profile/closeAccountView", "models/automaticDeposit", "components/common/scripts/viewHelpers/customerSupport", "modules/modals", "views/linkBankAccount/setupView"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
         return i.View.extend({
             template: r,
             tagName: "div",
@@ -47334,8 +47335,8 @@ var requirejs, require, define;
                 }
             },
             onInitialize: function() {
-                this.model.get("bankAccount").bind("change:description", this.render, this), this.listenTo(BMT.user, "sync", function() {
-                    this.render(), BMT.refreshBanners()
+                this.model.get("bankAccount").bind("change:description", this.render, this), this.listenTo(BS.user, "sync", function() {
+                    this.render(), BS.refreshBanners()
                 })
             },
             templateHelpers: {
@@ -47348,7 +47349,7 @@ var requirejs, require, define;
                     return e.get("active") ? e.get("description") : "No linked account"
                 },
                 feeTypeDisplayName: function() {
-                    return BMT.user.get("pricingSummary").displayName()
+                    return BS.user.get("pricingSummary").displayName()
                 },
                 advisedFeeTypeDisplayAmount: function() {
                     return this.pctTrimZeros(this.self.model.num("feeAmount"), 2) + " / year"
@@ -47369,20 +47370,20 @@ var requirejs, require, define;
                     accountGroup: this.model
                 });
                 this.listenTo(t, "close", function() {
-                    BMT.user.fetch()
+                    BS.user.fetch()
                 }), l.show(t)
             },
             reviewPricingPlan: function(e) {
-                BMT.modal.show(new o({
-                    model: BMT.user.get("pricingSummary")
+                BS.modal.show(new o({
+                    model: BS.user.get("pricingSummary")
                 }))
             },
             toggleCloseInfo: function() {
                 this.ui.closeInfo.toggle()
             },
             closeAccount: function(e) {
-                BMT.accountGroup.isPersonal() ? (e.preventDefault(), BMT.modal.show(new u({
-                    model: BMT.user
+                BS.accountGroup.isPersonal() ? (e.preventDefault(), BS.modal.show(new u({
+                    model: BS.user
                 }))) : this.toggleCloseInfo()
             }
         })
@@ -47420,7 +47421,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '</span>\n\n<button class="edit blue">Change</button>\n<div class="clearfix"></div>\n', s
         });
         return t.registerPartial("views/profile/beneficiaryCollection", n), n
-    }), define("views/profile/beneficiaryCollectionView", ["common/betterment.views", "hbs!views/profile/beneficiaryCollection", "views/profile/editBeneficiariesView"], function(e, t, n) {
+    }), define("views/profile/beneficiaryCollectionView", ["common/betasmartz.views", "hbs!views/profile/beneficiaryCollection", "views/profile/editBeneficiariesView"], function(e, t, n) {
         return e.View.extend({
             template: t,
             tagName: "li",
@@ -47449,18 +47450,18 @@ var requirejs, require, define;
                 this.ui.content.text(this.templateHelpers.listBeneficiaries())
             },
             editBeneficiaries: function() {
-                BMT.modal.show(new n({
+                BS.modal.show(new n({
                     collection: this.collection,
                     collectionName: this.options.collectionName,
                     isIRA: this.options.isIRA
                 }))
             }
         })
-    }), define("views/profile/beneficiariesView", ["jquery", "underscore", "common/betterment.views", "views/profile/beneficiaryCollectionView"], function(e, t, n, r) {
+    }), define("views/profile/beneficiariesView", ["jquery", "underscore", "common/betasmartz.views", "views/profile/beneficiaryCollectionView"], function(e, t, n, r) {
         return n.View.extend({
             tagName: "ul",
             onShow: function() {
-                BMT.accounts().hasInvestingAccount() && this.renderBeneficiaryCollection(new r({
+                BS.accounts().hasInvestingAccount() && this.renderBeneficiaryCollection(new r({
                     collection: this.options.investingAcctBeneficiaries,
                     collectionName: "Investing Accounts",
                     collectionBalance: "",
@@ -47496,7 +47497,7 @@ var requirejs, require, define;
             MAX_UPLOAD_SIZE_MB: e,
             MAX_UPLOAD_SIZE_BYTES: e * t
         }
-    }), define("views/trust/documentUploadModal", ["jquery", "underscore", "common/betterment.views", "models/v1/trustDocument", "models/v1/baseCollection", "common/constants/uploadLimits", "components/common/scripts/services/browserService"], function(e, t, n, r, i, s, o) {
+    }), define("views/trust/documentUploadModal", ["jquery", "underscore", "common/betasmartz.views", "models/v1/trustDocument", "models/v1/baseCollection", "common/constants/uploadLimits", "components/common/scripts/services/browserService"], function(e, t, n, r, i, s, o) {
         return n.ModalView.extend({
             template: "trust/documentUploadModal",
             className: "document-upload",
@@ -47522,7 +47523,7 @@ var requirejs, require, define;
                 var n = e(t.target).closest(".upload-row"),
                     r = n.data("serialNumber"),
                     i = this.documentIdLookup[r];
-                this.removeDocumentFromServer(i, BMT.accountGroup.get("trust")), n.remove(), delete this.documentIdLookup[r]
+                this.removeDocumentFromServer(i, BS.accountGroup.get("trust")), n.remove(), delete this.documentIdLookup[r]
             },
             onInitialize: function() {
                 this.nextFileSerialNumber = 0, this.numUploaded = 0, this.nextFileSerialNumber = 0, this.documentIdLookup = {}
@@ -47561,7 +47562,7 @@ var requirejs, require, define;
                         t.result && (this.documentIdLookup[n.serialNumber] = t.result.id), this.numUploaded++, this.$("#trust-document-upload-file-" + n.serialNumber + " .success-mark").text("✔"), this.$("#trust-document-upload-file-" + n.serialNumber + " .upload-progress").text("").append('<div class="grey-x"></div>')
                     };
                 t.fileupload({
-                    url: i.API_URL + "/trust/" + BMT.accountGroup.get("trust").id + "/documents",
+                    url: i.API_URL + "/trust/" + BS.accountGroup.get("trust").id + "/documents",
                     autoUpload: !0,
                     maxFilesize: s.MAX_UPLOAD_SIZE_BYTES,
                     add: function(t, n) {
@@ -47580,19 +47581,19 @@ var requirejs, require, define;
                 }).on("fileuploadfail", f.bind(this)).on("fileuploaddone", l.bind(this))
             },
             closeModal: function() {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             },
             onOK: function(e) {
-                this.numUploaded ? (this.block(), BMT.user.fetch().then(function() {
-                    BMT.vent.trigger("trust:documents:uploaded"), BMT.flash("Documents have been successfully uploaded. You will receive an email once your trust is approved."), this.unblock(), this.closeModal()
+                this.numUploaded ? (this.block(), BS.user.fetch().then(function() {
+                    BS.vent.trigger("trust:documents:uploaded"), BS.flash("Documents have been successfully uploaded. You will receive an email once your trust is approved."), this.unblock(), this.closeModal()
                 }.bind(this))) : this.closeModal()
             },
             onCancel: function(e) {
-                for (var t = 0; t < this.nextFileSerialNumber; t++) this.documentIdLookup[t] && this.removeDocumentFromServer(this.documentIdLookup[t], BMT.accountGroup.get("trust"));
+                for (var t = 0; t < this.nextFileSerialNumber; t++) this.documentIdLookup[t] && this.removeDocumentFromServer(this.documentIdLookup[t], BS.accountGroup.get("trust"));
                 this.numUploaded = 0, this.closeModal()
             }
         })
-    }), define("views/profile/trustInformationView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/trust/documentUploadModal"], function(e, t, n, r, i) {
+    }), define("views/profile/trustInformationView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/trust/documentUploadModal"], function(e, t, n, r, i) {
         return r.View.extend({
             template: "profile/trustInformation",
             tagName: "div",
@@ -47600,8 +47601,8 @@ var requirejs, require, define;
                 "click .trust-document-upload button": "openUploadModal"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "trust:documents:uploaded", function() {
-                    BMT.accountGroup.get("trust").needsDocuments() || this.$(".trust-document-upload .item-content").text("Uploaded")
+                this.listenTo(BS.vent, "trust:documents:uploaded", function() {
+                    BS.accountGroup.get("trust").needsDocuments() || this.$(".trust-document-upload .item-content").text("Uploaded")
                 })
             },
             templateHelpers: {
@@ -47621,11 +47622,11 @@ var requirejs, require, define;
                     return this.self.model.get("city") + ", " + this.self.model.get("state")
                 },
                 document_upload_prefix: function() {
-                    return BMT.accountGroup.get("trust") && BMT.accountGroup.get("trust").needsDocuments() ? " Not " : ""
+                    return BS.accountGroup.get("trust") && BS.accountGroup.get("trust").needsDocuments() ? " Not " : ""
                 }
             },
             openUploadModal: function() {
-                BMT.modal.show(new i)
+                BS.modal.show(new i)
             }
         })
     }), define("hbs!views/profile/jointAccountHolder", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -47681,12 +47682,12 @@ var requirejs, require, define;
             }) : u), s += f(o) + '" />\n</section>\n\n<hr/>\n', s
         });
         return t.registerPartial("views/profile/jointAccountHolder", n), n
-    }), define("views/profile/jointAccountHolderView", ["common/betterment.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/profile/jointAccountHolder"], function(e, t, n) {
+    }), define("views/profile/jointAccountHolderView", ["common/betasmartz.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/profile/jointAccountHolder"], function(e, t, n) {
         return e.View.extend({
             template: n,
             templateHelpers: {
                 primaryAccountHolder: function() {
-                    return BMT.accountGroup.get("primaryAccountHolderId") === BMT.user.id ? BMT.user.fullName() : this.self.model.get("firstName") + " " + (this.self.model.get("middleName") || "") + " " + this.self.model.get("lastName")
+                    return BS.accountGroup.get("primaryAccountHolderId") === BS.user.id ? BS.user.fullName() : this.self.model.get("firstName") + " " + (this.self.model.get("middleName") || "") + " " + this.self.model.get("lastName")
                 }
             }
         })
@@ -47733,7 +47734,7 @@ var requirejs, require, define;
             }
         };
         return e.extend(t)
-    }), define("views/profile/profileView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/profile/contactInfoView", "views/profile/personalView", "views/profile/accountAdministrationView", "views/profile/beneficiariesView", "views/profile/trustInformationView", "views/profile/jointAccountHolderView", "models/v1/jointAccountHolder", "models/v1/contactPreferences", "models/v1/accountGroupBeneficiaries", "models/v1/accountBeneficiaries", "components/common/scripts/viewHelpers/customerSupport", "services/accountService", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
+    }), define("views/profile/profileView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/profile/contactInfoView", "views/profile/personalView", "views/profile/accountAdministrationView", "views/profile/beneficiariesView", "views/profile/trustInformationView", "views/profile/jointAccountHolderView", "models/v1/jointAccountHolder", "models/v1/contactPreferences", "models/v1/accountGroupBeneficiaries", "models/v1/accountBeneficiaries", "components/common/scripts/viewHelpers/customerSupport", "services/accountService", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
         return r.View.extend({
             template: "profile/profile",
             templateHelpers: {
@@ -47751,21 +47752,21 @@ var requirejs, require, define;
                 jointAccountHolder: "#joint-account-holder"
             },
             onInitialize: function() {
-                this.model = BMT.accountGroup
+                this.model = BS.accountGroup
             },
             onShow: function() {
-                BMT.analytics.track("PageVisited", {
+                BS.analytics.track("PageVisited", {
                     Location: "Profile"
-                }), this.showContactInfo(), this.showBeneficiariesInfo(BMT.accounts()), this.personal.show(new s({
-                    model: BMT.user
+                }), this.showContactInfo(), this.showBeneficiariesInfo(BS.accounts()), this.personal.show(new s({
+                    model: BS.user
                 })), this.accountAdministration.show(new o({
-                    model: BMT.accountGroup
-                })), BMT.accountGroup.get("trust") && this.trustInformation.show(new a({
-                    model: BMT.accountGroup.get("trust")
+                    model: BS.accountGroup
+                })), BS.accountGroup.get("trust") && this.trustInformation.show(new a({
+                    model: BS.accountGroup.get("trust")
                 }));
-                if (BMT.accountGroup.isJointAccount() && !BMT.accountGroup.isPendingApproval()) {
+                if (BS.accountGroup.isJointAccount() && !BS.accountGroup.isPendingApproval()) {
                     var e = new l({
-                        accountGroup: BMT.accountGroup
+                        accountGroup: BS.accountGroup
                     });
                     e.fetch().then(function() {
                         this.jointAccountHolder.show(new f({
@@ -47778,7 +47779,7 @@ var requirejs, require, define;
                 var e = new c;
                 e.fetch().then(function() {
                     var t = new i({
-                        model: BMT.user,
+                        model: BS.user,
                         contactPreferences: e
                     });
                     this.contactInfo.show(t)
@@ -47802,7 +47803,7 @@ var requirejs, require, define;
                     o = t.invoke(s, "fetch");
                 e.when.apply(e, o).done(function() {
                     this.beneficiaries.show(new u({
-                        model: BMT.accountGroup,
+                        model: BS.accountGroup,
                         investingAcctBeneficiaries: r,
                         iraBeneficiaryGroups: i
                     }))
@@ -47814,7 +47815,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="panel card horizontal-center logged-out">\n    <div class="inner">\n        <h1 class="tab-header">\n            Create a new password\n        </h1>\n        <form method="POST" class="passwordReset" action="#">\n            <!-- nested forms will be here, this is necessary;\n                Syphon gets the first form to extract inputs from  -->\n            <section id="securityQuestion">\n            </section>\n\n            <section class="newPassword">\n                <label>New password</label>\n                <input type="password" name="password" />\n                <span class="note">8 characters minimum</span>\n            </section>\n        </form>\n        <button id="changePassword" class="blue">Change Password</button>\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/login/passwordReset", n), n
-    }), define("views/login/passwordResetView", ["underscore", "backbone", "common/betterment.views", "hbs!views/login/passwordReset", "views/profile/securityQuestionView"], function(e, t, n, r, i) {
+    }), define("views/login/passwordResetView", ["underscore", "backbone", "common/betasmartz.views", "hbs!views/login/passwordReset", "views/profile/securityQuestionView"], function(e, t, n, r, i) {
         return n.View.extend({
             template: r,
             id: "passwordReset",
@@ -47846,11 +47847,11 @@ var requirejs, require, define;
                     if (!s || o) this.block(), this.model.save(e.extend(i, o), {
                         forceSave: !0,
                         success: function() {
-                            BMT.alert({
+                            BS.alert({
                                 title: "Password change Successful",
                                 body: "Your password has been changed successfully. You can now log in to your account.",
                                 icon: "accept"
-                            }), BMT.router.navigate("", !0)
+                            }), BS.router.navigate("", !0)
                         },
                         complete: function() {
                             r.unblock()
@@ -47864,7 +47865,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="panel horizontal-center forgotPassword logged-out">\n    <div class="inner">\n        <h1 class="tab-header">Forgot your password?</h1>\n        <h2 class="modal-body">\n            If you forgot your password, please enter the email address associated with your account to reset your password.\n        </h2>\n\n        <form method="POST" action="#">\n            <label>Email</label>\n            <input type="email" name="forgotPasswordEmail" />\n        </form>\n        <button id="submitForgotPassword" class="blue">Send reset email</button>\n        <a href="#login">Back to log in</a>\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/login/forgotPassword", n), n
-    }), define("models/passwordReset", ["jquery", "underscore", "backbone", "common/betterment.models"], function(e, t, n, r) {
+    }), define("models/passwordReset", ["jquery", "underscore", "backbone", "common/betasmartz.models"], function(e, t, n, r) {
         return r.Model.extend({
             urlRoot: "/passwordReset",
             idAttribute: "key",
@@ -47878,7 +47879,7 @@ var requirejs, require, define;
                 }
             }
         })
-    }), define("views/login/forgotPasswordView", ["common/betterment.views", "hbs!views/login/forgotPassword", "models/passwordReset"], function(e, t, n) {
+    }), define("views/login/forgotPasswordView", ["common/betasmartz.views", "hbs!views/login/forgotPassword", "models/passwordReset"], function(e, t, n) {
         return e.View.extend({
             template: t,
             id: "forgotPassword",
@@ -47898,7 +47899,7 @@ var requirejs, require, define;
                 }, {
                     forceSave: !0,
                     success: function() {
-                        BMT.flash("Password reset email sent. Please check your inbox.")
+                        BS.flash("Password reset email sent. Please check your inbox.")
                     },
                     complete: function() {
                         t.unblock()
@@ -47906,7 +47907,7 @@ var requirejs, require, define;
                 })
             }
         })
-    }), define("views/signup/baseSectionView", ["underscore", "common/betterment.views"], function(e, t) {
+    }), define("views/signup/baseSectionView", ["underscore", "common/betasmartz.views"], function(e, t) {
         return t.View.extend({
             onInitialize: function() {
                 this.attrs = this.options.attrs, this.name = this.options.name, this.position = this.options.position, this.setupConversation(), this.listenTo(this, "signup:unlockSection", this.unlockSection), this.listenTo(this, "conversation:updated", this.checkSectionComplete), this.on("show", function() {
@@ -47924,7 +47925,7 @@ var requirejs, require, define;
                     var t = $(this),
                         n = t.attr("name"),
                         r = t.val();
-                    BMT.analytics.trackOnce("SignupSectionCompleted", e.extend({
+                    BS.analytics.trackOnce("SignupSectionCompleted", e.extend({
                         Name: n.capitalize(),
                         Location: "BigForm"
                     }, {
@@ -47935,7 +47936,7 @@ var requirejs, require, define;
             onRenderSection: function() {},
             bindUnlockBehavior: function() {
                 this.$("input").last().one("keydown", function() {
-                    BMT.vent.trigger("signup:sectionAlmostComplete", this)
+                    BS.vent.trigger("signup:sectionAlmostComplete", this)
                 }.bind(this))
             },
             showErrors: function(t) {
@@ -47957,7 +47958,7 @@ var requirejs, require, define;
                 this.options.locked = !1, this.blocking && (this.$el.removeClass("signup-section-locked"), this.$(":input").removeAttr("disabled"), this.unblock())
             },
             checkSectionComplete: function() {
-                this.isValid() && BMT.vent.trigger("signup:sectionAlmostComplete", this)
+                this.isValid() && BS.vent.trigger("signup:sectionAlmostComplete", this)
             },
             validate: function() {
                 return this.conversation.validate()
@@ -48093,7 +48094,7 @@ var requirejs, require, define;
                     r = t.next("input"),
                     i = this._normalizedCode(e),
                     s = t.val();
-                i === 8 && !s && n.length ? n.focus() : s.length === parseInt(t.attr("maxlength"), 10) && r.length && r.focus(), BMT.vent.trigger("signup:dateOfBirthChanged")
+                i === 8 && !s && n.length ? n.focus() : s.length === parseInt(t.attr("maxlength"), 10) && r.length && r.focus(), BS.vent.trigger("signup:dateOfBirthChanged")
             },
             afterPopulateValues: function() {
                 this.conversation.validate({
@@ -48254,7 +48255,7 @@ var requirejs, require, define;
             HOMEMAKER: "Homemaker",
             UNEMPLOYED: "Not employed"
         }
-    }), define("views/signup/employmentView", ["jquery", "underscore", "common/betterment.models", "components/common/scripts/util/formatter", "common/slider", "views/signup/baseSectionView", "components/common/scripts/constants/employmentConstants"], function(e, t, n, r, i, s, o) {
+    }), define("views/signup/employmentView", ["jquery", "underscore", "common/betasmartz.models", "components/common/scripts/util/formatter", "common/slider", "views/signup/baseSectionView", "components/common/scripts/constants/employmentConstants"], function(e, t, n, r, i, s, o) {
         var u = [{
                 max: 74,
                 min: 0,
@@ -48356,7 +48357,7 @@ var requirejs, require, define;
             },
             bindUnlockBehavior: function() {
                 this.$(".net-worth-slider").one("slidechange", t.bind(function() {
-                    BMT.vent.trigger("signup:sectionAlmostComplete", this)
+                    BS.vent.trigger("signup:sectionAlmostComplete", this)
                 }, this))
             },
             afterPopulateValues: function() {
@@ -48368,7 +48369,7 @@ var requirejs, require, define;
             },
             employmentStatusChanged: function(t) {
                 var n = e(t.currentTarget).val();
-                this.toggleEmploymentDetails(n), this.toggleAnnualIncomePrompt(n), BMT.vent.trigger("signup:employmentStatusChanged")
+                this.toggleEmploymentDetails(n), this.toggleAnnualIncomePrompt(n), BS.vent.trigger("signup:employmentStatusChanged")
             },
             toggleEmploymentDetails: function(e) {
                 var t = this.$(".occupation, .employer");
@@ -48414,7 +48415,7 @@ var requirejs, require, define;
                     value: 0,
                     tooltip: !1,
                     start: function(e, t) {
-                        BMT.analytics.trackOnce("InputSubmitted", {
+                        BS.analytics.trackOnce("InputSubmitted", {
                             Name: s.attr("name").capitalize(),
                             Location: "BigForm/Employment",
                             Type: "Slider"
@@ -48478,13 +48479,13 @@ var requirejs, require, define;
             },
             extraFields: ["accountType", "income"],
             onInitializeSection: function() {
-                this.goalTypes = s.goalTypes(), this.listenTo(BMT.vent, "signup:dateOfBirthChanged signup:employmentStatusChanged", this.goalTypeChanged)
+                this.goalTypes = s.goalTypes(), this.listenTo(BS.vent, "signup:dateOfBirthChanged signup:employmentStatusChanged", this.goalTypeChanged)
             },
             goalTypeChanged: function() {
                 var e = this.getGoalType(),
                     t = s.getGoalTypeByName(e),
                     n = this.getAccountType();
-                this.updateInputFields(e), BMT.vent.trigger("signup:accountTypeChanged", n), t && this.conversation.validate(), this.updateAllocationRecommendation()
+                this.updateInputFields(e), BS.vent.trigger("signup:accountTypeChanged", n), t && this.conversation.validate(), this.updateAllocationRecommendation()
             },
             updateAllocationRecommendation: function() {
                 var e = this._getContextForAllocationRecommendation();
@@ -48727,7 +48728,7 @@ var requirejs, require, define;
             },
             extraFields: ["accountType"],
             onInitializeSection: function() {
-                this.listenTo(BMT.vent, "signup:accountTypeChanged", function(e) {
+                this.listenTo(BS.vent, "signup:accountTypeChanged", function(e) {
                     this.renderTOS(e)
                 }, this)
             },
@@ -48736,7 +48737,7 @@ var requirejs, require, define;
             },
             showIraTOS: function() {
                 var e = this.attrs.accountType && r.isIRA(this.attrs.accountType),
-                    t = BMT.accountGroup.has("accounts") && BMT.accounts().size() > 0 && BMT.accounts().at(0).isIRA();
+                    t = BS.accountGroup.has("accounts") && BS.accounts().size() > 0 && BS.accounts().at(0).isIRA();
                 return e || t
             },
             showSepTOS: function() {
@@ -48757,7 +48758,7 @@ var requirejs, require, define;
                     i = this;
                 if (t.val() === "true") {
                     var s = this.confirmations[n];
-                    BMT.alert({
+                    BS.alert({
                         title: s.title,
                         icon: "warning",
                         width: 490,
@@ -48772,10 +48773,10 @@ var requirejs, require, define;
                         }],
                         handler: function(e) {
                             if (n === "associatedToBrokerDealer") {
-                                if (e === "no") BMT.modal.close(this), i.model.unset("firmName"), i.$("[name=" + n + "][value=false]").prop("checked", "checked");
+                                if (e === "no") BS.modal.close(this), i.model.unset("firmName"), i.$("[name=" + n + "][value=false]").prop("checked", "checked");
                                 else if (e === "yes") {
                                     var t = this.$("[name=firm]");
-                                    t.val() ? (BMT.modal.close(this), i.model.set("firmName", this.$("input[name=firm]").val()), BMT.alert({
+                                    t.val() ? (BS.modal.close(this), i.model.set("firmName", this.$("input[name=firm]").val()), BS.alert({
                                         title: "Broker dealer association",
                                         icon: "accept",
                                         body: "Thanks! We'll send you an email with further instructions as soon as you've finished signing up.",
@@ -48785,7 +48786,7 @@ var requirejs, require, define;
                                         }]
                                     })) : this.updateFieldValidation(t, "Please provide a firm name.")
                                 }
-                            } else BMT.modal.close(this), e === "no" ? i.$("[name=" + n + "][value=false]").prop("checked", "checked") : r.length && r.slideDown()
+                            } else BS.modal.close(this), e === "no" ? i.$("[name=" + n + "][value=false]").prop("checked", "checked") : r.length && r.slideDown()
                         }
                     })
                 } else n === "associatedToBrokerDealer" ? i.model.unset("firmName") : r.length && r.slideUp()
@@ -49069,10 +49070,10 @@ var requirejs, require, define;
                 }
             },
             annualIncome: function(t, n, r) {
-                return e.isString(t) && (t = parseInt(t.trim(), 10)), t === 0 || t && t > 0 ? !1 : "Your annual gross income is required by law and also helps us give you better advice."
+                return e.isString(t) && (t = parseInt(t.trim(), 10)), t === 0 || t && t > 0 ? !1 : "Your annual gross income is required by law and also helps us give you betasmartz advice."
             },
             netWorth: function(t, n, r) {
-                return e.isString(t) && (t = parseInt(t.trim(), 10)), t && t >= 0 ? !1 : "Your net worth is required by law and also helps us give you better advice."
+                return e.isString(t) && (t = parseInt(t.trim(), 10)), t && t >= 0 ? !1 : "Your net worth is required by law and also helps us give you betasmartz advice."
             },
             goalType: {
                 required: !0
@@ -49216,21 +49217,21 @@ var requirejs, require, define;
                 bad: "Your employer information is required by law."
             },
             annualIncome: {
-                prompt: "Your annual income is your total income before taxes. The more accurate your income, the better we can tailor our advice for you.",
-                bad: "Your annual gross income is required by law and also helps us give you better advice."
+                prompt: "Your annual income is your total income before taxes. The more accurate your income, the betasmartz we can tailor our advice for you.",
+                bad: "Your annual gross income is required by law and also helps us give you betasmartz advice."
             },
             annualIncomeRetired: {
                 prompt: "This is your current annual income from all sources (Age Pension, pension, etc) in retirement. It may be different than your desired income.",
-                bad: "Your annual gross income is required by law and also helps us give you better advice."
+                bad: "Your annual gross income is required by law and also helps us give you betasmartz advice."
             },
             annualIncomeHomemaker: {
-                prompt: "Your household annual income is your total household income before taxes. The more accurate your income, the better we can tailor our advice for you.",
-                bad: "Your household annual gross income is required by law and also helps us give you better advice."
+                prompt: "Your household annual income is your total household income before taxes. The more accurate your income, the betasmartz we can tailor our advice for you.",
+                bad: "Your household annual gross income is required by law and also helps us give you betasmartz advice."
             },
             netWorth: {
                 prompt: "Estimate your net worth by taking the value of your bank account and investments, minus any loans or debts. This should not include your primary home or mortgage.",
                 good: "Got it! You can change this later in your Account Settings.",
-                bad: "Your net worth is required by law and also helps us give you better advice."
+                bad: "Your net worth is required by law and also helps us give you betasmartz advice."
             }
         }, n.Model.extend(o)
     }), define("components/common/scripts/services/cookieService", ["jquery", "underscore", "components/common/scripts/models/appData", "jqueryCookie"], function(e, t, n) {
@@ -49330,7 +49331,7 @@ var requirejs, require, define;
 
         function c(e) {
             function t() {
-                BMT.alert(r.getErrorContentForCode("UNKNOWN")), BMT.logError("New Big Form signup error: \nerror code: " + e.status + " something bad happened")
+                BS.alert(r.getErrorContentForCode("UNKNOWN")), BS.logError("New Big Form signup error: \nerror code: " + e.status + " something bad happened")
             }
             if (!e || !e.status || e.status === 500) return t(), {};
             var n;
@@ -49339,7 +49340,7 @@ var requirejs, require, define;
             } catch (i) {
                 return t(), {}
             }
-            return n.errorMessages ? n.errorMessages : n.errorCode ? (BMT.alert(r.getErrorContentForCode(n.errorCode)), {}) : (t(), {})
+            return n.errorMessages ? n.errorMessages : n.errorCode ? (BS.alert(r.getErrorContentForCode(n.errorCode)), {}) : (t(), {})
         }
         var u;
         return {
@@ -49360,9 +49361,9 @@ var requirejs, require, define;
                 return r ? (e.reject(r), e.promise()) : (n.save({}, {
                     skipErrorAlert: !0
                 }).then(function() {
-                    BMT.user.fetch().then(function() {
-                        BMT.session.parse(), BMT.session.refreshTokens().then(function() {
-                            e.resolve(BMT.user)
+                    BS.user.fetch().then(function() {
+                        BS.session.parse(), BS.session.refreshTokens().then(function() {
+                            e.resolve(BS.user)
                         })
                     })
                 }).fail(function(t) {
@@ -49371,7 +49372,7 @@ var requirejs, require, define;
                 }), e.promise())
             }
         }
-    }), define("views/signup/signupView", ["underscore", "common/betterment.views", "common/errorHandler", "views/signup/basicContactView", "views/signup/identityVerificationView", "views/signup/securityView", "views/signup/employmentView", "views/signup/goalView", "views/signup/regulatoryView", "views/signup/identityCorrectionView", "components/common/scripts/modules/async", "models/user", "models/visitor", "models/session", "components/common/scripts/services/domainService", "projector", "models/v1/advisor", "components/common/scripts/services/signupService", "services/firmFetcher"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
+    }), define("views/signup/signupView", ["underscore", "common/betasmartz.views", "common/errorHandler", "views/signup/basicContactView", "views/signup/identityVerificationView", "views/signup/securityView", "views/signup/employmentView", "views/signup/goalView", "views/signup/regulatoryView", "views/signup/identityCorrectionView", "components/common/scripts/modules/async", "models/user", "models/visitor", "models/session", "components/common/scripts/services/domainService", "projector", "models/v1/advisor", "components/common/scripts/services/signupService", "services/firmFetcher"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y) {
         var b = {
             Location: "Signup",
             Module: "BigForm"
@@ -49411,7 +49412,7 @@ var requirejs, require, define;
                 }
             },
             onInitialize: function() {
-                this.sections = [], this.sectionsByName = {}, this.model = g.getModel(), this.advisor = this.options.advisor, this.listenTo(BMT.vent, "signup:sectionAlmostComplete", this.unlockNext), this.sectionCount = 0
+                this.sections = [], this.sectionsByName = {}, this.model = g.getModel(), this.advisor = this.options.advisor, this.listenTo(BS.vent, "signup:sectionAlmostComplete", this.unlockNext), this.sectionCount = 0
             },
             onShow: function() {
                 this.renderSections(), window.dataLayer.push({
@@ -49419,7 +49420,7 @@ var requirejs, require, define;
                 })
             },
             renderSections: function() {
-                this.basicContactRegion.show(this._addSection("basicContact", r, !1, !0)), this.identityVerificationRegion.show(this._addSection("identity", i)), this.securityRegion.show(this._addSection("security", s)), this.employmentRegion.show(this._addSection("employment", o)), this.model.hasGoalInfo() || this.goalRegion.show(this._addSection("goal", u)), this.regulatoryRegion.show(this._addSection("regulatory", a)), this.model.hasData() && (this.$("#welcomeBackPanel").show(), this.model.hasUserInfo() && this.$("#signupWelcomeHeader").text("Welcome, " + this.model.get("firstName")), this._focusFirstSection()), this.isAdvisedSignup() && (BMT.toggleAdvisedBranding(y.get()), this.$(".advisor-phone").mask("9-999-999-9999"), this.$(".how-heard-selector").val("Other"), this.model.set("advisorToken", this.advisor.get("token")), this.model.set("clientAgreementToken", this.advisor.get("firmClientAgreementToken"))), BMT.analytics.track("PageVisited", b), BMT.vent.trigger("snapEngage:enable"), BMT.vent.trigger("crazyEgg:enable")
+                this.basicContactRegion.show(this._addSection("basicContact", r, !1, !0)), this.identityVerificationRegion.show(this._addSection("identity", i)), this.securityRegion.show(this._addSection("security", s)), this.employmentRegion.show(this._addSection("employment", o)), this.model.hasGoalInfo() || this.goalRegion.show(this._addSection("goal", u)), this.regulatoryRegion.show(this._addSection("regulatory", a)), this.model.hasData() && (this.$("#welcomeBackPanel").show(), this.model.hasUserInfo() && this.$("#signupWelcomeHeader").text("Welcome, " + this.model.get("firstName")), this._focusFirstSection()), this.isAdvisedSignup() && (BS.toggleAdvisedBranding(y.get()), this.$(".advisor-phone").mask("9-999-999-9999"), this.$(".how-heard-selector").val("Other"), this.model.set("advisorToken", this.advisor.get("token")), this.model.set("clientAgreementToken", this.advisor.get("firmClientAgreementToken"))), BS.analytics.track("PageVisited", b), BS.vent.trigger("snapEngage:enable"), BS.vent.trigger("crazyEgg:enable")
             },
             onDestroy: function() {
                 g.reset()
@@ -49434,7 +49435,7 @@ var requirejs, require, define;
                     this.model.set(t), e.isUndefined(this.model.get("skipIdentityCheckFeedback")) ? this.model.set("skipIdentityCheckFeedback", !1) : this.model.set("skipIdentityCheckFeedback", !0), g.signup().then(function(e) {
                         window.dataLayer && window.dataLayer.push({
                             event: "signupComplete"
-                        }), BMT.user = e, BMT.vent.trigger("login")
+                        }), BS.user = e, BS.vent.trigger("login")
                     }).fail(function(e) {
                         this.unblockForSave();
                         if (e.identityCheck) {
@@ -49491,7 +49492,7 @@ var requirejs, require, define;
                 this.blocking && (this.blockedEl.children(".spinner-bg, .svg-circle-spinner").remove(), this.blockedEl.css("position", "auto"), this._delegateDOMEvents(), this.blocking = !1, delete this.blockedEl)
             },
             goToLogin: function(e) {
-                e && e.preventDefault(), BMT.goToLogin()
+                e && e.preventDefault(), BS.goToLogin()
             },
             _focusFirstSection: function() {
                 var e = this;
@@ -49574,7 +49575,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="notification-popover info-tip clearfix">\n    <p>\n        <span class="callout-text">Congrats!</span> Your new trust account has been created. Use this menu to switch between your accounts.\n    </p>\n    <p>\n        <button class="close-popover">Ok, got it</button>\n    </p>\n</div>\n'
         });
         return t.registerPartial("views/common/trustAdded", n), n
-    }), define("views/common/popoverView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/accountGroupSwitcher", "hbs!views/common/jointAccountAdded", "hbs!views/common/trustAdded"], function(e, t, n, r, i, s) {
+    }), define("views/common/popoverView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/accountGroupSwitcher", "hbs!views/common/jointAccountAdded", "hbs!views/common/trustAdded"], function(e, t, n, r, i, s) {
         var o = {
             accountGroupSwitcher: r,
             jointAccountAdded: i,
@@ -49599,10 +49600,10 @@ var requirejs, require, define;
                 });
                 this.listenTo(t, "closePopover", function() {
                     s()
-                }), BMT.popoverRegion.show(t), u(e)
+                }), BS.popoverRegion.show(t), u(e)
             },
             s = function() {
-                BMT.popoverRegion.empty()
+                BS.popoverRegion.empty()
             },
             o = function(e) {
                 return r[e] === !0
@@ -49685,7 +49686,7 @@ var requirejs, require, define;
         }, t.Validation.mixin);
         var f = n.Model.extend(i, a);
         return f
-    }), define("views/trust/trustSignupView", ["jquery", "underscore", "backbone", "common/betterment.views", "components/account/scripts/services/goalTypeService", "components/common/scripts/constants/addressConstants", "components/common/scripts/services/dateService", "services/popoverService", "models/accountGroup", "models/v1/trustSignup", "components/common/scripts/analytics/analytics", "views/common/termsOfServiceView"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
+    }), define("views/trust/trustSignupView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "components/account/scripts/services/goalTypeService", "components/common/scripts/constants/addressConstants", "components/common/scripts/services/dateService", "services/popoverService", "models/accountGroup", "models/v1/trustSignup", "components/common/scripts/analytics/analytics", "views/common/termsOfServiceView"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
         return r.View.extend({
             id: "trust-signup",
             template: "trust/trustSignup",
@@ -49734,11 +49735,11 @@ var requirejs, require, define;
                     t = e.conversation.serialize();
                 e.conversation.validate().done(function() {
                     e._blockForSave(), e.model.save(t).done(function() {
-                        BMT.user.fetch().done(function() {
-                            var t = BMT.user.get("accountGroups").where({
+                        BS.user.fetch().done(function() {
+                            var t = BS.user.get("accountGroups").where({
                                 id: e.model.get("accountGroupId")
                             })[0];
-                            BMT.setAccountGroup(t), l.track("TrustAdded", {
+                            BS.setAccountGroup(t), l.track("TrustAdded", {
                                 Module: "TrustSignup"
                             }), u.show("trustAdded")
                         })
@@ -49784,7 +49785,7 @@ var requirejs, require, define;
             showServerSideErrors: function(e) {
                 var n = this,
                     r;
-                BMT.logError("Trust Signup failed." + e);
+                BS.logError("Trust Signup failed." + e);
                 try {
                     r = JSON.parse(e.responseText), r = r.errorMessages
                 } catch (i) {
@@ -49862,14 +49863,14 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.sourceProviderName, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + ' IRA Account Number</label>\n                    <span class="input-area">\n                        <input class="white" type="text" name="sourceAccountNumber" placeholder="Ex. 109238123" autofocus="autofocus"/>\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n                <div class="input-line" data-field="fullRollover">\n\n                    <label class="transfer-type-label">Select type of transfer</label>\n\n                    <div class="no-label transfer-type">\n                        <span class="input-area radio-option">\n                            <input class="white full-rollover" type="radio" name="fullRollover" value="true" checked />\n                            Transfer Full Balance\n                        </span>\n                        <span class="input-area radio-option">\n                            <input class="white partial-rollover" type="radio" name="fullRollover" value="false" />\n                            Transfer Partial Balance\n                        </span>\n                    </div>\n\n                    <label class="amount-label"></label>\n\n                    <span class="input-area">\n                        <span class="almighty-dollar">$</span>\n                        <input class="money" money-input="int" type="text" name="amount" placeholder="Dollar amount" />\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n            </section>\n        </article>\n\n        <hr />\n\n        <div class="legal-text">\n            By proceeding with form submission, you:\n            <ul>\n                <li>\n                    Direct BetaSmartz and the delivering firm to act on all instructions given on this form, including transferring assets to Betterment.\n                </li>\n                <li>\n                    Accept that any assets not readily transferable might not be transferred within the time frames set by FINRA or other applicable authorities.\n                </li>\n                <li>\n                    Accept that BetaSmartz is not responsible for changes in the value of assets that may occur during the transfer process.\n                </li>\n                <li>\n                    Affirm that you are aware of any tax or financial implications that may arise in connection with this transfer or with the sale or liquidation of any assets prior to transfer, including penalties, fees, financial losses, or losses of product features or benefits.\n                </li>\n            </ul>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="complete-form" disabled="disabled">', (u = n.proceedButtonText) ? o = u.call(t, {
+            }) : u), s += f(o) + ' IRA Account Number</label>\n                    <span class="input-area">\n                        <input class="white" type="text" name="sourceAccountNumber" placeholder="Ex. 109238123" autofocus="autofocus"/>\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n                <div class="input-line" data-field="fullRollover">\n\n                    <label class="transfer-type-label">Select type of transfer</label>\n\n                    <div class="no-label transfer-type">\n                        <span class="input-area radio-option">\n                            <input class="white full-rollover" type="radio" name="fullRollover" value="true" checked />\n                            Transfer Full Balance\n                        </span>\n                        <span class="input-area radio-option">\n                            <input class="white partial-rollover" type="radio" name="fullRollover" value="false" />\n                            Transfer Partial Balance\n                        </span>\n                    </div>\n\n                    <label class="amount-label"></label>\n\n                    <span class="input-area">\n                        <span class="almighty-dollar">$</span>\n                        <input class="money" money-input="int" type="text" name="amount" placeholder="Dollar amount" />\n                        <div class="conversation-text"></div>\n                    </span>\n                </div>\n\n            </section>\n        </article>\n\n        <hr />\n\n        <div class="legal-text">\n            By proceeding with form submission, you:\n            <ul>\n                <li>\n                    Direct BetaSmartz and the delivering firm to act on all instructions given on this form, including transferring assets to Betasmartz.\n                </li>\n                <li>\n                    Accept that any assets not readily transferable might not be transferred within the time frames set by FINRA or other applicable authorities.\n                </li>\n                <li>\n                    Accept that BetaSmartz is not responsible for changes in the value of assets that may occur during the transfer process.\n                </li>\n                <li>\n                    Affirm that you are aware of any tax or financial implications that may arise in connection with this transfer or with the sale or liquidation of any assets prior to transfer, including penalties, fees, financial losses, or losses of product features or benefits.\n                </li>\n            </ul>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="complete-form" disabled="disabled">', (u = n.proceedButtonText) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.proceedButtonText, o = typeof u === a ? u.call(t, {
                 hash: {}
             }) : u), s += f(o) + "</button>\n        </div>\n    </div>\n</form>\n", s
         });
         return t.registerPartial("views/rollover/rolloverForm", n), n
-    }), define("views/rollover/rolloverFormView", ["common/betterment.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/rollover/rolloverForm"], function(e, t, n) {
+    }), define("views/rollover/rolloverFormView", ["common/betasmartz.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/rollover/rolloverForm"], function(e, t, n) {
         return e.View.extend({
             className: "rollover-form",
             template: n,
@@ -49920,16 +49921,16 @@ var requirejs, require, define;
                 var t = this.conversation.serialize();
                 t.amount = t.amount.replace(/,/g, ""), this.conversation.validate().done(function() {
                     this.model.set(t), this.trigger("completeForm")
-                }.bind(this)), BMT.analytics.track("ElementClicked", {
+                }.bind(this)), BS.analytics.track("ElementClicked", {
                     Location: "RolloverNarrative/DirectTransferForm",
                     Name: this.isSignable() ? "ProceedToSignature" : "CreateTransferRequest",
                     Type: "Button"
                 })
             },
             onCancel: function(e) {
-                e && e.preventDefault(), BMT.scrollToTop({
+                e && e.preventDefault(), BS.scrollToTop({
                     duration: 0
-                }), BMT.router.navigate("summary", !0)
+                }), BS.router.navigate("summary", !0)
             },
             isSignable: function() {
                 return this.options.sourceProviderOptions.signable
@@ -49944,21 +49945,21 @@ var requirejs, require, define;
                 }.bind(this))
             },
             sourceAccountNumberChange: function() {
-                BMT.analytics.track("InputSubmitted", {
+                BS.analytics.track("InputSubmitted", {
                     Name: "PreviousAccountNumber",
                     Type: "Field",
                     Location: "RolloverNarrative/DirectTransferForm"
                 })
             },
             fullRolloverClick: function() {
-                BMT.analytics.track("InputSubmitted", {
+                BS.analytics.track("InputSubmitted", {
                     Name: "PartialRollover",
                     Type: "Field",
                     Location: "RolloverNarrative/DirectTransferForm"
                 })
             },
             amountChange: function() {
-                BMT.analytics.track("InputSubmitted", {
+                BS.analytics.track("InputSubmitted", {
                     Name: "RolloverAmount",
                     Type: "Field",
                     Location: "RolloverNarrative/DirectTransferForm"
@@ -50008,24 +50009,24 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.amount, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + ' </td>\n                </tr>\n            </tbody>\n        </table>\n        <hr>\n        <h3>Authorization &amp; Signature</h3>\n        <p>Please accept this letter as authorization to liquidate and transfer the assets in the account(s) specified above to Betterment, C/O Sunwest Trust, as a custodian for my IRA.</p>\n        <h3 style="display: inline-block">Amount to be transferred:</h3> ', (u = n.amount) ? o = u.call(t, {
+            }) : u), s += f(o) + ' </td>\n                </tr>\n            </tbody>\n        </table>\n        <hr>\n        <h3>Authorization &amp; Signature</h3>\n        <p>Please accept this letter as authorization to liquidate and transfer the assets in the account(s) specified above to Betasmartz, C/O Sunwest Trust, as a custodian for my IRA.</p>\n        <h3 style="display: inline-block">Amount to be transferred:</h3> ', (u = n.amount) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.amount, o = typeof u === a ? u.call(t, {
                 hash: {}
-            }) : u), s += f(o) + '\n\n        <div class="explanation-copy">\n        Sign the transfer request below using your mouse\n        </div>\n\n        <div class="signature-pad unsigned">\n            <div class="wizard-buttons">\n                <button class="cancel clear-signature">Clear</button>\n            </div>\n        </div>\n\n        <div class="legal-text">\n            <p>\n                I understand that attaching my e-signature is the legal equivalent of submitting a document signed by hand, and that clicking the “Sign &amp; Submit” button manifests my desire and intent to transfer my IRA to Betterment.\n            </p>\n            <p>\n                BetaSmartz uses a third-party service to send faxes on your behalf. Per its policies, this third-party service keeps your faxed information confidential; you may review its privacy policies <a href="http://www.interfax.net/en/privacy" target="_blank">here</a>. By submitting this form you acknowledge and accept the use of this third-party service.\n            </p>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="ok submit-signature">Sign &amp; Submit To ', (u = n.sourceProviderName) ? o = u.call(t, {
+            }) : u), s += f(o) + '\n\n        <div class="explanation-copy">\n        Sign the transfer request below using your mouse\n        </div>\n\n        <div class="signature-pad unsigned">\n            <div class="wizard-buttons">\n                <button class="cancel clear-signature">Clear</button>\n            </div>\n        </div>\n\n        <div class="legal-text">\n            <p>\n                I understand that attaching my e-signature is the legal equivalent of submitting a document signed by hand, and that clicking the “Sign &amp; Submit” button manifests my desire and intent to transfer my IRA to Betasmartz.\n            </p>\n            <p>\n                BetaSmartz uses a third-party service to send faxes on your behalf. Per its policies, this third-party service keeps your faxed information confidential; you may review its privacy policies <a href="http://www.interfax.net/en/privacy" target="_blank">here</a>. By submitting this form you acknowledge and accept the use of this third-party service.\n            </p>\n        </div>\n\n        <div class="wizard-buttons" style="clear:both;">\n            <button class="ok submit-signature">Sign &amp; Submit To ', (u = n.sourceProviderName) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.sourceProviderName, o = typeof u === a ? u.call(t, {
                 hash: {}
             }) : u), s += f(o) + '</button>\n            <button class="cancel cancel-signature">Cancel</button>\n        </div>\n    </div>\n', s
         });
         return t.registerPartial("views/rollover/rolloverSignature", n), n
-    }), define("views/rollover/rolloverSignatureView", ["underscore", "common/betterment.views", "hbs!views/rollover/rolloverSignature", "components/common/scripts/models/appData", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i) {
+    }), define("views/rollover/rolloverSignatureView", ["underscore", "common/betasmartz.views", "hbs!views/rollover/rolloverSignature", "components/common/scripts/models/appData", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i) {
         return t.View.extend({
             className: "rollover-preview",
             template: n,
             templateHelpers: {
                 dateOfBirth: function() {
-                    return this.self.formatter.formatDate("MM d, yy", BMT.user.dateOfBirth())
+                    return this.self.formatter.formatDate("MM d, yy", BS.user.dateOfBirth())
                 },
                 sourceProviderName: function() {
                     var e = this.self.model.get("sourceProvider");
@@ -50054,7 +50055,7 @@ var requirejs, require, define;
                     return this.self.model.get("fullRollover") === "true" ? "Full Amount" : this.money(this.self.model.num("amount"))
                 },
                 fullName: function() {
-                    return BMT.user.fullName()
+                    return BS.user.fullName()
                 }
             },
             events: {
@@ -50075,26 +50076,26 @@ var requirejs, require, define;
                 this.$signaturePad.jSignature("clear"), this.setSignatureBackground()
             },
             cancelSignature: function(e) {
-                e && e.preventDefault(), BMT.scrollToTop({
+                e && e.preventDefault(), BS.scrollToTop({
                     duration: 0
-                }), BMT.router.navigate("summary", !0)
+                }), BS.router.navigate("summary", !0)
             },
             isValidSignature: function() {
                 return this.$signaturePad.jSignature("getData", "native").length > 0
             },
             submitSignature: function() {
-                this.isValidSignature() ? this.confirmTransfer() : BMT.alert({
+                this.isValidSignature() ? this.confirmTransfer() : BS.alert({
                     icon: "warning",
                     title: "Signature Required",
                     body: "<p>Please sign the form in order to process your SMSF transfer.</p>"
-                }), BMT.analytics.track("ElementClicked", {
+                }), BS.analytics.track("ElementClicked", {
                     Name: "SignAndSubmit",
                     Type: "Button",
                     Location: "RolloverNarrative/DirectTransferForm"
                 })
             },
             confirmTransfer: function() {
-                BMT.alert({
+                BS.alert({
                     title: "Please Confirm Transfer",
                     body: "Are you sure you want to initiate a direct transfer out of your " + this.model.get("sourceProvider") + " IRA? This will immediately send the request to your provider.",
                     bodyAttrs: {
@@ -50117,16 +50118,16 @@ var requirejs, require, define;
             },
             saveRequestAndNavigate: function() {
                 this.block(this.$el), this.model.set("signatureImage", this.$signaturePad.jSignature("getData")), this.model.save().done(function() {
-                    this.unblock(), BMT.selectedAccount = this.model.get("account");
+                    this.unblock(), BS.selectedAccount = this.model.get("account");
                     var e = this.options.nextFlow ? this.options.nextFlow : "summary";
-                    BMT.analytics.track("InfoRequested", {
+                    BS.analytics.track("InfoRequested", {
                         Location: "RolloverNarrative",
                         Subject: "Rollover",
                         RolloverProcess: "Automatic",
                         SourceType: this.model.get("sourceType"),
                         PreviousProvider: this.model.get("sourceProvider"),
                         ApproximateValue: this.model.num("amount")
-                    }), BMT.navigateWithFlash(e, "Direct transfer initiated. Check your email for more details."), BMT.scrollToTop({
+                    }), BS.navigateWithFlash(e, "Direct transfer initiated. Check your email for more details."), BS.scrollToTop({
                         duration: 0
                     })
                 }.bind(this)).fail(function() {
@@ -50167,7 +50168,7 @@ var requirejs, require, define;
             return s += '\n                </li>\n            </ul>\n\n            <div class="buttons">\n                <button class="print-request">Print my transfer request</button>\n                <a class="download-request"><span class="download-blue-icon"></span> Download as a PDF</a>\n            </div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/rollover/rolloverPreview", n), n
-    }), define("views/rollover/rolloverPreviewView", ["jquery", "common/betterment.views", "hbs!views/rollover/rolloverPreview", "models/v1/rolloverDocument"], function(e, t, n, r) {
+    }), define("views/rollover/rolloverPreviewView", ["jquery", "common/betasmartz.views", "hbs!views/rollover/rolloverPreview", "models/v1/rolloverDocument"], function(e, t, n, r) {
         var i = {
             template: n,
             templateHelpers: {
@@ -50185,7 +50186,7 @@ var requirejs, require, define;
                 "click .download-request": "downloadRequest"
             },
             onInitialize: function() {
-                BMT.analytics.track("InfoRequested", {
+                BS.analytics.track("InfoRequested", {
                     Location: "RolloverNarrative",
                     Subject: "Rollover",
                     RolloverProcess: "UserPrint",
@@ -50197,18 +50198,18 @@ var requirejs, require, define;
             beforeRender: function() {
                 var t = new e.Deferred;
                 return this.model.save().always(function() {
-                    BMT.refreshAccounts(t.resolve, t.resolve)
+                    BS.refreshAccounts(t.resolve, t.resolve)
                 }.bind(this)), t.promise()
             },
             goToAccount: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "RolloverNarrative/RequestPreview",
                     Name: "GoToAccount",
                     Type: "Button"
-                }), BMT.selectedAccount = this.model.get("account"), BMT.router.navigate("advice", !0)
+                }), BS.selectedAccount = this.model.get("account"), BS.router.navigate("advice", !0)
             },
             printRequest: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "RolloverNarrative/RequestPreview",
                     Name: "PrintRequest",
                     Type: "Button"
@@ -50217,7 +50218,7 @@ var requirejs, require, define;
                 e.print()
             },
             downloadRequest: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Location: "RolloverNarrative/RequestPreview",
                     Name: "DownloadRequest",
                     Type: "Button"
@@ -50230,7 +50231,7 @@ var requirejs, require, define;
             }
         };
         return t.View.extend(i)
-    }), define("views/rollover/rolloverRequestView", ["underscore", "common/betterment.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/rollover/rolloverRequest", "models/v1/rolloverRequest", "views/rollover/rolloverFormView", "views/rollover/rolloverSignatureView", "views/rollover/rolloverPreviewView", "components/common/scripts/models/appData"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/rollover/rolloverRequestView", ["underscore", "common/betasmartz.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/rollover/rolloverRequest", "models/v1/rolloverRequest", "views/rollover/rolloverFormView", "views/rollover/rolloverSignatureView", "views/rollover/rolloverPreviewView", "components/common/scripts/models/appData"], function(e, t, n, r, i, s, o, u, a) {
         return t.View.extend({
             className: "rollover-request",
             template: r,
@@ -50239,7 +50240,7 @@ var requirejs, require, define;
             },
             onShow: function() {
                 if (e.isUndefined(this.options.rollover)) {
-                    BMT.router.navigate("summary", {
+                    BS.router.navigate("summary", {
                         trigger: !0
                     });
                     return
@@ -50318,7 +50319,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '" />\n    </form>\n</div>\n', s
         });
         return t.registerPartial("views/jointAccountSignup/acceptInviteLogin", n), n
-    }), define("views/jointAccountSignup/acceptInviteLoginView", ["backbone", "common/betterment.views", "hbs!views/jointAccountSignup/acceptInviteLogin", "components/common/scripts/services/domainService", "views/common/termsOfServiceView"], function(e, t, n, r, i) {
+    }), define("views/jointAccountSignup/acceptInviteLoginView", ["backbone", "common/betasmartz.views", "hbs!views/jointAccountSignup/acceptInviteLogin", "components/common/scripts/services/domainService", "views/common/termsOfServiceView"], function(e, t, n, r, i) {
         return t.View.extend({
             events: {
                 "click button": "next"
@@ -50347,7 +50348,7 @@ var requirejs, require, define;
                 })), this.$acceptsUserAgreement = this.$("input[name=userAgreement]"), this.applyValidation()
             },
             submitAcceptance: function(e) {
-                if (!e.userAgreement) return BMT.alert({
+                if (!e.userAgreement) return BS.alert({
                     title: "Customer Agreement",
                     body: "Please accept the customer agreement to continue and confirm the creation of your joint account.",
                     icon: "warning"
@@ -50362,7 +50363,7 @@ var requirejs, require, define;
             next: function(t) {
                 t.preventDefault();
                 var n = e.Syphon.serialize(this);
-                this.options.invite.get("requireLogin") ? this.model.validate(n) || (BMT.session = this.model, this.block(), this.model.save(n, {
+                this.options.invite.get("requireLogin") ? this.model.validate(n) || (BS.session = this.model, this.block(), this.model.save(n, {
                     silent: !0
                 }).always(this.unblock).then(function() {
                     this.submitAcceptance(n)
@@ -50374,21 +50375,21 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="confirmation-form">\n    <h1>You have successfully opened a joint account</h1>\n    <form class="login-form">\n        <button class="full-width full-login">Continue to your account</button>\n    </form>\n</div>\n'
         });
         return t.registerPartial("views/jointAccountSignup/acceptInviteConfirm", n), n
-    }), define("views/jointAccountSignup/acceptInviteConfirmView", ["common/betterment.views", "hbs!views/jointAccountSignup/acceptInviteConfirm", "services/popoverService"], function(e, t, n) {
+    }), define("views/jointAccountSignup/acceptInviteConfirmView", ["common/betasmartz.views", "hbs!views/jointAccountSignup/acceptInviteConfirm", "services/popoverService"], function(e, t, n) {
         return e.View.extend({
             events: {
                 "click button": "next"
             },
             template: t,
             next: function() {
-                this.block(), BMT.user.fetch({
+                this.block(), BS.user.fetch({
                     success: function() {
-                        BMT.vent.trigger("login"), n.show("jointAccountAdded")
+                        BS.vent.trigger("login"), n.show("jointAccountAdded")
                     }
                 })
             }
         })
-    }), define("views/jointAccountSignup/acceptInviteController", ["common/betterment.views", "hbs!views/jointAccountSignup/acceptInvite", "models/v1/jointAccountInvite", "views/jointAccountSignup/acceptInviteLoginView", "views/jointAccountSignup/acceptInviteConfirmView", "models/session"], function(e, t, n, r, i, s) {
+    }), define("views/jointAccountSignup/acceptInviteController", ["common/betasmartz.views", "hbs!views/jointAccountSignup/acceptInvite", "models/v1/jointAccountInvite", "views/jointAccountSignup/acceptInviteLoginView", "views/jointAccountSignup/acceptInviteConfirmView", "models/session"], function(e, t, n, r, i, s) {
         return e.View.extend({
             className: "joint-account-acceptance",
             template: t,
@@ -50409,11 +50410,11 @@ var requirejs, require, define;
                 }).done(function() {
                     this.showLoginView()
                 }.bind(this)).fail(function() {
-                    BMT.showLoading(), BMT.goToLogin()
+                    BS.showLoading(), BS.goToLogin()
                 }.bind(this))
             },
             showLoginView: function() {
-                BMT.subnav.currentView.emptyContent(), BMT.emptyBanners();
+                BS.subnav.currentView.emptyContent(), BS.emptyBanners();
                 var e = new r({
                     model: new s,
                     invite: this.model
@@ -50434,7 +50435,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="goal-selector-region"></div>\n'
         });
         return t.registerPartial("views/retirementPlanning/sharedHeader", n), n
-    }), define("views/retirementPlanning/sharedHeaderView", ["common/betterment.views", "hbs!views/retirementPlanning/sharedHeader", "views/common/dropdown/planGoalSelectorView"], function(e, t, n) {
+    }), define("views/retirementPlanning/sharedHeaderView", ["common/betasmartz.views", "hbs!views/retirementPlanning/sharedHeader", "views/common/dropdown/planGoalSelectorView"], function(e, t, n) {
         return e.View.extend({
             className: "retirement-plan-header",
             template: t,
@@ -50442,13 +50443,13 @@ var requirejs, require, define;
                 goalSelectorRegion: ".goal-selector-region"
             },
             onRender: function() {
-                var e = BMT.user.get("financialPlans").selected(),
+                var e = BS.user.get("financialPlans").selected(),
                     t = e.is("complete") ? e.id : "setup",
                     r = n.create({
                         selectedPlan: "plan-" + t
                     });
                 this.listenTo(r, "accountChanged", function() {
-                    BMT.router.navigate("advice", !0)
+                    BS.router.navigate("advice", !0)
                 }), this.goalSelectorRegion.show(r)
             }
         })
@@ -50534,7 +50535,7 @@ var requirejs, require, define;
             return s += "\n        </div>\n    </div>\n</div>\n", s
         });
         return t.registerPartial("views/retirementPlanning/splashBubble", n), n
-    }), define("views/retirementPlanning/splashBubbleView", ["common/betterment.views", "hbs!views/retirementPlanning/splashBubble", "services/retirementPlanService"], function(e, t, n) {
+    }), define("views/retirementPlanning/splashBubbleView", ["common/betasmartz.views", "hbs!views/retirementPlanning/splashBubble", "services/retirementPlanService"], function(e, t, n) {
         return e.View.extend({
             template: t,
             ui: {
@@ -50552,7 +50553,7 @@ var requirejs, require, define;
                     return e.monthlySocialSecurityTodaysDollars * 12
                 },
                 currentBalance: function() {
-                    return n.getTotalBettermentAccountBalance(this.retirementPlan().get("financialPlan"))
+                    return n.getTotalBetasmartzAccountBalance(this.retirementPlan().get("financialPlan"))
                 },
                 annualSavings: function() {
                     return this.retirementPlan().getRecommendedYearlySavings()
@@ -50568,7 +50569,7 @@ var requirejs, require, define;
                 }
             }
         })
-    }), define("views/retirementPlanning/splashView", ["jquery", "underscore", "projector", "common/betterment.views", "hbs!views/retirementPlanning/splash", "components/common/scripts/analytics/analytics", "components/common/scripts/modules/async", "components/common/scripts/services/projectorService", "services/accountService", "components/automaticTransaction/scripts/services/automaticTransactionService", "models/user", "models/v2/zipCode", "models/v2/retirementPlan", "models/v2/financialPlan", "models/v2/financialProfile", "views/retirementPlanning/sharedHeaderView", "views/retirementPlanning/splashBubbleView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
+    }), define("views/retirementPlanning/splashView", ["jquery", "underscore", "projector", "common/betasmartz.views", "hbs!views/retirementPlanning/splash", "components/common/scripts/analytics/analytics", "components/common/scripts/modules/async", "components/common/scripts/services/projectorService", "services/accountService", "components/automaticTransaction/scripts/services/automaticTransactionService", "models/user", "models/v2/zipCode", "models/v2/retirementPlan", "models/v2/financialPlan", "models/v2/financialProfile", "views/retirementPlanning/sharedHeaderView", "views/retirementPlanning/splashBubbleView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m) {
         return r.View.extend({
             className: "retirement-plan-splash panel card",
             template: i,
@@ -50600,7 +50601,7 @@ var requirejs, require, define;
             },
             loadZipCode: function() {
                 return this.zipCode = new c({
-                    zip: BMT.user.get("zip")
+                    zip: BS.user.get("zip")
                 }), this.zipCode.fetch()
             },
             loadRetirementPlan: function() {
@@ -50611,14 +50612,14 @@ var requirejs, require, define;
             },
             getMockFinancialProfile: function() {
                 if (!this._mockFinancialProfile) {
-                    var e = BMT.user.getFinancialProfile();
+                    var e = BS.user.getFinancialProfile();
                     this._mockFinancialProfile = new d(t.omit(e.attributes, "id", "user")), this._mockFinancialProfile.set("user", this.getMockUser()), this._mockFinancialProfile.setComplete()
                 }
                 return this._mockFinancialProfile
             },
             getMockFinancialPlan: function() {
                 if (!this._mockFinancialPlan) {
-                    var e = BMT.user.get("financialPlans").selected();
+                    var e = BS.user.get("financialPlans").selected();
                     this._mockFinancialPlan = new p(t.omit(e.attributes, "id", "user", "accounts", "externalAccounts")), this._mockFinancialPlan.set({
                         user: this.getMockUser(),
                         accounts: this.getRetirementAccounts()
@@ -50628,8 +50629,8 @@ var requirejs, require, define;
             },
             getMockUser: function() {
                 return this._mockUser || (this._mockUser = new l({
-                    zip: BMT.user.get("zip"),
-                    dateOfBirth: BMT.user.get("dateOfBirth")
+                    zip: BS.user.get("zip"),
+                    dateOfBirth: BS.user.get("dateOfBirth")
                 })), this._mockUser
             },
             getRetirementAccounts: function() {
@@ -50642,15 +50643,15 @@ var requirejs, require, define;
             },
             getPreRetirementConsumption: function() {
                 return u.getRecommendedRetirementConsumption({
-                    currentAge: BMT.user.getAge(),
-                    grossIncome: BMT.user.num("annualIncome"),
-                    state: BMT.user.get("state"),
+                    currentAge: BS.user.getAge(),
+                    grossIncome: BS.user.num("annualIncome"),
+                    state: BS.user.get("state"),
                     costOfLivingIndex: this.zipCode.has("costOfLivingIndex") ? this.zipCode.num("costOfLivingIndex") : 100,
                     inflation: 0
                 })
             },
             next: function() {
-                BMT.router.navigate("retireGuideSetup", !0, {
+                BS.router.navigate("retireGuideSetup", !0, {
                     welcomeFlow: !0
                 })
             }
@@ -50665,7 +50666,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="bubble user">\n    <div class="bubble-container">\n        <div class="background"></div>\n        <div class="content-container">\n            <div class="bubble-content"></div>\n        </div>\n        <div class="sub-container">\n            <div class="sub-content"></div>\n        </div>\n    </div>\n</div>\n<div class="bubble spouse">\n    <div class="bubble-container">\n        <div class="background"></div>\n        <div class="content-container">\n            <div class="bubble-content"></div>\n        </div>\n        <div class="sub-container">\n            <div class="sub-content"></div>\n        </div>\n    </div>\n</div>\n<div class="bubble spending">\n    <div class="bubble-container">\n        <div class="background"></div>\n        <div class="content-container">\n            <div class="bubble-content"></div>\n        </div>\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/retirementPlanning/bubbles", n), n
-    }), define("views/retirementPlanning/bubblesView", ["common/betterment.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/retirementPlanning/bubbles"], function(e, t, n) {
+    }), define("views/retirementPlanning/bubblesView", ["common/betasmartz.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/retirementPlanning/bubbles"], function(e, t, n) {
         var r = 30,
             i = 280;
         return e.View.extend({
@@ -50767,7 +50768,7 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/retirementPlanning/personalDetailsBubble", n), n
-    }), define("views/retirementPlanning/personalDetailsView", ["jqueryMask","common/betterment.views", "hbs!views/retirementPlanning/personalDetails", "hbs!views/retirementPlanning/personalDetailsBubble"], function(jm, e, t, n) {
+    }), define("views/retirementPlanning/personalDetailsView", ["jqueryMask","common/betasmartz.views", "hbs!views/retirementPlanning/personalDetails", "hbs!views/retirementPlanning/personalDetailsBubble"], function(jm, e, t, n) {
         return e.View.extend({
             template: t,
             className: "personal-details-step",
@@ -50798,7 +50799,7 @@ var requirejs, require, define;
                 },
                 disclaimerLink: {
                     text: "Your information is safe and never shared >",
-                    supportUrl: "customer/portal/articles/1920463-how-will-the-information-i-enter-into-betterment-for-advice-be-used-"
+                    supportUrl: "customer/portal/articles/1920463-how-will-the-information-i-enter-into-betasmartz-for-advice-be-used-"
                 }
             },
             onInitialize: function() {
@@ -50807,7 +50808,7 @@ var requirejs, require, define;
             onRender: function() {
                 this.ui.spouseAgeInput.mask("99/99/9999");
                 this.ui.spouseElements.toggle(this.profile.isMarried()), this.profile.isMarried() ? this.selectMarried() : this.selectSingle(), this.options.bubbles.content("user", n({
-                    name: BMT.user.get("firstName"),
+                    name: BS.user.get("firstName"),
                     age: this.profile.getAge()
                 })), this.options.bubbles.toggle("user", !0)
             },
@@ -50914,7 +50915,7 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/retirementPlanning/annualIncomeBubble", n), n
-    }), define("views/retirementPlanning/annualIncomeView", ["common/betterment.views", "hbs!views/retirementPlanning/annualIncome", "hbs!views/retirementPlanning/annualIncomeBubble"], function(e, t, n) {
+    }), define("views/retirementPlanning/annualIncomeView", ["common/betasmartz.views", "hbs!views/retirementPlanning/annualIncome", "hbs!views/retirementPlanning/annualIncomeBubble"], function(e, t, n) {
         return e.View.extend({
             template: t,
             className: "annual-income-step",
@@ -50970,7 +50971,7 @@ var requirejs, require, define;
             userBubbleContent: function() {
                 var e = this.profile.dollars("pretaxIncome") || 0;
                 return n({
-                    name: BMT.user.get("firstName"),
+                    name: BS.user.get("firstName"),
                     income: e,
                     hasIncome: e !== 0
                 })
@@ -51010,7 +51011,7 @@ var requirejs, require, define;
             if (o || o === 0) s += o;
             return s += 'saved so far?</h1>\n    <p>Enter all retirement accounts below to get the most accurate advice.</p>\n    <p class="unadvised-user-only">' + l((u = n.link || t && t.link, a = {
                 hash: {}
-            }, u ? u.call(t, t && t.disclaimerLink, a) : h.call(t, "link", t && t.disclaimerLink, a))) + '</p>\n\n    <div class="totals">\n        <div class="total-retirement-balance">\n            <div class="total-label">Total Retirement Balance</div>\n            <div class="total-value"></div>\n        </div>\n        <div class="total-annual-contribution">\n            <div class="total-label">Annual Contribution</div>\n            <div class="total-value"></div>\n        </div>\n    </div>\n\n    <div class="accounts">\n\n        <div class="betterment-accounts"></div>\n\n        <div class="external-accounts"></div>\n\n    </div>\n</div>\n\n<div class="buttons">\n    <button class="silver back">Back</button>\n    <button class="blue next">Save and Continue</button>\n</div>\n', s
+            }, u ? u.call(t, t && t.disclaimerLink, a) : h.call(t, "link", t && t.disclaimerLink, a))) + '</p>\n\n    <div class="totals">\n        <div class="total-retirement-balance">\n            <div class="total-label">Total Retirement Balance</div>\n            <div class="total-value"></div>\n        </div>\n        <div class="total-annual-contribution">\n            <div class="total-label">Annual Contribution</div>\n            <div class="total-value"></div>\n        </div>\n    </div>\n\n    <div class="accounts">\n\n        <div class="betasmartz-accounts"></div>\n\n        <div class="external-accounts"></div>\n\n    </div>\n</div>\n\n<div class="buttons">\n    <button class="silver back">Back</button>\n    <button class="blue next">Save and Continue</button>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/accounts", n), n
     }), define("hbs!views/retirementPlanning/retirementSavingsBubble", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {
@@ -51041,12 +51042,12 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/retirementPlanning/retirementSavingsBubble", n), n
-    }), define("hbs!views/retirementPlanning/bettermentAccounts", ["hbs", "hbs/handlebars"], function(e, t) {
+    }), define("hbs!views/retirementPlanning/betasmartzAccounts", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="list-header">Select your <span class="unadvised-user-only">Betterment</span> retirement accounts</div>\n<div class="list-header-row">\n    <div class="account-summary">Accounts</div>\n    <div class="current-balance">Current Balance</div>\n    <div class="annual-contribution">Annual Contribution</div>\n    <div class="percent-stocks">Percent Stocks</div>\n</div>\n<div class="accounts-list"></div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="list-header">Select your <span class="unadvised-user-only">Betasmartz</span> retirement accounts</div>\n<div class="list-header-row">\n    <div class="account-summary">Accounts</div>\n    <div class="current-balance">Current Balance</div>\n    <div class="annual-contribution">Annual Contribution</div>\n    <div class="percent-stocks">Percent Stocks</div>\n</div>\n<div class="accounts-list"></div>\n'
         });
-        return t.registerPartial("views/retirementPlanning/bettermentAccounts", n), n
-    }), define("hbs!views/retirementPlanning/bettermentAccount", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money", "components/common/scripts/templateHelpers/pct"], function(e, t) {
+        return t.registerPartial("views/retirementPlanning/betasmartzAccounts", n), n
+    }), define("hbs!views/retirementPlanning/betasmartzAccount", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money", "components/common/scripts/templateHelpers/pct"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
             function p(e, t) {
                 return "with-ag-label"
@@ -51123,8 +51124,8 @@ var requirejs, require, define;
                 hash: {}
             }, u ? u.call(t, t && t.allocation, a) : h.call(t, "pct", t && t.allocation, a))) + "</div>\n</div>\n", s
         });
-        return t.registerPartial("views/retirementPlanning/bettermentAccount", n), n
-    }), define("views/retirementPlanning/bettermentAccountView", ["common/betterment.views", "hbs!views/retirementPlanning/bettermentAccount", "components/common/scripts/util/formatter", "components/automaticTransaction/scripts/services/automaticTransactionService", "services/financialPlanUpdater"], function(e, t, n, r, i) {
+        return t.registerPartial("views/retirementPlanning/betasmartzAccount", n), n
+    }), define("views/retirementPlanning/betasmartzAccountView", ["common/betasmartz.views", "hbs!views/retirementPlanning/betasmartzAccount", "components/common/scripts/util/formatter", "components/automaticTransaction/scripts/services/automaticTransactionService", "services/financialPlanUpdater"], function(e, t, n, r, i) {
         return e.View.extend({
             template: t,
             ui: {
@@ -51175,10 +51176,10 @@ var requirejs, require, define;
                     return this.self.model.getCurrentBalanceWithPending()
                 },
                 showAccountGroupLabel: function() {
-                    return BMT.user.get("accountGroups").length > 1
+                    return BS.user.get("accountGroups").length > 1
                 },
                 accountGroupName: function() {
-                    var e = BMT.user.get("accountGroups").get(this.self.model.num("accountGroupId"));
+                    var e = BS.user.get("accountGroups").get(this.self.model.num("accountGroupId"));
                     return e.get("name")
                 }
             },
@@ -51229,7 +51230,7 @@ var requirejs, require, define;
                 })
             }
         })
-    }), define("views/retirementPlanning/bettermentAccountsView", ["underscore", "common/betterment.views", "hbs!views/retirementPlanning/bettermentAccounts", "components/common/scripts/modules/async", "views/retirementPlanning/bettermentAccountView"], function(e, t, n, r, i) {
+    }), define("views/retirementPlanning/betasmartzAccountsView", ["underscore", "common/betasmartz.views", "hbs!views/retirementPlanning/betasmartzAccounts", "components/common/scripts/modules/async", "views/retirementPlanning/betasmartzAccountView"], function(e, t, n, r, i) {
         return t.CompositeView.extend({
             template: n,
             getChildView: function() {
@@ -51274,7 +51275,7 @@ var requirejs, require, define;
         })
     }), define("hbs!views/retirementPlanning/externalAccounts", ["hbs", "hbs/handlebars"], function(e, t) {
         var n = t.template(function(e, t, n, r, i) {
-            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="list-header">Add your <span class="unadvised-user-only">Non-Betterment</span><span class="advised-user-only">external</span> retirement accounts</div>\n<div class="list-header-row">\n    <div class="account-type">Account Type</div>\n    <div class="account-owner">Account Owner</div>\n    <div class="current-balance">\n        Current Balance\n        <span class="help-content">\n            Latest total dollar value of this account. You should update this number at least annually and re-review your plan.\n        </span>\n    </div>\n    <div class="annual-contribution">\n        Annual Contrib. Including Company\n        <span class="help-content">\n            Enter the total amount that you plan to save each year into this account, plus any company contribution that you get.\n        </span>\n    </div>\n\n    <div class="remove-account"></div>\n</div>\n\n<div class="accounts-list"></div>\n\n<p class="update-advice">Update your account values periodically to get accurate advice.</p>\n\n<div class="add-external-account bubble-button">\n    <div class="button-icon selected">\n        <div class="symbol">+</div>\n    </div>\n    <div class="button-label loud">Add account</div>\n</div>\n'
+            return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="list-header">Add your <span class="unadvised-user-only">Non-Betasmartz</span><span class="advised-user-only">external</span> retirement accounts</div>\n<div class="list-header-row">\n    <div class="account-type">Account Type</div>\n    <div class="account-owner">Account Owner</div>\n    <div class="current-balance">\n        Current Balance\n        <span class="help-content">\n            Latest total dollar value of this account. You should update this number at least annually and re-review your plan.\n        </span>\n    </div>\n    <div class="annual-contribution">\n        Annual Contrib. Including Company\n        <span class="help-content">\n            Enter the total amount that you plan to save each year into this account, plus any company contribution that you get.\n        </span>\n    </div>\n\n    <div class="remove-account"></div>\n</div>\n\n<div class="accounts-list"></div>\n\n<p class="update-advice">Update your account values periodically to get accurate advice.</p>\n\n<div class="add-external-account bubble-button">\n    <div class="button-icon selected">\n        <div class="symbol">+</div>\n    </div>\n    <div class="button-label loud">Add account</div>\n</div>\n'
         });
         return t.registerPartial("views/retirementPlanning/externalAccounts", n), n
     }), define("hbs!views/retirementPlanning/externalAccount", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/moneyCents"], function(e, t) {
@@ -51386,12 +51387,12 @@ var requirejs, require, define;
                 }
             }, u ? u.call(t, "advisorFeePercent", a) : f.call(t, "inputPercent", "advisorFeePercent", a))) + '\n\n            <div class="learn-more-data">\n                How is this information used?\n            </div>\n            <div class="help-content">\n                The account type, investment type, owner, balance, contributions and fees for this manually added account are used in our advice to estimate the projected value and tax treatment of withdrawals as accurately as possible.  Please provide details as accurately as possible.\n\n                <a href=' + l((u = n.supportUrl || t && t.supportUrl, a = {
                 hash: {}
-            }, u ? u.call(t, "/customer/portal/articles/1920463-how-will-the-information-i-enter-into-betterment-for-advice-be-used", a) : f.call(t, "supportUrl", "/customer/portal/articles/1920463-how-will-the-information-i-enter-into-betterment-for-advice-be-used", a))) + ">Your information is safe and never shared &gt;</a>\n            </div>\n\n            " + l((u = n.submitButton || t && t.submitButton, a = {
+            }, u ? u.call(t, "/customer/portal/articles/1920463-how-will-the-information-i-enter-into-betasmartz-for-advice-be-used", a) : f.call(t, "supportUrl", "/customer/portal/articles/1920463-how-will-the-information-i-enter-into-betasmartz-for-advice-be-used", a))) + ">Your information is safe and never shared &gt;</a>\n            </div>\n\n            " + l((u = n.submitButton || t && t.submitButton, a = {
                 hash: {}
             }, u ? u.call(t, "Save", a) : f.call(t, "submitButton", "Save", a))) + "\n        </form>\n\n\n    </div>\n</div>\n", s
         });
         return t.registerPartial("views/retirementPlanning/externalAccountSetup", n), n
-    }), define("views/retirementPlanning/externalAccountSetupView", ["underscore", "hbs!views/retirementPlanning/externalAccountSetup", "common/betterment.views", "components/common/scripts/behaviors/editableForm", "components/bubble/scripts/balanceBubbleView", "components/common/scripts/util/handlebarsHelpers", "models/v2/externalAccount", "hbs!views/linkBankAccount/svg/bankLogoManual"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/retirementPlanning/externalAccountSetupView", ["underscore", "hbs!views/retirementPlanning/externalAccountSetup", "common/betasmartz.views", "components/common/scripts/behaviors/editableForm", "components/bubble/scripts/balanceBubbleView", "components/common/scripts/util/handlebarsHelpers", "models/v2/externalAccount", "hbs!views/linkBankAccount/svg/bankLogoManual"], function(e, t, n, r, i, s, o, u) {
         return n.View.extend({
             className: "external-account-setup",
             ui: {
@@ -51447,7 +51448,7 @@ var requirejs, require, define;
                 },
                 accountOwnerOptions: function() {
                     var t = {
-                        user: BMT.user.get("firstName"),
+                        user: BS.user.get("firstName"),
                         joint: "Joint"
                     };
                     return this.self.options.spouseName && e.extend(t, {
@@ -51470,7 +51471,7 @@ var requirejs, require, define;
                 }))
             }
         })
-    }), define("views/retirementPlanning/externalAccountView", ["common/betterment.views", "modules/modals", "hbs!views/retirementPlanning/externalAccount", "views/retirementPlanning/externalAccountSetupView"], function(e, t, n, r) {
+    }), define("views/retirementPlanning/externalAccountView", ["common/betasmartz.views", "modules/modals", "hbs!views/retirementPlanning/externalAccount", "views/retirementPlanning/externalAccountSetupView"], function(e, t, n, r) {
         return e.View.extend({
             template: n,
             ui: {
@@ -51499,7 +51500,7 @@ var requirejs, require, define;
                 },
                 displayAccountOwner: function() {
                     var e = this.self.model.get("accountOwner");
-                    return e === "joint" ? "Joint" : e === "spouse" ? this.self.options.profile.get("spouseName") : BMT.user.get("firstName")
+                    return e === "joint" ? "Joint" : e === "spouse" ? this.self.options.profile.get("spouseName") : BS.user.get("firstName")
                 }
             },
             editAccount: function() {
@@ -51517,7 +51518,7 @@ var requirejs, require, define;
                 this.trigger("change:account"), this.render()
             }
         })
-    }), define("views/retirementPlanning/externalAccountsView", ["common/betterment.views", "hbs!views/retirementPlanning/externalAccounts", "modules/modals", "models/v2/externalAccount", "views/retirementPlanning/externalAccountView", "views/retirementPlanning/externalAccountSetupView"], function(e, t, n, r, i, s) {
+    }), define("views/retirementPlanning/externalAccountsView", ["common/betasmartz.views", "hbs!views/retirementPlanning/externalAccounts", "modules/modals", "models/v2/externalAccount", "views/retirementPlanning/externalAccountView", "views/retirementPlanning/externalAccountSetupView"], function(e, t, n, r, i, s) {
         return e.CompositeView.extend({
             template: t,
             events: {
@@ -51588,12 +51589,12 @@ var requirejs, require, define;
                 })()
             }
         }
-    }), define("views/retirementPlanning/accountsView", ["jquery", "underscore", "common/betterment.views", "hbs!views/retirementPlanning/accounts", "hbs!views/retirementPlanning/retirementSavingsBubble", "components/common/scripts/modules/async", "services/accountService", "components/automaticTransaction/scripts/services/automaticTransactionService", "services/financialPlanUpdater", "views/retirementPlanning/bettermentAccountsView", "views/retirementPlanning/externalAccountsView", "components/common/scripts/util/formatter", "viewHelpers/scrambleEffect"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
+    }), define("views/retirementPlanning/accountsView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/retirementPlanning/accounts", "hbs!views/retirementPlanning/retirementSavingsBubble", "components/common/scripts/modules/async", "services/accountService", "components/automaticTransaction/scripts/services/automaticTransactionService", "services/financialPlanUpdater", "views/retirementPlanning/betasmartzAccountsView", "views/retirementPlanning/externalAccountsView", "components/common/scripts/util/formatter", "viewHelpers/scrambleEffect"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
         return n.View.extend({
             template: r,
             className: "accounts-step",
             regions: {
-                bettermentAccounts: ".betterment-accounts",
+                betasmartzAccounts: ".betasmartz-accounts",
                 externalAccounts: ".external-accounts"
             },
             ui: {
@@ -51614,27 +51615,27 @@ var requirejs, require, define;
                 },
                 disclaimerLink: {
                     text: "Your information is safe and never shared >",
-                    supportUrl: "customer/portal/articles/1920463-how-will-the-information-i-enter-into-betterment-for-advice-be-used-"
+                    supportUrl: "customer/portal/articles/1920463-how-will-the-information-i-enter-into-betasmartz-for-advice-be-used-"
                 }
             },
             onInitialize: function() {
                 this.profile = this.options.profile, this.plan = this.options.plan
             },
             onRender: function() {
-                this.externalAccountsCollection = BMT.user.get("externalAccounts"), this.options.bubbles.toggle("spending", !1), this.options.bubbles.content("spouse", !1), this.showChildViews(), this.reTotal()
+                this.externalAccountsCollection = BS.user.get("externalAccounts"), this.options.bubbles.toggle("spending", !1), this.options.bubbles.content("spouse", !1), this.showChildViews(), this.reTotal()
             },
             showChildViews: function() {
-                this.bettermentAccountsView = new f({
+                this.betasmartzAccountsView = new f({
                     model: this.plan,
                     collection: o.getAllAccounts()
-                }), this.listenTo(this.bettermentAccountsView, "changed", this.reTotal), this.bettermentAccounts.show(this.bettermentAccountsView), this.externalAccountsView = new l({
+                }), this.listenTo(this.betasmartzAccountsView, "changed", this.reTotal), this.betasmartzAccounts.show(this.betasmartzAccountsView), this.externalAccountsView = new l({
                     collection: this.externalAccountsCollection,
                     profile: this.profile
                 }), this.listenTo(this.externalAccountsCollection, "change add remove", this.reTotal), this.externalAccounts.show(this.externalAccountsView)
             },
             userBubbleContent: function(e) {
                 return i({
-                    name: BMT.user.get("firstName") + (this.profile.isMarried() ? " & " + this.profile.get("spouseName") : ""),
+                    name: BS.user.get("firstName") + (this.profile.isMarried() ? " & " + this.profile.get("spouseName") : ""),
                     retirementSavings: e
                 })
             },
@@ -51643,22 +51644,22 @@ var requirejs, require, define;
                     n = this.externalAccountsCollection.some(function(t) {
                         return t.is("spouseAccount") === e
                     });
-                return n && t.push("+ External Accounts"), this.bettermentAccountsView.getSelectedAccounts().length !== 0 && !e && t.push(BMT.user.isAdvised() ? "+ Your Accounts" : "+ Betterment"), t.length === 0 ? !1 : t.join("<br>")
+                return n && t.push("+ External Accounts"), this.betasmartzAccountsView.getSelectedAccounts().length !== 0 && !e && t.push(BS.user.isAdvised() ? "+ Your Accounts" : "+ Betasmartz"), t.length === 0 ? !1 : t.join("<br>")
             },
             reTotal: function() {
                 this.options.bubbles.sub("user", this.bubbleSubContent(!1));
-                var e = this.bettermentAccountsView.getSelectedAccounts().concat(this.externalAccountsCollection.models),
+                var e = this.betasmartzAccountsView.getSelectedAccounts().concat(this.externalAccountsCollection.models),
                     n = t.reduce(e, function(e, t) {
                         return e += t.has("currentBalance") ? t.getCurrentBalanceWithPending() : t.dollars("balance"), e
                     }, 0);
                 h.scramble(this.ui.totalRetirementBalance, this.formatter.money(n, 0), 40), this.options.bubbles.content("user", this.userBubbleContent(n));
                 var r = this.externalAccountsCollection.reduce(function(e, t) {
                     return e += t.dollars("annualContribution"), e
-                }, 0) + this.bettermentAccountsView.getTotalAnnualContribution();
+                }, 0) + this.betasmartzAccountsView.getTotalAnnualContribution();
                 h.scramble(this.ui.totalAnnualContribution, this.formatter.money(r, 0), 40)
             },
             onBeforeSave: function() {
-                return s.whenAll([this.bettermentAccountsView.syncAccountStates(), this.externalAccountsCollection.save()])
+                return s.whenAll([this.betasmartzAccountsView.syncAccountStates(), this.externalAccountsCollection.save()])
             }
         })
     }), define("components/common/scripts/templateHelpers/number", ["hbs/handlebars", "components/common/scripts/util/formatter"], function(e, t) {
@@ -51746,13 +51747,13 @@ var requirejs, require, define;
                 hash: {}
             }) : (u = t && t.expectedInflation, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '%)\n                        </div>\n                        <span class="arrow">&rsaquo;</span>\n                    </div>\n                    <div class="error" data-field="annualSalaryPercentGrowth"></div>\n                    <div class="explanation">\n                        <span class="unadvised-user-only">\n                            Since you are using Betterment, we assume you are an above average performer and will get\n                            raises in excess of inflation.\n                        </span>\n                        <span class="advised-user-only">\n                            We assume you will get raises in excess of inflation.\n                        </span>\n                        We assume 1% plus inflation raises of 3%, but you can change these in the Assumptions in the\n                        next step.\n                    </div>\n                </div>\n                <div class="typical-spending calculated-row">\n                    <div class="row-header">\n                        <div class="copy">\n                            Spending\n                            <span class="income-replacement-ratio inline-editable">\n                                <span display data-model="plan" data-property="incomeReplacementRatio">\n                                    ' + l((u = n.pct || t && t.pct, a = {
+            }) : u), s += l(o) + '%)\n                        </div>\n                        <span class="arrow">&rsaquo;</span>\n                    </div>\n                    <div class="error" data-field="annualSalaryPercentGrowth"></div>\n                    <div class="explanation">\n                        <span class="unadvised-user-only">\n                            Since you are using Betasmartz, we assume you are an above average performer and will get\n                            raises in excess of inflation.\n                        </span>\n                        <span class="advised-user-only">\n                            We assume you will get raises in excess of inflation.\n                        </span>\n                        We assume 1% plus inflation raises of 3%, but you can change these in the Assumptions in the\n                        next step.\n                    </div>\n                </div>\n                <div class="typical-spending calculated-row">\n                    <div class="row-header">\n                        <div class="copy">\n                            Spending\n                            <span class="income-replacement-ratio inline-editable">\n                                <span display data-model="plan" data-property="incomeReplacementRatio">\n                                    ' + l((u = n.pct || t && t.pct, a = {
                 hash: {}
             }, u ? u.call(t, t && t.incomeReplacementRatio, 0, a) : h.call(t, "pct", t && t.incomeReplacementRatio, 0, a))) + '\n                                </span>\n                                <span editable  style="display:none;" data-current="', (u = n.incomeReplacementRatio) ? o = u.call(t, {
                 hash: {}
             }) : (u = t && t.incomeReplacementRatio, o = typeof u === f ? u.call(t, {
                 hash: {}
-            }) : u), s += l(o) + '">\n                                    <input pct-input />%\n                                </span>\n                            </span>\n                            of current after-tax income\n                        </div>\n                        <span class="arrow">&rsaquo;</span>\n                    </div>\n                    <div class="explanation">\n                        Our spending model is based on household spending research that links income to spending needs.\n                        Higher income individuals typically have to replace less of their pre-retirement income in retirement. This is better than calculators that use a fixed 85% income replacement assumption.\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n\n<div class="buttons">\n    <button class="silver back">Back</button>\n    <button class="blue next">Save and Continue</button>\n</div>\n', s
+            }) : u), s += l(o) + '">\n                                    <input pct-input />%\n                                </span>\n                            </span>\n                            of current after-tax income\n                        </div>\n                        <span class="arrow">&rsaquo;</span>\n                    </div>\n                    <div class="explanation">\n                        Our spending model is based on household spending research that links income to spending needs.\n                        Higher income individuals typically have to replace less of their pre-retirement income in retirement. This is betasmartz than calculators that use a fixed 85% income replacement assumption.\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n\n<div class="buttons">\n    <button class="silver back">Back</button>\n    <button class="blue next">Save and Continue</button>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/retirementSpending", n), n
     }), define("hbs!views/retirementPlanning/retirementSpendingBubble", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/money"], function(e, t) {
@@ -51766,7 +51767,7 @@ var requirejs, require, define;
             }, o ? o.call(t, t && t.amount, 0, u) : a.call(t, "money", t && t.amount, 0, u))) + "/year</div>\n", s
         });
         return t.registerPartial("views/retirementPlanning/retirementSpendingBubble", n), n
-    }), define("views/retirementPlanning/retirementSpendingView", ["underscore", "common/betterment.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/retirementPlanning/retirementSpending", "hbs!views/retirementPlanning/annualIncomeBubble", "hbs!views/retirementPlanning/retirementSpendingBubble", "components/common/scripts/services/projectorService", "components/common/scripts/util/formatter", "models/v2/zipCode"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/retirementPlanning/retirementSpendingView", ["underscore", "common/betasmartz.views", "components/common/scripts/util/handlebarsHelpers", "hbs!views/retirementPlanning/retirementSpending", "hbs!views/retirementPlanning/annualIncomeBubble", "hbs!views/retirementPlanning/retirementSpendingBubble", "components/common/scripts/services/projectorService", "components/common/scripts/util/formatter", "models/v2/zipCode"], function(e, t, n, r, i, s, o, u, a) {
         return t.View.extend({
             template: r,
             className: "retirement-spending-step",
@@ -51869,7 +51870,7 @@ var requirejs, require, define;
             },
             onRender: function() {
                 this.options.bubbles.toggle("spouse", !1), this.options.bubbles.content("user", i({
-                    name: BMT.user.get("firstName") + (this.profile.isMarried() ? " & " + this.profile.get("spouseName") : ""),
+                    name: BS.user.get("firstName") + (this.profile.isMarried() ? " & " + this.profile.get("spouseName") : ""),
                     income: this.formatter.money(this.profile.grossIncome(), 0),
                     hasIncome: !0
                 })), this.block(), this.loadZipData().then(this.showInitialState)
@@ -51919,7 +51920,7 @@ var requirejs, require, define;
             },
             loadZipData: function() {
                 return this.zipCode = new a({
-                    zip: BMT.user.get("zip")
+                    zip: BS.user.get("zip")
                 }), this.zipCode.fetch().always(function() {
                     return this.retirementZipCode = this.zipCode.clone(), this.zipCode
                 }.bind(this))
@@ -51946,7 +51947,7 @@ var requirejs, require, define;
                     costOfLivingIndex: this.zipCode.num("costOfLivingIndex"),
                     retirementCostOfLivingIndex: this.retirementZipCode.num("costOfLivingIndex"),
                     marginalPropensityToConsumeOverride: this.plan.get("incomeReplacementRatio") || undefined,
-                    state: BMT.user.get("state"),
+                    state: BS.user.get("state"),
                     inflation: 0
                 })
             },
@@ -51955,7 +51956,7 @@ var requirejs, require, define;
                     t = o.futureDollars(this.profile.grossIncome(), e, this.profile.num("annualSalaryPercentGrowth")),
                     n = o.calculateAverageTaxRate({
                         grossIncome: t,
-                        state: BMT.user.get("state")
+                        state: BS.user.get("state")
                     }),
                     r = t * (1 - n);
                 return o.calculateMarginalPropensityToConsume(r, this.zipCode.num("costOfLivingIndex"))
@@ -52071,7 +52072,7 @@ var requirejs, require, define;
             }, o ? o.call(t, t && t.retireeFAQLink, u) : a.call(t, "link", t && t.retireeFAQLink, u))) + '</span>\n    </p>\n\n</div>\n<div class="buttons">\n    <button class="blue ok">Continue to Retiree Advice</button>\n    <button class="silver cancel">Cancel</button>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/retirementAgeModal", n), n
-    }), define("views/retirementPlanning/retirementAgeModalView", ["common/betterment.views", "hbs!views/retirementPlanning/retirementAgeModal", "components/common/scripts/services/domainService"], function(e, t, n) {
+    }), define("views/retirementPlanning/retirementAgeModalView", ["common/betasmartz.views", "hbs!views/retirementPlanning/retirementAgeModal", "components/common/scripts/services/domainService"], function(e, t, n) {
         return e.ModalView.extend({
             template: t,
             className: "retirement-age-modal",
@@ -52086,13 +52087,13 @@ var requirejs, require, define;
                 }
             },
             onCancel: function() {
-                BMT.modal.close(this), this.trigger("cancel")
+                BS.modal.close(this), this.trigger("cancel")
             },
             onOk: function() {
-                BMT.modal.close(this), this.trigger("ok")
+                BS.modal.close(this), this.trigger("ok")
             }
         })
-    }), define("views/retirementPlanning/retirementAgeView", ["common/betterment.views", "hbs!views/retirementPlanning/retirementAge", "hbs!views/retirementPlanning/retirementAgeBubble", "views/retirementPlanning/retirementAgeModalView", "components/account/scripts/constants/retirementConstants"], function(e, t, n, r, i) {
+    }), define("views/retirementPlanning/retirementAgeView", ["common/betasmartz.views", "hbs!views/retirementPlanning/retirementAge", "hbs!views/retirementPlanning/retirementAgeBubble", "views/retirementPlanning/retirementAgeModalView", "components/account/scripts/constants/retirementConstants"], function(e, t, n, r, i) {
         return e.View.extend({
             className: "retirement-age-step",
             template: t,
@@ -52116,7 +52117,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 name: function() {
-                    return BMT.user.get("firstName")
+                    return BS.user.get("firstName")
                 },
                 isMarried: function() {
                     return this.self.profile.isMarried()
@@ -52139,7 +52140,7 @@ var requirejs, require, define;
             },
             updateBubbles: function() {
                 this.options.bubbles.content("user", n({
-                    name: BMT.user.get("firstName"),
+                    name: BS.user.get("firstName"),
                     isRetired: this.isUserRetired(),
                     retirementAge: this.getUserRetirementAge()
                 }));
@@ -52193,7 +52194,7 @@ var requirejs, require, define;
                 var e = new r;
                 this.listenTo(e, "cancel", function() {
                     this._chooseRetirementStatus(this.ui.userQuestion.find(".choice.not-retired"))
-                }.bind(this)), this.listenTo(e, "ok", BMT.router.navigate.bind(null, "advice", !0)), BMT.modal.show(e)
+                }.bind(this)), this.listenTo(e, "ok", BS.router.navigate.bind(null, "advice", !0)), BS.modal.show(e)
             },
             _initRetirementStatus: function(e, t) {
                 var n = e.find(t ? ".choice.retired" : ".choice.not-retired");
@@ -52204,7 +52205,7 @@ var requirejs, require, define;
                 t.find(".choice").removeClass("active"), e.addClass("active"), t.toggleClass("expanded", e.hasClass("retired")), this.isUserRetired() && this.showModal(), this.ui.spouseRetirementAgeWrapper.toggleClass("invisible", this.isSpouseRetired()), this.updateBubbles()
             }
         })
-    }), define("views/retirementPlanning/setupView", ["jquery", "common/betterment.views", "common/betterment.models", "hbs!views/retirementPlanning/setup", "components/common/scripts/modules/async", "components/common/scripts/analytics/analytics", "views/retirementPlanning/sharedHeaderView", "components/progressNav/scripts/progressNavView", "views/retirementPlanning/bubblesView", "views/retirementPlanning/personalDetailsView", "views/retirementPlanning/annualIncomeView", "views/retirementPlanning/accountsView", "views/retirementPlanning/retirementSpendingView", "views/retirementPlanning/retirementAgeView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/retirementPlanning/setupView", ["jquery", "common/betasmartz.views", "common/betasmartz.models", "hbs!views/retirementPlanning/setup", "components/common/scripts/modules/async", "components/common/scripts/analytics/analytics", "views/retirementPlanning/sharedHeaderView", "components/progressNav/scripts/progressNavView", "views/retirementPlanning/bubblesView", "views/retirementPlanning/personalDetailsView", "views/retirementPlanning/annualIncomeView", "views/retirementPlanning/accountsView", "views/retirementPlanning/retirementSpendingView", "views/retirementPlanning/retirementAgeView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         return t.View.extend({
             className: "retirement-plan-setup panel card",
             template: r,
@@ -52239,7 +52240,7 @@ var requirejs, require, define;
                 }.bind(this))
             },
             loadDependencies: function() {
-                return this.financialProfile = BMT.user.getFinancialProfile(), this.financialPlan = BMT.user.get("financialPlans").selected(), i.whenAll([this.financialProfile.fetch(), this.financialPlan.fetch()])
+                return this.financialProfile = BS.user.getFinancialProfile(), this.financialPlan = BS.user.get("financialPlans").selected(), i.whenAll([this.financialProfile.fetch(), this.financialPlan.fetch()])
             },
             transition: function(e, t, n) {
                 e.animate({
@@ -52256,7 +52257,7 @@ var requirejs, require, define;
                 }), this.progressRegion.show(this.progressView), this.bubblesView = new a, this.bubblesRegion.show(this.bubblesView), this.showStep(this.getStartStep() - 1)
             },
             showStep: function(e) {
-                BMT.router.navigate("retireGuideSetup/" + (e + 1)), this.progressView.setActiveStep(e);
+                BS.router.navigate("retireGuideSetup/" + (e + 1)), this.progressView.setActiveStep(e);
                 var t = this.steps[e].view,
                     n = new t({
                         profile: this.financialProfile,
@@ -52267,7 +52268,7 @@ var requirejs, require, define;
                     this.handleNext(e, n)
                 }), this.listenTo(n, "back", function() {
                     e > 0 ? this.showStep(e - 1) : this.goBack()
-                }), this.questionsRegion.hasView() ? this.transition(this.questionsRegion.$el, this.questionsRegion, n) : this.questionsRegion.show(n), BMT.scrollToTop({
+                }), this.questionsRegion.hasView() ? this.transition(this.questionsRegion.$el, this.questionsRegion, n) : this.questionsRegion.show(n), BS.scrollToTop({
                     scrollTop: 125
                 }), s.track("ElementViewed", {
                     Name: this.steps[e].label.replace(/ /g, ""),
@@ -52288,10 +52289,10 @@ var requirejs, require, define;
                 return !e || e < 1 || e > this.steps.length ? 1 : e
             },
             goToPlan: function() {
-                BMT.scrollToTop(), BMT.router.navigate("retireGuide", !0)
+                BS.scrollToTop(), BS.router.navigate("retireGuide", !0)
             },
             goBack: function() {
-                this.options.welcomeFlow ? BMT.router.navigate("retireGuideStart", !0) : BMT.router.navigate("advice", !0)
+                this.options.welcomeFlow ? BS.router.navigate("retireGuideStart", !0) : BS.router.navigate("advice", !0)
             }
         })
     }), define("hbs!views/retirementPlanning/plan", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -52349,7 +52350,7 @@ var requirejs, require, define;
             }) : u), s += l(o) + "</span>\n    </span>.\n</p>\n", s
         });
         return t.registerPartial("views/retirementPlanning/planSummary", n), n
-    }), define("views/retirementPlanning/planSummaryView", ["common/betterment.views", "hbs!views/retirementPlanning/planSummary"], function(e, t) {
+    }), define("views/retirementPlanning/planSummaryView", ["common/betasmartz.views", "hbs!views/retirementPlanning/planSummary"], function(e, t) {
         return e.View.extend({
             template: t,
             events: {
@@ -52495,7 +52496,7 @@ var requirejs, require, define;
             }, u ? u.call(t, o, 0, a) : f.call(t, "money", o, 0, a))) + '</div>\n        </div>\n        <div class="recommended">\n            <div class="slider-label">Recommended</div>\n            <div class="slider-value per-year"></div>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/projection/currentSavings", n), n
-    }), define("views/retirementPlanning/projection/currentSavingsView", ["common/betterment.views", "hbs!views/retirementPlanning/projection/currentSavings"], function(e, t) {
+    }), define("views/retirementPlanning/projection/currentSavingsView", ["common/betasmartz.views", "hbs!views/retirementPlanning/projection/currentSavings"], function(e, t) {
         return e.View.extend({
             template: t,
             ui: {
@@ -52582,7 +52583,7 @@ var requirejs, require, define;
                 return this.selectedSavings !== undefined ? this.selectedSavings : this.model.getYearlySavings()
             },
             backToAccountsSetup: function() {
-                BMT.router.navigate("retireGuideSetup/4", !0)
+                BS.router.navigate("retireGuideSetup/4", !0)
             }
         })
     }), define("hbs!views/retirementPlanning/projection/retirementAge", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -52598,7 +52599,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '</span>\n    <span editable><input type="text" /></span>\n    <div class="error"></div>\n</span>\n', s
         });
         return t.registerPartial("views/retirementPlanning/projection/retirementAge", n), n
-    }), define("views/retirementPlanning/projection/retirementAgeView", ["common/betterment.views", "hbs!views/retirementPlanning/projection/retirementAge"], function(e, t) {
+    }), define("views/retirementPlanning/projection/retirementAgeView", ["common/betasmartz.views", "hbs!views/retirementPlanning/projection/retirementAge"], function(e, t) {
         return e.View.extend({
             template: t,
             ui: {
@@ -52661,7 +52662,7 @@ var requirejs, require, define;
             }, o ? o.call(t, t && t.poorAmount, 0, u) : a.call(t, "money", t && t.poorAmount, 0, u))) + "/year</span></li>\n    </ul>\n</figure>\n", s
         });
         return t.registerPartial("views/retirementPlanning/projection/projectionGraphTooltip", n), n
-    }), define("views/retirementPlanning/projection/projectionGraphView", ["underscore", "projector", "common/betterment.views", "hbs!views/retirementPlanning/projection/projectionGraph", "hbs!views/retirementPlanning/projection/projectionGraphTooltip", "components/common/scripts/services/projectorService"], function(e, t, n, r, i, s) {
+    }), define("views/retirementPlanning/projection/projectionGraphView", ["underscore", "projector", "common/betasmartz.views", "hbs!views/retirementPlanning/projection/projectionGraph", "hbs!views/retirementPlanning/projection/projectionGraphTooltip", "components/common/scripts/services/projectorService"], function(e, t, n, r, i, s) {
         return n.View.extend({
             template: r,
             ui: {
@@ -52793,7 +52794,7 @@ var requirejs, require, define;
                 return this.options.parent.getSelectedYearlySavings()
             }
         })
-    }), define("views/retirementPlanning/projectionView", ["jquery", "underscore", "common/betterment.views", "components/common/scripts/constants/colors", "hbs!views/retirementPlanning/projection", "views/common/dropdown/dropdownView", "models/v2/financialProfile", "services/retirementPlanService", "hbs!views/retirementPlanning/socialSecurityTooltip", "components/common/scripts/services/projectorService", "views/retirementPlanning/projection/currentSavingsView", "views/retirementPlanning/projection/retirementAgeView", "views/retirementPlanning/projection/projectionGraphView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
+    }), define("views/retirementPlanning/projectionView", ["jquery", "underscore", "common/betasmartz.views", "components/common/scripts/constants/colors", "hbs!views/retirementPlanning/projection", "views/common/dropdown/dropdownView", "models/v2/financialProfile", "services/retirementPlanService", "hbs!views/retirementPlanning/socialSecurityTooltip", "components/common/scripts/services/projectorService", "views/retirementPlanning/projection/currentSavingsView", "views/retirementPlanning/projection/retirementAgeView", "views/retirementPlanning/projection/projectionGraphView"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
         return n.View.extend({
             template: i,
             className: "retirement-planning-projection",
@@ -52933,10 +52934,10 @@ var requirejs, require, define;
                 return this.retirementPlan.getRecommendedYearlySavings()
             },
             backToProfile: function() {
-                BMT.router.navigate("retireGuideSetup", !0)
+                BS.router.navigate("retireGuideSetup", !0)
             },
             next: function() {
-                BMT.scrollToTop(), this.trigger("next")
+                BS.scrollToTop(), this.trigger("next")
             }
         })
     }), define("hbs!views/retirementPlanning/howToSave", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -53118,7 +53119,7 @@ var requirejs, require, define;
                 }
             }
         }
-    }), define("views/retirementPlanning/howToSaveView", ["underscore", "components/common/scripts/util/handlebarsHelpers", "common/betterment.views", "hbs!views/retirementPlanning/howToSave", "services/retirementPlanService", "components/common/scripts/constants/colors", "viewHelpers/retirementPlanAdviceText"], function(e, t, n, r, i, s, o) {
+    }), define("views/retirementPlanning/howToSaveView", ["underscore", "components/common/scripts/util/handlebarsHelpers", "common/betasmartz.views", "hbs!views/retirementPlanning/howToSave", "services/retirementPlanService", "components/common/scripts/constants/colors", "viewHelpers/retirementPlanAdviceText"], function(e, t, n, r, i, s, o) {
         var u = 175,
             a = 25,
             f = 20,
@@ -53251,7 +53252,7 @@ var requirejs, require, define;
                 }), o.parent().find(".name").toggleClass("larger-font", s > 1), a.text(this.formatter.money(t, 0)), this.toggleContributionType(e, !0)
             },
             next: function() {
-                BMT.scrollToTop(), this.trigger("next")
+                BS.scrollToTop(), this.trigger("next")
             }
         })
     }), define("hbs!views/retirementPlanning/actions", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -53327,7 +53328,7 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/retirementPlanning/addRecommendedGoal", n), n
-    }), define("views/retirementPlanning/addRecommendedGoalView", ["underscore", "common/betterment.views", "hbs!views/retirementPlanning/addRecommendedGoal", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/common/alertView", "services/accountService", "components/common/scripts/viewHelpers/customerSupport", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("views/retirementPlanning/addRecommendedGoalView", ["underscore", "common/betasmartz.views", "hbs!views/retirementPlanning/addRecommendedGoal", "views/common/addGoalView", "views/common/addGoal/addGoalCardDefinitions", "views/common/alertView", "services/accountService", "components/common/scripts/viewHelpers/customerSupport", "components/account/scripts/constants/accountTypes"], function(e, t, n, r, i, s, o, u, a) {
         var f = {
                 traditionalIra: {
                     title: "SMSF",
@@ -53386,7 +53387,7 @@ var requirejs, require, define;
                     return this.self.getGoalInfo().description
                 },
                 addedStateDescription: function() {
-                    return this.self.getGoalInfo().isSpousal ? BMT.user.isAdvised() ? h : c : l
+                    return this.self.getGoalInfo().isSpousal ? BS.user.isAdvised() ? h : c : l
                 },
                 contribution: function() {
                     return this.self.getContribution()
@@ -53396,7 +53397,7 @@ var requirejs, require, define;
                 },
                 canAddGoal: function() {
                     var e = this.self.getGoalInfo();
-                    return !e.isSpousal && (a.isInvesting(e.filter.accountType) || BMT.accountGroup.isPersonal())
+                    return !e.isSpousal && (a.isInvesting(e.filter.accountType) || BS.accountGroup.isPersonal())
                 }
             },
             getAccount: function() {
@@ -53439,19 +53440,19 @@ var requirejs, require, define;
             },
             goToAdvice: function() {
                 var e = this.getAccount();
-                if (e.num("accountGroupId") !== BMT.accountGroup.num("id")) {
-                    var t = BMT.user.get("accountGroups").get(e.num("accountGroupId"));
-                    BMT.setAccountGroup(t, {
+                if (e.num("accountGroupId") !== BS.accountGroup.num("id")) {
+                    var t = BS.user.get("accountGroups").get(e.num("accountGroupId"));
+                    BS.setAccountGroup(t, {
                         account: e,
                         destination: "advice",
                         scrollToTop: !0
                     });
                     return
                 }
-                BMT.selectedAccount = e, BMT.router.navigate("advice", !0), BMT.scrollToTop()
+                BS.selectedAccount = e, BS.router.navigate("advice", !0), BS.scrollToTop()
             }
         })
-    }), define("views/retirementPlanning/actionsView", ["hbs!views/retirementPlanning/actions", "common/betterment.views", "views/retirementPlanning/addRecommendedGoalView"], function(e, t, n) {
+    }), define("views/retirementPlanning/actionsView", ["hbs!views/retirementPlanning/actions", "common/betasmartz.views", "views/retirementPlanning/addRecommendedGoalView"], function(e, t, n) {
         var r = ["traditionalIra", "spouseTraditionalIra", "rothIra", "spouseRothIra", "taxable"];
         return t.View.extend({
             template: e,
@@ -53527,7 +53528,7 @@ var requirejs, require, define;
             }) : u), s += l(o) + '"/> /year pre-tax</p>\n            </div>\n\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/editAssumptions", n), n
-    }), define("views/retirementPlanning/editAssumptionsView", ["underscore", "common/betterment.views", "hbs!views/retirementPlanning/editAssumptions", "components/common/scripts/services/domainService", "projector"], function(e, t, n, r, i) {
+    }), define("views/retirementPlanning/editAssumptionsView", ["underscore", "common/betasmartz.views", "hbs!views/retirementPlanning/editAssumptions", "components/common/scripts/services/domainService", "projector"], function(e, t, n, r, i) {
         return t.View.extend({
             template: n,
             className: "retirement-plan-edit-assumptions",
@@ -53636,7 +53637,7 @@ var requirejs, require, define;
                 this.$el.parent().slideUp()
             }
         })
-    }), define("views/retirementPlanning/planView", ["underscore", "common/betterment.views", "hbs!views/retirementPlanning/plan", "components/common/scripts/modules/async", "components/common/scripts/analytics/analytics", "views/retirementPlanning/sharedHeaderView", "views/retirementPlanning/planSummaryView", "views/retirementPlanning/projectionView", "views/retirementPlanning/howToSaveView", "views/retirementPlanning/actionsView", "views/retirementPlanning/editAssumptionsView", "models/v2/retirementPlan"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
+    }), define("views/retirementPlanning/planView", ["underscore", "common/betasmartz.views", "hbs!views/retirementPlanning/plan", "components/common/scripts/modules/async", "components/common/scripts/analytics/analytics", "views/retirementPlanning/sharedHeaderView", "views/retirementPlanning/planSummaryView", "views/retirementPlanning/projectionView", "views/retirementPlanning/howToSaveView", "views/retirementPlanning/actionsView", "views/retirementPlanning/editAssumptionsView", "models/v2/retirementPlan"], function(e, t, n, r, i, s, o, u, a, f, l, c) {
         return t.View.extend({
             template: n,
             className: "retirement-plan panel card",
@@ -53670,13 +53671,13 @@ var requirejs, require, define;
                         financialPlan: this.financialPlan
                     })
                 }.bind(this), function() {
-                    BMT.router.navigate("retireGuideStart", !0)
+                    BS.router.navigate("retireGuideStart", !0)
                 }).then(function(e) {
                     this.retirementPlan = e, this.preloadComplete(), this.renderSubviews()
                 }.bind(this))
             },
             preloadDependencies: function() {
-                return this.financialProfile = BMT.user.getFinancialProfile(), this.externalAccounts = BMT.user.get("externalAccounts"), this.financialPlan = BMT.user.get("financialPlans").selected(), r.whenAll([this.financialProfile.fetch(), this.externalAccounts.fetch()]).then(function() {
+                return this.financialProfile = BS.user.getFinancialProfile(), this.externalAccounts = BS.user.get("externalAccounts"), this.financialPlan = BS.user.get("financialPlans").selected(), r.whenAll([this.financialProfile.fetch(), this.externalAccounts.fetch()]).then(function() {
                     if (!this.financialProfile.is("complete") || !this.financialPlan.is("complete")) return $.Deferred().reject().promise()
                 }.bind(this))
             },
@@ -53735,11 +53736,11 @@ var requirejs, require, define;
                 this.retirementPlan.get("financialProfile").save(), this.retirementPlan.get("financialPlan").save()
             }, 1500, !1)
         })
-    }), define("views/common/accountGroupSelectionView", ["common/betterment.views"], function(e) {
+    }), define("views/common/accountGroupSelectionView", ["common/betasmartz.views"], function(e) {
         return e.View.extend({
             onShow: function() {
-                var e = BMT.user.get("accountGroups").get(this.options.accountGroupId);
-                e ? BMT.setAccountGroup(e) : BMT.router.navigate("summary", {
+                var e = BS.user.get("accountGroups").get(this.options.accountGroupId);
+                e ? BS.setAccountGroup(e) : BS.router.navigate("summary", {
                     trigger: !0
                 })
             }
@@ -53772,11 +53773,11 @@ var requirejs, require, define;
             accountGroupSelection: S,
             allocation: s
         }
-    }), define("common/router", ["jquery", "underscore", "backbone", "common/pages", "models/passwordReset", "models/visitor", "common/betterment.models", "components/common/scripts/services/browserService", "components/common/scripts/services/domainService"], function(e, t, n, r, i, s, o, u, a) {
+    }), define("common/router", ["jquery", "underscore", "backbone", "common/pages", "models/passwordReset", "models/visitor", "common/betasmartz.models", "components/common/scripts/services/browserService", "components/common/scripts/services/domainService"], function(e, t, n, r, i, s, o, u, a) {
         function l(n, i) {
-            BMT.vent.trigger("goto", n);
+            BS.vent.trigger("goto", n);
             var s = r[n];
-            BMT.currentPage = n;
+            BS.currentPage = n;
             if (t.isString(s)) e.ajax({
                 dataType: "script",
                 url: s
@@ -53784,7 +53785,7 @@ var requirejs, require, define;
             else {
                 var o = s,
                     u = new o(i);
-                BMT.showMainContent(u)
+                BS.showMainContent(u)
             }
         }
         var f = {};
@@ -53835,51 +53836,51 @@ var requirejs, require, define;
             },
             gotoPage: function(e, n) {
                 t.extend(f, n), this.initialPage = null, this.initialOptions = {};
-                if (e === "signup" && u.isMobile()) BMT.goToSignup(f.token);
+                if (e === "signup" && u.isMobile()) BS.goToSignup(f.token);
                 else if (e === "demo") {
-                    if (BMT.hasLoggedInUser() && BMT.user.isFull()) {
+                    if (BS.hasLoggedInUser() && BS.user.isFull()) {
                         this.navigate("", !0);
                         return
                     }
                     var i = this;
-                    BMT.session.save({
+                    BS.session.save({
                         userName: "demo@example.org"
                     }, {
                         success: function() {
                             i.navigate("", !0)
                         }
                     })
-                } else if (BMT.hasLoggedInUser()) {
+                } else if (BS.hasLoggedInUser()) {
                     var s = r[e] ? e : "summary",
-                        o = e === "login" || e === "profile" && BMT.user.is("demo") || e === "signup" && BMT.user.isFull();
+                        o = e === "login" || e === "profile" && BS.user.is("demo") || e === "signup" && BS.user.isFull();
                     if (o) {
                         this.browserRedirect("summary");
                         return
                     }
-                    if (BMT.accountGroup.isClosed() && !t.contains(["activity", "profile"], e)) {
+                    if (BS.accountGroup.isClosed() && !t.contains(["activity", "profile"], e)) {
                         this.browserRedirect("activity");
                         return
-                    }!t.contains(["goalSetup", "rollover"], e) && BMT.selectedAccount && !BMT.selectedAccount.isComplete() && (BMT.selectedAccount = BMT.accounts().at(0)), BMT.ribbonDrawer.currentView && !BMT.ribbonDrawer.currentView.options.preventClose && BMT.vent.trigger("closeDrawer"), l(s, f), f = {}, BMT.refreshBanners()
+                    }!t.contains(["goalSetup", "rollover"], e) && BS.selectedAccount && !BS.selectedAccount.isComplete() && (BS.selectedAccount = BS.accounts().at(0)), BS.ribbonDrawer.currentView && !BS.ribbonDrawer.currentView.options.preventClose && BS.vent.trigger("closeDrawer"), l(s, f), f = {}, BS.refreshBanners()
                 } else e !== "login" && (this.initialPage = r[e] ? e : "summary", this.initialOptions = f), this.navigate("", !0)
             },
             gotoLogin: function(n) {
                 var i = this,
-                    o = !BMT.hasLoggedInUser(),
+                    o = !BS.hasLoggedInUser(),
                     u = this.initialPage,
                     a = this.initialOptions;
-                o && BMT.user.fetch({
+                o && BS.user.fetch({
                     skipErrorAlert: !0,
                     success: function(t, n) {
-                        e.cookie(BMT.userNameCookieKey, null, {
+                        e.cookie(BS.userNameCookieKey, null, {
                             domain: location.host === "localhost" ? "localhost" : "betasmartz.com",
                             path: "/"
-                        }), BMT.session.parse(), BMT.session.refreshTokens().then(function() {
-                            BMT.vent.trigger("login")
+                        }), BS.session.parse(), BS.session.refreshTokens().then(function() {
+                            BS.vent.trigger("login")
                         })
                     },
                     error: function() {
                         function l(t) {
-                            i.navigate(f, !1), BMT.showMainContent(new r[e](o))
+                            i.navigate(f, !1), BS.showMainContent(new r[e](o))
                         }
                         var e = u === "signup" ? "signup" : "login",
                             o = t.extend({
@@ -53906,7 +53907,7 @@ var requirejs, require, define;
                 }, this.navigate("transfer", !0)
             },
             retirementPlanStart: function() {
-                !BMT.user.isLoggedIn() || BMT.user.get("financialPlans").selected().isNew() ? this.gotoPage("retireGuideStart") : this.navigate("retireGuideSetup", !0)
+                !BS.user.isLoggedIn() || BS.user.get("financialPlans").selected().isNew() ? this.gotoPage("retireGuideStart") : this.navigate("retireGuideSetup", !0)
             },
             retirementPlanSetupStep: function(e) {
                 f = {
@@ -53919,27 +53920,27 @@ var requirejs, require, define;
                 })
             },
             forgotPassword: function() {
-                BMT.hasSession() || s.fetch().always(function() {
-                    BMT.showMainContent(new r.forgotPassword)
+                BS.hasSession() || s.fetch().always(function() {
+                    BS.showMainContent(new r.forgotPassword)
                 })
             },
             confirmEmail: function(e) {
                 var t = this;
-                BMT.hasSession() || (new o.Model).save({
+                BS.hasSession() || (new o.Model).save({
                     key: e
                 }, {
                     skipErrorAlert: !0,
                     forceSave: !0,
                     url: "/emailConfirmation",
                     success: function() {
-                        BMT.alert({
+                        BS.alert({
                             title: "Email address confirmed",
                             body: "Your email address has been confirmed!",
                             icon: "accept"
                         })
                     },
                     error: function() {
-                        BMT.alert({
+                        BS.alert({
                             title: "Problem confirming email",
                             body: "There was a problem confirming your email address. Please contact support",
                             icon: "block"
@@ -53952,14 +53953,14 @@ var requirejs, require, define;
             },
             passwordReset: function(e) {
                 var t = this;
-                if (!BMT.hasSession()) {
+                if (!BS.hasSession()) {
                     var n = new i({
                         key: e
                     });
                     n.fetch({
                         success: function() {
                             s.fetch().always(function() {
-                                BMT.showMainContent(new r.passwordReset({
+                                BS.showMainContent(new r.passwordReset({
                                     model: n
                                 }))
                             })
@@ -54198,7 +54199,7 @@ var requirejs, require, define;
                 o = []
         }
         typeof define == "function" && define.amd && define.amd.jQuery ? define("jqueryBlockUI", ["jquery"], e) : e(jQuery)
-    }(), define("regions/modalRegion", ["jquery", "underscore", "marionette", "common/betterment.views", "jqueryBlockUI"], function(e, t, n, r) {
+    }(), define("regions/modalRegion", ["jquery", "underscore", "marionette", "common/betasmartz.views", "jqueryBlockUI"], function(e, t, n, r) {
         var i = 1e5,
             s = 0,
             o = [];
@@ -54276,7 +54277,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="drawer-ribbon-region"></div>\n<div class="close-drawer collapse-circle"></div>\n'
         });
         return t.registerPartial("views/drawers/baseDrawer", n), n
-    }), define("views/drawers/baseDrawerView", ["common/betterment.views", "hbs!views/drawers/baseDrawer"], function(e, t) {
+    }), define("views/drawers/baseDrawerView", ["common/betasmartz.views", "hbs!views/drawers/baseDrawer"], function(e, t) {
         return e.View.extend({
             template: t,
             events: {
@@ -54286,7 +54287,7 @@ var requirejs, require, define;
                 drawerRibbonRegion: ".drawer-ribbon-region"
             },
             closeDrawer: function() {
-                BMT.vent.trigger("closeDrawer")
+                BS.vent.trigger("closeDrawer")
             },
             transitionToRibbon: function(e, t) {
                 var n = new e(t || {});
@@ -54295,7 +54296,7 @@ var requirejs, require, define;
                 }.bind(this)) : this.drawerRibbonRegion.show(n)
             }
         })
-    }), define("views/taxLossHarvesting/baseTlhRibbonView", ["common/betterment.views"], function(e) {
+    }), define("views/taxLossHarvesting/baseTlhRibbonView", ["common/betasmartz.views"], function(e) {
         return e.View.extend({
             className: "tlh-ribbon",
             onShow: function() {
@@ -54310,7 +54311,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<iframe width="560" height="315" src="//www.youtube.com/embed/bX_AO-fQ-y0?modestbranding=1&rel=0&showinfo=0&autoplay=1&autohide=1" frameborder="0" allowfullscreen></iframe>\n<div class="actions">\n    <button>&lt; Back to activation</button>\n</div>\n'
         });
         return t.registerPartial("views/taxLossHarvesting/videoModal", n), n
-    }), define("views/taxLossHarvesting/videoModalView", ["common/betterment.views", "hbs!views/taxLossHarvesting/videoModal"], function(e, t) {
+    }), define("views/taxLossHarvesting/videoModalView", ["common/betasmartz.views", "hbs!views/taxLossHarvesting/videoModal"], function(e, t) {
         return e.ModalView.extend({
             className: "tlh-video-modal",
             template: t,
@@ -54318,13 +54319,13 @@ var requirejs, require, define;
                 "click button": "onCancel"
             },
             onInitialize: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "TLHVideo",
                     Location: "TLHRibbon"
                 })
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("views/taxLossHarvesting/introRibbonView", ["views/taxLossHarvesting/baseTlhRibbonView", "services/flyoverService", "services/taxLossHarvestingService", "components/common/scripts/models/appData", "views/notifications/dismissibleFlyoverView", "views/taxLossHarvesting/videoModalView"], function(e, t, n, r, i, s) {
@@ -54344,39 +54345,39 @@ var requirejs, require, define;
                 }
             },
             isEnabled: function() {
-                return n.isUserOn(BMT.accountGroup)
+                return n.isUserOn(BS.accountGroup)
             },
             onConfirm: function() {
                 if (this.isEnabled()) {
                     this.onCancel();
                     return
                 }
-                this.$(".confirm").prop("disabled", !0), BMT.analytics.track("ElementClicked", {
+                this.$(".confirm").prop("disabled", !0), BS.analytics.track("ElementClicked", {
                     Name: "TurnOnTLH",
-                    Balance: BMT.accountGroup.getTotalBalance(),
+                    Balance: BS.accountGroup.getTotalBalance(),
                     Location: "TLHRibbon"
-                }), BMT.vent.trigger("taxLossHarvesting:consent"), BMT.vent.trigger("taxLossHarvesting:update")
+                }), BS.vent.trigger("taxLossHarvesting:consent"), BS.vent.trigger("taxLossHarvesting:update")
             },
             openBlog: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "TLHBlog",
                     Location: "TLHRibbon"
                 })
             },
             openWhitepaper: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "TLHWhitepaper",
                     Location: "TLHRibbon"
                 })
             },
             openVideo: function() {
-                BMT.modal.show(new s)
+                BS.modal.show(new s)
             },
             onCancel: function() {
-                BMT.vent.trigger("closeDrawer")
+                BS.vent.trigger("closeDrawer")
             }
         })
-    }), define("views/common/supportView", ["jquery", "underscore", "backbone", "common/betterment.views", "common/betterment.models"], function(e, t, n, r, i) {
+    }), define("views/common/supportView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "common/betasmartz.models"], function(e, t, n, r, i) {
         var s = i.Model.extend({
             url: "/supportEmail",
             labels: {
@@ -54405,14 +54406,14 @@ var requirejs, require, define;
                     return this.self.useUserName()
                 },
                 supportPhoneNumber: function() {
-                    return BMT.accountGroup.isAdvised() ? "888-400-1571" : "888-428-9482"
+                    return BS.accountGroup.isAdvised() ? "888-400-1571" : "888-428-9482"
                 }
             },
             useUserName: function() {
-                return BMT.hasSession() && BMT.user.not("demo")
+                return BS.hasSession() && BS.user.not("demo")
             },
             onInitialize: function() {
-                var e = this.useUserName() ? BMT.user.get("userName") : "";
+                var e = this.useUserName() ? BS.user.get("userName") : "";
                 this.model = new s({
                     from: e
                 })
@@ -54426,7 +54427,7 @@ var requirejs, require, define;
                 this.model.validate(r) || (this.block(), this.model.save(r, {
                     forceSave: !0,
                     success: function() {
-                        BMT.modal.close(t), BMT.flash("Your question has been sent to support, we will respond shortly")
+                        BS.modal.close(t), BS.flash("Your question has been sent to support, we will respond shortly")
                     },
                     complete: function() {
                         t.unblock()
@@ -54434,7 +54435,7 @@ var requirejs, require, define;
                 }))
             },
             onCancel: function(e) {
-                BMT.modal.close(this)
+                BS.modal.close(this)
             }
         })
     }), define("components/common/scripts/templateHelpers/cdnUrl", ["hbs/handlebars", "components/common/scripts/util/handlebarsHelpers", "components/common/scripts/services/domainService"], function(e, t, n) {
@@ -54463,7 +54464,7 @@ var requirejs, require, define;
             templateHelpers: {
                 accountGroupText: function() {
                     var e;
-                    return BMT.accountGroup.isTrust() ? e = "In addition to your trust account, do you have a funded personal account, SMF, or joint account?" : BMT.accountGroup.isJointAccount() ? e = "In addition to your joint account, do you have a funded personal account, SMF, or trust account?" : e = "In addition to your personal account, do you have a funded joint account or trust account?", i.s(e)
+                    return BS.accountGroup.isTrust() ? e = "In addition to your trust account, do you have a funded personal account, SMF, or joint account?" : BS.accountGroup.isJointAccount() ? e = "In addition to your joint account, do you have a funded personal account, SMF, or trust account?" : e = "In addition to your personal account, do you have a funded joint account or trust account?", i.s(e)
                 }
             },
             events: {
@@ -54498,33 +54499,33 @@ var requirejs, require, define;
                 }
             },
             onConfirm: function() {
-                this.validate() && (this.$(".confirm").prop("disabled", !0), n.consentForAccountGroup(BMT.accountGroup).then(function() {
-                    BMT.analytics.track("TLHEnabled", {
+                this.validate() && (this.$(".confirm").prop("disabled", !0), n.consentForAccountGroup(BS.accountGroup).then(function() {
+                    BS.analytics.track("TLHEnabled", {
                         Location: "TLHRibbon"
-                    }), BMT.vent.trigger("taxLossHarvesting:complete"), BMT.vent.trigger("taxLossHarvesting:update")
+                    }), BS.vent.trigger("taxLossHarvesting:complete"), BS.vent.trigger("taxLossHarvesting:update")
                 }, function() {
                     this.$(".confirm").removeAttr("disabled")
                 }.bind(this)))
             },
             onCancel: function() {
-                BMT.vent.trigger("closeDrawer")
+                BS.vent.trigger("closeDrawer")
             },
             haveSpouseChanged: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "SpouseAgree",
                     Location: "TLHRibbon",
                     Value: $(e.currentTarget).val().capitalize()
                 }), this._showAdviceMessage(e), this._checkValidAnswer(e)
             },
             haveJointAcctChanged: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "JointAcctAgree",
                     Location: "TLHRibbon",
                     Value: $(e.currentTarget).val().capitalize()
                 }), this._showAdviceMessage(e), this._checkValidAnswer(e)
             },
             haveEtfsChanged: function(e) {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "OtherETFAgree",
                     Location: "TLHRibbon",
                     Value: $(e.currentTarget).val().capitalize()
@@ -54566,10 +54567,10 @@ var requirejs, require, define;
                 return this.$("[name=have-spouse]:checked").val() === "no" && this.$("[name=have-joint-acct]:checked").val() === "no" && this.$("[name=agreement]").is(":checked")
             },
             showSupport: function(e) {
-                e.preventDefault(), BMT.modal.show(new t)
+                e.preventDefault(), BS.modal.show(new t)
             },
             backToLearnMore: function() {
-                BMT.vent.trigger("taxLossHarvesting:learnMore")
+                BS.vent.trigger("taxLossHarvesting:learnMore")
             }
         })
     }), define("hbs!views/taxLossHarvesting/completeRibbon", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -54594,7 +54595,7 @@ var requirejs, require, define;
             },
             onInitialize: function() {
                 this.listenTo(this, "destroy", function() {
-                    if (r.isUserOn(BMT.accountGroup)) {
+                    if (r.isUserOn(BS.accountGroup)) {
                         var e = new s({}, {
                             view: o,
                             template: n
@@ -54608,19 +54609,19 @@ var requirejs, require, define;
                 })
             },
             onConfirm: function() {
-                BMT.vent.trigger("closeDrawer")
+                BS.vent.trigger("closeDrawer")
             },
             onTurnOff: function() {
-                this.$(".turn-off").prop("disabled", !0), r.disableForAccountGroup(BMT.accountGroup).then(function() {
-                    BMT.analytics.track("TLHDisabled", {
+                this.$(".turn-off").prop("disabled", !0), r.disableForAccountGroup(BS.accountGroup).then(function() {
+                    BS.analytics.track("TLHDisabled", {
                         Location: "TLHRibbon"
-                    }), BMT.flash("Tax Loss Harvesting has been disabled."), BMT.vent.trigger("taxLossHarvesting:update"), BMT.vent.trigger("closeDrawer")
+                    }), BS.flash("Tax Loss Harvesting has been disabled."), BS.vent.trigger("taxLossHarvesting:update"), BS.vent.trigger("closeDrawer")
                 }).fail(function() {
                     this.$(".turn-off").removeAttr("disabled")
                 }.bind(this))
             },
             changeAutoDepositSettings: function() {
-                BMT.router.navigate("transfer", !0)
+                BS.router.navigate("transfer", !0)
             }
         })
     }), define("hbs!views/taxLossHarvesting/whatToExpectRibbon", ["hbs", "hbs/handlebars", "components/common/scripts/templateHelpers/link"], function(e, t) {
@@ -54628,7 +54629,7 @@ var requirejs, require, define;
             this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers);
             var s = "",
                 o, u, a, f = n.helperMissing;
-            s += '<div class="inner">\n    <h1>Learn about <span class="blue">Tax Loss Harvesting</span> </h1>\n    <div class="clearfix content">\n        <div class="white-box how-it-works">\n            <div class="top-image"></div>\n            <h2 class="blue">How It Works</h2>\n            <p>Securities with material losses are sold and replaced with similar securities.\n            Total losses harvested are displayed on Summary, and transaction details on Activity.</p>\n        </div>\n\n        <div class="white-box what-to-expect">\n            <div class="top-image"></div>\n            <h2 class="blue">What to Expect</h2>\n            <p>Current holdings, including replacement securities, are displayed on the Portfolio page.\n            Transactions rebalance your portfolio which saves you taxes later.</p>\n        </div>\n\n        <div class="white-box your-tax-return">\n            <div class="top-image"></div>\n            <h2 class="blue">Your Tax Return</h2>\n            <p>The benefits of Tax Loss Harvesting will appear on your tax return when you file as\n            usual using Betterment&#39;s tax forms. ', o = (u = n.link || t && t.link, a = {
+            s += '<div class="inner">\n    <h1>Learn about <span class="blue">Tax Loss Harvesting</span> </h1>\n    <div class="clearfix content">\n        <div class="white-box how-it-works">\n            <div class="top-image"></div>\n            <h2 class="blue">How It Works</h2>\n            <p>Securities with material losses are sold and replaced with similar securities.\n            Total losses harvested are displayed on Summary, and transaction details on Activity.</p>\n        </div>\n\n        <div class="white-box what-to-expect">\n            <div class="top-image"></div>\n            <h2 class="blue">What to Expect</h2>\n            <p>Current holdings, including replacement securities, are displayed on the Portfolio page.\n            Transactions rebalance your portfolio which saves you taxes later.</p>\n        </div>\n\n        <div class="white-box your-tax-return">\n            <div class="top-image"></div>\n            <h2 class="blue">Your Tax Return</h2>\n            <p>The benefits of Tax Loss Harvesting will appear on your tax return when you file as\n            usual using Betasmartz&#39;s tax forms. ', o = (u = n.link || t && t.link, a = {
                 hash: {}
             }, u ? u.call(t, t && t.learnMoreLink, a) : f.call(t, "link", t && t.learnMoreLink, a));
             if (o || o === 0) s += o;
@@ -54666,13 +54667,13 @@ var requirejs, require, define;
                 }
             },
             onConfirm: function() {
-                BMT.vent.trigger("closeDrawer")
+                BS.vent.trigger("closeDrawer")
             },
             onTurnOff: function() {
-                this.$(".turn-off").prop("disabled", !0), n.disableForAccountGroup(BMT.accountGroup).then(function() {
-                    BMT.analytics.track("TLHDisabled", {
+                this.$(".turn-off").prop("disabled", !0), n.disableForAccountGroup(BS.accountGroup).then(function() {
+                    BS.analytics.track("TLHDisabled", {
                         Location: "TLHRibbon"
-                    }), BMT.flash("Tax Loss Harvesting has been disabled."), BMT.vent.trigger("taxLossHarvesting:update"), BMT.vent.trigger("closeDrawer")
+                    }), BS.flash("Tax Loss Harvesting has been disabled."), BS.vent.trigger("taxLossHarvesting:update"), BS.vent.trigger("closeDrawer")
                 }).fail(function() {
                     this.$(".turn-off").removeAttr("disabled")
                 }.bind(this))
@@ -54682,15 +54683,15 @@ var requirejs, require, define;
         return e.extend({
             id: "tlhRibbon",
             onInitialize: function() {
-                this.listenTo(BMT.vent, "taxLossHarvesting:learnMore", function() {
-                    BMT.analytics.track("ElementViewed", {
+                this.listenTo(BS.vent, "taxLossHarvesting:learnMore", function() {
+                    BS.analytics.track("ElementViewed", {
                         Name: "TLHRibbon"
                     }), this.transitionToRibbon(t)
-                }), this.listenTo(BMT.vent, "taxLossHarvesting:consent", function() {
+                }), this.listenTo(BS.vent, "taxLossHarvesting:consent", function() {
                     this.transitionToRibbon(n)
-                }), this.listenTo(BMT.vent, "taxLossHarvesting:complete", function() {
+                }), this.listenTo(BS.vent, "taxLossHarvesting:complete", function() {
                     this.transitionToRibbon(r)
-                }), this.listenTo(BMT.vent, "taxLossHarvesting:whatToExpect", function() {
+                }), this.listenTo(BS.vent, "taxLossHarvesting:whatToExpect", function() {
                     this.transitionToRibbon(i)
                 })
             }
@@ -54705,7 +54706,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<p>\n    Joint accounts allow you to create and manage your financial goals together.<br/>\n    Each joint account holder has access to the account and can transfer funds, create goals and more.\n</p>\n\n<ol class="tiles">\n    <li class="tile joint-invite">\n        <h3>Invite someone</h3>\n        <p>The joint account holder will receive an invitation via email.</p>\n    </li>\n    <li class="tile joint-link">\n        <h3>Link a Checking Account</h3>\n        <p>Link existing checking account or add a new one to your joint account.</p>\n    </li>\n    <li class="tile joint-add">\n        <h3>Create Goals</h3>\n        <p>Create goals to start<br>investing together.</p>\n    </li>\n</ol>\n\n<a class="faq-link" href="#" target="_blank">Frequently Asked Questions &gt;</a>\n\n<button>\n    Open now\n</button>\n'
         });
         return t.registerPartial("views/jointAccountSignup/splash", n), n
-    }), define("views/jointAccountSignup/splashView", ["common/betterment.views", "components/common/scripts/analytics/analytics", "hbs!views/jointAccountSignup/splash"], function(e, t, n) {
+    }), define("views/jointAccountSignup/splashView", ["common/betasmartz.views", "components/common/scripts/analytics/analytics", "hbs!views/jointAccountSignup/splash"], function(e, t, n) {
         return e.View.extend({
             className: "splash",
             events: {
@@ -54715,7 +54716,7 @@ var requirejs, require, define;
             next: function() {
                 t.track("ElementClicked", {
                     Name: "JointAccountStart",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
                 }), this.trigger("next")
             }
@@ -54753,7 +54754,7 @@ var requirejs, require, define;
             return s += '\n\n    <div class="button-wrapper">\n        <button disabled="disabled">\n            Continue\n        </button>\n    </div>\n</form>\n', s
         });
         return t.registerPartial("views/jointAccountSignup/account", n), n
-    }), define("views/jointAccountSignup/accountView", ["common/betterment.views", "hbs!views/jointAccountSignup/account", "components/common/scripts/analytics/analytics", "models/v1/jointAccountInvite"], function(e, t, n, r) {
+    }), define("views/jointAccountSignup/accountView", ["common/betasmartz.views", "hbs!views/jointAccountSignup/account", "components/common/scripts/analytics/analytics", "models/v1/jointAccountInvite"], function(e, t, n, r) {
         return e.View.extend({
             events: {
                 "click button": "next",
@@ -54768,11 +54769,11 @@ var requirejs, require, define;
             template: t,
             templateHelpers: {
                 canRetitle: function() {
-                    return !BMT.accountGroup.hasIRAGoal()
+                    return !BS.accountGroup.hasIRAGoal()
                 }
             },
             onShow: function() {
-                BMT.accountGroup.hasIRAGoal() && (this.ui.addOwnerLabel.addClass("disabled"), this.ui.addOwnerInput.prop("disabled", !0))
+                BS.accountGroup.hasIRAGoal() && (this.ui.addOwnerLabel.addClass("disabled"), this.ui.addOwnerInput.prop("disabled", !0))
             },
             inputsChanged: function() {
                 this.ui.nextButton.prop("disabled", !1), this.model.set({
@@ -54782,7 +54783,7 @@ var requirejs, require, define;
             next: function(e) {
                 n.track("ElementClicked", {
                     Name: "JointAccountMethod",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
                 }), this.trigger("next")
             }
@@ -54792,7 +54793,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<form class="agreement">\n    <h1>Customer agreement</h1>\n\n    <div class="tlh-warning">\n          </div>\n\n    <div class="terms-of-service"></div>\n\n    <div class="button-wrapper">\n        <button class="accept-agreement" disabled="disabled">\n            Continue\n        </button>\n    </div>\n</form>\n'
         });
         return t.registerPartial("views/jointAccountSignup/acceptAgreement", n), n
-    }), define("views/jointAccountSignup/acceptAgreementView", ["common/betterment.views", "hbs!views/jointAccountSignup/acceptAgreement", "components/common/scripts/services/browserService", "components/common/scripts/analytics/analytics", "models/v1/jointAccountInvite", "views/common/termsOfServiceView"], function(e, t, n, r, i, s) {
+    }), define("views/jointAccountSignup/acceptAgreementView", ["common/betasmartz.views", "hbs!views/jointAccountSignup/acceptAgreement", "components/common/scripts/services/browserService", "components/common/scripts/analytics/analytics", "models/v1/jointAccountInvite", "views/common/termsOfServiceView"], function(e, t, n, r, i, s) {
         return e.View.extend({
             events: {
                 "click button": "next",
@@ -54822,7 +54823,7 @@ var requirejs, require, define;
             next: function(e) {
                 this.termsOfServiceRegion.currentView.checkAgreements(), this.model.get("acceptedAgreement") && (r.track("ElementClicked", {
                     Name: "JointAccountAgree",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
                 }), this.trigger("next"))
             }
@@ -54932,7 +54933,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '</a>.\n        </p>\n    </div>\n\n    <div class="button-wrapper">\n        <button class="send-invite" disabled="disabled">\n            Send invitation\n        </button>\n    </div>\n</form>\n', s
         });
         return t.registerPartial("views/jointAccountSignup/invite", n), n
-    }), define("views/jointAccountSignup/inviteView", ["underscore", "common/betterment.views", "hbs!views/jointAccountSignup/invite", "components/common/scripts/analytics/analytics", "components/common/scripts/services/browserService", "components/common/scripts/services/domainService", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o) {
+    }), define("views/jointAccountSignup/inviteView", ["underscore", "common/betasmartz.views", "hbs!views/jointAccountSignup/invite", "components/common/scripts/analytics/analytics", "components/common/scripts/services/browserService", "components/common/scripts/services/domainService", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o) {
         var u = {
             advisedUsers: "advised-email",
             invitationExists: "invitation-exists",
@@ -54975,14 +54976,14 @@ var requirejs, require, define;
             next: function(e) {
                 this.hideErrors();
                 var t = this.ui.input.val().trim();
-                t.toLowerCase() === BMT.user.get("userName").toLowerCase() ? this.showErrors("own-email") : (this.block(), this.model.save({
+                t.toLowerCase() === BS.user.get("userName").toLowerCase() ? this.showErrors("own-email") : (this.block(), this.model.save({
                     invitedEmail: t
                 }, {
                     skipErrorAlert: !0,
                     success: function(e) {
                         this.unblock(), r.track("ElementClicked", {
                             Name: "JointAccountInvite",
-                            Location: BMT.currentPage.capitalize(),
+                            Location: BS.currentPage.capitalize(),
                             Type: "Button"
                         }), this.trigger("next", e.get("accountGroupId"), t)
                     }.bind(this),
@@ -54991,11 +54992,11 @@ var requirejs, require, define;
                         var n = this.extractError(t);
                         this.showErrors(n), n === "advised-email" ? r.track("ElementClicked", {
                             Name: "JointAccountInvite_AdvisedError",
-                            Location: BMT.currentPage.capitalize(),
+                            Location: BS.currentPage.capitalize(),
                             Type: "Button"
                         }) : r.track("ElementClicked", {
                             Name: "JointAccountInvite_NonCustomerError",
-                            Location: BMT.currentPage.capitalize(),
+                            Location: BS.currentPage.capitalize(),
                             Type: "Button"
                         })
                     }.bind(this)
@@ -55018,7 +55019,7 @@ var requirejs, require, define;
                 })
             },
             scrollToInvite: function() {
-                BMT.router.navigate("invite", {
+                BS.router.navigate("invite", {
                     trigger: !0
                 }), $("html, body").animate({
                     scrollTop: $("#invite").offset().top
@@ -55050,7 +55051,7 @@ var requirejs, require, define;
             return s += '\n            </div>\n        </div>\n\n        <div class="no-linked-account">\n            <p class="secondary">\n                You\'ll be able to link your checking account<br/>\n                after creating your joint account.\n            </p>\n        </div>\n    </div>\n\n    <div class="retitle-message">\n        <p class="secondary">\n            You do not need to specify a bank account at this time because you are adding an owner to your existing account.\n        </p>\n    </div>\n\n    <div class="button-wrapper">\n        <button class="link-bank">\n            Continue\n        </button>\n    </div>\n</form>\n', s
         });
         return t.registerPartial("views/jointAccountSignup/linkBank", n), n
-    }), define("views/jointAccountSignup/linkBankView", ["common/betterment.views", "components/common/scripts/analytics/analytics", "hbs!views/jointAccountSignup/linkBank", "services/bankAccountService"], function(e, t, n, r) {
+    }), define("views/jointAccountSignup/linkBankView", ["common/betasmartz.views", "components/common/scripts/analytics/analytics", "hbs!views/jointAccountSignup/linkBank", "services/bankAccountService"], function(e, t, n, r) {
         return e.View.extend({
             events: {
                 "click button": "next"
@@ -55071,7 +55072,7 @@ var requirejs, require, define;
                 }
             },
             getBankAccount: function() {
-                var e = r.getPersonalBankAccount(BMT.user);
+                var e = r.getPersonalBankAccount(BS.user);
                 if (e && e.isActiveAndConfirmed()) return e
             },
             onRender: function() {
@@ -55081,11 +55082,11 @@ var requirejs, require, define;
                 }.bind(this))
             },
             next: function() {
-                this.$("input[name=bankAccount]:checked").val() === "personal" && r.copyPersonalBankAccount(BMT.user, this.model, {
+                this.$("input[name=bankAccount]:checked").val() === "personal" && r.copyPersonalBankAccount(BS.user, this.model, {
                     skipErrorAlert: !0
                 }), t.track("ElementClicked", {
                     Name: "JointAccountBank",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
                 }), this.trigger("next")
             }
@@ -55121,7 +55122,7 @@ var requirejs, require, define;
             return s += "\n    </div>\n</div>\n", s
         });
         return t.registerPartial("views/jointAccountSignup/confirmAccount", n), n
-    }), define("views/jointAccountSignup/confirmAccountView", ["common/betterment.views", "components/common/scripts/analytics/analytics", "hbs!views/jointAccountSignup/confirmAccount"], function(e, t, n) {
+    }), define("views/jointAccountSignup/confirmAccountView", ["common/betasmartz.views", "components/common/scripts/analytics/analytics", "hbs!views/jointAccountSignup/confirmAccount"], function(e, t, n) {
         return e.View.extend({
             events: {
                 "click button.finish-confirm": "next",
@@ -55143,19 +55144,19 @@ var requirejs, require, define;
             next: function() {
                 t.track("ElementClicked", {
                     Name: "JointAccountDone",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
-                }), this.options.inviteModel.is("isRetitle") ? (BMT.vent.trigger("closeDrawer"), BMT.accountGroup.unset("jointAccountPendingInviteCollection"), BMT.refreshJointAccountInviteBanner()) : (this.block(), this.trigger("next"))
+                }), this.options.inviteModel.is("isRetitle") ? (BS.vent.trigger("closeDrawer"), BS.accountGroup.unset("jointAccountPendingInviteCollection"), BS.refreshJointAccountInviteBanner()) : (this.block(), this.trigger("next"))
             },
             cancel: function() {
                 t.track("ElementClicked", {
                     Name: "JointAccountDone",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
-                }), BMT.showLoading(), BMT.vent.trigger("closeDrawer"), this.trigger("cancel")
+                }), BS.showLoading(), BS.vent.trigger("closeDrawer"), this.trigger("cancel")
             }
         })
-    }), define("views/jointAccountSignup/jointAccountSignupLayout", ["underscore", "common/betterment.views", "common/betterment.models", "hbs!views/jointAccountSignup/jointAccountSignup", "components/progressNav/scripts/progressNavView", "views/jointAccountSignup/splashView", "views/jointAccountSignup/accountView", "views/jointAccountSignup/acceptAgreementView", "views/jointAccountSignup/inviteView", "views/jointAccountSignup/linkBankView", "views/jointAccountSignup/confirmAccountView", "models/accountGroup", "models/v1/jointAccountInvite", "services/popoverService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
+    }), define("views/jointAccountSignup/jointAccountSignupLayout", ["underscore", "common/betasmartz.views", "common/betasmartz.models", "hbs!views/jointAccountSignup/jointAccountSignup", "components/progressNav/scripts/progressNavView", "views/jointAccountSignup/splashView", "views/jointAccountSignup/accountView", "views/jointAccountSignup/acceptAgreementView", "views/jointAccountSignup/inviteView", "views/jointAccountSignup/linkBankView", "views/jointAccountSignup/confirmAccountView", "models/accountGroup", "models/v1/jointAccountInvite", "services/popoverService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p) {
         return t.View.extend({
             className: "joint-account-signup-ribbon",
             template: r,
@@ -55232,13 +55233,13 @@ var requirejs, require, define;
                 this.progressView.setActiveStep(4), this.swipeLeft(this.contentRegion.$el, this.contentRegion, this.confirmAccountView)
             },
             goToAccount: function() {
-                BMT.user.fetch().done(function() {
-                    var e = BMT.user.get("accountGroups").get(this.model.id);
-                    BMT.setAccountGroup(e)
+                BS.user.fetch().done(function() {
+                    var e = BS.user.get("accountGroups").get(this.model.id);
+                    BS.setAccountGroup(e)
                 }.bind(this))
             },
             informJointAccount: function() {
-                BMT.refreshAccountGroup(), p.show("jointAccountAdded")
+                BS.refreshAccountGroup(), p.show("jointAccountAdded")
             }
         })
     }), define("views/drawers/jointAccountSignupView", ["views/drawers/baseDrawerView", "views/jointAccountSignup/jointAccountSignupLayout"], function(e, t) {
@@ -55254,13 +55255,13 @@ var requirejs, require, define;
                 this.$(".collapse-circle").remove(), this.ribbonRegion.show(new t)
             }
         })
-    }), define("regions/drawerRegion", ["jquery", "underscore", "marionette", "common/betterment.views", "components/common/scripts/analytics/analytics", "views/drawers/tlhRibbonView", "views/drawers/jointAccountSignupView"], function(e, t, n, r, i, s, o) {
+    }), define("regions/drawerRegion", ["jquery", "underscore", "marionette", "common/betasmartz.views", "components/common/scripts/analytics/analytics", "views/drawers/tlhRibbonView", "views/drawers/jointAccountSignupView"], function(e, t, n, r, i, s, o) {
         return n.Region.extend({
             el: ".ribbon-drawer",
             initialize: function() {
                 var e = function(e, t, n) {
                     var r = function() {
-                        this.show(t), BMT.vent.trigger(e + ":" + n), this.hideSecondaryContent(), this.$el.slideDown(500, "easeOutExpo", function() {
+                        this.show(t), BS.vent.trigger(e + ":" + n), this.hideSecondaryContent(), this.$el.slideDown(500, "easeOutExpo", function() {
                             this.isShowing = !0
                         }.bind(this))
                     }.bind(this);
@@ -55268,20 +55269,20 @@ var requirejs, require, define;
                         r()
                     }.bind(this)) : r()
                 }.bind(this);
-                this.listenTo(BMT.vent, "openDrawer:showTlhRibbon", function(t) {
+                this.listenTo(BS.vent, "openDrawer:showTlhRibbon", function(t) {
                     var n = new s;
                     e("taxLossHarvesting", n, t)
-                }), this.listenTo(BMT.vent, "openDrawer:showJointAccountSignup", function(t) {
+                }), this.listenTo(BS.vent, "openDrawer:showJointAccountSignup", function(t) {
                     var n = new o;
                     e("jointAccountSignup", n, t)
-                }), this.listenTo(BMT.vent, "closeDrawer", function(e) {
+                }), this.listenTo(BS.vent, "closeDrawer", function(e) {
                     this.closeDrawer()
                 })
             },
             closeDrawer: function(e) {
                 i.track("ElementClicked", {
                     Name: "CloseDrawer",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Button"
                 }), this.showSecondaryContent(), this.$el.slideUp(500, "easeOutExpo", function() {
                     this.empty(), this.isShowing = !1, e && e()
@@ -55301,12 +55302,12 @@ var requirejs, require, define;
             i = {
                 isWebAction: function() {
                     var e = this.get("action_url");
-                    return e && e.indexOf("betterment://") === -1
+                    return e && e.indexOf("betasmartz://") === -1
                 },
                 getAppActionSlug: function() {
                     var t = this.get("action_url");
                     if (this.isWebAction(t)) return "";
-                    var n = t.split("betterment://");
+                    var n = t.split("betasmartz://");
                     return e.last(n)
                 },
                 isUnread: function() {
@@ -55322,7 +55323,7 @@ var requirejs, require, define;
         return t.Model.extend(i)
     }), define("models/v1/feedItems", ["backbone", "underscore", "components/common/scripts/services/domainService", "models/v1/baseCollection", "models/v1/feedItem"], function(e, t, n, r, i) {
         var s = function() {
-                return btoa(["bmt_user_" + BMT.user.get("id"), BMT.session.getToken("notifications")].join(":"))
+                return btoa(["bS_user_" + BS.user.get("id"), BS.session.getToken("notifications")].join(":"))
             },
             o = {
                 model: i,
@@ -55333,7 +55334,7 @@ var requirejs, require, define;
                 },
                 requestData: function() {
                     var e = {
-                        account_group_id: BMT.accountGroup.id,
+                        account_group_id: BS.accountGroup.id,
                         count: this.count
                     };
                     return this.afterId !== null && (e.after_id = this.afterId), e
@@ -55374,7 +55375,7 @@ var requirejs, require, define;
     }), define("services/feedService", ["jquery", "underscore", "backbone", "components/common/scripts/services/dateService", "components/common/scripts/services/domainService", "models/v1/baseModels", "models/v1/feedItems"], function(e, t, n, r, i, s, o) {
         var u = null,
             a = function() {
-                return btoa(["bmt_user_" + BMT.user.get("id"), BMT.session.getToken("notifications")].join(":"))
+                return btoa(["bS_user_" + BS.user.get("id"), BS.session.getToken("notifications")].join(":"))
             },
             f = n.Model.extend({
                 url: function() {
@@ -55405,7 +55406,7 @@ var requirejs, require, define;
                     return u !== null ? t.resolve(u) : n.fetch().then(function() {
                         u = n, t.resolve(n)
                     }, function(e) {
-                        e.status === "401" ? BMT.session.refreshTokens().then(function() {
+                        e.status === "401" ? BS.session.refreshTokens().then(function() {
                             n.fetch().then(function() {
                                 u = n, t.resolve(n)
                             }, function() {
@@ -55509,7 +55510,7 @@ var requirejs, require, define;
             return s += "\n    </div>\n</div>\n", s
         });
         return t.registerPartial("views/feed/feedItem", n), n
-    }), define("views/feed/feedItemView", ["common/betterment.views", "components/common/scripts/analytics/analytics", "services/feedService", "hbs!views/feed/feedItem"], function(e, t, n, r) {
+    }), define("views/feed/feedItemView", ["common/betasmartz.views", "components/common/scripts/analytics/analytics", "services/feedService", "hbs!views/feed/feedItem"], function(e, t, n, r) {
         var i = {
                 template: r,
                 className: "feed-item clearfix",
@@ -55541,7 +55542,7 @@ var requirejs, require, define;
                         Location: "Updates",
                         Name: this.model.get("message_type"),
                         Type: "Button"
-                    }), BMT.router.navigate(this.model.getAppActionSlug(), !0), n.trigger("feed:close"), !1
+                    }), BS.router.navigate(this.model.getAppActionSlug(), !0), n.trigger("feed:close"), !1
                 },
                 onShow: function() {
                     this.model.isUnread() && this.$el.addClass("unread")
@@ -55554,7 +55555,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="cover"></div>\n<div class="heading">\n    Updates\n    <div class="close-tab">x</div>\n</div>\n<div class="newest"></div>\n<div class="load-more">Load More</div>'
         });
         return t.registerPartial("views/feed/feedPanel", n), n
-    }), define("views/feed/feedCompositeView", ["common/betterment.views", "components/common/scripts/analytics/analytics", "services/feedService", "views/feed/feedItemView", "hbs!views/feed/feedPanel"], function(e, t, n, r, i) {
+    }), define("views/feed/feedCompositeView", ["common/betasmartz.views", "components/common/scripts/analytics/analytics", "services/feedService", "views/feed/feedItemView", "hbs!views/feed/feedPanel"], function(e, t, n, r, i) {
         var s = {
                 className: "feed-panel",
                 template: i,
@@ -55609,7 +55610,7 @@ var requirejs, require, define;
                             Offset: this.collection.length
                         }), r < n && this.ui.loadMore.hide()
                     }.bind(this), function() {
-                        BMT.alert({
+                        BS.alert({
                             title: "Updates are not available",
                             body: "We cannot retrieve more notifications right now. Check back again later.",
                             icon: "warning"
@@ -55661,7 +55662,7 @@ var requirejs, require, define;
             }, o ? o.call(t, "pricing", u) : a.call(t, "brochureUrl", "pricing", u))) + '" class="thirty-days" data-track-event="ElementClicked" data-track-module="Explore" data-track-location="UserLinks" data-track-name="Pricing" target="_blank">30 days</a>\n</p>\n<button class="orange large signup" data-track-event="ElementClicked" data-track-module="Explore" data-track-location="UserLinks" data-track-name="Signup">Sign Up</button>\n', s
         });
         return t.registerPartial("views/common/subnav/demoLinks", n), n
-    }), define("views/common/subnav/demoLinksView", ["common/betterment.views", "hbs!views/common/subnav/demoLinks"], function(e, t) {
+    }), define("views/common/subnav/demoLinksView", ["common/betasmartz.views", "hbs!views/common/subnav/demoLinks"], function(e, t) {
         return e.View.extend({
             template: t,
             id: "demoLinks",
@@ -55669,11 +55670,11 @@ var requirejs, require, define;
                 "click .signup": "doSignup"
             },
             doSignup: function(e) {
-                e && e.preventDefault(), BMT.user.is("demo") ? BMT.vent.trigger("logout", {
+                e && e.preventDefault(), BS.user.is("demo") ? BS.vent.trigger("logout", {
                     after: function() {
-                        BMT.accountGroup = BMT.user.getDefaultAccountGroup(), BMT.goToSignup()
+                        BS.accountGroup = BS.user.getDefaultAccountGroup(), BS.goToSignup()
                     }
-                }) : BMT.goToSignup(), BMT.analytics.track("ElementClicked", {
+                }) : BS.goToSignup(), BS.analytics.track("ElementClicked", {
                     Name: "SignUp",
                     Type: "Button",
                     Location: "Header",
@@ -55712,13 +55713,13 @@ var requirejs, require, define;
             }) : u), s += l(o) + "</div>\n", s
         });
         return t.registerPartial("views/common/subnav/accountGroup", n), n
-    }), define("views/common/subnav/accountGroupView", ["common/betterment.views", "hbs!views/common/subnav/accountGroup"], function(e, t) {
+    }), define("views/common/subnav/accountGroupView", ["common/betasmartz.views", "hbs!views/common/subnav/accountGroup"], function(e, t) {
         return e.View.extend({
             template: t,
             className: "accountGroup",
             templateHelpers: {
                 isSelected: function() {
-                    return BMT.accountGroup.get("id") === this.self.model.get("id")
+                    return BS.accountGroup.get("id") === this.self.model.get("id")
                 }
             },
             events: {
@@ -55728,17 +55729,17 @@ var requirejs, require, define;
                 this.templateHelpers.isSelected() && this.$el.addClass("selected")
             },
             selectAccountGroup: function() {
-                BMT.setAccountGroup(this.model)
+                BS.setAccountGroup(this.model)
             }
         })
-    }), define("views/common/subnav/accountGroupsCollectionView", ["jquery", "underscore", "backbone", "common/betterment.views", "views/common/subnav/accountGroupView"], function(e, t, n, r, i) {
+    }), define("views/common/subnav/accountGroupsCollectionView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "views/common/subnav/accountGroupView"], function(e, t, n, r, i) {
         return r.CollectionView.extend({
             getChildView: function() {
                 return i
             },
             id: "accountGroupsCollection"
         })
-    }), define("views/common/subnav/userLinksView", ["jquery", "underscore", "common/betterment.views", "views/common/subnav/accountGroupsCollectionView", "models/visitor", "components/common/scripts/analytics/analytics", "services/feedService"], function(e, t, n, r, i, s, o) {
+    }), define("views/common/subnav/userLinksView", ["jquery", "underscore", "common/betasmartz.views", "views/common/subnav/accountGroupsCollectionView", "models/visitor", "components/common/scripts/analytics/analytics", "services/feedService"], function(e, t, n, r, i, s, o) {
         var u = 2e3,
             a = 5e3;
         return n.View.extend({
@@ -55770,10 +55771,10 @@ var requirejs, require, define;
                     return this.self.getUserCurrentBalance()
                 },
                 getAccountGroupName: function() {
-                    return BMT.accountGroup.get("name")
+                    return BS.accountGroup.get("name")
                 },
                 hasJointAccountsFeature: function() {
-                    return !BMT.user.get("accountGroups").find(function(e) {
+                    return !BS.user.get("accountGroups").find(function(e) {
                         return e.get("type") === "JOINT" && e.get("accountGroupState") !== "CLOSED"
                     }) && i.hasVariation("joint_accounts_on")
                 }
@@ -55787,11 +55788,11 @@ var requirejs, require, define;
                 showNotifications: ".show-notifications"
             },
             onInitialize: function() {
-                this.model = BMT.accountGroup, this.listenTo(BMT.user, "change", this.updateUserInfo), this.listenTo(BMT.user.get("accountGroups"), "change", this.updateUserInfo), this.listenTo(this.model, "change", this.updateUserInfo), this.listenTo(this.model.get("accounts"), "change reset add", this.updateUserInfo), this.listenTo(BMT.vent, "goto", this.setActiveLink, this), e(document).unbind("click", this.userMenuHideOnBlur.bind(this)), e(document).click(this.userMenuHideOnBlur.bind(this))
+                this.model = BS.accountGroup, this.listenTo(BS.user, "change", this.updateUserInfo), this.listenTo(BS.user.get("accountGroups"), "change", this.updateUserInfo), this.listenTo(this.model, "change", this.updateUserInfo), this.listenTo(this.model.get("accounts"), "change reset add", this.updateUserInfo), this.listenTo(BS.vent, "goto", this.setActiveLink, this), e(document).unbind("click", this.userMenuHideOnBlur.bind(this)), e(document).click(this.userMenuHideOnBlur.bind(this))
             },
             onRender: function() {
                 this.setActiveLink(this.options.page), this.accountGroupsRegion.show(new r({
-                    collection: BMT.user.get("accountGroups")
+                    collection: BS.user.get("accountGroups")
                 }))
             },
             onShow: function() {
@@ -55819,14 +55820,14 @@ var requirejs, require, define;
                 this._isLocked = !1
             },
             getUserFirstName: function() {
-                return BMT.user.get("firstName")
+                return BS.user.get("firstName")
             },
             getUserCurrentBalance: function() {
-                return this.formatter.money(BMT.accounts().totalCurrentBalance(!0))
+                return this.formatter.money(BS.accounts().totalCurrentBalance(!0))
             },
             updateUserInfo: function() {
                 this.$(".user-first-name").text(this.getUserFirstName()), this.$(".balance").text(this.getUserCurrentBalance()), this.accountGroupsRegion.show(new r({
-                    collection: BMT.user.get("accountGroups")
+                    collection: BS.user.get("accountGroups")
                 }))
             },
             isUserMenuVisible: function() {
@@ -55868,7 +55869,7 @@ var requirejs, require, define;
             },
             gotoTab: function(t) {
                 var n = e(t.currentTarget).attr("href").replace("#", "");
-                BMT.currentPage === n && t.preventDefault(), this.hideUserMenu()
+                BS.currentPage === n && t.preventDefault(), this.hideUserMenu()
             },
             goToTrustSignup: function(e) {
                 return s.track("ElementClicked", {
@@ -55880,9 +55881,9 @@ var requirejs, require, define;
             goToJointAccountSignup: function(e) {
                 s.track("ElementClicked", {
                     Name: "JointAccountDrawer",
-                    Location: BMT.currentPage.capitalize(),
+                    Location: BS.currentPage.capitalize(),
                     Type: "Link"
-                }), this.hideUserMenu(), BMT.vent.trigger("openDrawer:showJointAccountSignup", "splash")
+                }), this.hideUserMenu(), BS.vent.trigger("openDrawer:showJointAccountSignup", "splash")
             },
             setActiveLink: function(e, t) {
                 this.setAllInactive(), this.$(".user-links a[href=#" + e + "]").addClass("selected")
@@ -55892,7 +55893,7 @@ var requirejs, require, define;
             },
             logout: function(e) {
                 window.location.replace("/sign_out");
-                /*e && e.preventDefault(), BMT.vent.trigger("logout", {
+                /*e && e.preventDefault(), BS.vent.trigger("logout", {
                     timeout: !1
                 })*/
             },
@@ -55900,7 +55901,7 @@ var requirejs, require, define;
                 e(document).unbind("click", this.userMenuHideOnBlur)
             }
         })
-    }), define("views/common/subnav/subnavView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/subnav/subnav", "models/visitor", "views/common/subnav/demoLinksView", "views/common/subnav/userLinksView"], function(e, t, n, r, i, s, o) {
+    }), define("views/common/subnav/subnavView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/subnav/subnav", "models/visitor", "views/common/subnav/demoLinksView", "views/common/subnav/userLinksView"], function(e, t, n, r, i, s, o) {
         var u = null,
             a = null;
         return n.View.extend({
@@ -55909,7 +55910,7 @@ var requirejs, require, define;
                 linksRegion: "#linksRegion"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "logout", function() {
+                this.listenTo(BS.vent, "logout", function() {
                     this.linksRegion.empty(), u = null
                 })
             },
@@ -55937,7 +55938,7 @@ var requirejs, require, define;
                 }.bind(this)), u = t
             },
             _getViewForPage: function(e) {
-                return BMT.user.is("demo") ? s : BMT.user.isFull() ? o : n.View
+                return BS.user.is("demo") ? s : BS.user.isFull() ? o : n.View
             }
         })
     }), define("hbs!views/common/giftIcon", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -56008,7 +56009,7 @@ var requirejs, require, define;
             return s += '\n    </div>\n\n    <div class="advisor-details advised-user-only"></div>\n</div>\n\n<ul class="back-to-summary">\n    <li>\n        <a href="#summary">\n            <span class="back-icon">&#8250;</span>\n            Back to Summary\n        </a>\n    </li>\n</ul>\n', s
         });
         return t.registerPartial("views/common/tabBar", n), n
-    }), define("views/advisors/advisorDetailsView", ["jquery", "underscore", "common/betterment.views", "viewHelpers/phoneNumberFormatter"], function(e, t, n, r) {
+    }), define("views/advisors/advisorDetailsView", ["jquery", "underscore", "common/betasmartz.views", "viewHelpers/phoneNumberFormatter"], function(e, t, n, r) {
         return n.View.extend({
             template: "advisors/advisorDetails",
             events: {
@@ -56041,7 +56042,7 @@ var requirejs, require, define;
                 return e(t.target).closest(".expand-advisor-details, .more-advisor-details").length === 0
             }
         })
-    }), define("views/common/tabBarView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/tabBar", "views/advisors/advisorDetailsView", "models/visitor", "services/advisorFetcher"], function(e, t, n, r, i, s, o) {
+    }), define("views/common/tabBarView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/tabBar", "views/advisors/advisorDetailsView", "models/visitor", "services/advisorFetcher"], function(e, t, n, r, i, s, o) {
         return n.View.extend({
             template: r,
             tagName: "div",
@@ -56054,16 +56055,16 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 isClosed: function() {
-                    return BMT.accountGroup.isClosed()
+                    return BS.accountGroup.isClosed()
                 },
                 showInviteButton: function() {
-                    return this.allowNavigation() && this.self.model.not("demo") && !this.self.model.isClosed() && BMT.hasSession()
+                    return this.allowNavigation() && this.self.model.not("demo") && !this.self.model.isClosed() && BS.hasSession()
                 },
                 showDynamicShare: function() {
-                    return BMT.user.get("pricingSummary").has("freeDaysRemaining")
+                    return BS.user.get("pricingSummary").has("freeDaysRemaining")
                 },
                 getFreeTimeLabel: function() {
-                    var e = BMT.user.get("pricingSummary").num("freeDaysRemaining"),
+                    var e = BS.user.get("pricingSummary").num("freeDaysRemaining"),
                         t = "";
                     return e > 365 ? t += Math.floor(e / 365) + " free year" : e > 183 ? t += Math.floor(e / 31) + " free month" : t += e + " free day", t.split(" ", 1)[0] !== "1" && (t += "s"), t
                 },
@@ -56075,31 +56076,31 @@ var requirejs, require, define;
                 "click a": "gotoTab"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "goto", this.depressLink, this)
+                this.listenTo(BS.vent, "goto", this.depressLink, this)
             },
             onRender: function() {
                 this.depressLink(this.options.page)
             },
             onShow: function() {
-                BMT.user.isAdvised() && o.fetch().then(function(e) {
+                BS.user.isAdvised() && o.fetch().then(function(e) {
                     this.advisorDetails.show(new i({
                         model: e
                     }))
                 }.bind(this))
             },
             onRoute: function(e, t, n) {
-                this.$(".tab-bar-normal").toggle(e !== "signup" && e !== "login" && e !== "trust-signup"), this.$(".back-to-summary").toggle(e === "trust-signup"), this.$(".main-nav").toggleClass("disabled", BMT.accounts().length === 0 || e === "goalSetup" && BMT.accounts().length === 1)
+                this.$(".tab-bar-normal").toggle(e !== "signup" && e !== "login" && e !== "trust-signup"), this.$(".back-to-summary").toggle(e === "trust-signup"), this.$(".main-nav").toggleClass("disabled", BS.accounts().length === 0 || e === "goalSetup" && BS.accounts().length === 1)
             },
             allowNavigation: function() {
-                return !this.$(".main-nav").hasClass("disabled") && BMT.accounts().firstGoalHasCompletionDate()
+                return !this.$(".main-nav").hasClass("disabled") && BS.accounts().firstGoalHasCompletionDate()
             },
             gotoTab: function(t) {
                 var n = e(t.currentTarget).attr("href").replace("#", "");
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: n,
                     Type: "Link",
                     Location: "TabBar"
-                }), (!this.allowNavigation() || BMT.currentPage === n) && t.preventDefault()
+                }), (!this.allowNavigation() || BS.currentPage === n) && t.preventDefault()
             },
             depressLink: function(e, n) {
                 function r(e) {
@@ -56147,7 +56148,7 @@ var requirejs, require, define;
             }) : u), s += f(o) + '</li>\n\n</ul>', s
         });
         return t.registerPartial("views/common/footerLinks", n), n
-    }), define("views/common/footerLinksView", ["jquery", "underscore", "backbone", "hbs!views/common/footerLinks", "common/betterment.views", "views/common/supportView", "common/betterment.models", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o, u) {
+    }), define("views/common/footerLinksView", ["jquery", "underscore", "backbone", "hbs!views/common/footerLinks", "common/betasmartz.views", "views/common/supportView", "common/betasmartz.models", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i, s, o, u) {
         var a = o.Model.extend({
             url: "/supportEmail",
             validation: {
@@ -56192,13 +56193,13 @@ var requirejs, require, define;
                 "click #suggest": "onOK"
             },
             useUserName: function() {
-                return BMT.hasSession() && BMT.user.not("demo")
+                return BS.hasSession() && BS.user.not("demo")
             },
             onInitialize: function() {
                 this.model = new a
             },
             onShow: function() {
-                BMT.vent.trigger("snapEngage:enable"), this.applyValidation({
+                BS.vent.trigger("snapEngage:enable"), this.applyValidation({
                     before: t.bind(function(e, n) {
                         return this.$(n.currentTarget).val() || t.contains(this.$("input, textarea, button"), n.relatedTarget)
                     }, this)
@@ -56209,21 +56210,21 @@ var requirejs, require, define;
                 i.from = i.from || "anonymous-feedback@betasmartz.com", this.model.validate(i) || (this.block(), i.message = "Feedback from Footer: " + i.message + " (URL: " + this.getCurrentPageURL() + ")", this.model.save(i, {
                     forceSave: !0,
                     success: t.bind(function() {
-                        e("#footerLinks form textarea").val(""), this.collapseForm(), BMT.flash("Your message has been sent to our team. Thanks for your feedback!")
+                        e("#footerLinks form textarea").val(""), this.collapseForm(), BS.flash("Your message has been sent to our team. Thanks for your feedback!")
                     }, this),
                     complete: t.bind(function() {
                         this.unblock()
                     }, this)
-                })), BMT.analytics.track("ElementClicked", {
+                })), BS.analytics.track("ElementClicked", {
                     Location: "BottomNav",
                     Type: "Button",
                     Name: "SendFeedback"
                 })
             },
             expandForm: function() {
-                this.$("textarea").css("height", "90px"), this.useUserName() ? (this.$("button").fadeIn(200), this.$("input").val(BMT.user.get("userName"))) : this.$("input").fadeIn(200, t.bind(function() {
+                this.$("textarea").css("height", "90px"), this.useUserName() ? (this.$("button").fadeIn(200), this.$("input").val(BS.user.get("userName"))) : this.$("input").fadeIn(200, t.bind(function() {
                     this.$("button").fadeIn(200)
-                }, this)), BMT.analytics.track("ElementClicked", {
+                }, this)), BS.analytics.track("ElementClicked", {
                     Location: "BottomNav",
                     Type: "Field",
                     Name: "Feedback"
@@ -56245,16 +56246,16 @@ var requirejs, require, define;
                 }, this)), this.hideAllValidation()
             },
             openLiveChat: function(e) {
-                e && e.preventDefault(), SnapEngage.setUserEmail(BMT.user.get("email"), !0), SnapEngage.openProactiveChat(!0, !0)
+                e && e.preventDefault(), SnapEngage.setUserEmail(BS.user.get("email"), !0), SnapEngage.openProactiveChat(!0, !0)
             },
             showSupport: function(e) {
-                e.preventDefault(), BMT.modal.show(new s)
+                e.preventDefault(), BS.modal.show(new s)
             },
             getCurrentPageURL: function() {
                 return window.location.href
             }
         })
-    }), define("views/common/loadingView", ["common/betterment.views", "hbs!components/common/scripts/templates/blockSpinner"], function(e, t) {
+    }), define("views/common/loadingView", ["common/betasmartz.views", "hbs!components/common/scripts/templates/blockSpinner"], function(e, t) {
         return e.View.extend({
             template: t
         })
@@ -56275,7 +56276,7 @@ var requirejs, require, define;
             return s += '.</p>\n            <button class="left secondary banner-button copy-personal">Use my existing bank account</button>\n        </div>\n        <div class="banner-close" data-dismiss="banner"></div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/common/copyPersonalBankAccountBanner", n), n
-    }), define("views/common/copyPersonalBankAccountBannerView", ["jquery", "underscore", "common/betterment.views", "common/betterment.models", "services/bankAccountService", "services/bannerViewPreferenceService", "hbs!views/common/copyPersonalBankAccountBanner"], function(e, t, n, r, i, s, o) {
+    }), define("views/common/copyPersonalBankAccountBannerView", ["jquery", "underscore", "common/betasmartz.views", "common/betasmartz.models", "services/bankAccountService", "services/bannerViewPreferenceService", "hbs!views/common/copyPersonalBankAccountBanner"], function(e, t, n, r, i, s, o) {
         return n.View.extend({
             template: o,
             tagName: "div",
@@ -56286,7 +56287,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 showBonusText: function() {
-                    return BMT.accountGroup.has("potentialBonus")
+                    return BS.accountGroup.has("potentialBonus")
                 }
             },
             hideForSession: function() {
@@ -56294,9 +56295,9 @@ var requirejs, require, define;
             },
             copyPersonalBankAccount: function(e) {
                 e && e.preventDefault();
-                if (!i.canCopyPersonalBankAccount(BMT.user, BMT.accountGroup)) return;
-                var t = i.getPersonalBankAccount(BMT.user);
-                BMT.alert({
+                if (!i.canCopyPersonalBankAccount(BS.user, BS.accountGroup)) return;
+                var t = i.getPersonalBankAccount(BS.user);
+                BS.alert({
                     title: 'Confirm your <span class="trust-ag-only">trust</span><span class="joint-ag-only">joint</span> checking account',
                     body: '<p>Would you like to link your existing personal checking account to your <span class="trust-ag-only">trust</span><span class="joint-ag-only">joint</span> account?</p><p><div><span class="bold-text">Bank:</span> ' + t.get("description") + "</div>" + '<div><span class="bold-text">Account number:</span> ' + t.get("accountNumber") + "</div></p>",
                     noClose: !0,
@@ -56311,30 +56312,30 @@ var requirejs, require, define;
                     handler: function(e) {
                         if (e === "linkAccount") {
                             var t = this;
-                            this.block(), i.copyPersonalBankAccount(BMT.user, BMT.accountGroup).then(function() {
-                                BMT.accountGroup.get("bankAccount").fetch({
+                            this.block(), i.copyPersonalBankAccount(BS.user, BS.accountGroup).then(function() {
+                                BS.accountGroup.get("bankAccount").fetch({
                                     forceUpdate: !0
                                 }).then(function() {
-                                    BMT.refreshBanners(), BMT.flash("Your bank account has been linked successfully.")
+                                    BS.refreshBanners(), BS.flash("Your bank account has been linked successfully.")
                                 }).always(function() {
-                                    t.unblock(), BMT.modal.close(t)
+                                    t.unblock(), BS.modal.close(t)
                                 })
                             }).fail(function() {
-                                t.unblock(), BMT.modal.close(t)
+                                t.unblock(), BS.modal.close(t)
                             })
-                        } else BMT.modal.close(this)
+                        } else BS.modal.close(this)
                     }
                 })
             }
         })
-    }), define("views/common/verifyAccountBannerView", ["jquery", "underscore", "common/betterment.views", "services/bannerViewPreferenceService"], function(e, t, n, r) {
+    }), define("views/common/verifyAccountBannerView", ["jquery", "underscore", "common/betasmartz.views", "services/bannerViewPreferenceService"], function(e, t, n, r) {
         return n.View.extend({
             template: "common/verifyAccountBanner",
             tagName: "div",
             className: "banner-view verify-account-banner",
             templateHelpers: {
                 bonusText: function() {
-                    if (BMT.accountGroup.has("potentialBonus")) return '&nbsp;and <span class="bold-text">receive your bonus</span>'
+                    if (BS.accountGroup.has("potentialBonus")) return '&nbsp;and <span class="bold-text">receive your bonus</span>'
                 }
             },
             events: {
@@ -56345,11 +56346,11 @@ var requirejs, require, define;
                 r.setVerifyAccountForceHide(), this.$el.slideUp(300)
             },
             goToTransfer: function() {
-                BMT.analytics.track("ElementClicked", {
+                BS.analytics.track("ElementClicked", {
                     Name: "VerifyChecking",
                     Type: "Button",
                     Location: "VerifyAccountBanner"
-                }), BMT.router.navigate("transfer", !0)
+                }), BS.router.navigate("transfer", !0)
             }
         })
     }), define("hbs!views/common/emailTrustDocumentsBanner", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -56357,7 +56358,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="banner-wrapper">\n    <div class="banner">\n        <div class="image multi-document-alt"></div>\n        <div class="explanation">\n            <p>Upload your trust documents below to complete sign up.</p>\n            <button class="left secondary banner-button">Upload documents</button>\n        </div>\n    </div>\n</div>\n'
         });
         return t.registerPartial("views/common/emailTrustDocumentsBanner", n), n
-    }), define("views/common/emailTrustDocumentsBannerView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/emailTrustDocumentsBanner", "views/trust/documentUploadModal"], function(e, t, n, r, i) {
+    }), define("views/common/emailTrustDocumentsBannerView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/emailTrustDocumentsBanner", "views/trust/documentUploadModal"], function(e, t, n, r, i) {
         return n.View.extend({
             template: r,
             tagName: "div",
@@ -56366,15 +56367,15 @@ var requirejs, require, define;
                 "click button.banner-button": "showUploadModal"
             },
             onInitialize: function() {
-                this.listenTo(BMT.vent, "trust:documents:uploaded", this.hide)
+                this.listenTo(BS.vent, "trust:documents:uploaded", this.hide)
             },
             hide: function() {
                 this.hidden = !0, this.$el.slideUp(300, function() {
-                    BMT.vent.trigger("banner:emailTrustDocumentsBanner:hidden")
+                    BS.vent.trigger("banner:emailTrustDocumentsBanner:hidden")
                 })
             },
             showUploadModal: function() {
-                BMT.modal.show(new i)
+                BS.modal.show(new i)
             }
         })
     }), define("hbs!views/jointAccountSignup/resendBanner", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -56402,7 +56403,7 @@ var requirejs, require, define;
             }
         };
         return e.Model.extend(t)
-    }), define("views/jointAccountSignup/resendBannerView", ["common/betterment.views", "hbs!views/jointAccountSignup/resendBanner", "models/v1/jointAccountInvite", "models/v1/jointAccountInviteResends", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i) {
+    }), define("views/jointAccountSignup/resendBannerView", ["common/betasmartz.views", "hbs!views/jointAccountSignup/resendBanner", "models/v1/jointAccountInvite", "models/v1/jointAccountInviteResends", "components/common/scripts/viewHelpers/customerSupport"], function(e, t, n, r, i) {
         return e.View.extend({
             template: t,
             tagName: "div",
@@ -56430,9 +56431,9 @@ var requirejs, require, define;
                 o.save({}, {
                     skipErrorAlert: !0
                 }).done(function() {
-                    BMT.flash("Invitation resent successfully."), this.getClass().forceHide = !0, this.remove()
+                    BS.flash("Invitation resent successfully."), this.getClass().forceHide = !0, this.remove()
                 }.bind(this)).fail(function() {
-                    BMT.alert({
+                    BS.alert({
                         icon: "warning",
                         title: "Invite Resend Limit Reached",
                         body: "You have reached your invite resend limit.  Please contact customer support at either " + i.getSupportNumber() + ' or <a href="mailto:' + i.getSupportEmail() + '">' + i.getSupportEmail() + "</a> for assistance."
@@ -56477,7 +56478,7 @@ var requirejs, require, define;
             return s += '\n        </div>\n        <div class="banner-close" data-dismiss="banner"></div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/retirementPlanning/banner", n), n
-    }), define("views/retirementPlanning/bannerView", ["common/betterment.views", "hbs!views/retirementPlanning/banner", "services/retirementPlanService", "models/visitor", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i) {
+    }), define("views/retirementPlanning/bannerView", ["common/betasmartz.views", "hbs!views/retirementPlanning/banner", "services/retirementPlanService", "models/visitor", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i) {
         return e.View.extend({
             template: t,
             className: "banner-view retirement-plan-banner",
@@ -56487,7 +56488,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 isPlanStarted: function() {
-                    return !BMT.user.get("financialPlans").selected().isNew()
+                    return !BS.user.get("financialPlans").selected().isNew()
                 }
             },
             animatedHide: function(e) {
@@ -56503,19 +56504,19 @@ var requirejs, require, define;
                 }), this.animatedHide()
             },
             goToRetirementPlan: function() {
-                var e = BMT.user.get("financialPlans").selected().isNew();
+                var e = BS.user.get("financialPlans").selected().isNew();
                 i.track("ElementClicked", {
                     Type: e ? "Initial" : "Continue",
                     Location: "Summary",
                     Name: "PlanBanner"
                 }), this.animatedHide(function() {
-                    e ? BMT.router.navigate("retireGuideStart", !0) : BMT.router.navigate("retireGuideSetup", !0)
+                    e ? BS.router.navigate("retireGuideStart", !0) : BS.router.navigate("retireGuideSetup", !0)
                 })
             }
         }, {
             shouldShow: function() {
-                var e = !BMT.user.isAdvised();
-                return !window.localStorage.retirementPlanningBannerForceHide && BMT.currentPage === "summary" && BMT.accountGroup.get("accounts").length && BMT.accountGroup.get("bankAccount").get("active") && !BMT.user.get("financialPlans").selected().is("complete") && BMT.user.is("retireGuideEnabled") && e
+                var e = !BS.user.isAdvised();
+                return !window.localStorage.retirementPlanningBannerForceHide && BS.currentPage === "summary" && BS.accountGroup.get("accounts").length && BS.accountGroup.get("bankAccount").get("active") && !BS.user.get("financialPlans").selected().is("complete") && BS.user.is("retireGuideEnabled") && e
             }
         })
     }), define("hbs!views/transfer/smartDeposits/relinkBankBanner", ["hbs", "hbs/handlebars", "hbs!views/transfer/smartDeposits/unlinkBankAccountLogo"], function(e, t) {
@@ -56528,7 +56529,7 @@ var requirejs, require, define;
             return s += '</div>\n            </div>\n        </div>\n        <div class="explanation">\n            <div class="text">\n                <h3>Relink your bank account</h3>\n                <p>Your bank authentication has recently changed. Please re-authenticate your bank account so that we can use your most up-to-date bank information.</p>\n            </div>\n            <button class="right secondary banner-button">Relink bank</button>\n        </div>\n    </div>\n</div>\n', s
         });
         return t.registerPartial("views/transfer/smartDeposits/relinkBankBanner", n), n
-    }), define("views/transfer/smartDeposits/relinkBankBannerView", ["common/betterment.views", "modules/modals", "hbs!views/transfer/smartDeposits/relinkBankBanner", "views/linkBankAccount/setupView", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i) {
+    }), define("views/transfer/smartDeposits/relinkBankBannerView", ["common/betasmartz.views", "modules/modals", "hbs!views/transfer/smartDeposits/relinkBankBanner", "views/linkBankAccount/setupView", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i) {
         return e.View.extend({
             template: n,
             className: "banner-view smart-deposits-banner",
@@ -56544,13 +56545,13 @@ var requirejs, require, define;
                     t.show(new r({
                         relink: !0,
                         alwaysHideProgress: !0,
-                        accountGroup: BMT.accountGroup
+                        accountGroup: BS.accountGroup
                     }))
                 })
             }
         }, {
             shouldShow: function() {
-                return (BMT.currentPage === "summary" || BMT.currentPage === "transfer") && BMT.accounts().withSmartDepositEnabled().length && BMT.user.bankAccount() && BMT.user.bankAccount().needsAuthUpdate()
+                return (BS.currentPage === "summary" || BS.currentPage === "transfer") && BS.accounts().withSmartDepositEnabled().length && BS.user.bankAccount() && BS.user.bankAccount().needsAuthUpdate()
             }
         })
     }), define("hbs!views/common/depositAfterSignupBanner", ["hbs", "hbs/handlebars"], function(e, t) {
@@ -56558,7 +56559,7 @@ var requirejs, require, define;
             return this.compilerInfo = [4, ">= 1.0.0"], n = this.merge(n, e.helpers), '<div class="banner-wrapper">\n    <div class="banner">\n        <div class="image chart-icon"></div>\n        <div class="explanation">\n            <p>Auto-deposits can improve returns and lower your tax bill over time.</p>\n            <button class="left secondary banner-button">Set up an auto deposit</button>\n        </div>\n        <div class="banner-close" data-dismiss="banner"></div>\n    </div>\n</div>\n\n'
         });
         return t.registerPartial("views/common/depositAfterSignupBanner", n), n
-    }), define("views/common/depositAfterSignupBannerView", ["jquery", "underscore", "common/betterment.views", "hbs!views/common/depositAfterSignupBanner", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o) {
+    }), define("views/common/depositAfterSignupBannerView", ["jquery", "underscore", "common/betasmartz.views", "hbs!views/common/depositAfterSignupBanner", "views/transfer/automaticTransactionSettingsModalView", "views/transfer/automaticDepositSettingsView", "components/common/scripts/analytics/analytics"], function(e, t, n, r, i, s, o) {
         return n.View.extend({
             template: r,
             tagName: "div",
@@ -56591,7 +56592,7 @@ var requirejs, require, define;
                     Location: "DepositAfterSignupBanner",
                     Name: "ADnudgeCTA"
                 }), this.animatedHide(function() {
-                    BMT.router.navigate("advice", !0)
+                    BS.router.navigate("advice", !0)
                 })
             },
             isDismissed: function() {
@@ -56604,14 +56605,14 @@ var requirejs, require, define;
         return {
             checkStateAndAlert: function() {
                 var n = new e.Deferred;
-                return BMT.user.isSuspended() || BMT.accountGroup.isSuspended() ? BMT.alert({
+                return BS.user.isSuspended() || BS.accountGroup.isSuspended() ? BS.alert({
                     icon: "warning",
                     title: "Account Suspended",
                     body: "<p>Your account is currently suspended while we review your records. You will have limited access to your account and cannot initiate transactions until it has been unsuspended.</p><p>This may be due to identity verification or certain activity on your account. If you don&apos;t receive an email from us shortly please call " + t.getSuspendedSupportNumber() + " for immediate assistance." + "</p>",
                     handler: function() {
                         n.resolve()
                     }
-                }) : BMT.accountGroup.isClosed() ? BMT.alert({
+                }) : BS.accountGroup.isClosed() ? BS.alert({
                     icon: "warning",
                     title: "Account Closed",
                     body: "<p>Your account has been closed. You are still able to access your account activity and statements, but may no longer initiate transactions.</p><p>If you have questions regarding the status of your account, please call our Customer Support Team at " + t.getSupportNumber() + "." + "</p>",
@@ -56621,7 +56622,7 @@ var requirejs, require, define;
                 }) : n.resolve(), n.promise()
             }
         }
-    }), define("views/common/welcomeView", ["jquery", "underscore", "common/betterment.views"], function(e, t, n) {
+    }), define("views/common/welcomeView", ["jquery", "underscore", "common/betasmartz.views"], function(e, t, n) {
         return n.ModalView.extend({
             template: "common/welcome",
             className: "welcome-view",
@@ -56630,7 +56631,7 @@ var requirejs, require, define;
             },
             templateHelpers: {
                 userFirstName: function() {
-                    return BMT.user.get("firstName")
+                    return BS.user.get("firstName")
                 },
                 advisorLogoUrl: function() {
                     return this.self.advisor ? this.self.advisor.get("firmLogoUrl") : ""
@@ -56648,12 +56649,12 @@ var requirejs, require, define;
                 }.bind(this))
             },
             goToSummary: function() {
-                BMT.router.navigate("summary", {
+                BS.router.navigate("summary", {
                     trigger: !0
-                }), BMT.modal.close(this)
+                }), BS.modal.close(this)
             }
         })
-    }), define("views/common/welcomeRetireeView", ["jquery", "underscore", "backbone", "common/betterment.views", "modules/pricingPlans"], function(e, t, n, r, i) {
+    }), define("views/common/welcomeRetireeView", ["jquery", "underscore", "backbone", "common/betasmartz.views", "modules/pricingPlans"], function(e, t, n, r, i) {
         return r.ModalView.extend({
             template: "common/welcomeRetiree",
             className: "welcome-view",
@@ -56669,14 +56670,14 @@ var requirejs, require, define;
                 }
             },
             goToSummary: function() {
-                BMT.router.navigate("summary", {
+                BS.router.navigate("summary", {
                     trigger: !0
-                }), BMT.modal.close(this)
+                }), BS.modal.close(this)
             }
         })
     }), define("common/loginAlertChain", ["models/account", "models/v1/accountBeneficiaries", "views/profile/editBeneficiariesView", "views/common/welcomeView", "views/common/welcomeRetireeView", "components/common/scripts/util/formatter", "models/rolloverFollowup", "components/account/scripts/services/goalTypeService", "services/taxLossHarvestingService", "viewHelpers/userStateAlertHelper", "services/advisorFetcher", "components/common/scripts/util/ie", "services/bankAccountService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h) {
         function m() {
-            var e = BMT.accountGroup.isAdvised() ? d : p;
+            var e = BS.accountGroup.isAdvised() ? d : p;
             if (v < e.length) {
                 var t = e[v];
                 v += 1, t()
@@ -56684,7 +56685,7 @@ var requirejs, require, define;
         }
 
         function g() {
-            c.isIE9orLess() ? BMT.alert({
+            c.isIE9orLess() ? BS.alert({
                 icon: "warning",
                 title: "Unsupported Browser",
                 body: '<p>Your browser version is no longer supported, which may reduce functionality and result in a suboptimal experience.</p><p>We recommend installing <a href="http://www.google.com/chrome/">Google Chrome</a> as your primary browser since it updates automatically, so you won\'t run into these issues in the future.</p>',
@@ -56695,15 +56696,15 @@ var requirejs, require, define;
         }
 
         function y() {
-            BMT.user.is("demo") ? BMT.alert({
+            BS.user.is("demo") ? BS.alert({
                 width: 430,
                 title: "",
-                body: '<div class="blue-logo"></div><h2 style="font-size: 20px; margin: 50px 0 30px;">Welcome to the interactive demo!</h2><p style="width: 350px; margin: 0 auto;">Explore this Demo User\'s account at your own pace. We think you\'ll agree - it\'s simply a better way to invest.</p>',
+                body: '<div class="blue-logo"></div><h2 style="font-size: 20px; margin: 50px 0 30px;">Welcome to the interactive demo!</h2><p style="width: 350px; margin: 0 auto;">Explore this Demo User\'s account at your own pace. We think you\'ll agree - it\'s simply a betasmartz way to invest.</p>',
                 bodyAttrs: {
                     style: "width: 100%; text-align: center; font-size: 17px; line-height: 20px;"
                 },
                 handler: function(e) {
-                    BMT.analytics.track("SessionStarted", {
+                    BS.analytics.track("SessionStarted", {
                         Type: "Demo"
                     })
                 }
@@ -56712,20 +56713,20 @@ var requirejs, require, define;
 
         function b() {
             function f(e) {
-                window.localStorage.setItem("hasSeenWelcomeModal-" + BMT.user.id, "true"), BMT.modal.show(e), e.on("destroy", function() {
+                window.localStorage.setItem("hasSeenWelcomeModal-" + BS.user.id, "true"), BS.modal.show(e), e.on("destroy", function() {
                     m()
                 })
             }
-            var t = BMT.user.is("firstLogin") && !BMT.accountGroup.isClosed() && window.localStorage.getItem("hasSeenWelcomeModal-" + BMT.user.id) !== "true",
-                n = BMT.accounts().first();
-            if (t && BMT.user.isAdvised()) l.fetch().then(function(e) {
+            var t = BS.user.is("firstLogin") && !BS.accountGroup.isClosed() && window.localStorage.getItem("hasSeenWelcomeModal-" + BS.user.id) !== "true",
+                n = BS.accounts().first();
+            if (t && BS.user.isAdvised()) l.fetch().then(function(e) {
                 f(new r({
                     advisor: e,
                     modalClasses: "flat-background",
                     hideCloseButton: !0
                 }))
             });
-            else if (t && BMT.user.isRetired() && n.isRetirementGoalDisplayedAsAge()) {
+            else if (t && BS.user.isRetired() && n.isRetirementGoalDisplayedAsAge()) {
                 var o = e.Model.getAllocationRecommendation(n.goalTerm(), n),
                     u = 1 - o,
                     a = s.pct(o) + " stocks and " + s.pct(u) + " bonds";
@@ -56736,12 +56737,12 @@ var requirejs, require, define;
         }
 
         function w() {
-            BMT.user.is("firstFundedLogin") && !BMT.accountGroup.isClosed() ? BMT.alert({
+            BS.user.is("firstFundedLogin") && !BS.accountGroup.isClosed() ? BS.alert({
                 width: 400,
                 icon: "speedometer",
-                title: "Be a Better Friend",
-                className: "better-friend-modal",
-                body: "Send your friends a BetaSmartz invitation with a bonus of " + BMT.user.get("referralProgram").get("receiverPrize") + " and you'll get " + BMT.user.get("referralProgram").get("senderPrize") + " for everyone that signs up and funds an account. It just takes a few seconds.",
+                title: "Be a Betasmartz Friend",
+                className: "betasmartz-friend-modal",
+                body: "Send your friends a BetaSmartz invitation with a bonus of " + BS.user.get("referralProgram").get("receiverPrize") + " and you'll get " + BS.user.get("referralProgram").get("senderPrize") + " for everyone that signs up and funds an account. It just takes a few seconds.",
                 buttons: [{
                     id: "yes",
                     title: "Invite"
@@ -56753,21 +56754,21 @@ var requirejs, require, define;
                     }
                 }],
                 handler: function(e) {
-                    e === "yes" ? BMT.router.navigate("invite", !0) : m()
+                    e === "yes" ? BS.router.navigate("invite", !0) : m()
                 }
             }) : m()
         }
 
         function E() {
-            if (BMT.user.is("firstLogin") && BMT.user.is("iraSignup")) {
+            if (BS.user.is("firstLogin") && BS.user.is("iraSignup")) {
                 var e = new n({
                     collection: new t([], {
-                        account: BMT.selectedAccount
+                        account: BS.selectedAccount
                     })
                 });
                 e.on("destroy", function() {
                     m()
-                }), BMT.modal.show(e)
+                }), BS.modal.show(e)
             } else m()
         }
 
@@ -56789,8 +56790,8 @@ var requirejs, require, define;
                     var t = e.get("account"),
                         n = t.get("accountGroup"),
                         r = e.num("amount");
-                    BMT.refreshAccounts(function() {
-                        e.trigger("change"), BMT.vent.trigger("deposit:refresh")
+                    BS.refreshAccounts(function() {
+                        e.trigger("change"), BS.vent.trigger("deposit:refresh")
                     }), t.plusEquals("pendingDeposits", r), i.convertExperienceForDeposit(e), n.set("funded", !0)
                 })
             }
@@ -57001,8 +57002,8 @@ var requirejs, require, define;
                     if (t) {
                         var s = r() || [],
                             o = s.slice(4).join("\n"),
-                            u = BMT.user && BMT.user.get("id");
-                        BMT.logError({
+                            u = BS.user && BS.user.get("id");
+                        BS.logError({
                             message: e,
                             file: t,
                             line: i,
@@ -57028,7 +57029,7 @@ var requirejs, require, define;
 
         function s(e) {
             SnapEngage.allowProactiveChat(e), e && !n && (n = !0, SnapEngage.setCallback("ChatMessageSent", function() {
-                BMT.hasSession() && BMT.refreshSession()
+                BS.hasSession() && BS.refreshSession()
             }))
         }
         var t = 6e4,
@@ -57071,15 +57072,15 @@ var requirejs, require, define;
         return t
     }), define("ducts/linkBankAccountHandler", ["modules/modals", "views/linkBankAccount/setupView"], function(e, t) {
         $(document).on("click.rails", ".bank-accounts .details button", function(n) {
-            var r = parseInt(n.currentTarget.dataset.bettermentdbAccountGroupId, 10),
-                i = BMT.user.get("accountGroups").findWhere({
+            var r = parseInt(n.currentTarget.dataset.betasmartzdbAccountGroupId, 10),
+                i = BS.user.get("accountGroups").findWhere({
                     id: r
                 }),
                 s = new t({
                     accountGroup: i
                 });
             s.once("close", function() {
-                BMT.router.renderPage("bankAccounts")
+                BS.router.renderPage("bankAccounts")
             }), e.show(s)
         })
     }), define("ducts/smartDepositHandler", ["jquery", "underscore", "modules/modals", "services/accountService", "views/common/smartDepositSettingsView"], function(e, t, n, r, i) {
@@ -57087,7 +57088,7 @@ var requirejs, require, define;
             var s = r.getAllAccounts().get(t),
                 o = i.withConfig(s.get("smartDepositConfig"));
             o.once("close", function() {
-                BMT.router.renderPage("transferNew")
+                BS.router.renderPage("transferNew")
             }), n.show(o)
         })
     }), define("ducts/ductTape", ["ducts/depositHandler", "ducts/logErrorHandler", "ducts/snapEngageHandler", "ducts/crazyEggHandler", "ducts/linkBankAccountHandler", "ducts/smartDepositHandler"], function(e, t, n, r, i, s, o) {
@@ -57125,12 +57126,12 @@ var requirejs, require, define;
             return s += "\n", s
         });
         return t.registerPartial("views/common/headerLogo", n), n
-    }), define("views/common/headerLogoView", ["common/betterment.views", "hbs!views/common/headerLogo", "services/firmFetcher", "components/common/scripts/services/domainService"], function(e, t, n, r) {
+    }), define("views/common/headerLogoView", ["common/betasmartz.views", "hbs!views/common/headerLogo", "services/firmFetcher", "components/common/scripts/services/domainService"], function(e, t, n, r) {
         return e.View.extend({
             template: t,
             templateHelpers: {
                 headerLogoUrl: function() {
-                    return BMT.hasLoggedInUser() ? "#summary" : n.get() ? !1 : r.brochureHost()
+                    return BS.hasLoggedInUser() ? "#summary" : n.get() ? !1 : r.brochureHost()
                 }
             },
             onShow: function() {
@@ -57141,13 +57142,13 @@ var requirejs, require, define;
                 })) : e.text(this.model.get("name")))
             }
         })
-    }), define("bmt", ["jquery", "underscore", "backbone", "marionette", "modules/logger", "common/router", "common/errorHandler", "regions/modalRegion", "regions/drawerRegion", "regions/feedRegion", "views/common/alertView", "views/common/subnav/subnavView", "views/common/tabBarView", "views/common/footerLinksView", "views/common/flashView", "views/common/loadingView", "views/summary/summaryView", "views/activity/activityView", "views/common/copyPersonalBankAccountBannerView", "views/common/verifyAccountBannerView", "views/common/emailTrustDocumentsBannerView", "views/jointAccountSignup/resendBannerView", "views/retirementPlanning/bannerView", "views/transfer/smartDeposits/relinkBankBannerView", "views/common/depositAfterSignupBannerView", "models/session", "models/user", "models/visitor", "components/common/scripts/models/appData", "components/common/scripts/services/domainService", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/services/browserService", "viewHelpers/userStateAlertHelper", "common/betterment.models", "common/loginAlertChain", "components/common/scripts/analytics/analytics", "components/common/scripts/models/v1/assetClassMetadata", "ducts/ductTape", "components/common/scripts/modules/async", "services/advisorFetcher", "services/bankAccountService", "views/common/headerLogoView", "services/firmFetcher", "services/accountService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w, E, S, x, T, N, C, k, L, A, O, M, _, D, P, H, B, j, F, I, q, R, U, z) {
+    }), define("bS", ["jquery", "underscore", "backbone", "marionette", "modules/logger", "common/router", "common/errorHandler", "regions/modalRegion", "regions/drawerRegion", "regions/feedRegion", "views/common/alertView", "views/common/subnav/subnavView", "views/common/tabBarView", "views/common/footerLinksView", "views/common/flashView", "views/common/loadingView", "views/summary/summaryView", "views/activity/activityView", "views/common/copyPersonalBankAccountBannerView", "views/common/verifyAccountBannerView", "views/common/emailTrustDocumentsBannerView", "views/jointAccountSignup/resendBannerView", "views/retirementPlanning/bannerView", "views/transfer/smartDeposits/relinkBankBannerView", "views/common/depositAfterSignupBannerView", "models/session", "models/user", "models/visitor", "components/common/scripts/models/appData", "components/common/scripts/services/domainService", "components/portfolio/scripts/services/portfolioSetService", "components/common/scripts/services/browserService", "viewHelpers/userStateAlertHelper", "common/betasmartz.models", "common/loginAlertChain", "components/common/scripts/analytics/analytics", "components/common/scripts/models/v1/assetClassMetadata", "ducts/ductTape", "components/common/scripts/modules/async", "services/advisorFetcher", "services/bankAccountService", "views/common/headerLogoView", "services/firmFetcher", "services/accountService"], function(e, t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, m, g, y, b, w, E, S, x, T, N, C, k, L, A, O, M, _, D, P, H, B, j, F, I, q, R, U, z) {
         function W() {
-            e(document.body).toggleClass("multi-ag", BMT.user.get("accountGroups").length > 1), e(document.body).toggleClass("single-ag", BMT.user.get("accountGroups").length <= 1)
+            e(document.body).toggleClass("multi-ag", BS.user.get("accountGroups").length > 1), e(document.body).toggleClass("single-ag", BS.user.get("accountGroups").length <= 1)
         }
 
         function X(t) {
-            BMT.accountGroup = t, e(document.body).toggleClass("trust-ag", t.isTrust()), e(document.body).toggleClass("personal-ag", t.isPersonal()), e(document.body).toggleClass("joint-ag", t.isJointAccount()), e(document.body).toggleClass("non-trust-ag", !t.isTrust()), e(document.body).toggleClass("non-personal-ag", !t.isPersonal()), e(document.body).toggleClass("non-joint-ag", !t.isJointAccount()), BMT.user.isFull() && e.ajaxSetup({
+            BS.accountGroup = t, e(document.body).toggleClass("trust-ag", t.isTrust()), e(document.body).toggleClass("personal-ag", t.isPersonal()), e(document.body).toggleClass("joint-ag", t.isJointAccount()), e(document.body).toggleClass("non-trust-ag", !t.isTrust()), e(document.body).toggleClass("non-personal-ag", !t.isPersonal()), e(document.body).toggleClass("non-joint-ag", !t.isJointAccount()), BS.user.isFull() && e.ajaxSetup({
                 data: {
                     accountGroupId: t.get("id")
                 }
@@ -57157,13 +57158,13 @@ var requirejs, require, define;
         function V(t) {
             t.is("performerSession") ? e(".session-banner.performer").show() : t.is("advisorSession") && e(".session-banner.advisor").show()
         }
-        return BMT = new r.Application, e.ajaxSetup({
+        return BS = new r.Application, e.ajaxSetup({
             headers: {
                 "X-Page-Load-Id": (new Date).getTime(),
                 From: "Backbone"
             },
             cache: !1
-        }), t.extend(BMT, {
+        }), t.extend(BS, {
             saveEmailCookieKey: "savedEmail",
             userNameCookieKey: "userName",
             analytics: H,
@@ -57179,19 +57180,19 @@ var requirejs, require, define;
                 return t.noShow || this.modal.show(n), n
             },
             flash: function(e) {
-                BMT.flashPlaceholder.show(new d({
+                BS.flashPlaceholder.show(new d({
                     model: new D.Model({
                         message: e
                     })
                 }))
             },
             navigateWithFlash: function(e, t) {
-                BMT.router.navigate(e, {
+                BS.router.navigate(e, {
                     trigger: !0
-                }), BMT.flash(t)
+                }), BS.flash(t)
             },
             firePixel: function(e) {
-                e && (e[0] !== "<" && (e = '<img src="' + e + '" />'), BMT.$pixels.append(e))
+                e && (e[0] !== "<" && (e = '<img src="' + e + '" />'), BS.$pixels.append(e))
             },
             refreshSession: function() {
                 N.refreshTimeout()
@@ -57200,70 +57201,70 @@ var requirejs, require, define;
                 return z.loadAccounts().then(e, t)
             },
             refreshCheckingAccountBanner: function() {
-                q.shouldShowLinkAccount() && q.canCopyPersonalBankAccount(BMT.user, BMT.accountGroup) ? BMT.bankAccountBannerContent.show(new y) : q.shouldShowVerifyAccount() ? BMT.bankAccountBannerContent.show(new b) : BMT.bankAccountBannerContent.empty()
+                q.shouldShowLinkAccount() && q.canCopyPersonalBankAccount(BS.user, BS.accountGroup) ? BS.bankAccountBannerContent.show(new y) : q.shouldShowVerifyAccount() ? BS.bankAccountBannerContent.show(new b) : BS.bankAccountBannerContent.empty()
             },
             needToShowTrustDocumentBanner: function() {
-                return BMT.currentPage === "transfer" && BMT.accountGroup.get("bankAccount").not("active") ? !1 : BMT.accountGroup.isTrust() ? BMT.accountGroup.get("trust").needsDocuments() ? w.forceHide ? !1 : !0 : !1 : !1
+                return BS.currentPage === "transfer" && BS.accountGroup.get("bankAccount").not("active") ? !1 : BS.accountGroup.isTrust() ? BS.accountGroup.get("trust").needsDocuments() ? w.forceHide ? !1 : !0 : !1 : !1
             },
             refreshTrustDocumentsBanner: function() {
-                BMT.needToShowTrustDocumentBanner() ? BMT.trustDocumentsBannerContent.show(new w) : BMT.trustDocumentsBannerContent.empty()
+                BS.needToShowTrustDocumentBanner() ? BS.trustDocumentsBannerContent.show(new w) : BS.trustDocumentsBannerContent.empty()
             },
             refreshJointAccountInviteBanner: function() {
-                k.hasVariation("joint_accounts_on") && !E.forceHide && BMT.currentPage !== "goalSetup" && (!BMT.accountGroup.isJointAccount() || BMT.accountGroup.get("accountGroupState") !== "NORMAL") && BMT.accountGroup.get("accounts").length && BMT.accountGroup.get("bankAccount").get("active") ? BMT.accountGroup.getPendingJointAccountInvitations().done(function(e) {
-                    e.length && BMT.jointAccountInviteBannerContent.show(new E({
+                k.hasVariation("joint_accounts_on") && !E.forceHide && BS.currentPage !== "goalSetup" && (!BS.accountGroup.isJointAccount() || BS.accountGroup.get("accountGroupState") !== "NORMAL") && BS.accountGroup.get("accounts").length && BS.accountGroup.get("bankAccount").get("active") ? BS.accountGroup.getPendingJointAccountInvitations().done(function(e) {
+                    e.length && BS.jointAccountInviteBannerContent.show(new E({
                         model: e.at(0)
                     }))
-                }) : BMT.jointAccountInviteBannerContent.empty()
+                }) : BS.jointAccountInviteBannerContent.empty()
             },
             refreshDepositAfterSignupBanner: function() {
-                this.depositAfterSignupBannerView && !this.depositAfterSignupBannerView.isDismissed() && (BMT.currentPage === "summary" || BMT.currentPage === "transfer" ? this.depositAfterSignupBannerView.show() : this.depositAfterSignupBannerView.hide())
+                this.depositAfterSignupBannerView && !this.depositAfterSignupBannerView.isDismissed() && (BS.currentPage === "summary" || BS.currentPage === "transfer" ? this.depositAfterSignupBannerView.show() : this.depositAfterSignupBannerView.hide())
             },
             showDepositAfterSignupBanner: function() {
-                BMT.accountGroup.is("funded") || (this.depositAfterSignupBannerView = new T, BMT.depositAfterSignupContent.show(this.depositAfterSignupBannerView))
+                BS.accountGroup.is("funded") || (this.depositAfterSignupBannerView = new T, BS.depositAfterSignupContent.show(this.depositAfterSignupBannerView))
             },
             refreshRetirementPlanBanner: function() {
-                S.shouldShow() ? BMT.retirementPlanBannerContent.show(new S) : BMT.retirementPlanBannerContent.empty()
+                S.shouldShow() ? BS.retirementPlanBannerContent.show(new S) : BS.retirementPlanBannerContent.empty()
             },
             refreshRelinkBankBanner: function() {
-                x.shouldShow() ? BMT.relinkBankBannerContent.show(new x) : BMT.relinkBankBannerContent.empty()
+                x.shouldShow() ? BS.relinkBankBannerContent.show(new x) : BS.relinkBankBannerContent.empty()
             },
             refreshBanners: function() {
-                BMT.refreshCheckingAccountBanner(), BMT.refreshTrustDocumentsBanner(), BMT.refreshJointAccountInviteBanner(), BMT.refreshDepositAfterSignupBanner(), BMT.refreshRetirementPlanBanner(), BMT.refreshRelinkBankBanner()
+                BS.refreshCheckingAccountBanner(), BS.refreshTrustDocumentsBanner(), BS.refreshJointAccountInviteBanner(), BS.refreshDepositAfterSignupBanner(), BS.refreshRetirementPlanBanner(), BS.refreshRelinkBankBanner()
             },
             showMainContent: function(t) {
-                var n = BMT.mainContent;
-                BMT.setResponsiveLayout(t.options.setResponsiveLayout === !0), BMT.mainContent.empty(), BMT.unboundedContent.empty(), e("#railsContent").empty(), t.showInRegion && (n = t.showInRegion), n.show(t)
+                var n = BS.mainContent;
+                BS.setResponsiveLayout(t.options.setResponsiveLayout === !0), BS.mainContent.empty(), BS.unboundedContent.empty(), e("#railsContent").empty(), t.showInRegion && (n = t.showInRegion), n.show(t)
             },
             showLoading: function() {
-                BMT.showMainContent(new v)
+                BS.showMainContent(new v)
             },
             refreshAccountGroup: function() {
-                BMT.user.fetch().done(function() {
-                    BMT.setAccountGroup(BMT.accountGroup)
+                BS.user.fetch().done(function() {
+                    BS.setAccountGroup(BS.accountGroup)
                 })
             },
             emptyBanners: function() {
-                BMT.bankAccountBannerContent.empty(), BMT.trustDocumentsBannerContent.empty(), BMT.jointAccountInviteBannerContent.empty(), BMT.depositAfterSignupContent.empty()
+                BS.bankAccountBannerContent.empty(), BS.trustDocumentsBannerContent.empty(), BS.jointAccountInviteBannerContent.empty(), BS.depositAfterSignupContent.empty()
             },
             setAccountGroup: function(e, t) {
                 function i() {
-                    X(n), BMT.subnav.show(new c), BMT.refreshBanners(), BMT.currentPage = "summary", BMT.router.navigate("summary"), BMT.showMainContent(new m), BMT.tabBar.show(new h({
+                    X(n), BS.subnav.show(new c), BS.refreshBanners(), BS.currentPage = "summary", BS.router.navigate("summary"), BS.showMainContent(new m), BS.tabBar.show(new h({
                         page: "summary",
-                        model: BMT.accountGroup
-                    })), BMT.footerLinks.show(new p)
+                        model: BS.accountGroup
+                    })), BS.footerLinks.show(new p)
                 }
                 t = t || {};
-                var n = BMT.accountGroup;
+                var n = BS.accountGroup;
                 X(e);
                 var r = new c;
-                r.lock(), BMT.emptyBanners(), BMT.showMainContent(new v), BMT.subnav.show(r), BMT.tabBar.empty(), BMT.vent.trigger("closeDrawer"), BMT.refreshAccounts(function() {
-                    BMT.selectedAccount = t.account || BMT.accounts().at(0), F.every(BMT.accounts().models, function(e) {
+                r.lock(), BS.emptyBanners(), BS.showMainContent(new v), BS.subnav.show(r), BS.tabBar.empty(), BS.vent.trigger("closeDrawer"), BS.refreshAccounts(function() {
+                    BS.selectedAccount = t.account || BS.accounts().at(0), F.every(BS.accounts().models, function(e) {
                         return O.loadPortfolioSetForAccount(e)
                     }).done(function() {
-                        r.unlock(), BMT.refreshBanners(), BMT.user.returnsCollection = null, _.checkStateAndAlert(), BMT.accountGroup.isClosed() ? (BMT.router.navigate("activity"), BMT.router.renderPage("activity")) : (BMT.router.navigate(t.destination || "summary"), BMT.router.renderPage(t.destination || "summary", t.pageOptions)), BMT.tabBar.show(new h({
-                            page: BMT.currentPage,
-                            model: BMT.accountGroup
-                        })), BMT.footerLinks.show(new p), t.scrollToTop && BMT.scrollToTop()
+                        r.unlock(), BS.refreshBanners(), BS.user.returnsCollection = null, _.checkStateAndAlert(), BS.accountGroup.isClosed() ? (BS.router.navigate("activity"), BS.router.renderPage("activity")) : (BS.router.navigate(t.destination || "summary"), BS.router.renderPage(t.destination || "summary", t.pageOptions)), BS.tabBar.show(new h({
+                            page: BS.currentPage,
+                            model: BS.accountGroup
+                        })), BS.footerLinks.show(new p), t.scrollToTop && BS.scrollToTop()
                     })
                 }, i)
             },
@@ -57274,7 +57275,7 @@ var requirejs, require, define;
                 return this.accountGroup.get("accounts")
             },
             toggleAdvisedBranding: function(t) {
-                e(document.body).toggleClass("advised-user", !!t), e(document.body).toggleClass("unadvised-user", !t), t ? e(document).prop("title", t.get("name") + " - Powered by BetaSmartz") : e(document).prop("title", "Betterment"), BMT.headerLogo.show(new R({
+                e(document.body).toggleClass("advised-user", !!t), e(document.body).toggleClass("unadvised-user", !t), t ? e(document).prop("title", t.get("name") + " - Powered by BetaSmartz") : e(document).prop("title", "Betasmartz"), BS.headerLogo.show(new R({
                     model: t
                 }))
             },
@@ -57300,11 +57301,11 @@ var requirejs, require, define;
                 return !!location.host.match(/^beta/)
             },
             goToSignup: function(e) {
-                if (BMT.hasLoggedInUser()) BMT.router.navigate("summary", {
+                if (BS.hasLoggedInUser()) BS.router.navigate("summary", {
                     trigger: !0
                 });
                 else if (!e) window.location.href = A.getResponsiveSignupUrl();
-                else if (!M.isMobile()) BMT.router.navigate("signup", {
+                else if (!M.isMobile()) BS.router.navigate("signup", {
                     trigger: !0
                 });
                 else {
@@ -57313,7 +57314,7 @@ var requirejs, require, define;
                 }
             },
             goToLogin: function() {
-                BMT.router.navigate("login", {
+                BS.router.navigate("login", {
                     trigger: !0
                 })
             },
@@ -57336,7 +57337,7 @@ var requirejs, require, define;
                 }, r) : s.scrollTop(0)
             },
             initializeLog: function() {
-                i.init(BMT.isLocal())
+                i.init(BS.isLocal())
             },
             logInfo: function(e) {
                 i.info(e)
@@ -57353,8 +57354,8 @@ var requirejs, require, define;
             setResponsiveLayout: function(t) {
                 t ? (e("html").addClass("responsive"), e("meta[name=viewport]").attr("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0")) : t === !1 && (e("html").removeClass("responsive"), e("meta[name=viewport]").attr("content", "width=1100"))
             }
-        }), BMT.addInitializer(function(r) {
-            j.bindAllTo(BMT.vent), BMT.addRegions({
+        }), BS.addInitializer(function(r) {
+            j.bindAllTo(BS.vent), BS.addRegions({
                 subnav: "#subnav",
                 tabBar: "#tabBar",
                 ribbonDrawer: a,
@@ -57374,24 +57375,24 @@ var requirejs, require, define;
                 popoverRegion: "#popover-region",
                 headerLogo: "#header-logo",
                 feed: f
-            }), BMT.vent.bind("error", function(e, t, n) {
-                BMT.alert(o.getErrorDetailsFromResponse(t))
-            }), BMT.vent.bind("errorCode", function(e) {
-                BMT.alert(o.getErrorContentForCode(e))
-            }), BMT.vent.bind("login", function(e) {
+            }), BS.vent.bind("error", function(e, t, n) {
+                BS.alert(o.getErrorDetailsFromResponse(t))
+            }), BS.vent.bind("errorCode", function(e) {
+                BS.alert(o.getErrorContentForCode(e))
+            }), BS.vent.bind("login", function(e) {
                 var e = e || {},
-                    t = BMT.user,
+                    t = BS.user,
                     n = function(e, t) {
-                        var n = BMT.router.initialPage || "summary";
-                        V(e), W(), U.setFirmForAdvisor(t), BMT.toggleAdvisedBranding(U.get()), BMT.tabBar.show(new h({
+                        var n = BS.router.initialPage || "summary";
+                        V(e), W(), U.setFirmForAdvisor(t), BS.toggleAdvisedBranding(U.get()), BS.tabBar.show(new h({
                             page: n,
-                            model: BMT.accountGroup
-                        })), BMT.router.account ? BMT.selectedAccount = BMT.accounts().get(BMT.router.account) : BMT.selectedAccount = BMT.accounts().at(0), F.every(BMT.accounts().models, function(e) {
+                            model: BS.accountGroup
+                        })), BS.router.account ? BS.selectedAccount = BS.accounts().get(BS.router.account) : BS.selectedAccount = BS.accounts().at(0), F.every(BS.accounts().models, function(e) {
                             return O.loadPortfolioSetForAccount(e)
                         }).done(function() {
-                            BMT.scrollToTop({
+                            BS.scrollToTop({
                                 async: !1
-                            }), BMT.router.navigate(n, !0, BMT.router.initialOptions), delete BMT.router.initialPage, P.start(), window.dataLayer && window.dataLayer.push({
+                            }), BS.router.navigate(n, !0, BS.router.initialOptions), delete BS.router.initialPage, P.start(), window.dataLayer && window.dataLayer.push({
                                 event: "userLoggedIn"
                             })
                         })
@@ -57400,20 +57401,20 @@ var requirejs, require, define;
                 var r = [];
                 r.push(k.fetch()), t.isAdvised() && r.push(I.fetch()), F.whenAll(r).always(function(e, r) {
                     var i = {
-                        FeeType: BMT.user.get("pricingSummary").displayName()
+                        FeeType: BS.user.get("pricingSummary").displayName()
                     };
-                    BMT.analytics.registerUser(t, i), BMT.analytics.track("UserLoggedIn"), BMT.refreshAccounts(function() {
+                    BS.analytics.registerUser(t, i), BS.analytics.track("UserLoggedIn"), BS.refreshAccounts(function() {
                         n(t, r)
                     })
                 })
-            }), BMT.vent.bind("logout", function(e) {
+            }), BS.vent.bind("logout", function(e) {
                 window.location.replace("/sign_out");
                 /*
-                var n = BMT.isTest() || BMT.isLocal() || BMT.user.isAdvised(),
+                var n = BS.isTest() || BS.isLocal() || BS.user.isAdvised(),
                     r = t.extend({
                         timeout: !1,
                         after: function() {
-                            BMT.analytics.track("UserLoggedOut");
+                            BS.analytics.track("UserLoggedOut");
                             if (n) {
                                 var e = (location.protocol || "https:") + "//",
                                     t = "/app/",
@@ -57422,26 +57423,26 @@ var requirejs, require, define;
                             } else location.href = A.brochureHost() + "/" + (r.timeout ? "timeout" : "logout")
                         }
                     }, e || {});
-                BMT.session.destroy({
+                BS.session.destroy({
                     skipErrorAlert: !0,
                     complete: function() {
-                        BMT.user.off(), BMT.user = new C, BMT.session = new N, BMT.accountGroup = null, r.after()
+                        BS.user.off(), BS.user = new C, BS.session = new N, BS.accountGroup = null, r.after()
                     }
                 })*/
-            }), BMT.analytics.registerProperties({
+            }), BS.analytics.registerProperties({
                 Platform: "Web",
                 App: "WebApp"
-            }), BMT.analytics.attachElementTracking(), e("header .logo").click(function() {
-                var e = !BMT.user.isFull() && (!BMT.accounts().length || !BMT.accounts().first().isComplete());
+            }), BS.analytics.attachElementTracking(), e("header .logo").click(function() {
+                var e = !BS.user.isFull() && (!BS.accounts().length || !BS.accounts().first().isComplete());
                 if (e) return !1
-            }), BMT.$pixels = e("#pixels"), F.whenAll([L.loadInstance(), B.fetch()]).done(function() {
-                BMT.session = new N, BMT.user = new C, BMT.user.on("change", W), X(BMT.user.getDefaultAccountGroup()), BMT.router = new s, BMT.subnav.show(new c), BMT.headerLogo.show(new R), BMT.footerLinks.show(new p), BMT.initializeLog(), BMT.showMainContent(new v);
+            }), BS.$pixels = e("#pixels"), F.whenAll([L.loadInstance(), B.fetch()]).done(function() {
+                BS.session = new N, BS.user = new C, BS.user.on("change", W), X(BS.user.getDefaultAccountGroup()), BS.router = new s, BS.subnav.show(new c), BS.headerLogo.show(new R), BS.footerLinks.show(new p), BS.initializeLog(), BS.showMainContent(new v);
                 var e = location.pathname.match(/^\/([a-z0-9-]+)\/app\//i),
                     t = e && e[1];
                 t ? U.fetchAndSetFirmBySlug(t, {
                     skipErrorAlert: !0
                 }).done(function(e) {
-                    BMT.toggleAdvisedBranding(e), n.history.start({
+                    BS.toggleAdvisedBranding(e), n.history.start({
                         root: "/" + t + "/app/"
                     })
                 }).fail(function() {
@@ -57452,12 +57453,12 @@ var requirejs, require, define;
             }).fail(function() {
                 location.href = "/503"
             }), M.isWebkit() && e("body").addClass("webkit"), M.isIe() && e("body").addClass("ie")
-        }), BMT
+        }), BS
     }), define("components/common/scripts/util/templates", ["jquery", "marionette"], function(e, t) {
         return {
             setup: function(n) {
                 var r = new e.Deferred,
-                    i = window.BMTVersion ? window.BMTVersion + "." : "",
+                    i = window.BSVersion ? window.BSVersion + "." : "",
                     s = "/static/templates/client/templates." + i + "xml",
                     o = n || s;
                 return e.get(o, function(n) {
@@ -58330,7 +58331,7 @@ var requirejs, require, define;
                 e(this).find(".spinner-bg, .svg-circle-spinner").remove(), e(this).css("position", "auto")
             }), this
         }
-    }), define("overrides", ["jquery", "underscore", "backbone", "marionette", "bmt", "components/common/scripts/util/formatter", "backboneMemento", "backboneSyphon", "common/text.spinner", "components/common/scripts/libs/jquery.numberInputs", "common/syphonCustomization", "jqueryBlockUI", "rivets", "components/common/scripts/mixins", "common/railsOverrides", "modules/jquery.spinner"], function(e, t, n, r, i, s) {
+    }), define("overrides", ["jquery", "underscore", "backbone", "marionette", "bS", "components/common/scripts/util/formatter", "backboneMemento", "backboneSyphon", "common/text.spinner", "components/common/scripts/libs/jquery.numberInputs", "common/syphonCustomization", "jqueryBlockUI", "rivets", "components/common/scripts/mixins", "common/railsOverrides", "modules/jquery.spinner"], function(e, t, n, r, i, s) {
         return e.blockUI.defaults.themedCSS = {
             position: "absolute",
             top: "150px",
@@ -71865,7 +71866,7 @@ var requirejs, require, define;
             backboneValidation: "bower_components/backbone-validation/dist/backbone-validation-amd",
             marionette: "bower_components/backbone.marionette/lib/backbone.marionette",
             rivets: "libs/rivets",
-            bmt: "app",
+            bS: "app",
             datejs: "../../../components/common/scripts/libs/date",
             d3: "../../../components/common/scripts/libs/d3",
             nv: "../../../components/common/scripts/libs/nv.d3",
@@ -71879,7 +71880,7 @@ var requirejs, require, define;
         hbs: {
             helperDirectory: "components/common/scripts/templateHelpers/"
         }
-    }), require(["jquery", "underscore", "backbone", "bmt", "components/common/scripts/util/templates", "overrides", "components/common/scripts/libs/es5-shim", "jqueryCookie", "jqueryTransit", "jqueryUI", "jqueryQtip", "jqueryMask", "jqueryNumeric", "jqueryUITouchPunch", "jqueryCaret", "jqueryBrowserMobile", "jqueryOutside", "jqueryPlaceholder", "jqueryUjs", "bootstrap", "jSignature", "d3", "nv", "common/csrf", "fileUpload", "components/common/scripts/backboneValidationOverrides", "rails/includes"], function(e, t, n, r, i, s) {
+    }), require(["jquery", "underscore", "backbone", "bS", "components/common/scripts/util/templates", "overrides", "components/common/scripts/libs/es5-shim", "jqueryCookie", "jqueryTransit", "jqueryUI", "jqueryQtip", "jqueryMask", "jqueryNumeric", "jqueryUITouchPunch", "jqueryCaret", "jqueryBrowserMobile", "jqueryOutside", "jqueryPlaceholder", "jqueryUjs", "bootstrap", "jSignature", "d3", "nv", "common/csrf", "fileUpload", "components/common/scripts/backboneValidationOverrides", "rails/includes"], function(e, t, n, r, i, s) {
         e(function() {
             i.setup().done(function() {
                 r.start()

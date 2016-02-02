@@ -6902,7 +6902,7 @@ summary {
 .link-checking-arrow-reverse,
 .chevron,
 .pricing-builder,
-.pricing-better,
+.pricing-betasmartz,
 .pricing-best,
 .blue-pen,
 .blue-pen:hover,
@@ -6944,7 +6944,7 @@ summary {
 .privacy-icon,
 .ssl-icon,
 .money-bag-icon,
-.betterment-lock-icon,
+.betasmartz-lock-icon,
 .unbranded-lock-icon,
 .security-lock-icon,
 .article-icon,
@@ -6991,10 +6991,10 @@ summary {
 header .header-wrapper #subnav .pricing.ghost .invest-for-free,
 header .header-wrapper #subnav .pricing.ghost .thirty-days,
 header .header-wrapper #subnav .pricing.ghost .thirty-days:hover,
-.better-spinner .spinner-buttons .better-spinner-down,
-.better-spinner .spinner-buttons .better-spinner-down:hover,
-.better-spinner .spinner-buttons .better-spinner-up,
-.better-spinner .spinner-buttons .better-spinner-up:hover,
+.betasmartz-spinner .spinner-buttons .betasmartz-spinner-down,
+.betasmartz-spinner .spinner-buttons .betasmartz-spinner-down:hover,
+.betasmartz-spinner .spinner-buttons .betasmartz-spinner-up,
+.betasmartz-spinner .spinner-buttons .betasmartz-spinner-up:hover,
 .question-boxes li:hover .article-icon,
 #tlhRibbon .tlh-ribbon .inner .actions .back:hover .icon,
 #tlhRibbon .tlh-ribbon.tlh-what-to-expect .how-it-works .top-image,
@@ -9541,7 +9541,7 @@ input[type=color]:focus:focus,
     background-position:-249px -287px;
     display:inline-block
 }
-.pricing-better {
+.pricing-betasmartz {
     width:35px;
     height:28px;
     background-position:-213px -287px;
@@ -9795,7 +9795,7 @@ input[type=color]:focus:focus,
     background-position:-13px -287px;
     display:inline-block
 }
-.betterment-lock-icon {
+.betasmartz-lock-icon {
     width:25px;
     height:31px;
     background-position:-486px -193px;

@@ -955,7 +955,7 @@ class FinancialPlansAccountAdditionView(ClientView):
             "annual_contribution_cents"]
         fp_account.save()
         payload["id"] = fp_account.pk
-        payload["bettermentdb_account_id"] = goal.pk
+        payload["betasmartzdb_account_id"] = goal.pk
         del payload["account_id"]
         return HttpResponse(ujson.dumps(payload),
                             content_type="application/json")

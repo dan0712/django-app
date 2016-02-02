@@ -58,7 +58,7 @@ var a = self.model;
 <input class="left" type="text" name="name" maxlength="64" />
 <span class="left name"><%- name() %></span>
 
-<% if (BMT.user.not('demo') && !self.model.isIRA()) { %>
+<% if (BS.user.not('demo') && !self.model.isIRA()) { %>
 <span class="left white-pen"></span>
 <% } %>
 
@@ -283,7 +283,7 @@ amount and allocation at least annually using our recommendations.
 If you follow this advice annually, we estimate that your chance of
 outliving your portfolio is 1%.
 <br>
-<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1482070-about-our-%22monthly-safe-withdrawal%22-advice">Learn More &gt;</a>
+<a target="_blank" href="http://support.betasmartz.com/customer/portal/articles/1482070-about-our-%22monthly-safe-withdrawal%22-advice">Learn More &gt;</a>
 </span>
 </span>
 </div>
@@ -368,7 +368,7 @@ likely want to avoid.
 </div>
 <p>
 For more details see the rules in <a target="_blank" href="http://www.irs.gov/uac/About-Publication-590">IRS Publication 590</a> under Inherited IRAs.
-Contact <a href="mailto:support@betterment.com">support@betterment.com</a> if you have any questions.
+Contact <a href="mailto:support@betasmartz.com">support@betasmartz.com</a> if you have any questions.
 </p>
 </div>
 </div>
@@ -457,7 +457,7 @@ Please allow 4-5 business days for transfers to complete.
 <div class="text">
 <p>
 <% if (pendingTrustBlocker()) { %>
-Your trust account is still pending approval. At this time, we cannot process deposits into your trust account. Please contact trusts@betterment.com or <%= supportPhoneNumber() %>.
+Your trust account is still pending approval. At this time, we cannot process deposits into your trust account. Please contact trusts@betasmartz.com or <%= supportPhoneNumber() %>.
 <% } else if (wireInstructionsBlocker()) { %>
 <span class="green heading">Deposits greater than <%= money(maxACHAmount()) %> must be wired directly from your bank.
 Wire instructions will appear on the next screen.</span>
@@ -1061,7 +1061,7 @@ A conversion to a Roth IRA is a taxable distribution. Taxes will be due on any c
 
 <form action="#" method="POST">
 <% if (self.model.get('parentUser').get('state') == 'MI') { %>
-<p><span class="bold-text">Michigan Residents:</span> Form MI W4-P is required. Please download, print, check box 1, sign, and email to us at support@betterment.com.</p>
+<p><span class="bold-text">Michigan Residents:</span> Form MI W4-P is required. Please download, print, check box 1, sign, and email to us at support@betasmartz.com.</p>
 <div>
 <input type="checkbox" name="michigan" /> I agree to not have state tax withheld (required)
 </div>
@@ -1284,24 +1284,24 @@ See Terms
 <h2>Frequently Asked Questions</h2>
 <ul>
 <li>
-<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1012004" data-track-event="ElementClicked" data-track-location="Support" data-track-name="FAQTop1">
+<a target="_blank" href="http://support.betasmartz.com/customer/portal/articles/1012004" data-track-event="ElementClicked" data-track-location="Support" data-track-name="FAQTop1">
 How can I delete or edit goals?
 </a>
 </li>
 
 <li>
-<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1152537" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="FAQTop2">
+<a target="_blank" href="http://support.betasmartz.com/customer/portal/articles/1152537" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="FAQTop2">
 How can I rollover my employee-sponsored retirement plan?
 </a>
 </li>
 
 <li>
-<a target="_blank" href="http://support.betterment.com/customer/portal/articles/1148713" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="FAQTop3">
+<a target="_blank" href="http://support.betasmartz.com/customer/portal/articles/1148713" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="FAQTop3">
 How do I rollover my IRA?
 </a>
 </li>
 <li>
-<a target="_blank" class="view-more-link" href="http://support.betterment.com" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="ViewAll">
+<a target="_blank" class="view-more-link" href="http://support.betasmartz.com" data-track-event="ElementClicked"  data-track-location="Support" data-track-name="ViewAll">
 View more &#62;
 </a>
 </li>
@@ -1329,7 +1329,7 @@ View more &#62;
 </span>
 
 <div class="left contact-email">
-<h2><a target="_blank" href="mailto:support@betterment.com">support@betterment.com</a></h2>
+<h2><a target="_blank" href="mailto:support@betasmartz.com">support@betasmartz.com</a></h2>
 </div>
 </div>
 </div>
@@ -1340,7 +1340,7 @@ View more &#62;
 <form method="POST" class="contact-form" action="#">
 <section class="to-field">
 <label>To</label>
-<span>BetaSmartz Support &lt;support@betterment.com&gt;</span>
+<span>BetaSmartz Support &lt;support@betasmartz.com&gt;</span>
 </section>
 <section class="from-field">
 <label>From</label>
@@ -1440,7 +1440,7 @@ View more &#62;
 <h2>Add an initial deposit</h2>
 <p>
 Your deposits are invested on the next business day, and you can immediately start benefitting from our advice. Your first 30 days are free. After that you get the best value if you deposit <%- money(bestMinimumBalance(), 0) %> or more.<br>
-<a href="https://www.betterment.com/pricing/">Learn more about our fees ></a>
+<a href="https://www.betasmartz.com/pricing/">Learn more about our fees ></a>
 </p>
 </div>
 </li>
@@ -1512,7 +1512,7 @@ Your friend didn&#39;t sign up before the expiration date.
 <div class="fine-print">
 <strong>Terms and Conditions</strong>
 <p>
-The offer is valid only for new individual accounts with BetaSmartz. Please send invites only to people you know personally who will be glad to get them. BetaSmartz will send one invite and up to two reminders to each friend you invite: (1) in your name; and/or (2) with your name. The reminders may be different from the original invite and can be canceled by emailing support@betterment.com. To qualify for the bonus, referred friends must make an initial deposit
+The offer is valid only for new individual accounts with BetaSmartz. Please send invites only to people you know personally who will be glad to get them. BetaSmartz will send one invite and up to two reminders to each friend you invite: (1) in your name; and/or (2) with your name. The reminders may be different from the original invite and can be canceled by emailing support@betasmartz.com. To qualify for the bonus, referred friends must make an initial deposit
 <% if (hasMinimumDeposit()) { %>
 of at least <%= minimumDeposit() %>
 <% } %>
@@ -1604,7 +1604,7 @@ Send invite
 ]]></template><template name="performance/performanceBalancesSelector"><![CDATA[
 <h2 class="section-header left">Select a goal</h2>
 <ul class="goals-list toggle-views">
-<% _.each(BMT.accounts().filter(function(account) {
+<% _.each(BS.accounts().filter(function(account) {
 return account.get('currentBalance') > 0;
 }), function(a) { %>
 <li>
@@ -1826,7 +1826,7 @@ Your portfolio is transitioning to new asset classes. Rebalancing will automatic
 <% } %>
 
 <p><%= rebalancingEnabled() ? 'Our' : 'When on, our' %> algorithm automatically rebalances and avoids taking short-term gains to save you taxes.
-<a href="http://support.betterment.com/customer/portal/articles/987453" target="_blank">Learn more &gt;</a></p>
+<a href="http://support.betasmartz.com/customer/portal/articles/987453" target="_blank">Learn more &gt;</a></p>
 <% } %>
 
 <% if (showDriftGraph()) { %>
@@ -1983,7 +1983,7 @@ Closing your account is a big deal. If you think you might use BetaSmartz again 
 <div id="trustInformation" class="stacked-items">
 </div>
 <div class="support-info">
-To amend a trust or add or remove a trustee, please contact our support team at <%= customerSupportNumber() %> or <a href="mailto:support@betterment.com">support@betterment.com</a>.
+To amend a trust or add or remove a trustee, please contact our support team at <%= customerSupportNumber() %> or <a href="mailto:support@betasmartz.com">support@betasmartz.com</a>.
 </div>
 </div>
 </div>
@@ -2079,7 +2079,7 @@ To amend a trust or add or remove a trustee, please contact our support team at 
 </span>
 </div>
 
-<% if (BMT.user.isNew()) { %>
+<% if (BS.user.isNew()) { %>
 <div class="input-line" data-required="true">
 <label>Password</label>
 <span class="input-area">
@@ -2503,8 +2503,8 @@ should be directed to a tax advisor or the IRS.
 <h4>After signing up for a personal account you can:</h4>
 <ul>
 <li>Set up a <a href="<%= supportUrl('customer/portal/articles/1827645-how-can-i-open-a-joint-account-') %>" target="_blank">Joint Account</a></li>
-<li>Create a <a href="<%= supportUrl('customer/portal/articles/1570520-how-do-i-open-a-trust-account-with-betterment-') %>" target="_blank">Trust Account</a></li>
-<li>Roll over your <a href="<%= supportUrl('customer/portal/articles/1801145-how-do-i-transfer-my-ira-to-betterment-') %>" target="_blank">401(k) or IRA</a></li>
+<li>Create a <a href="<%= supportUrl('customer/portal/articles/1570520-how-do-i-open-a-trust-account-with-betasmartz-') %>" target="_blank">Trust Account</a></li>
+<li>Roll over your <a href="<%= supportUrl('customer/portal/articles/1801145-how-do-i-transfer-my-ira-to-betasmartz-') %>" target="_blank">401(k) or IRA</a></li>
 </ul>
 </div>
 
@@ -2531,7 +2531,7 @@ Talk to one of our product specialists, like Brandon.
 </li>
 <li>
 <span class="icon"><span class="mail-icon"></span></span>
-<span class="text"><a href="mailto:support@betterment.com">support@betterment.com</a></span>
+<span class="text"><a href="mailto:support@betasmartz.com">support@betasmartz.com</a></span>
 </li>
 <li>
 <span class="icon"><span class="bubble-icon"></span></span>
@@ -2565,7 +2565,7 @@ Talk to one of our product specialists, like Brandon.
 </li>
 <li>
 <span class="icon"><span class="mail-icon"></span></span>
-<span class="text"><a href="mailto:support@betterment.com">Email Support</a></span>
+<span class="text"><a href="mailto:support@betasmartz.com">Email Support</a></span>
 </li>
 <li>
 <span class="icon"><span class="bubble-icon"></span></span>
@@ -2579,7 +2579,7 @@ Talk to one of our product specialists, like Brandon.
 <h5 class="unadvised-user-only">Security & Privacy</h5>
 <h4 class="unadvised-user-only">BetaSmartz&#39;s Promise</h4>
 <div class="promise">
-<div class="icon unadvised-user-only betterment-lock-icon"></div>
+<div class="icon unadvised-user-only betasmartz-lock-icon"></div>
 <div class="icon advised-user-only unbranded-lock-icon"></div>
 <p>
 We promise to ensure the utmost security and privacy when it comes to your account.
@@ -2629,7 +2629,7 @@ We promise to ensure the utmost security and privacy when it comes to your accou
 state: side == 'front' ? 'open' : 'close'
 }) %>
 
-<% if (BMT.accounts().size() > 1) { %>
+<% if (BS.accounts().size() > 1) { %>
 <div class="drag-grip"></div>
 <% } %>
 </div>
@@ -2968,7 +2968,7 @@ It can sometimes be positive even with negative earnings.
 It can sometimes be negative even with positive earnings.
 <% } %>
 
-If you are comparing returns to other investments you hold, you should use this return. <a href="<%- brochure_url('resources/investment-strategy/portfolio-management/betterment-calculate-investment-returns/') %>" target="_blank">Read more&nbsp;&gt;</a>
+If you are comparing returns to other investments you hold, you should use this return. <a href="<%- brochure_url('resources/investment-strategy/portfolio-management/betasmartz-calculate-investment-returns/') %>" target="_blank">Read more&nbsp;&gt;</a>
 </div>
 
 ]]></template><template name="transfer/automaticDepositSettings"><![CDATA[
@@ -3194,7 +3194,7 @@ Since you are younger than 59 1/2, penalties may apply to your withdrawals. See 
 </li>
 </ul>
 <div>
-<p>You will receive a reminder to verify the amounts from <a href="mailto:support@betterment.com">support@betterment.com</a>.</p>
+<p>You will receive a reminder to verify the amounts from <a href="mailto:support@betasmartz.com">support@betasmartz.com</a>.</p>
 </div>
 <div>
 <button class="orange">Back to Summary</button>
@@ -3495,7 +3495,7 @@ Scared of the market? Use our cash-equivalent option instead of withdrawing by s
 With this change, your goal will be invested in 100% Short-term Treasuries (<a href="http://us.ishares.com/product_info/fund/overview/SHV.htm" target="_blank">SHV</a>), a cash-equivalent with very little market risk.
 </p>
 <p class="description">
-Our Advice: Stay Put. Market timing <a href="<%= brochure_url('resources/investment-strategy/behavioral-finance-investing-strategy/betterments-quest-behavior-gap-zero/') %>" target="_blank">reduces returns</a> by about 1.6%.
+Our Advice: Stay Put. Market timing <a href="<%= brochure_url('resources/investment-strategy/behavioral-finance-investing-strategy/betasmartzs-quest-behavior-gap-zero/') %>" target="_blank">reduces returns</a> by about 1.6%.
 </p>
 
 <div class="modal-buttons">
@@ -3512,7 +3512,7 @@ Or, <a href="#advice">try a different allocation &gt;</a>
 <div class="modal-body">
 <% if(!canUpload) { %>
 <div>
-Please email electronic copies of the <strong> title page</strong> and <strong>signature pages</strong> of your trust agreement to <a href="mailto:trusts@betterment.com">trusts@betterment.com</a>. We do not need a copy of the entire agreement.
+Please email electronic copies of the <strong> title page</strong> and <strong>signature pages</strong> of your trust agreement to <a href="mailto:trusts@betasmartz.com">trusts@betasmartz.com</a>. We do not need a copy of the entire agreement.
 </div>
 <% } else { %>
 <div>
@@ -3520,10 +3520,10 @@ Please upload and submit electronic copies of the <strong> title page</strong> a
 </div>
 <% } %>
 <div class="trust-upload-error trust-upload-error-size">
-Sorry, this file is over our <%= uploadLimit %>MB size limit.  Please upload individual pages or contact <a href="mailto:trusts@betterment.com">trusts@betterment.com</a> for further assistance.
+Sorry, this file is over our <%= uploadLimit %>MB size limit.  Please upload individual pages or contact <a href="mailto:trusts@betasmartz.com">trusts@betasmartz.com</a> for further assistance.
 </div>
 <div class="trust-upload-error trust-upload-error-duplicate">
-It appears that we already have a copy of this file.  If you feel that you have reached this message in error, please contact <a href="mailto:trusts@betterment.com">trusts@betterment.com</a> for further assistance.
+It appears that we already have a copy of this file.  If you feel that you have reached this message in error, please contact <a href="mailto:trusts@betasmartz.com">trusts@betasmartz.com</a> for further assistance.
 </div>
 </div>
 

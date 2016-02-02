@@ -130,15 +130,17 @@ ASSET_FEE_EVENTS = ((0, 'Day End'),
                     (8, 'Exit Order Item'),
                     (9, 'Transaction'))
 
-ASSET_FEE_UNITS = ((0, 'Asset Value'), # total value of the asset
-                   (1, 'Asset Qty'), # how many units of an asset
-                   (2, 'NAV Performance')) # % positive change in the NAV
+ASSET_FEE_UNITS = ((0, 'Asset Value'),  # total value of the asset
+                   (1, 'Asset Qty'),  # how many units of an asset
+                   (2, 'NAV Performance'))  # % positive change in the NAV
 
-ASSET_FEE_LEVEL_TYPES = ((0, 'Add'), # Once the next level is reached, the amount form that band is added to lower bands
-                         (1, 'Replace')) # Once the next level is reached, the value from that level is used for the entire amount
+ASSET_FEE_LEVEL_TYPES = (
+    (0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
+    (1, 'Replace'))  # Once the next level is reached, the value from that level is used for the entire amount
 
 # TODO: Make the system currency a setting for the site
 SYSTEM_CURRENCY = 'AUD'
+
 
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
@@ -1176,7 +1178,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         for account in self.financial_plan_accounts.all():
             obj = dict()
             obj["id"] = account.pk
-            obj["bettermentdb_account_id"] = account.account.pk
+            obj["betasmartzdb_account_id"] = account.account.pk
             obj["annual_contribution_cents"] = account.annual_contribution_cents
             betasmartz_goals.append(obj)
 
@@ -1613,10 +1615,8 @@ class Goal(models.Model):
     custom_hedges = models.TextField(null=True)
     archived = models.BooleanField(default=False)
 
-
     class Meta:
         ordering = ['name']
-
 
     @property
     def hedges(self):
@@ -1624,6 +1624,14 @@ class Goal(models.Model):
             return mark_safe('null')
         else:
             return mark_safe(self.custom_hedges)
+
+    @property
+    def metrics(self):
+        metric = {}
+        metrics = json.loads(self.metrics)
+        for m in metrics:
+            metric[m] = {"id": metrics[m]}
+        return mark_safe(json.dumps(metric))
 
     @property
     def picked_regions(self):
@@ -1895,7 +1903,7 @@ class Goal(models.Model):
     def on_track(self):
         current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
         term = self.get_term
-        expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees/1000.0 \
+        expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees / 1000.0 \
                           + self.portfolio_set.risk_free_rate
         expected_value = current_balance * (1 + expected_return) ** term
         if hasattr(self, "auto_deposit"):
@@ -2001,6 +2009,7 @@ class AssetFeatureValue(models.Model):
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
+
     pass
 
 
@@ -2032,7 +2041,8 @@ class GoalMetric(models.Model):
     comparison = models.IntegerField(default=1, choices=comparisons.items())
     rebalance_type = models.IntegerField(choices=rebalance_types.items(),
                                          help_text='Is the rebalance threshold an absolute threshold or relative (percentage difference) threshold?')
-    rebalance_thr = models.FloatField(help_text='The difference between configured and measured value at which a rebalance will be recommended.')
+    rebalance_thr = models.FloatField(
+            help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
     measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
 
@@ -2266,6 +2276,7 @@ class FinancialProfile(models.Model):
 class DailyPrice(models.Model):
     class Meta:
         unique_together = ("ticker", "date")
+
     ticker = models.ForeignKey(Ticker, db_index=False)
     date = models.DateField()
     nav = models.FloatField(null=True)
@@ -2276,6 +2287,7 @@ class MonthlyPrices(models.Model):
     class Meta:
         ordering = ["symbol", "date"]
         unique_together = ("symbol", "date")
+
     symbol = models.CharField(max_length=100)
     date = models.DateField()  # This will be the last date in the month.
     price = models.FloatField(default=0)
@@ -2285,8 +2297,10 @@ class ExchangeRate(models.Model):
     """
     Describes the rate from the first to the second currency
     """
+
     class Meta:
         unique_together = ("first", "second", "date")
+
     first = models.CharField(max_length=3)
     second = models.CharField(max_length=3)
     date = models.DateField()

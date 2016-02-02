@@ -103,7 +103,7 @@
             "linkType": "manual",
             "colorHex": "#3481D1",
             "displayName": "Other Bank",
-            "logoUrl": "https://betterment-retail-public-demo.s3.amazonaws.com/assets/bank_logos/other_bank-555c24241f320b0efc2b30ad3c8c65a7.svg"
+            "logoUrl": "https://betasmartz-retail-public-demo.s3.amazonaws.com/assets/bank_logos/other_bank-555c24241f320b0efc2b30ad3c8c65a7.svg"
         },
         "averageAllocation": "0.55",
         "accountReturn": {
