@@ -395,8 +395,10 @@ def calculate_portfolios(goal, api=DbApi()) -> str:
                 weights, er, vol = get_portfolio_stats(goal_instruments, goal_symbol_ixs, instruments, lcovars, weights)
             except Unsatisfiable as e:
                 logger.warn(e)
-                idata[2]['_weight_'] = 0.0
+                idata[2]['_weight_'] = 0
                 weights = idata[2].groupby('ac')['_weight_'].sum()
+                # We set all the weights even, but still adding to 1, as the UI can't handle otherwise.
+                weights[:] = 1/len(weights)
                 er = 0.0
                 vol = 0.0
 

@@ -89,7 +89,11 @@ def get_fund_hist_data(ids, begin_date, end_date):
                     'DATEFORMAT': 'ddmmyyyy'}
 
     hist_fields = ['PX_LAST',
-                   'FUND_TOTAL_ASSETS']
+                   'FUND_TOTAL_ASSETS',
+                   'PX_MID',
+                   'PX_HIGH',
+                   'PX_LOW',
+                   'FUND_NET_ASSET_VAL']
 
     '''
         Other fund-applicable history fields that may be of interest in the future:
@@ -106,16 +110,31 @@ def get_fund_hist_data(ids, begin_date, end_date):
     if use_id is None:
         api = BbSftp(hn, un, pw)
         hrid, hist_req = api.build_request(hist_headers, hist_fields, ids)
+        print("Using request id: {}".format(hrid))
         responses = api.request({hrid: hist_req})
         response = responses[hrid]
     else:
         with gzip.open(use_id) as hist_file:
             response = hist_file.read().decode("utf-8")
     dframes = parse_hist_security_response(response, begin_date, end_date, hist_fields)
-    # FUND_TOTAL_ASSETS is in million of asset currency. Convert it to base qty.
-    for frame in dframes.values():
+
+    def price_getter(row):
+        h = row['PX_HIGH']
+        l = row['PX_LOW']
+        m = row['PX_MID']
+        la = row['PX_LAST']
+        return (h + l) / 2 if (pd.notnull(h) and pd.notnull(l)) else (m if pd.notnull(m) else (la if pd.notnull(la) else row['FUND_NET_ASSET_VAL']))
+
+    for key, frame in dframes.items():
         frame.dropna(how='all', inplace=True)
+        # FUND_TOTAL_ASSETS is in million of asset currency. Convert it to base qty.
         frame['FUND_TOTAL_ASSETS'] *= 1000000
+        nprices = frame.apply(price_getter, axis=1)
+        if not nprices.empty:
+            frame['nav'] = nprices
+        #frame.to_csv("/tmp/bberg_{}.csv".format(key))
+        frame.iloc[:, 0] = nprices
+        frame.drop(frame.columns[2:], axis=1, inplace=True)  # Remove the cols we don't want.
         frame.columns = ['nav', 'aum']
 
     return dframes

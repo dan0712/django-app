@@ -1,6 +1,9 @@
+import logging
 from main.models import AssetClass, Ticker
 from django.db import models
 
+
+logger = logging.getLogger("portfolios.models")
 
 class ProxyAssetClass(AssetClass):
     class Meta:
@@ -60,8 +63,11 @@ class PortfolioSet(models.Model):
             if region not in rc:
                 rc[region] = "AUD"
             ticker = asset.tickers.filter(ordering=0).first()
-            if ticker.currency != "AUD":
-                rc[region] = ticker.currency
+            if ticker:
+                if ticker.currency != "AUD":
+                    rc[region] = ticker.currency
+            else:
+                logger.warn("Asset class: {} has no tickers.".format(asset.name))
 
         for asset_class in self.asset_classes.all():
             get_regions_currencies(asset_class)

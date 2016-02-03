@@ -7,19 +7,6 @@
       "optimization_mode": {{goal.optimization_mode}},
       "picked_regions": {{goal.picked_regions}},
       "hedges": {{goal.hedges}},
-      "metrics": [
-                  {
-                     id: 1,
-                      type: 0,
-                      rebalance_type: 1,
-                      rebalance_thr: 0.005,
-                      configured: 0.5,
-                      meausred_val: null,
-                      goal_id: 11,
-                      comparison: 1,
-                      feature_id: 83
-                  }
-                ],
       "name": "{{goal.name}}",
       "accountNumber": "{{account.pk}}",
       "ordering": {{forloop.counter0}},

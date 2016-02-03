@@ -1,0 +1,1 @@
+This docker project is for use on IBM Bluemix.
