@@ -10,7 +10,6 @@ from main.models import Ticker, SYSTEM_CURRENCY, AssetFeatureValue, MarkowitzSca
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
 from portfolios.api.yahoo import DbApi
 from portfolios.bl_model import calculate_co_vars
-from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.profile_it import do_cprofile
 from ...models import PortfolioSet
 from main.models import Goal
@@ -624,15 +623,55 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal
     return wts[0], min_cost
 
 
+def get_unconstrained(portfolio_set):
+    covars, samples, instruments, masks = get_instruments()
+    ps_ixs = masks[PORTFOLIO_SET_MASK_PREFIX + str(portfolio_set.id)].nonzero()[0].tolist()
+    ps_instrs = instruments.iloc[ps_ixs]
+    xs, constraints = get_core_constraints(len(ps_instrs))
+    market_caps = get_market_caps(ps_instrs)
+
+    # Get the views appropriate for the portfolio set
+    views, vers = get_views(portfolio_set, ps_instrs)
+
+    # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
+    lcovars = covars.iloc[ps_ixs, ps_ixs]
+    mu, sigma = bl_model(lcovars.values,
+                         market_caps.values,
+                         views,
+                         vers,
+                         samples)
+    fid = AssetFeatureValue.objects.get(name='Stocks Only').id
+    stocks_mask = masks.iloc[ps_ixs, masks.columns.get_loc(fid)].nonzero()[0].tolist()
+    logger.debug("Portfolio Set: {}. Unconstrained symbols: {}, stocks: {}".format(portfolio_set.name,
+                                                                                   ps_instrs.index,
+                                                                                   stocks_mask))
+    json_portfolios = {}
+    for allocation in list(np.arange(0, 1.01, 0.01)):
+        nc = constraints + [sum_entries(xs[stocks_mask]) == allocation]
+        weights, cost = markowitz_optimizer_3(xs, sigma, 1.2, mu, nc)
+        if weights.any():
+            weights, er, vol = get_portfolio_stats(ps_instrs, ps_ixs, instruments, lcovars, weights)
+        else:
+            instruments['_weight_'] = 0
+            weights = instruments.groupby('ac')['_weight_'].sum()
+            weights[:] = 1/len(weights)
+            er = 0.0
+            vol = 0.0
+        json_portfolios["{0:.2f}".format(allocation)] = {
+            "allocations": weights.to_dict(),
+            "risk": allocation,
+            "expectedReturn": er * 100,
+            # Vol we return is stddev
+            "volatility": (vol * 100 * 100) ** (1 / 2)
+        }
+
+
 def get_all_optimal_portfolios():
     # calculate default portfolio
     yahoo_api = DbApi()#get_api("YAHOO")
 
     for ps in PortfolioSet.objects.all():
-        goal = Goal()
-        goal.custom_portfolio_set = ps
-        # TODO: Remove this dependency on the old code and build the goal manually here.
-        ps.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal, api=yahoo_api), double_precision=2)
+        ps.portfolios = ujson.dumps(get_unconstrained(ps), double_precision=2)
         ps.save()
 
     # calculate portfolios
