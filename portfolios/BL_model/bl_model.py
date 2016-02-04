@@ -6,7 +6,7 @@ import logging
 
 
 logger = logging.getLogger('betasmartz.bl_model')
-logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
 class OptimizationFailed(Exception):
     pass

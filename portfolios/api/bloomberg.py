@@ -132,8 +132,8 @@ def get_fund_hist_data(ids, begin_date, end_date):
         nprices = frame.apply(price_getter, axis=1)
         if not nprices.empty:
             frame['nav'] = nprices
-        #frame.to_csv("/tmp/bberg_{}.csv".format(key))
-        frame.iloc[:, 0] = nprices
+            #frame.to_csv("/tmp/bberg_{}.csv".format(key))
+            frame.iloc[:, 0] = nprices
         frame.drop(frame.columns[2:], axis=1, inplace=True)  # Remove the cols we don't want.
         frame.columns = ['nav', 'aum']
 

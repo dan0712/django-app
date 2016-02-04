@@ -40,8 +40,8 @@ LMT_PORTFOLIO_PCT = 0.05
 MINIMUM_PRICE_SAMPLES = 12
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
-logger.setLevel(logging.DEBUG)
-#logger.setLevel(logging.INFO)
+#logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
@@ -664,6 +664,8 @@ def get_unconstrained(portfolio_set):
             # Vol we return is stddev
             "volatility": (vol * 100 * 100) ** (1 / 2)
         }
+
+    return json_portfolios
 
 
 def get_all_optimal_portfolios():
