@@ -9758,7 +9758,7 @@ function() {
     }), $("#firmLogoExamples").qtip({
         content: {
             text: function() {
-                return $.parseHTML('<div class="firm-logo">Color logo example with a transparent background</div><img class="color-logo" src="https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/example_color_firm_logo-107e15c536632cbcc9b841367cfa47ff.png"/><div class="firm-logo">White logo example with a transparent background</div><img class="white-logo" src="https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/example_white_firm_logo-e0c3f3d92f1388bb3781660e82e5efda.png"/>')
+                return $.parseHTML('<div class="firm-logo">Color logo example with a transparent background</div><img class="color-logo" src="https://betterment-institutional-public-demo.s3.amazonaws.com/assets/example_color_firm_logo-107e15c536632cbcc9b841367cfa47ff.png"/><div class="firm-logo">White logo example with a transparent background</div><img class="white-logo" src="https://betterment-institutional-public-demo.s3.amazonaws.com/assets/example_white_firm_logo-e0c3f3d92f1388bb3781660e82e5efda.png"/>')
             }
         },
         show: "mousedown",
@@ -9777,7 +9777,7 @@ function() {
         }
     })
 });
-var BS = BS || {};
+var BMT = BMT || {};
 ! function() {
     $(document).on("click", "[data-track-event]", function(t) {
         var e = $(t.currentTarget).data();
@@ -9800,7 +9800,7 @@ var BS = BS || {};
                 } catch (t) {}
             }
         }
-    }), BS.Analytics = {
+    }), BMT.Analytics = {
         init: function() {
             mixpanel.register_once({
                 Actor: "Advisor",
@@ -9939,7 +9939,7 @@ var BS = BS || {};
     }), $("#firmLogoExamples").qtip({
         content: {
             text: function() {
-                return $.parseHTML('<div class="firm-logo">Color logo example with a transparent background</div><img class="color-logo" src="https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/example_color_firm_logo-107e15c536632cbcc9b841367cfa47ff.png"/><div class="firm-logo">White logo example with a transparent background</div><img class="white-logo" src="https://betasmartz-institutional-public-demo.s3.amazonaws.com/assets/example_white_firm_logo-e0c3f3d92f1388bb3781660e82e5efda.png"/>')
+                return $.parseHTML('<div class="firm-logo">Color logo example with a transparent background</div><img class="color-logo" src="https://betterment-institutional-public-demo.s3.amazonaws.com/assets/example_color_firm_logo-107e15c536632cbcc9b841367cfa47ff.png"/><div class="firm-logo">White logo example with a transparent background</div><img class="white-logo" src="https://betterment-institutional-public-demo.s3.amazonaws.com/assets/example_white_firm_logo-e0c3f3d92f1388bb3781660e82e5efda.png"/>')
             }
         },
         show: "mousedown",

@@ -3499,7 +3499,7 @@ header .header-wrapper .logo {
     top: 50%;
     height: 21px;
     margin-top: -10.5px;
-    background-image: url(../../img/betasmartz.png);
+    background-image: url(../../img/betterment.png);
     background-repeat: no-repeat;
     background-size: contain;
     background-repeat: no-repeat;
@@ -3516,7 +3516,7 @@ only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 150dpi),
 only screen and (min-resolution: 1.5dppx) {
     header .header-wrapper .logo {
-        background-image: url(../../img/betasmartz@2x.png)
+        background-image: url(../../img/betterment@2x.png)
     }
 }
 header .header-wrapper #popover-region .notification-popover {
@@ -4189,12 +4189,12 @@ div.ghost-form .pane.benefits-pane h4 {
 .withdrawal-alternative-modal .allocation-slider {
     margin-top: 5px
 }
-.betasmartz-spinner {
+.better-spinner {
     display: inline-block;
     vertical-align: middle;
     height: 34px
 }
-.betasmartz-spinner input {
+.better-spinner input {
     border-right: 0;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
@@ -4202,17 +4202,17 @@ div.ghost-form .pane.benefits-pane h4 {
     height: 32px;
     vertical-align: top
 }
-.betasmartz-spinner input:focus {
+.better-spinner input:focus {
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     box-shadow: none
 }
-.betasmartz-spinner input:focus+.spinner-buttons {
+.better-spinner input:focus+.spinner-buttons {
     border-color: #006400;
     outline: 0;
     outline: thin dotted \9
 }
-.betasmartz-spinner .spinner-buttons {
+.better-spinner .spinner-buttons {
     display: inline-block;
     border: 1px solid #bbb;
     border-left: 0;
@@ -4227,16 +4227,16 @@ div.ghost-form .pane.benefits-pane h4 {
     line-height: 32px;
     position: relative
 }
-.betasmartz-spinner .spinner-buttons .betasmartz-spinner-button {
+.better-spinner .spinner-buttons .better-spinner-button {
     -moz-user-select: -moz-none;
     -ms-user-select: none;
     -webkit-user-select: none;
     user-select: none
 }
-.betasmartz-spinner .spinner-buttons .betasmartz-spinner-button:focus {
+.better-spinner .spinner-buttons .better-spinner-button:focus {
     outline: 0
 }
-.betasmartz-spinner .spinner-buttons .betasmartz-spinner-down {
+.better-spinner .spinner-buttons .better-spinner-down {
     width: 15px;
     height: 19px;
     background-position: -128px 0;
@@ -4245,13 +4245,13 @@ div.ghost-form .pane.benefits-pane h4 {
     top: 5px;
     left: 5px
 }
-.betasmartz-spinner .spinner-buttons .betasmartz-spinner-down:hover {
+.better-spinner .spinner-buttons .better-spinner-down:hover {
     width: 15px;
     height: 19px;
     background-position: -201px 0;
     display: inline-block
 }
-.betasmartz-spinner .spinner-buttons .betasmartz-spinner-up {
+.better-spinner .spinner-buttons .better-spinner-up {
     width: 15px;
     height: 19px;
     background-position: -113px 0;
@@ -4260,7 +4260,7 @@ div.ghost-form .pane.benefits-pane h4 {
     top: 5px;
     right: 5px
 }
-.betasmartz-spinner .spinner-buttons .betasmartz-spinner-up:hover {
+.better-spinner .spinner-buttons .better-spinner-up:hover {
     width: 15px;
     height: 19px;
     background-position: -168px 0;
@@ -8759,50 +8759,50 @@ html.responsive body .panel.logged-out {
     padding: 8px 0;
     height: 28px
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts {
     margin-bottom: 25px
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .list-header-row .account-summary {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .list-header-row .account-summary {
     width: 36%
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-select {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-select {
     width: 3%
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-select input {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-select input {
     margin: -1px 0 0
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-summary {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-summary {
     width: 33%;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-summary .goal-warning {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-summary .goal-warning {
     font-size: 20px;
     color: #fca886;
     vertical-align: -9px;
     top: -5px
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .current-balance {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .current-balance {
     width: 21%
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .annual-contribution {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .annual-contribution {
     width: 24%
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .annual-contribution input {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .annual-contribution input {
     width: 70px
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .percent-stocks {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .percent-stocks {
     width: 19%
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-row.with-ag-label .col {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-row.with-ag-label .col {
     height: 26px;
     padding: 30px 0 0
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-row.with-ag-label .account-summary {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-row.with-ag-label .account-summary {
     padding-top: 16px
 }
-.retirement-plan-setup .content .accounts-step .accounts .betasmartz-accounts .account-row.with-ag-label .account-group-label {
+.retirement-plan-setup .content .accounts-step .accounts .betterment-accounts .account-row.with-ag-label .account-group-label {
     font-size: 9px;
     text-transform: uppercase;
     margin-bottom: 5px;

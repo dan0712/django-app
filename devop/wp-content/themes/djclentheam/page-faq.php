@@ -78,7 +78,7 @@ get_header(); ?>
 
 </section>
 
-<section class="padding-top-normal padding-bottom-normal  section-type-column" style="background-color: <?php the_field('section_5_bg_color'); ?>;" id="section-betasmartz-institutional-overview">
+<section class="padding-top-normal padding-bottom-normal  section-type-column" style="background-color: <?php the_field('section_5_bg_color'); ?>;" id="section-betterment-institutional-overview">
 
     <div class="container">
     
