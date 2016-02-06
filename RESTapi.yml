@@ -1,0 +1,637 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Betasmartz API
+  description: API to the RESTful Betasmartz services. These are the pre-rewrite services.
+  version: "0.0.1"
+# the domain of the service
+host: betasmartz.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /
+produces:
+  - application/json
+paths:
+  /client/api/appData:
+    get:
+      summary: Global Application Data
+      description: |
+        All the data that is independent of the page. It is used over the whole application.
+      tags:
+        - Global
+      responses:
+        200:
+          description: A JSON blob of crap, most of which I have no idea what it is.
+  /client/api/asset-classes:
+    get:
+      summary: Available Asset Classes
+      description: |
+        Global list of all the asset classes in the system
+      tags:
+        - Global
+      responses:
+        200:
+          description: An array of Asset Classes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AssetClass'
+  /client/api/user:
+    get:
+      summary: User Details
+      description: Details about the user. Accounts, pricing plans etc.
+      tags:
+        - Client
+      responses:
+        200:
+          description: the user's details
+  /session:
+    post:
+      summary: Session active notification (I think)
+      description: |
+        Sent on intervals from UI
+      parameters:
+        - name: model
+          in: formData
+          description: Don't Know. Empty '{}' in our current implementation
+          required: true
+          type: string
+        - name: _method
+          in: query
+          description: Don't Know. 'PUT' in our current implementation
+          required: true
+          type: string
+      tags:
+        - Global
+      responses:
+        200:
+          description: OK
+  /client/api/visitor:
+    get:
+      summary: No idea what this does
+      description: |
+        No Idea
+      parameters:
+        - name: accountGroupId
+          in: query
+          description: What account do we want data for.
+          required: true
+          type: integer
+      tags:
+        - Client
+        - Incomplete
+      responses:
+        200:
+          description: All OK
+  /client/api/advisors/{advisor_id}:
+    get:
+      summary: Returns details of advisor from the perspective of a single account
+      description: |
+        TODO
+      parameters:
+        - name: advisor_id
+          in: path
+          description: What advisor do we want the info for.
+          required: true
+          type: integer
+        - name: accountGroupId
+          in: query
+          description: What account are we accessing from.
+          required: true
+          type: integer
+      tags:
+        - Incomplete
+      responses:
+        200:
+          description: All OK
+  /client/api/accounts:
+    get:
+      summary: Returns all the goals for an account.
+      description: |
+         This should actually be named "goals", not "accounts"
+      parameters:
+        - name: accountGroupId
+          in: query
+          description: What account do we want data for. This should actually be named "accountId", not "accountGroup"
+          required: true
+          type: integer
+      tags:
+        - Client
+      responses:
+        200:
+          description: All OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Goal'
+  /client/api/portfolio-sets/goal_{goal_id}_{unused_id}/asset-classes:
+    get:
+      summary: Returns details of a portfolio set used by a given goal.
+      description: |
+        All the asset classes in the portfolio set, and all the tickers in each of tthe asset classes.
+        
+        In the current fron-end, we also pass the accountGroupId as a query param, but it is unused.
+        
+        TODO This API should not even exist. We should probably get all the portfolio sets for a logged in user once and store it in the front end. We know what portfolio set is for a goal by the goal info.
+      parameters:
+        - name: goal_id
+          in: path
+          description: What goal do we want the portfolio set for.
+          required: true
+          type: integer
+        - name: unused_id
+          in: path
+          description: Not Used.
+          required: true
+          type: integer
+      tags:
+        - Incomplete
+      responses:
+        200:
+          description: All OK.
+          schema:
+            type: array
+            items:
+              type: object
+              description: An asset class and it's tickers
+              properties:
+                assetClass:
+                  type: object
+                  properties:
+                    assetClass:
+                      type: string
+                      description: |
+                        Short name of the asset class
+                        Example "AUS_SMALL_CAP_VALUE_STOCKS"
+                    investmentType:
+                      type: string
+                      description: |
+                        What type of asset investment is it?
+                        Example "STOCKS"
+                        This should really come from an "InvestmentTypes" api call. Or even global app data.
+                    displayName:
+                      type: string
+                      description: |
+                        Human readable name of the asset class
+                        Example "Australian Small-Cap Value"
+                    superAssetClass:
+                      type: string
+                      description: |
+                        Parent Grouping. "type_region"
+                      example: EQUITY_AU
+                tickers:
+                  type: array
+                  description: |
+                    The tickers in the asset class.
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: The identifier of this ticker
+                        example: 1
+                      symbol:
+                        type: string
+                        description: The Betasmartz assigned symbol of this ticker
+                        example: VSO
+                      displayName:
+                        type: string
+                        description: The full name of this asset
+                        example: Vanguard MSCI Australian Small Companies Index ETF
+                      description:
+                        type: string
+                        description: The full description of this asset
+                        example: Australian Small-Cap Value
+                      ordering:
+                        type: integer
+                        description: The priority of this ticker within an asset class.
+                        example: 0
+                      url:
+                        type: string
+                        description: The url to more details about this asset
+                        example: https://www.vanguardinvestments.com.au/retail/ret/investments/etfdetailVASCIE.jsp
+                      unitPrice:
+                        type: number
+                        description: The current unit priceof this ticker.
+                        example: 41.55
+                      primary:
+                        type: boolean
+                        description: TODO. Not sure. Assuming this is the primary ticker within the asset class for tax loss harvesting purposes.
+                        example: true
+  /client/api/portfolio-sets/goal_{goal_id}_{unused_id}/portfolios:
+    get:
+      summary: Returns the 100 portfolios calculatedfor a goal.
+      description: |
+        The allocations to each of the asset classes, and the overall portfolio risk and expected return
+        
+        In the current front-end, we also pass the accountGroupId as a query param, but it is unused.
+        
+        TODO This API should be refactored to be at the endpoint 'api/client/goal_{goal_id}/portfolios' or something.
+      parameters:
+        - name: goal_id
+          in: path
+          description: What goal do we want the portfolio set for.
+          required: true
+          type: integer
+        - name: unused_id
+          in: path
+          description: Not Used.
+          required: true
+          type: integer
+      tags:
+        - Incomplete
+      responses:
+        200:
+          description: All OK.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Portfolio'
+definitions:
+  AssetClass:
+    type: object
+    description: |
+      Description of one asset class.
+      We should include the id here as well.
+    properties:
+      name:
+        type: string
+        description: Unique descriptive short name of the asset class.
+      displayOrder:
+        type: integer
+        description: What order amongst all?
+      donutOrder:
+        type: integer
+        description: Where in the donut should it be.
+      primaryColor:
+        type: string
+        description: HEX color code. Eg. '#50891E'
+      foregroundColor:
+        type: string
+        description: HEX color code. Eg. '#50891E'
+      driftColor:
+        type: string
+        description: HEX color code. Eg. '#50891E'
+      assetClassExplanation:
+        type: string
+        description: Full description.
+      tickersExplanation:
+        type: string
+        description: Full description of why the tickers in this asset class.
+  Portfolio:
+    type: object
+    description: |
+      An allocation of asset classes and the total risk and expected return.
+    properties:
+      risk:
+        type: number
+        description: The proportion of stocks in the portfolio. TODO This needs to change.
+      volatility:
+        type: number
+        description: The stdev of the portfolio returns
+      expectedReturn:
+        type: number
+        description: Annualized expected return
+      allocations:
+        type: object
+        description: map from asset class name to percent allocated to that asset class.
+        example: {"ETHICAL_GLOBAL_MARKETS_STOCKS_EX_AUS":0.0,"AUS_CORPORATE_BONDS":0.0}
+  Goal:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of this goal
+      name:
+        type: string
+        description: Short name of this goal
+      regions_currencies:
+        type: object
+        description: |
+          An object with a varying number of entries, each key is the name of a region, each value is the 3 letter code of a currency. eg. '{"US": "USD", "EU": "EUR"}'
+      regions_allocation":
+        type: object
+        description: |
+          An object specifying the weights of each region. Eg. '{"US":{"size":0.2},"AU":{"size":0.6},"INT":{"size":0.2}}'
+      stocks_and_bonds:
+        type: string
+        description: |
+          Does this goal include stocks only, bonds only or both?
+        enum:
+          - both
+          - stocks
+          - bonds
+      optimization_mode:
+        type: integer
+        description: |
+          The optimisation algorithm that will be used for this goal. DEPRECATED
+      picked_regions:
+        type: array
+        description: |
+          The collection of regions the user has selected. DEPRECATED
+        items:
+          type: string
+          description: The name of the region.
+      hedges:
+        type: object
+        description: |
+          The collection of region names used, and whether hedging is activated or not. DEPRECATED
+          eg: '{"CN":false,"EM":false,"EU":false,"JAPAN":false,"US":false,"AS":false,"UK":false,"INT":false}'
+      accountNumber:
+        type: string
+        description: |
+          No idea what this is. Is it the same as the "accountGroupId" field?
+      ordering:
+        type: integer
+        description: |
+          The display order of this goal within the account.
+      rebalanceEnabled: 
+        type: boolean
+        description: Is rebalancing enabled for this goal?
+      smartDepositViolations:
+        type: array
+        description: No idea what this is for
+        items:
+          type: string
+          description: Eg. "not_plaid"
+      smartDepositConfig:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            description: Is Smart deposit enabled? (I have no idea what smart deposit is)
+      accountGroupId:
+        type: integer
+        description: The account that owns this goal
+      portfolioSetId:
+        type: integer
+        description: The id of the portfolio set that lists the assets that this goal can use.
+      financialPlanId:
+        type: integer
+        description: The id of the financial plan for this goal. Can be 'null' which is a bit strange and should simply not be included in that case I believe.
+      financialPlan:
+        type: object
+        description: No idea. Was 'null' in my example.
+      accountType: 
+        type: string
+        description: |
+          What type of goal is this?
+          Example "INVESTING".
+          This should probably be named 'goalType' or simply 'type' and be an int.
+      createdDate:
+        type: string
+        description: |
+          Timestamp for when the goal was created. Eg "20160118231626" Why is this not a string?
+      goalAmount:
+        type: string
+        description: |
+          Amount for this goal. No idea why it's a string. eg. "320.0"
+      income:
+        type: boolean
+        description: Is this an income type goal?
+      goalType:
+        type: string
+        description: |
+          No idea why we have this, and 'income' and 'accountType'. An example here is "EMERGENCY"
+      goalCompletionDate:
+        type: string
+        description: |
+          Timestamp for the target completion of the goal. Eg "20160118231626" Why is this not a string?
+      automaticDepositId:
+        type: integer
+        description: |
+          Id of the automatic deposit record for this goal.
+          Example I have is 14
+      automaticDeposit:
+        description: |
+          Details of the automatic deposit for this goal. This should really come from a separate API call.
+        $ref: '#/definitions/AutomaticDeposit'
+      automaticWithdrawalId:
+        type: integer
+        description: |
+          Id of the automatic deposit record for this goal.
+          Example I have is null
+      allocation:
+        type: number
+        description: |
+          What proportion of the goal's assets should be stock funds?
+          DEPRECATED. Will be specified in GoalMetrics
+          Example 0.56 means 56% stoocks
+      satelliteAlloc:
+        type: number
+        description: |
+          What proportion of the goal's assets should be satellite funds?
+          DEPRECATED. Will be specified in GoalMetrics
+          Example 0.0 means use no satellite funds
+      canChangeAllocation:
+        type: boolean
+        description: |
+          Can the goal have it's allocation changed?
+      currentBalance:
+        type: string
+        description: |
+          What is the current balance of this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      availableBalance":
+        type: string
+        description: |
+          What is the available balance of this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      availableBalanceForWithdrawal:
+        type: string
+        description: |
+          What is the available balance to withdraw from this goal. TODO Elaborate.
+          Example "0.0"
+          Why is this not a float?
+      pendingDeposits:
+        type: string
+        description: |
+          What is the pending deposit amount for this goal. TODO Elaborate.
+          Example "0.0"
+          Why is this not a float?
+      transferAllTo:
+        type: object
+        description: |
+          No idea. TODO Elaborate.
+          Example null,
+      pendingWithdrawals:
+        type: string
+        description: |
+          What is the pending withdrawal amount for this goal. TODO Elaborate.
+          Example "0.0"
+          Why is this not a float?
+      pendingConversions:
+        type: string
+        description: |
+          What is the pending conversion amount for this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      recharacterized:
+        type: string
+        description: |
+          What is the recharacterised amount for this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      stockBalance:
+        type: string
+        description: |
+          What is the stock balance of this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      bondBalance:
+        type: string
+        description: |
+          What is the bond balance of this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      cashBalance:
+        type: string
+        description: |
+          What is the cash balance of this goal. TODO Elaborate.
+          Example "0.0"
+          Why is this not a float?
+      lifetimeAverageBalance:
+        type: string
+        description: |
+          What is the lifetime average balance for this goal. TODO Elaborate.
+          Example "0.0"
+          Why is this not a float?
+      lifetimeReturn:
+        type: string
+        description: |
+          What is the lifetime return for this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      totalInvested:
+        type: string
+        description: |
+          What is the total amount invested into this goal. TODO Elaborate.
+          Example "0.0"
+          Why is this not a float?
+      totalEarned:
+        type: string
+        description: |
+          What is the total amount earned by this goal. TODO Elaborate.
+          Example "0"
+          Why is this not a float?
+      accountReturn:
+        type: object
+        description: No idea - TODO Elaborate
+        properties:
+          deposits:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          withdrawals:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          otherAdjustments:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          fees:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "55"
+              Why is this not a float?
+          dividends:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          marketChanges:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          totalInvested:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          otherAdjustments:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0"
+              Why is this not a float?
+          lifetimeReturn:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0.0"
+              Why is this not a float?
+          lifetimePersonalReturn:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0"
+              Why is this not a float?
+          lastEndingBalance:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0"
+              Why is this not a float?
+          averageBalance:
+            type: string
+            description: |
+              No idea. TODO Elaborate.
+              Example "0"
+              Why is this not a float?
+  AutomaticDeposit:
+    type: object
+    description: |
+      Details of an automatic deposit plan
+    properties:
+      id:
+        type: integer
+        description: The identifier of this Automatic deposit plan.
+      transactionDateTime2:
+        type: object
+        description: |
+          No idea about this field. Was null in the example
+      transactionDateTime1:
+        type: string
+        description: |
+          Some timestamp. No idea what it means. Eg "20160101150000" Why is this not a string?
+      nextTransaction:
+        type: string
+        description: |
+          Don't know. Assuming the time of the next scheduled auto deposit. Eg "20160205000000" Why is this not a string?
+      lastPlanChange":
+        type: string
+        description: |
+          Don't know. Assuming the last time this auto deposit plan was changed. 
+          Eg "20160118234351" 
+          Why is this not a string?
+      frequency:
+        type: string
+        description: |
+          When does the deposit happen. No idea what the possible values are.
+          Example I have is "MONTHLY"
+      amount:
+        type: string
+        description: |
+          How much to deposit each time
+          Example I have is "1531.23"
+          Why is this not a float field?
+      enabled:
+        type: boolean
+        description: Is this automatic deposit currently enabled?
