@@ -48,7 +48,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django_cron',
     'test_without_migrations',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework.authtoken',
 
 )
 
@@ -64,6 +65,28 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 )
+
+REST_FRAMEWORK = {
+
+    'EXCEPTION_HANDLER': 'api.v1.utils.api_exceptions.custom_exception_handler',
+
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
 
 ROOT_URLCONF = 'main.urls'
 
