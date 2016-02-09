@@ -11,6 +11,11 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ('password',)
 
 
+class GoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Goal
+
+
 class AdvisorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advisor
@@ -34,5 +39,10 @@ class ClientAccountSerializer(serializers.ModelSerializer):
 
     account_group = AccountGroupSerializer()
 
+    goals = serializers.SerializerMethodField()
+
     class Meta:
         model = ClientAccount
+
+    def get_goals(self, obj):
+        return GoalSerializer(obj.goals, many=True).data
