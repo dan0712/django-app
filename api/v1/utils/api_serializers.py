@@ -17,5 +17,8 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class ClientAccountSerializer(serializers.ModelSerializer):
+
+    primary_owner = ClientSerializer()
+
     class Meta:
         model = ClientAccount
