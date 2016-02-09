@@ -13,11 +13,11 @@ else:
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql_psycopg2',
-         'NAME': "betasmartz_{}".format(environment),
-         'USER': 'betasmartz_{}'.format(environment),
+         'NAME': os.environ.get('DB_NAME', "betasmartz_{}".format(environment)),
+         'USER': os.environ.get('DB_USER', 'betasmartz_{}'.format(environment)),
          'PASSWORD': os.environ["DB_PASSWORD"],
-         'HOST': os.environ["DB_PORT_5432_TCP_ADDR"],
-         'PORT': os.environ["DB_PORT_5432_TCP_PORT"],
+         'HOST': os.environ.get('DB_HOST', 'postgres'),
+         'PORT': os.environ.get('DB_PORT', 5432)
      }
 }
 

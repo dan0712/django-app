@@ -11,11 +11,11 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 
     # Link the mounted directory to where we want it. This is a work around to root not having permissions on the nfs
     # mount that bluemix makes.
-    ln -s /mnt/wpdata/wp-content /var/www/html/wp-content
+    #ln -s /mnt/wpdata/wp-content /var/www/html/wp-content
 
     # Inserting sleep delay for Bluemix to wait for routing to be set up per recommendation via:
     # https://www.ng.bluemix.net/docs/containers/doc/container_troubleshoot.html
-    sleep 60
+    #sleep 60
 
 	if [ -n "$MYSQL_PORT_3306_TCP" ]; then
 		if [ -z "$WORDPRESS_DB_HOST" ]; then
