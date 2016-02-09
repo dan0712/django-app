@@ -33,6 +33,7 @@ class APIClient(APIView):
 
         return Response(content)
 
+
 class APIClientAccounts(APIView):
     def get(self, request, format=None):
 
@@ -40,7 +41,9 @@ class APIClientAccounts(APIView):
 
             client = self.request.user.client
 
-            client_data = ClientSerializer(client).data
+            client_accounts = client.accounts.filter().all()
+
+            client_accounts_data = ClientAccountSerializer(client_accounts, many=True).data
 
         except Exception as e:
 
@@ -56,7 +59,7 @@ class APIClientAccounts(APIView):
             raise ExceptionDefault(detail=response)
 
         content = {
-            'client': client_data,
+            'client_accounts': client_accounts_data,
         }
 
         return Response(content)

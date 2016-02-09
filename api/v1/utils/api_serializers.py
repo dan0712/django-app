@@ -14,3 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
+
+
+class ClientAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientAccount
