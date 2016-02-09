@@ -59,7 +59,7 @@ class APIClientAccounts(APIView):
             raise ExceptionDefault(detail=response)
 
         content = {
-            'client_accounts': client_accounts_data,
+            'accounts': client_accounts_data,
         }
 
         return Response(content)
