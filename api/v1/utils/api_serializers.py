@@ -11,7 +11,15 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ('password',)
 
 
+class AdvisorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Advisor
+
+
 class AccountGroupSerializer(serializers.ModelSerializer):
+    advisor = AdvisorSerializer()
+    secondary_advisors = AdvisorSerializer(many=True)
+
     class Meta:
         model = AccountGroup
 
@@ -22,7 +30,6 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class ClientAccountSerializer(serializers.ModelSerializer):
-
     primary_owner = ClientSerializer()
 
     account_group = AccountGroupSerializer()
