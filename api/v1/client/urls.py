@@ -6,6 +6,4 @@ urlpatterns = patterns('',
                        (r'^api/v1/client/?$', APIClient.as_view()),
 
                        (r'^api/v1/client/accounts/?$', APIClientAccounts.as_view()),
-
-                       (r'^api/v1/client/accounts/?$', APIClientAccounts.as_view()),
 )

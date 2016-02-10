@@ -5,6 +5,39 @@ from api.v1.utils.api_responses import *
 from api.v1.utils.api_serializers import *
 
 
+class APIUser(APIView):
+    def get(self, request, format=None):
+        """
+        ---
+        response_serializer: UserSerializer
+
+        """
+        try:
+
+            user = self.request.user
+
+            user_data = UserSerializer(user).data
+
+        except Exception as e:
+
+            if hasattr(e, 'detail'):
+
+                response = e.detail
+
+            else:
+                response = dict()
+                response['message'] = str(e.message)
+                response['status'] = 'error'
+
+            raise ExceptionDefault(detail=response)
+
+        content = {
+            'user': user_data,
+        }
+
+        return Response(content)
+
+
 class APIUserLevel(APIView):
 
     def get(self, request, format=None):

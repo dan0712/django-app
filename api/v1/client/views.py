@@ -7,7 +7,11 @@ from api.v1.utils.api_serializers import *
 
 class APIClient(APIView):
     def get(self, request, format=None):
+        """
+        ---
+        response_serializer: ClientSerializer
 
+        """
         try:
 
             client = self.request.user.client
