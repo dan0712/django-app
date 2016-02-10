@@ -40,8 +40,6 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class ClientAccountSerializer(serializers.ModelSerializer):
-    primary_owner = ClientSerializer()
-
     account_group = AccountGroupSerializer()
 
     goals = serializers.SerializerMethodField()
