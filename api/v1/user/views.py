@@ -6,8 +6,16 @@ from api.v1.utils.api_serializers import *
 
 
 class APIUserLevel(APIView):
-    def get(self, request, format=None):
 
+    def get(self, request, format=None):
+        """
+        ---
+        type:
+          advisor:
+            type: boolean
+          client:
+            type: boolean
+        """
         try:
 
             # by default lets just set both false.
