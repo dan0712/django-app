@@ -11,6 +11,11 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ('password',)
 
 
+class GoalTypesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoalTypes
+
+
 class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal

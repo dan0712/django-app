@@ -100,7 +100,7 @@ PERSONAL_DATA_WIDGETS = {
     'address_line_1':
         forms.TextInput(attrs={"placeholder": "House name, Unit/House number"}),
     "address_line_2": forms.TextInput(
-            attrs={"placeholder": "Street address"})
+        attrs={"placeholder": "Street address"})
 }
 
 ALLOCATION = "ALLOCATION"
@@ -130,24 +130,26 @@ ASSET_FEE_EVENTS = ((0, 'Day End'),
                     (8, 'Exit Order Item'),
                     (9, 'Transaction'))
 
-ASSET_FEE_UNITS = ((0, 'Asset Value'), # total value of the asset
-                   (1, 'Asset Qty'), # how many units of an asset
-                   (2, 'NAV Performance')) # % positive change in the NAV
+ASSET_FEE_UNITS = ((0, 'Asset Value'),  # total value of the asset
+                   (1, 'Asset Qty'),  # how many units of an asset
+                   (2, 'NAV Performance'))  # % positive change in the NAV
 
-ASSET_FEE_LEVEL_TYPES = ((0, 'Add'), # Once the next level is reached, the amount form that band is added to lower bands
-                         (1, 'Replace')) # Once the next level is reached, the value from that level is used for the entire amount
+ASSET_FEE_LEVEL_TYPES = (
+(0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
+(1, 'Replace'))  # Once the next level is reached, the value from that level is used for the entire amount
 
 # TODO: Make the system currency a setting for the site
 SYSTEM_CURRENCY = 'AUD'
+
 
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(BetaSmartzAgreementForm, self).clean()
         if not (cleaned_data["betasmartz_agreement"] is True):
             self._errors['betasmartz_agreement'] = mark_safe(
-                    '<ul class="errorlist">'
-                    '<li>You must accept the BetaSmartz\'s agreement'
-                    ' to continue.</li></ul>')
+                '<ul class="errorlist">'
+                '<li>You must accept the BetaSmartz\'s agreement'
+                ' to continue.</li></ul>')
 
         return cleaned_data
 
@@ -167,7 +169,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
 
         if password1 and (password1 != password2):
             self._errors['confirm_password'] = mark_safe(
-                    '<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
+                '<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
 
         # check if user already exist
         try:
@@ -183,8 +185,8 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
                 if hasattr(user, self.user_profile_type):
                     rupt = self.user_profile_type.replace("_", " ")
                     self._errors['email'] = mark_safe(
-                            u'<ul class="errorlist"><li>User already has an'
-                            u' {0} account</li></ul>'.format(rupt))
+                        u'<ul class="errorlist"><li>User already has an'
+                        u' {0} account</li></ul>'.format(rupt))
 
         cleaned_data["password"] = make_password(password1)
         return cleaned_data
@@ -193,7 +195,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
         # check if user already exist
         try:
             self.instance = User.objects.get(
-                    email=self.cleaned_data.get('email'))
+                email=self.cleaned_data.get('email'))
         except ObjectDoesNotExist:
             pass
         instance = super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
@@ -233,7 +235,7 @@ class NeedApprobation(models.Model):
         account_type = self._meta.verbose_name
 
         subject = "Your BetaSmartz new {0} account have been approved".format(
-                account_type)
+            account_type)
 
         context = {
             'subject': subject,
@@ -273,13 +275,13 @@ class NeedConfirmation(models.Model):
             return None
 
         return settings.SITE_URL + "/confirm_email/{0}/{1}".format(
-                self.content_type, self.confirmation_key)
+            self.content_type, self.confirmation_key)
 
     def send_confirmation_email(self):
         account_type = self._meta.verbose_name
 
         subject = "BetaSmartz new {0} account confirmation".format(
-                account_type)
+            account_type)
 
         context = {
             'subject': subject,
@@ -289,11 +291,11 @@ class NeedConfirmation(models.Model):
         }
 
         send_mail(
-                subject,
-                '',
-                None,
-                [self.email],
-                html_message=render_to_string('email/confirmation.html', context))
+            subject,
+            '',
+            None,
+            [self.email],
+            html_message=render_to_string('email/confirmation.html', context))
 
 
 class PersonalData(models.Model):
@@ -373,22 +375,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_('last name'), max_length=30)
     username = models.CharField(max_length=30, editable=False, default='')
     email = models.EmailField(
-            _('email address'),
-            unique=True,
-            error_messages={
-                'unique': _("A user with that email already exists."),
-            })
+        _('email address'),
+        unique=True,
+        error_messages={
+            'unique': _("A user with that email already exists."),
+        })
 
     is_staff = models.BooleanField(
-            _('staff status'),
-            default=False,
-            help_text=_(
-                    'Designates whether the user can log into this admin site.'))
+        _('staff status'),
+        default=False,
+        help_text=_(
+            'Designates whether the user can log into this admin site.'))
     is_active = models.BooleanField(
-            _('active'),
-            default=True,
-            help_text=_('Designates whether this user should be treated as '
-                        'active. Unselect this instead of deleting accounts.'))
+        _('active'),
+        default=True,
+        help_text=_('Designates whether this user should be treated as '
+                    'active. Unselect this instead of deleting accounts.'))
 
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
     prepopulated = models.BooleanField(default=False)
@@ -436,9 +438,9 @@ class Firm(models.Model):
                                              null=True,
                                              blank=True)
     client_agreement_url = models.FileField(
-            verbose_name="Client Agreement (PDF)",
-            null=True,
-            blank=True)
+        verbose_name="Client Agreement (PDF)",
+        null=True,
+        blank=True)
     form_adv_part2_url = models.FileField(verbose_name="Form Adv",
                                           null=True,
                                           blank=True)
@@ -736,13 +738,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         super(Advisor, self).save(*args, **kw)
         if send_confirmation_mail and (self.confirmation_key is not None):
             self.user.email_user(
-                    "BetaSmartz advisor account confirmation",
-                    "You advisor account have been approved, "
-                    "please confirm your email here: "
-                    "{site_url}/advisor/confirm_email/{confirmation_key}/"
-                    " \n\n\n  The BetaSmartz Team".format(
-                            confirmation_key=self.confirmation_key,
-                            site_url=settings.SITE_URL))
+                "BetaSmartz advisor account confirmation",
+                "You advisor account have been approved, "
+                "please confirm your email here: "
+                "{site_url}/advisor/confirm_email/{confirmation_key}/"
+                " \n\n\n  The BetaSmartz Team".format(
+                    confirmation_key=self.confirmation_key,
+                    site_url=settings.SITE_URL))
 
 
 class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData
@@ -756,8 +758,8 @@ class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData
 class AccountGroup(models.Model):
     advisor = models.ForeignKey(Advisor, related_name="primary_account_groups")
     secondary_advisors = models.ManyToManyField(
-            Advisor,
-            related_name='secondary_account_groups')
+        Advisor,
+        related_name='secondary_account_groups')
     name = models.CharField(max_length=100)
 
     @property
@@ -871,8 +873,8 @@ class ClientAccount(models.Model):
         # get personal group or create it
         group_name = "{0}".format(self.primary_owner.full_name)
         groups = AccountGroup.objects.filter(
-                name=group_name,
-                advisor=self.primary_owner.advisor)
+            name=group_name,
+            advisor=self.primary_owner.advisor)
         if groups:
             group = groups[0]
         else:
@@ -929,7 +931,7 @@ class ClientAccount(models.Model):
                 self.primary_owner.user.first_name)"""
 
         return "{0}'s {1}".format(
-                self.primary_owner.user.first_name, self.get_account_class_display())
+            self.primary_owner.user.first_name, self.get_account_class_display())
 
     @property
     def total_balance(self):
@@ -1024,9 +1026,9 @@ class ClientAccount(models.Model):
 
     def __str__(self):
         return "{0}:{1}:{2}:({3})".format(
-                self.primary_owner.full_name,
-                self.primary_owner.advisor.first_name,
-                self.primary_owner.advisor.firm.name, self.account_type_name)
+            self.primary_owner.full_name,
+            self.primary_owner.advisor.first_name,
+            self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
 FULL_TIME = "FULL_TIME"
@@ -1094,9 +1096,9 @@ class MedicareNumberValidator(object):
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
     advisor = models.ForeignKey(Advisor, related_name="all_clients")
     secondary_advisors = models.ManyToManyField(
-            Advisor,
-            related_name='secondary_clients',
-            editable=False)
+        Advisor,
+        related_name='secondary_clients',
+        editable=False)
     create_date = models.DateTimeField(auto_now_add=True)
     client_agreement = models.FileField()
 
@@ -1107,26 +1109,26 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                       default=TFN_YES)
 
     associated_to_broker_dealer = models.BooleanField(
-            verbose_name="Are employed by or associated with "
-                         "a broker dealer?",
-            default=False,
-            choices=YES_NO)
+        verbose_name="Are employed by or associated with "
+                     "a broker dealer?",
+        default=False,
+        choices=YES_NO)
     ten_percent_insider = models.BooleanField(
-            verbose_name="Are you a 10% shareholder, director, or"
-                         " policy maker of a publicly traded company?",
-            default=False,
-            choices=YES_NO)
+        verbose_name="Are you a 10% shareholder, director, or"
+                     " policy maker of a publicly traded company?",
+        default=False,
+        choices=YES_NO)
 
     public_position_insider = models.BooleanField(
-            verbose_name="Do you or a family member hold a public office position?",
-            default=False,
-            choices=YES_NO)
+        verbose_name="Do you or a family member hold a public office position?",
+        default=False,
+        choices=YES_NO)
 
     us_citizen = models.BooleanField(
-            verbose_name="Are you a US citizen/person"
-                         " for the purpose of US Federal Income Tax?",
-            default=False,
-            choices=YES_NO)
+        verbose_name="Are you a US citizen/person"
+                     " for the purpose of US Federal Income Tax?",
+        default=False,
+        choices=YES_NO)
 
     employment_status = models.CharField(max_length=20,
                                          choices=EMPLOYMENT_STATUS_CHOICES)
@@ -1164,7 +1166,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         if plan is None:
             return ""
         betasmartz_externals = json.loads(serializers.serialize(
-                "json", self.financial_plan_external_accounts.all()))
+            "json", self.financial_plan_external_accounts.all()))
         external_accounts = []
 
         for be in betasmartz_externals:
@@ -1219,7 +1221,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def external_accounts(self):
         betasmartz_externals = json.loads(serializers.serialize(
-                "json", self.financial_plan_external_accounts.all()))
+            "json", self.financial_plan_external_accounts.all()))
         external_accounts = []
 
         for be in betasmartz_externals:
@@ -1313,10 +1315,10 @@ SUPER_ASSET_CLASSES = (
 
 class AssetClass(models.Model):
     name = models.CharField(
-            max_length=255,
-            validators=[RegexValidator(
-                    regex=r'^[0-9a-zA-Z_]+$',
-                    message="Invalid character only accept (0-9a-zA-Z_) ")])
+        max_length=255,
+        validators=[RegexValidator(
+            regex=r'^[0-9a-zA-Z_]+$',
+            message="Invalid character only accept (0-9a-zA-Z_) ")])
     display_order = models.PositiveIntegerField()
     primary_color = ColorField()
     foreground_color = ColorField()
@@ -1375,12 +1377,12 @@ class Region(models.Model):
 
 class Ticker(models.Model):
     symbol = models.CharField(
-            max_length=10,
-            blank=False,
-            null=False,
-            unique=True,
-            validators=[RegexValidator(regex=r'^[^ ]+$',
-                                       message="Invalid symbol format")])
+        max_length=10,
+        blank=False,
+        null=False,
+        unique=True,
+        validators=[RegexValidator(regex=r'^[^ ]+$',
+                                   message="Invalid symbol format")])
     display_name = models.CharField(max_length=255, blank=False, null=False)
     description = models.TextField(blank=True, default="", null=False)
     ordering = models.IntegerField(blank=True, default="", null=False)
@@ -1447,8 +1449,8 @@ class EmailInvitation(models.Model):
     status = models.PositiveIntegerField(choices=EMAIL_INVITATION_STATUSES,
                                          default=INVITATION_PENDING)
     invitation_type = models.PositiveIntegerField(
-            choices=INVITATION_TYPE_CHOICES,
-            default=INVITATION_CLIENT)
+        choices=INVITATION_TYPE_CHOICES,
+        default=INVITATION_CLIENT)
 
     @property
     def get_status_name(self):
@@ -1499,7 +1501,7 @@ class EmailInvitation(models.Model):
                 application_type = itc[1]
 
         subject = "BetaSmartz {application_type} sign up form url".format(
-                application_type=application_type)
+            application_type=application_type)
         inviter_type = self.inviter_object.get_inviter_type()
         inviter_name = self.inviter_object.get_inviter_name()
         invite_url = self.inviter_object.get_invite_url(self.invitation_type, self.email)
@@ -1589,6 +1591,14 @@ class AssetFee(models.Model):
         return "[{}] {}".format(self.id, self.name)
 
 
+class GoalTypes(models.Model):
+    name = models.CharField(max_length=255, null=False)
+    default_term = models.IntegerField(null=False)
+    code = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        db_table = 'goal_types'
+
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
@@ -1613,10 +1623,8 @@ class Goal(models.Model):
     custom_hedges = models.TextField(null=True)
     archived = models.BooleanField(default=False)
 
-
     class Meta:
         ordering = ['name']
-
 
     @property
     def hedges(self):
@@ -1895,7 +1903,7 @@ class Goal(models.Model):
     def on_track(self):
         current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
         term = self.get_term
-        expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees/1000.0 \
+        expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees / 1000.0 \
                           + self.portfolio_set.risk_free_rate
         expected_value = current_balance * (1 + expected_return) ** term
         if hasattr(self, "auto_deposit"):
@@ -1988,6 +1996,7 @@ class AssetFeature(models.Model):
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
+
     pass
 
 
@@ -2001,6 +2010,7 @@ class AssetFeatureValue(models.Model):
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
+
     pass
 
 
@@ -2032,7 +2042,8 @@ class GoalMetric(models.Model):
     comparison = models.IntegerField(default=1, choices=comparisons.items())
     rebalance_type = models.IntegerField(choices=rebalance_types.items(),
                                          help_text='Is the rebalance threshold an absolute threshold or relative (percentage difference) threshold?')
-    rebalance_thr = models.FloatField(help_text='The difference between configured and measured value at which a rebalance will be recommended.')
+    rebalance_thr = models.FloatField(
+        help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
     measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
 
@@ -2053,6 +2064,7 @@ class GoalMetric(models.Model):
 class Position(models.Model):
     class Meta:
         unique_together = ('goal', 'ticker')
+
     goal = models.ForeignKey(Goal, related_name='positions')
     ticker = models.ForeignKey(Ticker)
     share = models.FloatField(default=0)
@@ -2266,6 +2278,7 @@ class FinancialProfile(models.Model):
 class DailyPrice(models.Model):
     class Meta:
         unique_together = ("ticker", "date")
+
     ticker = models.ForeignKey(Ticker, db_index=False)
     date = models.DateField()
     nav = models.FloatField(null=True)
@@ -2276,6 +2289,7 @@ class MonthlyPrices(models.Model):
     class Meta:
         ordering = ["symbol", "date"]
         unique_together = ("symbol", "date")
+
     symbol = models.CharField(max_length=100)
     date = models.DateField()  # This will be the last date in the month.
     price = models.FloatField(default=0)
@@ -2285,8 +2299,10 @@ class ExchangeRate(models.Model):
     """
     Describes the rate from the first to the second currency
     """
+
     class Meta:
         unique_together = ("first", "second", "date")
+
     first = models.CharField(max_length=3)
     second = models.CharField(max_length=3)
     date = models.DateField()
@@ -2329,8 +2345,8 @@ class Supervisor(models.Model):
         }
 
         send_mail(
-                subject,
-                '',
-                None,
-                [self.user.email],
-                html_message=render_to_string('email/new_supervisor.html', context))
+            subject,
+            '',
+            None,
+            [self.user.email],
+            html_message=render_to_string('email/new_supervisor.html', context))
