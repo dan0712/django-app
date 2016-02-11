@@ -1,0 +1,224 @@
+swagger: '2.0'
+info:
+  title: Betasmartz API
+  description: Manage your finances with betasmartz
+  version: "1.0.0"
+# the domain of the service
+host: betasmartz.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /api/v1
+produces:
+  - application/json
+paths:
+  /goals/{goal_id}/metrics:
+    get:
+      summary: Get all metrics for a goal
+      description: |
+        Return all metrics for a given goal
+      parameters:
+        - name: goal_id
+          in: path
+          description: Id of the goal we are considering
+          required: true
+          type: integer
+      responses:
+        200:
+          description: | 
+            An array of goal metrics
+            The following fields MUST be set for the response, unless they are explicitly filtered.
+              - id
+              - comparison
+              - rebalance_type
+              - rebalance_thr
+              - configured_val
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GoalMetric'
+        401:
+          description: Not authorised
+          schema:
+            $ref: '#/definitions/NotAuthorised'
+    post:
+      summary: Add a new metric to a goal
+      parameters:
+        - name: goal_id
+          in: path
+          description: Id of the goal we are considering
+          required: true
+          type: integer
+        - name: metric
+          in: body
+          description: The metric you want to add to the goal
+          schema:
+            $ref: '#/definitions/GoalMetric'
+          required: true
+      responses:
+        200:
+          description: |
+            The goal metric was added succesfully.
+            The newly created metric is returned.
+            The following fields MUST be set for the response, unless they are explicitly filtered.
+              - id
+              - comparison
+              - rebalance_type
+              - rebalance_thr
+              - configured_val
+          schema:
+              $ref: '#/definitions/GoalMetric'
+        401:
+          description: Not authorised
+          schema:
+            $ref: '#/definitions/NotAuthorised'
+
+  /goals/{goal_id}/metrics/{metric_id}:
+    get:
+      summary: Get the given metric for a goal
+      parameters:
+        - name: goal_id
+          in: path
+          description: Id of the goal we are considering
+          required: true
+          type: integer
+        - name: metric_id
+          in: path
+          description: Id of the metric we are retrieving
+          required: true
+          type: integer
+      responses:
+        200:
+          description: | 
+            The goal metric
+            The following fields MUST be set for the response, unless they are explicitly filtered.
+              - id
+              - comparison
+              - rebalance_type
+              - rebalance_thr
+              - configured_val
+          schema:
+            $ref: '#/definitions/GoalMetric'
+        401:
+          description: Not authorised
+          schema:
+            $ref: '#/definitions/NotAuthorised'
+        404:
+          description: Goal Metric for the goal and metric ids not found
+    put:
+      summary: Replace the given metric for a goal
+      parameters:
+        - name: goal_id
+          in: path
+          description: Id of the goal we are considering
+          required: true
+          type: integer
+        - name: metric_id
+          in: path
+          description: Id of the metric we are retrieving
+          required: true
+          type: integer
+        - name: metric
+          in: body
+          required: true
+          description: |
+            The metric to replace the existing with.
+            The following fields MUST be set within the replacement object.
+              - comparison
+              - rebalance_type
+              - rebalance_thr
+              - configured_val
+          schema:
+            $ref: '#/definitions/GoalMetric'
+      responses:
+        200:
+          description: | 
+            The replace operation was successful.
+        401:
+          description: Not authorised
+          schema:
+            $ref: '#/definitions/NotAuthorised'
+        404:
+          description: Goal Metric for the goal and metric ids not found
+    delete:
+      summary: Remove the given metric for a goal
+      parameters:
+        - name: goal_id
+          in: path
+          description: Id of the goal we are considering
+          required: true
+          type: integer
+        - name: metric_id
+          in: path
+          description: Id of the metric we are retrieving
+          required: true
+          type: integer
+      responses:
+        200:
+          description: | 
+            The goal metric was successfully deleted
+        401:
+          description: Not authorised
+          schema:
+            $ref: '#/definitions/NotAuthorised'
+        404:
+          description: Goal Metric for the goal and metric ids not found
+definitions:
+  GoalMetric:
+    type: object
+    description: |
+      A Metric describes a thing by which we can measure a portfolio used by a goal.
+      It also describes a desired range for the metric, and a current measurement.
+    required:
+      - goal
+      - type
+    properties:
+      id:
+        type: integer
+        readOnly: true
+        description: The unique identifier of this goal metric
+      goal:
+        type: integer
+        description: The identifier of the Goal that this Metric belongs to.
+      type:
+        type: integer
+        enum: [0, 1]
+        description: |
+          The identifier of the type of Metric this is.
+          PortfolioMix = 0, Risk Score = 1
+      feature:
+        type: integer
+        description: |
+          The identifier of the feature that we want to specify for the portfolio.
+          This field MUST be included if type=0. It will be ignored, and may be excluded if type=1
+      comparison:
+        type: integer
+        enum: [0, 1, 2]
+        description: |
+          The identifier of the type of Comparison this metric specifies.
+          Minimum = 0, Exactly = 1, Maximum = 2
+      rebalance_type:
+        type: integer
+        enum: [0, 1]
+        description: |
+          The way in which the rebalance threshold is applied to the configured value to calculate the trigger level for this metric to cause a rebalance
+          Absolute(0) - A rebalance is triggered if the measured value is greater than this absolute distance from the configured value
+          Relative(1) - A rebalance is triggered if the measured value is greater than this relative distance from the configured value.
+      rebalance_thr:
+        type: number
+        description: The Trigger level for a rebalance
+      configured_val:
+        type: number
+        description: The desired level of the given metric
+      measured_val:
+        type: number
+        description: |
+          The actual measured value of the given metric.
+          May be excluded if there is no current measurement.
+
+  NotAuthorised:
+    type: object
+    properties:
+      message:
+        type: string
