@@ -645,6 +645,10 @@ class Logout(ImpersonateBase):
             auth_login(request, imposter)
             return HttpResponseRedirect(redirect_url)
 
+        # we will remove everything in session.
+        for key in request.session.keys():
+            del request.session[key]
+
         logout(request)
 
         return HttpResponseRedirect('/')
