@@ -33,7 +33,7 @@ class APITransactionsDeposit(APIView):
 
             transaction_object.save()
 
-            transaction = {'id': transaction_object.id, 'goal_id': goal.id, 'amount': transaction_object.amount}
+            transaction_dict = {'id': transaction_object.id, 'goal_id': goal.id, 'amount': transaction_object.amount}
 
         except Exception as e:
 
@@ -49,7 +49,7 @@ class APITransactionsDeposit(APIView):
             raise ExceptionDefault(detail=response)
 
         content = {
-            'transaction': transaction,
+            'transaction': transaction_dict,
         }
 
         return Response(content)

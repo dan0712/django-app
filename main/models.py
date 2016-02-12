@@ -1613,6 +1613,9 @@ class Goal(models.Model):
     account_type = models.CharField(max_length=20, default='INVESTING')
     type = models.CharField(max_length=20, default='RETIREMENT')
     drift = models.FloatField(default=0)
+    duration = models.FloatField(default=0)
+    initialDeposit = models.FloatField(default=0)
+    amount = models.FloatField(default=0)
     total_balance_db = models.FloatField(default=0,
                                          verbose_name="total balance")
     custom_portfolio_set = models.ForeignKey('portfolios.PortfolioSet', null=True, blank=True)
@@ -1623,6 +1626,7 @@ class Goal(models.Model):
     portfolios = models.TextField(null=True)
     custom_hedges = models.TextField(null=True)
     archived = models.BooleanField(default=False)
+    ethical_investments = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['name']
