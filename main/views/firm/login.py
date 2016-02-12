@@ -91,7 +91,7 @@ def firm_login(request, template_name='registration/login.html', redirect_field_
                 # Okay, security check complete. Log the user in.
                 auth_login(request, form.get_user())
 
-                return HttpResponseRedirect(redirect_to)
+                return HttpResponseRedirect("/")
             else:
                 form = authentication_form(request)
         else:
