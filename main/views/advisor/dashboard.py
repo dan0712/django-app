@@ -22,6 +22,7 @@ from operator import itemgetter
 from ..base import AdvisorView, ClientView
 from ...forms import EmailInviteForm
 from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_CLASSES
+from django.contrib.auth import authenticate, login, logout
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
@@ -614,12 +615,12 @@ class ImpersonateView(ImpersonateBase):
 
 class Logout(ImpersonateBase):
     def get_imposter(self):
-        impersonate_history = self.request.session.get('impersonate_history',
-                                                       [])
+        impersonate_history = self.request.session.get('impersonate_history',[])
 
         if impersonate_history:
             record = impersonate_history.pop()
             imposter_id = record[0]
+
             try:
                 imposter = User.objects.get(pk=imposter_id)
             except ObjectDoesNotExist:
@@ -644,8 +645,9 @@ class Logout(ImpersonateBase):
             auth_login(request, imposter)
             return HttpResponseRedirect(redirect_url)
 
-        auth_logout(request)
-        return HttpResponseRedirect('/firm/login')
+        logout(request)
+
+        return HttpResponseRedirect('/')
 
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
