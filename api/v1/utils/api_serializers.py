@@ -35,6 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
 class GoalTypesSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalTypes
+        fields = ('id', 'name', 'group')
 
 
 class GoalSerializer(serializers.ModelSerializer):

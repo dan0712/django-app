@@ -28,7 +28,7 @@ class APIGoalTypes(APIView):
             raise ExceptionDefault(detail=response)
 
         content = {
-            'goalTypes': goal_types_data,
+            'goal_types': goal_types_data,
         }
 
         return Response(content)

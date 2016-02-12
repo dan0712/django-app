@@ -1595,6 +1595,7 @@ class GoalTypes(models.Model):
     name = models.CharField(max_length=255, null=False)
     default_term = models.IntegerField(null=False)
     code = models.CharField(max_length=255, unique=True)
+    group = models.CharField(max_length=255, null=True)
 
     class Meta:
         db_table = 'goal_types'
