@@ -10,3 +10,17 @@ def response_user_registered_login_successful():
     response['detail'] = 'User registered and login Successful.'
 
     return response
+
+
+def response_missing_fields(field=''):
+    response = dict()
+
+    response['code'] = 'response_missing_fields'
+
+    response['status'] = 'error'
+
+    response['message'] = 'Missing "%s" field.' % (field)
+
+    response['detail'] = 'Missing "%s" field.' % (field)
+
+    return response
