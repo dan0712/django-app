@@ -3,6 +3,9 @@ from rest_framework.views import APIView
 from api.v1.utils.api_exceptions import *
 from api.v1.utils.api_responses import *
 from api.v1.utils.api_serializers import *
+from api.v1.utils.helpers import *
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate, login, logout
 
 
 class APIUser(APIView):
@@ -39,7 +42,6 @@ class APIUser(APIView):
 
 
 class APIUserLevel(APIView):
-
     def get(self, request, format=None):
         """
         ---
@@ -85,6 +87,65 @@ class APIUserLevel(APIView):
         content = {
             'client': client,
             'advisor': advisor,
+        }
+
+        return Response(content)
+
+
+class APIAccessToken(APIView):
+    def get(self, request, format=None):
+        """
+        ---
+        type:
+          username:
+            type: string
+            required: true
+          password:
+            type: string
+            required: true
+        """
+        try:
+
+            username = self.request.data.get('username', None)
+
+            password = self.request.data.get('password', None)
+
+            # check for any missing field.
+            if username is None or username == '':
+                raise ExceptionDefault(detail=response_missing_fields(field='Email Address'))
+
+            if validate_email(username) is False:
+                raise ExceptionDefault(detail=response_invalid_email_address())
+
+            if password is None or password == '':
+                raise ExceptionDefault(detail=response_missing_fields(field='Password'))
+
+            try:
+                user = User.objects.get(email=username)
+            except User.DoesNotExist:
+                raise ExceptionDefault(detail=response_account_not_found())
+
+            user = authenticate(username=user.username, password=password)
+
+            token, created = Token.objects.get_or_create(user=user)
+
+            return Response({'token': token.key})
+
+        except Exception as e:
+
+            if hasattr(e, 'detail'):
+
+                response = e.detail
+
+            else:
+                response = dict()
+                response['message'] = str(e.message)
+                response['status'] = 'error'
+
+            raise ExceptionDefault(detail=response)
+
+        content = {
+            'token': token.key,
         }
 
         return Response(content)
