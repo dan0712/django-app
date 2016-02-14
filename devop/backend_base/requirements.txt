@@ -1,11 +1,15 @@
 # We want to explicitly list versions so we get no nasty surprises in future.
 
+Django==1.8.4
+
+numpy==1.9.2
+pandas==0.16.2
+
 beautifulsoup4==4.4.0
 CVXcanon==0.0.23.3
 cvxopt==1.1.8
 cvxpy==0.3.4
 diff-match-patch==20121119
-Django==1.8.4
 django-authority==0.9
 django-ckeditor-updated==4.4.4
 django-common-helpers==0.7.0
@@ -26,8 +30,6 @@ django-test-without-migrations==0.4
 djangorestframework==3.3.1
 ecos==2.0.4
 Markdown==2.6.5
-numpy==1.9.2
-pandas==0.16.2
 pexpect==4.0.1
 Pillow==3.0.0
 psycopg2==2.6.1
