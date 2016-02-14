@@ -93,7 +93,9 @@ class APIUserLevel(APIView):
 
 
 class APIAccessToken(APIView):
-    def get(self, request, format=None):
+    permission_classes = ()
+
+    def post(self, request, format=None):
         """
         ---
         type:
@@ -112,13 +114,13 @@ class APIAccessToken(APIView):
 
             # check for any missing field.
             if username is None or username == '':
-                raise ExceptionDefault(detail=response_missing_fields(field='Email Address'))
+                raise ExceptionDefault(detail=response_missing_fields(field='username'))
 
             if validate_email(username) is False:
                 raise ExceptionDefault(detail=response_invalid_email_address())
 
             if password is None or password == '':
-                raise ExceptionDefault(detail=response_missing_fields(field='Password'))
+                raise ExceptionDefault(detail=response_missing_fields(field='password'))
 
             try:
                 user = User.objects.get(email=username)
@@ -128,8 +130,6 @@ class APIAccessToken(APIView):
             user = authenticate(username=user.username, password=password)
 
             token, created = Token.objects.get_or_create(user=user)
-
-            return Response({'token': token.key})
 
         except Exception as e:
 
