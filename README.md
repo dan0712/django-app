@@ -89,7 +89,6 @@ update and get current user and profile objects
 PARAMS:
 "first_name"                : String
 "last_name"                 : String
-"last_name"                 : String
 "email"                     : String
 ...
 "oldpassword"               : String # required if password is changed
