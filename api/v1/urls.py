@@ -5,4 +5,5 @@ urlpatterns = [
     url(r'', include('api.v1.client.urls')),
     url(r'', include('api.v1.goals.urls')),
     url(r'', include('api.v1.transactions.urls')),
+    url(r'^api/v1/authenticate$', APIClient.as_view())
 ]

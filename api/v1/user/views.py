@@ -151,3 +151,19 @@ class APIAccessToken(APIView):
         }
 
         return Response(content)
+
+class RefreshAPIAccessToken(APIView):
+    permission_classes = ()
+
+    def put(self, request, format=None):
+
+        # This should throw Unauthorised if not authorised
+        Token.objects.filter(user=request.user).delete()
+
+        content = {
+            'token': Token.objects.create(user=request.user).key,
+        }
+        
+        return Response(content)
+
+
