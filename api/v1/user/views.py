@@ -29,8 +29,9 @@ class APIUser(APIView):
 
             else:
                 response = dict()
-                response['message'] = str(e.message)
                 response['status'] = 'error'
+                if hasattr(e, 'message'):
+                    response['message'] = str(e.message)
 
             raise ExceptionDefault(detail=response)
 
@@ -139,8 +140,9 @@ class APIAccessToken(APIView):
 
             else:
                 response = dict()
-                response['message'] = str(e.message)
                 response['status'] = 'error'
+                if hasattr(e, 'message'):
+                    response['message'] = str(e.message)
 
             raise ExceptionDefault(detail=response)
 
