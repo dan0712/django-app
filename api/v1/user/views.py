@@ -128,14 +128,14 @@ class APIAccessToken(APIView):
             except User.DoesNotExist:
                 raise ExceptionDefault(detail=response_account_not_found())
 
-            user = authenticate(username=user.username, password=password)
+            # TODO: funny, yes? :(
+            user = authenticate(username=user.email, password=password)
 
             token, created = Token.objects.get_or_create(user=user)
 
         except Exception as e:
 
             if hasattr(e, 'detail'):
-
                 response = e.detail
 
             else:
