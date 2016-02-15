@@ -3,19 +3,22 @@
 
 
 ## Installation
-Non-Docker installation instructions:  
-- install python3.5: `brew install python3`  
-- check path: `export PATH=${PATH}:/usr/local/Cellar/python3/3.5.1/bin`  
-- create virtual env: `pyvenv-3.5 env`  
-- run virtual env: `source env/bin/activate`  
-- (replace numpy version in reqs): `numpy==1.10.4`  
-- install packages: `pip install -r devop/backend_base/requirements.txt`  
-...  
-- create db: `./manage.py syncdb`  
-- migrate db: `./manage.py migrate`  
-...  
-- create local settings: `cp local_settings_docker.py local_settings.py`  
-- migrate db: `./manage.py runserver`  
+Non-Docker installation instructions (MacOS):  
+```sh
+brew install python3 # install python3.5
+export PATH=${PATH}:/usr/local/Cellar/python3/3.5.1/bin # check the path
+pyvenv-3.5 env # create virtual env
+source env/bin/activate # run virtual env
+
+(replace numpy version in requirements): numpy==1.10.4
+pip install -r devop/backend_base/requirements.txt # - install packages
+
+./manage.py syncdb # create db
+./manage.py migrate # migrate db
+
+cp local_settings_docker.py local_settings.py # create local settings
+./manage.py runserver # run server
+```
 
 
 
