@@ -3,25 +3,32 @@ import json
 import uuid
 from datetime import date
 from json.decoder import JSONDecodeError
+from numpy import array
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, _, \
-    UserManager, timezone, \
-    send_mail
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import (
+    AbstractBaseUser, PermissionsMixin, _,
+    UserManager, timezone,
+    send_mail
+)
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.validators import RegexValidator, ValidationError, MinValueValidator, MaxValueValidator, \
-    MinLengthValidator, MaxLengthValidator
+from django.core.validators import (
+    RegexValidator, ValidationError, MinValueValidator,
+    MaxValueValidator, MinLengthValidator, MaxLengthValidator
+)
 from django.db import models
+from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
+from rest_framework.authtoken.models import Token
+
 from main.slug import unique_slugify
-from numpy import array
 from .fields import ColorField
 
 
@@ -417,6 +424,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         " Returns the short name for the user."
         return self.first_name
+
+    def get_token(self):
+        """
+        Custom helper method for User class to get user token.
+        see: rest_framework.authentication.TokenAuthentication
+        """
+        if not hasattr(self, '_token'):
+            try:
+                self._token, _ = Token.objects.get_or_create(user=self)
+
+            except IntegrityError:
+                # hint: threading and concurrency makes me sick
+                self._token = Token.objects.get(user=self)
+
+        return self._token
 
     def email_user(self, subject, message, from_email=settings.DEFAULT_FROM_EMAIL, **kwargs):
         """

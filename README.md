@@ -32,3 +32,83 @@ Token based authorization is used, according to the [RFC 6750](http://tools.ietf
 ```
 Authorization: Token 550ab235d5598d5efac0334b
 ```
+
+### Authentication
+
+**POST /api/signup**  RESERVED  
+signup user
+```
+PARAMS:
+"first_name"                : String # required
+"last_name"                 : String # required
+"email"                     : String # required
+"password"                  : String # required
+...
+RETURNS:
+"user"                      : Object
+```
+
+**POST /api/signin**  
+login user and send back authorization token
+```
+PARAMS:
+"email"                     : String # required
+"password"                  : String # required
+
+RETURN:
+- isn't logged:
+"error"                     : Object
+
+- is logged:
+User object
+...with nested profiles and token value
+```
+
+
+### Me
+
+**GET /api/me**  
+check authentication token validity and get current user object
+```
+PARAMS:
+no extra params
+
+RETURN:
+- isn't valid:
+"error"                     : Object
+
+- is valid:
+User object
+...with nested profiles and token value
+```
+
+
+**POST /api/me**  
+update and get current user and profile objects
+```
+PARAMS:
+"first_name"                : String
+"last_name"                 : String
+"last_name"                 : String
+"email"                     : String
+...
+"oldpassword"               : String # required if password is changed
+"password"                  : String # to change the password
+"password2"                 : String # to change the password
+
+RETURN:
+User object
+...with nested profiles
+```
+
+**POST /api/me/image**  RESERVED  
+```
+PARAMS:
+(multipart form)
+"image"                     : File (as Multiform data)
+(non-multipart form)
+"image"                     : String with Base64 file content
+
+RETURN:
+User object
+```

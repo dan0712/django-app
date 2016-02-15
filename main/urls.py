@@ -13,7 +13,7 @@ def ok_response_json(*args, **kwargs):
 
 urlpatterns = patterns(
     '',
-    (r'', include('api.urls')),
+    (r'api/', include('api.urls', namespace='api')),
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^admin/filebrowser/', include(site.urls)),
     url(r'^admin/', include(admin.site.urls)),
