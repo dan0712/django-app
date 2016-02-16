@@ -22,6 +22,24 @@ cp local_settings_docker.py local_settings.py # create local settings
 
 
 
+## Demo
+http://demo.betasmartz.com/
+http://demo.betasmartz.com/docs  
+
+credentials (username/pass):  
+advisor: advisor@example.org/123  
+client: obama@demo.org/123  
+
+
+
+## Models
+![models](devop/models.png)
+
+To update the models view:  
+`./manage.py graph_models -o devop/models.png main advisors portfolios`
+
+
+
 ## Api
 Documentation and guidelines for interface API.
 
@@ -30,5 +48,5 @@ Documentation and guidelines for interface API.
 
 Token based authorization is used, according to the [RFC 6750](http://tools.ietf.org/html/rfc6750). Token should be passed in the header, query or body. Example of passing token in the header (with the "service" word "Token"):
 ```
-Authorization: Token 550ab235d5598d5efac0334b
+Authorization: Bearer 550ab235d5598d5efac0334b
 ```

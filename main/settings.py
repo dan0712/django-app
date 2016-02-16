@@ -36,23 +36,26 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'compat',
-    'main',
-    'portfolios',
-    'advisors',
-    'tinymce_4',
-    'pages',
-    'import_export',
-    'suit',
-    'filebrowser',
     'django.contrib.admin',
     'django_cron',
+
+    'django_extensions', # temp. to visualize models only
     'test_without_migrations',
+    'corsheaders',
+    'tinymce_4',
+    'import_export',
+    'filebrowser',
+    'suit',
+    'compat',
+    'pages',
+
     'rest_framework',
     'rest_framework.authtoken',
-    'corsheaders',
     'rest_framework_swagger',
 
+    'main',
+    'advisors',
+    'portfolios',
 )
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
