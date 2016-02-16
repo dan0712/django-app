@@ -13,8 +13,8 @@ source env/bin/activate # run virtual env
 (replace numpy version in requirements): numpy==1.10.4
 pip install -r devop/backend_base/requirements.txt # - install packages
 
-./manage.py syncdb # create db
 ./manage.py migrate # migrate db
+./manage.py loaddata main/fixtures/data.json # (optional) load fixtures
 
 cp local_settings_docker.py local_settings.py # create local settings
 ./manage.py runserver # run server
