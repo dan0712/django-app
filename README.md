@@ -35,7 +35,7 @@ Authorization: Token 550ab235d5598d5efac0334b
 
 ### Authentication
 
-**POST /api/signup**  RESERVED  
+**POST /api/register**  RESERVED  
 signup user
 ```
 PARAMS:
@@ -48,7 +48,7 @@ RETURNS:
 "user"                      : Object
 ```
 
-**POST /api/signin**  
+**POST /api/login**  
 login user and send back authorization token
 ```
 PARAMS:

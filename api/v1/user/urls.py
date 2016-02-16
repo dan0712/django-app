@@ -5,13 +5,13 @@ import api.v1.user.views as views
 
 
 urlpatterns = patterns('',
-    (r'^user/?$', APIUser.as_view()), # TODO: bearly needed
-    (r'^user/level/?$', APIUserLevel.as_view()), # TODO: lets drop it
+    url(r'^user/?$', APIUser.as_view(), name='user'), # TODO: bearly needed
+    url(r'^user/level/?$', APIUserLevel.as_view(), name='user-level'), # TODO: lets drop it
 
-    (r'^me/$', views.MeView.as_view()),
-    (r'^signin/$', views.SigninView.as_view()),
-    # reserved # (r'^signup/$', views.SigninView.as_view()),
+    url(r'^me/$', views.MeView.as_view(), name='user-me'),
+    url(r'^login/$', views.LoginView.as_view(), name='user-login'),
+    # reserved # url(r'^register/$', views.RegisterView.as_view(), name='user-register'),
 
-    # reserved # (r'^signin/reset/$', views.ResetView.as_view(), name='auth-reset'),
-    # reserved # (r'^signin/send-reset-email/$', views.SendResetEmailView.as_view(), name='auth-send-reset-email'),
+    # reserved # url(r'^register/reset/$', views.ResetView.as_view(), name='user-reset'),
+    # reserved # url(r'^register/send-reset-email/$', views.SendResetEmailView.as_view(), name='user-send-reset-email'),
 )

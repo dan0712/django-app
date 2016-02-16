@@ -78,7 +78,7 @@ class MeView(views.APIView):
         return Response(serializer.data)
 
 
-class SigninView(views.APIView):
+class LoginView(views.APIView):
     """
     Signin andvisors or any other type of users
     """
@@ -107,7 +107,6 @@ class SigninView(views.APIView):
         token_serializer.is_valid(raise_exception=True)
         user = token_serializer.validated_data['user']
 
-        print ('!!!!222', user.__class__)
         # check if user is authenticated
         if not user.is_authenticated():
             raise exceptions.NotAuthenticated()
@@ -119,16 +118,11 @@ class SigninView(views.APIView):
         # let's (re)create token
         token = Token.objects.get_or_create(user=user)
 
-        print ('!!!!444', token, self.serializer_class)
-
         serializer = self.serializer_class(user)
-
-        print ('!!!!5555', serializer.data)
-
         return Response(serializer.data)
 
 
-class SignupView(views.APIView):
+class RegisterView(views.APIView):
     pass
 
 
