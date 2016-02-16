@@ -22,6 +22,24 @@ cp local_settings_docker.py local_settings.py # create local settings
 
 
 
+## Demo
+http://demo.betasmartz.com/
+http://demo.betasmartz.com/docs  
+
+credentials (username/pass):  
+advisor: advisor@example.org/123  
+client: obama@demo.org/123  
+
+
+
+## Models
+![models](devop/models.png)
+
+To update the models view:  
+`./manage.py graph_models -o devop/models.png main advisors portfolios`
+
+
+
 ## Api
 Documentation and guidelines for interface API.
 
