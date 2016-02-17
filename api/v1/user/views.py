@@ -6,16 +6,23 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
+# TODO: drop unused imports after removing obsoleted endpoints
 from main.models import User
 from api.v1.utils.api_exceptions import *
 from api.v1.utils.api_responses import *
 from api.v1.utils.api_serializers import *
 from api.v1.utils.helpers import *
 
-import api.v1.user.serializers as serializers
+from . import serializers
+from ..views import ApiViewMixin
+from ..permissions import (
+    IsAdvisor,
+    IsMyAdvisorCompany,
+    IsAdvisorOrClient,
+)
 
 
-class MeView(views.APIView):
+class MeView(ApiViewMixin, views.APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.UserSerializer
 
@@ -66,7 +73,7 @@ class MeView(views.APIView):
         #if user.is_client:
         #    data_client = self.get_nested_data('client__')
         #    if data_client:
-        #        serializer_client = serializers.InvestorUpdateSerializer(
+        #        serializer_client = serializers.ClientUpdateSerializer(
         #            data=data_client, context={'request': request})
         #        serializer_client.is_valid(raise_exception=True)
         #        serializer_client.save()
@@ -78,7 +85,7 @@ class MeView(views.APIView):
         return Response(serializer.data)
 
 
-class LoginView(views.APIView):
+class LoginView(ApiViewMixin, views.APIView):
     """
     Signin andvisors or any other type of users
     """
@@ -122,11 +129,11 @@ class LoginView(views.APIView):
         return Response(serializer.data)
 
 
-class RegisterView(views.APIView):
+class RegisterView(ApiViewMixin, views.APIView):
     pass
 
 
-class ResetView(views.APIView):
+class ResetView(ApiViewMixin, views.APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -149,7 +156,7 @@ class ResetView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ResetEmailView(views.APIView):
+class ResetEmailView(ApiViewMixin, views.APIView):
     authentication_classes = ()
     permission_classes = (AllowAny,)
 
@@ -167,7 +174,7 @@ class ResetEmailView(views.APIView):
 
 
 # TODO: obsoleted?
-class APIUser(views.APIView):
+class APIUser(ApiViewMixin, views.APIView):
     def get(self, request, format=None):
         """
         ---
@@ -202,7 +209,7 @@ class APIUser(views.APIView):
 
 
 # TODO: obsoleted?
-class APIUserLevel(views.APIView):
+class APIUserLevel(ApiViewMixin, views.APIView):
     def get(self, request, format=None):
         """
         ---
@@ -254,7 +261,7 @@ class APIUserLevel(views.APIView):
 
 
 # TODO: obsoleted
-class APIAccessToken(views.APIView):
+class APIAccessToken(ApiViewMixin, views.APIView):
     permission_classes = ()
 
     def post(self, request, format=None):

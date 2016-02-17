@@ -51,6 +51,40 @@ Token based authorization is used, according to the [RFC 6750](http://tools.ietf
 Authorization: Token 550ab235d5598d5efac0334b
 ```
 
+
+### Formatting
+All responses are styled according to Google JSON Style Guide:  
+https://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml#method.  
+
+#### Success
+```
+{
+    "apiVersion": "2",
+    "status": 200,
+    "data": {
+        "results": [{}, ...],
+        "count": 777,
+    }
+}
+```
+
+
+#### Errors
+All failed responses are returned with HTTP status 200 (except authorization errors). 
+Error status and other info is placed in the response body:  
+```
+{
+    "apiVersion": "1",
+    "status": 400,
+    "error": {
+      name: "%Error%", # derived from Exception object, for example: "ValidationError"
+      message: "%Something goes wrong%",
+      errors: [{}, ...]
+    }
+}
+```
+
+
 ### Authentication
 
 **POST /api/register**  RESERVED  

@@ -1622,6 +1622,7 @@ class GoalTypes(models.Model):
     class Meta:
         db_table = 'goal_types'
 
+
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
@@ -2377,3 +2378,7 @@ class Supervisor(models.Model):
             None,
             [self.user.email],
             html_message=render_to_string('email/new_supervisor.html', context))
+
+
+# TODO: move to separate package
+from . import user
