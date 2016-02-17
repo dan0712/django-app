@@ -28,9 +28,9 @@ def custom_exception_handler(exc, context):
             if hasattr(e, 'detail'):
                 api_response['detail'] = e.detail
             else:
-                api_response['detail'] = response.data['detail']
+                api_response['detail'] = response.data.get('detail')
 
-            api_response['message'] = response.data['detail']
+            api_response['message'] = response.data.get('detail')
 
             api_response['status'] = 'error'
 
