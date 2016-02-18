@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
-from main.models import Goal, ClientAccount
+from main.models import Goal, GoalTypes, ClientAccount
 
 
 __all__ = (
     'GoalSerializer', 'GoalListSerializer',
     'GoalUpdateSerializer',
+    'GoalTypeListSerializer',
 )
 
 
@@ -93,3 +94,10 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
         #    self.fields['account'].queryset = \
         #        self.fields['account'].queryset.filter_by_advisor(user.advisor)
 
+
+class GoalTypeListSerializer(serializers.ModelSerializer):
+    """
+    Experimental
+    """
+    class Meta:
+        model = GoalTypes

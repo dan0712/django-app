@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import list_route
 
-from main.models import Goal
+from main.models import Goal, GoalTypes
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor,
@@ -58,3 +59,10 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             qs = qs.filter_by_client(user.client)
 
         return qs
+
+    @list_route(methods=['get'])
+    def types(self, request):
+        goal_types = GoalTypes.objects.all().order_by('name')
+        serializer = serializers.GoalTypeListSerializer(goal_types, many=True)
+        return Response()
+
