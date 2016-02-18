@@ -18,7 +18,7 @@ class GoalClientAccountSerializer(serializers.ModelSerializer):
 
 
 class GoalSerializer(serializers.ModelSerializer):
-    client_account = GoalClientAccountSerializer()
+    account = GoalClientAccountSerializer()
 
     class Meta:
         model = Goal
@@ -31,16 +31,51 @@ class GoalListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         exclude = (
-            #'data', 'description',
-            #'created_at', 'updated_at',
+            'portfolios',
+            'created_date', 'completion_date',
         )
+
+
+class GoalCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Goal
+        fields = (
+            'account',
+            'name',
+            'target', 'income',
+            'completion_date', 'allocation',
+            'drift', 'duration', 'initialDeposit', 'amount',
+        ) # list fields explicitly
+
+    def __init__(self, *args, **kwargs):
+        super(GoalCreateSerializer, self).__init__(*args, **kwargs)
+
+        # request-based validation
+        request = self.context.get('request')
+        if not request:
+            return # for swagger's dummy calls only
+
+        user = request.user
+
+        # experimental / for advisors
+        if user.is_advisor:
+            self.fields['account'].queryset = \
+                self.fields['account'].queryset.filter_by_advisor(user.advisor)
+
+        # experimental / for clients
+        if user.is_client:
+            #self.fields['account'].required = False
+            #self.fields['account'].default = user.client.portfolios.all().first()
+            self.fields['account'].queryset = \
+                self.fields['account'].queryset.filter_by_client(user.client)
 
 
 class GoalUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = (
-            'target', 'portfolio',
+            'name', 'target',
+            'duration', 'initialDeposit',
         ) # list fields explicitly
 
     def __init__(self, *args, **kwargs):
@@ -57,6 +92,4 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
         #if user.is_advisor:
         #    self.fields['account'].queryset = \
         #        self.fields['account'].queryset.filter_by_advisor(user.advisor)
-        #    self.fields['portfolio'].queryset = \
-        #        self.fields['portfolio'].queryset.filter_by_advisor(user.advisor)
 

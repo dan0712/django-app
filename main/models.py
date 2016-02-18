@@ -15,8 +15,8 @@ from django.contrib.auth.models import (
     UserManager, timezone,
     send_mail
 )
+
 from django.core import serializers
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
     MaxValueValidator, MinLengthValidator, MaxLengthValidator
@@ -30,6 +30,9 @@ from rest_framework.authtoken.models import Token
 
 from main.slug import unique_slugify
 from .fields import ColorField
+from .managers import (
+    ClientAccountQuerySet, GoalQuerySet,
+)
 
 
 def validate_agreement(value):
@@ -181,7 +184,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
         # check if user already exist
         try:
             user = User.objects.get(email=cleaned_data.get('email'))
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             user = None
 
         if (user is not None) and (not user.prepopulated):
@@ -203,7 +206,7 @@ class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
         try:
             self.instance = User.objects.get(
                 email=self.cleaned_data.get('email'))
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             pass
         instance = super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
         instance.prepopulated = False
@@ -413,6 +416,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def full_name(self):
         return self.get_full_name()
+
+    @property
+    def is_advisor(self):
+        """
+        Custom helper method for User class to check user type/profile.
+        """
+        if not hasattr(self, '_is_advisor'):
+            self._is_advisor = hasattr(self, 'advisor')
+            #self._is_advisor = self.groups.filter(name=User.GROUP_ADVISOR).exists()
+
+        return self._is_advisor
+
+    @property
+    def is_client(self):
+        """
+        Custom helper method for User class to check user type/profile.
+        """
+        if not hasattr(self, '_is_client'):
+            self._is_client = hasattr(self, 'client')
+            #self._is_client = self.groups.filter(name=User.GROUP_CLIENT).exists()
+
+        return self._is_client
 
     def get_full_name(self):
         """
@@ -671,7 +696,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
         try:
             user = User.objects.get(email=email, prepopulated=True)
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             user = None
 
         invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
@@ -877,6 +902,8 @@ class ClientAccount(models.Model):
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
                                                                            ("USER_ON", "USER_ON")), default="USER_OFF")
     asset_fee_plan = models.ForeignKey(AssetFeePlan, null=True)
+
+    objects = ClientAccountQuerySet.as_manager()
 
     @property
     def goals(self):
@@ -1484,7 +1511,7 @@ class EmailInvitation(models.Model):
     def get_status(self):
         try:
             user = User.objects.get(email=self.email)
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             user = None
 
         if user.prepopulated:
@@ -1628,7 +1655,6 @@ class Goal(models.Model):
     name = models.CharField(max_length=100)
     target = models.FloatField(default=0)
     income = models.BooleanField(default=False)
-    created_date = models.DateTimeField(auto_now_add=True)
     completion_date = models.DateTimeField()
     allocation = models.FloatField()  # The proportion of Stocks to use for the ETFs (Core Component) of the instrument mix for this goal
     satellite_pct = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], default=0.0,
@@ -1650,6 +1676,10 @@ class Goal(models.Model):
     custom_hedges = models.TextField(null=True)
     archived = models.BooleanField(default=False)
     ethical_investments = models.BooleanField(default=False)
+
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    objects = GoalQuerySet.as_manager()
 
     class Meta:
         ordering = ['name']
@@ -1749,7 +1779,7 @@ class Goal(models.Model):
         try:
             FinancialPlanAccount.objects.get(account=self,
                                              client=self.account.primary_owner)
-        except ObjectDoesNotExist:
+        except FinancialPlanAccount.DoesNotExist:
             return "null"
 
         if hasattr(self.account.primary_owner, 'financial_plan'):
@@ -1762,7 +1792,7 @@ class Goal(models.Model):
         try:
             FinancialPlanAccount.objects.get(account=self,
                                              client=self.account.primary_owner)
-        except ObjectDoesNotExist:
+        except FinancialPlanAccount.DoesNotExist:
             return "null"
 
         return self.account.primary_owner.get_financial_plan
@@ -2378,7 +2408,3 @@ class Supervisor(models.Model):
             None,
             [self.user.email],
             html_message=render_to_string('email/new_supervisor.html', context))
-
-
-# TODO: move to separate package
-from . import user

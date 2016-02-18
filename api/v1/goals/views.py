@@ -18,16 +18,15 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         .select_related('account') \
         #.defer('account__data') \
     serializer_class = serializers.GoalSerializer
+    serializer_response_class = serializers.GoalSerializer
     permission_classes = (
-        #IsAdvisorOrClient,
+        IsAdvisorOrClient,
         #IsMyAdvisorCompany,
     )
 
     #filter_class = filters.GoalFilter
-    #filter_fields = ('name')
-    #search_fields = ('name')
-
-    # TODO: specify permissions for Client for "write" actions
+    filter_fields = ('name',)
+    search_fields = ('name',)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -36,14 +35,17 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             else:
                 return serializers.GoalSerializer
         else:
-            return serializers.GoalUpdateSerializer
+            if self.action == 'create':
+                return serializers.GoalCreateSerializer
+            else:
+                return serializers.GoalUpdateSerializer
 
     def get_queryset(self):
         qs = self.queryset
 
         # hide "slow" fields for list view
         if self.action == 'list':
-            # qs = qs.defer('data')
+            qs = qs.defer('portfolios')
             qs = qs.select_related()
 
         # show "permissioned" records only

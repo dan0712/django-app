@@ -10,11 +10,11 @@ class ApiRenderer(JSONRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         """
         NB. be sure that settings.REST_FRAMEWORK contains:
-        'EXCEPTION_HANDLER': '...utils.api_exception_handler',
+        'EXCEPTION_HANDLER': '...api_exception_handler',
         """
 
         wrapper = {
-            'apiVersion': '1',
+            'apiVersion': '2',
         }
 
         # move error to the root level
