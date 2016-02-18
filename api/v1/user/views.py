@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 # TODO: drop unused imports after removing obsoleted endpoints
-from main.models import User
+from main.models import User, ClientAccount, Goal
 
 from ..clients import serializers as clients_serializers
 from ..views import ApiViewMixin
@@ -93,6 +93,23 @@ class MeAccountsView(ApiViewMixin, views.APIView):
         accounts = client.accounts_all.all()
 
         serializer = self.serializer_class(accounts, many=True)
+        return Response(serializer.data)
+
+
+class MeGoalsView(ApiViewMixin, views.APIView):
+    """
+    Experimental
+    (not sure it will be needed in the future)
+    """
+    serializer_class = clients_serializers.ClientGoalListSerializer
+    permission_classes = (IsClient,)
+
+    def get(self, request):
+        user = self.request.user
+        client = user.client
+        goals = Goal.objects.filter_by_client(client)
+
+        serializer = self.serializer_class(goals, many=True)
         return Response(serializer.data)
 
 

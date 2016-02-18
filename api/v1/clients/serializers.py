@@ -69,6 +69,18 @@ class ClientAccountListSerializer(serializers.ModelSerializer):
 
 class ClientGoalListSerializer(serializers.ModelSerializer):
     """
+    Light version of GoalSerializer
+    """
+    class Meta:
+        model = Goal
+        exclude = (
+            'portfolios',
+            'created_date', 'completion_date',
+        )
+
+
+class ClientGoalListSerializer(serializers.ModelSerializer):
+    """
     Light version of PortfolioSerializer
     """
     class Meta:
