@@ -6,7 +6,7 @@ from .goals import views as goals_views
 # obsoleted # from .transactions import views as transactions_views
 
 
-router = routers.SimpleRouter()
+router = routers.SimpleRouter(trailing_slash=False)
 router.register(r'goals', goals_views.GoalViewSet, base_name='goals')
 
 
