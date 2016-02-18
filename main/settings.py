@@ -91,6 +91,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
+    'EXCEPTION_HANDLER': 'api.handlers.api_exception_handler',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 

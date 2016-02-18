@@ -17,6 +17,8 @@ class ApiRenderer(JSONRenderer):
             'apiVersion': '2',
         }
 
+        print ('!!!!!!!!', data, renderer_context)
+
         # move error to the root level
         if hasattr(data, 'get') and data.get('error'):
             wrapper['error'] = data['error']

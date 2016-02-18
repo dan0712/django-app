@@ -4,7 +4,6 @@ from rest_framework import authentication, status, views, exceptions
 from rest_framework.response import Response
 from rest_framework.renderers import BrowsableAPIRenderer # temp
 
-from .handlers import api_exception_handler
 from .authentication import ExtraTokenAuthentication
 from .renderers import ApiRenderer
 
@@ -93,7 +92,6 @@ class MultipleSerializersModelViewMixin(object):
 
 
 class ApiViewMixin(MultipleSerializersModelViewMixin, object):
-    #exception_handler = api_exception_handler
     authentication_classes = (ExtraTokenAuthentication,)
     renderer_classes = (
         ApiRenderer,

@@ -64,5 +64,5 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     def types(self, request):
         goal_types = GoalTypes.objects.all().order_by('name')
         serializer = serializers.GoalTypeListSerializer(goal_types, many=True)
-        return Response()
+        return Response(serializer.data)
 
