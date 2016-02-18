@@ -38,6 +38,6 @@ def api_exception_handler(exc, context):
 
         # always (smile) return 200 OK status
         response.data['status'] = response.status_code
-        response = Response(response.data, status=status.HTTP_200_OK)
+        response = Response(response.data, status=response.status_code)
 
     return response
