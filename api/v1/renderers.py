@@ -17,19 +17,10 @@ class ApiRenderer(JSONRenderer):
             'apiVersion': '2',
         }
 
-        print ('!!!!!!!!', data, renderer_context)
-
         # move error to the root level
         if hasattr(data, 'get') and data.get('error'):
             wrapper['error'] = data['error']
             del data['error']
-
-            # move status to the root level
-            if data.get('status'):
-                wrapper['status'] = data['status']
-                del data['status']
-            else:
-                wrapper['status'] = renderer_context['response'].status_code
 
         if data:
             wrapper['data'] = data

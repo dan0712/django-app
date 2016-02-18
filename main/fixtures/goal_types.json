@@ -1,0 +1,71 @@
+[{
+    "model": "main.goaltypes",
+    "id": 1,
+    "fields": {
+      "name": "Wealth Protection",
+      "default_term": 0,
+      "code": "A",
+      "group": "Essentials"
+    }
+  },
+  {
+    "model": "main.goaltypes",
+    "id": 2,
+    "fields": {
+      "name": "Grow Wealth",
+      "default_term": 0,
+      "code": "B",
+      "group": "Essentials"
+    }
+  },
+  {
+    "model": "main.goaltypes",
+    "id": 3,
+    "fields": {
+      "name": "Retirement",
+      "default_term": 0,
+      "code": "C",
+      "group": "Essentials"
+    }
+  },
+  {
+    "model": "main.goaltypes",
+    "id": 4,
+    "fields": {
+      "name": "Retirement Income",
+      "default_term": 0,
+      "code": "D",
+      "group": "Essentials"
+    }
+  },
+  {
+    "model": "main.goaltypes",
+    "id": 5,
+    "fields": {
+      "name": "House",
+      "default_term": 0,
+      "code": "E",
+      "group": "Major Savings"
+    }
+  },
+  {
+    "model": "main.goaltypes",
+    "id": 6,
+    "fields": {
+      "name": "Education",
+      "default_term": 0,
+      "code": "F",
+      "group": "Major Savings"
+    }
+  },
+  {
+    "model": "main.goaltypes",
+    "id": 7,
+    "fields": {
+      "name": "Other",
+      "default_term": 0,
+      "code": "G",
+      "group": "Major Savings"
+    }
+  }
+]

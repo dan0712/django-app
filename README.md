@@ -14,6 +14,7 @@ source env/bin/activate # run virtual env
 pip install -r devop/backend_base/requirements.txt # - install packages
 
 ./manage.py migrate # migrate db
+./manage.py loaddata main/fixtures/goal_types.json # load fixtures
 ./manage.py loaddata main/fixtures/data.json # (optional) load fixtures
 
 cp local_settings_docker.py local_settings.py # create local settings
@@ -60,7 +61,6 @@ https://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml#method.
 ```
 {
     "apiVersion": "2",
-    "status": 200,
     "data": {
         "results": [{}, ...],
         "count": 777,
@@ -70,15 +70,14 @@ https://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml#method.
 
 
 #### Errors
-All failed responses are returned with HTTP status 200 (except authorization errors). 
 Error status and other info is placed in the response body:  
 ```
 {
     "apiVersion": "1",
-    "status": 400,
     "error": {
-      name: "%Error%", # derived from Exception object, for example: "ValidationError"
-      message: "%Something goes wrong%",
+      code: 400,
+      reason: "%Exception code%", # for example: "ValidationError"
+      message: "Something goes wrong :(",
       errors: [{}, ...]
     }
 }
