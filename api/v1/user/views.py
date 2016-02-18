@@ -6,16 +6,21 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from main.models import User
-from api.v1.utils.api_exceptions import *
-from api.v1.utils.api_responses import *
-from api.v1.utils.api_serializers import *
-from api.v1.utils.helpers import *
+# TODO: drop unused imports after removing obsoleted endpoints
+from main.models import User, ClientAccount, Goal
 
-import api.v1.user.serializers as serializers
+from ..clients import serializers as clients_serializers
+from ..views import ApiViewMixin
+from ..permissions import (
+    IsAdvisor,
+    IsClient,
+    IsMyAdvisorCompany,
+    IsAdvisorOrClient,
+)
+from . import serializers
 
 
-class MeView(views.APIView):
+class MeView(ApiViewMixin, views.APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.UserSerializer
 
@@ -66,7 +71,7 @@ class MeView(views.APIView):
         #if user.is_client:
         #    data_client = self.get_nested_data('client__')
         #    if data_client:
-        #        serializer_client = serializers.InvestorUpdateSerializer(
+        #        serializer_client = serializers.ClientUpdateSerializer(
         #            data=data_client, context={'request': request})
         #        serializer_client.is_valid(raise_exception=True)
         #        serializer_client.save()
@@ -78,7 +83,37 @@ class MeView(views.APIView):
         return Response(serializer.data)
 
 
-class LoginView(views.APIView):
+class MeAccountsView(ApiViewMixin, views.APIView):
+    serializer_class = clients_serializers.ClientAccountListSerializer
+    permission_classes = (IsClient,)
+
+    def get(self, request):
+        user = self.request.user
+        client = user.client
+        accounts = client.accounts_all.all()
+
+        serializer = self.serializer_class(accounts, many=True)
+        return Response(serializer.data)
+
+
+class MeGoalsView(ApiViewMixin, views.APIView):
+    """
+    Experimental
+    (not sure it will be needed in the future)
+    """
+    serializer_class = clients_serializers.ClientGoalListSerializer
+    permission_classes = (IsClient,)
+
+    def get(self, request):
+        user = self.request.user
+        client = user.client
+        goals = Goal.objects.filter_by_client(client)
+
+        serializer = self.serializer_class(goals, many=True)
+        return Response(serializer.data)
+
+
+class LoginView(ApiViewMixin, views.APIView):
     """
     Signin andvisors or any other type of users
     """
@@ -122,11 +157,11 @@ class LoginView(views.APIView):
         return Response(serializer.data)
 
 
-class RegisterView(views.APIView):
+class RegisterView(ApiViewMixin, views.APIView):
     pass
 
 
-class ResetView(views.APIView):
+class ResetView(ApiViewMixin, views.APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -149,7 +184,7 @@ class ResetView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ResetEmailView(views.APIView):
+class ResetEmailView(ApiViewMixin, views.APIView):
     authentication_classes = ()
     permission_classes = (AllowAny,)
 
@@ -164,153 +199,3 @@ class ResetEmailView(views.APIView):
 
         else:
             return Response('User is blocked', status=status.HTTP_403_FORBIDDEN)
-
-
-# TODO: obsoleted?
-class APIUser(views.APIView):
-    def get(self, request, format=None):
-        """
-        ---
-        response_serializer: UserSerializer
-
-        """
-        try:
-
-            user = self.request.user
-
-            user_data = UserSerializer(user).data
-
-        except Exception as e:
-
-            if hasattr(e, 'detail'):
-
-                response = e.detail
-
-            else:
-                response = dict()
-                response['status'] = 'error'
-                if hasattr(e, 'message'):
-                    response['message'] = str(e.message)
-
-            raise ExceptionDefault(detail=response)
-
-        content = {
-            'user': user_data,
-        }
-
-        return Response(content)
-
-
-# TODO: obsoleted?
-class APIUserLevel(views.APIView):
-    def get(self, request, format=None):
-        """
-        ---
-        type:
-          advisor:
-            type: boolean
-          client:
-            type: boolean
-        """
-        try:
-
-            # by default lets just set both false.
-            client = False
-            advisor = False
-
-            user = self.request.user
-
-            # check if they have client node
-            if hasattr(user, 'client'):
-                # now check if client node is not NULL
-                if user.client is not None:
-                    client = True
-
-            # check if they have advisor node
-            if hasattr(user, 'advisor'):
-                # now check if advisor node is not NULL
-                if user.advisor is not None:
-                    advisor = True
-
-        except Exception as e:
-
-            if hasattr(e, 'detail'):
-
-                response = e.detail
-
-            else:
-                response = dict()
-                response['message'] = str(e.message)
-                response['status'] = 'error'
-
-            raise ExceptionDefault(detail=response)
-
-        content = {
-            'client': client,
-            'advisor': advisor,
-        }
-
-        return Response(content)
-
-
-# TODO: obsoleted
-class APIAccessToken(views.APIView):
-    permission_classes = ()
-
-    def post(self, request, format=None):
-        """
-        ---
-        type:
-          username:
-            type: string
-            required: true
-          password:
-            type: string
-            required: true
-        """
-        try:
-
-            username = self.request.data.get('username', None)
-
-            password = self.request.data.get('password', None)
-
-            # check for any missing field.
-            if username is None or username == '':
-                raise ExceptionDefault(detail=response_missing_fields(field='username'))
-
-            if validate_email(username) is False:
-                raise ExceptionDefault(detail=response_invalid_email_address())
-
-            if password is None or password == '':
-                raise ExceptionDefault(detail=response_missing_fields(field='password'))
-
-            try:
-                user = User.objects.get(email=username)
-            except User.DoesNotExist:
-                raise ExceptionDefault(detail=response_account_not_found())
-
-            # TODO: funny, yes? :(
-            user = authenticate(username=user.email, password=password)
-
-            token, created = Token.objects.get_or_create(user=user)
-
-        except Exception as e:
-
-            if hasattr(e, 'detail'):
-                response = e.detail
-
-            else:
-                response = dict()
-                response['status'] = 'error'
-                if hasattr(e, 'message'):
-                    response['message'] = str(e.message)
-
-            raise ExceptionDefault(detail=response)
-
-        content = {
-            'token': token.key,
-        }
-
-        return Response(content)
-
-

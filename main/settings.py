@@ -73,26 +73,26 @@ MIDDLEWARE_CLASSES = (
 )
 
 REST_FRAMEWORK = {
-
-    'EXCEPTION_HANDLER': 'api.v1.utils.api_exceptions.custom_exception_handler',
-
+    'PAGE_SIZE': 20,
+    'PAGE_SIZE_QUERY_PARAM': 'page_size',  # allow client to override, using `?page_size=xxx`.
+    'MAX_PAGE_SIZE': 1000,  # maximum limit allowed when using `?page_size=xxx`.
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
-
+        # RESERVED # 'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
-
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-    )
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework.filters.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ),
+    'EXCEPTION_HANDLER': 'api.handlers.api_exception_handler',
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -203,5 +203,33 @@ CRON_CLASSES = [
     "portfolios.cron.CalculatePortfoliosCron",
     # ...
 ]
+
+# DOCUMENTATION
+SWAGGER_SETTINGS = {
+    'exclude_namespaces': [],
+    'api_version': '2.0',
+    'api_path': '/',
+    'enabled_methods': [
+        'get',
+        'post',
+        'put',
+        #'patch',
+        'delete'
+    ],
+    'api_key': '',
+    'is_authenticated': False,
+    'is_superuser': False,
+    'permission_denied_handler': None,
+    'resource_access_handler': None,
+    #'base_path':'127.0.0.1:8000/docs/',
+    'info': {
+        #'contact': 'info@stratifi.com',
+        'description': 'Reference',
+        'title': 'BetaSmartz API',
+    },
+    'doc_expansion': 'list',
+    #'resource_access_handler': 'api.views.resource_access_handler',
+}
+
 
 from local_settings import *

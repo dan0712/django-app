@@ -16,6 +16,7 @@ django-common-helpers==0.7.0
 django-compat==1.0.7
 django-cron==0.4.3
 git+git://github.com/smacker/django-filebrowser-no-grappelli.git#egg=django-filebrowser
+django-filter>=0.9
 django-flat-theme==1.1.3
 django-haystack==2.4.1
 django-import-export==0.4.0

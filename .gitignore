@@ -92,7 +92,7 @@ crashlytics-build.properties
 
 ### Python template
 # Byte-compiled / optimized / DLL files
-__pycache__/
+__pycache__
 *.py[cod]
 
 # C extensions
@@ -150,3 +150,7 @@ target/
 pip-selfcheck.json
 db.sqlite3
 local_settings.py
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

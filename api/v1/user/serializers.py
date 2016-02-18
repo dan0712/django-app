@@ -1,10 +1,9 @@
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
-from main.models import User
 
 from rest_framework import exceptions, serializers
 
-#from ..models import Advisor, Client
+from main.models import User, Advisor, Client
 
 
 __all__ = (
@@ -57,19 +56,84 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
+class UserAdvisorSerializer(serializers.ModelSerializer):
+    #firm = UserFirmSerializer()
+
+    class Meta:
+        model = Advisor
+        exclude = (
+            'user',
+            'confirmation_key',
+            'security_question_1', 'security_question_2',
+            'security_answer_1', 'security_answer_2',
+            #'token', # what's the token?
+            'letter_of_authority', 'betasmartz_agreement',
+        )
+
+
+class UserClientSerializer(serializers.ModelSerializer):
+    advisor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Client
+        exclude = (
+            'user',
+            'security_question_1', 'security_question_2',
+            'security_answer_1', 'security_answer_2',
+            'client_agreement',
+            'confirmation_key',
+            # filter out more fields if needed
+            'create_date',
+        )
+
+    def get_advisor(self, obj):
+        client = obj
+        if client.advisor:
+            return UserClientAdvisorSerializer(client.advisor).data
+
+
+class UserClientAdvisorUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = (
+            'prepopulated',
+            'is_staff', 'is_superuser',
+            'password', 'last_login',
+            'user_permissions', 'groups',
+            'username', 'email',
+            'date_joined',
+            'is_active',
+        )
+
+
+class UserClientAdvisorSerializer(serializers.ModelSerializer):
+    user = UserClientAdvisorUserSerializer()
+
+    class Meta:
+        model = Advisor
+        fields = (
+            'id',
+            'gender',
+            'phone_number', 'work_phone',
+            'user', 'firm',
+        )
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     For read (GET) requests only
     """
     token = serializers.SerializerMethodField(read_only=True)
-    #advisor = serializers.SerializerMethodField()
-    #client = serializers.SerializerMethodField()
+    advisor = serializers.SerializerMethodField()
+    client = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         exclude = (
+            'prepopulated',
             'is_staff', 'is_active', 'is_superuser',
             'password',
+            'user_permissions',
         )
 
     def get_token(self, obj):
@@ -77,17 +141,15 @@ class UserSerializer(serializers.ModelSerializer):
         token = user.get_token()
         return token.key
 
-    # RESERVED
-    #def get_advisor(self, obj):
-    #    user = obj
-    #    if user.is_advisor:
-    #        return UserAdvisorSerializer(user.advisor).data
+    def get_advisor(self, obj):
+        user = obj
+        if user.is_advisor:
+            return UserAdvisorSerializer(user.advisor).data
 
-    # RESERVED
-    #def get_client(self, obj):
-    #    user = obj
-    #    if user.is_client:
-    #        return UserClientSerializer(user.client).data
+    def get_client(self, obj):
+        user = obj
+        if user.is_client:
+            return UserClientSerializer(user.client).data
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -118,6 +180,45 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Invalid current password')
 
         return data
+
+
+class AdvisorUpdateSerializer(serializers.ModelSerializer):
+    """
+    For write (POST/PUT/...) requests only
+    """
+    class Meta:
+        model = Advisor
+        fields = (
+        #'firm',
+        )
+
+
+class ClientUpdateSerializer(serializers.ModelSerializer):
+    """
+    For write (POST/PUT/...) requests only
+    """
+    class Meta:
+        model = Client
+        fields = (
+        'advisor',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ClientUpdateSerializer, self).__init__(*args, **kwargs)
+
+        # request based validation
+        request = self.context.get('request')
+        if not request:
+            return # for swagger's dummy calls only
+
+        user = request.user
+
+        # experimental / for advisors only
+        if user.is_advisor:
+            advisor = user.advisor
+
+            self.fields['advisor'].queryset = \
+                self.fields['advisor'].queryset.filter(pk=advisor.pk)
 
 
 class ResetSerializer(serializers.Serializer):
