@@ -13,7 +13,7 @@ from portfolios.bl_model import OptimizationException
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, TRANSACTION_STATUS_PENDING, Goal, TRANSACTION_TYPE_ALLOCATION, TransactionMemo, \
-    AutomaticDeposit, AutomaticWithdrawal, TRANSACTION_TYPE_WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
+    RecurringTransaction, TRANSACTION_TYPE_WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
     TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED, TRANSACTION_TYPE_FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass, Position
 
@@ -179,8 +179,8 @@ class ClientAccounts(ClientView, TemplateView):
         # remove from financial plan
         FinancialPlanAccount.objects.filter(account=goal).delete()
         # remove automatic deposit and wdw
-        AutomaticWithdrawal.objects.filter(account=goal).delete()
-        AutomaticDeposit.objects.filter(account=goal).delete()
+        #AutomaticWithdrawal.objects.filter(account=goal).delete()
+        #AutomaticDeposit.objects.filter(account=goal).delete()
 
         # move shares
         if goal.total_balance > 0:
@@ -714,7 +714,7 @@ class SetAutoDepositView(ClientView):
         if hasattr(goal, "auto_deposit"):
             ad = goal.auto_deposit
         else:
-            ad = AutomaticDeposit(account=goal)
+            ad = RecurringTransaction(account=goal)
 
         ad.amount = payload.get("amount", 0)
         ad.frequency = payload["frequency"]
@@ -748,7 +748,7 @@ class SetAutoWithdrawalView(ClientView):
         if hasattr(goal, "auto_withdrawal"):
             ad = goal.auto_withdrawal
         else:
-            ad = AutomaticWithdrawal(account=goal)
+            ad = RecurringTransaction(goal=goal)
 
         ad.amount = payload.get("amount", 0)
         ad.frequency = payload["frequency"]

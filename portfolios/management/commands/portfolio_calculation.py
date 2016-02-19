@@ -216,7 +216,7 @@ def get_goal_masks(goal, masks):
     logger.debug("Goal mask for goal: {} after removals: {} ({} items)".format(goal, goal_mask, len(goal_mask.nonzero())))
 
     # Only use the instruments from the specified portfolio set.
-    goal_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(goal.portfolio_set_id)]
+    goal_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(goal.portfolio_set.id)]
 
     logger.debug("Usable indicies in our portfolio: {}".format(goal_mask.nonzero()[0].tolist()))
 
