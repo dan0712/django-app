@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 
 from main.models import Goal, GoalTypes
 from ..views import ApiViewMixin
@@ -63,6 +63,13 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     @list_route(methods=['get'])
     def types(self, request):
         goal_types = GoalTypes.objects.all().order_by('name')
-        serializer = serializers.GoalTypeListSerializer(goal_types, many=True)
+        serializer = serializers.GoalGoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
 
+    @detail_route(methods=['get'])
+    def positions(self, request, pk=None):
+        goal = self.get_object()
+
+        positions = goal.positions.all()
+        serializer = serializers.GoalPositionListSerializer(positions, many=True)
+        return Response(serializer.data)

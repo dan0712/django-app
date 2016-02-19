@@ -1367,8 +1367,8 @@ class AssetClass(models.Model):
         max_length=255,
         validators=[RegexValidator(
             regex=r'^[0-9a-zA-Z_]+$',
-            message="Invalid character only accept (0-9a-zA-Z_) ")])
-    display_order = models.PositiveIntegerField()
+            message="Invalid character only accept (0-9a-zA-Z_) ")], db_index=True)
+    display_order = models.PositiveIntegerField(db_index=True)
     primary_color = ColorField()
     foreground_color = ColorField()
     drift_color = ColorField()
@@ -1376,7 +1376,7 @@ class AssetClass(models.Model):
                                                default="",
                                                null=False)
     tickers_explanation = models.TextField(blank=True, default="", null=False)
-    display_name = models.CharField(max_length=255, blank=False, null=False)
+    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
     investment_type = models.CharField(max_length=255,
                                        choices=INVESTMENT_TYPES,
                                        blank=False,
@@ -1432,9 +1432,9 @@ class Ticker(models.Model):
         unique=True,
         validators=[RegexValidator(regex=r'^[^ ]+$',
                                    message="Invalid symbol format")])
-    display_name = models.CharField(max_length=255, blank=False, null=False)
+    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
     description = models.TextField(blank=True, default="", null=False)
-    ordering = models.IntegerField(blank=True, default="", null=False)
+    ordering = models.IntegerField(blank=True, default="", null=False, db_index=True)
     url = models.URLField()
     unit_price = models.FloatField(default=10)
     asset_class = models.ForeignKey(AssetClass, related_name="tickers")
@@ -1641,7 +1641,7 @@ class AssetFee(models.Model):
 
 
 class GoalTypes(models.Model):
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, null=False, db_index=True)
     default_term = models.IntegerField(null=False)
     code = models.CharField(max_length=255, unique=True)
     group = models.CharField(max_length=255, null=True)

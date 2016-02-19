@@ -2,11 +2,13 @@ from django.conf.urls import patterns, include, url
 from rest_framework import routers
 
 from .user import views as user_views
+from .settings import views as settings_views
 from .goals import views as goals_views
 # obsoleted # from .transactions import views as transactions_views
 
 
 router = routers.SimpleRouter(trailing_slash=False)
+router.register(r'settings', settings_views.SettingsViewSet, base_name='settings')
 router.register(r'goals', goals_views.GoalViewSet, base_name='goals')
 
 
