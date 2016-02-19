@@ -21,7 +21,7 @@ from ..permissions import (
 from . import serializers
 
 
-class MeView(views.APIView):
+class MeView(ApiViewMixin, views.APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.UserSerializer
 
@@ -114,7 +114,7 @@ class MeGoalsView(ApiViewMixin, views.APIView):
         return Response(serializer.data)
 
 
-class LoginView(views.APIView):
+class LoginView(ApiViewMixin, views.APIView):
     """
     Signin andvisors or any other type of users
     """

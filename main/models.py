@@ -2024,10 +2024,20 @@ class GoalMetric(models.Model):
             configured_val: 0.3
         }
     """
-    TYPE_PORTFOLIO_MIX = 0
-    TYPE_RISK_SCORE = 1
-    metric_types = {TYPE_PORTFOLIO_MIX: 'Portfolio Mix', TYPE_RISK_SCORE: 'RiskScore'}
-    comparisons = {0: 'Minimum', 1: 'Exactly', 2: 'Maximum'}
+    METRIC_TYPE_PORTFOLIO_MIX = 0
+    METRIC_TYPE_RISK_SCORE = 1
+    METRIC_COMPARISON_MINIMUM = 0
+    METRIC_COMPARISON_EXACTLY = 1
+    METRIC_COMPARISON_MAXIMUM = 2
+    metric_types = {
+        METRIC_TYPE_PORTFOLIO_MIX: 'Portfolio Mix',
+        METRIC_TYPE_RISK_SCORE: 'RiskScore'
+    }
+    comparisons = {
+        METRIC_COMPARISON_MINIMUM: 'Minimum',
+        METRIC_COMPARISON_EXACTLY: 'Exactly',
+        METRIC_COMPARISON_MAXIMUM: 'Maximum',
+    }
     rebalance_types = {0: 'Absolute', 1: 'Relative'}
 
     goal = models.ForeignKey(Goal, related_name='metrics')

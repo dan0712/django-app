@@ -4,6 +4,8 @@ from api.v1.utils.api_exceptions import *
 from api.v1.utils.api_responses import *
 from api.v1.utils.api_serializers import *
 
+from main.models import Goal, Transaction
+
 
 class APITransactionsDeposit(APIView):
     def post(self, request, format=None):

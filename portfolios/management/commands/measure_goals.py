@@ -94,10 +94,10 @@ def measure(goal, idata):
         risk_score = None
 
     for metric in goal.metrics.all():
-        if metric.type == GoalMetric.TYPE_RISK_SCORE:
+        if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
             logger.debug("Setting measured risk score: {} for metric: {}".format(risk_score, metric))
             metric.measured_val = risk_score
-        elif metric.type == GoalMetric.TYPE_PORTFOLIO_MIX:
+        elif metric.type == GoalMetric.METRIC_TYPE_PORTFOLIO_MIX:
             val = feature_weights[metric.feature.id]
             logger.debug("Setting measured proportion: {} for metric: {}".format(val, metric))
             metric.measured_val = val
