@@ -6,7 +6,8 @@ from main.models import (
 )
 
 __all__ = (
-    'GoalSerializer', 'GoalListSerializer',
+    'GoalSerializer',
+    'GoalListSerializer',
     'GoalUpdateSerializer',
     'GoalTypeListSerializer',
 )
@@ -34,8 +35,7 @@ class GoalListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         exclude = (
-            'portfolios',
-            'created_date', 'completion_date',
+            'created',
         )
 
 
@@ -45,9 +45,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         fields = (
             'account',
             'name',
-            'target', 'income',
-            'completion_date', 'allocation',
-            'drift', 'duration', 'initialDeposit', 'amount',
+            'type',
         ) # list fields explicitly
 
     def __init__(self, *args, **kwargs):
@@ -78,8 +76,7 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = (
-            'name', 'target',
-            'duration', 'initialDeposit',
+            'name',
         ) # list fields explicitly
 
     def __init__(self, *args, **kwargs):

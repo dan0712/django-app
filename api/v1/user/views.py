@@ -10,6 +10,7 @@ from rest_framework.authtoken.models import Token
 from main.models import User, ClientAccount, Goal
 
 from ..clients import serializers as clients_serializers
+from ..goals import serializers as goal_serializers
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor,
@@ -20,7 +21,7 @@ from ..permissions import (
 from . import serializers
 
 
-class MeView(ApiViewMixin, views.APIView):
+class MeView(views.APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.UserSerializer
 
@@ -101,7 +102,7 @@ class MeGoalsView(ApiViewMixin, views.APIView):
     Experimental
     (not sure it will be needed in the future)
     """
-    serializer_class = clients_serializers.ClientGoalListSerializer
+    serializer_class = goal_serializers.GoalListSerializer
     permission_classes = (IsClient,)
 
     def get(self, request):
@@ -113,7 +114,7 @@ class MeGoalsView(ApiViewMixin, views.APIView):
         return Response(serializer.data)
 
 
-class LoginView(ApiViewMixin, views.APIView):
+class LoginView(views.APIView):
     """
     Signin andvisors or any other type of users
     """
@@ -124,6 +125,9 @@ class LoginView(ApiViewMixin, views.APIView):
     parser_classes = (
         parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,
     )
+
+    #def get_serializer_class(self):
+    #    return self.serializer_class
 
     def post(self, request):
         """
