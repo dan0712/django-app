@@ -21,7 +21,7 @@ from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAcco
 from operator import itemgetter
 from ..base import AdvisorView, ClientView
 from ...forms import EmailInviteForm
-from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_CLASSES
+from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_TYPES
 from django.contrib.auth import authenticate, login, logout
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
@@ -1063,7 +1063,7 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
         ctx_data["client"] = self.client
         ctx_data["account_class"] = self.account_class
         account_type_name = self.account_class
-        for i in ACCOUNT_CLASSES:
+        for i in ACCOUNT_TYPES:
             if i[0] == self.account_class:
                 account_type_name = i[1]
         ctx_data["account_type_name"] = account_type_name

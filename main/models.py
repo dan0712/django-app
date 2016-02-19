@@ -1,9 +1,8 @@
 import importlib
 import json
+import logging
 import uuid
 from datetime import date
-from json.decoder import JSONDecodeError
-from numpy import array
 
 from django import forms
 from django.conf import settings
@@ -15,11 +14,11 @@ from django.contrib.auth.models import (
     UserManager, timezone,
     send_mail
 )
-
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
-    MaxValueValidator, MinLengthValidator, MaxLengthValidator
+    MaxValueValidator, MinLengthValidator
 )
 from django.db import models
 from django.db.utils import IntegrityError
@@ -33,6 +32,8 @@ from .fields import ColorField
 from .managers import (
     ClientAccountQuerySet, GoalQuerySet,
 )
+
+logger = logging.getLogger('main.models')
 
 
 def validate_agreement(value):
@@ -67,7 +68,9 @@ INVITATION_CLIENT = 3
 INVITATION_TYPE_CHOICES = (
     (INVITATION_ADVISOR, "Advisor"),
     (AUTHORIZED_REPRESENTATIVE, 'Authorised representative'),
-    (INVITATION_CLIENT, 'Client'), (INVITATION_SUPERVISOR, 'Supervisor'))
+    (INVITATION_SUPERVISOR, 'Supervisor'),
+    (INVITATION_CLIENT, 'Client'),
+)
 
 INVITATION_TYPE_DICT = {
     str(INVITATION_ADVISOR): "advisor",
@@ -113,21 +116,24 @@ PERSONAL_DATA_WIDGETS = {
         attrs={"placeholder": "Street address"})
 }
 
-ALLOCATION = "ALLOCATION"
-DEPOSIT = "DEPOSIT"
-WITHDRAWAL = "WITHDRAWAL"
-FEE = "FEE"
-REBALANCE = "REBALANCE"
-MARKET_CHANGE = "MARKET_CHANGE"
+TRANSACTION_TYPE_ALLOCATION = 0
+TRANSACTION_TYPE_DEPOSIT = 1
+TRANSACTION_TYPE_WITHDRAWAL = 2
+TRANSACTION_TYPE_REBALANCE = 3
+TRANSACTION_TYPE_MARKET_CHANGE = 4
+TRANSACTION_TYPE_FEE = 5
+TRANSACTION_TYPES = (
+    (TRANSACTION_TYPE_ALLOCATION, "ALLOCATION"),
+    (TRANSACTION_TYPE_DEPOSIT, "DEPOSIT"),
+    (TRANSACTION_TYPE_WITHDRAWAL, 'WITHDRAWAL'),
+    (TRANSACTION_TYPE_REBALANCE, 'REBALANCE'),
+    (TRANSACTION_TYPE_MARKET_CHANGE, "MARKET_CHANGE"),
+    (TRANSACTION_TYPE_FEE, 'FEE'),
+)
 
-TRANSACTION_CHOICES = ((REBALANCE, 'REBALANCE'), (ALLOCATION, "ALLOCATION"),
-                       (DEPOSIT, "DEPOSIT"), (WITHDRAWAL, 'WITHDRAWAL'),
-                       (MARKET_CHANGE, "MARKET_CHANGE"))
-
-PENDING = 'PENDING'
-EXECUTED = 'EXECUTED'
-
-TRANSACTION_STATUS_CHOICES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
+TRANSACTION_STATUS_PENDING = 'PENDING'
+TRANSACTION_STATUS_EXECUTED = 'EXECUTED'
+TRANSACTION_STATUSES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
 
 ASSET_FEE_EVENTS = ((0, 'Day End'),
                     (1, 'Complete Day'),
@@ -145,11 +151,39 @@ ASSET_FEE_UNITS = ((0, 'Asset Value'),  # total value of the asset
                    (2, 'NAV Performance'))  # % positive change in the NAV
 
 ASSET_FEE_LEVEL_TYPES = (
-(0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
-(1, 'Replace'))  # Once the next level is reached, the value from that level is used for the entire amount
+    (0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
+    (1, 'Replace')  # Once the next level is reached, the value from that level is used for the entire amount
+)
 
 # TODO: Make the system currency a setting for the site
 SYSTEM_CURRENCY = 'AUD'
+
+BONDS = "BONDS"  # Bonds only Fund
+STOCKS = "STOCKS"  # Stocks only Fund
+MIXED = "MIXED"  # Mixture of stocks and bonds
+INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MIXED", "MIXED"))
+
+SUPER_ASSET_CLASSES = (
+    # EQUITY
+    ("EQUITY_AU", "EQUITY_AU"),
+    ("EQUITY_US", "EQUITY_US"),
+    ("EQUITY_EU", "EQUITY_EU"),
+    ("EQUITY_EM", "EQUITY_EM"),
+    ("EQUITY_INT", "EQUITY_INT"),
+    ("EQUITY_UK", "EQUITY_UK"),
+    ("EQUITY_JAPAN", "EQUITY_JAPAN"),
+    ("EQUITY_AS", "EQUITY_AS"),
+    ("EQUITY_CN", "EQUITY_CN"),
+    # FIXED_INCOME
+    ("FIXED_INCOME_AU", "FIXED_INCOME_AU"),
+    ("FIXED_INCOME_US", "FIXED_INCOME_US"),
+    ("FIXED_INCOME_EU", "FIXED_INCOME_EU"),
+    ("FIXED_INCOME_EM", "FIXED_INCOME_EM"),
+    ("FIXED_INCOME_INT", "FIXED_INCOME_INT"),
+    ("FIXED_INCOME_UK", "FIXED_INCOME_UK"),
+    ("FIXED_INCOME_JAPAN", "FIXED_INCOME_JAPAN"),
+    ("FIXED_INCOME_AS", "FIXED_INCOME_AS"),
+    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"))
 
 
 class BetaSmartzAgreementForm(forms.ModelForm):
@@ -472,6 +506,104 @@ class User(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
+class AssetClass(models.Model):
+    name = models.CharField(
+        max_length=255,
+        validators=[RegexValidator(
+            regex=r'^[0-9a-zA-Z_]+$',
+            message="Invalid character only accept (0-9a-zA-Z_) ")],
+        db_index=True)
+    display_order = models.PositiveIntegerField(db_index=True)
+    primary_color = ColorField()
+    foreground_color = ColorField()
+    drift_color = ColorField()
+    asset_class_explanation = models.TextField(blank=True,
+                                               default="",
+                                               null=False)
+    tickers_explanation = models.TextField(blank=True, default="", null=False)
+    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
+    investment_type = models.CharField(max_length=255,
+                                       choices=INVESTMENT_TYPES,
+                                       blank=False,
+                                       null=False)
+    super_asset_class = models.CharField(max_length=255,
+                                         choices=SUPER_ASSET_CLASSES)
+
+    def save(self,
+             force_insert=False,
+             force_update=False,
+             using=None,
+             update_fields=None):
+        self.name = self.name.upper()
+
+        super(AssetClass, self).save(force_insert, force_update, using,
+                                     update_fields)
+
+    @property
+    def donut_order(self):
+        return 8000 - self.display_order
+
+    def __str__(self):
+        return self.name
+
+
+class PortfolioSet(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
+    risk_free_rate = models.FloatField()
+    tau = models.FloatField()
+    default_region_sizes = models.TextField(default="{}")
+    portfolios = models.TextField(editable=False, null=True, blank=True)
+    default_picked_regions = models.TextField(null=True)
+    optimization_mode = models.IntegerField(choices=[(1, 'auto mode'), (2, 'weight mode')], default=2)
+
+    @property
+    def stocks_and_bonds(self):
+        has_bonds = False
+        has_stocks = False
+
+        for asset_class in self.asset_classes.all():
+            if "EQUITY_" in asset_class.super_asset_class:
+                has_stocks = True
+            if "FIXED_INCOME_" in asset_class.super_asset_class:
+                has_bonds = True
+
+        if has_bonds and has_stocks:
+            return "both"
+        elif has_stocks:
+            return "stocks"
+        else:
+            return "bonds"
+
+    @property
+    def regions(self):
+        def get_regions(x):
+            return x.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
+        return [get_regions(asset_class.super_asset_class) for asset_class in self.asset_classes.all()]
+
+    @property
+    def regions_currencies(self):
+        rc = {}
+
+        def get_regions_currencies(asset):
+            region = asset.super_asset_class.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
+            if region not in rc:
+                rc[region] = "AUD"
+            ticker = asset.tickers.filter(ordering=0).first()
+            if ticker:
+                if ticker.currency != "AUD":
+                    rc[region] = ticker.currency
+            else:
+                logger.warn("Asset class: {} has no tickers.".format(asset.name))
+
+        for asset_class in self.asset_classes.all():
+            get_regions_currencies(asset_class)
+        return rc
+
+    def __str__(self):
+        return self.name
+
+
 class Firm(models.Model):
     name = models.CharField(max_length=255)
     dealer_group_number = models.CharField(max_length=50,
@@ -494,6 +626,7 @@ class Firm(models.Model):
     token = models.CharField(max_length=36, editable=False)
     fee = models.PositiveIntegerField(default=0)
     can_use_ethical_portfolio = models.BooleanField(default=True)
+    default_portfolio_set = models.ForeignKey(PortfolioSet)
 
     def save(self,
              force_insert=False,
@@ -677,6 +810,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     work_phone = AUPhoneNumberField(null=True)
     betasmartz_agreement = models.BooleanField()
     last_action = models.DateTimeField(null=True)
+    default_portfolio_set = models.ForeignKey(PortfolioSet)
 
     @property
     def dashboard_url(self):
@@ -875,15 +1009,18 @@ class AccountGroup(models.Model):
         return self.name
 
 
-PERSONAL_ACCOUNT = "PERSONAL"
-
-ACCOUNT_TYPES = ((PERSONAL_ACCOUNT, "Personal Account"),)
-
-JOINT_ACCOUNT = "joint_account"
-TRUST_ACCOUNT = "trust_account"
-
-ACCOUNT_CLASSES = ((JOINT_ACCOUNT, "Personal Account"),
-                   (TRUST_ACCOUNT, "SMSF/Trust Account"))
+ACCOUNT_TYPE_PERSONAL = 0
+ACCOUNT_TYPE_JOINT = 1
+ACCOUNT_TYPE_TRUST = 2
+ACCOUNT_TYPE_SMSF = 3
+ACCOUNT_TYPE_CORPORATE = 4
+ACCOUNT_TYPES = (
+    (ACCOUNT_TYPE_PERSONAL, "Personal Account"),
+    (ACCOUNT_TYPE_JOINT, "Joint Account"),
+    (ACCOUNT_TYPE_TRUST, "Trust Account"),
+    (ACCOUNT_TYPE_SMSF, "Self Managed Superannuation Fund"),
+    (ACCOUNT_TYPE_CORPORATE, "Corporate Account"),
+)
 
 
 class ClientAccount(models.Model):
@@ -891,9 +1028,8 @@ class ClientAccount(models.Model):
                                       related_name="accounts_all",
                                       null=True)
     custom_fee = models.PositiveIntegerField(default=0)
-    account_class = models.CharField(max_length=20, choices=ACCOUNT_CLASSES, default=TRUST_ACCOUNT)
-
-    account_name = models.CharField(max_length=255, default=PERSONAL_ACCOUNT)
+    account_type = models.IntegerField(choices=ACCOUNT_TYPES)
+    account_name = models.CharField(max_length=255, default='PERSONAL')
     primary_owner = models.ForeignKey('Client', related_name="accounts_all")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
@@ -902,6 +1038,7 @@ class ClientAccount(models.Model):
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
                                                                            ("USER_ON", "USER_ON")), default="USER_OFF")
     asset_fee_plan = models.ForeignKey(AssetFeePlan, null=True)
+    default_portfolio_set = models.ForeignKey(PortfolioSet)
 
     objects = ClientAccountQuerySet.as_manager()
 
@@ -1080,19 +1217,22 @@ class ClientAccount(models.Model):
             self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
-FULL_TIME = "FULL_TIME"
-PART_TIME = 'PART_TIME'
-SELF_EMPLOYED = 'SELF_EMPLOYED'
-STUDENT = "STUDENT"
-RETIRED = "RETIRED"
-HOMEMAKER = "HOMEMAKER"
-UNEMPLOYED = "UNEMPLOYED"
-
-EMPLOYMENT_STATUS_CHOICES = (
-    (FULL_TIME, 'Employed (full-time)'), (PART_TIME, 'Employed (part-time)'),
-    (SELF_EMPLOYED, 'Self-employed'), (STUDENT, 'Student'),
-    (RETIRED, 'Retired'), (HOMEMAKER, 'Homemaker'),
-    (UNEMPLOYED, "Not employed"))
+EMPLOYMENT_STATUS_FULL_TIME = 0
+EMPLOYMENT_STATUS_PART_TIME = 1
+EMPLOYMENT_STATUS_SELF_EMPLOYED = 1
+EMPLOYMENT_STATUS_STUDENT = 2
+EMPLOYMENT_STATUS_RETIRED = 3
+EMPLOYMENT_STATUS_HOMEMAKER = 4
+EMPLOYMENT_STATUS_UNEMPLOYED = 5
+EMPLOYMENT_STATUSES = (
+    (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
+    (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
+    (EMPLOYMENT_STATUS_SELF_EMPLOYED, 'Self-employed'),
+    (EMPLOYMENT_STATUS_STUDENT, 'Student'),
+    (EMPLOYMENT_STATUS_RETIRED, 'Retired'),
+    (EMPLOYMENT_STATUS_HOMEMAKER, 'Homemaker'),
+    (EMPLOYMENT_STATUS_UNEMPLOYED, "Not employed"),
+)
 
 
 class TaxFileNumberValidator(object):
@@ -1179,9 +1319,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         default=False,
         choices=YES_NO)
 
-    employment_status = models.CharField(max_length=20,
-                                         choices=EMPLOYMENT_STATUS_CHOICES)
-
+    employment_status = models.IntegerField(choices=EMPLOYMENT_STATUSES)
     net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
@@ -1334,74 +1472,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             new_ac.remove_from_group()
 
 
-BONDS = "BONDS"  # Bonds only Fund
-STOCKS = "STOCKS"  # Stocks only Fund
-MIXED = "MIXED"  # Mixture of stocks and bonds
-INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MIXED", "MIXED"))
-
-SUPER_ASSET_CLASSES = (
-    # EQUITY
-    ("EQUITY_AU", "EQUITY_AU"),
-    ("EQUITY_US", "EQUITY_US"),
-    ("EQUITY_EU", "EQUITY_EU"),
-    ("EQUITY_EM", "EQUITY_EM"),
-    ("EQUITY_INT", "EQUITY_INT"),
-    ("EQUITY_UK", "EQUITY_UK"),
-    ("EQUITY_JAPAN", "EQUITY_JAPAN"),
-    ("EQUITY_AS", "EQUITY_AS"),
-    ("EQUITY_CN", "EQUITY_CN"),
-    # FIXED_INCOME
-    ("FIXED_INCOME_AU", "FIXED_INCOME_AU"),
-    ("FIXED_INCOME_US", "FIXED_INCOME_US"),
-    ("FIXED_INCOME_EU", "FIXED_INCOME_EU"),
-    ("FIXED_INCOME_EM", "FIXED_INCOME_EM"),
-    ("FIXED_INCOME_INT", "FIXED_INCOME_INT"),
-    ("FIXED_INCOME_UK", "FIXED_INCOME_UK"),
-    ("FIXED_INCOME_JAPAN", "FIXED_INCOME_JAPAN"),
-    ("FIXED_INCOME_AS", "FIXED_INCOME_AS"),
-    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"))
-
-
-class AssetClass(models.Model):
-    name = models.CharField(
-        max_length=255,
-        validators=[RegexValidator(
-            regex=r'^[0-9a-zA-Z_]+$',
-            message="Invalid character only accept (0-9a-zA-Z_) ")], db_index=True)
-    display_order = models.PositiveIntegerField(db_index=True)
-    primary_color = ColorField()
-    foreground_color = ColorField()
-    drift_color = ColorField()
-    asset_class_explanation = models.TextField(blank=True,
-                                               default="",
-                                               null=False)
-    tickers_explanation = models.TextField(blank=True, default="", null=False)
-    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
-    investment_type = models.CharField(max_length=255,
-                                       choices=INVESTMENT_TYPES,
-                                       blank=False,
-                                       null=False)
-    super_asset_class = models.CharField(max_length=255,
-                                         choices=SUPER_ASSET_CLASSES)
-
-    def save(self,
-             force_insert=False,
-             force_update=False,
-             using=None,
-             update_fields=None):
-        self.name = self.name.upper()
-
-        super(AssetClass, self).save(force_insert, force_update, using,
-                                     update_fields)
-
-    @property
-    def donut_order(self):
-        return 8000 - self.display_order
-
-    def __str__(self):
-        return self.name
-
-
 class MarkowitzScale(models.Model):
     """
     We convert the max and min Markowitz to an exponential function in the form a * b^x + c passing through the points:
@@ -1434,7 +1504,7 @@ class Ticker(models.Model):
                                    message="Invalid symbol format")])
     display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
     description = models.TextField(blank=True, default="", null=False)
-    ordering = models.IntegerField(blank=True, default="", null=False, db_index=True)
+    ordering = models.IntegerField(db_index=True)
     url = models.URLField()
     unit_price = models.FloatField(default=10)
     asset_class = models.ForeignKey(AssetClass, related_name="tickers")
@@ -1580,7 +1650,7 @@ API_CHOICES = ((YAHOO_API, "YAHOO"), (GOOGLE_API, 'GOOGLE'))
 
 class Platform(models.Model):
     fee = models.PositiveIntegerField(default=0)
-    portfolio_set = models.ForeignKey('portfolios.PortfolioSet')
+    portfolio_set = models.ForeignKey(PortfolioSet)
     api = models.CharField(max_length=20,
                            default=YAHOO_API,
                            choices=API_CHOICES)
@@ -1643,243 +1713,109 @@ class AssetFee(models.Model):
 class GoalTypes(models.Model):
     name = models.CharField(max_length=255, null=False, db_index=True)
     default_term = models.IntegerField(null=False)
-    code = models.CharField(max_length=255, unique=True)
     group = models.CharField(max_length=255, null=True)
+    risk_sensitivity = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
+                                         help_text="Default risk sensitivity for this goal type. "
+                                                   "0 = not sensitive, 10 = Very sensitive (No risk tolerated)")
 
     class Meta:
-        db_table = 'goal_types'
+        db_table = 'goal_types'  # TODO: Change this to main_
+
+MONTHLY = "MONTHLY"
+TWICE_A_MONTH = "TWICE_A_MONTH"
+EVERY_OTHER_WEEK = "EVERY_OTHER_WEEK"
+WEEKLY = "WEEKLY"
+
+FREQUENCY_CHOICES = ((MONTHLY, "1/mo"), (TWICE_A_MONTH, "2/mo"),
+                     (EVERY_OTHER_WEEK, "2/mo"), (WEEKLY, 'WEEKLY'))
+
+
+class AutomaticDeposit(models.Model):
+    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
+    enabled = models.BooleanField(default=True)
+    amount = models.FloatField()
+    transaction_date_time_1 = models.DateTimeField(null=True)
+    transaction_date_time_2 = models.DateTimeField(null=True)
+    last_plan_change = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def next_transaction(self):
+        return date.today()
+
+    @property
+    def is_enabled(self):
+        return "true" if self.enabled else "false"
+
+    @property
+    def get_annualized(self):
+
+        if self.frequency == MONTHLY:
+            return self.amount * 12
+        elif self.frequency == TWICE_A_MONTH:
+            return self.amount * 2 * 12
+        elif self.frequency == EVERY_OTHER_WEEK:
+            return self.amount * 2 * 12
+        elif self.frequency == WEEKLY:
+            return self.amount * 4 * 12
+
+        return 0
+
+
+class Portfolio(models.Model):
+    variance = models.FloatField()
+    er = models.FloatField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    # Also has 'goal_setting' field from GoalSetting
+
+
+class PortfolioItem(models.Model):
+    portfolio = models.ForeignKey(Portfolio, related_name='items')
+    asset = models.ForeignKey(Ticker)
+    weight = models.FloatField()
+    volatility = models.FloatField(help_text='variance of this asset a the time of setting this portfolio.')
+
+
+class GoalSetting(models.Model):
+    target = models.FloatField(default=0)
+    completion = models.DateField(help_text='The scheduled completion date for the goal.')
+    hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
+    auto_deposit = models.OneToOneField(AutomaticDeposit, null=True)
+    # also has 'metrics' field from GoalMetrics model.
+    portfolio = models.OneToOneField(Portfolio, related_name='goal_setting')
 
 
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
-    target = models.FloatField(default=0)
-    income = models.BooleanField(default=False)
-    completion_date = models.DateTimeField()
-    allocation = models.FloatField()  # The proportion of Stocks to use for the ETFs (Core Component) of the instrument mix for this goal
-    satellite_pct = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], default=0.0,
-                                      null=True)  # The proportion of Managed Funds (Active component) to use in the instrument mix for this goal
-    account_type = models.CharField(max_length=20, default='INVESTING')
-    type = models.CharField(max_length=20, default='RETIREMENT')
-    drift = models.FloatField(default=0)
-    duration = models.FloatField(default=0)
-    initialDeposit = models.FloatField(default=0)
-    amount = models.FloatField(default=0)
-    total_balance_db = models.FloatField(default=0,
-                                         verbose_name="total balance")
-    custom_portfolio_set = models.ForeignKey('portfolios.PortfolioSet', null=True, blank=True)
-    custom_regions = models.TextField(null=True)
-    custom_picked_regions = models.TextField(null=True)
-    custom_optimization_mode = models.IntegerField(choices=[(0, 'None'), (1, 'auto mode'), (2, 'weight mode')],
-                                                   default=0)
-    portfolios = models.TextField(null=True)
-    custom_hedges = models.TextField(null=True)
-    archived = models.BooleanField(default=False)
-    ethical_investments = models.BooleanField(default=False)
-
-    created_date = models.DateTimeField(auto_now_add=True)
+    type = models.ForeignKey(GoalTypes)
+    created = models.DateTimeField(auto_now_add=True)
+    portfolio_set = models.ForeignKey(PortfolioSet,
+                                      help_text='The set of assets that may be used to create a portfolio for this goal.')
+    active_settings = models.OneToOneField(GoalSetting,
+                                           related_name='goal_active',
+                                           help_text='The settings were last used to do a rebalance. '
+                                                     'These settings are responsible for our current market positions.',
+                                           null=True)
+    approved_settings = models.OneToOneField(GoalSetting,
+                                             related_name='goal_approved',
+                                             help_text='The settings that both the client and advisor have confirmed '
+                                                       'and will become active the next time the goal is rebalanced.',
+                                             null=True)
+    selected_settings = models.OneToOneField(GoalSetting,
+                                             related_name='goal_selected',
+                                             help_text='The settings that the client has confirmed, '
+                                                       'but are not yet approved by the advisor.',
+                                             null=True)
+    archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
 
     objects = GoalQuerySet.as_manager()
 
     class Meta:
         ordering = ['name']
 
-    @property
-    def hedges(self):
-        if self.custom_hedges is None:
-            return mark_safe('null')
-        else:
-            return mark_safe(self.custom_hedges)
-
-    @property
-    def picked_regions(self):
-        if self.custom_picked_regions is None:
-            return mark_safe(self.portfolio_set.default_picked_regions)
-        else:
-            return mark_safe(self.custom_picked_regions)
-
-    @property
-    def optimization_mode(self):
-        if self.custom_optimization_mode == 0:
-            return self.portfolio_set.optimization_mode
-        else:
-            return self.custom_optimization_mode
-
-    @property
-    def regions_currencies(self):
-        return mark_safe(json.dumps(self.portfolio_set.regions_currencies, sort_keys=True))
-
-    @property
-    def stocks_and_bonds(self):
-        return self.portfolio_set.stocks_and_bonds
-
-    @property
-    def is_custom_size(self):
-        if self.custom_regions is None:
-            return False
-
-        region_sizes = {}
-        try:
-            region_sizes = json.loads(self.custom_regions)
-        except JSONDecodeError:
-            pass
-
-        if len(region_sizes) == 0:
-            return False
-
-        portfolio_set_regions = self.portfolio_set.regions
-
-        total_size = 0
-        for key in region_sizes.keys():
-            if key not in portfolio_set_regions:
-                self.custom_regions = None
-                self.portfolios = None
-                self.save()
-                return False
-            total_size += region_sizes[key]["size"]
-
-        if total_size != 1:
-            self.custom_regions = None
-            self.portfolios = None
-            self.save()
-            return False
-
-        return True
-
-    @property
-    def regions_allocation(self):
-        if self.is_custom_size:
-            return mark_safe(self.custom_regions)
-        else:
-            regions_allocation = {}
-            sizes = json.loads(self.portfolio_set.default_region_sizes)
-            for k in sizes:
-                regions_allocation[k] = {"size": sizes[k]}
-            return mark_safe(json.dumps(regions_allocation))
-
-    @property
-    def region_sizes(self):
-        region_sizes = {}
-        if self.is_custom_size:
-            cr = json.loads(self.custom_regions)
-            for k in cr:
-                region_sizes[k] = cr[k]["size"]
-            return region_sizes
-        sizes = json.loads(self.portfolio_set.default_region_sizes)
-
-        if len(sizes) == 0:
-            raise Exception("bad region size for portfolio %s " % self.portfolio_set.name)
-        return sizes
-
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
-
-    @property
-    def get_financial_plan_id(self):
-        try:
-            FinancialPlanAccount.objects.get(account=self,
-                                             client=self.account.primary_owner)
-        except FinancialPlanAccount.DoesNotExist:
-            return "null"
-
-        if hasattr(self.account.primary_owner, 'financial_plan'):
-            return self.account.primary_owner.financial_plan.pk
-        else:
-            return "null"
-
-    @property
-    def get_financial_plan(self):
-        try:
-            FinancialPlanAccount.objects.get(account=self,
-                                             client=self.account.primary_owner)
-        except FinancialPlanAccount.DoesNotExist:
-            return "null"
-
-        return self.account.primary_owner.get_financial_plan
-
-    @property
-    def portfolio_set(self):
-        from portfolios.models import PortfolioSet
-
-        if self.custom_portfolio_set is None:
-            if "_ETHICAL" in self.type:
-                if self.account.primary_owner.advisor.firm.can_use_ethical_portfolio:
-                    self.custom_portfolio_set = PortfolioSet.objects.get(name="Ethical")
-                    # TODO: be more smart about this
-                    self.allocation = 1
-                    self.save()
-                    return self.custom_portfolio_set
-            return Platform.objects.first().portfolio_set
-
-        # check ethical portfolios
-        if "_ETHICAL" in self.type:
-            if not self.account.primary_owner.advisor.firm.can_use_ethical_portfolio:
-                self.custom_portfolio_set = None
-                self.save()
-                return Platform.objects.first().portfolio_set
-            else:
-                # TODO: be more smart about this
-                self.allocation = 1
-                self.save()
-
-        return self.custom_portfolio_set
-
-    @property
-    def target_portfolio(self):
-        if self.is_custom_size:
-            positions = json.loads(self.portfolios)
-        else:
-            positions = json.loads(self.portfolio_set.portfolios)
-        return positions["{:.2f}".format(self.allocation)]
-
-    @property
-    def target_allocation(self):
-        return self.target_portfolio["allocations"]
-
-    @property
-    def get_drift(self):
-        tb = self.total_balance
-
-        if tb == 0:
-            return 0
-
-        portfolio_set = self.portfolio_set
-        tickers = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
-
-        tickers_prices = []
-        target_allocation = []
-        current_allocation = []
-
-        for ticker in tickers:
-            tickers_prices.append(ticker.unit_price)
-            target_allocation.append(self.target_allocation.get(ticker.asset_class.name, 0))
-            positions = Position.objects.filter(goal=self, ticker=ticker).all()
-            cs = 0
-            if positions:
-                for p in positions:
-                    cs += p.value
-            current_allocation.append(cs / tb)
-
-        current_allocation = array(current_allocation)
-        target_allocation = array(target_allocation)
-
-        return float("{0:.2f}".format(sum(abs(current_allocation - target_allocation)) / (3 / 2) / 2 * 100))
-
-    @property
-    def life_time_average_balance(self):
-        return 0
-
-    @property
-    def life_time_personal_return(self):
-        return 0
-
-    @property
-    def total_earned(self):
-        return 0
-
-    @property
-    def portfolio_set_id(self):
-        return self.portfolio_set.pk
 
     @property
     def available_balance(self):
@@ -1889,8 +1825,8 @@ class Goal(models.Model):
     def pending_deposits(self):
         pd = 0.0
         for d in Transaction.objects.filter(account=self,
-                                            status=PENDING,
-                                            type=DEPOSIT).all():
+                                            status=TRANSACTION_STATUS_PENDING,
+                                            type=TRANSACTION_TYPE_DEPOSIT).all():
             pd += d.amount
         return pd
 
@@ -1898,8 +1834,8 @@ class Goal(models.Model):
     def pending_withdrawals(self):
         pw = 0.0
         for w in Transaction.objects.filter(account=self,
-                                            status=PENDING,
-                                            type=WITHDRAWAL).all():
+                                            status=TRANSACTION_STATUS_PENDING,
+                                            type=TRANSACTION_TYPE_WITHDRAWAL).all():
             pw -= w.amount
         return pw
 
@@ -1907,8 +1843,8 @@ class Goal(models.Model):
     def total_deposits(self):
         pd = 0.0
         for d in Transaction.objects.filter(account=self,
-                                            status=EXECUTED,
-                                            type=DEPOSIT).all():
+                                            status=TRANSACTION_STATUS_EXECUTED,
+                                            type=TRANSACTION_TYPE_DEPOSIT).all():
             pd += d.amount
         return pd
 
@@ -1916,8 +1852,8 @@ class Goal(models.Model):
     def total_withdrawals(self):
         pw = 0.0
         for w in Transaction.objects.filter(account=self,
-                                            status=EXECUTED,
-                                            type=WITHDRAWAL).all():
+                                            status=TRANSACTION_STATUS_EXECUTED,
+                                            type=TRANSACTION_TYPE_WITHDRAWAL).all():
             pw -= w.amount
         return pw
 
@@ -2141,7 +2077,7 @@ class Position(models.Model):
 
 class Transaction(models.Model):
     account = models.ForeignKey(Goal, related_name="transactions", null=True)
-    type = models.CharField(max_length=255, choices=TRANSACTION_CHOICES)
+    type = models.IntegerField(choices=TRANSACTION_TYPES)
     from_account = models.ForeignKey(Goal,
                                      related_name="transactions_from",
                                      null=True,
@@ -2154,8 +2090,8 @@ class Transaction(models.Model):
     satelliteAlloc = models.FloatField(default=0)
 
     status = models.CharField(max_length=20,
-                              choices=TRANSACTION_STATUS_CHOICES,
-                              default=PENDING)
+                              choices=TRANSACTION_STATUSES,
+                              default=TRANSACTION_STATUS_PENDING)
     created_date = models.DateTimeField(auto_now_add=True)
     executed_date = models.DateTimeField(null=True)
     new_balance = models.FloatField(default=0)
@@ -2176,50 +2112,7 @@ class TransactionMemo(models.Model):
     transaction = models.ForeignKey(Transaction, related_name="memos")
 
 
-MONTHLY = "MONTHLY"
-TWICE_A_MONTH = "TWICE_A_MONTH"
-EVERY_OTHER_WEEK = "EVERY_OTHER_WEEK"
-WEEKLY = "WEEKLY"
-
-FREQUENCY_CHOICES = ((MONTHLY, "1/mo"), (TWICE_A_MONTH, "2/mo"),
-                     (EVERY_OTHER_WEEK, "2/mo"), (WEEKLY, 'WEEKLY'))
-
-
 class AutomaticWithdrawal(models.Model):
-    account = models.OneToOneField(Goal, related_name="auto_withdrawal")
-    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
-    enabled = models.BooleanField(default=True)
-    amount = models.FloatField()
-    transaction_date_time_1 = models.DateTimeField(null=True)
-    transaction_date_time_2 = models.DateTimeField(null=True)
-    last_plan_change = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def next_transaction(self):
-        return date.today()
-
-    @property
-    def is_enabled(self):
-        return "true" if self.enabled else "false"
-
-    @property
-    def get_annualized(self):
-
-        if self.frequency == MONTHLY:
-            return self.amount * 12
-        elif self.frequency == TWICE_A_MONTH:
-            return self.amount * 2 * 12
-        elif self.frequency == EVERY_OTHER_WEEK:
-            return self.amount * 2 * 12
-        elif self.frequency == WEEKLY:
-            return self.amount * 4 * 12
-
-        return 0
-
-
-class AutomaticDeposit(models.Model):
-    account = models.OneToOneField(Goal, related_name="auto_deposit")
     frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
     enabled = models.BooleanField(default=True)
     amount = models.FloatField()
@@ -2272,7 +2165,8 @@ class Performer(models.Model):
                              choices=PERFORMER_GROUP_CHOICE,
                              default=BENCHMARK)
     allocation = models.FloatField(default=0)
-    portfolio_set = models.ForeignKey('portfolios.PortfolioSet')
+    #portfolio_set = models.ForeignKey(PortfolioSet)
+    portfolio_set = models.IntegerField()
 
 
 class CostOfLivingIndex(models.Model):
@@ -2408,3 +2302,28 @@ class Supervisor(models.Model):
             None,
             [self.user.email],
             html_message=render_to_string('email/new_supervisor.html', context))
+
+
+class ProxyAssetClass(AssetClass):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "Asset classes"
+        verbose_name = "Asset class"
+
+
+class ProxyTicker(Ticker):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "Tickers"
+        verbose_name = "Ticker"
+
+
+class View(models.Model):
+    q = models.FloatField()
+    assets = models.TextField()
+    portfolio_set = models.ForeignKey(PortfolioSet, related_name="views")
+
+
+class MarketCap(models.Model):
+    ticker = models.OneToOneField(Ticker, related_name='market_cap')
+    value = models.FloatField(default=0)

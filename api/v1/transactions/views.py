@@ -29,7 +29,7 @@ class APITransactionsDeposit(APIView):
 
             transaction_object.amount = amount
 
-            transaction_object.type = DEPOSIT
+            transaction_object.type = TRANSACTION_TYPE_DEPOSIT
 
             transaction_object.save()
 

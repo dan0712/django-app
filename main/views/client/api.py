@@ -7,15 +7,14 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 
-from main.models import AssetFeature
+from main.models import AssetFeature, PortfolioSet
 from portfolios.bl_model import OptimizationException
 #from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
-from portfolios.models import PortfolioSet
 from ..base import ClientView
-from ...models import Transaction, ClientAccount, PENDING, Goal, ALLOCATION, TransactionMemo, \
-    AutomaticDeposit, AutomaticWithdrawal, WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
-    MARKET_CHANGE, EXECUTED, FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
+from ...models import Transaction, ClientAccount, TRANSACTION_STATUS_PENDING, Goal, TRANSACTION_TYPE_ALLOCATION, TransactionMemo, \
+    AutomaticDeposit, AutomaticWithdrawal, TRANSACTION_TYPE_WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
+    TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED, TRANSACTION_TYPE_FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass, Position
 
 from django.http.response import Http404
@@ -201,7 +200,7 @@ class ClientAccounts(ClientView, TemplateView):
                     new_position.save()
                     p.delete()
 
-                transfer_transaction.status = EXECUTED
+                transfer_transaction.status = TRANSACTION_STATUS_EXECUTED
                 transfer_transaction.executed_date = datetime.now()
                 transfer_transaction.save()
 
@@ -209,7 +208,7 @@ class ClientAccounts(ClientView, TemplateView):
                 # wdw all the money
                 wdw_transaction = Transaction()
                 wdw_transaction.account = goal
-                wdw_transaction.type = WITHDRAWAL
+                wdw_transaction.type = TRANSACTION_TYPE_WITHDRAWAL
                 wdw_transaction.amount = goal.total_balance
                 wdw_transaction.save()
         goal.save()
@@ -354,10 +353,10 @@ class NewTransactionsView(ClientView):
                                      pk=goal_pk,
                                      account__primary_owner=self.client)
             query_set = goal.transactions.order_by("executed_date").filter(
-                status=EXECUTED)
+                status=TRANSACTION_STATUS_EXECUTED)
         else:
             query_set = Transaction.objects.order_by("executed_date").filter(
-                status=EXECUTED,
+                status=TRANSACTION_STATUS_EXECUTED,
                 account__account__primary_owner=self.client)
 
         if days_ago:
@@ -368,7 +367,7 @@ class NewTransactionsView(ClientView):
         market_change_by_week = {}
 
         for transaction in query_set.all():
-            if transaction.type == MARKET_CHANGE:
+            if transaction.type == TRANSACTION_TYPE_MARKET_CHANGE:
                 dt = transaction.executed_date
                 week_day = str(dt.isocalendar()[1])
                 if week_day not in market_change_by_week:
@@ -392,7 +391,7 @@ class NewTransactionsView(ClientView):
                     "id": "{0}".format(transaction.pk),
                     "accountName": transaction.account.name,
                     "accountID": "{0}".format(transaction.account.pk),
-                    "type": MARKET_CHANGE,
+                    "type": TRANSACTION_TYPE_MARKET_CHANGE,
                     "typeID": "2",
                     "date": dt.strftime('%Y%m%d%H%M%S'),
                     "dateString": dt.strftime('%b %d'),
@@ -444,7 +443,7 @@ class NewTransactionsView(ClientView):
                     "failed": False,
                     "canBeCanceled": False
                 }
-                if transaction.type == ALLOCATION:
+                if transaction.type == TRANSACTION_TYPE_ALLOCATION:
                     ctx["isAllocation"] = True
                     ctx["change"] = "0"
                     stocks = int(transaction.amount * 100)
@@ -452,7 +451,7 @@ class NewTransactionsView(ClientView):
                     ctx["description"] = "Allocation Change ({0}% stocks, {1}% bonds)".format(
                         stocks, bonds)
 
-                if transaction.type in (WITHDRAWAL, FEE):
+                if transaction.type in (TRANSACTION_TYPE_WITHDRAWAL, TRANSACTION_TYPE_FEE):
                     ctx["change"] = "{:.2f}".format(-float(ctx["change"]))
 
                 transactions.append(ctx)
@@ -524,7 +523,7 @@ class NewTransactionsView(ClientView):
                 new_position, is_new = Position.objects.get_or_create(goal=new_transaction.to_account, ticker=p.ticker)
                 new_position.share += transfer_share_size
                 new_position.save()
-            new_transaction.status = EXECUTED
+            new_transaction.status = TRANSACTION_STATUS_EXECUTED
             new_transaction.executed_date = datetime.now()
             new_transaction.save()
 
@@ -566,11 +565,11 @@ class ChangeAllocation(ClientView):
         new_t.account = goal
         new_t.amount = goal.allocation
         new_t.satelliteAlloc = goal.satellite_pct
-        new_t.type = ALLOCATION
+        new_t.type = TRANSACTION_TYPE_ALLOCATION
         # remove all the pending allocation transactions for this account
         Transaction.objects.filter(account=goal,
-                                   type=ALLOCATION,
-                                   status=PENDING).all().delete()
+                                   type=TRANSACTION_TYPE_ALLOCATION,
+                                   status=TRANSACTION_STATUS_PENDING).all().delete()
         new_t.save()
 
         if has_changed:
@@ -694,11 +693,11 @@ class ChangeGoalView(ClientView):
             new_t = Transaction()
             new_t.account = goal
             new_t.amount = goal.allocation
-            new_t.type = ALLOCATION
+            new_t.type = TRANSACTION_TYPE_ALLOCATION
             # remove all the pending allocation transactions for this account
             Transaction.objects.filter(account=goal,
-                                       type=ALLOCATION,
-                                       status=PENDING).all().delete()
+                                       type=TRANSACTION_TYPE_ALLOCATION,
+                                       status=TRANSACTION_STATUS_PENDING).all().delete()
             new_t.save()
 
         return HttpResponse('null', content_type="application/json")
@@ -782,7 +781,7 @@ class Withdrawals(ClientView):
         new_transaction.account = goal
         new_transaction.from_account = None
         new_transaction.to_account = None
-        new_transaction.type = WITHDRAWAL
+        new_transaction.type = TRANSACTION_TYPE_WITHDRAWAL
         new_transaction.amount = payload["amount"]
         new_transaction.save()
 
@@ -806,7 +805,7 @@ class AnalysisBalances(ClientView):
                                  pk=goal_pk,
                                  account__primary_owner=self.client)
         trs = goal.transactions.filter(
-            type=MARKET_CHANGE).order_by('executed_date').all()
+            type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
         if trs:
             for transaction in trs:
                 r_obj = {
@@ -863,7 +862,7 @@ class AnalysisReturns(ClientView):
         for account in self.client.accounts.all():
             for goal in account.goals.all():
                 trs = goal.transactions.filter(
-                    type=MARKET_CHANGE).order_by('executed_date').all()
+                    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
                 if not trs:
                     continue
                 counter += 1

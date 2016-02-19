@@ -8,10 +8,9 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from main.models import Firm, Advisor, User, Performer, \
     AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, \
-    TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend
+    TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend, ProxyAssetClass, ProxyTicker, PortfolioSet, View
 from portfolios.management.commands.get_historical_returns import \
     get_historical_returns as internal_get_historical_returns
-from portfolios.models import ProxyAssetClass, ProxyTicker, PortfolioSet, View
 from suit.admin import SortableModelAdmin
 from suit.admin import SortableTabularInline
 
@@ -233,7 +232,7 @@ class ClientAccountAdmin(admin.ModelAdmin):
 
 
 class GoalAdmin(admin.ModelAdmin):
-    list_display = ('account', 'name', 'total_balance_db', 'allocation', 'drift', 'type')
+    list_display = ('account', 'name', 'type')
     actions = (rebalance,)
     pass
 

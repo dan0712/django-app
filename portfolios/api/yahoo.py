@@ -4,11 +4,10 @@ from datetime import datetime
 import pandas as pd
 from pandas import Series
 import json
-from main.models import DataApiDict, MonthlyPrices
+from main.models import DataApiDict, MonthlyPrices, MarketCap
 from urllib.parse import quote
 import calendar
 from bs4 import BeautifulSoup
-from portfolios.models import MarketCap
 import random
 import scipy.interpolate
 import time

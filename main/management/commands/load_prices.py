@@ -6,9 +6,8 @@ import math
 from django.core.management.base import BaseCommand
 from django.db.models.aggregates import Max
 
-from main.models import Ticker, DailyPrice, MonthlyPrices, ExchangeRate, SYSTEM_CURRENCY
+from main.models import Ticker, DailyPrice, MonthlyPrices, ExchangeRate, SYSTEM_CURRENCY, MarketCap
 from portfolios.api.bloomberg import get_fund_hist_data as bl_getter, get_fx_rates
-from portfolios.models import MarketCap
 
 logger = logging.getLogger("load_prices")
 

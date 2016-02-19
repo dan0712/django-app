@@ -6,10 +6,9 @@ from pandas import DataFrame
 
 from django.core.management.base import BaseCommand
 
-from main.models import Goal, AssetClass
+from main.models import Goal, AssetClass, PortfolioSet
 from portfolios.api.yahoo import YahooApi, DbApi
 from portfolios.bl_model import handle_data, calculate_co_vars
-from ...models import PortfolioSet
 
 logger = logging.getLogger("calculate_portfolios")
 

@@ -24,10 +24,12 @@ def populate_current_prices():
         ticker.save()
 
     # Set the calculated values on the goals using the new ticker navs.
+    '''
     for goal in Goal.objects.all():
         goal.drift = goal.get_drift
         goal.total_balance_db = goal.total_balance
         goal.save()
+    '''
 
 
 class Command(BaseCommand):

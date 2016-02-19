@@ -6,12 +6,11 @@ import math
 import datetime
 
 from main.management.commands.convert_metrics import convert_goal
-from main.models import Ticker, SYSTEM_CURRENCY, AssetFeatureValue, MarkowitzScale
+from main.models import Ticker, SYSTEM_CURRENCY, AssetFeatureValue, MarkowitzScale, PortfolioSet
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
 from portfolios.api.yahoo import DbApi
 from portfolios.bl_model import calculate_co_vars
 from portfolios.profile_it import do_cprofile
-from ...models import PortfolioSet
 from main.models import Goal
 from django.core.management.base import BaseCommand
 

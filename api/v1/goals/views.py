@@ -46,7 +46,6 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         # hide "slow" fields for list view
         if self.action == 'list':
-            qs = qs.defer('portfolios')
             qs = qs.select_related()
 
         # show "permissioned" records only

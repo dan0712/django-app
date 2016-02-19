@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from main.models import Platform, Performer, Ticker, SymbolReturnHistory, STRATEGY, Goal, Transaction, MARKET_CHANGE, EXECUTED
+from main.models import Platform, Performer, Ticker, SymbolReturnHistory, STRATEGY, Goal, Transaction, TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED
 from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
 from portfolios.bl_model import handle_data
@@ -54,10 +54,10 @@ def demo_accounts_returns():
         counter = 0
         for k in table.index.tolist()[1:]:
             counter += 1
-            transaction, is_new = Transaction.objects.get_or_create(type=MARKET_CHANGE, created_date=k, account=goal)
+            transaction, is_new = Transaction.objects.get_or_create(type=TRANSACTION_TYPE_MARKET_CHANGE, created_date=k, account=goal)
             transaction.inversion = inv
             transaction.amount = goal_values[counter] - goal_values[counter-1]
-            transaction.status = EXECUTED
+            transaction.status = TRANSACTION_STATUS_EXECUTED
             transaction.executed_date = k
             transaction.return_fraction = (goal_values[counter] - goal_values[counter-1])/goal_values[counter-1]
             transaction.new_balance = goal_values[counter]
