@@ -66,9 +66,10 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                 self.fields['account'].queryset.filter_by_advisor(user.advisor)
 
         # experimental / for clients
+        # TEMP set default account
         if user.is_client:
-            #self.fields['account'].required = False
-            #self.fields['account'].default = user.client.portfolios.all().first()
+            self.fields['account'].required = False
+            self.fields['account'].default = user.client.accounts.all().first()
             self.fields['account'].queryset = \
                 self.fields['account'].queryset.filter_by_client(user.client)
 
