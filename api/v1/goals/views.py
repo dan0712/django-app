@@ -1,8 +1,9 @@
 from rest_framework import viewsets, status
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
-from main.models import Goal, GoalTypes
+from main.models import Goal, GoalTypes, GoalSetting
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor,
@@ -77,3 +78,30 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         positions = goal.positions.all()
         serializer = serializers.GoalPositionListSerializer(positions, many=True)
         return Response(serializer.data)
+
+    @detail_route(methods=['get'], url_path='selected-portfolio')
+    def selected_portfolio(self, request, pk=None):
+        goal = self.get_object()
+        portfolio = goal.selected_settings.portfolio
+        serializer = serializers.PortfolioSerializer(portfolio)
+        return Response(serializer.data)
+
+    @detail_route(methods=['get', 'put'], url_path='selected-settings')
+    def selected_settings(self, request, pk=None):
+        goal = self.get_object()
+        if request.method == 'GET':
+            serializer = serializers.GoalSettingSerializer(goal.selected_settings)
+            return Response(serializer.data)
+        if request.method == 'PUT':
+            serializer = serializers.GoalSettingCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            settings = serializer.save(goal=goal)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @detail_route(methods=['get'], url_path='approved-settings')
+    def approved_settings(self, request, pk=None):
+        goal = self.get_object()
+        serializer = serializers.GoalSettingSerializer(goal.approved_settings)
+        return Response(serializer.data)
+

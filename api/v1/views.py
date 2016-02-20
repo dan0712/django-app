@@ -95,7 +95,7 @@ class ApiViewMixin(MultipleSerializersModelViewMixin, object):
     authentication_classes = (ExtraTokenAuthentication,)
     renderer_classes = (
         ApiRenderer,
-        BrowsableAPIRenderer, # temp
+        #BrowsableAPIRenderer, # temp
     )
 
     def get_nested_data(self, namespace):

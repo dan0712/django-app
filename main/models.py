@@ -1760,12 +1760,12 @@ class GoalTypes(models.Model):
 
 
 class RecurringTransaction(models.Model):
+    # Note: Only settings that are active will have their recurring transactions processed.
     setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', null=True)  # TODO remove the null
     # Note: https://www.npmjs.com/package/rrule and https://www.npmjs.com/package/rrecur for UI side of below
-    recurrence = RecurrenceField()
+    recurrence = models.TextField()
     enabled = models.BooleanField(default=True)
     amount = models.FloatField()
-    last_plan_change = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
@@ -1785,7 +1785,7 @@ class PortfolioItem(models.Model):
     portfolio = models.ForeignKey(Portfolio, related_name='items')
     asset = models.ForeignKey(Ticker)
     weight = models.FloatField()
-    volatility = models.FloatField(help_text='variance of this asset a the time of setting this portfolio.')
+    volatility = models.FloatField(help_text='variance of this asset at the time of creating this portfolio.')
 
 
 class GoalSetting(models.Model):
@@ -1793,6 +1793,7 @@ class GoalSetting(models.Model):
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
     # also has 'metrics' field from GoalMetrics model.
+    # also has 'recurring_transactions' field from RecurringTransaction model.
     portfolio = models.OneToOneField(Portfolio, related_name='goal_setting')
 
     @property
@@ -1813,25 +1814,30 @@ class Goal(models.Model):
     portfolio_set = models.ForeignKey(PortfolioSet,
         help_text='The set of assets that may be used to create a portfolio for this goal.')
     # TODO: Remove null bit below once everyone is running this code.
-    active_settings = models.OneToOneField(GoalSetting,
+    active_settings = models.OneToOneField(
+        GoalSetting,
         related_name='goal_active',
         help_text='The settings were last used to do a rebalance. '
-            'These settings are responsible for our current market positions.',
+                  'These settings are responsible for our current market positions.',
         blank=True,
         null=True)
-    approved_settings = models.OneToOneField(GoalSetting,
+    approved_settings = models.OneToOneField(
+        GoalSetting,
         related_name='goal_approved',
         help_text='The settings that both the client and advisor have confirmed '
-            'and will become active the next time the goal is rebalanced.',
+                  'and will become active the next time the goal is rebalanced.',
         blank=True,
         null=True)
-    selected_settings = models.OneToOneField(GoalSetting,
+    selected_settings = models.OneToOneField(
+        GoalSetting,
         related_name='goal_selected',
         help_text='The settings that the client has confirmed, '
-            'but are not yet approved by the advisor.',
+                  'but are not yet approved by the advisor.',
         blank=True,
         null=True)
     archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
+
+    # Also has reverse 'positions' field from Position model.
 
     objects = GoalQuerySet.as_manager()
 

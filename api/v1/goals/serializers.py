@@ -33,17 +33,19 @@ class PortfolioItemSerializer(serializers.ModelSerializer):
         fields = (
             'asset',
             'weight',
+            'volatility',
         )
 
 
 class PortfolioSerializer(serializers.ModelSerializer):
     items = PortfolioItemSerializer(many=True)
+
     class Meta:
         model = Portfolio
         fields = (
             'variance',
             'er',
-            'items'
+            'items',
         )
 
 
@@ -57,47 +59,66 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
         )
 
 
-class GoalSettingSerializer(serializers.ModelSerializer):
-    portfolio = PortfolioSerializer()
-    recurring_transactions = RecurringTransactionSerializer()
-
-    class Meta:
-        model = GoalSetting
-        exclude = (
-            'goal'
-        )
-
-
-class GoalClientAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClientAccount
-        exclude = (
-            #'created_at',
-        )
-
-
-class GoalGoalSettingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GoalSetting
-        exclude = (
-            #'created_at',
-        )
-
-
-class GoalSettingGoalMetricSerializer(serializers.ModelSerializer):
+class GoalMetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalMetric
         exclude = (
-            'goal',
+            'id',
+            'setting',
         )
 
 
-class GoalSerializer(serializers.ModelSerializer):
-    account = GoalClientAccountSerializer()
-    metrics = GoalSettingGoalMetricSerializer(source='active_settings__metrics', many=True)
-    settings = GoalGoalSettingSerializer(source='active_settings')
-    #approved_settings = GoalGoalSettingSerializer()
-    #selected_settings = GoalGoalSettingSerializer()
+class GoalMetricCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoalMetric
+
+
+class GoalSettingSerializer(serializers.ModelSerializer):
+    portfolio = PortfolioSerializer()
+    metrics = GoalMetricSerializer(many=True)
+    recurring_transactions = RecurringTransactionSerializer(many=True)
+
+    class Meta:
+        model = GoalSetting
+        exclude = (
+            'id',
+        )
+
+
+class GoalSettingCreateSerializer(serializers.ModelSerializer):
+    metrics = GoalMetricSerializer(many=True)
+    recurring_transactions = RecurringTransactionSerializer(many=True)
+    portfolio = PortfolioSerializer()
+
+    class Meta:
+        model = GoalSetting
+        fields = (
+            'target',
+            'completion',
+            'hedge_fx',
+            'metrics',
+            'recurring_transactions',
+            'portfolio'
+        )
+
+    def create(self, validated_data):
+        goal = validated_data.pop('goal')
+        metrics_data = validated_data.pop('metrics')
+        tx_data = validated_data.pop('recurring_transactions')
+        port_data = validated_data.pop('portfolio')
+        port_items_data = port_data.pop('items')
+        with transaction.atomic():
+            port = Portfolio.objects.create(**port_data)
+            PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port, **i_data) for i_data in port_items_data])
+            setting = GoalSetting.objects.create(portfolio=port, **validated_data)
+            RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+            GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
+            old_setting = goal.selected_settings
+            goal.selected_settings = setting
+            goal.save()
+            old_setting.delete()
+
+        return setting
 
 
 class GoalSerializer(serializers.ModelSerializer):
@@ -105,10 +126,7 @@ class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         exclude = (
-            #'account'
-            'created',
             'active_settings',
-            'approved_settings', 'selected_settings',
         )
 
 
@@ -116,15 +134,11 @@ class GoalListSerializer(serializers.ModelSerializer):
     """
     Light version of GoalSerializer
     """
-    settings = GoalGoalSettingSerializer(source='active_settings')
-
     class Meta:
         model = Goal
-        exclude = (
-            #'account',
-            'created',
-            'active_settings',
-            'approved_settings', 'selected_settings',
+        fields = (
+            'id',
+            'name',
         )
 
 
