@@ -17,6 +17,7 @@ from . import serializers
 class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     queryset = Goal.objects.all() \
         .select_related('account') \
+        .select_related('active_settings') # , 'approved_settings', 'selected_settings') \
         #.defer('account__data') \
     serializer_class = serializers.GoalSerializer
     serializer_response_class = serializers.GoalSerializer

@@ -6,6 +6,8 @@ from rest_framework.views import exception_handler
 def api_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
+    return response;
+
     error = {
         'reason': exc.__class__.__name__,
     }
