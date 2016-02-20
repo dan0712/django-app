@@ -4,6 +4,7 @@ import json
 import logging
 import uuid
 from datetime import date
+from enum import Enum, unique
 
 from django import forms
 from django.conf import settings
@@ -50,6 +51,31 @@ def validate_module(value):
         raise ValidationError("The supplied module: {} could not be found.".format(value))
 
 
+@unique
+class StandardAssetFeatures(Enum):
+    SRI = 0
+
+    def get_object(self):
+        names = {
+            # feature_tag: feature_name
+            self.SRI: 'Social Responsibility',
+        }
+        return AssetFeature.objects.get_or_create(name=names[self.value])[0]
+
+
+@unique
+class StandardAssetFeatureValues(Enum):
+    SRI_OTHER = 0
+
+    def get_object(self):
+        data = {
+            # feature_value_tag: (feature_tag, feature_value_name)
+            self.SRI_OTHER: (StandardAssetFeatures.SRI, 'Non-specific Social Responsibility Initiative')
+        }
+        return AssetFeatureValue.objects.get_or_create(name=data[self.value][1],
+                                                       defaults={'feature':data[self.value][0].get_object()})[0]
+
+
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
                   " following a BetaSmartz approval."
 
@@ -61,6 +87,23 @@ INVITATION_CLOSED = 4
 EMAIL_INVITATION_STATUSES = (
     (INVITATION_PENDING, 'Pending'), (INVITATION_SUBMITTED, 'Submitted'),
     (INVITATION_ACTIVE, 'Active'), (INVITATION_CLOSED, 'Closed'))
+
+EMPLOYMENT_STATUS_FULL_TIME = 0
+EMPLOYMENT_STATUS_PART_TIME = 1
+EMPLOYMENT_STATUS_SELF_EMPLOYED = 1
+EMPLOYMENT_STATUS_STUDENT = 2
+EMPLOYMENT_STATUS_RETIRED = 3
+EMPLOYMENT_STATUS_HOMEMAKER = 4
+EMPLOYMENT_STATUS_UNEMPLOYED = 5
+EMPLOYMENT_STATUSES = (
+    (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
+    (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
+    (EMPLOYMENT_STATUS_SELF_EMPLOYED, 'Self-employed'),
+    (EMPLOYMENT_STATUS_STUDENT, 'Student'),
+    (EMPLOYMENT_STATUS_RETIRED, 'Retired'),
+    (EMPLOYMENT_STATUS_HOMEMAKER, 'Homemaker'),
+    (EMPLOYMENT_STATUS_UNEMPLOYED, "Not employed"),
+)
 
 INVITATION_ADVISOR = 0
 AUTHORIZED_REPRESENTATIVE = 1
@@ -837,7 +880,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
 
         if user:
-            invitation_url += "/" + str(user.pk) + "/" + user.client.accounts_all.first().token
+            invitation_url += "/" + str(user.pk) + "/" + user.client.primary_accounts.first().token
         return invitation_url
 
     @staticmethod
@@ -1031,7 +1074,7 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    primary_owner = models.ForeignKey('Client', related_name="accounts_all")
+    primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
@@ -1218,22 +1261,9 @@ class ClientAccount(models.Model):
             self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
-EMPLOYMENT_STATUS_FULL_TIME = 0
-EMPLOYMENT_STATUS_PART_TIME = 1
-EMPLOYMENT_STATUS_SELF_EMPLOYED = 1
-EMPLOYMENT_STATUS_STUDENT = 2
-EMPLOYMENT_STATUS_RETIRED = 3
-EMPLOYMENT_STATUS_HOMEMAKER = 4
-EMPLOYMENT_STATUS_UNEMPLOYED = 5
-EMPLOYMENT_STATUSES = (
-    (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
-    (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
-    (EMPLOYMENT_STATUS_SELF_EMPLOYED, 'Self-employed'),
-    (EMPLOYMENT_STATUS_STUDENT, 'Student'),
-    (EMPLOYMENT_STATUS_RETIRED, 'Retired'),
-    (EMPLOYMENT_STATUS_HOMEMAKER, 'Homemaker'),
-    (EMPLOYMENT_STATUS_UNEMPLOYED, "Not employed"),
-)
+class JointAccount(models.Model):
+    joined = models.ForeignKey(ClientAccount, related_name='joint_holder')
+    client = models.ForeignKey('Client', related_name='joint_accounts')
 
 
 class TaxFileNumberValidator(object):
@@ -1339,6 +1369,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             for secondary_advisor in account.account_group.secondary_advisors.all(
             ):
                 self.secondary_advisors.add(secondary_advisor)
+
+    @property
+    def accounts_all(self):
+        return self.primary_accounts | self.joint_accounts.select_related('joined')
 
     @property
     def accounts(self):
@@ -1724,7 +1758,8 @@ class GoalTypes(models.Model):
 
 
 class RecurringTransaction(models.Model):
-    setting = models.ForeignKey(GoalSetting, related_name='recurring_transactions')
+    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', null=True)  # TODO remove the null
+    # Note: https://www.npmjs.com/package/rrule and https://www.npmjs.com/package/rrecur for UI side of below
     recurrence = RecurrenceField()
     enabled = models.BooleanField(default=True)
     amount = models.FloatField()
@@ -1785,10 +1820,12 @@ class Goal(models.Model):
                                              help_text='The settings that both the client and advisor have confirmed '
                                                        'and will become active the next time the goal is rebalanced.',
                                              null=True)
+    # TODO: Remove null bit below once everyone is running this code.
     selected_settings = models.OneToOneField(GoalSetting,
                                              related_name='goal_selected',
                                              help_text='The settings that the client has confirmed, '
-                                                       'but are not yet approved by the advisor.')
+                                                       'but are not yet approved by the advisor.',
+                                             null=True)
     archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
 
     objects = GoalQuerySet.as_manager()
@@ -2021,9 +2058,15 @@ class GoalMetric(models.Model):
         METRIC_COMPARISON_EXACTLY: 'Exactly',
         METRIC_COMPARISON_MAXIMUM: 'Maximum',
     }
-    rebalance_types = {0: 'Absolute', 1: 'Relative'}
+    REBALANCE_TYPE_ABSOLUTE = 0
+    REBALANCE_TYPE_RELATIVE = 1
+    rebalance_types = {
+        REBALANCE_TYPE_ABSOLUTE: 'Absolute',
+        REBALANCE_TYPE_RELATIVE: 'Relative',
+    }
 
-    setting = models.ForeignKey(GoalSetting, related_name='metrics')
+    # TODO: Remove null bit. once everyone is up to this release of code.
+    setting = models.ForeignKey(GoalSetting, related_name='metrics', null=True)
     type = models.IntegerField(choices=metric_types.items())
     feature = models.ForeignKey(AssetFeatureValue, null=True)
     comparison = models.IntegerField(default=1, choices=comparisons.items())

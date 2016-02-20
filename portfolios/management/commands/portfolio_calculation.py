@@ -58,11 +58,12 @@ def build_instruments(api=DbApi()):
     """
     Builds all the instruments know about in the system.
     Have global pandas tables of all the N instruments in the system, and operate on these tables through masks.
-        - N x 4 Instruments table
+        - N x 5 Instruments table
             - Column 1 (exp_ret): Annualised expected return
             - Column 2 (mkt_cap): Market cap or AUM in system currency
             - Column 3 (ac): The asset class the instrument belongs to.
             - Column 4 (price): The current market midprice
+            - Column 5 (id): The id of the Ticker model object
         - Covariance matrix (N x N)
         - N x M array of views defined on instruments
         - M x 1 array of expected returns per view.
@@ -134,14 +135,16 @@ def build_instruments(api=DbApi()):
                       ticker.asset_class.name,
                       prices.iloc[-1],
                       ticker.features.values_list('id', flat=True),
-                      ac_ps[ticker.asset_class.id]))
+                      ac_ps[ticker.asset_class.id],
+                      ticker.id,
+                      ))
 
     # Filter the table to be only complete.
     ctable = pd.concat(ccols, axis=1).iloc[minix:, :]
 
     # For some reason once I added the exclude arg below, the index arg was ignored, so I have to do it manually after.
     instruments = pd.DataFrame.from_records(irows,
-                                            columns=['symbol', 'exp_ret', 'mkt_cap', 'ac', 'price', 'features', 'pids'],
+                                            columns=['symbol', 'exp_ret', 'mkt_cap', 'ac', 'price', 'features', 'pids', 'id'],
                                             exclude=['features', 'pids']).set_index('symbol')
 
     masks = pd.DataFrame(False, index=instruments.index, columns=AssetFeatureValue.objects.values_list('id', flat=True))
@@ -475,14 +478,15 @@ def calculate_portfolio(goal, idata):
     """
     Calculates the instrument weights to use for a given goal.
     :param goal: The goal to calculate the portflio for.
-    :return: (ac_weights, er, variance) All values will be None if no suitable allocation can be found.
-             - ac_weights: A Pandas series of weights for each instrument asset class.
+    :return: (weights, er, variance) All values will be None if no suitable allocation can be found.
+             - weights: A Pandas series of weights for each instrument.
              - er: Expected return of portfolio
              - variance: Total variance of portfolio
     """
     logger.debug("Calculating portfolio for alloc: {}".format(goal.allocation))
 
-    weights, cost, xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = optimize_goal(goal, idata)
+    odata = optimize_goal(goal, idata)
+    weights, cost, xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = odata
 
     # Find the optimal orderable weights.
     weights, cost = make_orderable(weights, cost, xs, sigma, mu, lam, constraints, goal, goal_instruments['price'])
@@ -494,16 +498,24 @@ def get_portfolio_stats(goal_instruments, goal_symbol_ixs, instruments, lcovars,
     # Get the totals per asset class, portfolio expected return and portfolio variance
     instruments['_weight_'] = 0.0
     instruments.iloc[goal_symbol_ixs, instruments.columns.get_loc('_weight_')] = weights
-    ac_weights = instruments.groupby('ac')['_weight_'].sum()
-    # TODO: Remove this "return everything" functionality to only return asset classes with an allocation.
-    # ac_weights = ac_weights[ac_weights > 0.01]
-    # TODO: Should we really be displaying the expected return from the time series, or the BL mu?
+
+    # LOGIC TO RETURN GROUPED BY ASSET CLASS
+    # ret_weights = instruments.groupby('ac')['_weight_'].sum()
+
+    # LOGIC TO RETURN PER ASSET
+    ret_weights = instruments['_weight_']
+
+    # Filter out assets with no allocation
+    ret_weights = ret_weights[ret_weights > 0.01]
+
+    # Generate portfolio variance and expected return
     er = weights.dot(goal_instruments['exp_ret'])
     logger.debug("Generated asset weights: {}".format(weights))
     logger.debug("Generated portfolio expected return of {} using asset returns: {}".format(er, goal_instruments['exp_ret']))
     variance = weights.dot(lcovars).dot(weights.T)
     logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, lcovars))
-    return ac_weights, er, variance
+
+    return ret_weights, er, variance
 
 
 def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal, prices):
@@ -563,7 +575,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal
         req_mult = np.min(ovr_lmt)
         req_units = np.zeros_like(weights)
         req_units[interested] = np.ceil(ovr_lmt * req_mult)
-        # TODO: Figure out the ordering costs of the assets for this customer at this point based on currrent holdings,
+        # TODO: Figure out the ordering costs of the assets for this customer at this point based on current holdings,
         # TODO: costs per asset and units to purchase. Notify these costs to the user.
         req_budget = np.sum(req_units * prices)
 

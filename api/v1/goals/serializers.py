@@ -4,8 +4,10 @@ from rest_framework import serializers
 from main.models import (
     Goal, GoalTypes, ClientAccount,
     Position,
-    GoalSetting, Portfolio, PortfolioItem, RecurringTransaction)
+    GoalSetting, Portfolio, PortfolioItem, RecurringTransaction, GoalMetric, AssetFeatureValue,
+    StandardAssetFeatureValues)
 from portfolios.management.commands.portfolio_calculation import get_instruments, calculate_portfolio
+from portfolios.management.commands.risk_profiler import recommend_risk
 
 __all__ = (
     'GoalSerializer',
@@ -84,6 +86,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
     target = serializers.IntegerField()
     completion = serializers.DateField()
     initial_deposit = serializers.IntegerField(required=False)
+    ethical = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = Goal
@@ -94,6 +97,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
             'target',
             'completion',
             'initial_deposit',
+            'ethical',
         ) # list fields explicitly
 
     def __init__(self, *args, **kwargs):
@@ -121,7 +125,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """
-        Override the default create because we need to generate a portfolio etc.
+        Override the default create because we need to generate a portfolio.
         :param validated_data:
         :return: The created Goal
         """
@@ -134,7 +138,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                 variance=0,
                 er=0,
             )
-            settings = GoalSetting.objects.create(
+            setting = GoalSetting.objects.create(
                 target=validated_data['target'],
                 completion=validated_data['completion'],
                 hedge_fx=False,
@@ -145,16 +149,34 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                 name=validated_data['name'],
                 type=validated_data['type'],
                 portfolio_set=account.default_portfolio_set,
-                selected_settings=settings,
+                selected_settings=setting,
             )
 
-            # TODO: Based on the risk profile, and whether an ethical profile was specified on creation, set up Metrics.
-            
+            # Based on the risk profile, and whether an ethical profile was specified on creation, set up Metrics.
+            recommended_risk = recommend_risk(setting)
+            GoalMetric.objects.create(setting=setting,
+                                      type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+                                      comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
+                                      rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
+                                      rebalance_thr=0.05,
+                                      configured_val=recommended_risk)
+            if validated_data['ethical']:
+                GoalMetric.objects.create(
+                    setting=setting,
+                    type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
+                    feature=StandardAssetFeatureValues.SRI_OTHER.get_object(),
+                    comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
+                    rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
+                    rebalance_thr=0.05,
+                    configured_val=1  # Start with 100% ethical.
+                )
+
+            # Calculate the optimised portfolio
             weights, er, variance = calculate_portfolio(goal, idata)
             items = [PortfolioItem(portfolio=portfolio,
-                                   asset=k,
-                                   weight=v,
-                                   volatility=idata[0].loc[k, k]) for k, v in weights.items()]
+                                   asset=idata[2].loc[sym, 'id'],
+                                   weight=weight,
+                                   volatility=idata[0].loc[sym, sym]) for sym, weight in weights.items()]
             PortfolioItem.objects.bulk_create(items)
             portfolio.variance = variance
             portfolio.er = er
