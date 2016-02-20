@@ -1,8 +1,10 @@
+import datetime
 import importlib
 import json
 import logging
 import uuid
 from datetime import date
+from enum import Enum, unique
 
 from django import forms
 from django.conf import settings
@@ -15,7 +17,6 @@ from django.contrib.auth.models import (
     send_mail
 )
 from django.core import serializers
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
     MaxValueValidator, MinLengthValidator
@@ -25,6 +26,7 @@ from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
+from recurrence.fields import RecurrenceField
 from rest_framework.authtoken.models import Token
 
 from main.slug import unique_slugify
@@ -49,6 +51,31 @@ def validate_module(value):
         raise ValidationError("The supplied module: {} could not be found.".format(value))
 
 
+@unique
+class StandardAssetFeatures(Enum):
+    SRI = 0
+
+    def get_object(self):
+        names = {
+            # feature_tag: feature_name
+            self.SRI: 'Social Responsibility',
+        }
+        return AssetFeature.objects.get_or_create(name=names[self.value])[0]
+
+
+@unique
+class StandardAssetFeatureValues(Enum):
+    SRI_OTHER = 0
+
+    def get_object(self):
+        data = {
+            # feature_value_tag: (feature_tag, feature_value_name)
+            self.SRI_OTHER: (StandardAssetFeatures.SRI, 'Non-specific Social Responsibility Initiative')
+        }
+        return AssetFeatureValue.objects.get_or_create(name=data[self.value][1],
+                                                       defaults={'feature':data[self.value][0].get_object()})[0]
+
+
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
                   " following a BetaSmartz approval."
 
@@ -60,6 +87,23 @@ INVITATION_CLOSED = 4
 EMAIL_INVITATION_STATUSES = (
     (INVITATION_PENDING, 'Pending'), (INVITATION_SUBMITTED, 'Submitted'),
     (INVITATION_ACTIVE, 'Active'), (INVITATION_CLOSED, 'Closed'))
+
+EMPLOYMENT_STATUS_FULL_TIME = 0
+EMPLOYMENT_STATUS_PART_TIME = 1
+EMPLOYMENT_STATUS_SELF_EMPLOYED = 1
+EMPLOYMENT_STATUS_STUDENT = 2
+EMPLOYMENT_STATUS_RETIRED = 3
+EMPLOYMENT_STATUS_HOMEMAKER = 4
+EMPLOYMENT_STATUS_UNEMPLOYED = 5
+EMPLOYMENT_STATUSES = (
+    (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
+    (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
+    (EMPLOYMENT_STATUS_SELF_EMPLOYED, 'Self-employed'),
+    (EMPLOYMENT_STATUS_STUDENT, 'Student'),
+    (EMPLOYMENT_STATUS_RETIRED, 'Retired'),
+    (EMPLOYMENT_STATUS_HOMEMAKER, 'Homemaker'),
+    (EMPLOYMENT_STATUS_UNEMPLOYED, "Not employed"),
+)
 
 INVITATION_ADVISOR = 0
 AUTHORIZED_REPRESENTATIVE = 1
@@ -836,7 +880,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
 
         if user:
-            invitation_url += "/" + str(user.pk) + "/" + user.client.accounts_all.first().token
+            invitation_url += "/" + str(user.pk) + "/" + user.client.primary_accounts.first().token
         return invitation_url
 
     @staticmethod
@@ -1030,7 +1074,7 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    primary_owner = models.ForeignKey('Client', related_name="accounts_all")
+    primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
@@ -1217,22 +1261,9 @@ class ClientAccount(models.Model):
             self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
-EMPLOYMENT_STATUS_FULL_TIME = 0
-EMPLOYMENT_STATUS_PART_TIME = 1
-EMPLOYMENT_STATUS_SELF_EMPLOYED = 1
-EMPLOYMENT_STATUS_STUDENT = 2
-EMPLOYMENT_STATUS_RETIRED = 3
-EMPLOYMENT_STATUS_HOMEMAKER = 4
-EMPLOYMENT_STATUS_UNEMPLOYED = 5
-EMPLOYMENT_STATUSES = (
-    (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
-    (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
-    (EMPLOYMENT_STATUS_SELF_EMPLOYED, 'Self-employed'),
-    (EMPLOYMENT_STATUS_STUDENT, 'Student'),
-    (EMPLOYMENT_STATUS_RETIRED, 'Retired'),
-    (EMPLOYMENT_STATUS_HOMEMAKER, 'Homemaker'),
-    (EMPLOYMENT_STATUS_UNEMPLOYED, "Not employed"),
-)
+class JointAccount(models.Model):
+    joined = models.ForeignKey(ClientAccount, related_name='joint_holder')
+    client = models.ForeignKey('Client', related_name='joint_accounts')
 
 
 class TaxFileNumberValidator(object):
@@ -1338,6 +1369,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             for secondary_advisor in account.account_group.secondary_advisors.all(
             ):
                 self.secondary_advisors.add(secondary_advisor)
+
+    @property
+    def accounts_all(self):
+        # TODO: Make this work
+        #return self.primary_accounts.get_queryset() | self.joint_accounts.select_related('joined')
+        return self.primary_accounts
 
     @property
     def accounts(self):
@@ -1721,45 +1758,19 @@ class GoalTypes(models.Model):
     class Meta:
         db_table = 'goal_types'  # TODO: Change this to main_
 
-MONTHLY = "MONTHLY"
-TWICE_A_MONTH = "TWICE_A_MONTH"
-EVERY_OTHER_WEEK = "EVERY_OTHER_WEEK"
-WEEKLY = "WEEKLY"
 
-FREQUENCY_CHOICES = ((MONTHLY, "1/mo"), (TWICE_A_MONTH, "2/mo"),
-                     (EVERY_OTHER_WEEK, "2/mo"), (WEEKLY, 'WEEKLY'))
-
-
-class AutomaticDeposit(models.Model):
-    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
+class RecurringTransaction(models.Model):
+    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', null=True)  # TODO remove the null
+    # Note: https://www.npmjs.com/package/rrule and https://www.npmjs.com/package/rrecur for UI side of below
+    recurrence = RecurrenceField()
     enabled = models.BooleanField(default=True)
     amount = models.FloatField()
-    transaction_date_time_1 = models.DateTimeField(null=True)
-    transaction_date_time_2 = models.DateTimeField(null=True)
     last_plan_change = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def next_transaction(self):
-        return date.today()
-
-    @property
-    def is_enabled(self):
-        return "true" if self.enabled else "false"
-
-    @property
-    def get_annualized(self):
-
-        if self.frequency == MONTHLY:
-            return self.amount * 12
-        elif self.frequency == TWICE_A_MONTH:
-            return self.amount * 2 * 12
-        elif self.frequency == EVERY_OTHER_WEEK:
-            return self.amount * 2 * 12
-        elif self.frequency == WEEKLY:
-            return self.amount * 4 * 12
-
-        return 0
+        return self.recurrence.after(datetime.datetime.now(), inc=True)
 
 
 class Portfolio(models.Model):
@@ -1767,6 +1778,7 @@ class Portfolio(models.Model):
     er = models.FloatField()
     created_date = models.DateTimeField(auto_now_add=True)
     # Also has 'goal_setting' field from GoalSetting
+    # Also has 'items' field from PortfolioItem
 
 
 class PortfolioItem(models.Model):
@@ -1780,9 +1792,17 @@ class GoalSetting(models.Model):
     target = models.FloatField(default=0)
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
-    auto_deposit = models.OneToOneField(AutomaticDeposit, null=True)
     # also has 'metrics' field from GoalMetrics model.
     portfolio = models.OneToOneField(Portfolio, related_name='goal_setting')
+
+    @property
+    def goal(self):
+        if hasattr(self, 'goal_selected'):
+            return self.goal_selected
+        if hasattr(self, 'goal_approved'):
+            return self.goal_approved
+        # Must be an active goal
+        return self.goal_active
 
 
 class Goal(models.Model):
@@ -1791,7 +1811,8 @@ class Goal(models.Model):
     type = models.ForeignKey(GoalTypes)
     created = models.DateTimeField(auto_now_add=True)
     portfolio_set = models.ForeignKey(PortfolioSet,
-                                      help_text='The set of assets that may be used to create a portfolio for this goal.')
+        help_text='The set of assets that may be used to create a portfolio for this goal.')
+    # TODO: Remove null bit below once everyone is running this code.
     active_settings = models.OneToOneField(GoalSetting,
         related_name='goal_active',
         help_text='The settings were last used to do a rebalance. '
@@ -1799,6 +1820,10 @@ class Goal(models.Model):
         blank=True,
         null=True)
     approved_settings = models.OneToOneField(GoalSetting,
+            related_name='goal_approved',
+            help_text='The settings that both the client and advisor have confirmed '
+                'and will become active the next time the goal is rebalanced.',
+            null=True)
         related_name='goal_approved',
         help_text='The settings that both the client and advisor have confirmed '
             'and will become active the next time the goal is rebalanced.',
@@ -1898,17 +1923,18 @@ class Goal(models.Model):
 
     @property
     def on_track(self):
+        return False  # TODO: Make this work.
         current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
         term = self.get_term
         expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees / 1000.0 \
                           + self.portfolio_set.risk_free_rate
         expected_value = current_balance * (1 + expected_return) ** term
         if hasattr(self, "auto_deposit"):
-            ada = self.auto_deposit.get_annualized
+            #ada = self.auto_deposit.get_annualized
             for i in range(0, term):
                 expected_value += ada * (1 + expected_return) ** (term - i - 1)
         if hasattr(self, "auto_withdrawal"):
-            ada = self.auto_withdrawal.get_annualized
+            #ada = self.auto_withdrawal.get_annualized
             for i in range(0, term):
                 expected_value -= ada * (1 + expected_return) ** (term - i - 1)
         return expected_value >= self.target
@@ -2041,9 +2067,15 @@ class GoalMetric(models.Model):
         METRIC_COMPARISON_EXACTLY: 'Exactly',
         METRIC_COMPARISON_MAXIMUM: 'Maximum',
     }
-    rebalance_types = {0: 'Absolute', 1: 'Relative'}
+    REBALANCE_TYPE_ABSOLUTE = 0
+    REBALANCE_TYPE_RELATIVE = 1
+    rebalance_types = {
+        REBALANCE_TYPE_ABSOLUTE: 'Absolute',
+        REBALANCE_TYPE_RELATIVE: 'Relative',
+    }
 
-    goal = models.ForeignKey(Goal, related_name='metrics')
+    # TODO: Remove null bit. once everyone is up to this release of code.
+    setting = models.ForeignKey(GoalSetting, related_name='metrics', null=True)
     type = models.IntegerField(choices=metric_types.items())
     feature = models.ForeignKey(AssetFeatureValue, null=True)
     comparison = models.IntegerField(default=1, choices=comparisons.items())
@@ -2060,7 +2092,7 @@ class GoalMetric(models.Model):
                                                         self.comparisons[self.comparison],
                                                         self.configured_val * 100,
                                                         self.feature.name,
-                                                        self.goal)
+                                                        self.setting.goal)
         else:
             return "[{}] Risk Score {} {} for Goal: {}".format(self.id,
                                                                self.comparisons[self.comparison],
@@ -2123,38 +2155,6 @@ class TransactionMemo(models.Model):
     comment = models.TextField()
     transaction_type = models.CharField(max_length=20)
     transaction = models.ForeignKey(Transaction, related_name="memos")
-
-
-class AutomaticWithdrawal(models.Model):
-    frequency = models.CharField(max_length=50, choices=FREQUENCY_CHOICES)
-    enabled = models.BooleanField(default=True)
-    amount = models.FloatField()
-    transaction_date_time_1 = models.DateTimeField(null=True)
-    transaction_date_time_2 = models.DateTimeField(null=True)
-    last_plan_change = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def next_transaction(self):
-        return date.today()
-
-    @property
-    def is_enabled(self):
-        return "true" if self.enabled else "false"
-
-    @property
-    def get_annualized(self):
-
-        if self.frequency == MONTHLY:
-            return self.amount * 12
-        elif self.frequency == TWICE_A_MONTH:
-            return self.amount * 2 * 12
-        elif self.frequency == EVERY_OTHER_WEEK:
-            return self.amount * 2 * 12
-        elif self.frequency == WEEKLY:
-            return self.amount * 4 * 12
-
-        return 0
 
 
 class SymbolReturnHistory(models.Model):

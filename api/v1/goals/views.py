@@ -51,6 +51,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         if self.action == 'list':
             qs = qs.prefetch_related()
             qs = qs.select_related()
+            qs = qs.filter(archived=False)
 
         # show "permissioned" records only
         user = self.request.user

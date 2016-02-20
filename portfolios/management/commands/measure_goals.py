@@ -19,7 +19,7 @@ from scipy.optimize import minimize_scalar
 from main.models import Goal, Position, GoalMetric
 from portfolios.BL_model.bl_model import bl_model, markowitz_cost
 from portfolios.management.commands.portfolio_calculation import get_instruments, get_market_caps, \
-    get_views, lambda_to_risk_score, optimize_goal, Unsatisfiable
+    get_views, lambda_to_risk_score, optimize_settings, Unsatisfiable
 
 logger = logging.getLogger("measure_goals")
 # logger.setLevel(logging.DEBUG)
@@ -44,7 +44,7 @@ def get_risk_score(goal, weights, idata):
         logger.info("No holdings for goal: {} so current risk score is 0.".format(goal))
         return 0.0
 
-    current_cost = optimize_goal(goal, idata)[1]
+    current_cost = optimize_settings(goal, idata)[1]
 
     # Set up the required data
     covars, samples, instruments, masks = idata

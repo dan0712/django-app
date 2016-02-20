@@ -98,7 +98,7 @@ class PortfolioCalculationTests(TestCase):
         goal1.type = "INVESTING"
 
         # Create the goal masks and check there's only 2 instruments active,
-        goal_symbol_ixs, cvx_masks = get_goal_masks(goal1, self._masks)
+        goal_symbol_ixs, cvx_masks = get_settings_masks(goal1, self._masks)
         self.assertEqual(goal_symbol_ixs, [0, 3])
 
         # Create the core constraints and make sure it's of the correct number of variables.
@@ -120,7 +120,7 @@ class PortfolioCalculationTests(TestCase):
         goal2.type = "INVESTING_ETHICAL"
 
         # Create the goal masks and check there's only one instrument active, and it's the ethical aussie one.
-        goal_symbol_ixs, cvx_masks = get_goal_masks(goal2, self._masks)
+        goal_symbol_ixs, cvx_masks = get_settings_masks(goal2, self._masks)
         self.assertEqual(goal_symbol_ixs, [3])
 
         # Create the core constraints and make sure it's of the correct number of variables.

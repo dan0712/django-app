@@ -1,9 +1,16 @@
+import logging
+
 from rest_framework.response import Response
 from rest_framework import status, exceptions
 from rest_framework.views import exception_handler
 
 
+logger = logging.getLogger('api_handler')
+
 def api_exception_handler(exc, context):
+
+    logger.exception("Exception in API")
+
     response = exception_handler(exc, context)
 
     error = {

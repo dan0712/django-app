@@ -213,7 +213,7 @@ class ClientSignUpPrepopulated(UpdateView):
         return ctx
 
     def get_success_url(self):
-        client_account = self.object.client.accounts_all.first()
+        client_account = self.object.client.primary_accounts.first()
         client_account.confirmed = True
         client_account.save()
         messages.info(self.request, SUCCESS_MESSAGE)
