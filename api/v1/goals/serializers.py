@@ -6,10 +6,15 @@ from rest_framework import serializers
 from main.models import (
     Goal, GoalTypes, ClientAccount,
     Position,
-    GoalSetting, Portfolio, PortfolioItem, RecurringTransaction, GoalMetric, AssetFeatureValue,
-    StandardAssetFeatureValues)
-from portfolios.management.commands.portfolio_calculation import get_instruments, calculate_portfolio, Unsatisfiable
+    GoalSetting, Portfolio, PortfolioItem, 
+    RecurringTransaction, GoalMetric, AssetFeatureValue,
+    StandardAssetFeatureValues
+)
+from portfolios.management.commands.portfolio_calculation import (
+    get_instruments, calculate_portfolio, Unsatisfiable
+)
 from portfolios.management.commands.risk_profiler import recommend_risk
+
 
 __all__ = (
     'GoalSerializer',
@@ -18,15 +23,8 @@ __all__ = (
     'GoalTypeListSerializer',
 )
 
+
 logger = logging.getLogger('goal_serializer')
-
-
-class ClientAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClientAccount
-        #exclude = (
-        #    'id',
-        #)
 
 
 class PortfolioItemSerializer(serializers.ModelSerializer):
