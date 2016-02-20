@@ -188,20 +188,20 @@ def get_instruments(api=DbApi()):
     return build_instruments(api)
 
 
-def get_goal_masks(goal, masks):
+def get_settings_masks(settings, masks):
     '''
-    :param goal: The goal we want to modify the global masks for
+    :param settings: The settings we want to modify the global masks for
     :param masks: The global asset feature masks
-    :return: (goal_symbol_ixs, cvx_masks)
-        - goal_symbol_ixs: A list of ilocs into the masks index for the symbols used in this goal.
-        - cvx_masks: A dict from mask name to list of indicies in the goal_symbols list that match this mask name.
+    :return: (settings_symbol_ixs, cvx_masks)
+        - settings_symbol_ixs: A list of ilocs into the masks index for the symbols used in this setting.
+        - cvx_masks: A dict from mask name to list of indicies in the setting_symbols list that match this mask name.
     '''
     removals = np.array([False] * len(masks))
 
-    # logger.debug("Creating Goal masks from global masks: {}".format(masks))
+    # logger.debug("Creating Settings masks from global masks: {}".format(masks))
     fids = []
 
-    for metric in goal.metrics.all():
+    for metric in settings.metrics.all():
         if metric.type == 0:
             if math.isclose(metric.configured_val, 0.0):
                 # Saying a minimum percentage of 0% is superfluous.
@@ -215,19 +215,19 @@ def get_goal_masks(goal, masks):
                 fids.append(metric.feature.id)
 
     # Do the removals
-    goal_mask = np.logical_not(removals)
-    logger.debug("Goal mask for goal: {} after removals: {} ({} items)".format(goal, goal_mask, len(goal_mask.nonzero())))
+    settings_mask = np.logical_not(removals)
+    logger.debug("Mask for settings: {} after removals: {} ({} items)".format(settings, settings_mask, len(settings_mask.nonzero())))
 
     # Only use the instruments from the specified portfolio set.
-    goal_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(goal.portfolio_set.id)]
+    settings_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(settings.goal.portfolio_set.id)]
 
-    logger.debug("Usable indicies in our portfolio: {}".format(goal_mask.nonzero()[0].tolist()))
+    logger.debug("Usable indicies in our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
-    cvx_masks = {fid: masks.loc[goal_mask, fid].nonzero()[0].tolist() for fid in fids}
-    logger.debug("CVX masks for goal: {}: {}".format(goal, cvx_masks))
+    cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}
+    logger.debug("CVX masks for settings: {}: {}".format(settings, cvx_masks))
 
-    return goal_mask.nonzero()[0].tolist(), cvx_masks
+    return settings_mask.nonzero()[0].tolist(), cvx_masks
 
 
 def get_core_constraints(nvars):
@@ -235,7 +235,7 @@ def get_core_constraints(nvars):
     Creates the core cvxpy constraints and optimisation variables for any portfolio optimisation calculation.
     :param nvars: The number of optimisation variables to create.
     :return: (xs, constraints)
-        - xs: The list of cvxpy variables that we will optimise for. Length is count of trues in goal_mask
+        - xs: The list of cvxpy variables that we will optimise for.
         - constraints: The core constraints suitable for cvxpy
     """
     # Create the list of variables that we will optimise for.
@@ -250,23 +250,23 @@ def get_core_constraints(nvars):
     return xs, constraints
 
 
-def get_metric_constraints(goal, cvx_masks, xs, overrides=None):
+def get_metric_constraints(settings, cvx_masks, xs, overrides=None):
     """
     Adds the constraints to be used by cvxpy coming from the metrics for this goal.
-    :param goal: Details of the goal you want the constraints for
-    :param cvx_masks: A dict of all the goal-specific cvxpy iloc lists against the goal_symbols for each mask name.
+    :param settings: Details of the settings you want the constraints for
+    :param cvx_masks: A dict of all the settings-specific cvxpy iloc lists against the settings_symbols for each mask name.
     :param xs: The list of cvxpy variables we are optimising
     :return: (lambda, constraints)
     """
     constraints = []
     risk_score = None
-    for metric in goal.metrics.all():
+    for metric in settings.metrics.all():
         if metric.type == 1:
             risk_score = metric.configured_val
         elif metric.type == 0:  # Portfolio Mix
             if overrides:
                 val = overrides.get(metric.feature.id, metric.configured_val)
-            # Non-inclusions are taken care of in the goal mask, so ignore those constraints.
+            # Non-inclusions are taken care of in the settings mask, so ignore those constraints.
             if math.isclose(val, 0.0):
                 continue
             # Saying a maximum percentage of 100% is superfluous, so ignore those constraints.
@@ -276,23 +276,23 @@ def get_metric_constraints(goal, cvx_masks, xs, overrides=None):
             feature_assets = cvx_masks[metric.feature.id]
             # If we have no possible symbols, and we have a metric with a non-zero allocation, fail.
             if len(feature_assets) == 0 and metric.comparison != 2:
-                raise Unsatisfiable("Goal metric: {} is not satisfiable.".format(metric))
+                raise Unsatisfiable("Settings metric: {} is not satisfiable.".format(metric))
             if metric.comparison == 0:
-                logger.debug("Adding constraint that goal symbols: {} must be minimum {}".format(feature_assets, val))
+                logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) >= val)
             elif metric.comparison == 1:
-                logger.debug("Adding constraint that goal symbols: {} must be exactly {}".format(feature_assets, val))
+                logger.debug("Adding constraint that symbols: {} must be exactly {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) == val)
             elif metric.comparison == 2:
-                logger.debug("Adding constraint that goal symbols: {} must be maximum {}".format(feature_assets, val))
+                logger.debug("Adding constraint that symbols: {} must be maximum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) <= val)
             else:
-                raise Exception("Unknown metric comparison value: {} found for goal: {}".format(metric.comparison, goal))
+                raise Exception("Unknown metric comparison value: {} found for settings: {}".format(metric.comparison, settings))
         else:
-            raise Exception("Unknown metric type: {} found for goal: {}".format(metric.type, goal))
+            raise Exception("Unknown metric type: {} found for settings: {}".format(metric.type, settings))
 
     if risk_score is None:
-        raise Exception("Risk score metric could not be found for goal: {}".format(goal))
+        raise Exception("Risk score metric could not be found for settings: {}".format(settings))
 
     return risk_score_to_lambda(risk_score), constraints
 
@@ -320,7 +320,7 @@ def lambda_to_risk_score(lam):
 def get_market_caps(instruments):
     """
     Get a set of initial weights based on relative market capitalisation
-    :param instruments: The instruments table for this goal
+    :param instruments: The instruments table
     :return: A pandas series indexed as the instruments table containing the initial unoptimised instrument weights.
     """
     interested = instruments['mkt_cap']
@@ -423,81 +423,81 @@ class Unsatisfiable(Exception):
     pass
 
 
-def optimize_goal(goal, idata):
+def optimize_settings(settings, idata):
     """
-    Calculates the goal weights
-    :param goal:
+    Calculates the portfolio weights
+    :param settings:
     :param idata:
     :param single:
     :return:
     """
     # Optimise for the instrument weights given the constraints
-    xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = calc_opt_inputs(goal, idata)
-    logger.debug("Optimising goal using lambda: {}, mu: {}\ncovars: {}\nsigma: {}".format(lam, mu, lcovars, sigma))
+    xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = calc_opt_inputs(settings, idata)
+    logger.debug("Optimising settings using lambda: {}, mu: {}\ncovars: {}\nsigma: {}".format(lam, mu, lcovars, sigma))
     weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, constraints)
 
     if not weights.any():
-        raise Unsatisfiable("Could not find an appropriate allocation for Goal: {}".format(goal))
+        raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(settings))
 
-    return weights, cost, xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars
+    return weights, cost, xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars
 
 
-def calc_opt_inputs(goal, idata, metric_overrides=None):
+def calc_opt_inputs(settings, idata, metric_overrides=None):
     # Get the global instrument data
     covars, samples, instruments, masks = idata
 
-    # Convert the goal into a constraint based on a mask for the instruments appropriate for the goal given
-    goal_symbol_ixs, cvx_masks = get_goal_masks(goal, masks)
-    if len(goal_symbol_ixs) == 0:
-        raise Unsatisfiable("No assets available for goal: {} given it's constraints.".format(goal))
-    xs, constraints = get_core_constraints(len(goal_symbol_ixs))
-    lam, mconstraints = get_metric_constraints(goal, cvx_masks, xs, metric_overrides)
+    # Convert the settings into a constraint based on a mask for the instruments appropriate for the settings given
+    settings_symbol_ixs, cvx_masks = get_settings_masks(settings, masks)
+    if len(settings_symbol_ixs) == 0:
+        raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(settings))
+    xs, constraints = get_core_constraints(len(settings_symbol_ixs))
+    lam, mconstraints = get_metric_constraints(settings, cvx_masks, xs, metric_overrides)
     constraints += mconstraints
-    logger.debug("Got constraints for goal: {}. Active symbols:{}".format(goal, goal_symbol_ixs))
+    logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
-    goal_instruments = instruments.iloc[goal_symbol_ixs]
+    settings_instruments = instruments.iloc[settings_symbol_ixs]
 
     # Get the initial weights for the optimisation using only the target instruments
-    market_caps = get_market_caps(goal_instruments)
+    market_caps = get_market_caps(settings_instruments)
 
-    # Get the views appropriate for the goal
-    views, vers = get_views(goal.portfolio_set, goal_instruments)
+    # Get the views appropriate for the settings
+    views, vers = get_views(settings.goal.portfolio_set, settings_instruments)
 
     # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
-    lcovars = covars.iloc[goal_symbol_ixs, goal_symbol_ixs]
+    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
     mu, sigma = bl_model(lcovars.values,
                          market_caps.values,
                          views,
                          vers,
                          samples)
 
-    return xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars
+    return xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars
 
 
-def calculate_portfolio(goal, idata):
+def calculate_portfolio(settings, idata):
     """
-    Calculates the instrument weights to use for a given goal.
-    :param goal: The goal to calculate the portflio for.
+    Calculates the instrument weights to use for a given goal settings.
+    :param settings: The settings to calculate the portfolio for.
     :return: (weights, er, variance) All values will be None if no suitable allocation can be found.
              - weights: A Pandas series of weights for each instrument.
              - er: Expected return of portfolio
              - variance: Total variance of portfolio
     """
-    logger.debug("Calculating portfolio for alloc: {}".format(goal.allocation))
+    logger.debug("Calculating portfolio for settings: {}".format(settings))
 
-    odata = optimize_goal(goal, idata)
-    weights, cost, xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = odata
+    odata = optimize_settings(settings, idata)
+    weights, cost, xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = odata
 
     # Find the optimal orderable weights.
-    weights, cost = make_orderable(weights, cost, xs, sigma, mu, lam, constraints, goal, goal_instruments['price'])
+    weights, cost = make_orderable(weights, cost, xs, sigma, mu, lam, constraints, settings, settings_instruments['price'])
 
-    return get_portfolio_stats(goal_instruments, goal_symbol_ixs, instruments, lcovars, weights)
+    return get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, lcovars, weights)
 
 
-def get_portfolio_stats(goal_instruments, goal_symbol_ixs, instruments, lcovars, weights):
+def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, lcovars, weights):
     # Get the totals per asset class, portfolio expected return and portfolio variance
     instruments['_weight_'] = 0.0
-    instruments.iloc[goal_symbol_ixs, instruments.columns.get_loc('_weight_')] = weights
+    instruments.iloc[settings_symbol_ixs, instruments.columns.get_loc('_weight_')] = weights
 
     # LOGIC TO RETURN GROUPED BY ASSET CLASS
     # ret_weights = instruments.groupby('ac')['_weight_'].sum()
@@ -509,16 +509,16 @@ def get_portfolio_stats(goal_instruments, goal_symbol_ixs, instruments, lcovars,
     ret_weights = ret_weights[ret_weights > 0.01]
 
     # Generate portfolio variance and expected return
-    er = weights.dot(goal_instruments['exp_ret'])
+    er = weights.dot(settings_instruments['exp_ret'])
     logger.debug("Generated asset weights: {}".format(weights))
-    logger.debug("Generated portfolio expected return of {} using asset returns: {}".format(er, goal_instruments['exp_ret']))
+    logger.debug("Generated portfolio expected return of {} using asset returns: {}".format(er, settings_instruments['exp_ret']))
     variance = weights.dot(lcovars).dot(weights.T)
     logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, lcovars))
 
     return ret_weights, er, variance
 
 
-def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal, prices):
+def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, settings, prices):
     """
     Turn the raw weights into orderable units
     There are three costs here:
@@ -534,13 +534,14 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal
     :param mu: A 1xn numpy array of the expected returns per asset
     :param lam: The Markowitz risk appetite constant
     :param constraints: The existing constraints we must adhere to
-    :param goal: The goal we are making this portfolio orderable for.
+    :param settings: The settings we are making this portfolio orderable for.
     :param prices: The prices of each asset.
     :return: (weights, cost)
         - weights are the new symbol weights that should align to orderable units given the passed prices.
           This will be an empty array if no orderable portfolio could be found.
         - cost is the new Markowitz cost
     """
+    goal = settings.goal
     budget = goal.total_balance + goal.cash_balance + goal.pending_deposits + goal.pending_withdrawals
 
     def aligned(i):
@@ -592,8 +593,8 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal
         weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, constraints)
         # If we don't get an orderable amount here, there's nothing left to do.
         if not weights.any():
-            emsg = "Could not find orderable portfolio for goal: {} once I removed assets below ordering threshold"
-            raise Unsatisfiable(emsg.format(goal))
+            emsg = "Could not find orderable portfolio for settings: {} once I removed assets below ordering threshold"
+            raise Unsatisfiable(emsg.format(settings))
 
     # Create a collection of all instruments that are to be included, but the weights are currently not on an orderable
     # quantity.
@@ -625,11 +626,11 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, goal
         wts = mcw
 
     if not wts.any():
-        raise Unsatisfiable("Could not find an appropriate allocation given ordering constraints for goal: {} ".format(goal))
+        raise Unsatisfiable("Could not find an appropriate allocation given ordering constraints for settings: {} ".format(settings))
 
-    logger.info('Ordering cost for goal {}: {}, pre-ordering val: {}'.format(goal.id,
-                                                                             min_cost-original_cost,
-                                                                             original_cost))
+    logger.info('Ordering cost for settings {}: {}, pre-ordering val: {}'.format(settings.id,
+                                                                                 min_cost - original_cost,
+                                                                                 original_cost))
 
     return wts[0], min_cost
 

@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 from rest_framework import serializers
 
@@ -6,7 +8,7 @@ from main.models import (
     Position,
     GoalSetting, Portfolio, PortfolioItem, RecurringTransaction, GoalMetric, AssetFeatureValue,
     StandardAssetFeatureValues)
-from portfolios.management.commands.portfolio_calculation import get_instruments, calculate_portfolio
+from portfolios.management.commands.portfolio_calculation import get_instruments, calculate_portfolio, Unsatisfiable
 from portfolios.management.commands.risk_profiler import recommend_risk
 
 __all__ = (
@@ -16,8 +18,10 @@ __all__ = (
     'GoalTypeListSerializer',
 )
 
+logger = logging.getLogger('goal_serializer')
 
-class GoalClientAccountSerializer(serializers.ModelSerializer):
+
+class ClientAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientAccount
         #exclude = (
@@ -54,6 +58,7 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
             'amount',
         )
 
+
 class GoalSettingSerializer(serializers.ModelSerializer):
     portfolio = PortfolioSerializer()
     recurring_transactions = RecurringTransactionSerializer()
@@ -64,11 +69,14 @@ class GoalSettingSerializer(serializers.ModelSerializer):
             'goal'
         )
 
-class GoalSerializer(serializers.ModelSerializer):
-    account = GoalClientAccountSerializer()
 
+class GoalSerializer(serializers.ModelSerializer):
+    # TODO: Make created read only.
     class Meta:
         model = Goal
+        exclude = (
+            #'account'
+        )
 
 
 class GoalListSerializer(serializers.ModelSerializer):
@@ -78,6 +86,7 @@ class GoalListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         exclude = (
+            #'account',
             'created',
         )
 
@@ -138,7 +147,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                 variance=0,
                 er=0,
             )
-            setting = GoalSetting.objects.create(
+            settings = GoalSetting.objects.create(
                 target=validated_data['target'],
                 completion=validated_data['completion'],
                 hedge_fx=False,
@@ -149,12 +158,12 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                 name=validated_data['name'],
                 type=validated_data['type'],
                 portfolio_set=account.default_portfolio_set,
-                selected_settings=setting,
+                selected_settings=settings,
             )
 
             # Based on the risk profile, and whether an ethical profile was specified on creation, set up Metrics.
-            recommended_risk = recommend_risk(setting)
-            GoalMetric.objects.create(setting=setting,
+            recommended_risk = recommend_risk(settings)
+            GoalMetric.objects.create(setting=settings,
                                       type=GoalMetric.METRIC_TYPE_RISK_SCORE,
                                       comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
                                       rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
@@ -162,7 +171,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                                       configured_val=recommended_risk)
             if validated_data['ethical']:
                 GoalMetric.objects.create(
-                    setting=setting,
+                    setting=settings,
                     type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
                     feature=StandardAssetFeatureValues.SRI_OTHER.get_object(),
                     comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
@@ -171,16 +180,23 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                     configured_val=1  # Start with 100% ethical.
                 )
 
+            # TODO: Add the initial deposit logic.
+
             # Calculate the optimised portfolio
-            weights, er, variance = calculate_portfolio(goal, idata)
-            items = [PortfolioItem(portfolio=portfolio,
-                                   asset=idata[2].loc[sym, 'id'],
-                                   weight=weight,
-                                   volatility=idata[0].loc[sym, sym]) for sym, weight in weights.items()]
-            PortfolioItem.objects.bulk_create(items)
-            portfolio.variance = variance
-            portfolio.er = er
-            portfolio.save()
+            try:
+                weights, er, variance = calculate_portfolio(settings, idata)
+                items = [PortfolioItem(portfolio=portfolio,
+                                       asset=idata[2].loc[sym, 'id'],
+                                       weight=weight,
+                                       volatility=idata[0].loc[sym, sym]) for sym, weight in weights.items()]
+                PortfolioItem.objects.bulk_create(items)
+                portfolio.variance = variance
+                portfolio.er = er
+                portfolio.save()
+            except Unsatisfiable:
+                # TODO: Return a message to the user that because they didn't make an initial deposit, we couldn't
+                # come up with an appropriate portfolio, and they need to make a deposit to get started.
+                logger.exception("No suitable portfolio could be found. Leaving empty.")
 
         return goal
 

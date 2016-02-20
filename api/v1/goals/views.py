@@ -51,6 +51,9 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         # show "permissioned" records only
         user = self.request.user
 
+        # TODO: I only want this to filter for the "list" view, not for the individual as well.
+        qs = qs.filter(archived=False)
+
         if user.is_advisor:
             qs = qs.filter_by_advisor(user.advisor)
 

@@ -15,18 +15,18 @@ def recommend_risk(setting):
     """
     # If the account is a Joint or Personal, use age of youngest owner, otherwise, use None
     account = setting.goal.account
-    today = datetime.datetime.today()
+    today = datetime.datetime.today().date()
     if account.account_type in (ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF, ACCOUNT_TYPE_JOINT):
         primary_owner = account.primary_owner
         age = years_between(primary_owner.date_of_birth, today)
         income = primary_owner.income
-        worth = primary_owner.worth
+        worth = primary_owner.net_worth
         if account.account_type == ACCOUNT_TYPE_JOINT:
             joint_holder = account.joint_holder.client
             age2 = years_between(joint_holder.date_of_birth, today)
             age = min(age, age2)
             income += joint_holder.income
-            worth += joint_holder.worth
+            worth += joint_holder.net_worth
 
         # TODO: Maybe we want the "best" status, or maybe the status of the youngest?, Or maybe an average.
         status = primary_owner.employment_status

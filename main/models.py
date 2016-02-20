@@ -1372,7 +1372,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def accounts_all(self):
-        return self.primary_accounts | self.joint_accounts.select_related('joined')
+        # TODO: Make this work
+        #return self.primary_accounts.get_queryset() | self.joint_accounts.select_related('joined')
+        return self.primary_accounts
 
     @property
     def accounts(self):
