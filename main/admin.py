@@ -6,9 +6,13 @@ from django.contrib.auth.hashers import make_password
 from django.shortcuts import render_to_response, HttpResponseRedirect
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from main.models import Firm, Advisor, User, Performer, \
-    AuthorisedRepresentative, FirmData, Client, ClientAccount, Goal, Platform, Position, Transaction, \
-    TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend, ProxyAssetClass, ProxyTicker, PortfolioSet, View
+from main.models import (
+    Firm, Advisor, User, Performer,
+    AuthorisedRepresentative, FirmData, Client, ClientAccount,
+    Goal, GoalMetric, GoalSetting, Platform, Position, Transaction,
+    TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
+    ProxyAssetClass, ProxyTicker, PortfolioSet, View
+)
 from portfolios.management.commands.get_historical_returns import \
     get_historical_returns as internal_get_historical_returns
 from suit.admin import SortableModelAdmin
@@ -231,8 +235,13 @@ class ClientAccountAdmin(admin.ModelAdmin):
     pass
 
 
+class GoalMetricInline(admin.StackedInline):
+    model = GoalMetric
+
+
 class GoalAdmin(admin.ModelAdmin):
     list_display = ('account', 'name', 'type')
+    inlines = (GoalMetricInline,)
     actions = (rebalance,)
     pass
 

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.models import (
-    Goal, GoalSetting, GoalTypes,
+    Goal, GoalSetting, GoalMetric, GoalTypes,
     ClientAccount, Position,
 )
 
@@ -29,8 +29,17 @@ class GoalGoalSettingSerializer(serializers.ModelSerializer):
         )
 
 
+class GoalGoalMetricSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoalMetric
+        exclude = (
+            'goal',
+        )
+
+
 class GoalSerializer(serializers.ModelSerializer):
     account = GoalClientAccountSerializer()
+    metrics = GoalGoalMetricSerializer(many=True)
     settings = GoalGoalSettingSerializer(source='active_settings')
     #approved_settings = GoalGoalSettingSerializer()
     #selected_settings = GoalGoalSettingSerializer()

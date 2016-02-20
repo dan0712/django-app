@@ -17,7 +17,9 @@ from . import serializers
 class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     queryset = Goal.objects.all() \
         .select_related('account') \
-        .select_related('active_settings') # , 'approved_settings', 'selected_settings') \
+        .select_related('active_settings') \
+        .prefetch_related('metrics')  
+        # , 'approved_settings', 'selected_settings') \
         #.defer('account__data') \
     serializer_class = serializers.GoalSerializer
     serializer_response_class = serializers.GoalSerializer
@@ -47,6 +49,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         # hide "slow" fields for list view
         if self.action == 'list':
+            qs = qs.prefetch_related()
             qs = qs.select_related()
 
         # show "permissioned" records only

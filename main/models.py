@@ -1793,20 +1793,23 @@ class Goal(models.Model):
     portfolio_set = models.ForeignKey(PortfolioSet,
                                       help_text='The set of assets that may be used to create a portfolio for this goal.')
     active_settings = models.OneToOneField(GoalSetting,
-                                           related_name='goal_active',
-                                           help_text='The settings were last used to do a rebalance. '
-                                                     'These settings are responsible for our current market positions.',
-                                           null=True)
+        related_name='goal_active',
+        help_text='The settings were last used to do a rebalance. '
+            'These settings are responsible for our current market positions.',
+        blank=True,
+        null=True)
     approved_settings = models.OneToOneField(GoalSetting,
-                                             related_name='goal_approved',
-                                             help_text='The settings that both the client and advisor have confirmed '
-                                                       'and will become active the next time the goal is rebalanced.',
-                                             null=True)
+        related_name='goal_approved',
+        help_text='The settings that both the client and advisor have confirmed '
+            'and will become active the next time the goal is rebalanced.',
+        blank=True,
+        null=True)
     selected_settings = models.OneToOneField(GoalSetting,
-                                             related_name='goal_selected',
-                                             help_text='The settings that the client has confirmed, '
-                                                       'but are not yet approved by the advisor.',
-                                             null=True)
+        related_name='goal_selected',
+        help_text='The settings that the client has confirmed, '
+            'but are not yet approved by the advisor.',
+        blank=True,
+        null=True)
     archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
 
     objects = GoalQuerySet.as_manager()
