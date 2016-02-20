@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from main.models import User, ClientAccount, Goal
 
 from ..clients import serializers as clients_serializers
-from ..goals import serializers as goal_serializers
+from ..goals import serializers as goals_serializers
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor,
@@ -102,7 +102,7 @@ class MeGoalsView(ApiViewMixin, views.APIView):
     Experimental
     (not sure it will be needed in the future)
     """
-    serializer_class = goal_serializers.GoalListSerializer
+    serializer_class = goals_serializers.GoalListSerializer
     permission_classes = (IsClient,)
 
     def get(self, request):

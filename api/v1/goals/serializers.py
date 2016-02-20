@@ -4,10 +4,10 @@ from django.db import transaction
 from rest_framework import serializers
 
 from main.models import (
-    Goal, GoalTypes, ClientAccount,
-    Position,
-    GoalSetting, Portfolio, PortfolioItem, 
-    RecurringTransaction, GoalMetric, AssetFeatureValue,
+    ClientAccount,
+    Goal, GoalSetting, GoalMetric, GoalTypes,
+    Position, Portfolio, PortfolioItem, 
+    RecurringTransaction, AssetFeatureValue,
     StandardAssetFeatureValues
 )
 from portfolios.management.commands.portfolio_calculation import (
@@ -68,12 +68,39 @@ class GoalSettingSerializer(serializers.ModelSerializer):
         )
 
 
+class GoalGoalSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoalSetting
+        exclude = (
+            #'created_at',
+        )
+
+
+class GoalGoalMetricSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoalMetric
+        exclude = (
+            'goal',
+        )
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    account = GoalClientAccountSerializer()
+    metrics = GoalGoalMetricSerializer(many=True)
+    settings = GoalGoalSettingSerializer(source='active_settings')
+    #approved_settings = GoalGoalSettingSerializer()
+    #selected_settings = GoalGoalSettingSerializer()
+
+
 class GoalSerializer(serializers.ModelSerializer):
     # TODO: Make created read only.
     class Meta:
         model = Goal
         exclude = (
             #'account'
+            'created',
+            'active_settings',
+            'approved_settings', 'selected_settings',
         )
 
 
@@ -81,11 +108,15 @@ class GoalListSerializer(serializers.ModelSerializer):
     """
     Light version of GoalSerializer
     """
+    settings = GoalGoalSettingSerializer(source='active_settings')
+
     class Meta:
         model = Goal
         exclude = (
             #'account',
             'created',
+            'active_settings',
+            'approved_settings', 'selected_settings',
         )
 
 
@@ -99,6 +130,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         model = Goal
         fields = (
             'account',
+            'portfolio_set',
             'name',
             'type',
             'target',

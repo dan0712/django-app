@@ -56,6 +56,7 @@ class UserUpdateSerializer(UserUpdateSerializer):
         )
 
 
+# TODO: move to /accounts package
 class ClientAccountListSerializer(serializers.ModelSerializer):
     """
     Light version of AccountSerializer
