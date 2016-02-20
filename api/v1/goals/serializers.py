@@ -84,7 +84,7 @@ class GoalGoalSettingSerializer(serializers.ModelSerializer):
         )
 
 
-class GoalGoalMetricSerializer(serializers.ModelSerializer):
+class GoalSettingGoalMetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalMetric
         exclude = (
@@ -94,7 +94,7 @@ class GoalGoalMetricSerializer(serializers.ModelSerializer):
 
 class GoalSerializer(serializers.ModelSerializer):
     account = GoalClientAccountSerializer()
-    metrics = GoalGoalMetricSerializer(many=True)
+    metrics = GoalSettingGoalMetricSerializer(source='active_settings__metrics', many=True)
     settings = GoalGoalSettingSerializer(source='active_settings')
     #approved_settings = GoalGoalSettingSerializer()
     #selected_settings = GoalGoalSettingSerializer()
