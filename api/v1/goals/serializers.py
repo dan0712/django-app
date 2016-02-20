@@ -68,6 +68,14 @@ class GoalSettingSerializer(serializers.ModelSerializer):
         )
 
 
+class GoalClientAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientAccount
+        exclude = (
+            #'created_at',
+        )
+
+
 class GoalGoalSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalSetting
