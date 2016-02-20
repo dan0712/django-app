@@ -1820,10 +1820,6 @@ class Goal(models.Model):
         blank=True,
         null=True)
     approved_settings = models.OneToOneField(GoalSetting,
-            related_name='goal_approved',
-            help_text='The settings that both the client and advisor have confirmed '
-                'and will become active the next time the goal is rebalanced.',
-            null=True)
         related_name='goal_approved',
         help_text='The settings that both the client and advisor have confirmed '
             'and will become active the next time the goal is rebalanced.',
