@@ -6,8 +6,6 @@ from rest_framework.views import exception_handler
 def api_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
-    return response;
-
     error = {
         'reason': exc.__class__.__name__,
     }
@@ -17,7 +15,7 @@ def api_exception_handler(exc, context):
 
     else:
         error['code'] = response.status_code
-        detail = getattr(exc, 'detail')
+        detail = getattr(exc, 'detail', {})
 
         if isinstance(exc, exceptions.ValidationError):
             non_field_errors = detail.pop('non_field_errors', [])

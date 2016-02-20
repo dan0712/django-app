@@ -64,6 +64,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         model = Goal
         fields = (
             'account',
+            'portfolio_set',
             'name',
             'type',
         ) # list fields explicitly
