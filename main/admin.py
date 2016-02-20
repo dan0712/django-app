@@ -239,11 +239,13 @@ class GoalMetricInline(admin.StackedInline):
     model = GoalMetric
 
 
+class GoalSetting(admin.ModelAdmin):
+    inlines = (GoalMetricInline,)
+
+
 class GoalAdmin(admin.ModelAdmin):
     list_display = ('account', 'name', 'type')
-    inlines = (GoalMetricInline,)
     actions = (rebalance,)
-    pass
 
 
 class PlatformAdminAdmin(admin.ModelAdmin):
