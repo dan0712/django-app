@@ -3,13 +3,14 @@ import logging
 from django.db import transaction
 from rest_framework import serializers
 
+from rest_framework.fields import FloatField, IntegerField
+
 from main.models import (
-    ClientAccount,
     Goal, GoalSetting, GoalMetric, GoalTypes,
     Position, Portfolio, PortfolioItem, 
-    RecurringTransaction, AssetFeatureValue,
-    StandardAssetFeatureValues
-)
+    RecurringTransaction,
+    StandardAssetFeatureValues,
+    Transaction)
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable
 )
@@ -49,6 +50,18 @@ class PortfolioSerializer(serializers.ModelSerializer):
         )
 
 
+class StatelessPortfolioItemSerializer(serializers.Serializer):
+    asset = IntegerField()
+    weight = FloatField()
+    volatility = FloatField()
+
+
+class StatelessPortfolioSerializer(serializers.Serializer):
+    variance = FloatField()
+    er = FloatField()
+    items = StatelessPortfolioItemSerializer(many=True)
+
+
 class RecurringTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecurringTransaction
@@ -56,6 +69,19 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
             'recurrence',
             'enabled',
             'amount',
+        )
+
+
+class TransactionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = (
+            'amount',
+            'from_account',
+            'to_account',
+        )
+        required_fields = (
+            'amount'
         )
 
 
@@ -74,9 +100,9 @@ class GoalMetricCreateSerializer(serializers.ModelSerializer):
 
 
 class GoalSettingSerializer(serializers.ModelSerializer):
-    portfolio = PortfolioSerializer()
     metrics = GoalMetricSerializer(many=True)
     recurring_transactions = RecurringTransactionSerializer(many=True)
+    portfolio = PortfolioSerializer()
 
     class Meta:
         model = GoalSetting
@@ -85,7 +111,63 @@ class GoalSettingSerializer(serializers.ModelSerializer):
         )
 
 
+class StatelessGoalSettingSerializer(serializers.ModelSerializer):
+    """
+    Creates a goal setting that has no database representation, but is linked to the real goal.
+    We use the ModelSerializer to do all our field representation for us.
+    """
+    metrics = GoalMetricSerializer(many=True)
+    recurring_transactions = RecurringTransactionSerializer(many=True)
+
+    class Meta:
+        model = GoalSetting
+        fields = (
+            'target',
+            'completion',
+            'hedge_fx',
+            'metrics',
+            'recurring_transactions',
+        )
+
+    def save(self):
+        raise NotImplementedError('Save is not a valid operation for a stateless serializer')
+
+    def update(self):
+        raise NotImplementedError('update is not a valid operation for a stateless serializer')
+
+    def create(self):
+        raise NotImplementedError('create is not a valid operation for a stateless serializer')
+
+    @staticmethod
+    def create_stateless(validated_data, goal):
+        metrics_data = validated_data.pop('metrics')
+        tx_data = validated_data.pop('recurring_transactions')
+        port = Portfolio(variance=0, er=0)
+        setting = GoalSetting(portfolio=port, **validated_data)
+        metrics = [GoalMetric(setting=setting, **i_data) for i_data in metrics_data]
+        goalt = goal
+
+        # Currently unused
+        #RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+
+        class DummySettings(object):
+            class PseudoManager:
+                @staticmethod
+                def all(): return metrics
+            id = None
+            goal = goalt
+            metrics = PseudoManager
+            target = setting.target
+            completion = setting.completion
+            hedge_fx = setting.hedge_fx
+
+        return DummySettings()
+
+
 class GoalSettingCreateSerializer(serializers.ModelSerializer):
+    """
+    Puts the passed settings into the 'selected_settings' field on the goal indicated.
+    """
     metrics = GoalMetricSerializer(many=True)
     recurring_transactions = RecurringTransactionSerializer(many=True)
     portfolio = PortfolioSerializer()
@@ -98,7 +180,7 @@ class GoalSettingCreateSerializer(serializers.ModelSerializer):
             'hedge_fx',
             'metrics',
             'recurring_transactions',
-            'portfolio'
+            'portfolio',
         )
 
     def create(self, validated_data):
@@ -113,21 +195,18 @@ class GoalSettingCreateSerializer(serializers.ModelSerializer):
             setting = GoalSetting.objects.create(portfolio=port, **validated_data)
             RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
             GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
-            old_setting = goal.selected_settings
-            goal.selected_settings = setting
-            goal.save()
-            old_setting.delete()
+            goal.set_selected(setting)
 
         return setting
 
 
 class GoalSerializer(serializers.ModelSerializer):
-    # TODO: Make created read only.
     class Meta:
         model = Goal
         exclude = (
             'active_settings',
         )
+        read_only_fields = ('created',)
 
 
 class GoalListSerializer(serializers.ModelSerializer):
@@ -159,7 +238,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
             'completion',
             'initial_deposit',
             'ethical',
-        ) # list fields explicitly
+        )  # list fields explicitly
 
     def __init__(self, *args, **kwargs):
         super(GoalCreateSerializer, self).__init__(*args, **kwargs)
@@ -258,7 +337,8 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
         model = Goal
         fields = (
             'name',
-        ) # list fields explicitly
+            'type',
+        )  # list fields explicitly
 
     def __init__(self, *args, **kwargs):
         super(GoalUpdateSerializer, self).__init__(*args, **kwargs)

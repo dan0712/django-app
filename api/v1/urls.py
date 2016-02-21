@@ -4,7 +4,6 @@ from rest_framework import routers
 from .user import views as user_views
 from .settings import views as settings_views
 from .goals import views as goals_views
-# obsoleted # from .transactions import views as transactions_views
 
 
 router = routers.SimpleRouter(trailing_slash=False)
@@ -26,7 +25,6 @@ urlpatterns = patterns('',
     # reserved # url(r'^register/reset/?$', user_views.ResetView.as_view(), name='user-reset'),
     # reserved # url(r'^register/send-reset-email/?$', user_views.SendResetEmailView.as_view(), name='user-send-reset-email'),
 
-    # obsoleted # url(r'^transactions/deposit/?$', transactions_views.APITransactionsDeposit.as_view()),
 )
 
 urlpatterns += router.urls

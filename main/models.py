@@ -5,6 +5,7 @@ import logging
 import uuid
 from datetime import date
 from enum import Enum, unique
+from itertools import chain
 
 from django import forms
 from django.conf import settings
@@ -21,7 +22,7 @@ from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
     MaxValueValidator, MinLengthValidator
 )
-from django.db import models
+from django.db import models, transaction
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -1136,6 +1137,10 @@ class ClientAccount(models.Model):
         self.primary_owner.rebuild_secondary_advisors()
 
     @property
+    def advisors(self):
+        return chain([self.primary_owner.advisor, self.account_group.advisor], self.account_group.secondary_advisors.all())
+
+    @property
     def target(self):
         total_target = 0
         for goal in self.goals.all():
@@ -1847,6 +1852,31 @@ class Goal(models.Model):
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
+    @transaction.atomic
+    def set_selected(self, setting):
+        """
+        Sets the passed in setting object as the selected_setting.
+        :param setting:
+        :return:
+        """
+        old_setting = self.selected_settings
+        if setting.id == old_setting.id:
+            return
+        self.selected_settings = setting
+        self.save()
+        if old_setting.id not in (self.active_settings.id, self.approved_settings.id):
+            old_setting.delete()
+
+    @transaction.atomic
+    def approve_selected(self):
+        old_setting = self.approved_settings
+        if old_setting is not None and self.selected_settings.id == old_setting.id:
+            return
+        self.approved_settings = self.selected_settings
+        self.save()
+        if old_setting is not None and old_setting.id != self.active_settings.id:
+            old_setting.delete()
+
     @property
     def available_balance(self):
         return self.total_balance + self.pending_withdrawals
@@ -2134,8 +2164,6 @@ class Transaction(models.Model):
                                    null=True,
                                    blank=True)
     amount = models.FloatField(default=0)
-    satelliteAlloc = models.FloatField(default=0)
-
     status = models.CharField(max_length=20,
                               choices=TRANSACTION_STATUSES,
                               default=TRANSACTION_STATUS_PENDING)
