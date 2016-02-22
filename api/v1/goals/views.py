@@ -101,11 +101,12 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             return Response(serializer.data)
 
         if request.method == 'PUT':
-            serializer = serializers.GoalSettingSerializer(data=request.data)
+            settings = goal.selected_settings
+            serializer = serializers.GoalSettingSerializer(settings, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            settings = serializer.save(goal=goal)
+            serializer.save(goal=goal)
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @detail_route(methods=['get'], url_path='approved-settings')
     def approved_settings(self, request, pk=None):

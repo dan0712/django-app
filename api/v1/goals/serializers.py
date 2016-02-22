@@ -1,7 +1,9 @@
+import copy
 import logging
 
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from rest_framework.fields import FloatField, IntegerField
 
@@ -119,25 +121,80 @@ class GoalSettingSerializer(serializers.ModelSerializer):
             'portfolio',
         )
 
-    def create(self, validated_data):
+    def update(self, setting, validated_data):
         """
-        Puts the passed settings into the 'selected_settings' field on the passed goal.
+        Overwrite update to deal with nested writes.
+        :param instance:
+        :param validated_data:
+        :return:
         """
         goal = validated_data.pop('goal')
-        metrics_data = validated_data.pop('metrics')
-        tx_data = validated_data.pop('recurring_transactions')
-        port_data = validated_data.pop('portfolio')
-        port_items_data = port_data.pop('items')
+        metrics_data = validated_data.pop('metrics', None)
+        tx_data = validated_data.pop('recurring_transactions', None)
+        port_data = validated_data.pop('portfolio', None)
 
         with transaction.atomic():
-            port = Portfolio.objects.create(**port_data)
-            PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port, **i_data) for i_data in port_items_data])
-            setting = GoalSetting.objects.create(portfolio=port, **validated_data)
-            RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
-            GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
+            if port_data is None:
+                # We have to do it this way so the portfolio_id field on the setting is updated.
+                new_port = setting.portfolio
+                pxs = setting.portfolio.items.all()
+                new_port.id = None
+                new_port.save()
+                setting.portfolio = new_port
+                for item in pxs:
+                    item.portfolio = setting.portfolio
+                    item.save()
+            else:
+                old_port = setting.portfolio
+                port_items_data = port_data.pop('items', None)
+                setting.portfolio = Portfolio.objects.create(**port_data)
+                if port_items_data is None:
+                    for item in old_port.items:
+                        item.portfolio = setting.portfolio
+                        item.save()
+                else:
+                    PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=setting.portfolio, **i_data) for i_data in port_items_data])
+                old_port.delete()
+
+            for attr, value in validated_data.items():
+                setattr(setting, attr, value)
+
+            # We need to save these before we change the id.
+            txs = setting.recurring_transactions.all()
+            mxs = setting.metrics.all()
+
+            # Change the id so we create a new item on save.
+            setting = copy.copy(setting)
+            setting.pk = None
+            setting.save()
+
+            if tx_data is None:
+                for item in txs:
+                    item.setting = setting
+                    item.save()
+            else:
+                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+
+            if metrics_data is None:
+                for item in mxs:
+                    item.setting = setting
+                    item.save()
+                optimise_required = False
+            else:
+                GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
+                optimise_required = True
+
+            if optimise_required:
+                pass
+                # TODO: Redo the optimisation, and return an error if the portfolio passed in does not match that
+                # TODO which was optimised.
+
             goal.set_selected(setting)
 
         return setting
+
+    def create(self, validated_data):
+        raise NotImplementedError('create is not a valid operation for a GoalSetting')
 
 
 class GoalSettingStatelessSerializer(serializers.ModelSerializer):
