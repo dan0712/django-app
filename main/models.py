@@ -23,6 +23,7 @@ from django.core.validators import (
     MaxValueValidator, MinLengthValidator
 )
 from django.db import models, transaction
+from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -161,19 +162,19 @@ PERSONAL_DATA_WIDGETS = {
         attrs={"placeholder": "Street address"})
 }
 
-TRANSACTION_TYPE_ALLOCATION = 0
-TRANSACTION_TYPE_DEPOSIT = 1
-TRANSACTION_TYPE_WITHDRAWAL = 2
-TRANSACTION_TYPE_REBALANCE = 3
-TRANSACTION_TYPE_MARKET_CHANGE = 4
-TRANSACTION_TYPE_FEE = 5
-TRANSACTION_TYPES = (
-    (TRANSACTION_TYPE_ALLOCATION, "ALLOCATION"),
-    (TRANSACTION_TYPE_DEPOSIT, "DEPOSIT"),
-    (TRANSACTION_TYPE_WITHDRAWAL, 'WITHDRAWAL'),
-    (TRANSACTION_TYPE_REBALANCE, 'REBALANCE'),
-    (TRANSACTION_TYPE_MARKET_CHANGE, "MARKET_CHANGE"),
-    (TRANSACTION_TYPE_FEE, 'FEE'),
+TRANSACTION_REASON_DIVIDEND = 0
+TRANSACTION_REASON_DEPOSIT = 1
+TRANSACTION_REASON_WITHDRAWAL = 2
+TRANSACTION_REASON_REBALANCE = 3
+TRANSACTION_REASON_TRANSFER = 4
+TRANSACTION_REASON_FEE = 5
+TRANSACTION_REASONS = (
+    (TRANSACTION_REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
+    (TRANSACTION_REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
+    (TRANSACTION_REASON_WITHDRAWAL, 'WITHDRAWAL'),  # Withdrawal from the goal to the account
+    (TRANSACTION_REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal, or from account to goal.
+    (TRANSACTION_REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
+    (TRANSACTION_REASON_FEE, 'FEE'),
 )
 
 TRANSACTION_STATUS_PENDING = 'PENDING'
@@ -1084,6 +1085,7 @@ class ClientAccount(models.Model):
                                                                            ("USER_ON", "USER_ON")), default="USER_OFF")
     asset_fee_plan = models.ForeignKey(AssetFeePlan, null=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
+    cash_balance = models.FloatField(default=0, help_text='The amount of cash in this account available to be used.')
 
     objects = ClientAccountQuerySet.as_manager()
 
@@ -1816,8 +1818,11 @@ class Goal(models.Model):
     name = models.CharField(max_length=100)
     type = models.ForeignKey(GoalTypes)
     created = models.DateTimeField(auto_now_add=True)
-    portfolio_set = models.ForeignKey(PortfolioSet,
+    portfolio_set = models.ForeignKey(
+        PortfolioSet,
         help_text='The set of assets that may be used to create a portfolio for this goal.')
+    cash_balance = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
+
     # TODO: Remove null bit below once everyone is running this code.
     active_settings = models.OneToOneField(
         GoalSetting,
@@ -1860,74 +1865,123 @@ class Goal(models.Model):
         :return:
         """
         old_setting = self.selected_settings
-        if setting.id == old_setting.id:
+        if setting == old_setting:
             return
         self.selected_settings = setting
         self.save()
-        if old_setting.id not in (self.active_settings.id, self.approved_settings.id):
+        if old_setting not in (self.active_settings, self.approved_settings):
             old_setting.delete()
 
     @transaction.atomic
     def approve_selected(self):
         old_setting = self.approved_settings
-        if old_setting is not None and self.selected_settings.id == old_setting.id:
+        if self.selected_settings == old_setting:
             return
         self.approved_settings = self.selected_settings
         self.save()
-        if old_setting is not None and old_setting.id != self.active_settings.id:
+        if old_setting != self.active_settings:
             old_setting.delete()
 
     @property
     def available_balance(self):
-        return self.total_balance + self.pending_withdrawals
+        return self.total_balance - self.pending_outgoings
 
     @property
-    def pending_deposits(self):
+    def pending_transactions(self):
+        return Transaction.objects.filter(Q(to_goal=self) | Q(from_goal=self) & Q(status=TRANSACTION_STATUS_PENDING))
+
+    @property
+    def pending_amount(self):
+        pa = 0.0
+        for t in self.pending_transactions:
+            if self == t.from_goal:
+                pa -= t.amount
+            else:
+                pa += t.amount
+        return pa
+
+    @property
+    def pending_incomings(self):
         pd = 0.0
-        for d in Transaction.objects.filter(account=self,
-                                            status=TRANSACTION_STATUS_PENDING,
-                                            type=TRANSACTION_TYPE_DEPOSIT).all():
+        for d in Transaction.objects.filter(to_goal=self, status=TRANSACTION_STATUS_PENDING):
             pd += d.amount
         return pd
 
     @property
-    def pending_withdrawals(self):
+    def pending_outgoings(self):
         pw = 0.0
-        for w in Transaction.objects.filter(account=self,
-                                            status=TRANSACTION_STATUS_PENDING,
-                                            type=TRANSACTION_TYPE_WITHDRAWAL).all():
-            pw -= w.amount
+        for w in Transaction.objects.filter(from_goal=self, status=TRANSACTION_STATUS_PENDING):
+            pw += w.amount
         return pw
 
     @property
-    def total_deposits(self):
+    def requested_incomings(self):
         pd = 0.0
-        for d in Transaction.objects.filter(account=self,
-                                            status=TRANSACTION_STATUS_EXECUTED,
-                                            type=TRANSACTION_TYPE_DEPOSIT).all():
+        for d in Transaction.objects.filter(to_goal=self,
+                                            status=TRANSACTION_STATUS_EXECUTED).exclude(reason__in=(TRANSACTION_REASON_FEE,
+                                                                                                    TRANSACTION_REASON_DIVIDEND)):
             pd += d.amount
         return pd
 
     @property
-    def total_withdrawals(self):
+    def requested_outgoings(self):
         pw = 0.0
-        for w in Transaction.objects.filter(account=self,
-                                            status=TRANSACTION_STATUS_EXECUTED,
-                                            type=TRANSACTION_TYPE_WITHDRAWAL).all():
+        for w in Transaction.objects.filter(from_goal=self,
+                                            status=TRANSACTION_STATUS_EXECUTED).exclude(reason__in=(TRANSACTION_REASON_FEE,
+                                                                                                    TRANSACTION_REASON_DIVIDEND)):
             pw -= w.amount
         return pw
 
     @property
     def total_dividends(self):
-        return 0.0
+        divs = 0.0
+        for t in Transaction.objects.filter(Q(status=TRANSACTION_STATUS_EXECUTED) &
+                                            (Q(to_goal=self) | Q(from_goal=self)) &
+                                            (Q(reason=TRANSACTION_REASON_DIVIDEND))):
+            divs += t.amount if self == t.to_goal else -t.amount
+        return divs
 
     @property
     def market_changes(self):
         return 0.0
 
     @property
-    def total_invested(self):
-        return self.total_deposits
+    def total_deposits(self):
+        """
+        :return: The total amount of the deposits into the goal from the account cash. Excluding pending.
+        """
+        inputs = 0.0
+        for t in Transaction.objects.filter(status=TRANSACTION_STATUS_EXECUTED,
+                                            to_goal=self,
+                                            reason=TRANSACTION_REASON_DEPOSIT):
+            inputs += t.amount
+        return inputs
+
+    @property
+    def total_withdrawals(self):
+        """
+        :return: The total amount of the withdrawals from the goal to the account cash. Excluding pending.
+        """
+        inputs = 0.0
+        for t in Transaction.objects.filter(status=TRANSACTION_STATUS_EXECUTED,
+                                            to_goal=self,
+                                            reason=TRANSACTION_REASON_WITHDRAWAL):
+            inputs += t.amount
+        return inputs
+
+    @property
+    def net_invested(self):
+        """
+        :return: The actual realised amount invested (incomings - outgoings),
+                 excluding any pending transactions or performance-based transactions.
+
+        """
+        inputs = 0.0
+        for t in Transaction.objects.filter(Q(status=TRANSACTION_STATUS_EXECUTED) &
+                                            (Q(to_goal=self) | Q(from_goal=self)) &
+                                            (~Q(reason__in=(TRANSACTION_REASON_FEE, TRANSACTION_REASON_DIVIDEND)))):
+            inputs += t.amount if self == t.to_goal else -t.amount
+        return inputs
 
     @property
     def life_time_return(self):
@@ -1942,25 +1996,50 @@ class Goal(models.Model):
         return 0
 
     @property
-    def cash_balance(self):
-        return 0.0
-
-    @property
     def total_fees(self):
-        return self.account.fee
+        fees = 0.0
+        for t in Transaction.objects.filter(Q(status=TRANSACTION_STATUS_EXECUTED) &
+                                            (Q(to_goal=self) | Q(from_goal=self)) &
+                                            (Q(reason=TRANSACTION_REASON_FEE))):
+            fees += t.amount if self == t.to_goal else -t.amount
+        return fees
 
     @property
     def recharacterized(self):
         return 0
 
     @property
+    def total_earnings(self):
+        """
+        Earnings after fees. (increase of value, plus dividends, minus fees)
+        :return: The current total balance minus any inputs excluding dividends, plus any withdrawals excluding fees.
+        """
+        return self.total_balance - self.net_invested
+
+    @property
+    def investments(self):
+        return {
+                'deposits': self.total_deposits,
+                'withdrawals': self.total_withdrawals,
+                'other': self.net_invested - self.total_deposits + self.total_withdrawals,
+               }
+
+    @property
+    def earnings(self):
+        return {
+                'market_moves': self.total_earnings - self.total_dividends + self.total_fees,
+                'dividends': self.total_dividends,
+                'fees': self.total_fees,
+               }
+
+    @property
     def on_track(self):
         return False  # TODO: Make this work.
-        current_balance = self.total_balance + self.pending_deposits - self.pending_withdrawals
         term = self.get_term
         expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees / 1000.0 \
                           + self.portfolio_set.risk_free_rate
-        expected_value = current_balance * (1 + expected_return) ** term
+        expected_value = self.current_balance * (1 + expected_return) ** term
+        # TODO: Add recurring transactions to this.
         if hasattr(self, "auto_deposit"):
             #ada = self.auto_deposit.get_annualized
             for i in range(0, term):
@@ -1973,10 +2052,17 @@ class Goal(models.Model):
 
     @property
     def total_balance(self):
-        b = 0
+        b = self.cash_balance
         for p in Position.objects.filter(goal=self).all():
             b += p.value
         return b
+
+    @property
+    def current_balance(self):
+        """
+        :return: The current total balance including any pending transactions.
+        """
+        return self.total_balance + self.pending_amount
 
     @property
     def stock_balance(self):
@@ -1996,6 +2082,10 @@ class Goal(models.Model):
 
     @property
     def total_return(self):
+        """
+        TODO: Should this be some average of the annualised return?
+        :return:
+        """
         return 0
 
     @property
@@ -2153,17 +2243,23 @@ class Position(models.Model):
 
 
 class Transaction(models.Model):
-    account = models.ForeignKey(Goal, related_name="transactions", null=True)
-    type = models.IntegerField(choices=TRANSACTION_TYPES)
-    from_account = models.ForeignKey(Goal,
-                                     related_name="transactions_from",
-                                     null=True,
-                                     blank=True)
-    to_account = models.ForeignKey(Goal,
-                                   related_name="transactions_to",
-                                   null=True,
-                                   blank=True)
-    amount = models.FloatField(default=0)
+    """
+    Deposits have a to_goal, withdrawals have a from_goal, transfers have both
+    Every Transaction must have one or both.
+    When one is null, it means it was to the account's cash.
+    """
+    reason = models.IntegerField(choices=TRANSACTION_REASONS, db_index=True)
+    from_goal = models.ForeignKey(Goal,
+                                  related_name="transactions_from",
+                                  null=True,
+                                  blank=True,
+                                  db_index=True)
+    to_goal = models.ForeignKey(Goal,
+                                related_name="transactions_to",
+                                null=True,
+                                blank=True,
+                                db_index=True)
+    amount = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
     status = models.CharField(max_length=20,
                               choices=TRANSACTION_STATUSES,
                               default=TRANSACTION_STATUS_PENDING)
@@ -2172,6 +2268,13 @@ class Transaction(models.Model):
     new_balance = models.FloatField(default=0)
     inversion = models.FloatField(default=0)
     return_fraction = models.FloatField(default=0)
+
+    def save(self, *args, **kwargs):
+        if self.from_goal is None and self.to_goal is None:
+            raise ValidationError("One or more of from_goal and to_goal is required")
+        if self.from_goal == self.to_goal:
+            raise ValidationError("Cannot transact with myself.")
+        super(Transaction, self).save(*args, **kwargs)
 
 
 class DataApiDict(models.Model):

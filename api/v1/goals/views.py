@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
 from api.v1.goals.serializers import PortfolioStatelessSerializer
-from main.models import Goal, GoalTypes, TRANSACTION_TYPE_DEPOSIT
+from main.models import Goal, GoalTypes, TRANSACTION_REASON_DEPOSIT
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, get_instruments, Unsatisfiable, \
     calculate_portfolios
 from ..views import ApiViewMixin
@@ -39,7 +39,10 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             if self.action == 'list':
-                return serializers.GoalListSerializer
+                if int(self.request.query_params.get('detail', 0)) == 1:
+                    return serializers.GoalSerializer
+                else:
+                    return serializers.GoalListSerializer
             else:
                 return serializers.GoalSerializer
         else:
@@ -98,7 +101,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             return Response(serializer.data)
 
         if request.method == 'PUT':
-            serializer = serializers.GoalSettingCreateSerializer(data=request.data)
+            serializer = serializers.GoalSettingSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             settings = serializer.save(goal=goal)
             headers = self.get_success_headers(serializer.data)
@@ -194,7 +197,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         goal = self.get_object()
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(account=goal, type=TRANSACTION_TYPE_DEPOSIT)
+        serializer.save(to_goal=goal, type=TRANSACTION_REASON_DEPOSIT)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

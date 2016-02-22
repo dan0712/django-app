@@ -110,55 +110,6 @@ class GoalSettingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GoalSetting
-        exclude = (
-            'id',
-        )
-
-
-class FieldClientAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClientAccount
-        exclude = (
-            #'created_at',
-        )
-
-
-class FieldGoalSettingGoalMetricSerializer(serializers.ModelSerializer):
-    """
-    GoalMetrics as nested object for GoalSetting (nested to Goal)
-    """
-    class Meta:
-        model = GoalMetric
-        exclude = (
-            'setting',
-        )
-
-
-class FieldGoalSettingSerializer(serializers.ModelSerializer):
-    """
-    GoalSetting as nested object for Goal
-    """
-    metrics = FieldGoalSettingGoalMetricSerializer(many=True)
-    recurring_transactions = RecurringTransactionSerializer(many=True)
-    portfolio = PortfolioSerializer()
-
-    class Meta:
-        model = GoalSetting
-        exclude = (
-            #'created_at',
-        )
-
-
-class GoalSettingCreateSerializer(serializers.ModelSerializer):
-    """
-    Puts the passed settings into the 'selected_settings' field on the goal indicated.
-    """
-    metrics = GoalMetricSerializer(many=True)
-    recurring_transactions = RecurringTransactionSerializer(many=True)
-    portfolio = PortfolioSerializer()
-
-    class Meta:
-        model = GoalSetting
         fields = (
             'target',
             'completion',
@@ -169,6 +120,9 @@ class GoalSettingCreateSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        """
+        Puts the passed settings into the 'selected_settings' field on the passed goal.
+        """
         goal = validated_data.pop('goal')
         metrics_data = validated_data.pop('metrics')
         tx_data = validated_data.pop('recurring_transactions')
@@ -182,6 +136,8 @@ class GoalSettingCreateSerializer(serializers.ModelSerializer):
             RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
             GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
             goal.set_selected(setting)
+
+        return setting
 
 
 class GoalSettingStatelessSerializer(serializers.ModelSerializer):
@@ -238,22 +194,32 @@ class GoalSettingStatelessSerializer(serializers.ModelSerializer):
 
 
 class GoalSerializer(serializers.ModelSerializer):
-    account = FieldClientAccountSerializer()
-    total_balance = serializers.SerializerMethodField()
-    settings = FieldGoalSettingSerializer(source='active_settings')
-    #approved_settings = FieldGoalSettingSerializer()
-    #selected_settings = FieldGoalSettingSerializer()
+    class InvestedSerializer(serializers.Serializer):
+        deposits = serializers.FloatField()
+        withdrawals = serializers.FloatField()
+        other = serializers.FloatField()
+
+    class EarnedSerializer(serializers.Serializer):
+        market_moves = serializers.FloatField()
+        dividends = serializers.FloatField()
+        fees = serializers.FloatField()
+
+    # property fields
+    on_track = serializers.BooleanField()
+    balance = serializers.FloatField(source='current_balance')
+    earnings = serializers.FloatField(source='total_earnings')
+    stock_balance = serializers.FloatField()
+    bond_balance = serializers.FloatField()
+    total_return = serializers.FloatField()
+    invested = InvestedSerializer(source='investments')
+    earned = EarnedSerializer(source='earnings')
 
     class Meta:
         model = Goal
         exclude = (
-            #'account'
-            'created',
-            'approved_settings', 'selected_settings',
+            'active_settings',
         )
-
-    def get_total_balance(self, obj):
-        return obj.total_balance
+        read_only_fields = ('created',)
 
 
 class GoalListSerializer(serializers.ModelSerializer):

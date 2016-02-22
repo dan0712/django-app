@@ -542,7 +542,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         - cost is the new Markowitz cost
     """
     goal = settings.goal
-    budget = goal.total_balance + goal.cash_balance + goal.pending_deposits + goal.pending_withdrawals
+    budget = goal.current_balance
 
     def aligned(i):
         """

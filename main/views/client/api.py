@@ -12,9 +12,9 @@ from portfolios.bl_model import OptimizationException
 #from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
-from ...models import Transaction, ClientAccount, TRANSACTION_STATUS_PENDING, Goal, TRANSACTION_TYPE_ALLOCATION, TransactionMemo, \
-    RecurringTransaction, TRANSACTION_TYPE_WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
-    TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED, TRANSACTION_TYPE_FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
+from ...models import Transaction, ClientAccount, TRANSACTION_STATUS_PENDING, Goal, TransactionMemo, \
+    RecurringTransaction, TRANSACTION_REASON_WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
+    TRANSACTION_STATUS_EXECUTED, TRANSACTION_REASON_FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass, Position
 
 from django.http.response import Http404
@@ -208,7 +208,7 @@ class ClientAccounts(ClientView, TemplateView):
                 # wdw all the money
                 wdw_transaction = Transaction()
                 wdw_transaction.account = goal
-                wdw_transaction.type = TRANSACTION_TYPE_WITHDRAWAL
+                wdw_transaction.type = TRANSACTION_REASON_WITHDRAWAL
                 wdw_transaction.amount = goal.total_balance
                 wdw_transaction.save()
         goal.save()
@@ -367,56 +367,58 @@ class NewTransactionsView(ClientView):
         market_change_by_week = {}
 
         for transaction in query_set.all():
-            if transaction.type == TRANSACTION_TYPE_MARKET_CHANGE:
-                dt = transaction.executed_date
-                week_day = str(dt.isocalendar()[1])
-                if week_day not in market_change_by_week:
-                    start_day_dt = dt - timedelta(days=dt.weekday())
-                    end_day_dt = start_day_dt + timedelta(days=6)
-                    start_day = start_day_dt.strftime('%b %d')
-                    end_day = end_day_dt.strftime('%b %d')
+                '''
+                if transaction.type == TRANSACTION_TYPE_MARKET_CHANGE:
+                    dt = transaction.executed_date
+                    week_day = str(dt.isocalendar()[1])
+                    if week_day not in market_change_by_week:
+                        start_day_dt = dt - timedelta(days=dt.weekday())
+                        end_day_dt = start_day_dt + timedelta(days=6)
+                        start_day = start_day_dt.strftime('%b %d')
+                        end_day = end_day_dt.strftime('%b %d')
 
-                    market_change_by_week[week_day] = {
-                        "date": start_day_dt,
-                        "dateString": "{0} to {1}".format(start_day, end_day),
-                        "description": "Market Changes",
-                        "shortDescription": "Market Changes",
-                        "childTransactions": [],
-                        "change": "0"
+                        market_change_by_week[week_day] = {
+                            "date": start_day_dt,
+                            "dateString": "{0} to {1}".format(start_day, end_day),
+                            "description": "Market Changes",
+                            "shortDescription": "Market Changes",
+                            "childTransactions": [],
+                            "change": "0"
+                        }
+                    ct = {
+                        "isDocument": False,
+                        "isAllocation": False,
+                        "fullTime": dt.strftime('%Y-%m-%d %H:%M:%S'),
+                        "id": "{0}".format(transaction.pk),
+                        "accountName": transaction.account.name,
+                        "accountID": "{0}".format(transaction.account.pk),
+                        "type": TRANSACTION_TYPE_MARKET_CHANGE,
+                        "typeID": "2",
+                        "date": dt.strftime('%Y%m%d%H%M%S'),
+                        "dateString": dt.strftime('%b %d'),
+                        "change": "{:.2f}".format(transaction.amount),
+                        "balance": "{:.2f}".format(transaction.new_balance),
+                        "createdDate":
+                            transaction.created_date.strftime('%Y%m%d%H%M%S'),
+                        "completedDate": dt.strftime('%Y%m%d%H%M%S'),
+                        "isCanceled": False,
+                        "shortDescription": "Market Change",
+                        "description": "Market Change",
+                        "pending": False,
+                        "failed": False,
+                        "canBeCanceled": False
                     }
-                ct = {
-                    "isDocument": False,
-                    "isAllocation": False,
-                    "fullTime": dt.strftime('%Y-%m-%d %H:%M:%S'),
-                    "id": "{0}".format(transaction.pk),
-                    "accountName": transaction.account.name,
-                    "accountID": "{0}".format(transaction.account.pk),
-                    "type": TRANSACTION_TYPE_MARKET_CHANGE,
-                    "typeID": "2",
-                    "date": dt.strftime('%Y%m%d%H%M%S'),
-                    "dateString": dt.strftime('%b %d'),
-                    "change": "{:.2f}".format(transaction.amount),
-                    "balance": "{:.2f}".format(transaction.new_balance),
-                    "createdDate":
-                        transaction.created_date.strftime('%Y%m%d%H%M%S'),
-                    "completedDate": dt.strftime('%Y%m%d%H%M%S'),
-                    "isCanceled": False,
-                    "shortDescription": "Market Change",
-                    "description": "Market Change",
-                    "pending": False,
-                    "failed": False,
-                    "canBeCanceled": False
-                }
 
-                market_change_by_week[week_day]["childTransactions"].append(ct)
-                market_change_by_week[week_day]["balance"] = "{:.2f}".format(
-                    transaction.new_balance)
-                change = float(market_change_by_week[week_day][
-                                   "change"]) + transaction.amount
-                market_change_by_week[week_day]["change"] = "{:.2f}".format(
-                    change)
+                    market_change_by_week[week_day]["childTransactions"].append(ct)
+                    market_change_by_week[week_day]["balance"] = "{:.2f}".format(
+                        transaction.new_balance)
+                    change = float(market_change_by_week[week_day][
+                                       "change"]) + transaction.amount
+                    market_change_by_week[week_day]["change"] = "{:.2f}".format(
+                        change)
 
-            else:
+                else:
+                '''
                 dt = transaction.executed_date
                 ctx = {
                     "isDocument": False,
@@ -443,15 +445,8 @@ class NewTransactionsView(ClientView):
                     "failed": False,
                     "canBeCanceled": False
                 }
-                if transaction.type == TRANSACTION_TYPE_ALLOCATION:
-                    ctx["isAllocation"] = True
-                    ctx["change"] = "0"
-                    stocks = int(transaction.amount * 100)
-                    bonds = 100 - stocks
-                    ctx["description"] = "Allocation Change ({0}% stocks, {1}% bonds)".format(
-                        stocks, bonds)
 
-                if transaction.type in (TRANSACTION_TYPE_WITHDRAWAL, TRANSACTION_TYPE_FEE):
+                if transaction.type in (TRANSACTION_REASON_WITHDRAWAL, TRANSACTION_REASON_FEE):
                     ctx["change"] = "{:.2f}".format(-float(ctx["change"]))
 
                 transactions.append(ctx)
@@ -561,6 +556,7 @@ class ChangeAllocation(ClientView):
         else:
             has_changed = False
 
+        '''
         new_t = Transaction()
         new_t.account = goal
         new_t.amount = goal.allocation
@@ -571,6 +567,7 @@ class ChangeAllocation(ClientView):
                                    type=TRANSACTION_TYPE_ALLOCATION,
                                    status=TRANSACTION_STATUS_PENDING).all().delete()
         new_t.save()
+        '''
 
         if has_changed:
             if goal.is_custom_size:
@@ -690,6 +687,7 @@ class ChangeGoalView(ClientView):
             else:
                 goal.portfolios = None
             goal.save()
+            '''
             new_t = Transaction()
             new_t.account = goal
             new_t.amount = goal.allocation
@@ -699,6 +697,7 @@ class ChangeGoalView(ClientView):
                                        type=TRANSACTION_TYPE_ALLOCATION,
                                        status=TRANSACTION_STATUS_PENDING).all().delete()
             new_t.save()
+            '''
 
         return HttpResponse('null', content_type="application/json")
 
@@ -781,7 +780,7 @@ class Withdrawals(ClientView):
         new_transaction.account = goal
         new_transaction.from_account = None
         new_transaction.to_account = None
-        new_transaction.type = TRANSACTION_TYPE_WITHDRAWAL
+        new_transaction.type = TRANSACTION_REASON_WITHDRAWAL
         new_transaction.amount = payload["amount"]
         new_transaction.save()
 
@@ -804,8 +803,9 @@ class AnalysisBalances(ClientView):
         goal = get_object_or_404(Goal,
                                  pk=goal_pk,
                                  account__primary_owner=self.client)
-        trs = goal.transactions.filter(
-            type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
+        trs=None
+        #trs = goal.transactions.filter(
+        #    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
         if trs:
             for transaction in trs:
                 r_obj = {
@@ -861,8 +861,9 @@ class AnalysisReturns(ClientView):
 
         for account in self.client.accounts.all():
             for goal in account.goals.all():
-                trs = goal.transactions.filter(
-                    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
+                trs = None  # TODO: fix this
+                #trs = goal.transactions.filter(
+                #    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
                 if not trs:
                     continue
                 counter += 1
