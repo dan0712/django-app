@@ -194,7 +194,28 @@ class GoalSettingSerializer(serializers.ModelSerializer):
         return setting
 
     def create(self, validated_data):
-        raise NotImplementedError('create is not a valid operation for a GoalSetting')
+        # TODO: Remove this method once all goals have selected-settings
+        """
+        Puts the passed settings into the 'selected_settings' field on the passed goal.
+        """
+        goal = validated_data.pop('goal')
+        metrics_data = validated_data.pop('metrics')
+        tx_data = validated_data.pop('recurring_transactions')
+        port_data = validated_data.pop('portfolio')
+        port_items_data = port_data.pop('items')
+        with transaction.atomic():
+            port = Portfolio.objects.create(**port_data)
+            PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port, **i_data) for i_data in port_items_data])
+            setting = GoalSetting.objects.create(portfolio=port, **validated_data)
+            RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+            GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
+            goal.set_selected(setting)
+
+        return setting
+
+    # TODO: REactivate after all goals have selected_settings
+    #def create(self, validated_data):
+    #    raise NotImplementedError('create is not a valid operation for a GoalSetting')
 
 
 class GoalSettingStatelessSerializer(serializers.ModelSerializer):
