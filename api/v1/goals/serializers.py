@@ -76,7 +76,17 @@ class GoalClientAccountSerializer(serializers.ModelSerializer):
         )
 
 
+class GoalGoalSettingGoalMetricSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoalMetric
+        exclude = (
+            'setting',
+        )
+
+
 class GoalGoalSettingSerializer(serializers.ModelSerializer):
+    metrics = GoalGoalSettingGoalMetricSerializer(many=True)
+
     class Meta:
         model = GoalSetting
         exclude = (
@@ -84,30 +94,17 @@ class GoalGoalSettingSerializer(serializers.ModelSerializer):
         )
 
 
-class GoalSettingGoalMetricSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GoalMetric
-        exclude = (
-            'goal',
-        )
-
-
 class GoalSerializer(serializers.ModelSerializer):
     account = GoalClientAccountSerializer()
-    metrics = GoalSettingGoalMetricSerializer(source='active_settings__metrics', many=True)
     settings = GoalGoalSettingSerializer(source='active_settings')
     #approved_settings = GoalGoalSettingSerializer()
     #selected_settings = GoalGoalSettingSerializer()
 
-
-class GoalSerializer(serializers.ModelSerializer):
-    # TODO: Make created read only.
     class Meta:
         model = Goal
         exclude = (
             #'account'
             'created',
-            'active_settings',
             'approved_settings', 'selected_settings',
         )
 

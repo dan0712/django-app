@@ -11,7 +11,8 @@ from main.models import (
     AuthorisedRepresentative, FirmData, Client, ClientAccount,
     Goal, GoalMetric, GoalSetting, Platform, Position, Transaction,
     TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
-    ProxyAssetClass, ProxyTicker, PortfolioSet, View
+    ProxyAssetClass, ProxyTicker, PortfolioSet, 
+    Portfolio, PortfolioItem, View,
 )
 from portfolios.management.commands.get_historical_returns import \
     get_historical_returns as internal_get_historical_returns
@@ -239,7 +240,8 @@ class GoalMetricInline(admin.StackedInline):
     model = GoalMetric
 
 
-class GoalSetting(admin.ModelAdmin):
+class GoalSettingAdmin(admin.ModelAdmin):
+    model = GoalSetting
     inlines = (GoalMetricInline,)
 
 
@@ -255,6 +257,15 @@ class PlatformAdminAdmin(admin.ModelAdmin):
 
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('goal', 'ticker', 'value')
+    pass
+
+
+class PortfolioItemInline(admin.StackedInline):
+    model = PortfolioItem
+
+
+class PortfolioAdmin(admin.ModelAdmin):
+    inlines = (PortfolioItemInline,)
     pass
 
 
@@ -327,6 +338,7 @@ admin.site.register(Performer, PerformerAdmin)
 admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
+admin.site.register(GoalSetting, GoalSettingAdmin)
 admin.site.register(Dividend)
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
@@ -334,6 +346,7 @@ admin.site.register(Advisor, AdvisorAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(AuthorisedRepresentative, AuthorisedRepresentativeAdmin)
 admin.site.register(User, UserAdmin)
+admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)

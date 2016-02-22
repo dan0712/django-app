@@ -12,7 +12,7 @@ def api_exception_handler(exc, context):
     logger.exception("Exception in API")
 
     response = exception_handler(exc, context)
-
+    print ('!!!!context', context, exc)
     error = {
         'reason': exc.__class__.__name__,
     }
