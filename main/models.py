@@ -5,6 +5,7 @@ import logging
 import uuid
 from datetime import date
 from enum import Enum, unique
+from itertools import chain
 
 from django import forms
 from django.conf import settings
@@ -21,7 +22,7 @@ from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
     MaxValueValidator, MinLengthValidator
 )
-from django.db import models
+from django.db import models, transaction
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -1136,6 +1137,10 @@ class ClientAccount(models.Model):
         self.primary_owner.rebuild_secondary_advisors()
 
     @property
+    def advisors(self):
+        return chain([self.primary_owner.advisor, self.account_group.advisor], self.account_group.secondary_advisors.all())
+
+    @property
     def target(self):
         total_target = 0
         for goal in self.goals.all():
@@ -1760,12 +1765,12 @@ class GoalTypes(models.Model):
 
 
 class RecurringTransaction(models.Model):
+    # Note: Only settings that are active will have their recurring transactions processed.
     setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', null=True)  # TODO remove the null
     # Note: https://www.npmjs.com/package/rrule and https://www.npmjs.com/package/rrecur for UI side of below
-    recurrence = RecurrenceField()
+    recurrence = models.TextField()
     enabled = models.BooleanField(default=True)
     amount = models.FloatField()
-    last_plan_change = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
@@ -1785,7 +1790,7 @@ class PortfolioItem(models.Model):
     portfolio = models.ForeignKey(Portfolio, related_name='items')
     asset = models.ForeignKey(Ticker)
     weight = models.FloatField()
-    volatility = models.FloatField(help_text='variance of this asset a the time of setting this portfolio.')
+    volatility = models.FloatField(help_text='variance of this asset at the time of creating this portfolio.')
 
 
 class GoalSetting(models.Model):
@@ -1793,6 +1798,7 @@ class GoalSetting(models.Model):
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
     # also has 'metrics' field from GoalMetrics model.
+    # also has 'recurring_transactions' field from RecurringTransaction model.
     portfolio = models.OneToOneField(Portfolio, related_name='goal_setting')
 
     @property
@@ -1813,25 +1819,30 @@ class Goal(models.Model):
     portfolio_set = models.ForeignKey(PortfolioSet,
         help_text='The set of assets that may be used to create a portfolio for this goal.')
     # TODO: Remove null bit below once everyone is running this code.
-    active_settings = models.OneToOneField(GoalSetting,
+    active_settings = models.OneToOneField(
+        GoalSetting,
         related_name='goal_active',
         help_text='The settings were last used to do a rebalance. '
-            'These settings are responsible for our current market positions.',
+                  'These settings are responsible for our current market positions.',
         blank=True,
         null=True)
-    approved_settings = models.OneToOneField(GoalSetting,
+    approved_settings = models.OneToOneField(
+        GoalSetting,
         related_name='goal_approved',
         help_text='The settings that both the client and advisor have confirmed '
-            'and will become active the next time the goal is rebalanced.',
+                  'and will become active the next time the goal is rebalanced.',
         blank=True,
         null=True)
-    selected_settings = models.OneToOneField(GoalSetting,
+    selected_settings = models.OneToOneField(
+        GoalSetting,
         related_name='goal_selected',
         help_text='The settings that the client has confirmed, '
-            'but are not yet approved by the advisor.',
+                  'but are not yet approved by the advisor.',
         blank=True,
         null=True)
     archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
+
+    # Also has reverse 'positions' field from Position model.
 
     objects = GoalQuerySet.as_manager()
 
@@ -1840,6 +1851,31 @@ class Goal(models.Model):
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
+
+    @transaction.atomic
+    def set_selected(self, setting):
+        """
+        Sets the passed in setting object as the selected_setting.
+        :param setting:
+        :return:
+        """
+        old_setting = self.selected_settings
+        if setting.id == old_setting.id:
+            return
+        self.selected_settings = setting
+        self.save()
+        if old_setting.id not in (self.active_settings.id, self.approved_settings.id):
+            old_setting.delete()
+
+    @transaction.atomic
+    def approve_selected(self):
+        old_setting = self.approved_settings
+        if old_setting is not None and self.selected_settings.id == old_setting.id:
+            return
+        self.approved_settings = self.selected_settings
+        self.save()
+        if old_setting is not None and old_setting.id != self.active_settings.id:
+            old_setting.delete()
 
     @property
     def available_balance(self):
@@ -2093,7 +2129,7 @@ class GoalMetric(models.Model):
             return "[{}] Risk Score {} {} for Goal: {}".format(self.id,
                                                                self.comparisons[self.comparison],
                                                                1 + self.configured_val * 99,
-                                                               self.goal)
+                                                               self.setting.goal)
 
 
 class Position(models.Model):
@@ -2128,8 +2164,6 @@ class Transaction(models.Model):
                                    null=True,
                                    blank=True)
     amount = models.FloatField(default=0)
-    satelliteAlloc = models.FloatField(default=0)
-
     status = models.CharField(max_length=20,
                               choices=TRANSACTION_STATUSES,
                               default=TRANSACTION_STATUS_PENDING)
