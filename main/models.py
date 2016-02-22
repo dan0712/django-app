@@ -2296,12 +2296,16 @@ class SymbolReturnHistory(models.Model):
     date = models.DateField()
 
 
-STRATEGY = "STRATEGY"
-BENCHMARK = "BENCHMARK"
-BOND = "BOND"
-STOCK = "STOCK"
-PERFORMER_GROUP_CHOICE = ((STRATEGY, "STRATEGY"), (BENCHMARK, "BENCHMARK"),
-                          (BOND, "BOND"), (STOCK, "STOCK"))
+PERFORMER_GROUP_STRATEGY = "PERFORMER_GROUP_STRATEGY"
+PERFORMER_GROUP_BENCHMARK = "PERFORMER_GROUP_BENCHMARK"
+PERFORMER_GROUP_BOND = "PERFORMER_GROUP_BOND"
+PERFORMER_GROUP_STOCK = "PERFORMER_GROUP_STOCK"
+PERFORMER_GROUP_CHOICE = (
+    (PERFORMER_GROUP_STRATEGY, "PERFORMER_GROUP_STRATEGY"),
+    (PERFORMER_GROUP_BENCHMARK, "PERFORMER_GROUP_BENCHMARK"),
+    (PERFORMER_GROUP_BOND, "PERFORMER_GROUP_BOND"),
+    (PERFORMER_GROUP_STOCK, "PERFORMER_GROUP_STOCK")
+)
 
 
 class Performer(models.Model):
@@ -2309,7 +2313,7 @@ class Performer(models.Model):
     name = models.CharField(max_length=100)
     group = models.CharField(max_length=20,
                              choices=PERFORMER_GROUP_CHOICE,
-                             default=BENCHMARK)
+                             default=PERFORMER_GROUP_BENCHMARK)
     allocation = models.FloatField(default=0)
     #portfolio_set = models.ForeignKey(PortfolioSet)
     portfolio_set = models.IntegerField()

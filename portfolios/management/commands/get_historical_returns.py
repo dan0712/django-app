@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from main.models import Platform, Performer, Ticker, SymbolReturnHistory, STRATEGY, PortfolioSet
+from main.models import Platform, Performer, Ticker, SymbolReturnHistory, PERFORMER_GROUP_STRATEGY, PortfolioSet
 from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
 import json
@@ -16,7 +16,7 @@ def get_historical_returns():
     symbols = []
     # get all the symbols
     for p in Performer.objects.all():
-        if p.group == STRATEGY:
+        if p.group == PERFORMER_GROUP_STRATEGY:
             continue
         if p.symbol:
             symbols.append(p.symbol)
@@ -48,7 +48,7 @@ def get_historical_returns():
             idx += 1
 
     # save strategies
-    for p in Performer.objects.filter(group=STRATEGY).all():
+    for p in Performer.objects.filter(group=PERFORMER_GROUP_STRATEGY).all():
         allocation = float("{:.2f}".format(p.allocation))
         p.symbol = "ALLOC{0}".format(allocation)
         p.save()

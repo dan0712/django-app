@@ -13,7 +13,7 @@ from portfolios.bl_model import OptimizationException
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, TRANSACTION_STATUS_PENDING, Goal, TransactionMemo, \
-    RecurringTransaction, TRANSACTION_REASON_WITHDRAWAL, Performer, STRATEGY, SymbolReturnHistory, \
+    RecurringTransaction, TRANSACTION_REASON_WITHDRAWAL, Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory, \
     TRANSACTION_STATUS_EXECUTED, TRANSACTION_REASON_FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass, Position
 
@@ -827,7 +827,7 @@ class AnalysisReturns(ClientView):
         for p in Performer.objects.all():
             counter += 1
             obj = {}
-            if p.group == STRATEGY:
+            if p.group == PERFORMER_GROUP_STRATEGY:
                 obj["name"] = p.name
             else:
                 obj["name"] = "{0} ({1})".format(p.name, p.symbol)
@@ -853,7 +853,7 @@ class AnalysisReturns(ClientView):
                         "{0}".format(int(1000 * time.mktime(r.date.timetuple()))),
                     "i": r.return_number
                 }
-                if p.group == STRATEGY:
+                if p.group == PERFORMER_GROUP_STRATEGY:
                     r_obj["ac"] = p.allocation
                 obj["returns"].append(r_obj)
 

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from main.models import Platform, Performer, Ticker, SymbolReturnHistory, STRATEGY, Goal, Transaction, TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED
+from main.models import Platform, Performer, Ticker, SymbolReturnHistory, PERFORMER_GROUP_STRATEGY, Goal, Transaction, TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED
 from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
 from portfolios.bl_model import handle_data
