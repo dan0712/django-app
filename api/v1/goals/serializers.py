@@ -213,12 +213,10 @@ class GoalSerializer(serializers.ModelSerializer):
     total_return = serializers.FloatField()
     invested = InvestedSerializer(source='investments')
     earned = EarnedSerializer(source='earnings')
+    selected_settings = GoalSettingSerializer()
 
     class Meta:
         model = Goal
-        exclude = (
-            'active_settings',
-        )
         read_only_fields = ('created',)
 
 
