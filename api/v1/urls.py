@@ -27,7 +27,7 @@ urlpatterns = patterns('',
     # reserved # url(r'^register/send-reset-email/?$', user_views.SendResetEmailView.as_view(), name='user-send-reset-email'),
 
     # Legacy APIs
-    url(r'^returns$', AnalysisReturns.as_view()),
+    url(r'^returns/$', AnalysisReturns.as_view()),
 )
 
 urlpatterns += router.urls
