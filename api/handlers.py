@@ -1,24 +1,23 @@
-import logging
+from django.conf import settings
 
 from rest_framework.response import Response
 from rest_framework import status, exceptions
 from rest_framework.views import exception_handler
 
 
-logger = logging.getLogger('api_handler')
-
 def api_exception_handler(exc, context):
 
-    logger.exception("Exception in API")
-
     response = exception_handler(exc, context)
-    print ('!!!!context', context, exc)
+
     error = {
         'reason': exc.__class__.__name__,
     }
 
     if response is None:
-        error['code'] = 400
+        if settings.DEBUG:
+            return response # it's not an api exception (certainly the bug)
+        else:
+            error['code'] = 400
 
     else:
         error['code'] = response.status_code
