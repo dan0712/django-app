@@ -28,7 +28,6 @@ from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
-from recurrence.fields import RecurrenceField
 from rest_framework.authtoken.models import Token
 
 from main.slug import unique_slugify
@@ -1845,6 +1844,10 @@ class Goal(models.Model):
                   'but are not yet approved by the advisor.',
         blank=True,
         null=True)
+    # Drift score is a cached field, and is populated whenever the goal is processed at the end-of-day process.
+    # As such it should not be written to anywhere else than that.
+    drift_score = models.FloatField(default=0.0, help_text='The maximum ratio of current drift to maximum allowable'
+                                                           ' drift from any metric on this goal.')
     archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
 
     # Also has reverse 'positions' field from Position model.
@@ -2207,6 +2210,23 @@ class GoalMetric(models.Model):
         help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
     measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
+
+    @property
+    def drift_score(self):
+        """
+        Drift score is a multiplier of how many times the rebalance trigger level the current difference between the
+        measured value and configured value is. The range will typically be [-1.0,1.0], but may extend higher or lower
+        under extreme drift situations.
+        Our rebalancing aims to keep the drift score for a goal between [-1.0,1.0].
+        :return: Float - The drift score
+        """
+        if self.measured_val is None:
+            return 0.0
+
+        if self.rebalance_type == self.REBALANCE_TYPE_ABSOLUTE:
+            return self.rebalance_thr / (self.measured_val - self.configured_val)
+        else:
+            return self.rebalance_thr / ((self.measured_val - self.configured_val) / self.self.configured_val)
 
     def __str__(self):
         if self.type == 0:

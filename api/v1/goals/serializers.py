@@ -295,7 +295,10 @@ class GoalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Goal
-        read_only_fields = ('created',)
+        read_only_fields = (
+            'created',
+            'drift_score'
+        )
 
 
 class GoalListSerializer(serializers.ModelSerializer):

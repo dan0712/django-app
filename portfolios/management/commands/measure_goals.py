@@ -14,6 +14,7 @@ import numpy as np
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from scipy.optimize import minimize_scalar
 
 from main.models import Goal, Position, GoalMetric
@@ -44,7 +45,7 @@ def get_risk_score(goal, weights, idata):
         logger.info("No holdings for goal: {} so current risk score is 0.".format(goal))
         return 0.0
 
-    current_cost = optimize_settings(goal, idata)[1]
+    current_cost = optimize_settings(goal.active_settings, idata)[1]
 
     # Set up the required data
     covars, samples, instruments, masks = idata
@@ -81,6 +82,16 @@ def get_risk_score(goal, weights, idata):
 
 
 def measure(goal, idata):
+    """
+    Measure all the metrics on a goals's active settings, and set the maximum drift for the goal.
+    :param goal:
+    :param idata:
+    :return:
+    """
+    if goal.active_settings is None:
+        logger.debug("Not measuring metrics for goal: {} as it has no active settings.".format(goal))
+        return
+
     weights = get_weights(goal)
     # Generate a feature -> weight map
     feature_weights = defaultdict(float)
@@ -93,17 +104,22 @@ def measure(goal, idata):
         logger.exception("Cannot get the current risk score.")
         risk_score = None
 
-    for metric in goal.metrics.all():
-        if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
-            logger.debug("Setting measured risk score: {} for metric: {}".format(risk_score, metric))
-            metric.measured_val = risk_score
-        elif metric.type == GoalMetric.METRIC_TYPE_PORTFOLIO_MIX:
-            val = feature_weights[metric.feature.id]
-            logger.debug("Setting measured proportion: {} for metric: {}".format(val, metric))
-            metric.measured_val = val
-        else:
-            raise Exception("Unknown type on metric: {}".format(metric))
-        metric.save()
+    with transaction.atomic:
+        drift_score = 0.0
+        for metric in goal.active_settings.metrics.all():
+            if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
+                logger.debug("Setting measured risk score: {} for metric: {}".format(risk_score, metric))
+                metric.measured_val = risk_score
+            elif metric.type == GoalMetric.METRIC_TYPE_PORTFOLIO_MIX:
+                val = feature_weights[metric.feature.id]
+                logger.debug("Setting measured proportion: {} for metric: {}".format(val, metric))
+                metric.measured_val = val
+            else:
+                raise Exception("Unknown type on metric: {}".format(metric))
+            drift_score = max(drift_score, abs(metric.drift_score))
+            metric.save()
+        goal.drift_score = drift_score
+        goal.save()
 
 
 def measure_all():
