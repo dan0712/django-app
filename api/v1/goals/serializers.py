@@ -430,10 +430,12 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
         fields = (
             'name',
             'type',
+            'portfolio_set',
         )  # list fields explicitly
 
     def __init__(self, *args, **kwargs):
-        super(GoalUpdateSerializer, self).__init__(*args, **kwargs)
+        kwargs.pop('partial', None)
+        super(GoalUpdateSerializer, self).__init__(*args, partial=True, **kwargs)
 
         # request based validation
         request = self.context.get('request')
