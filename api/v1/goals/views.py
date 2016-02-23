@@ -21,8 +21,8 @@ from . import serializers
 class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     queryset = Goal.objects.all() \
         .select_related('account') \
-        .select_related('active_settings') \
-        .prefetch_related('active_settings__metrics')  
+        .select_related('selected_settings') \
+        .prefetch_related('selected_settings__metrics')
         # , 'approved_settings', 'selected_settings') \
         #.defer('account__data') \
     serializer_class = serializers.GoalSerializer
@@ -57,7 +57,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         # hide "slow" fields for list view
         if self.action == 'list':
             qs = qs.prefetch_related()
-            qs = qs.select_related()
+            qs = qs.select_related('selected_settings')
             qs = qs.filter(archived=False)
 
         # show "permissioned" records only
@@ -201,7 +201,6 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer.save(to_goal=goal, type=TRANSACTION_REASON_DEPOSIT)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
 
     @staticmethod
     def build_portfolio_data(idata, item):

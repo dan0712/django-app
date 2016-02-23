@@ -295,22 +295,19 @@ class GoalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Goal
-        read_only_fields = (
-            'created',
-            'drift_score'
-        )
 
 
 class GoalListSerializer(serializers.ModelSerializer):
     """
     Light version of GoalSerializer
     """
+    on_track = serializers.BooleanField()
+    balance = serializers.FloatField(source='current_balance')
+    earnings = serializers.FloatField(source='total_earnings')
+    selected_settings = GoalSettingSerializer()
+
     class Meta:
         model = Goal
-        fields = (
-            'id',
-            'name',
-        )
 
 
 class GoalCreateSerializer(serializers.ModelSerializer):
