@@ -10,13 +10,13 @@ from rest_framework.fields import FloatField, IntegerField
 from main.models import (
     ClientAccount,
     Goal, GoalSetting, GoalMetric, GoalTypes,
-    Position, Portfolio, PortfolioItem, 
+    Position, Portfolio, PortfolioItem,
     RecurringTransaction,
     StandardAssetFeatureValues,
-    Transaction)
+    Transaction, TRANSACTION_REASON_DEPOSIT)
 from portfolios.management.commands.portfolio_calculation import (
-    get_instruments, calculate_portfolio, Unsatisfiable
-)
+    get_instruments, calculate_portfolio, Unsatisfiable,
+    current_stats_from_weights)
 from portfolios.management.commands.risk_profiler import recommend_risk
 
 
@@ -40,7 +40,6 @@ class PortfolioItemSerializer(serializers.ModelSerializer):
         fields = (
             'asset',
             'weight',
-            'volatility',
         )
 
 
@@ -50,9 +49,14 @@ class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Portfolio
         fields = (
-            'variance',
+            'stdev',
             'er',
             'items',
+        )
+        # Variance and er are read only because they are ALWAYS calculated from backend using our data.
+        read_only_fields = (
+            'stdev',
+            'er'
         )
 
 
@@ -63,7 +67,7 @@ class StatelessPortfolioItemSerializer(serializers.Serializer):
 
 
 class PortfolioStatelessSerializer(serializers.Serializer):
-    variance = FloatField()
+    stdev = FloatField()
     er = FloatField()
     items = StatelessPortfolioItemSerializer(many=True)
 
@@ -83,12 +87,18 @@ class TransactionCreateSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = (
             'amount',
-            'from_account',
-            'to_account',
+            'from_goal',
+            'to_goal',
         )
         required_fields = (
             'amount'
         )
+
+    #def create(self, validated_data):
+    #    return Transaction.objects.create(**validated_data)
+
+    def update(self, validated_data):
+        raise NotImplementedError('update is not a valid operation for a Transaction')
 
 
 class GoalMetricSerializer(serializers.ModelSerializer):
@@ -138,22 +148,27 @@ class GoalSettingSerializer(serializers.ModelSerializer):
                 # We have to do it this way so the portfolio_id field on the setting is updated.
                 new_port = setting.portfolio
                 pxs = setting.portfolio.items.all()
+                # Get the current portfolio statistics of the current weights,, as new weights were not passed in.
+                er, stdev, idatas = current_stats_from_weights([(item.asset.id, item.weight) for item in pxs])
                 new_port.id = None
+                new_port.er = er
+                new_port.stdev = stdev
                 new_port.save()
                 setting.portfolio = new_port
                 for item in pxs:
                     item.portfolio = setting.portfolio
+                    item.volatility = idatas[item.id]
                     item.save()
             else:
                 old_port = setting.portfolio
                 port_items_data = port_data.pop('items', None)
-                setting.portfolio = Portfolio.objects.create(**port_data)
-                if port_items_data is None:
-                    for item in old_port.items:
-                        item.portfolio = setting.portfolio
-                        item.save()
-                else:
-                    PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=setting.portfolio, **i_data) for i_data in port_items_data])
+                # Get the current portfolio statistics of the given weights.
+                er, stdev, idatas = current_stats_from_weights([(item['asset'],
+                                                                 item['weight']) for item in port_items_data])
+                setting.portfolio = Portfolio.objects.create(er=er, stdev=stdev)
+                PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=setting.portfolio,
+                                                                 **i_data,
+                                                                 volatility=idatas[i_data['asset']]) for i_data in port_items_data])
                 old_port.delete()
 
             for attr, value in validated_data.items():
@@ -179,15 +194,8 @@ class GoalSettingSerializer(serializers.ModelSerializer):
                 for item in mxs:
                     item.setting = setting
                     item.save()
-                optimise_required = False
             else:
                 GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
-                optimise_required = True
-
-            if optimise_required:
-                pass
-                # TODO: Redo the optimisation, and return an error if the portfolio passed in does not match that
-                # TODO which was optimised.
 
             goal.set_selected(setting)
 
@@ -204,8 +212,13 @@ class GoalSettingSerializer(serializers.ModelSerializer):
         port_data = validated_data.pop('portfolio')
         port_items_data = port_data.pop('items')
         with transaction.atomic():
-            port = Portfolio.objects.create(**port_data)
-            PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port, **i_data) for i_data in port_items_data])
+            # Get the current portfolio statistics of the given weights.
+            er, stdev, idatas = current_stats_from_weights([(item['asset'],
+                                                             item['weight']) for item in port_items_data])
+            port = Portfolio.objects.create(er=er, stdev=stdev)
+            PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
+                                                             **i_data,
+                                                             volatility=idatas[i_data['asset']]) for i_data in port_items_data])
             setting = GoalSetting.objects.create(portfolio=port, **validated_data)
             RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
             GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
@@ -249,7 +262,7 @@ class GoalSettingStatelessSerializer(serializers.ModelSerializer):
     def create_stateless(validated_data, goal):
         metrics_data = validated_data.pop('metrics')
         tx_data = validated_data.pop('recurring_transactions')
-        port = Portfolio(variance=0, er=0)
+        port = Portfolio(stdev=0, er=0)
         setting = GoalSetting(portfolio=port, **validated_data)
         metrics = [GoalMetric(setting=setting, **i_data) for i_data in metrics_data]
         goalt = goal
@@ -363,7 +376,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
 
         with transaction.atomic():
             portfolio = Portfolio.objects.create(
-                variance=0,
+                stdev=0,
                 er=0,
             )
             settings = GoalSetting.objects.create(
@@ -399,17 +412,22 @@ class GoalCreateSerializer(serializers.ModelSerializer):
                     configured_val=1  # Start with 100% ethical.
                 )
 
-            # TODO: Add the initial deposit logic.
+            # Add the initial deposit if specified.
+            initial_dep = validated_data.pop('initial_deposit', None)
+            if initial_dep is not None:
+                Transaction.objects.create(reason=TRANSACTION_REASON_DEPOSIT,
+                                           to_goal=goal,
+                                           amount=initial_dep)
 
             # Calculate the optimised portfolio
             try:
-                weights, er, variance = calculate_portfolio(settings, idata)
+                weights, er, stdev = calculate_portfolio(settings, idata)
                 items = [PortfolioItem(portfolio=portfolio,
                                        asset=idata[2].loc[sym, 'id'],
                                        weight=weight,
                                        volatility=idata[0].loc[sym, sym]) for sym, weight in weights.items()]
                 PortfolioItem.objects.bulk_create(items)
-                portfolio.variance = variance
+                portfolio.stdev = stdev
                 portfolio.er = er
                 portfolio.save()
             except Unsatisfiable:

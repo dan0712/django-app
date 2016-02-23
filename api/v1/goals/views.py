@@ -5,7 +5,7 @@ from rest_framework.decorators import list_route, detail_route
 
 from api.v1.goals.serializers import PortfolioStatelessSerializer
 from main.models import Goal, GoalTypes, TRANSACTION_REASON_DEPOSIT
-from portfolios.management.commands.portfolio_calculation import calculate_portfolio, get_instruments, Unsatisfiable, \
+from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios
 from ..views import ApiViewMixin
 from ..permissions import (
@@ -155,15 +155,9 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         settings = serializer.create_stateless(serializer.validated_data, goal)
 
-        # Calculate the portfolio
-        idata = get_instruments()
-
         try:
-            serializer = PortfolioStatelessSerializer(
-                data=self.build_portfolio_data(idata, calculate_portfolio(settings, idata)),
-                many=False)
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data)
+            data=self.build_portfolio_data(calculate_portfolio(settings))
+            return Response(data)
         except Unsatisfiable as e:
             # TODO: Reformat this into a structured response..
             return Response("No portfolio could be found: {}".format(e))
@@ -181,14 +175,9 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         settings = serializer.create_stateless(serializer.validated_data, goal)
 
         # Calculate the portfolio
-        idata = get_instruments()
-
         try:
-            serializer = PortfolioStatelessSerializer(
-                data=[self.build_portfolio_data(idata, item) for item in calculate_portfolios(settings, idata)],
-                many=True)
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data)
+            data = {str(item[0]): self.build_portfolio_data(item[1]) for item in calculate_portfolios(settings)}
+            return Response(data)
         except Unsatisfiable as e:
             # TODO: Reformat this into a structured response..
             return Response("No portfolio could be found: {}".format(e))
@@ -198,23 +187,22 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         goal = self.get_object()
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(to_goal=goal, type=TRANSACTION_REASON_DEPOSIT)
+        serializer.save(to_goal=goal, reason=TRANSACTION_REASON_DEPOSIT)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @staticmethod
-    def build_portfolio_data(idata, item):
+    def build_portfolio_data(item):
         if item is None:
             return None
-        weights, variance, er = item
+        weights, er, stdev = item
         return {
-            'variance': variance,
+            'stdev': stdev,
             'er': er,
             'items': [
                 {
-                    'asset': idata[2].loc[sym, 'id'],
-                    'weight': weight,
-                    'volatility': idata[0].loc[sym, sym],
-                } for sym, weight in weights.items()
+                    'asset': tid,
+                    'weight': weight
+                } for tid, weight in weights.iteritems()
             ]
         }
