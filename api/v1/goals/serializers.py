@@ -285,6 +285,9 @@ class GoalSettingStatelessSerializer(serializers.ModelSerializer):
 
 
 class GoalSerializer(serializers.ModelSerializer):
+    """
+    For read (GET) requests only
+    """
     class InvestedSerializer(serializers.Serializer):
         deposits = serializers.FloatField()
         withdrawals = serializers.FloatField()
@@ -312,6 +315,7 @@ class GoalSerializer(serializers.ModelSerializer):
 
 class GoalListSerializer(serializers.ModelSerializer):
     """
+    For read (GET) requests only
     Light version of GoalSerializer
     """
     on_track = serializers.BooleanField()
@@ -324,6 +328,9 @@ class GoalListSerializer(serializers.ModelSerializer):
 
 
 class GoalCreateSerializer(serializers.ModelSerializer):
+    """
+    For write (POST/...) requests only
+    """
     target = serializers.IntegerField()
     completion = serializers.DateField()
     initial_deposit = serializers.IntegerField(required=False)
@@ -439,6 +446,9 @@ class GoalCreateSerializer(serializers.ModelSerializer):
 
 
 class GoalUpdateSerializer(serializers.ModelSerializer):
+    """
+    For write (PUT/...) requests only
+    """
     class Meta:
         model = Goal
         fields = (
@@ -467,6 +477,7 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
 class GoalGoalTypeListSerializer(serializers.ModelSerializer):
     """
     Experimental
+    For read (GET) requests only
     """
     class Meta:
         model = GoalTypes
@@ -475,6 +486,7 @@ class GoalGoalTypeListSerializer(serializers.ModelSerializer):
 class GoalPositionListSerializer(serializers.ModelSerializer):
     """
     Experimental
+    For read (GET) requests only
     """
     class Meta:
         model = Position
