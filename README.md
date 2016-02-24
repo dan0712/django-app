@@ -86,7 +86,7 @@ Error status and other info is placed in the response body:
 
 ### Filtering, ordering and pagination
 
-Standard params that are accessible for all the "list" endpoints (RESERVED):
+Standard params that are accessible for all the "list" endpoints:
 ```
 PARAMS:
 "ordering"                  : String # example: '-name'
