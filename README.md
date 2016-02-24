@@ -84,6 +84,18 @@ Error status and other info is placed in the response body:
 ```
 
 
+### Filtering, ordering and pagination
+
+Standard params that are accessible for all the "list" endpoints (RESERVED):
+```
+PARAMS:
+"ordering"                  : String # example: '-name'
+"page"                      : Int # page number # starts from 0
+"page_size"                 : Int # records per page # default: 30
+"search"                    : String # for free-form search (*)
+```
+
+
 ### Authentication
 
 **POST /api/register**  RESERVED  
