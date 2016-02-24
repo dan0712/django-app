@@ -1780,7 +1780,7 @@ class RecurringTransaction(models.Model):
 
 
 class Portfolio(models.Model):
-    variance = models.FloatField()
+    stdev = models.FloatField()
     er = models.FloatField()
     created_date = models.DateTimeField(auto_now_add=True)
     # Also has 'goal_setting' field from GoalSetting

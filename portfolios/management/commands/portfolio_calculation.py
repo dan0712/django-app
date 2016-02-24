@@ -256,16 +256,23 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None):
     :param settings: Details of the settings you want the constraints for
     :param cvx_masks: A dict of all the settings-specific cvxpy iloc lists against the settings_symbols for each mask name.
     :param xs: The list of cvxpy variables we are optimising
+    :param overrides: An associative collection of key -> overridden value, where key can be any feature id, or the
+                      string 'risk_score' to override the risk score.
     :return: (lambda, constraints)
     """
     constraints = []
     risk_score = None
     for metric in settings.metrics.all():
         if metric.type == 1:
-            risk_score = metric.configured_val
+            if overrides:
+                risk_score = overrides.get("risk_score", metric.configured_val)
+            else:
+                risk_score = metric.configured_val
         elif metric.type == 0:  # Portfolio Mix
             if overrides:
                 val = overrides.get(metric.feature.id, metric.configured_val)
+            else:
+                val = metric.configured_val
             # Non-inclusions are taken care of in the settings mask, so ignore those constraints.
             if math.isclose(val, 0.0):
                 continue
@@ -367,59 +374,73 @@ def get_views(portfolio_set, instruments):
 
 
 #@do_cprofile
-def calculate_portfolios(goal, api=DbApi()) -> str:
+def calculate_portfolios(setting, api=DbApi()):
+    """
+    Calculate a list of 101 portfolios ranging over risk score.
+    :param setting: The settig we want to generate portfolios for.
+    :param api: Where to get the data
+    :raises Unsatisfiable: If no single satisfiable portfolio could be found.
+    :return: A list of 101 (risk_score, portfolio) tuples
+            - risk_score [0-1] in steps of 0.01
+            - portfolio is the same as the return value of calculate_portfolio.
+                portfolio will be None if no satisfiable portfolio could be found for this risk_score
+    """
     logger.debug("Calculate Portfolios Requested")
     try:
         idata = get_instruments(api)
-        convert_goal(goal)
         logger.debug("Got instruments")
-        json_portfolios = {}
-        # TODO: Range over lambda, not stocks alloc.
-        oldalloc = goal.allocation
-        stocks_feat = AssetFeatureValue.objects.get(name='Stocks Only').id
-        for allocation in list(np.arange(0, 1.01, 0.01)):
-            logger.debug("Doing alloc: {}".format(allocation))
-            # TODO: Remove this hack and actually continue the exception to JSON side
+        # We don't need to recalculate the inputs for every risk score, as the risk score is just passed back.
+        # We can do that directly
+        opt_inputs = calc_opt_inputs(setting, idata)
+        xs, sigma, mu, _, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = opt_inputs
+        logger.debug("Optimising for 100 portfolios using mu: {}\ncovars: {}\nsigma: {}".format(mu, lcovars, sigma))
+        # TODO: Use a parallel approach here.
+        portfolios = []
+        found = False
+        for risk_score in list(np.arange(0, 1.01, 0.01)):
+            lam = risk_score_to_lambda(risk_score)
+            logger.debug("Doing risk_score: {}, giving lambda: {}".format(risk_score, lam))
             try:
-                # Calculate the opt inputs for ranging alloc
-                ovr = {stocks_feat: allocation}
-                xs, sigma, mu, lam, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = calc_opt_inputs(goal, idata, metric_overrides=ovr)
-                logger.debug("Optimising goal using lambda: {}, mu: {}\ncovars: {}\nsigma: {}".format(lam, mu, lcovars, sigma))
                 weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, constraints)
-
                 if not weights.any():
-                    raise Unsatisfiable("Could not find an appropriate allocation for Goal: {}".format(goal))
+                    raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(setting))
 
                 # Find the optimal orderable weights.
-                weights, cost = make_orderable(weights, cost, xs, sigma, mu, lam, constraints, goal, goal_instruments['price'])
+                weights, cost = make_orderable(weights,
+                                               cost,
+                                               xs,
+                                               sigma,
+                                               mu,
+                                               lam,
+                                               constraints,
+                                               setting,
+                                               goal_instruments['price'])
+                # Convert to our statistics for our portfolio.
+                portfolios.append((risk_score,
+                                   get_portfolio_stats(goal_instruments,
+                                                       goal_symbol_ixs,
+                                                       instruments,
+                                                       lcovars,
+                                                       weights)))
+                found = True
 
-                weights, er, vol = get_portfolio_stats(goal_instruments, goal_symbol_ixs, instruments, lcovars, weights)
             except Unsatisfiable as e:
-                logger.warn(e)
-                idata[2]['_weight_'] = 0
-                weights = idata[2].groupby('ac')['_weight_'].sum()
-                # We set all the weights even, but still adding to 1, as the UI can't handle otherwise.
-                weights[:] = 1/len(weights)
-                er = 0.0
-                vol = 0.0
+                logger.debug("No allocation possible for lambda: {}".format(lam))
+                last_err = e
+                portfolios.append((risk_score, None))
 
-            if weights is not None:
-                json_portfolios["{0:.2f}".format(allocation)] = {
-                    "allocations": weights.to_dict(),
-                    "risk": allocation,
-                    "expectedReturn": er * 100,
-                    # Vol we return is stddev
-                    "volatility": (vol * 100 * 100) ** (1 / 2)
-                }
-        goal.allocation = oldalloc
+        if not found:
+            raise Unsatisfiable("No suitable portfolio could be found for any risk score. Last reason: {}".format(last_err))
+
     except:
-        logger.exception("Problem calculating portfolio for goal: {}".format(goal))
+        logger.exception("Problem calculating portfolio for setting: {}".format(setting))
         raise
 
-    return json_portfolios
+    return portfolios
 
 
 class Unsatisfiable(Exception):
+    # TODO: Give this more structured data
     pass
 
 
@@ -474,15 +495,17 @@ def calc_opt_inputs(settings, idata, metric_overrides=None):
     return xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars
 
 
-def calculate_portfolio(settings, idata):
+def calculate_portfolio(settings, idata=None):
     """
     Calculates the instrument weights to use for a given goal settings.
     :param settings: The settings to calculate the portfolio for.
     :return: (weights, er, variance) All values will be None if no suitable allocation can be found.
              - weights: A Pandas series of weights for each instrument.
              - er: Expected return of portfolio
-             - variance: Total variance of portfolio
+             - stdev: stdev of portfolio
     """
+    if idata is None:
+        idata = get_instruments()
     logger.debug("Calculating portfolio for settings: {}".format(settings))
 
     odata = optimize_settings(settings, idata)
@@ -495,6 +518,18 @@ def calculate_portfolio(settings, idata):
 
 
 def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, lcovars, weights):
+    """
+
+    :param settings_instruments:
+    :param settings_symbol_ixs:
+    :param instruments:
+    :param lcovars:
+    :param weights:
+    :return: (weights, er, stdev)
+            - weights is Pandas series of weights indexed on symbol
+            - er is the expected return of the portfolio
+            - stdev is the stdev of the portfolio returns
+    """
     # Get the totals per asset class, portfolio expected return and portfolio variance
     instruments['_weight_'] = 0.0
     instruments.iloc[settings_symbol_ixs, instruments.columns.get_loc('_weight_')] = weights
@@ -515,7 +550,36 @@ def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, 
     variance = weights.dot(lcovars).dot(weights.T)
     logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, lcovars))
 
-    return ret_weights, er, variance
+    # Convert variance to stdev and scale appropriately
+    return ret_weights, er * 100, (variance * 100 * 100) ** (1 / 2)
+
+
+def current_stats_from_weights(weights):
+    """
+    :param weights: A list of (ticker_id, weight) tuples.
+    :return: (portfolio_er, portfolio_stdev, {ticker_id: ticker_variance})
+    """
+    covars, samples, instruments, masks = get_instruments()
+
+    ix = instruments.set_index('id').index
+    ilocs = []
+    res = {}
+    for tid, weight in weights.itertuples():
+        iloc = ix.get_loc(tid)
+        ilocs.append(iloc)
+        res[tid] = covars.iloc[iloc]
+
+    lcovars = covars.iloc[ilocs, ilocs]
+    lers = instruments['exp_ret'].iloc[ilocs]
+    res = [(entry[0], lcovars.iloc[i]) for i, entry in enumerate(weights)]
+
+    # Generate portfolio stdev and expected return
+    er = weights.values.dot(lers)
+    logger.debug("Generated portfolio expected return of {} using current asset returns: {}".format(er, lers))
+    variance = weights.values.dot(lcovars).dot(weights.values.T)
+    logger.debug("Generated portfolio variance of {} using current asset covars: {}".format(variance, lcovars))
+
+    return er * 100, (variance * 100 * 100) ** (1 / 2), res
 
 
 def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, settings, prices):
@@ -536,9 +600,10 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     :param constraints: The existing constraints we must adhere to
     :param settings: The settings we are making this portfolio orderable for.
     :param prices: The prices of each asset.
+    :raises Unsatifiable if at any point a satifiable portfoio callot be found.
     :return: (weights, cost)
         - weights are the new symbol weights that should align to orderable units given the passed prices.
-          This will be an empty array if no orderable portfolio could be found.
+          This will always be set, otherwise Unsatisfiable will be raised.
         - cost is the new Markowitz cost
     """
     goal = settings.goal
@@ -682,22 +747,15 @@ def get_unconstrained(portfolio_set):
 
 def get_all_optimal_portfolios():
     # calculate default portfolio
-    yahoo_api = DbApi()#get_api("YAHOO")
-
-    for ps in PortfolioSet.objects.all():
-        ps.portfolios = ujson.dumps(get_unconstrained(ps), double_precision=2)
-        ps.save()
+    api = DbApi()#get_api("YAHOO")
 
     # calculate portfolios
     for goal in Goal.objects.all():
-        if goal.is_custom_size:
+        if goal.selected_settings is not None:
             try:
-                ports = calculate_portfolios(goal, api=yahoo_api)
-                goal.portfolios = ujson.dumps(ports, double_precision=2)
+                calculate_portfolios(goal.selected_settings, api=api)
             except Unsatisfiable as e:
                 logger.warn(e)
-                goal.portfolios = '{}'
-            goal.save()
 
 
 class Command(BaseCommand):
