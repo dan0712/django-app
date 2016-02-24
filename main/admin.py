@@ -280,7 +280,7 @@ class PortfolioSetAdmin(admin.ModelAdmin):
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('reason', 'from_goal', 'to_goal', 'status', 'amount', 'created_date')
+    list_display = ('reason', 'from_goal', 'to_goal', 'status', 'amount', 'created')
     inlines = (TransactionMemoInline,)
     actions = (execute_transaction,)
     list_filter = ('status',)

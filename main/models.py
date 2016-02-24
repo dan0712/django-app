@@ -1782,7 +1782,7 @@ class RecurringTransaction(models.Model):
 class Portfolio(models.Model):
     stdev = models.FloatField()
     er = models.FloatField()
-    created_date = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     # Also has 'goal_setting' field from GoalSetting
     # Also has 'items' field from PortfolioItem
 
@@ -1820,6 +1820,7 @@ class Goal(models.Model):
     portfolio_set = models.ForeignKey(
         PortfolioSet,
         help_text='The set of assets that may be used to create a portfolio for this goal.')
+    # The cash_balance field should NEVER be updated by an API. only our internal processes.
     cash_balance = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
 
     # TODO: Remove null bit below once everyone is running this code.
@@ -2283,8 +2284,8 @@ class Transaction(models.Model):
     status = models.CharField(max_length=20,
                               choices=TRANSACTION_STATUSES,
                               default=TRANSACTION_STATUS_PENDING)
-    created_date = models.DateTimeField(auto_now_add=True)
-    executed_date = models.DateTimeField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    executed = models.DateTimeField(null=True)
     new_balance = models.FloatField(default=0)
     inversion = models.FloatField(default=0)
     return_fraction = models.FloatField(default=0)

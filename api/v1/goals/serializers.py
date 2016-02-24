@@ -1,4 +1,5 @@
 import copy
+import datetime
 import logging
 
 from django.db import transaction
@@ -94,9 +95,6 @@ class TransactionCreateSerializer(serializers.ModelSerializer):
             'amount'
         )
 
-    #def create(self, validated_data):
-    #    return Transaction.objects.create(**validated_data)
-
     def update(self, validated_data):
         raise NotImplementedError('update is not a valid operation for a Transaction')
 
@@ -152,12 +150,13 @@ class GoalSettingSerializer(serializers.ModelSerializer):
                 er, stdev, idatas = current_stats_from_weights([(item.asset.id, item.weight) for item in pxs])
                 new_port.id = None
                 new_port.er = er
+                new_port.created = datetime.datetime.now()
                 new_port.stdev = stdev
                 new_port.save()
                 setting.portfolio = new_port
                 for item in pxs:
                     item.portfolio = setting.portfolio
-                    item.volatility = idatas[item.id]
+                    item.volatility = idatas[item.asset.id]
                     item.save()
             else:
                 old_port = setting.portfolio
@@ -286,7 +285,8 @@ class GoalSettingStatelessSerializer(serializers.ModelSerializer):
 
 class GoalSerializer(serializers.ModelSerializer):
     """
-    For read (GET) requests only
+    This serializer is for READ-(GET) requests only. Currently this is enforced by the fact that it contains nested objects, but the fields
+    'created' and 'cash_balance' should NEVER be updated by an API element.
     """
     class InvestedSerializer(serializers.Serializer):
         deposits = serializers.FloatField()

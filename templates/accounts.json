@@ -22,7 +22,7 @@
       "financialPlanId": {{goal.get_financial_plan_id}},
       "financialPlan": {{goal.get_financial_plan}},
       "accountType": "{{goal.account_type}}",
-      "createdDate": "{{goal.created_date |c_datetime}}",
+      "createdDate": "{{goal.created |c_datetime}}",
       "goalAmount": {% if goal.target != None %}"{{goal.target}}" {% else %} null{% endif %},
       "income": {% if goal.income %} true {% else %} false{% endif %},
       "goalType": "{{goal.type}}",

@@ -201,7 +201,7 @@ class ClientAccounts(ClientView, TemplateView):
                     p.delete()
 
                 transfer_transaction.status = TRANSACTION_STATUS_EXECUTED
-                transfer_transaction.executed_date = datetime.now()
+                transfer_transaction.executed = datetime.now()
                 transfer_transaction.save()
 
             else:
@@ -352,16 +352,16 @@ class NewTransactionsView(ClientView):
             goal = get_object_or_404(Goal,
                                      pk=goal_pk,
                                      account__primary_owner=self.client)
-            query_set = goal.transactions.order_by("executed_date").filter(
+            query_set = goal.transactions.order_by("executed").filter(
                 status=TRANSACTION_STATUS_EXECUTED)
         else:
-            query_set = Transaction.objects.order_by("executed_date").filter(
+            query_set = Transaction.objects.order_by("executed").filter(
                 status=TRANSACTION_STATUS_EXECUTED,
                 account__account__primary_owner=self.client)
 
         if days_ago:
             days_ago = datetime.today() - timedelta(days=days_ago)
-            query_set = query_set.filter(executed_date__gte=days_ago)
+            query_set = query_set.filter(executed__gte=days_ago)
 
         transactions = []
         market_change_by_week = {}
@@ -369,7 +369,7 @@ class NewTransactionsView(ClientView):
         for transaction in query_set.all():
                 '''
                 if transaction.type == TRANSACTION_TYPE_MARKET_CHANGE:
-                    dt = transaction.executed_date
+                    dt = transaction.executed
                     week_day = str(dt.isocalendar()[1])
                     if week_day not in market_change_by_week:
                         start_day_dt = dt - timedelta(days=dt.weekday())
@@ -399,7 +399,7 @@ class NewTransactionsView(ClientView):
                         "change": "{:.2f}".format(transaction.amount),
                         "balance": "{:.2f}".format(transaction.new_balance),
                         "createdDate":
-                            transaction.created_date.strftime('%Y%m%d%H%M%S'),
+                            transaction.created.strftime('%Y%m%d%H%M%S'),
                         "completedDate": dt.strftime('%Y%m%d%H%M%S'),
                         "isCanceled": False,
                         "shortDescription": "Market Change",
@@ -419,7 +419,7 @@ class NewTransactionsView(ClientView):
 
                 else:
                 '''
-                dt = transaction.executed_date
+                dt = transaction.executed
                 ctx = {
                     "isDocument": False,
                     "fullTime": dt.strftime('%Y-%m-%d %H:%M:%S'),
@@ -434,7 +434,7 @@ class NewTransactionsView(ClientView):
                     "change": "{:.2f}".format(transaction.amount),
                     "balance": "{:.2f}".format(transaction.new_balance),
                     "createdDate":
-                        transaction.created_date.strftime('%Y%m%d%H%M%S'),
+                        transaction.created.strftime('%Y%m%d%H%M%S'),
                     "completedDate": dt.strftime('%Y%m%d%H%M%S'),
                     "isCanceled": False,
                     "shortDescription": transaction.type.replace(
@@ -519,7 +519,7 @@ class NewTransactionsView(ClientView):
                 new_position.share += transfer_share_size
                 new_position.save()
             new_transaction.status = TRANSACTION_STATUS_EXECUTED
-            new_transaction.executed_date = datetime.now()
+            new_transaction.executed = datetime.now()
             new_transaction.save()
 
         if not new_transaction.account:
@@ -805,11 +805,11 @@ class AnalysisBalances(ClientView):
                                  account__primary_owner=self.client)
         trs=None
         #trs = goal.transactions.filter(
-        #    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
+        #    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed').all()
         if trs:
             for transaction in trs:
                 r_obj = {
-                    "d": transaction.executed_date.strftime('%Y%m%d%H%M%S'),
+                    "d": transaction.executed.strftime('%Y%m%d%H%M%S'),
                     "inv": transaction.inversion,
                     "bal": transaction.new_balance
                 }
@@ -863,18 +863,18 @@ class AnalysisReturns(ClientView):
             for goal in account.goals.all():
                 trs = None  # TODO: fix this
                 #trs = goal.transactions.filter(
-                #    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed_date').all()
+                #    type=TRANSACTION_TYPE_MARKET_CHANGE).order_by('executed').all()
                 if not trs:
                     continue
                 counter += 1
                 obj = dict()
                 obj["name"] = goal.name
                 obj["group"] = "ACCOUNT"
-                obj["createdDate"] = goal.created_date.strftime('%Y%m%d%H%M%S')
+                obj["createdDate"] = goal.created.strftime('%Y%m%d%H%M%S')
                 obj["initial"] = False
                 obj["lineID"] = counter
-                b_date_1 = trs[0].executed_date - timedelta(days=2)
-                b_date_2 = trs[0].executed_date - timedelta(days=1)
+                b_date_1 = trs[0].executed - timedelta(days=2)
+                b_date_2 = trs[0].executed - timedelta(days=1)
 
                 obj["returns"] = [{
                     "d": "{0}".format(int(1000 * time.mktime(
@@ -892,7 +892,7 @@ class AnalysisReturns(ClientView):
                 for transaction in trs:
                     r_obj = {
                         "d": "{0}".format(int(1000 * time.mktime(
-                            transaction.executed_date.timetuple()))),
+                            transaction.executed.timetuple()))),
                         "i": transaction.return_fraction
                     }
 

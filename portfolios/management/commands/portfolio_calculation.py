@@ -564,19 +564,21 @@ def current_stats_from_weights(weights):
     ix = instruments.set_index('id').index
     ilocs = []
     res = {}
-    for tid, weight in weights.itertuples():
+    wts = []
+    for tid, weight in weights:
         iloc = ix.get_loc(tid)
         ilocs.append(iloc)
-        res[tid] = covars.iloc[iloc]
+        res[tid] = covars.iloc[iloc, iloc]
+        wts.append(weight)
 
-    lcovars = covars.iloc[ilocs, ilocs]
-    lers = instruments['exp_ret'].iloc[ilocs]
-    res = [(entry[0], lcovars.iloc[i]) for i, entry in enumerate(weights)]
 
     # Generate portfolio stdev and expected return
-    er = weights.values.dot(lers)
+    nweights = np.array(wts)
+    lcovars = covars.iloc[ilocs, ilocs]
+    lers = instruments['exp_ret'].iloc[ilocs]
+    er = nweights.dot(lers)
     logger.debug("Generated portfolio expected return of {} using current asset returns: {}".format(er, lers))
-    variance = weights.values.dot(lcovars).dot(weights.values.T)
+    variance = nweights.dot(lcovars).dot(nweights.T)
     logger.debug("Generated portfolio variance of {} using current asset covars: {}".format(variance, lcovars))
 
     return er * 100, (variance * 100 * 100) ** (1 / 2), res

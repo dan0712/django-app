@@ -54,11 +54,13 @@ def demo_accounts_returns():
         counter = 0
         for k in table.index.tolist()[1:]:
             counter += 1
-            transaction, is_new = Transaction.objects.get_or_create(type=TRANSACTION_TYPE_MARKET_CHANGE, created_date=k, account=goal)
+            transaction, is_new = Transaction.objects.get_or_create(type=TRANSACTION_TYPE_MARKET_CHANGE,
+                                                                    created=k,
+                                                                    account=goal)
             transaction.inversion = inv
             transaction.amount = goal_values[counter] - goal_values[counter-1]
             transaction.status = TRANSACTION_STATUS_EXECUTED
-            transaction.executed_date = k
+            transaction.executed = k
             transaction.return_fraction = (goal_values[counter] - goal_values[counter-1])/goal_values[counter-1]
             transaction.new_balance = goal_values[counter]
             transaction.save()
