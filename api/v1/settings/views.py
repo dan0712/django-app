@@ -47,12 +47,12 @@ class SettingsViewSet(ApiViewMixin, viewsets.GenericViewSet):
     def asset_features(self, request):
         res = [
             {
-				"id": af.id,
+                "id": af.id,
                 "name": af.name,
                 "description": af.description,
                 "values": [
                     {
-						"id": v.id,
+                        "id": v.id,
                         "name": v.name,
                         "description": v.description
                     } for v in af.values.all()
