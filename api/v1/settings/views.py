@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import list_route
 
-from main.models import AssetClass, Ticker, GoalTypes
+from main.models import AssetClass, Ticker, GoalTypes, AssetFeature, GoalMetric
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor, IsClient,
@@ -43,3 +43,22 @@ class SettingsViewSet(ApiViewMixin, viewsets.GenericViewSet):
         serializer = serializers.TickerListSerializer(tickers, many=True)
         return Response(serializer.data)
 
+    @list_route(methods=['get'])
+    def asset_features(self, request):
+        res = {
+            af.id: {
+                "name": af.name,
+                "description": af.description,
+                "values": {
+                    v.id: {
+                        "name": v.name,
+                        "description": v.description
+                    } for v in af.values.all()
+                }
+            } for af in AssetFeature.objects.all()
+        }
+        return Response(res)
+
+    @list_route(methods=['get'])
+    def constraint_comparisons(self, request):
+        return Response(dict(GoalMetric.comparisons))
