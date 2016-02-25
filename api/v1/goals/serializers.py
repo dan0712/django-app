@@ -292,6 +292,7 @@ class GoalSerializer(serializers.ModelSerializer):
         deposits = serializers.FloatField()
         withdrawals = serializers.FloatField()
         other = serializers.FloatField()
+        net_pending = serializers.FloatField()
 
     class EarnedSerializer(serializers.Serializer):
         market_moves = serializers.FloatField()

@@ -2023,10 +2023,11 @@ class Goal(models.Model):
     @property
     def investments(self):
         return {
-                'deposits': self.total_deposits,
-                'withdrawals': self.total_withdrawals,
-                'other': self.net_invested - self.total_deposits + self.total_withdrawals,
-               }
+            'deposits': self.total_deposits,
+            'withdrawals': self.total_withdrawals,
+            'other': self.net_invested - self.total_deposits + self.total_withdrawals,
+            'net_pending': self.pending_amount,
+        }
 
     @property
     def earnings(self):
