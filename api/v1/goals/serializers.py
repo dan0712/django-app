@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 from rest_framework.fields import FloatField, IntegerField
 
+from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.models import (
     ClientAccount,
     Goal, GoalSetting, GoalMetric, GoalTypes,
@@ -35,30 +36,23 @@ logger = logging.getLogger('goal_serializer')
 # TODO: too messy module. deeply refactor later.
 
 
-class PortfolioItemSerializer(serializers.ModelSerializer):
+class PortfolioItemSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = PortfolioItem
-        fields = (
-            'asset',
-            'weight',
+        exclude = (
+            'portfolio',
+            'volatility',
         )
 
 
-class PortfolioSerializer(serializers.ModelSerializer):
+class PortfolioSerializer(ReadOnlyModelSerializer):
+    """
+    This is a read_only serializer.
+    """
     items = PortfolioItemSerializer(many=True)
 
     class Meta:
         model = Portfolio
-        fields = (
-            'stdev',
-            'er',
-            'items',
-        )
-        # Variance and er are read only because they are ALWAYS calculated from backend using our data.
-        read_only_fields = (
-            'stdev',
-            'er'
-        )
 
 
 class StatelessPortfolioItemSerializer(serializers.Serializer):
@@ -73,17 +67,15 @@ class PortfolioStatelessSerializer(serializers.Serializer):
     items = StatelessPortfolioItemSerializer(many=True)
 
 
-class RecurringTransactionSerializer(serializers.ModelSerializer):
+class RecurringTransactionSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RecurringTransaction
-        fields = (
-            'recurrence',
-            'enabled',
-            'amount',
+        exclude = (
+            'setting',
         )
 
 
-class TransactionCreateSerializer(serializers.ModelSerializer):
+class TransactionCreateSerializer(NoUpdateModelSerializer):
     class Meta:
         model = Transaction
         fields = (
@@ -95,24 +87,17 @@ class TransactionCreateSerializer(serializers.ModelSerializer):
             'amount'
         )
 
-    def update(self, validated_data):
-        raise NotImplementedError('update is not a valid operation for a Transaction')
 
-
-class GoalMetricSerializer(serializers.ModelSerializer):
+class GoalMetricSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = GoalMetric
         exclude = (
-            'id',
             'group',
         )
 
 
-class GoalMetricGroupSerializer(serializers.ModelSerializer):
+class GoalMetricGroupSerializer(ReadOnlyModelSerializer):
     metrics = GoalMetricSerializer(many=True)
-    """
-    For GET requests
-    """
     class Meta:
         model = GoalMetricGroup
         fields = (
@@ -123,12 +108,20 @@ class GoalMetricGroupSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         if instance.type == GoalMetricGroup.TYPE_CUSTOM:
-            self.fields.pop("id", None)
             self.fields.pop("name", None)
         return super(GoalMetricGroupSerializer, self).to_representation(instance)
 
 
-class GoalSettingSerializer(serializers.ModelSerializer):
+class GoalSettingSerializer(ReadOnlyModelSerializer):
+    metric_group = GoalMetricGroupSerializer()
+    recurring_transactions = RecurringTransactionSerializer(many=True)
+    portfolio = PortfolioSerializer()
+
+    class Meta:
+        model = GoalSetting
+
+
+class GoalSettingWritableSerializer(serializers.ModelSerializer):
     metric_group = GoalMetricGroupSerializer()
     recurring_transactions = RecurringTransactionSerializer(many=True)
     portfolio = PortfolioSerializer()
@@ -259,7 +252,7 @@ class GoalSettingSerializer(serializers.ModelSerializer):
     #    raise NotImplementedError('create is not a valid operation for a GoalSetting')
 
 
-class GoalSettingStatelessSerializer(serializers.ModelSerializer):
+class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSerializer):
     """
     Creates a goal setting that has no database representation, but is linked to the real goal.
     We use the ModelSerializer to do all our field representation for us.
@@ -279,12 +272,6 @@ class GoalSettingStatelessSerializer(serializers.ModelSerializer):
 
     def save(self):
         raise NotImplementedError('Save is not a valid operation for a stateless serializer')
-
-    def update(self):
-        raise NotImplementedError('update is not a valid operation for a stateless serializer')
-
-    def create(self):
-        raise NotImplementedError('create is not a valid operation for a stateless serializer')
 
     @staticmethod
     def create_stateless(validated_data, goal):
@@ -312,7 +299,7 @@ class GoalSettingStatelessSerializer(serializers.ModelSerializer):
         return DummySettings()
 
 
-class GoalSerializer(serializers.ModelSerializer):
+class GoalSerializer(ReadOnlyModelSerializer):
     """
     This serializer is for READ-(GET) requests only. Currently this is enforced by the fact that it contains nested objects, but the fields
     'created' and 'cash_balance' should NEVER be updated by an API element.
@@ -343,9 +330,8 @@ class GoalSerializer(serializers.ModelSerializer):
         model = Goal
 
 
-class GoalListSerializer(serializers.ModelSerializer):
+class GoalListSerializer(ReadOnlyModelSerializer):
     """
-    For read (GET) requests only
     Light version of GoalSerializer
     """
     on_track = serializers.BooleanField()
@@ -357,7 +343,7 @@ class GoalListSerializer(serializers.ModelSerializer):
         model = Goal
 
 
-class GoalCreateSerializer(serializers.ModelSerializer):
+class GoalCreateSerializer(NoUpdateModelSerializer):
     """
     For write (POST/...) requests only
     """
@@ -475,7 +461,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         return goal
 
 
-class GoalUpdateSerializer(serializers.ModelSerializer):
+class GoalUpdateSerializer(NoCreateModelSerializer):
     """
     For write (PUT/...) requests only
     """
@@ -504,7 +490,7 @@ class GoalUpdateSerializer(serializers.ModelSerializer):
         #        self.fields['account'].queryset.filter_by_advisor(user.advisor)
 
 
-class GoalGoalTypeListSerializer(serializers.ModelSerializer):
+class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
     """
     Experimental
     For read (GET) requests only
@@ -513,7 +499,7 @@ class GoalGoalTypeListSerializer(serializers.ModelSerializer):
         model = GoalTypes
 
 
-class GoalPositionListSerializer(serializers.ModelSerializer):
+class GoalPositionListSerializer(ReadOnlyModelSerializer):
     """
     Experimental
     For read (GET) requests only

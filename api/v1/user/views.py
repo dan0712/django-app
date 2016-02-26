@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 # TODO: drop unused imports after removing obsoleted endpoints
+from api.v1.user.serializers import UserAdvisorSerializer, UserClientSerializer
 from main.models import User, ClientAccount, Goal
 
 from ..clients import serializers as clients_serializers
@@ -33,8 +34,12 @@ class MeView(ApiViewMixin, views.APIView):
         response_serializer: serializers.UserSerializer
         """
         user = self.request.user
-        serializer = self.serializer_class(user)
-        return Response(serializer.data)
+        data = self.serializer_class(user).data
+        if user.is_advisor:
+            data.update(UserAdvisorSerializer(user.advisor).data)
+        elif user.is_client:
+            data.update(UserClientSerializer(user.client).data)
+        return Response(data)
 
     @transaction.atomic
     def post(self, request):
@@ -94,23 +99,6 @@ class MeAccountsView(ApiViewMixin, views.APIView):
         accounts = client.accounts_all.all()
 
         serializer = self.serializer_class(accounts, many=True)
-        return Response(serializer.data)
-
-
-class MeGoalsView(ApiViewMixin, views.APIView):
-    """
-    Experimental
-    (not sure it will be needed in the future)
-    """
-    serializer_class = goals_serializers.GoalListSerializer
-    permission_classes = (IsClient,)
-
-    def get(self, request):
-        user = self.request.user
-        client = user.client
-        goals = Goal.objects.filter_by_client(client)
-
-        serializer = self.serializer_class(goals, many=True)
         return Response(serializer.data)
 
 

@@ -124,8 +124,6 @@ class UserSerializer(serializers.ModelSerializer):
     For read (GET) requests only
     """
     token = serializers.SerializerMethodField(read_only=True)
-    advisor = serializers.SerializerMethodField()
-    client = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -140,16 +138,6 @@ class UserSerializer(serializers.ModelSerializer):
         user = obj
         token = user.get_token()
         return token.key
-
-    def get_advisor(self, obj):
-        user = obj
-        if user.is_advisor:
-            return UserAdvisorSerializer(user.advisor).data
-
-    def get_client(self, obj):
-        user = obj
-        if user.is_client:
-            return UserClientSerializer(user.client).data
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

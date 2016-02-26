@@ -18,7 +18,6 @@ urlpatterns = patterns('',
     url(r'^me/?$', user_views.MeView.as_view(), name='user-me'),
     # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
     url(r'^me/accounts/?$', user_views.MeAccountsView.as_view(), name='me-accounts'),
-    url(r'^me/goals/?$', user_views.MeGoalsView.as_view(), name='me-goals'),
 
     url(r'^login/?$', user_views.LoginView.as_view(), name='user-login'),
     url(r'^returns$', analysis_views.ReturnsView.as_view()),
