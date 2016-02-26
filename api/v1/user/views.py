@@ -36,9 +36,12 @@ class MeView(ApiViewMixin, views.APIView):
         user = self.request.user
         data = self.serializer_class(user).data
         if user.is_advisor:
+            role = 'advisor'
             data.update(UserAdvisorSerializer(user.advisor).data)
         elif user.is_client:
+            role = 'client'
             data.update(UserClientSerializer(user.client).data)
+        data.update({ 'role': role })
         return Response(data)
 
     @transaction.atomic
@@ -167,7 +170,7 @@ class ResetView(ApiViewMixin, views.APIView):
         user.save()
 
         # reset token
-        # no need to 
+        # no need to
         #token = Token.objects.get(user=user)
         #token.key = token.generate_key()
         #token.save()
