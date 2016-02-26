@@ -22,7 +22,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     queryset = Goal.objects.all() \
         .select_related('account') \
         .select_related('selected_settings') \
-        .prefetch_related('selected_settings__metrics')
+        .prefetch_related('selected_settings__metric_group')
         # , 'approved_settings', 'selected_settings') \
         #.defer('account__data') \
     serializer_class = serializers.GoalSerializer

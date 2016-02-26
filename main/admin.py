@@ -11,9 +11,9 @@ from main.models import (
     AuthorisedRepresentative, FirmData, Client, ClientAccount,
     Goal, GoalMetric, GoalSetting, Platform, Position, Transaction,
     TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
-    ProxyAssetClass, ProxyTicker, PortfolioSet, 
+    ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
-    GoalTypes)
+    GoalTypes, GoalMetricGroup)
 from portfolios.management.commands.get_historical_returns import \
     get_historical_returns as internal_get_historical_returns
 from suit.admin import SortableModelAdmin
@@ -240,9 +240,14 @@ class GoalMetricInline(admin.StackedInline):
     model = GoalMetric
 
 
+class GoalMetricGroupAdmin(admin.ModelAdmin):
+    model = GoalMetricGroup
+    inlines = (GoalMetricInline,)
+
+
 class GoalSettingAdmin(admin.ModelAdmin):
     model = GoalSetting
-    inlines = (GoalMetricInline,)
+    #inlines = (GoalMetricGroupAdmin,)
 
 
 class GoalTypeAdmin(admin.ModelAdmin):
@@ -344,6 +349,7 @@ admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
 admin.site.register(GoalTypes)
 admin.site.register(GoalSetting, GoalSettingAdmin)
+admin.site.register(GoalMetricGroup, GoalMetricGroupAdmin)
 admin.site.register(Dividend)
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)

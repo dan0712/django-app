@@ -14,7 +14,7 @@ from main.models import (
     Position, Portfolio, PortfolioItem,
     RecurringTransaction,
     StandardAssetFeatureValues,
-    Transaction, TRANSACTION_REASON_DEPOSIT)
+    Transaction, TRANSACTION_REASON_DEPOSIT, GoalMetricGroup)
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
@@ -104,17 +104,32 @@ class GoalMetricSerializer(serializers.ModelSerializer):
         model = GoalMetric
         exclude = (
             'id',
-            'setting',
+            'group',
         )
 
 
-class GoalMetricCreateSerializer(serializers.ModelSerializer):
+class GoalMetricGroupSerializer(serializers.ModelSerializer):
+    metrics = GoalMetricSerializer(many=True)
+    """
+    For GET requests
+    """
     class Meta:
-        model = GoalMetric
+        model = GoalMetricGroup
+        fields = (
+            'id',
+            'name',
+            'metrics',
+        )
+
+    def to_representation(self, instance):
+        if instance.type == GoalMetricGroup.TYPE_CUSTOM:
+            self.fields.pop("id", None)
+            self.fields.pop("name", None)
+        return super(GoalMetricGroupSerializer, self).to_representation(instance)
 
 
 class GoalSettingSerializer(serializers.ModelSerializer):
-    metrics = GoalMetricSerializer(many=True)
+    metric_group = GoalMetricGroupSerializer()
     recurring_transactions = RecurringTransactionSerializer(many=True)
     portfolio = PortfolioSerializer()
 
@@ -124,7 +139,7 @@ class GoalSettingSerializer(serializers.ModelSerializer):
             'target',
             'completion',
             'hedge_fx',
-            'metrics',
+            'metric_group',
             'recurring_transactions',
             'portfolio',
         )
@@ -137,64 +152,78 @@ class GoalSettingSerializer(serializers.ModelSerializer):
         :return:
         """
         goal = validated_data.pop('goal')
-        metrics_data = validated_data.pop('metrics', None)
+        metrics_data = validated_data.pop('metric_group', None)
         tx_data = validated_data.pop('recurring_transactions', None)
         port_data = validated_data.pop('portfolio', None)
 
         with transaction.atomic():
+            # Create a new setting.
+            old_setting = setting
+            setting = copy.copy(setting)
+            setting.pk = None
+            for attr, value in validated_data.items():
+                setattr(setting, attr, value)
+            if metrics_data is None:
+                # Copy the metric group if it's custom.
+                if setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM:
+                    new_mg = copy.copy(setting.metric_group)
+                    pxs = new_mg.metrics.all()
+                    new_mg.id = None
+                    new_mg.save()
+                    setting.metric_group = new_mg
+                    for metric in pxs:
+                        metric.id = None
+                        metric.group = new_mg
+                        metric.save()
+            else:
+                gid = metrics_data.get('id', None)
+                if gid is None:
+                    group = GoalMetricGroup.objects.create()
+                    metrics = metrics_data.get('metrics')
+                    mo = []
+                    for i_data in metrics:
+                        if 'measured_val' in i_data:
+                            raise ValidationError({"msg": "measured_val is read-only"})
+                        mo.append(GoalMetric(group=group, **i_data))
+                    GoalMetric.objects.bulk_create(mo)
+                    setting.metric_group = group
+                else:
+                    setting.metric_group = GoalMetricGroup.objects.get(gid)
+            setting.save()
+
+            # Create a new portfolio to match.
             if port_data is None:
+                # We can't just change the setting object the portfolio is pointing at as the old setting may still be
+                # active as an approved setting. WE need to create a new portfolio by copying the old one.
                 # We have to do it this way so the portfolio_id field on the setting is updated.
-                new_port = setting.portfolio
-                pxs = setting.portfolio.items.all()
-                # Get the current portfolio statistics of the current weights,, as new weights were not passed in.
-                er, stdev, idatas = current_stats_from_weights([(item.asset.id, item.weight) for item in pxs])
+                new_port = copy.copy(old_setting.portfolio)
+                pxs = new_port.items.all()
                 new_port.id = None
-                new_port.er = er
-                new_port.created = datetime.datetime.now()
-                new_port.stdev = stdev
+                new_port.setting = setting
                 new_port.save()
-                setting.portfolio = new_port
                 for item in pxs:
-                    item.portfolio = setting.portfolio
-                    item.volatility = idatas[item.asset.id]
+                    item.id = None
+                    item.portfolio = new_port
                     item.save()
             else:
-                old_port = setting.portfolio
                 port_items_data = port_data.pop('items', None)
                 # Get the current portfolio statistics of the given weights.
                 er, stdev, idatas = current_stats_from_weights([(item['asset'],
                                                                  item['weight']) for item in port_items_data])
-                setting.portfolio = Portfolio.objects.create(er=er, stdev=stdev)
-                PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=setting.portfolio,
+                port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
+                PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
                                                                  **i_data,
                                                                  volatility=idatas[i_data['asset']]) for i_data in port_items_data])
-                old_port.delete()
 
-            for attr, value in validated_data.items():
-                setattr(setting, attr, value)
-
-            # We need to save these before we change the id.
-            txs = setting.recurring_transactions.all()
-            mxs = setting.metrics.all()
-
-            # Change the id so we create a new item on save.
-            setting = copy.copy(setting)
-            setting.pk = None
-            setting.save()
-
+            # Do the recurring transactions
             if tx_data is None:
-                for item in txs:
-                    item.setting = setting
-                    item.save()
+                for item in old_setting.recurring_transactions.all():
+                    new_tx = copy.copy(item)
+                    new_tx.id = None
+                    new_tx.setting = setting
+                    new_tx.save()
             else:
                 RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
-
-            if metrics_data is None:
-                for item in mxs:
-                    item.setting = setting
-                    item.save()
-            else:
-                GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
 
             goal.set_selected(setting)
 

@@ -201,7 +201,7 @@ def get_settings_masks(settings, masks):
     # logger.debug("Creating Settings masks from global masks: {}".format(masks))
     fids = []
 
-    for metric in settings.metrics.all():
+    for metric in settings.metric_group.metrics.all():
         if metric.type == 0:
             if math.isclose(metric.configured_val, 0.0):
                 # Saying a minimum percentage of 0% is superfluous.
@@ -262,7 +262,7 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None):
     """
     constraints = []
     risk_score = None
-    for metric in settings.metrics.all():
+    for metric in settings.metric_group.metrics.all():
         if metric.type == 1:
             if overrides:
                 risk_score = overrides.get("risk_score", metric.configured_val)
@@ -414,6 +414,7 @@ def calculate_portfolios(setting, api=DbApi()):
                                                lam,
                                                constraints,
                                                setting,
+                                               setting.goal.available_balance,
                                                goal_instruments['price'])
                 # Convert to our statistics for our portfolio.
                 portfolios.append((risk_score,
@@ -512,7 +513,16 @@ def calculate_portfolio(settings, idata=None):
     weights, cost, xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = odata
 
     # Find the optimal orderable weights.
-    weights, cost = make_orderable(weights, cost, xs, sigma, mu, lam, constraints, settings, settings_instruments['price'])
+    weights, cost = make_orderable(weights,
+                                   cost,
+                                   xs,
+                                   sigma,
+                                   mu,
+                                   lam,
+                                   constraints,
+                                   settings,
+                                   settings.goal.available_balance,
+                                   settings_instruments['price'])
 
     return get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, lcovars, weights)
 
@@ -584,7 +594,7 @@ def current_stats_from_weights(weights):
     return er * 100, (variance * 100 * 100) ** (1 / 2), res
 
 
-def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, settings, prices):
+def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, settings, budget, prices, align=True):
     """
     Turn the raw weights into orderable units
     There are three costs here:
@@ -601,15 +611,19 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     :param lam: The Markowitz risk appetite constant
     :param constraints: The existing constraints we must adhere to
     :param settings: The settings we are making this portfolio orderable for.
+    :param budget: The budget we have to make this portfolio orderable.
     :param prices: The prices of each asset.
+    :param align: Perform the alignment to orderable quantities phase.
+
     :raises Unsatifiable if at any point a satifiable portfoio callot be found.
+
     :return: (weights, cost)
         - weights are the new symbol weights that should align to orderable units given the passed prices.
           This will always be set, otherwise Unsatisfiable will be raised.
         - cost is the new Markowitz cost
     """
     goal = settings.goal
-    budget = goal.current_balance
+    budget = goal.available_balance
 
     def aligned(i):
         """
@@ -662,12 +676,17 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         if not weights.any():
             emsg = "Could not find orderable portfolio for settings: {} once I removed assets below ordering threshold"
             raise Unsatisfiable(emsg.format(settings))
+    else:
+        cost = original_cost
+
+    # If we don't want to perform the alignment stage, return now.
+    if not align:
+        return weights, cost
 
     # Create a collection of all instruments that are to be included, but the weights are currently not on an orderable
     # quantity.
     # Find the minimum Markowitz cost off all the potential portfolio combinations that could be generated from a round
     # up and round down of each fund involved to orderable quantities.
-    # TODO: We could also weight results with distance of portfolio from the budget.
     indicies = []
     tweights = []
     for ix in range(len(weights)):

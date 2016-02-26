@@ -24,7 +24,9 @@ from django.core.validators import (
 )
 from django.db import models, transaction
 from django.db.models.query_utils import Q
+from django.db.models.signals import pre_delete
 from django.db.utils import IntegrityError
+from django.dispatch.dispatcher import receiver
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
@@ -982,6 +984,10 @@ class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData
 
 
 class AccountGroup(models.Model):
+    """
+    We use the term 'Households' on the Advisor page for this as well.
+    """
+
     advisor = models.ForeignKey(Advisor, related_name="primary_account_groups")
     secondary_advisors = models.ManyToManyField(
         Advisor,
@@ -1780,10 +1786,10 @@ class RecurringTransaction(models.Model):
 
 
 class Portfolio(models.Model):
+    setting = models.OneToOneField('GoalSetting', related_name='portfolio')
     stdev = models.FloatField()
     er = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
-    # Also has 'goal_setting' field from GoalSetting
     # Also has 'items' field from PortfolioItem
 
 
@@ -1798,9 +1804,9 @@ class GoalSetting(models.Model):
     target = models.FloatField(default=0)
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
-    # also has 'metrics' field from GoalMetrics model.
+    metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings')
     # also has 'recurring_transactions' field from RecurringTransaction model.
-    portfolio = models.OneToOneField(Portfolio, related_name='goal_setting')
+    # also has 'portfolio' field from Portfolio model.
 
     @property
     def goal(self):
@@ -1810,6 +1816,32 @@ class GoalSetting(models.Model):
             return self.goal_approved
         # Must be an active goal
         return self.goal_active
+
+
+class GoalMetricGroup(models.Model):
+    TYPE_CUSTOM = 0
+    TYPE_PRESET = 1
+    TYPES = (
+        (TYPE_CUSTOM, 'Custom'),  # Should be deleted when it is not used by any settings object
+        (TYPE_PRESET, 'Preset'),  # Exists on it's own.
+    )
+    type = models.IntegerField(choices=TYPES, default=TYPE_CUSTOM)
+    name = models.CharField(max_length=100, null=True)  #
+    # also has field 'metrics' from GoalMetric
+    # Also has field 'settings' from GoalSetting
+
+    def constraint_inputs(self):
+        """
+        A comparable set of inputs to all the optimisation constraints that would be generated from this group.
+        :return:
+        """
+        features = {}
+        for metric in self.metrics.all():
+            if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
+                risk = metric.configured_val
+            else:
+                features[metric.feature] = (metric.comparison, metric.feature, metric.configured_val)
+        return risk, features
 
 
 class Goal(models.Model):
@@ -1827,7 +1859,7 @@ class Goal(models.Model):
     active_settings = models.OneToOneField(
         GoalSetting,
         related_name='goal_active',
-        help_text='The settings were last used to do a rebalance. '
+        help_text='The settings were last used to do a rebalance.'
                   'These settings are responsible for our current market positions.',
         blank=True,
         null=True)
@@ -1874,7 +1906,9 @@ class Goal(models.Model):
         self.selected_settings = setting
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
-            old_setting.delete()
+            if old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM:
+                # This will also delete the setting as the metric group is a foreign key.
+                old_setting.metric_group.delete()
 
     @transaction.atomic
     def approve_selected(self):
@@ -2201,8 +2235,7 @@ class GoalMetric(models.Model):
         REBALANCE_TYPE_RELATIVE: 'Relative',
     }
 
-    # TODO: Remove null bit. once everyone is up to this release of code.
-    setting = models.ForeignKey(GoalSetting, related_name='metrics', null=True)
+    group = models.ForeignKey('GoalMetricGroup', related_name='metrics')
     type = models.IntegerField(choices=metric_types.items())
     feature = models.ForeignKey(AssetFeatureValue, null=True)
     comparison = models.IntegerField(default=1, choices=comparisons.items())
@@ -2232,16 +2265,16 @@ class GoalMetric(models.Model):
 
     def __str__(self):
         if self.type == 0:
-            return "[{}] {} {}% {} for Goal: {}".format(self.id,
-                                                        self.comparisons[self.comparison],
-                                                        self.configured_val * 100,
-                                                        self.feature.name,
-                                                        self.setting.goal)
+            return "[{}] {} {}% {} for Metric: {}".format(self.id,
+                                                          self.comparisons[self.comparison],
+                                                          self.configured_val * 100,
+                                                          self.feature.name,
+                                                          self.id)
         else:
-            return "[{}] Risk Score {} {} for Goal: {}".format(self.id,
-                                                               self.comparisons[self.comparison],
-                                                               1 + self.configured_val * 99,
-                                                               self.setting.goal)
+            return "[{}] Risk Score {} {} for Metric: {}".format(self.id,
+                                                                 self.comparisons[self.comparison],
+                                                                 1 + self.configured_val * 99,
+                                                                 self.id)
 
 
 class Position(models.Model):
@@ -2262,6 +2295,39 @@ class Position(models.Model):
 
     def __str__(self):
         return self.ticker.symbol
+
+
+class MarketOrderRequest(models.Model):
+    STATE_PENDING = 0
+    STATE_APPROVED = 1
+    STATE_SENT = 2  # Sent to the broker.
+    STATE_EXECUTED = 3  # Executed.
+    STATES = (
+        (STATE_PENDING, 'Pending'),
+        (STATE_APPROVED, 'Approved'),
+        (STATE_SENT, 'Sent'),
+        (STATE_EXECUTED, 'Executed'),
+    )
+    account = models.ForeignKey('ClientAccount', related_name='market_orders')
+
+
+class ExecutionRequest(models.Model):
+    REASON_DRIFT = 0  # The Request was made to neutralise drift on the goal
+    REASON_WITHDRAWAL = 1  # The request was made because a withdrawal was requested from the goal.
+    REASON_DEPOSIT = 2  # The request was made because a deposit was made to the goal
+    REASON_METRIC_CHANGE = 3  # The request was made because the inputs to the optimiser were changed.
+    REASONS = (
+        (REASON_DRIFT, 'Drift'),
+        (REASON_WITHDRAWAL, 'Withdrawal'),
+        (REASON_DEPOSIT, 'Deposit'),
+        (REASON_METRIC_CHANGE, 'Metric Change'),
+    )
+
+    reason = models.IntegerField(choices=REASONS)
+    goal = models.ForeignKey('Goal', related_name='execution_requests')
+    asset = models.ForeignKey('Ticker', related_name='execution_requests')
+    volume = models.FloatField()
+    order = models.ForeignKey(MarketOrderRequest, related_name='execution_requests')
 
 
 class Transaction(models.Model):

@@ -106,7 +106,7 @@ def measure(goal, idata):
 
     with transaction.atomic:
         drift_score = 0.0
-        for metric in goal.active_settings.metrics.all():
+        for metric in goal.active_settings.metric_group.metrics.all():
             if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
                 logger.debug("Setting measured risk score: {} for metric: {}".format(risk_score, metric))
                 metric.measured_val = risk_score
