@@ -66,7 +66,6 @@ class UserAdvisorSerializer(serializers.ModelSerializer):
             'confirmation_key',
             'security_question_1', 'security_question_2',
             'security_answer_1', 'security_answer_2',
-            #'token', # what's the token?
             'letter_of_authority', 'betasmartz_agreement',
         )
 
@@ -114,8 +113,10 @@ class UserClientAdvisorSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'gender',
-            'phone_number', 'work_phone',
-            'user', 'firm',
+            'work_phone',
+            'user',
+            'firm',
+            'email'
         )
 
 
