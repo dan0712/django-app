@@ -104,8 +104,9 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             settings = goal.selected_settings
             serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            serializer.save(goal=goal)
+            settings = serializer.save(goal=goal)
             headers = self.get_success_headers(serializer.data)
+            serializer = serializers.GoalSettingSerializer(settings)
             return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @detail_route(methods=['get'], url_path='approved-settings')

@@ -45,6 +45,15 @@ class PortfolioItemSerializer(ReadOnlyModelSerializer):
         )
 
 
+class PortfolioItemCreateSerializer(NoUpdateModelSerializer):
+    class Meta:
+        model = PortfolioItem
+        fields = (
+            'asset',
+            'weight',
+        )
+
+
 class PortfolioSerializer(ReadOnlyModelSerializer):
     """
     This is a read_only serializer.
@@ -53,6 +62,22 @@ class PortfolioSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = Portfolio
+        exclude = (
+            'setting',
+        )
+
+
+class PortfolioCreateSerializer(NoUpdateModelSerializer):
+    """
+    This is a read_only serializer.
+    """
+    items = PortfolioItemCreateSerializer(many=True)
+
+    class Meta:
+        model = Portfolio
+        fields = (
+            'items',
+        )
 
 
 class StatelessPortfolioItemSerializer(serializers.Serializer):
@@ -72,6 +97,16 @@ class RecurringTransactionSerializer(ReadOnlyModelSerializer):
         model = RecurringTransaction
         exclude = (
             'setting',
+        )
+
+
+class RecurringTransactionCreateSerializer(NoUpdateModelSerializer):
+    class Meta:
+        model = RecurringTransaction
+        fields = (
+            'recurrence',
+            'enabled',
+            'amount'
         )
 
 
@@ -96,8 +131,33 @@ class GoalMetricSerializer(ReadOnlyModelSerializer):
         )
 
 
+class GoalMetricCreateSerializer(NoUpdateModelSerializer):
+    class Meta:
+        model = GoalMetric
+        fields = (
+            'type',
+            'feature',
+            'comparison',
+            'rebalance_type',
+            'rebalance_thr',
+            'configured_val'
+        )
+
+
+class GoalMetricGroupCreateSerializer(NoUpdateModelSerializer):
+    metrics = GoalMetricCreateSerializer(many=True)
+
+    class Meta:
+        model = GoalMetricGroup
+        fields = (
+            'name',
+            'metrics',
+        )
+
+
 class GoalMetricGroupSerializer(ReadOnlyModelSerializer):
     metrics = GoalMetricSerializer(many=True)
+
     class Meta:
         model = GoalMetricGroup
         fields = (
@@ -122,9 +182,9 @@ class GoalSettingSerializer(ReadOnlyModelSerializer):
 
 
 class GoalSettingWritableSerializer(serializers.ModelSerializer):
-    metric_group = GoalMetricGroupSerializer()
-    recurring_transactions = RecurringTransactionSerializer(many=True)
-    portfolio = PortfolioSerializer()
+    metric_group = GoalMetricGroupCreateSerializer()
+    recurring_transactions = RecurringTransactionCreateSerializer(many=True)
+    portfolio = PortfolioCreateSerializer()
 
     class Meta:
         model = GoalSetting
@@ -140,7 +200,7 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
     def update(self, setting, validated_data):
         """
         Overwrite update to deal with nested writes.
-        :param instance:
+        :param setting: The item we're updating
         :param validated_data:
         :return:
         """
@@ -201,12 +261,12 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             else:
                 port_items_data = port_data.pop('items', None)
                 # Get the current portfolio statistics of the given weights.
-                er, stdev, idatas = current_stats_from_weights([(item['asset'],
+                er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                  item['weight']) for item in port_items_data])
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
                 PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
                                                                  **i_data,
-                                                                 volatility=idatas[i_data['asset']]) for i_data in port_items_data])
+                                                                 volatility=idatas[i_data['asset'].id]) for i_data in port_items_data])
 
             # Do the recurring transactions
             if tx_data is None:

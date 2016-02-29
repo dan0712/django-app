@@ -606,7 +606,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     There are three costs here:
     - Markowitz cost
     - Variation from budget
-    - Variation from constraints
+    - Variation from constraints (drift)
     For now we just minimize the Markowitz cost, but we can be smarter.
 
     :param weights: A 1xn numpy array of the weights we need to perturbate to fit into orderable units.
@@ -624,7 +624,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     :raises Unsatifiable if at any point a satisfiable portfolio cannot be found.
 
     :return: (weights, cost)
-        - weights are the new symbol weights that should align to orderable units given the passed prices.
+        - weights: A 1xn numpy array of the new symbol weights that should align to orderable units given the passed prices.
           This will always be set, otherwise Unsatisfiable will be raised.
         - cost is the new Markowitz cost
     """
