@@ -43,7 +43,7 @@ class SettingsViewSet(ApiViewMixin, viewsets.GenericViewSet):
         serializer = serializers.TickerListSerializer(tickers, many=True)
         return Response(serializer.data)
 
-    @list_route(methods=['get'])
+    @list_route(methods=['get'], url_path='asset-features')
     def asset_features(self, request):
         res = [
             {

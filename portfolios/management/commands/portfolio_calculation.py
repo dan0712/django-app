@@ -139,6 +139,10 @@ def build_instruments(api=DbApi()):
                       ticker.id,
                       ))
 
+    if len(ccols) == 0:
+        logger.warn("No valid instruments found")
+        raise Exception("No valid instruments found")
+
     # Filter the table to be only complete.
     ctable = pd.concat(ccols, axis=1).iloc[minix:, :]
 
@@ -414,7 +418,8 @@ def calculate_portfolios(setting, api=DbApi()):
                                                lam,
                                                constraints,
                                                setting,
-                                               setting.goal.available_balance,
+                                               # We use the current balance (including pending deposits).
+                                               setting.goal.current_balance,
                                                goal_instruments['price'])
                 # Convert to our statistics for our portfolio.
                 portfolios.append((risk_score,
@@ -521,7 +526,8 @@ def calculate_portfolio(settings, idata=None):
                                    lam,
                                    constraints,
                                    settings,
-                                   settings.goal.available_balance,
+                                   # We use the current balance (including pending deposits).
+                                   settings.goal.current_balance,
                                    settings_instruments['price'])
 
     return get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, lcovars, weights)
@@ -615,15 +621,13 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     :param prices: The prices of each asset.
     :param align: Perform the alignment to orderable quantities phase.
 
-    :raises Unsatifiable if at any point a satifiable portfoio callot be found.
+    :raises Unsatifiable if at any point a satisfiable portfolio cannot be found.
 
     :return: (weights, cost)
         - weights are the new symbol weights that should align to orderable units given the passed prices.
           This will always be set, otherwise Unsatisfiable will be raised.
         - cost is the new Markowitz cost
     """
-    goal = settings.goal
-    budget = goal.available_balance
 
     def aligned(i):
         """
@@ -689,9 +693,12 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     # up and round down of each fund involved to orderable quantities.
     indicies = []
     tweights = []
-    for ix in range(len(weights)):
-        if inactive[ix] or aligned(ix):
+    aligned_weight = 0.0  # Weight of the already aligned component.
+    for ix, weight in enumerate(weights):
+        if inactive[ix]:
             continue
+        if aligned(ix):
+            aligned_weight += weight
         indicies.append(ix)
         tweights.append(bordering(ix))
 
@@ -705,6 +712,9 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
             # Set the weights for this round
             for pos, tweight in enumerate(tweights):
                 wts[0, indicies[pos]] = tweight[(mask & (1 << pos)) > 0]
+            # Exclude this combination if the sum of the weights is over the 1 (The budget).
+            if (np.sum(wts) + aligned_weight) > 1:
+                continue
             new_cost = markowitz_cost(wts, sigma, lam, mu)
             if new_cost < min_cost:
                 mcw = np.copy(wts)

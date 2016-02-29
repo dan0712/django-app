@@ -107,3 +107,5 @@ def rebalance(goal):
     weights = perturbate()
 
 
+    # Change the portfolio on the approved_settings and write an audit log that the reason the protfolio was changed was
+    # due to a rebalance. Other reasons can be 'optimise'.

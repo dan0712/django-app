@@ -15,7 +15,7 @@ from main.models import (
     Position, Portfolio, PortfolioItem,
     RecurringTransaction,
     StandardAssetFeatureValues,
-    Transaction, TRANSACTION_REASON_DEPOSIT, GoalMetricGroup)
+    Transaction, TRANSACTION_REASON_DEPOSIT, GoalMetricGroup, Ticker)
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
@@ -228,21 +228,33 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
         Puts the passed settings into the 'selected_settings' field on the passed goal.
         """
         goal = validated_data.pop('goal')
-        metrics_data = validated_data.pop('metrics')
+        metrics_data = validated_data.pop('metric_group')
         tx_data = validated_data.pop('recurring_transactions')
         port_data = validated_data.pop('portfolio')
         port_items_data = port_data.pop('items')
         with transaction.atomic():
+            gid = metrics_data.get('id', None)
+            if gid is None:
+                metric_group = GoalMetricGroup.objects.create()
+                metrics = metrics_data.get('metrics')
+                mo = []
+                for i_data in metrics:
+                    if 'measured_val' in i_data:
+                        raise ValidationError({"msg": "measured_val is read-only"})
+                    mo.append(GoalMetric(group=metric_group, **i_data))
+                GoalMetric.objects.bulk_create(mo)
+            else:
+                metric_group = GoalMetricGroup.objects.get(gid)
+
             # Get the current portfolio statistics of the given weights.
             er, stdev, idatas = current_stats_from_weights([(item['asset'],
                                                              item['weight']) for item in port_items_data])
-            port = Portfolio.objects.create(er=er, stdev=stdev)
+            setting = GoalSetting.objects.create(metric_group=metric_group, **validated_data)
+            port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
             PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
                                                              **i_data,
                                                              volatility=idatas[i_data['asset']]) for i_data in port_items_data])
-            setting = GoalSetting.objects.create(portfolio=port, **validated_data)
             RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
-            GoalMetric.objects.bulk_create([GoalMetric(setting=setting, **i_data) for i_data in metrics_data])
             goal.set_selected(setting)
 
         return setting
@@ -398,15 +410,12 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
         idata = get_instruments()
 
         with transaction.atomic():
-            portfolio = Portfolio.objects.create(
-                stdev=0,
-                er=0,
-            )
+            metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)
             settings = GoalSetting.objects.create(
                 target=validated_data['target'],
                 completion=validated_data['completion'],
                 hedge_fx=False,
-                portfolio=portfolio,
+                metric_group=metric_group,
             )
             goal = Goal.objects.create(
                 account=account,
@@ -415,10 +424,9 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                 portfolio_set=account.default_portfolio_set,
                 selected_settings=settings,
             )
-
             # Based on the risk profile, and whether an ethical profile was specified on creation, set up Metrics.
             recommended_risk = recommend_risk(settings)
-            GoalMetric.objects.create(setting=settings,
+            GoalMetric.objects.create(group=metric_group,
                                       type=GoalMetric.METRIC_TYPE_RISK_SCORE,
                                       comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
                                       rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
@@ -426,7 +434,7 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                                       configured_val=recommended_risk)
             if validated_data['ethical']:
                 GoalMetric.objects.create(
-                    setting=settings,
+                    group=metric_group,
                     type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
                     feature=StandardAssetFeatureValues.SRI_OTHER.get_object(),
                     comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
@@ -434,6 +442,12 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                     rebalance_thr=0.05,
                     configured_val=1  # Start with 100% ethical.
                 )
+
+            portfolio = Portfolio.objects.create(
+                setting=settings,
+                stdev=0,
+                er=0,
+            )
 
             # Add the initial deposit if specified.
             initial_dep = validated_data.pop('initial_deposit', None)
@@ -446,9 +460,9 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
             try:
                 weights, er, stdev = calculate_portfolio(settings, idata)
                 items = [PortfolioItem(portfolio=portfolio,
-                                       asset=idata[2].loc[sym, 'id'],
+                                       asset=Ticker.objects.get(id=idata[2].loc[sym, 'id']),
                                        weight=weight,
-                                       volatility=idata[0].loc[sym, sym]) for sym, weight in weights.items()]
+                                       volatility=idata[0].loc[sym, sym]) for sym, weight in weights.iteritems()]
                 PortfolioItem.objects.bulk_create(items)
                 portfolio.stdev = stdev
                 portfolio.er = er

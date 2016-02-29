@@ -31,6 +31,7 @@ Overnight Process
  - Once the nightly process is done, compare the markowitz cost of the resulting portfolio against the daily optimum
    for this goal. This is the optimisation_drift. If it's over some percent different,
    inform the Client and Advisor that the portfolio needs to be reoptimised.
+ - Inform client and advisor if a goal has expired.
 
 
 '''
