@@ -249,15 +249,16 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
                 # We can't just change the setting object the portfolio is pointing at as the old setting may still be
                 # active as an approved setting. WE need to create a new portfolio by copying the old one.
                 # We have to do it this way so the portfolio_id field on the setting is updated.
-                new_port = copy.copy(old_setting.portfolio)
-                pxs = new_port.items.all()
-                new_port.id = None
-                new_port.setting = setting
-                new_port.save()
-                for item in pxs:
-                    item.id = None
-                    item.portfolio = new_port
-                    item.save()
+                if hasattr(old_setting, 'portfolio'):
+                    new_port = copy.copy(old_setting.portfolio)
+                    pxs = new_port.items.all()
+                    new_port.id = None
+                    new_port.setting = setting
+                    new_port.save()
+                    for item in pxs:
+                        item.id = None
+                        item.portfolio = new_port
+                        item.save()
             else:
                 port_items_data = port_data.pop('items', None)
                 # Get the current portfolio statistics of the given weights.
