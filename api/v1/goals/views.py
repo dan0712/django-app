@@ -102,7 +102,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         if request.method == 'PUT':
             settings = goal.selected_settings
-            serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=True)
+            serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=settings is not None)
             serializer.is_valid(raise_exception=True)
             settings = serializer.save(goal=goal)
             headers = self.get_success_headers(serializer.data)

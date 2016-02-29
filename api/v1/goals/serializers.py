@@ -183,8 +183,8 @@ class GoalSettingSerializer(ReadOnlyModelSerializer):
 
 class GoalSettingWritableSerializer(serializers.ModelSerializer):
     metric_group = GoalMetricGroupCreateSerializer()
-    recurring_transactions = RecurringTransactionCreateSerializer(many=True)
-    portfolio = PortfolioCreateSerializer()
+    recurring_transactions = RecurringTransactionCreateSerializer(many=True, required=False)
+    portfolio = PortfolioCreateSerializer(required=False)
 
     class Meta:
         model = GoalSetting
@@ -288,10 +288,11 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
         Puts the passed settings into the 'selected_settings' field on the passed goal.
         """
         goal = validated_data.pop('goal')
-        metrics_data = validated_data.pop('metric_group')
-        tx_data = validated_data.pop('recurring_transactions')
-        port_data = validated_data.pop('portfolio')
-        port_items_data = port_data.pop('items')
+        metrics_data = validated_data.pop('metric_group', None)
+        if metrics_data is None:
+            raise ValidationError({"metric_group": "is required"})
+        tx_data = validated_data.pop('recurring_transactions', None)
+        port_data = validated_data.pop('portfolio', None)
         with transaction.atomic():
             gid = metrics_data.get('id', None)
             if gid is None:
@@ -300,21 +301,27 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
                 mo = []
                 for i_data in metrics:
                     if 'measured_val' in i_data:
-                        raise ValidationError({"msg": "measured_val is read-only"})
+                        raise ValidationError({"measured_val": "is read-only"})
                     mo.append(GoalMetric(group=metric_group, **i_data))
                 GoalMetric.objects.bulk_create(mo)
             else:
                 metric_group = GoalMetricGroup.objects.get(gid)
 
-            # Get the current portfolio statistics of the given weights.
-            er, stdev, idatas = current_stats_from_weights([(item['asset'],
-                                                             item['weight']) for item in port_items_data])
             setting = GoalSetting.objects.create(metric_group=metric_group, **validated_data)
-            port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
-            PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
-                                                             **i_data,
-                                                             volatility=idatas[i_data['asset']]) for i_data in port_items_data])
-            RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+
+            # Get the current portfolio statistics of the given weights if specified.
+            if port_data is not None:
+                port_items_data = port_data.pop('items')
+                er, stdev, idatas = current_stats_from_weights([(item['asset'],
+                                                                 item['weight']) for item in port_items_data])
+                port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
+                PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
+                                                                 **i_data,
+                                                                 volatility=idatas[i_data['asset']]) for i_data in port_items_data])
+
+            if tx_data is not None:
+                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+
             goal.set_selected(setting)
 
         return setting
