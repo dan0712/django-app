@@ -1,0 +1,1 @@
+KEY_INSTRUMENTS = lambda dt: 'instrument_data:{0}'.format(dt)

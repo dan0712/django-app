@@ -337,8 +337,8 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
     Creates a goal setting that has no database representation, but is linked to the real goal.
     We use the ModelSerializer to do all our field representation for us.
     """
-    metrics = GoalMetricSerializer(many=True)
-    recurring_transactions = RecurringTransactionSerializer(many=True)
+    metric_group = GoalMetricGroupCreateSerializer()
+    recurring_transactions = RecurringTransactionCreateSerializer(many=True)
 
     class Meta:
         model = GoalSetting
@@ -346,7 +346,7 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             'target',
             'completion',
             'hedge_fx',
-            'metrics',
+            'metric_group',
             'recurring_transactions',
         )
 
@@ -355,26 +355,39 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
 
     @staticmethod
     def create_stateless(validated_data, goal):
-        metrics_data = validated_data.pop('metrics')
-        tx_data = validated_data.pop('recurring_transactions')
-        port = Portfolio(stdev=0, er=0)
-        setting = GoalSetting(portfolio=port, **validated_data)
-        metrics = [GoalMetric(setting=setting, **i_data) for i_data in metrics_data]
+
+        # Get the metrics
+        metrics_data = validated_data.pop('metric_group')
+        gid = metrics_data.get('id', None)
+        if gid is None:
+            mgroup = GoalMetricGroup()
+            metrics = metrics_data.get('metrics')
+            mo = []
+            for i_data in metrics:
+                mo.append(GoalMetric(group=mgroup, **i_data))
+
+            class DummyGroup(object):
+                class PseudoMgr:
+                    @staticmethod
+                    def all(): return mo
+                metrics = PseudoMgr
+            mtric_group = DummyGroup()
+        else:
+            mtric_group = GoalMetricGroup.objects.get(gid)
+
         goalt = goal
 
         # Currently unused
+        tx_data = validated_data.pop('recurring_transactions')
         #RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
 
         class DummySettings(object):
-            class PseudoManager:
-                @staticmethod
-                def all(): return metrics
             id = None
             goal = goalt
-            metrics = PseudoManager
-            target = setting.target
-            completion = setting.completion
-            hedge_fx = setting.hedge_fx
+            target = validated_data.pop('target')
+            completion = serializers.DateField().to_internal_value(validated_data.pop('completion'))
+            hedge_fx = validated_data.pop('hedge_fx')
+            metric_group = mtric_group
 
         return DummySettings()
 

@@ -1,23 +1,29 @@
-from collections import defaultdict
-# Use ujson as normal json doesn't support setting float precision
-import ujson
 import sys
 import math
 import datetime
+import logging
 
-from main.management.commands.convert_metrics import convert_goal
-from main.models import Ticker, SYSTEM_CURRENCY, AssetFeatureValue, MarkowitzScale, PortfolioSet
+import pandas as pd
+import numpy as np
+from cvxpy import sum_entries, Variable
+from collections import defaultdict
+
+from django.core.management.base import BaseCommand
+from django.core.cache import cache
+
+from main import redis
+
+from main.models import (
+    SYSTEM_CURRENCY,
+    Goal, Ticker, AssetFeatureValue, 
+    MarkowitzScale, PortfolioSet,
+)
+
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
 from portfolios.api.yahoo import DbApi
 from portfolios.bl_model import calculate_co_vars
 from portfolios.profile_it import do_cprofile
-from main.models import Goal
-from django.core.management.base import BaseCommand
 
-from cvxpy import sum_entries, Variable
-import logging
-import pandas as pd
-import numpy as np
 
 TYPE_MASK_PREFIX = 'TYPE_'
 ETHICAL_MASK_NAME = 'ETHICAL'
@@ -188,8 +194,14 @@ def build_instruments(api=DbApi()):
 
 
 def get_instruments(api=DbApi()):
-    # TODO: Go to a redis store to get it. If it's not there, add it.
-    return build_instruments(api)
+    key = redis.KEY_INSTRUMENTS(datetime.date.today().isoformat())
+    data = cache.get(key)
+
+    if data is None:
+        data = build_instruments(api)
+        cache.set(key, data, timeout=60*60*24)
+
+    return data
 
 
 def get_settings_masks(settings, masks):
@@ -553,8 +565,8 @@ def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, 
     # LOGIC TO RETURN GROUPED BY ASSET CLASS
     # ret_weights = instruments.groupby('ac')['_weight_'].sum()
 
-    # LOGIC TO RETURN PER ASSET
-    ret_weights = instruments['_weight_']
+    # LOGIC TO RETURN PER ASSET ID
+    ret_weights = instruments.set_index('id')['_weight_']
 
     # Filter out assets with no allocation
     ret_weights = ret_weights[ret_weights > 0.01]
@@ -704,6 +716,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
 
     elems = len(indicies)
     wts = np.expand_dims(weights, axis=0)
+    mcw = np.copy(wts)
     if elems > 0:
         rounds = 2 ** elems
         min_cost = sys.float_info.max
@@ -713,7 +726,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
             for pos, tweight in enumerate(tweights):
                 wts[0, indicies[pos]] = tweight[(mask & (1 << pos)) > 0]
             # Exclude this combination if the sum of the weights is over the 1 (The budget).
-            if (np.sum(wts) + aligned_weight) > 1:
+            if (np.sum(wts) + aligned_weight) > 1.00001:
                 continue
             new_cost = markowitz_cost(wts, sigma, lam, mu)
             if new_cost < min_cost:

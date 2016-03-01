@@ -1,10 +1,11 @@
 from django.conf.urls import patterns, include, url
 from rest_framework import routers
 
-from .analysis import views as analysis_views
+from api.v1 import views as views
 from .user import views as user_views
 from .settings import views as settings_views
 from .goals import views as goals_views
+from .analysis import views as analysis_views
 
 
 router = routers.SimpleRouter(trailing_slash=False)
@@ -13,7 +14,7 @@ router.register(r'goals', goals_views.GoalViewSet, base_name='goals')
 
 
 urlpatterns = patterns('',
-    #url(r'^$', IndexView.as_view()), # swagger doesn't get it :/
+    #url(r'^$', views.IndexView.as_view()), # swagger doesn't get it :/
 
     url(r'^me/?$', user_views.MeView.as_view(), name='user-me'),
     # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
