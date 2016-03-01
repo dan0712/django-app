@@ -1,7 +1,27 @@
 import datetime
 
-from main.models import ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_SMSF
+import math
 
+from main.models import ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_SMSF, EMPLOYMENT_STATUS_FULL_TIME, \
+    EMPLOYMENT_STATUS_PART_TIME, EMPLOYMENT_STATUS_STUDENT, EMPLOYMENT_STATUS_RETIRED, EMPLOYMENT_STATUS_HOMEMAKER, \
+    EMPLOYMENT_STATUS_UNEMPLOYED, EMPLOYMENT_STATUS_SELF_EMPLOYED
+
+# Risk tolerance scores for each employment status
+EMPLOYMENT_STATUS_SCORES = {
+    EMPLOYMENT_STATUS_FULL_TIME: 8,
+    EMPLOYMENT_STATUS_PART_TIME: 6,
+    EMPLOYMENT_STATUS_SELF_EMPLOYED: 7,
+    EMPLOYMENT_STATUS_STUDENT: 10,
+    EMPLOYMENT_STATUS_RETIRED: 1,
+    EMPLOYMENT_STATUS_HOMEMAKER: 5,
+    EMPLOYMENT_STATUS_UNEMPLOYED: 1,
+}
+
+LOW_LEVEL_INCOME = 10000
+HIGH_LEVEL_INCOME = 200000
+
+LOW_LEVEL_WORTH = 10000
+HIGH_LEVEL_WORTH = 1000000
 
 def years_between(first, second):
     return int((second - first).days / 365.25)
@@ -38,21 +58,45 @@ def recommend_risk(setting):
         worth = None
 
     ttl = years_between(today, setting.completion)
-    risk_sensitivity = setting.goal.type.risk_sensitivity
+    goal_type_sensitivity = setting.goal.type.risk_sensitivity
 
-    return get_recommendation(age, status, income, worth, ttl, risk_sensitivity)
+    return get_recommendation(age, status, income, worth, ttl, goal_type_sensitivity)
 
 
-def get_recommendation(age, status, income, worth, ttl, risk_sensitivity):
+def get_recommendation(age, status, income, worth, ttl, goal_type_sensitivity):
     """
     Get a recommended risk score (0-100) based on some characteristics of a goal.
     :param age:
     :param status:
     :param income:
     :param worth:
-    :param ttl:
-    :param risk_sensitivity:
-    :return: A recommended risk score.
+    :param ttl: The number of years left to go before this goal matures.
+    :param goal_type_sensitivity: 0 = not sensitive to risk, 10 = very sensitive to risk
+    :return: A recommended risk score as a float between 0 and 1
     """
-    # TODO: Make it work
-    return 0.5
+
+    # Anyone age 20 or under gets a score of 10, otherwise it scales down to 0 at age 95,
+    # slightly negative any older than that.
+    if age is None:
+        age_score = 10
+    else:
+        age_score = 10*(1-max(0,age-20)/(95-20))
+
+    if status is None:
+        status_score = 10
+    else:
+        status_score = EMPLOYMENT_STATUS_SCORES[status]
+
+    if income is None:
+        income_score = 10  # Roughly equivalent to 500k
+    else:
+        income_score = max(0, math.log(max(1, income)/LOW_LEVEL_INCOME, (HIGH_LEVEL_INCOME/LOW_LEVEL_INCOME) ** (1/8)))
+
+    if worth is None:
+        worth_score = 10  # Roughly 3.5M with 10K/1M settings
+    else:
+        worth_score = max(0, math.log(max(1, worth)/LOW_LEVEL_WORTH, (HIGH_LEVEL_WORTH/LOW_LEVEL_WORTH) ** (1/8)))
+
+    ttl_score = 10 if ttl > 15 else 8 if ttl > 10 else ttl/1.5
+
+    return min(1.0, ((10 - goal_type_sensitivity) + age_score + status_score + income_score + worth_score + ttl_score) / 90)

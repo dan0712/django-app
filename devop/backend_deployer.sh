@@ -32,7 +32,7 @@ main() {
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                --net=betasmartz-local \
                --name=${2}_betasmartz_app \
-               -d
+               -d \
                betasmartz/backend:${2}_cd
     docker exec nginx nginx -s reload
     popd
