@@ -24,9 +24,7 @@ from django.core.validators import (
 )
 from django.db import models, transaction
 from django.db.models.query_utils import Q
-from django.db.models.signals import pre_delete
 from django.db.utils import IntegrityError
-from django.dispatch.dispatcher import receiver
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
@@ -1855,7 +1853,6 @@ class Goal(models.Model):
     # The cash_balance field should NEVER be updated by an API. only our internal processes.
     cash_balance = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
 
-    # TODO: Remove null bit below once everyone is running this code.
     active_settings = models.OneToOneField(
         GoalSetting,
         related_name='goal_active',
@@ -1870,6 +1867,7 @@ class Goal(models.Model):
                   'and will become active the next time the goal is rebalanced.',
         blank=True,
         null=True)
+    # TODO: Remove null bit below once everyone is running this code.
     selected_settings = models.OneToOneField(
         GoalSetting,
         related_name='goal_selected',
@@ -1881,6 +1879,7 @@ class Goal(models.Model):
     # As such it should not be written to anywhere else than that.
     drift_score = models.FloatField(default=0.0, help_text='The maximum ratio of current drift to maximum allowable'
                                                            ' drift from any metric on this goal.')
+    rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing on this goal?')
     archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
 
     # Also has reverse 'positions' field from Position model.
@@ -2122,9 +2121,9 @@ class Goal(models.Model):
     @property
     def total_return(self):
         """
-        TODO: Should this be some average of the annualised return?
-        :return:
+        :return: The Time-Weighted Return for this goal
         """
+        # TODO: Do it
         return 0
 
     @property

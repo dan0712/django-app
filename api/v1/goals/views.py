@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
@@ -7,6 +7,7 @@ from api.v1.goals.serializers import PortfolioStatelessSerializer
 from main.models import Goal, GoalTypes, TRANSACTION_REASON_DEPOSIT
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios
+from portfolios.management.commands.risk_profiler import recommend_ttl_risks
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor,
@@ -26,6 +27,8 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         # , 'approved_settings', 'selected_settings') \
         #.defer('account__data') \
     serializer_class = serializers.GoalSerializer
+    # We don't want pagination on goals for now, as the UI can't handle it. We can add it back of we need to.
+    pagination_class = None
     serializer_response_class = serializers.GoalSerializer
     permission_classes = (
         IsAdvisorOrClient,
@@ -38,13 +41,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            if self.action == 'list':
-                if int(self.request.query_params.get('detail', 0)) == 1:
-                    return serializers.GoalSerializer
-                else:
-                    return serializers.GoalListSerializer
-            else:
-                return serializers.GoalSerializer
+            return serializers.GoalSerializer
         else:
             if self.action == 'create':
                 return serializers.GoalCreateSerializer
@@ -191,6 +188,18 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer.save(to_goal=goal, reason=TRANSACTION_REASON_DEPOSIT)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @detail_route(methods=['get'], url_path='recommended-risk-scores')
+    def recommended_risk_scores(self, request, pk=None):
+        setting = self.get_object().selected_settings
+        years = request.query_params.get('years', None)
+        if not years:
+            raise ValidationError("Query parameter 'years' must be specified and non-zero")
+        try:
+            years = int(years)
+        except ValueError:
+            raise ValidationError("Query parameter 'years' must be an integer")
+        return Response(recommend_ttl_risks(setting, years))
 
     @staticmethod
     def build_portfolio_data(item):

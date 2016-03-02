@@ -23,6 +23,7 @@ HIGH_LEVEL_INCOME = 200000
 LOW_LEVEL_WORTH = 10000
 HIGH_LEVEL_WORTH = 1000000
 
+
 def years_between(first, second):
     return int((second - first).days / 365.25)
 
@@ -33,6 +34,24 @@ def recommend_risk(setting):
     :param setting: The goal setting to build the recommedation for
     :return: A Float [0-1]
     """
+    age, goal_type_sensitivity, income, status, ttl, worth = get_setting_params(setting)
+
+    return get_recommendation(age, status, income, worth, ttl, goal_type_sensitivity)
+
+
+def recommend_ttl_risks(setting, years):
+    """
+    Generates a list of recommended risk scores for the number of years given.
+    Eg. if years is 3, a list len 3 is returned for risk given 1 year, 2 years and 3 years ttl.
+    :param setting: The setting to get the details from
+    :param years: The number of year options to use.
+    :return: A list of floats.
+    """
+    age, goal_type_sensitivity, income, status, _, worth = get_setting_params(setting)
+    return [get_recommendation(age, status, income, worth, ttl, goal_type_sensitivity) for ttl in range(1, years+1)]
+
+
+def get_setting_params(setting):
     # If the account is a Joint or Personal, use age of youngest owner, otherwise, use None
     account = setting.goal.account
     today = datetime.datetime.today().date()
@@ -56,11 +75,10 @@ def recommend_risk(setting):
         income = None
         # TODO: For trusts, use the trust assets as worth
         worth = None
-
     ttl = years_between(today, setting.completion)
     goal_type_sensitivity = setting.goal.type.risk_sensitivity
 
-    return get_recommendation(age, status, income, worth, ttl, goal_type_sensitivity)
+    return age, goal_type_sensitivity, income, status, ttl, worth
 
 
 def get_recommendation(age, status, income, worth, ttl, goal_type_sensitivity):

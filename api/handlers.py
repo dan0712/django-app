@@ -24,7 +24,7 @@ def api_exception_handler(exc, context):
         detail = getattr(exc, 'detail', {})
 
         if isinstance(exc, exceptions.ValidationError):
-            non_field_errors = detail.pop('non_field_errors', [])
+            non_field_errors = detail.pop('non_field_errors', []) if isinstance(detail, dict) else []
             non_field_errors = map(lambda s: str(s), non_field_errors) # stringify values
 
             error['message'] = ' '.join(non_field_errors) or 'Validation errors'
@@ -32,7 +32,8 @@ def api_exception_handler(exc, context):
             if detail:
                 error['errors'] = detail
 
-            response.data.pop('non_field_errors', None)
+            if isinstance(response.data, dict):
+                response.data.pop('non_field_errors', None)
 
         else:
             if isinstance(detail, (tuple, list, dict)):
