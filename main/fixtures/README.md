@@ -1,0 +1,1 @@
+The data.json.gz file should match the latest state of the Models. I.e. It should match the latest migration.

@@ -50,7 +50,7 @@ INSTALLED_APPS = (
     'pages',
 
     'recurrence',
-
+    'pinax.eventlog',  # For our activity tracking
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_swagger',
