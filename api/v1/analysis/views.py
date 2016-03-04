@@ -26,6 +26,7 @@ class ReturnsView(ApiViewMixin, views.APIView):
             else:
                 obj["name"] = "{0} ({1})".format(p.name, p.symbol)
 
+            obj['id'] = p.id
             obj["group"] = p.group
             obj["initial"] = False
             obj["lineID"] = counter

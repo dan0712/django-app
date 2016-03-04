@@ -181,7 +181,7 @@ class GoalSettingSerializer(ReadOnlyModelSerializer):
         model = GoalSetting
 
 
-class GoalSettingWritableSerializer(serializers.ModelSerializer):
+class GoalSettingWritableSerializer(NoUpdateModelSerializer):
     metric_group = GoalMetricGroupCreateSerializer()
     recurring_transactions = RecurringTransactionCreateSerializer(many=True, required=False)
     portfolio = PortfolioCreateSerializer(required=False)
@@ -197,6 +197,7 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             'portfolio',
         )
 
+    ''' NOT Used ATM
     def update(self, setting, validated_data):
         """
         Overwrite update to deal with nested writes.
@@ -282,9 +283,9 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             goal.set_selected(setting)
 
         return setting
+        '''
 
     def create(self, validated_data):
-        # TODO: Remove this method once all goals have selected-settings
         """
         Puts the passed settings into the 'selected_settings' field on the passed goal.
         """
@@ -303,12 +304,26 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
                 for i_data in metrics:
                     if 'measured_val' in i_data:
                         raise ValidationError({"measured_val": "is read-only"})
-                    mo.append(GoalMetric(group=metric_group, **i_data))
+                    mo.append(
+                        GoalMetric(
+                            group=metric_group,
+                            type=i_data['type'],
+                            feature=i_data.get('feature', None),
+                            comparison=i_data['comparison'],
+                            rebalance_type=i_data['rebalance_type'],
+                            rebalance_thr=i_data['rebalance_thr'],
+                            configured_val=i_data['configured_val'],
+                        )
+                    )
                 GoalMetric.objects.bulk_create(mo)
             else:
                 metric_group = GoalMetricGroup.objects.get(gid)
 
-            setting = GoalSetting.objects.create(metric_group=metric_group, **validated_data)
+            setting = GoalSetting.objects.create(metric_group=metric_group,
+                                                 target=validated_data['target'],
+                                                 completion=validated_data['completion'],
+                                                 hedge_fx=validated_data['hedge_fx'],
+                                                 )
 
             # Get the current portfolio statistics of the given weights if specified.
             if port_data is not None:
@@ -317,19 +332,19 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
                                                                  item['weight']) for item in port_items_data])
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
                 PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
-                                                                 **i_data,
+                                                                 asset=i_data['asset'],
+                                                                 weight=i_data['weight'],
                                                                  volatility=idatas[i_data['asset']]) for i_data in port_items_data])
 
             if tx_data is not None:
-                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting,
+                                                                               recurrence=i_data['recurrence'],
+                                                                               enabled=i_data['enabled'],
+                                                                               amount=i_data['amount']) for i_data in tx_data])
 
             goal.set_selected(setting)
 
         return setting
-
-    # TODO: REactivate after all goals have selected_settings
-    #def create(self, validated_data):
-    #    raise NotImplementedError('create is not a valid operation for a GoalSetting')
 
 
 class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSerializer):

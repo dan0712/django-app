@@ -89,7 +89,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer = serializers.PortfolioSerializer(portfolio)
         return Response(serializer.data)
 
-    @detail_route(methods=['get', 'put'], url_path='selected-settings')
+    @detail_route(methods=['get', 'post'], url_path='selected-settings')
     def selected_settings(self, request, pk=None):
         goal = self.get_object()
 
@@ -97,9 +97,8 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             serializer = serializers.GoalSettingSerializer(goal.selected_settings)
             return Response(serializer.data)
 
-        if request.method == 'PUT':
-            settings = goal.selected_settings
-            serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=settings is not None)
+        if request.method == 'POST':
+            serializer = serializers.GoalSettingWritableSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             settings = serializer.save(goal=goal)
             headers = self.get_success_headers(serializer.data)
