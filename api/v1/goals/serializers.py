@@ -378,8 +378,23 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             mgroup = GoalMetricGroup()
             metrics = metrics_data.get('metrics')
             mo = []
-            for i_data in metrics:
-                mo.append(GoalMetric(group=mgroup, **i_data))
+            for ix, i_data in enumerate(metrics):
+                compar = i_data.get('comparison', None)
+                if compar is None:
+                    emsg = "Metric {} in metrics list has no 'comparison' field, but it is required."
+                    raise ValidationError(emsg.format(ix))
+                metric = GoalMetric(group=mgroup,
+                                    type=i_data['type'],
+                                    feature=i_data.get('feature', None),
+                                    comparison=i_data['comparison'],
+                                    rebalance_type=i_data['rebalance_type'],
+                                    rebalance_thr=i_data['rebalance_thr'],
+                                    configured_val=i_data['configured_val'],
+                                   )
+                if metric.type == GoalMetric.METRIC_TYPE_PORTFOLIO_MIX and metric.feature is None:
+                    emsg = "Metric {} in metrics list is a portfolio mix metric, but no feature is specified."
+                    raise ValidationError(emsg.format(ix))
+                mo.append(metric)
 
             class DummyGroup(object):
                 class PseudoMgr:

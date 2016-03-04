@@ -1,3 +1,4 @@
+import ujson
 from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -140,15 +141,23 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @detail_route(methods=['post'], url_path='calculate-portfolio')
+    @detail_route(methods=['get'], url_path='calculate-portfolio')
     def calculate_portfolio(self, request, pk=None):
         """
         Called to calculate a portfolio object for a set of supplied settings.
         """
         goal = self.get_object()
 
-        # Create the settings from the request
-        serializer = serializers.GoalSettingStatelessSerializer(data=request.data)
+        setting_str = request.query_params.get('setting', None)
+        if not setting_str:
+            raise ValidationError("Query parameter 'setting' must be specified and a valid JSON string")
+        try:
+            setting = ujson.loads(setting_str)
+        except ValueError:
+            raise ValidationError("Query parameter 'setting' must be a valid json string")
+
+        # Create the settings object from the dict
+        serializer = serializers.GoalSettingStatelessSerializer(data=setting)
         serializer.is_valid(raise_exception=True)
         settings = serializer.create_stateless(serializer.validated_data, goal)
 
@@ -159,21 +168,29 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             # TODO: Reformat this into a structured response..
             return Response("No portfolio could be found: {}".format(e))
 
-    @detail_route(methods=['post'], url_path='calculate-all-portfolios')
+    @detail_route(methods=['get'], url_path='calculate-all-portfolios')
     def calculate_all_portfolios(self, request, pk=None):
         """
         Called to calculate all the portfolio objects for 100 different risk scores for the supplied settings.
         """
         goal = self.get_object()
 
-        # Create the settings from the request
-        serializer = serializers.GoalSettingStatelessSerializer(data=request.data)
+        setting_str = request.query_params.get('setting', None)
+        if not setting_str:
+            raise ValidationError("Query parameter 'setting' must be specified and a valid JSON string")
+        try:
+            setting = ujson.loads(setting_str)
+        except ValueError:
+            raise ValidationError("Query parameter 'setting' must be a valid json string")
+
+        # Create the settings from the dict
+        serializer = serializers.GoalSettingStatelessSerializer(data=setting)
         serializer.is_valid(raise_exception=True)
         settings = serializer.create_stateless(serializer.validated_data, goal)
 
         # Calculate the portfolio
         try:
-            data = {str(item[0]): self.build_portfolio_data(item[1]) for item in calculate_portfolios(settings)}
+            data = [self.build_portfolio_data(item[1], item[0]) for item in calculate_portfolios(settings)]
             return Response(data)
         except Unsatisfiable as e:
             # TODO: Reformat this into a structured response..
@@ -201,11 +218,11 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(recommend_ttl_risks(setting, years))
 
     @staticmethod
-    def build_portfolio_data(item):
+    def build_portfolio_data(item, risk_score=None):
         if item is None:
             return None
         weights, er, stdev = item
-        return {
+        res = {
             'stdev': stdev,
             'er': er,
             'items': [
@@ -215,3 +232,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
                 } for tid, weight in weights.iteritems()
             ]
         }
+        if risk_score is None:
+            return res
+        else:
+            return {'risk_score': risk_score, 'portfolio': res}
