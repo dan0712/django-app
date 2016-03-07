@@ -578,8 +578,8 @@ def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, 
     variance = weights.dot(lcovars).dot(weights.T)
     logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, lcovars))
 
-    # Convert variance to stdev and scale appropriately
-    return ret_weights, er * 100, (variance * 100 * 100) ** (1 / 2)
+    # Convert variance to stdev
+    return ret_weights, er, variance ** (1 / 2)
 
 
 def current_stats_from_weights(weights):
