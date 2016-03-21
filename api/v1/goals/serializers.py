@@ -11,7 +11,7 @@ from rest_framework.fields import FloatField, IntegerField
 from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.models import (
     ClientAccount,
-    Goal, GoalSetting, GoalMetric, GoalTypes,
+    Goal, GoalSetting, GoalMetric, GoalType,
     Position, Portfolio, PortfolioItem,
     RecurringTransaction,
     StandardAssetFeatureValues,
@@ -621,7 +621,7 @@ class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
     For read (GET) requests only
     """
     class Meta:
-        model = GoalTypes
+        model = GoalType
 
 
 class GoalPositionListSerializer(ReadOnlyModelSerializer):

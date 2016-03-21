@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.models import (
-    AssetClass, Ticker, GoalTypes,
+    AssetClass, Ticker, GoalType,
 )
 
 __all__ = (
@@ -16,7 +16,7 @@ class GoalTypeListSerializer(serializers.ModelSerializer):
     Experimental
     """
     class Meta:
-        model = GoalTypes
+        model = GoalType
 
 
 class AssetClassListSerializer(serializers.ModelSerializer):

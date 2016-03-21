@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import list_route
 
-from main.models import AssetClass, Ticker, GoalTypes, AssetFeature, GoalMetric
+from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisor, IsClient,
@@ -27,7 +27,7 @@ class SettingsViewSet(ApiViewMixin, viewsets.GenericViewSet):
 
     @list_route(methods=['get'], url_path='goal-types')
     def goal_types(self, request):
-        goal_types = GoalTypes.objects.all().order_by('name')
+        goal_types = GoalType.objects.all().order_by('name')
         serializer = serializers.GoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
 

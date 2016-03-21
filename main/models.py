@@ -1819,16 +1819,17 @@ class AssetFee(models.Model):
         return "[{}] {}".format(self.id, self.name)
 
 
-class GoalTypes(models.Model):
+class GoalType(models.Model):
     name = models.CharField(max_length=255, null=False, db_index=True)
+    description = models.TextField(null=True, blank=True)
     default_term = models.IntegerField(null=False)
     group = models.CharField(max_length=255, null=True)
     risk_sensitivity = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
                                          help_text="Default risk sensitivity for this goal type. "
                                                    "0 = not sensitive, 10 = Very sensitive (No risk tolerated)")
 
-    class Meta:
-        db_table = 'goal_types'  # TODO: Change this to main_
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
 
 
 class RecurringTransaction(models.Model):
@@ -1907,7 +1908,7 @@ class GoalMetricGroup(models.Model):
 class Goal(models.Model):
     account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
-    type = models.ForeignKey(GoalTypes)
+    type = models.ForeignKey(GoalType)
     created = models.DateTimeField(auto_now_add=True)
     portfolio_set = models.ForeignKey(
         PortfolioSet,

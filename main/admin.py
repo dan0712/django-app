@@ -15,7 +15,7 @@ from main.models import (
     TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
-    GoalTypes, GoalMetricGroup, MarketIndex)
+    GoalType, GoalMetricGroup, MarketIndex)
 #from portfolios.management.commands.get_historical_returns import \
 #    get_historical_returns as internal_get_historical_returns
 from suit.admin import SortableModelAdmin, SortableTabularInline
@@ -256,7 +256,7 @@ class GoalSettingAdmin(admin.ModelAdmin):
 
 
 class GoalTypeAdmin(admin.ModelAdmin):
-    model = GoalTypes
+    model = GoalType
 
 
 class GoalAdmin(admin.ModelAdmin):
@@ -352,7 +352,7 @@ admin.site.register(Performer, PerformerAdmin)
 #admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
-admin.site.register(GoalTypes)
+admin.site.register(GoalType)
 admin.site.register(MarketIndex)
 admin.site.register(GoalSetting, GoalSettingAdmin)
 admin.site.register(GoalMetricGroup, GoalMetricGroupAdmin)

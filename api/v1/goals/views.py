@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
 from api.v1.goals.serializers import PortfolioStatelessSerializer
-from main.models import Goal, GoalTypes, TRANSACTION_REASON_DEPOSIT
+from main.models import Goal, GoalType, TRANSACTION_REASON_DEPOSIT
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios
 from portfolios.management.commands.risk_profiler import recommend_ttl_risks
@@ -71,7 +71,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
     @list_route(methods=['get'])
     def types(self, request):
-        goal_types = GoalTypes.objects.all().order_by('name')
+        goal_types = GoalType.objects.all().order_by('name')
         serializer = serializers.GoalGoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
 
