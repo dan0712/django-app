@@ -10,6 +10,11 @@ Automatic Transaction Cost Threshold (ATCS)
 '''
 Overnight Process
 - Download New Data
+- Clear redis instruments cache and recalculate for the day, setting a 4 day timeout to cover weekends/holidays.
+- Calculate the new markowitz lambda bounds.
+- Process any position adjustments
+    - update the Position model and the Execution/ExecutionDistribution/Transaction models accordingly
+- Write the days balance for each goal to the HistoricalBalance model. Calculate from yesterday's figure.
 - Measure all metrics on goals
   - This calculates drift
 - For every account, build a map of goal.id -> experimental_settings, which will be populated for each goal that has a
@@ -43,4 +48,10 @@ Overnight Process
       - which ones went through (and what was the cost)
       -
 
+'''
+
+
+'''
+Once a week, on the weekend, check the last HistoricalBalance record matched a full build from all history, and any
+reconciled amount from the broker
 '''

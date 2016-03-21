@@ -612,7 +612,6 @@ class PortfolioSet(models.Model):
     name = models.CharField(max_length=100, unique=True)
     asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
     risk_free_rate = models.FloatField()
-    tau = models.FloatField()
 
     # Also has 'views' from View model.
 
@@ -2245,6 +2244,18 @@ class Goal(models.Model):
     def auto_term(self):
         today = date.today()
         return "{0}y".format(self.get_term)
+
+
+class HistoricalBalance(models.Model):
+    """
+    The historical balance model is a cache of the information that can be built from the Execution and Transaction
+    models. It enables fast historical view of a goals's balance.
+    This model should only ever be updated by code, and calculated from the source data in the Execution and Transaction
+    models.
+    """
+    goal = models.ForeignKey(Goal, related_name='balance_history')
+    date = models.DateField()
+    balance = models.FloatField()
 
 
 class AssetFeature(models.Model):
