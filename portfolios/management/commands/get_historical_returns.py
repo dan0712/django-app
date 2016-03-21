@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand, CommandError
 from main.models import Platform, Performer, Ticker, SymbolReturnHistory, PERFORMER_GROUP_STRATEGY, PortfolioSet
-from portfolios.api.yahoo import YahooApi
+#from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
 import json
 import numpy as np
 
-
+'''
 def get_api(api_name):
     api_dict = {"YAHOO": YahooApi()}
     return api_dict[api_name]
@@ -85,3 +85,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         get_historical_returns()
+'''

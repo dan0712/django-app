@@ -1,10 +1,12 @@
-__author__ = 'cristian'
+import logging
 import urllib.request
-from datetime import datetime
+import datetime
 import pandas as pd
 from pandas import Series
 import json
-from main.models import DataApiDict, MonthlyPrices, MarketCap
+
+from main.management.commands.build_returns import get_price_returns
+from main.models import DataApiDict, MarketCap
 from urllib.parse import quote
 import calendar
 from bs4 import BeautifulSoup
@@ -14,7 +16,11 @@ import time
 import numpy as np
 from dateutil.relativedelta import relativedelta
 
+__author__ = 'cristian'
 
+logger = logging.getLogger('yahoo_api')
+
+'''
 class YahooApi:
     currency_cache = {"AUD": 1}
 
@@ -186,10 +192,10 @@ class YahooApi:
         return bid*self.to_aud(currency)
 
     def market_cap(self, ticker):
-        '''
+        """
         :param ticker: The name of the symbol.
         :return: Market capitalisation in AUD
-        '''
+        """
         if ticker.symbol in self.market_cap_cache:
             return self.market_cap_cache[ticker.symbol]
         ticker_symbol = self.symbol_dict.get(ticker.symbol, ticker.symbol)
@@ -272,33 +278,6 @@ class TradingRoomApi:
             mp.price = price
             mp.save()
         return price_data
-
-
-class DbApi:
-
-    dates = None
-
-    def __init__(self):
-        today = datetime.today()
-        # Round the dates back to the last full month.
-        self.year = today.year-1 if today.month == 1 else today.year
-        self.month = 12 if today.month == 1 else today.month-1
-        self.day = today.day
-
-    def get_all_prices(self, ticker_symbol, period="m", currency="AUD"):
-        self.dates = pd.date_range('{}-{}'.format(self.year - 5, self.month),
-                                   '{}-{}'.format(self.year, self.month),
-                                   freq='M')
-
-        prices = MonthlyPrices.objects.filter(symbol=ticker_symbol).all()
-        price_data = {}
-
-        for i in prices:
-            price_data[pd.to_datetime(i.date.strftime("%Y-%m-%d"))] = i.price
-        return Series(price_data, index=self.dates, name=ticker_symbol)
-
-    def market_cap(self, ticker):
-        mp = MarketCap.objects.filter(ticker=ticker).first()
-        return None if mp is None else mp.value
+'''
 
 

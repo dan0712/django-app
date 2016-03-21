@@ -18,9 +18,9 @@ from django.db import transaction
 from scipy.optimize import minimize_scalar
 
 from main.models import Goal, Position, GoalMetric
-from portfolios.BL_model.bl_model import bl_model, markowitz_cost
-from portfolios.management.commands.portfolio_calculation import get_instruments, get_market_caps, \
-    get_views, lambda_to_risk_score, optimize_settings, Unsatisfiable
+from portfolios.BL_model.bl_model import markowitz_cost
+from portfolios.management.commands.portfolio_calculation import get_instruments, \
+    lambda_to_risk_score, optimize_settings, Unsatisfiable, run_bl
 
 logger = logging.getLogger("measure_goals")
 # logger.setLevel(logging.DEBUG)
@@ -57,19 +57,11 @@ def get_risk_score(goal, weights, idata):
         instruments.loc[sym, '_weight_'] = weight
 
     goal_instruments = instruments.iloc[goal_symbol_ixs]
-    market_caps = get_market_caps(goal_instruments)
-    views, vers = get_views(goal.portfolio_set, goal_instruments)
-    lcovars = covars.iloc[goal_symbol_ixs, goal_symbol_ixs]
+    mu, sigma = run_bl(instruments, covars, goal_instruments, samples, goal.portfolio_set)
     ws = np.expand_dims(goal_instruments['_weight_'].values, 0)
-    # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
-    mu, sigma = bl_model(lcovars.values,
-                         market_caps.values,
-                         views,
-                         vers,
-                         samples)
 
     # Get the lambda that produces the same cost as the optimum portfolio using the configured risk score.
-    # TODO: I can probably do this algebraicly, and not have to run an iterative minimizer, but this is easiest for now.
+    # TODO: I can probably do this algebraically, and not have to run an iterative minimizer, but this is easy for now.
     def f(lam):
         cost = markowitz_cost(ws, sigma, lam, mu)
         return abs(current_cost - cost)

@@ -3,10 +3,10 @@ import datetime
 import logging
 import math
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
-from django.db.models.aggregates import Max
 
-from main.models import Ticker, DailyPrice, MonthlyPrices, ExchangeRate, SYSTEM_CURRENCY, MarketCap
+from main.models import Ticker, MarketIndex, DailyPrice, ExchangeRate, SYSTEM_CURRENCY
 from portfolios.api.bloomberg import get_fund_hist_data as bl_getter, get_fx_rates
 
 logger = logging.getLogger("load_prices")
@@ -63,7 +63,7 @@ def fx_convert(val, date, currency):
         rate = ExchangeRate.objects.filter(first=SYSTEM_CURRENCY,
                                            second=currency,
                                            date=date).values_list('rate', flat=True)
-        #if len(rate) == 0 or not rate[0] or not rate[0][0] or not math.isfinite(rate[0][0]):
+        # if len(rate) == 0 or not rate[0] or not rate[0][0] or not math.isfinite(rate[0][0]):
         if len(rate) == 0 or not rate[0] or not math.isfinite(rate[0]):
             old_dt = date
             date = make_weekday(date - datetime.timedelta(days=1))
@@ -75,7 +75,7 @@ def fx_convert(val, date, currency):
                                                date=date).values_list('rate', flat=True)
             if len(rate) == 0 or not rate[0] or not math.isfinite(rate[0]):
                 raise Exception(msg.format(currency, date))
-        #print(rate[0])
+        # print(rate[0])
         rate = rate[0]
 
     return val / rate
@@ -85,89 +85,66 @@ def nan_none(val):
     return None if math.isnan(val) else val
 
 
-def load_ticker_data(begin_date, end_date):
+def load_price_data(begin_date, end_date):
     """
 
     :param begin_date:
     :param end_date:
     :return:
     """
-    # Get the api details for all our tickers
     api_calls = defaultdict(list)
     id_map = {}
-    for ticker in Ticker.objects.all():
-        if ticker.data_api is None:
-            logger.debug('Ignoring ticker: {} for data load as api not specified.'.format(ticker.pk))
+
+    # Get the api details for all our funds
+    for fund in Ticker.objects.all():
+        if fund.data_api is None:
+            logger.debug('Ignoring fund: {} for data load as api not specified.'.format(fund.pk))
             continue
-        if ticker.data_api_param is None or not ticker.data_api_param.strip():
-            logger.debug('Ignoring ticker: {} for data load as api param not specified.'.format(ticker.pk))
+        if fund.data_api_param is None or not fund.data_api_param.strip():
+            logger.debug('Ignoring fund: {} for data load as api param not specified.'.format(fund.pk))
             continue
 
-        # On second thoughts, lets not do this as it's a pretty good attack vector.
-        # Instead, load the ones we know in the header
-        # __import__(ticker.data_api)
+        api_calls[fund.data_api].append(fund.data_api_param)
+        id_map[fund.data_api_param] = fund
 
-        api_calls[ticker.data_api].append(ticker.data_api_param)
-        id_map[ticker.data_api_param] = ticker
+    # Get the api details for all our indices
+    for index in MarketIndex.objects.all():
+        if index.data_api is None:
+            logger.debug('Ignoring index: {} for data load as api not specified.'.format(index.pk))
+            continue
+        if index.data_api_param is None or not index.data_api_param.strip():
+            logger.debug('Ignoring index: {} for data load as api param not specified.'.format(index.pk))
+            continue
 
-    # A list of (navseries, ticker) pairs.
-    monthly_navs = []
+        api_calls[index.data_api].append(index.data_api_param)
+        id_map[index.data_api_param] = index
 
     # Get the daily data from each api for the provided dates
-    for api, ticker_params in api_calls.items():
-        dframes = api_map[api](ticker_params, begin_date, end_date)
+    for api, instr_params in api_calls.items():
+        dframes = api_map[api](instr_params, begin_date, end_date)
 
         # Load data into the django daily model, removing whatever's there
         for key, frame in dframes.items():
-            ticker = id_map[key]
-
-            # Generate the monthly prices from the frame.
-            # We were throwing a segfault here on empty frame, so we don't do it now.
-            if frame['nav'].dropna().size > 0:
-                # monthly_navs.append((frame['nav'].dropna().resample('M', how='last', closed='right', label='right'), ticker))
-                mnav = frame['nav'].dropna().astype(float).resample('M', how='ohlc')['close'].dropna()
-                monthly_navs.append((mnav, ticker))
-                #print(monthly_navs[-1])
-            else:
-                emsg = "Not generating prices for symbol: {} as there is no data to use."
-                logger.warn(emsg.format(ticker.symbol))
+            instr = id_map[key]
 
             # Delete any existing prices for the date range
-            DailyPrice.objects.filter(ticker=ticker).filter(date__range=(begin_date, end_date)).delete()
+            instr_type = ContentType.objects.get_for_model(instr)
+            DailyPrice.objects.filter(instrument_content_type=instr_type,
+                                      instrument_object_id=instr.id,
+                                      date__range=(begin_date, end_date)).delete()
 
             # Insert the new prices
             prices = []
-            for dt, nav, aum in frame.itertuples():
-                prices.append(DailyPrice(ticker=ticker,
+            for dt, price in frame.itertuples():
+                prices.append(DailyPrice(instrument=instr,
                                          date=dt,
-                                         nav=nan_none(fx_convert(nav, dt, ticker.currency)),
-                                         aum=nan_none(fx_convert(aum, dt, ticker.currency))))
-                #print("Appended {} from sym: {}, dt: {}, nav: {}".format(prices[-1].nav, key, dt, nav))
+                                         price=fx_convert(price, dt, instr.currency)))
+                # print("Appended {} from sym: {}, dt: {}, nav: {}".format(prices[-1].nav, key, dt, nav))
 
             DailyPrice.objects.bulk_create(prices)
 
-    # Load the MonthlyPrices table from the daily prices
-    # First delete any existing prices for the date range
-    # Pull the end_date back to the last end of month in the range.
-    if (end_date + datetime.timedelta(days=1)).month == end_date.month:
-        end_date = datetime.date(end_date.year, end_date.month, 1) - datetime.timedelta(days=1)
 
-    if end_date < begin_date:
-        msg = "Not setting monthly prices as no end of months covered in selected dates: {}-{}"
-        logger.debug(msg.format(begin_date, end_date))
-        return
-
-    # Insert the new monthly prices
-    monthly_prices = []
-    for series, ticker in monthly_navs:
-        MonthlyPrices.objects.filter(symbol=ticker.symbol).filter(date__range=(begin_date, end_date)).delete()
-        monthly_prices += [MonthlyPrices(symbol=ticker.symbol,
-                                         date=dt,
-                                         price=fx_convert(price, dt, ticker.currency)) for dt, price in
-                           series.iteritems() if dt <= datetime.datetime.combine(end_date, datetime.time())]
-    MonthlyPrices.objects.bulk_create(monthly_prices)
-
-
+'''
 def set_aum():
     """
     We generate the market cap from the date of the last monthly price we have available.
@@ -213,6 +190,7 @@ def get_aum(ticker, date):
         return dp.aum
     else:
         return aum[0]
+'''
 
 
 def parse_date(val):
@@ -225,7 +203,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('begin_date', type=parse_date, help='Inclusive start date to load the data for. (YYYYMMDD)')
         parser.add_argument('end_date', type=parse_date, help='Inclusive end date to load the data for. (YYYYMMDD)')
-        #parser.add_argument('--verbose', '-v', action='count', help='Increase logging verbosity')
+        # parser.add_argument('--verbose', '-v', action='count', help='Increase logging verbosity')
 
     def handle(self, *args, **options):
 
@@ -237,5 +215,5 @@ class Command(BaseCommand):
             logger.setLevel(min(logging.DEBUG, logger.level))
 
         load_fx_rates(options['begin_date'], options['end_date'])
-        load_ticker_data(options['begin_date'], options['end_date'])
-        set_aum()
+        load_price_data(options['begin_date'], options['end_date'])
+        # set_aum()

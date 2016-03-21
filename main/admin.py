@@ -1,3 +1,5 @@
+from genericadmin.admin import GenericAdminModelAdmin, BaseGenericModelAdmin
+
 from advisors import models as advisor_models
 from django.conf import settings
 from django.contrib import admin
@@ -13,11 +15,10 @@ from main.models import (
     TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
-    GoalTypes, GoalMetricGroup)
-from portfolios.management.commands.get_historical_returns import \
-    get_historical_returns as internal_get_historical_returns
-from suit.admin import SortableModelAdmin
-from suit.admin import SortableTabularInline
+    GoalTypes, GoalMetricGroup, MarketIndex)
+#from portfolios.management.commands.get_historical_returns import \
+#    get_historical_returns as internal_get_historical_returns
+from suit.admin import SortableModelAdmin, SortableTabularInline
 
 
 class AssetResource(resources.ModelResource):
@@ -25,10 +26,14 @@ class AssetResource(resources.ModelResource):
         model = ProxyAssetClass
 
 
-class TickerInline(SortableTabularInline):
+class TickerInline(BaseGenericModelAdmin, SortableTabularInline):
     model = ProxyTicker
     sortable = 'ordering'
     extra = 0
+    generic_fk_fields = [{
+        'ct_field': 'benchmark_content_type',
+        'fk_field': 'benchmark_object_id',
+    }]
 
 
 class ClientAccountInline(admin.StackedInline):
@@ -57,7 +62,7 @@ class FirmDataInline(admin.StackedInline):
     model = FirmData
 
 
-class AssetClassAdmin(SortableModelAdmin, ImportExportModelAdmin):
+class AssetClassAdmin(GenericAdminModelAdmin, SortableModelAdmin, ImportExportModelAdmin):
     list_display = ('name', 'display_name', 'display_order', 'investment_type', 'super_asset_class')
     inlines = (TickerInline,)
     resource_class = AssetResource
@@ -207,7 +212,7 @@ def invite_supervisor(modeladmin, request, queryset):
         return HttpResponseRedirect('/betasmartz_admin/firm/{pk}/invite_supervisor?next=/admin/main/firm/'
                                     .format(pk=queryset.all()[0].pk))
 
-
+'''
 def get_historical_returns(modeladmin, request, queryset):
     try:
         internal_get_historical_returns()
@@ -216,7 +221,7 @@ def get_historical_returns(modeladmin, request, queryset):
         return
 
     messages.success(request, "The historical returns for all the symbols has been completed")
-
+'''
 
 class FirmAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -258,11 +263,11 @@ class GoalAdmin(admin.ModelAdmin):
     list_display = ('account', 'name', 'type')
     actions = (rebalance,)
 
-
+'''
 class PlatformAdminAdmin(admin.ModelAdmin):
     actions = (get_historical_returns,)
     pass
-
+'''
 
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('goal', 'ticker', 'value')
@@ -344,10 +349,11 @@ admin.site.register(CostOfLivingIndex, CostOfLivingIndexAdmin)
 
 admin.site.register(DataApiDict, DataApiDictAdmin)
 admin.site.register(Performer, PerformerAdmin)
-admin.site.register(Platform, PlatformAdminAdmin)
+#admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
 admin.site.register(GoalTypes)
+admin.site.register(MarketIndex)
 admin.site.register(GoalSetting, GoalSettingAdmin)
 admin.site.register(GoalMetricGroup, GoalMetricGroupAdmin)
 admin.site.register(Dividend)

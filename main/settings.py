@@ -38,7 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django_cron',
-
+    'genericadmin',  # Allows nice selection of generic foreign keys in admin interface
     'django_extensions', # temp. to visualize models only
     'test_without_migrations',
     'corsheaders',

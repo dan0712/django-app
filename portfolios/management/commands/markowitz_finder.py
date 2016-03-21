@@ -8,37 +8,29 @@ from scipy.optimize.minpack import curve_fit
 
 from main.models import MarkowitzScale
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3
-from portfolios.management.commands.portfolio_calculation import get_instruments, get_market_caps, \
-    get_core_constraints, MIN_PORTFOLIO_PCT
+from portfolios.management.commands.portfolio_calculation import get_instruments, get_market_weights, \
+    get_core_constraints, MIN_PORTFOLIO_PCT, run_bl, FUND_MASK_NAME
 
 logger = logging.getLogger("markowitz_finder")
 logger.setLevel(logging.DEBUG)
 
 
 def get_extremes():
+    # Get the funds from the instruments table
     covars, samples, instruments, masks = get_instruments()
+    funds = instruments[masks[FUND_MASK_NAME]]
 
-    # Get the instrument with the best implied equilibrium return.
-    market_caps = get_market_caps(instruments)
-    instruments['iew'] = covars.dot(market_caps)
-    sted = instruments.sort('iew', ascending=False)
-    perfix = instruments.index.get_loc(sted.index[0])
-    logger.info("Found best performer: {} at index: {}".format(instruments.index[perfix], perfix))
+    # Generate the BL ERs and Sigma
+    # TODO: Add views. I.e. Have markowitz limits per portfolio set.
+    mu, sigma = run_bl(instruments, covars, funds, samples, None)
 
-    # At the moment we're ignoring views..
-    # TODO: Add view logic. I.e. Have markowitz limits per portfolio set.
-    # views, vers = get_views(goal, goal_instruments)
+    # Get the instrument with the best BL ER.
+    perfix = np.argmax(mu)
+    logger.info("Found largest BL ER instrument: {} at index: {}".format(funds.index[perfix], perfix))
 
-    xs, constraints = get_core_constraints(instruments.shape[0])
+    xs, constraints = get_core_constraints(funds.shape[0])
 
-    # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
-    mu, sigma = bl_model(covars.values,
-                         market_caps.values,
-                         np.zeros((0, instruments.shape[0])),
-                         [],
-                         samples)
-
-    # Find the lambda that gives only the most performant.
+    # Find the lambda that gives only the best BL ER.
     lowerb = 0.0
     upperb = 100000000.0
     mval = 10

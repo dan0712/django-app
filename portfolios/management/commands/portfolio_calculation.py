@@ -10,18 +10,18 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 from django.core.cache import cache
+from sklearn.covariance.shrunk_covariance_ import OAS
 
 from main import redis
+from main.management.commands.build_returns import get_price_returns
 
 from main.models import (
     SYSTEM_CURRENCY,
     Goal, Ticker, AssetFeatureValue, 
     MarkowitzScale, PortfolioSet,
-)
+    MarketCap)
 
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
-from portfolios.api.yahoo import DbApi
-from portfolios.bl_model import calculate_co_vars
 from portfolios.profile_it import do_cprofile
 
 
@@ -30,6 +30,7 @@ ETHICAL_MASK_NAME = 'ETHICAL'
 REGION_MASK_PREFIX = 'REGION_'
 PORTFOLIO_SET_MASK_PREFIX = 'PORTFOLIO-SET_'
 ETF_MASK_NAME = 'ETF'
+FUND_MASK_NAME = 'FUND'  # Mask for all fund instruments (doesn't include benchmarks etc).
 
 # Acceptable modulo multiplier of the unit price for ordering.
 ORDERING_ALIGNMENT_TOLERANCE = 0.01
@@ -42,7 +43,9 @@ MIN_PORTFOLIO_PCT = 0.01
 LMT_PORTFOLIO_PCT = 0.05
 
 # How many pricing samples do we need to make the statistics valid?
-MINIMUM_PRICE_SAMPLES = 12
+MINIMUM_PRICE_SAMPLES = 250
+
+WEEKDAYS_PER_YEAR = 260
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
 #logger.setLevel(logging.DEBUG)
@@ -60,7 +63,122 @@ def months_between(date1, date2):
     return m2 - m1
 
 
-def build_instruments(api=DbApi()):
+def get_market_weight(content_type_id, content_object_id):
+    mp = MarketCap.objects.filter(instrument_content_type__id=content_type_id,
+                                  instrument_object_id=content_object_id).order_by('-date').first()
+    return None if mp is None else mp.value
+
+
+def get_returns(funds, start_date, end_date, end_tol=0, min_days=None):
+    """
+    Returns the daily returns of the funds, and their benchmarks for the given date range.
+
+    Results will be a consecutive time block of returns, all ending on the same day.
+    The date they end on must be within 'end_tol' of the specified ending day.
+    NaNs may exist at the start of some funds or benchmarks if data was not available for them.
+
+    :param funds: The iterable of funds (Tickers) we want the data for.
+    :param start_date: The first date inclusive.
+    :param end_date: The last date inclusive.
+    :param end_tol: The maximum number of days before end_date the series is allowed to end.
+    :param min_days: The minimum number of days that need to be available for a fund to be included.
+    :return: (fund_returns, benchmark_returns, mappings)
+            - fund_returns is a Pandas DataFrame of return series for each fund. Column names are their ticker ids.
+            - benchmark_returns is a Pandas DataFrame of return series for each benchmark.
+              Column names are their content_type ids.
+            - mappings is a dict from ticker ids to content_type ids, so we know which goes with which.
+    """
+    min_end = end_date - datetime.timedelta(days=end_tol)
+    fund_returns = pd.DataFrame()
+    benchmark_returns = pd.DataFrame()
+    mappings = {}  # Map from fund to benchmark
+    max_end = end_date
+
+
+    # Map from benchmark to list of funds using it
+    b_to_f = defaultdict(list)
+
+    for fund in funds:
+        ser = fund.get_returns(start_date, end_date)
+        last_dt = ser.last_valid_index()
+        if last_dt is None:
+            emsg = "Excluding fund: {} as it has no returns available."
+            logger.warn(emsg.format(fund))
+            continue
+        last_dt = last_dt.date()
+        if fund.benchmark is None:
+            emsg = "Excluding fund: {} as it has no benchmark defined."
+            logger.warn(emsg.format(fund))
+            continue
+
+        # Add the benchmark returns if they're not already in there
+        # We need to use the content type to disambiguate the object Id as the same id may be used in multiple models.
+        bid = '{}_{}'.format(fund.benchmark_content_type.id, fund.benchmark_object_id)
+        brets = None
+        if bid not in benchmark_returns:
+            brets = fund.benchmark.get_returns(start_date, end_date)
+            blast_dt = brets.last_valid_index()
+            if blast_dt is None:
+                emsg = "Excluding fund: {} as its benchmark: {} has no returns available."
+                logger.warn(emsg.format(fund, fund.benchmark))
+                continue
+            blast_dt = blast_dt.date()
+            last_dt = min(blast_dt, last_dt)
+            if blast_dt < min_end:
+                emsg = "Excluding fund: {} as the last day of data for its benchmark is before {} (the minimum acceptable)."
+                logger.warn(emsg.format(fund, blast_dt))
+                continue
+
+        if last_dt < min_end:
+            emsg = "Excluding fund: {} as it's last day of data is before {} (the minimum acceptable)."
+            logger.warn(emsg.format(fund, last_dt))
+            continue
+        max_end = min(max_end, last_dt)
+        fund_returns[fund.id] = ser
+        b_to_f[bid].append(fund.id)
+        mappings[fund.id] = bid
+        if brets is not None:
+            benchmark_returns[bid] = brets
+
+    if max_end != end_date:
+        fund_returns = fund_returns.iloc[:fund_returns.index.get_loc(max_end)+1]
+        benchmark_returns = benchmark_returns.iloc[:benchmark_returns.index.get_loc(max_end)+1]
+
+    # If min_days was specified, drop any instruments that don't meet the criteria.
+    # We need to do this is a separate loop so the trimmed end date is available.
+    if min_days is not None:
+        to_drop = []
+        for iid, ser in fund_returns.iteritems():
+            if ser.count() < min_days:
+                emsg = "Excluding fund: {} as it doesn't have {} consecutive days of returns ending on {}."
+                logger.warn(emsg.format(iid, min_days, max_end))
+                to_drop.append(iid)
+                bid = mappings[iid]
+                b_to_f[bid].remove(iid)  # Remove the fund from the reverse mapping
+                if len(b_to_f[bid]) == 0:
+                    del b_to_f[bid]
+                    benchmark_returns.drop(bid, axis=1, inplace=1)
+                del mappings[iid]  # Remove the fund from the mappings
+        fund_returns.drop(to_drop, axis=1, inplace=1)
+
+        # Also check each of the benchmarks has enough data
+        to_drop = []
+        for bid, ser in benchmark_returns.iteritems():
+            if ser.count() < min_days:
+                emsg = "Excluding benchmark: {} and all it's funds as it doesn't have {} consecutive days of returns ending on {}."
+                logger.warn(emsg.format(bid, min_days, max_end))
+                to_drop.append(bid)
+                for fid in b_to_f[bid]:
+                    logger.warn("Removing fund: {}".format(fid))
+                    del mappings[fid]
+                    fund_returns.drop(fid, axis=1, inplace=1)
+                del b_to_f[bid]
+        benchmark_returns.drop(to_drop, axis=1, inplace=1)
+
+    return fund_returns, benchmark_returns, mappings
+
+
+def build_instruments():
     """
     Builds all the instruments know about in the system.
     Have global pandas tables of all the N instruments in the system, and operate on these tables through masks.
@@ -95,69 +213,76 @@ def build_instruments(api=DbApi()):
     tickers = Ticker.objects.all()
     # Much faster building the dataframes once, not appending on iteration.
     irows = []
-    ccols = []
 
     # the minimum index that has data for all symbols.
-    minix = 0
+    minloc = None
+
+    # Allow 5 days slippage just to be sure we have a trading day last.
+    fund_returns, benchmark_returns, bch_map = get_returns(funds=tickers,
+                                                           start_date=datetime.date.today() - datetime.timedelta(days=365*5),
+                                                           end_date=datetime.date.today(),
+                                                           end_tol=5,
+                                                           min_days=MINIMUM_PRICE_SAMPLES)
+
+    # We build these up while processing the tickers as we don't know what model they come from.
+    ctable = pd.DataFrame()
 
     for ticker in tickers:
-        # TODO: Get the current price from the daily prices table, not monthly.
-        prices = api.get_all_prices(ticker.symbol, currency=ticker.currency)
-        if not minix:
-            minix = -prices.shape[0]
-
-        # Make sure we have the minimum data to make the statistics meaningful.
-        isnulls = pd.isnull(prices)
-        if isnulls.iloc[-MINIMUM_PRICE_SAMPLES:].any():
-            emsg = "Removing symbol: {} from candidates as it has only {} available prices in the last {} samples."
-            logger.warn(emsg.format(ticker.symbol, prices.iloc[-MINIMUM_PRICE_SAMPLES:].count(), MINIMUM_PRICE_SAMPLES))
-            continue
-        mc = api.market_cap(ticker)
-        if mc is None:
-            emsg = "Removing symbol: {} from candidates as it has no market cap available"
-            logger.warn(emsg.format(ticker.symbol))
+        if ticker.id not in fund_returns:
+            logger.warn("Excluding {} from instruments as it doesn't have enough data".format(ticker))
             continue
 
-        # Build annualised expected return
-        first_valid = isnulls.argmin()
-        mths = months_between(first_valid, prices.index[-1]) + 1
-        er = (((prices.iloc[-1] - prices[first_valid]) / prices[first_valid]) / (mths / 12))
-        logger.debug("Built expected return {} for {} using {} months of data.".format(er, ticker.symbol, mths))
-        #er = (1 + ccols[-1].pct_change().mean()) ** 12 - 1
+        returns = fund_returns[ticker.id]
+        bid = bch_map[ticker.id]
 
-        # We need there to be no gaps in the prices, so our covariance calculation is correct. So find the min index
-        # that is common to all symbols.
-        for i in range(-(MINIMUM_PRICE_SAMPLES-1), minix-1, -1):
-            if pd.isnull(prices[i]):
-                minix = max(minix, i+1)
-                break
+        # Build annualised expected return with all the data we have.
+        er = (1 + returns.mean()) ** WEEKDAYS_PER_YEAR - 1
 
-        # Data good, so add the symbol
-        ccols.append(prices)
+        # Establish the lowest common denominator begin date for the covariance calculations
+        mmax = max(returns.first_valid_index(), benchmark_returns[bid].first_valid_index())
+        minloc = mmax if minloc is None else max(mmax, minloc)
 
+        if bid not in ctable:
+            bmw = get_market_weight(*bid.split('_'))
+            if not bmw:
+                emsg = "Excluding fund {} as its benchmark: {} doesn't have a market weight available"
+                logger.warn(emsg.format(ticker, bid))
+                continue
+
+            # Data good, so add the fund and benchmark
+            ctable[bid] = benchmark_returns[bid]
+            ber = (1 + returns.mean()) ** WEEKDAYS_PER_YEAR - 1
+            irows.append((bid, ber, bmw, None, None, [], [], bid, None))
+
+        ctable[ticker.id] = returns
         irows.append((ticker.symbol,
                       er,
-                      mc,
+                      0,  # For now we're using 0 for market caps of the funds, as they will 'inherit' the market cap of their benchmark
                       ticker.asset_class.name,
-                      prices.iloc[-1],
+                      ticker.daily_prices.order_by('-date')[0].price,  # There has to be a daily price, as we have returns
                       ticker.features.values_list('id', flat=True),
                       ac_ps[ticker.asset_class.id],
                       ticker.id,
+                      bid,
                       ))
 
-    if len(ccols) == 0:
+    if len(ctable) == 0:
         logger.warn("No valid instruments found")
         raise Exception("No valid instruments found")
 
-    # Filter the table to be only complete.
-    ctable = pd.concat(ccols, axis=1).iloc[minix:, :]
+    # filter the table to be only complete.
+    ctable = ctable.loc[minloc:, :]
 
     # For some reason once I added the exclude arg below, the index arg was ignored, so I have to do it manually after.
     instruments = pd.DataFrame.from_records(irows,
-                                            columns=['symbol', 'exp_ret', 'mkt_cap', 'ac', 'price', 'features', 'pids', 'id'],
+                                            columns=['symbol', 'exp_ret', 'mkt_cap', 'ac',
+                                                     'price', 'features', 'pids', 'id', 'bid'],
                                             exclude=['features', 'pids']).set_index('symbol')
 
     masks = pd.DataFrame(False, index=instruments.index, columns=AssetFeatureValue.objects.values_list('id', flat=True))
+
+    # Add the benchmark instruments mask
+    masks[FUND_MASK_NAME] = instruments['bid'].notnull()
 
     # Add this symbol to the appropriate portfolio set masks
     psid_miloc = {}
@@ -165,40 +290,39 @@ def build_instruments(api=DbApi()):
         mid = PORTFOLIO_SET_MASK_PREFIX + str(psid)
         masks[mid] = False
         psid_miloc[psid] = masks.columns.get_loc(mid)
+
+    # Add the feature masks
     for ix, row in enumerate(irows):
         for fid in row[5]:
             masks.iloc[ix, masks.columns.get_loc(fid)] = True
         for psid in row[6]:
             masks.iloc[ix, psid_miloc[psid]] = True
 
-    # For now we are using the old covariance method as some funds do not have 12 months data, and the old way allows
-    # differing sample lengths..
-    # TODO: Get rid of this and use the standard pandas covariance method.
-    sk_co_var, co_vars = calculate_co_vars(ctable.shape[1], ctable)
-    co_vars = pd.DataFrame(co_vars, index=instruments.index, columns=instruments.index)
-    #samples = 12
-
-    # Drop dates that have nulls for some symbols.
-    # TODO: Have some sanity check over the data. Make sure it's recent, gap free and with enough samples.
-    #ptable = ctable.dropna()
-
-    logger.debug("Prices as table: {}".format(ctable.to_dict('list')))
+    logger.debug("Returns as table: {}".format(ctable.to_dict('list')))
     #logger.debug("Prices as list: {}".format(ptable.values.tolist()))
 
-    #co_vars = ctable.cov()
+    # Annualise the returns so we can get annualised covariance
+    #ctable_annual = (ctable + 1) ** WEEKDAYS_PER_YEAR - 1
+    co_vars = ctable.cov() * WEEKDAYS_PER_YEAR
+
+    # Shrink the covars (Ledoit and Wolff)
+    sk = OAS(assume_centered=True)
+    sk.fit(ctable.values)
     samples = ctable.shape[0]
+    sk_cov = ((1-sk.shrinkage_)*co_vars + sk.shrinkage_*np.trace(co_vars)/len(co_vars)*np.identity(len(co_vars)))
+
     logger.debug("Market Caps as table: {}".format(instruments['mkt_cap'].to_dict()))
     logger.debug("Using symbols: {}".format([(row[0] + "[{}]".format(ix), row[5]) for ix, row in enumerate(irows)]))
 
-    return co_vars, samples, instruments, masks
+    return sk_cov, samples, instruments, masks
 
 
-def get_instruments(api=DbApi()):
+def get_instruments():
     key = redis.KEY_INSTRUMENTS(datetime.date.today().isoformat())
     data = cache.get(key)
 
     if data is None:
-        data = build_instruments(api)
+        data = build_instruments()
         cache.set(key, data, timeout=60*60*24)
 
     return data
@@ -206,6 +330,7 @@ def get_instruments(api=DbApi()):
 
 def get_settings_masks(settings, masks):
     '''
+    Removes benchmarks from the masks and any funds that we don't need.
     :param settings: The settings we want to modify the global masks for
     :param masks: The global asset feature masks
     :return: (settings_symbol_ixs, cvx_masks)
@@ -234,10 +359,13 @@ def get_settings_masks(settings, masks):
     settings_mask = np.logical_not(removals)
     logger.debug("Mask for settings: {} after removals: {} ({} items)".format(settings, settings_mask, len(settings_mask.nonzero())))
 
+    # Only use funds.
+    settings_mask &= masks[FUND_MASK_NAME]
+
     # Only use the instruments from the specified portfolio set.
     settings_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(settings.goal.portfolio_set.id)]
 
-    logger.debug("Usable indicies in our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
+    logger.debug("Usable indices in our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
     cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}
@@ -325,7 +453,7 @@ def risk_score_to_lambda(risk_score):
     scale = MarkowitzScale.objects.order_by('-date').first()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
-    if scale.date < (datetime.datetime.today() - datetime.timedelta(days=7)).date():
+    if scale.date < (datetime.date.today() - datetime.timedelta(days=7)):
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
     return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
 
@@ -335,12 +463,12 @@ def lambda_to_risk_score(lam):
     scale = MarkowitzScale.objects.order_by('-date').first()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The Markowitz lambda into a risk score.")
-    if scale.date < (datetime.datetime.today() - datetime.timedelta(days=7)).date():
+    if scale.date < (datetime.date.today() - datetime.timedelta(days=7)):
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
     return (math.log((lam - scale.c)/scale.a, scale.b) + 50) / 100
 
 
-def get_market_caps(instruments):
+def get_market_weights(instruments):
     """
     Get a set of initial weights based on relative market capitalisation
     :param instruments: The instruments table
@@ -349,21 +477,27 @@ def get_market_caps(instruments):
     interested = instruments['mkt_cap']
     total_market = interested.sum()
     if total_market == 0:
-        return 0
+        return pd.Series([0]*len(interested), index=interested.index)
     return interested / total_market
 
 
 def get_views(portfolio_set, instruments):
     """
     Return the views that are appropriate for a given portfolio set.
-    :param portfolio_set: The portfolio set to get the views for.
+    :param portfolio_set: The portfolio set to get the views for. May be null, in which case no views are returned.
     :param instruments: The n x d pandas dataframe with n instruments and their d data columns.
     :return: (views, view_rets)
         - views is a masked nxm numpy array corresponding to m investor views on future asset movements
         - view_rets is a mx1 numpy array of expected returns corresponding to views.
     """
     # TODO: We should get the cached views per portfolio set from redis
-    ps_views = portfolio_set.views.all()
+
+    if portfolio_set is None:
+        ps_views = []
+        logger.warn("No portfolio_set passed to get_views, no views can therefore be found.")
+    else:
+        ps_views = portfolio_set.views.all()
+
     views = np.zeros((len(ps_views), instruments.shape[0]))
     qs = []
     masked_views = []
@@ -390,7 +524,7 @@ def get_views(portfolio_set, instruments):
 
 
 #@do_cprofile
-def calculate_portfolios(setting, api=DbApi()):
+def calculate_portfolios(setting):
     """
     Calculate a list of 101 portfolios ranging over risk score.
     :param setting: The settig we want to generate portfolios for.
@@ -403,12 +537,12 @@ def calculate_portfolios(setting, api=DbApi()):
     """
     logger.debug("Calculate Portfolios Requested")
     try:
-        idata = get_instruments(api)
+        idata = get_instruments()
         logger.debug("Got instruments")
         # We don't need to recalculate the inputs for every risk score, as the risk score is just passed back.
         # We can do that directly
         opt_inputs = calc_opt_inputs(setting, idata)
-        xs, sigma, mu, _, constraints, goal_instruments, goal_symbol_ixs, instruments, lcovars = opt_inputs
+        xs, sigma, mu, _, constraints, setting_instruments, setting_symbol_ixs, instruments, lcovars = opt_inputs
         logger.debug("Optimising for 100 portfolios using mu: {}\ncovars: {}\nsigma: {}".format(mu, lcovars, sigma))
         # TODO: Use a parallel approach here.
         portfolios = []
@@ -432,11 +566,11 @@ def calculate_portfolios(setting, api=DbApi()):
                                                setting,
                                                # We use the current balance (including pending deposits).
                                                setting.goal.current_balance,
-                                               goal_instruments['price'])
+                                               setting_instruments['price'])
                 # Convert to our statistics for our portfolio.
                 portfolios.append((risk_score,
-                                   get_portfolio_stats(goal_instruments,
-                                                       goal_symbol_ixs,
+                                   get_portfolio_stats(setting_instruments,
+                                                       setting_symbol_ixs,
                                                        instruments,
                                                        lcovars,
                                                        weights)))
@@ -481,6 +615,42 @@ def optimize_settings(settings, idata):
     return weights, cost, xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars
 
 
+def run_bl(instruments, covars, target_instruments, samples, portfolio_set):
+    """
+    Runs Black-Litterman to determine ers and weights of funds based on benchmarks and fund views
+    :param instruments: The table of instrument data for funds and their benchmarks
+    :param covars: The covariance matrix for funds and their benchmarks
+    :param target_instruments: The fund instruments from the main instruments table that we are interested in.
+    :param samples: The number of samples used to create the covariance matrix
+    :param portfolio_set: The portfolio set that specifies the views. If None, no views will be used.
+    :return: The mu and sigma for the funds only.
+    """
+
+    # Get the indexes for the benchmarks for each of the funds
+    blabels = target_instruments['bid'].unique()
+
+    # Get all the benchmarks and fund instruments
+    bl_instruments = instruments.loc[blabels.tolist() + target_instruments.index.tolist()]
+
+    # Get the market weights for the benchmarks for each of the funds, and the funds.
+    # The market caps for the funds should be zero.
+    market_caps = get_market_weights(bl_instruments)
+
+    # Get the views appropriate for the settings
+    views, vers = get_views(portfolio_set, bl_instruments)
+
+    # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
+    lcovars = covars.loc[bl_instruments['id'], bl_instruments['id']]
+    mu, sigma = bl_model(lcovars.values,
+                         market_caps.values,
+                         views,
+                         vers,
+                         samples)
+
+    # modify the mu and sigma to only be the funds, then return just those.
+    return mu[len(blabels):], sigma[len(blabels):, len(blabels):]
+
+
 def calc_opt_inputs(settings, idata, metric_overrides=None):
     # Get the global instrument data
     covars, samples, instruments, masks = idata
@@ -495,20 +665,8 @@ def calc_opt_inputs(settings, idata, metric_overrides=None):
     logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
-
-    # Get the initial weights for the optimisation using only the target instruments
-    market_caps = get_market_caps(settings_instruments)
-
-    # Get the views appropriate for the settings
-    views, vers = get_views(settings.goal.portfolio_set, settings_instruments)
-
-    # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
+    mu, sigma = run_bl(instruments, covars, settings_instruments, samples, settings.goal.portfolio_set)
     lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
-    mu, sigma = bl_model(lcovars.values,
-                         market_caps.values,
-                         views,
-                         vers,
-                         samples)
 
     return xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars
 
@@ -609,7 +767,7 @@ def current_stats_from_weights(weights):
     variance = nweights.dot(lcovars).dot(nweights.T)
     logger.debug("Generated portfolio variance of {} using current asset covars: {}".format(variance, lcovars))
 
-    return er * 100, (variance * 100 * 100) ** (1 / 2), res
+    return er, variance ** (1 / 2), res
 
 
 def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, settings, budget, prices, align=True):
@@ -657,6 +815,9 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         """
         qty = (weights[i] * budget) // prices[i]
         return ((qty * prices[i]) / budget), (((qty + 1) * prices[i]) / budget)
+
+    # Copy the constraints because we mess with them in here, and we don't want that visible
+    constraints = constraints[:]
 
     # We only ever want weights over The MIN_PORTFOLIO_PCT.
     inactive = weights < MIN_PORTFOLIO_PCT
@@ -744,12 +905,13 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
     return wts[0], min_cost
 
 
+'''
 def get_unconstrained(portfolio_set):
     covars, samples, instruments, masks = get_instruments()
     ps_ixs = masks[PORTFOLIO_SET_MASK_PREFIX + str(portfolio_set.id)].nonzero()[0].tolist()
     ps_instrs = instruments.iloc[ps_ixs]
     xs, constraints = get_core_constraints(len(ps_instrs))
-    market_caps = get_market_caps(ps_instrs)
+    market_caps = get_market_weights(ps_instrs)
 
     # Get the views appropriate for the portfolio set
     views, vers = get_views(portfolio_set, ps_instrs)
@@ -787,17 +949,15 @@ def get_unconstrained(portfolio_set):
         }
 
     return json_portfolios
+'''
 
 
 def get_all_optimal_portfolios():
-    # calculate default portfolio
-    api = DbApi()#get_api("YAHOO")
-
     # calculate portfolios
     for goal in Goal.objects.all():
         if goal.selected_settings is not None:
             try:
-                calculate_portfolios(goal.selected_settings, api=api)
+                calculate_portfolios(goal.selected_settings)
             except Unsatisfiable as e:
                 logger.warn(e)
 

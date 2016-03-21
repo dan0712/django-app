@@ -89,7 +89,7 @@ def get_fund_hist_data(ids, begin_date, end_date):
                     'DATEFORMAT': 'ddmmyyyy'}
 
     hist_fields = ['PX_LAST',
-                   'FUND_TOTAL_ASSETS',
+                   #'FUND_TOTAL_ASSETS',
                    'PX_MID',
                    'PX_HIGH',
                    'PX_LOW',
@@ -97,13 +97,8 @@ def get_fund_hist_data(ids, begin_date, end_date):
 
     '''
         Other fund-applicable history fields that may be of interest in the future:
-        FUND_NET_ASSET_VAL
         DVD_SH_LAST
         PX_OPEN
-        PX_HIGH
-        PX_LOW
-        PX_LAST
-        PX_MID
         PX_VOLUME
     '''
     use_id = os.getenv('BBERG_HIST_FILE')
@@ -128,13 +123,14 @@ def get_fund_hist_data(ids, begin_date, end_date):
     for key, frame in dframes.items():
         frame.dropna(how='all', inplace=True)
         # FUND_TOTAL_ASSETS is in million of asset currency. Convert it to base qty.
-        frame['FUND_TOTAL_ASSETS'] *= 1000000
+        # frame['FUND_TOTAL_ASSETS'] *= 1000000
         nprices = frame.apply(price_getter, axis=1)
         if not nprices.empty:
             frame['nav'] = nprices
             #frame.to_csv("/tmp/bberg_{}.csv".format(key))
             frame.iloc[:, 0] = nprices
-        frame.drop(frame.columns[2:], axis=1, inplace=True)  # Remove the cols we don't want.
-        frame.columns = ['nav', 'aum']
+        frame.drop(frame.columns[1:], axis=1, inplace=True)  # Remove the cols we don't want.
+        frame.dropna(how='any', inplace=True)
+        frame.columns = ['price']
 
     return dframes

@@ -10,7 +10,7 @@ from itertools import chain
 from django import forms
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, _,
@@ -29,7 +29,9 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
 from rest_framework.authtoken.models import Token
+from django_pandas.managers import DataFrameManager
 
+from main.management.commands.build_returns import get_price_returns
 from main.slug import unique_slugify
 from .fields import ColorField
 from .managers import (
@@ -55,11 +57,14 @@ def validate_module(value):
 @unique
 class StandardAssetFeatures(Enum):
     SRI = 0
+    ASSET_TYPE = 1
 
     def get_object(self):
         names = {
             # feature_tag: feature_name
             self.SRI: 'Social Responsibility',
+            self.ASSET_TYPE: 'Asset Type',
+            # TODO: Add the rest
         }
         return AssetFeature.objects.get_or_create(name=names[self.value])[0]
 
@@ -67,14 +72,19 @@ class StandardAssetFeatures(Enum):
 @unique
 class StandardAssetFeatureValues(Enum):
     SRI_OTHER = 0
+    ASSET_TYPE_STOCK = 1
+    ASSET_TYPE_BOND = 2
+    # TODO: Add the rest
 
     def get_object(self):
         data = {
             # feature_value_tag: (feature_tag, feature_value_name)
-            self.SRI_OTHER: (StandardAssetFeatures.SRI, 'Non-specific Social Responsibility Initiative')
+            self.SRI_OTHER: (StandardAssetFeatures.SRI, 'Non-specific Social Responsibility Initiative'),
+            self.ASSET_TYPE_STOCK: (StandardAssetFeatures.ASSET_TYPE, 'Stocks only'),
+            self.ASSET_TYPE_BOND: (StandardAssetFeatures.ASSET_TYPE, 'Bonds only'),
         }
         return AssetFeatureValue.objects.get_or_create(name=data[self.value][1],
-                                                       defaults={'feature':data[self.value][0].get_object()})[0]
+                                                       defaults={'feature': data[self.value][0].get_object()})[0]
 
 
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
@@ -171,7 +181,7 @@ TRANSACTION_REASONS = (
     (TRANSACTION_REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
     (TRANSACTION_REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
     (TRANSACTION_REASON_WITHDRAWAL, 'WITHDRAWAL'),  # Withdrawal from the goal to the account
-    (TRANSACTION_REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal, or from account to goal.
+    (TRANSACTION_REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal.
     (TRANSACTION_REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
     (TRANSACTION_REASON_FEE, 'FEE'),
 )
@@ -1537,27 +1547,18 @@ class Region(models.Model):
         return self.name
 
 
-class Ticker(models.Model):
-    symbol = models.CharField(
-        max_length=10,
-        blank=False,
-        null=False,
-        unique=True,
-        validators=[RegexValidator(regex=r'^[^ ]+$',
-                                   message="Invalid symbol format")])
+class FinancialInstrument(models.Model):
+    """
+    A financial instrument is an identifiable thing for which data can be gathered to generate a daily return.
+    """
+    class Meta:
+        abstract = True
+
     display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
     description = models.TextField(blank=True, default="", null=False)
-    ordering = models.IntegerField(db_index=True)
     url = models.URLField()
-    unit_price = models.FloatField(default=10)
-    asset_class = models.ForeignKey(AssetClass, related_name="tickers")
     currency = models.CharField(max_length=10, default="AUD")
-    ethical = models.BooleanField(default=False,
-                                  help_text='Is this an ethical instrument?')
-    etf = models.BooleanField(default=True,
-                              help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
     region = models.ForeignKey(Region)
-
     data_api = models.CharField(help_text='The module that will be used to get the data for this ticker',
                                 choices=[('portfolios.api.bloomberg', 'Bloomberg')],
                                 max_length=30,
@@ -1567,6 +1568,62 @@ class Ticker(models.Model):
                                       unique=True,
                                       max_length=30,
                                       null=True)
+
+    def __str__(self):
+        return self.display_name
+
+
+class MarketIndex(FinancialInstrument):
+    """
+    For the moment, an index is a concrete FinancialInstrument that may have one or more tickers(funds) that track it.
+    """
+    trackers = GenericRelation('Ticker')
+    daily_prices = GenericRelation('DailyPrice',
+                                   content_type_field='instrument_content_type',
+                                   object_id_field='instrument_object_id')
+    market_caps = GenericRelation('MarketCap',
+                                  content_type_field='instrument_content_type',
+                                  object_id_field='instrument_object_id')
+
+    def get_returns(self, start_date, end_date):
+        """
+        Get the longest available consecutive daily returns series from the end date.
+        :param start_date:
+        :param end_date:
+        :return: A pandas time-series of the returns
+        """
+        return get_price_returns(self, start_date, end_date)
+
+
+class Ticker(FinancialInstrument):
+    symbol = models.CharField(
+        max_length=10,
+        blank=False,
+        null=False,
+        unique=True,
+        validators=[RegexValidator(regex=r'^[^ ]+$',
+                                   message="Invalid symbol format")])
+    ordering = models.IntegerField(db_index=True)
+    unit_price = models.FloatField(default=10)
+    asset_class = models.ForeignKey(AssetClass, related_name="tickers")
+    ethical = models.BooleanField(default=False,
+                                  help_text='Is this an ethical instrument?')
+    etf = models.BooleanField(default=True,
+                              help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
+    # A benchmark should be a subclass of financial instrument
+    limit = models.Q(app_label='main', model='marketindex')  # Only using index benchmarks at the moment, but may do more later
+    # TODO: REmove this null bit
+    benchmark_content_type = models.ForeignKey(ContentType,
+                                               on_delete=models.CASCADE,
+                                               null=True,
+                                               limit_choices_to=limit,
+                                               verbose_name='Benchmark Type')
+    benchmark_object_id = models.PositiveIntegerField(null=True,
+                                                      verbose_name='Benchmark Instrument')
+    benchmark = GenericForeignKey('benchmark_content_type', 'benchmark_object_id')
+    daily_prices = GenericRelation('DailyPrice',
+                                   content_type_field='instrument_content_type',
+                                   object_id_field='instrument_object_id')
 
     def __str__(self):
         return self.symbol
@@ -1589,6 +1646,15 @@ class Ticker(models.Model):
             v += p.value
 
         return v
+
+    def get_returns(self, start_date, end_date):
+        """
+        Get the longest available consecutive daily returns series from the end date.
+        :param start_date:
+        :param end_date:
+        :return: A pandas time-series of the returns
+        """
+        return get_price_returns(self, start_date, end_date)
 
     def save(self,
              force_insert=False,
@@ -2176,8 +2242,6 @@ class AssetFeature(models.Model):
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
 
-    pass
-
 
 class AssetFeatureValue(models.Model):
     name = models.CharField(max_length=127, unique=True, help_text="This should be an adjective.")
@@ -2189,8 +2253,6 @@ class AssetFeatureValue(models.Model):
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
-
-    pass
 
 
 class GoalMetric(models.Model):
@@ -2461,23 +2523,40 @@ class FinancialProfile(models.Model):
 
 
 class DailyPrice(models.Model):
-    class Meta:
-        unique_together = ("ticker", "date")
+    """
+    If a Financial Instrument is tradable, it will have a price.
+    """
+    objects = DataFrameManager()
 
-    ticker = models.ForeignKey(Ticker, db_index=False)
+    class Meta:
+        unique_together = ("instrument_content_type", "instrument_object_id", "date")
+
+    # An instrument should be a subclass of financial instrument
+    # TODO: REmove this null bit
+    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    instrument_object_id = models.PositiveIntegerField(null=True)
+    instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
     date = models.DateField()
-    nav = models.FloatField(null=True)
-    aum = models.BigIntegerField(null=True)
+    price = models.FloatField(null=True)
 
 
-class MonthlyPrices(models.Model):
+class MarketCap(models.Model):
+    """
+    If a Financial Instrument is tradable, it will have a market capitalisation. This may not change often.
+    """
+    objects = DataFrameManager()
+
     class Meta:
-        ordering = ["symbol", "date"]
-        unique_together = ("symbol", "date")
+        unique_together = ("instrument_content_type", "instrument_object_id", "date")
 
-    symbol = models.CharField(max_length=100)
-    date = models.DateField()  # This will be the last date in the month.
-    price = models.FloatField(default=0)
+    # An instrument should be a subclass of financial instrument
+    # TODO: REmove this null bit
+    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    instrument_object_id = models.PositiveIntegerField(null=True)
+    instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
+    # TODO: REmove this null bit
+    date = models.DateField(null=True)
+    value = models.FloatField()
 
 
 class ExchangeRate(models.Model):
@@ -2555,8 +2634,3 @@ class View(models.Model):
     q = models.FloatField()
     assets = models.TextField()
     portfolio_set = models.ForeignKey(PortfolioSet, related_name="views")
-
-
-class MarketCap(models.Model):
-    ticker = models.OneToOneField(Ticker, related_name='market_cap')
-    value = models.FloatField(default=0)
