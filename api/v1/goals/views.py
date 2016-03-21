@@ -162,7 +162,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         settings = serializer.create_stateless(serializer.validated_data, goal)
 
         try:
-            data=self.build_portfolio_data(calculate_portfolio(settings))
+            data = self.build_portfolio_data(calculate_portfolio(settings))
             return Response(data)
         except Unsatisfiable as e:
             # TODO: Reformat this into a structured response..

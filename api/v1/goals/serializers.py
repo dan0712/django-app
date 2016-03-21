@@ -571,9 +571,9 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
             try:
                 weights, er, stdev = calculate_portfolio(settings, idata)
                 items = [PortfolioItem(portfolio=portfolio,
-                                       asset=Ticker.objects.get(id=idata[2].loc[sym, 'id']),
+                                       asset=Ticker.objects.get(id=tid),
                                        weight=weight,
-                                       volatility=idata[0].loc[sym, sym]) for sym, weight in weights.iteritems()]
+                                       volatility=idata[0].loc[tid, tid]) for tid, weight in weights.iteritems()]
                 PortfolioItem.objects.bulk_create(items)
                 portfolio.stdev = stdev
                 portfolio.er = er
