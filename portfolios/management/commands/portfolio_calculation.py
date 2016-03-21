@@ -427,7 +427,8 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None):
             feature_assets = cvx_masks[metric.feature.id]
             # If we have no possible symbols, and we have a metric with a non-zero allocation, fail.
             if len(feature_assets) == 0 and metric.comparison != 2:
-                raise Unsatisfiable("Settings metric: {} is not satisfiable.".format(metric))
+                emsg = "Settings metric: {} is not satisfiable. There are no funds available to fulfil the constraint."
+                raise Unsatisfiable(emsg.format(metric))
             if metric.comparison == 0:
                 logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) >= val)
@@ -547,6 +548,7 @@ def calculate_portfolios(setting):
         # TODO: Use a parallel approach here.
         portfolios = []
         found = False
+        max_funds = 0  # Maximum required amount off any of the unsatisfiable errors
         for risk_score in list(np.arange(0, 1.01, 0.01)):
             lam = risk_score_to_lambda(risk_score)
             logger.debug("Doing risk_score: {}, giving lambda: {}".format(risk_score, lam))
@@ -579,10 +581,13 @@ def calculate_portfolios(setting):
             except Unsatisfiable as e:
                 logger.debug("No allocation possible for lambda: {}".format(lam))
                 last_err = e
+                if e.req_funds:
+                    max_funds = max(max_funds, e.req_funds)
                 portfolios.append((risk_score, None))
 
         if not found:
-            raise Unsatisfiable("No suitable portfolio could be found for any risk score. Last reason: {}".format(last_err))
+            emsg = "No suitable portfolio could be found for any risk score. Last reason: {}"
+            raise Unsatisfiable(emsg.format(last_err), max_funds if max_funds else None)
 
     except:
         logger.exception("Problem calculating portfolio for setting: {}".format(setting))
@@ -592,8 +597,12 @@ def calculate_portfolios(setting):
 
 
 class Unsatisfiable(Exception):
-    # TODO: Give this more structured data
-    pass
+    def __init__(self, msg, req_funds=None):
+        self.msg = msg
+        self.req_funds = req_funds
+
+    def __str__(self):
+        return self.msg
 
 
 def optimize_settings(settings, idata):
@@ -842,7 +851,8 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         if budget < req_budget:
             emsg = "The budget of {0} {1} is insufficient to purchase all the assets in the portfolio with allocated " \
                    "proportions over {2}%. Please increase the budget to at least {3} {1} to purchase this portfolio."
-            raise Unsatisfiable(emsg.format(budget, SYSTEM_CURRENCY, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget)))
+            raise Unsatisfiable(emsg.format(budget, SYSTEM_CURRENCY, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget)),
+                                math.ceil(req_budget))
 
     inactive_ilocs = inactive_unit.nonzero()[0].tolist()
     if len(inactive_ilocs) > 0:

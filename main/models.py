@@ -1878,6 +1878,9 @@ class GoalSetting(models.Model):
         # Must be an active goal
         return self.goal_active
 
+    def __str__(self):
+        return str(self.id)
+
 
 class GoalMetricGroup(models.Model):
     TYPE_CUSTOM = 0

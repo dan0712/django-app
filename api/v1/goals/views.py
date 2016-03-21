@@ -1,6 +1,6 @@
 import ujson
 from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError, APIException
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
@@ -165,8 +165,11 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             data = self.build_portfolio_data(calculate_portfolio(settings))
             return Response(data)
         except Unsatisfiable as e:
-            # TODO: Reformat this into a structured response..
-            return Response("No portfolio could be found: {}".format(e))
+            rdata = {'reason': "No portfolio could be found: {}".format(e)}
+            if e.req_funds is not None:
+                rdata['req_funds'] = e.req_funds
+
+            return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
 
     @detail_route(methods=['get'], url_path='calculate-all-portfolios')
     def calculate_all_portfolios(self, request, pk=None):
@@ -193,8 +196,12 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             data = [self.build_portfolio_data(item[1], item[0]) for item in calculate_portfolios(settings)]
             return Response(data)
         except Unsatisfiable as e:
-            # TODO: Reformat this into a structured response..
-            return Response("No portfolio could be found: {}".format(e))
+            rdata = {'reason': "No portfolio could be found: {}".format(e)}
+
+            if e.req_funds is not None:
+                rdata['req_funds'] = e.req_funds
+
+            return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
 
     @detail_route(methods=['post'])
     def deposit(self, request, pk=None):

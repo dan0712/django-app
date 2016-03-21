@@ -419,6 +419,9 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             hedge_fx = validated_data.pop('hedge_fx')
             metric_group = mtric_group
 
+            def __str__(self):
+                return 'API Temp'
+
         return DummySettings()
 
 
@@ -579,8 +582,9 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                 portfolio.er = er
                 portfolio.save()
             except Unsatisfiable:
-                # TODO: Return a message to the user that because they didn't make an initial deposit, we couldn't
-                # come up with an appropriate portfolio, and they need to make a deposit to get started.
+                # We detect when loading a goal in the allocation screen if there has been no portfolio created
+                # and return a message to the user. It it perfectly reasonable for a goal to be created without a
+                # portfolio.
                 logger.exception("No suitable portfolio could be found. Leaving empty.")
 
         return goal
