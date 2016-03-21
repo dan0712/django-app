@@ -41,16 +41,24 @@ def get_weights(goal):
 
 
 def get_risk_score(goal, weights, idata):
+    """
+    Returns the risk score for the provided weights.
+    :param goal:
+    :param weights:
+    :param idata:
+    :return:
+    """
     if len(weights) == 0:
         logger.info("No holdings for goal: {} so current risk score is 0.".format(goal))
         return 0.0
 
+    # Get the cost of a clean optimisation using the current constraints.
     current_cost = optimize_settings(goal.active_settings, idata)[1]
 
     # Set up the required data
     covars, samples, instruments, masks = idata
     instruments['_weight_'] = 0.0
-    # Build the indexes from our current holdings
+    # Build the indexes from the passed in weights
     goal_symbol_ixs = []
     for sym, weight, _ in weights:
         goal_symbol_ixs.append(instruments.index.get_loc(sym))

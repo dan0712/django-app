@@ -177,6 +177,10 @@ TRANSACTION_REASON_WITHDRAWAL = 2
 TRANSACTION_REASON_REBALANCE = 3
 TRANSACTION_REASON_TRANSFER = 4
 TRANSACTION_REASON_FEE = 5
+# Transaction is for a MarketOrderRequest. It's a transient transaction, for reserving funds. It will always be pending.
+# It will have it's amount reduced over time (converted to executions or rejections) until it's eventually removed.
+TRANSACTION_REASON_ORDER = 6
+TRANSACTION_REASON_EXECUTION = 7  # Transaction is for an Asset Execution that occurred. Will always be in executed state.
 TRANSACTION_REASONS = (
     (TRANSACTION_REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
     (TRANSACTION_REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
@@ -184,6 +188,8 @@ TRANSACTION_REASONS = (
     (TRANSACTION_REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal.
     (TRANSACTION_REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
     (TRANSACTION_REASON_FEE, 'FEE'),
+    (TRANSACTION_REASON_ORDER, 'ORDER'),
+    (TRANSACTION_REASON_ORDER, 'EXECUTION'),
 )
 
 TRANSACTION_STATUS_PENDING = 'PENDING'
@@ -607,6 +613,8 @@ class PortfolioSet(models.Model):
     asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
     risk_free_rate = models.FloatField()
     tau = models.FloatField()
+
+    # Also has 'views' from View model.
 
     @property
     def stocks_and_bonds(self):
@@ -2359,17 +2367,20 @@ class Position(models.Model):
 
 
 class MarketOrderRequest(models.Model):
-    STATE_PENDING = 0
-    STATE_APPROVED = 1
-    STATE_SENT = 2  # Sent to the broker.
-    STATE_EXECUTED = 3  # Executed.
+    STATE_PENDING = 0  # Raised somehow, but not yet approved to send to market
+    STATE_APPROVED = 1  # Approved to send to market, but not yet sent.
+    STATE_SENT = 2  # Sent to the broker (at least partially outstanding).
+    STATE_COMPLETE = 3  # May be fully or partially executed, but there is none left outstanding.
     STATES = (
         (STATE_PENDING, 'Pending'),
         (STATE_APPROVED, 'Approved'),
         (STATE_SENT, 'Sent'),
-        (STATE_EXECUTED, 'Executed'),
+        (STATE_COMPLETE, 'Complete'),
     )
+    state = models.IntegerField(choices=STATES, default=STATE_PENDING)
     account = models.ForeignKey('ClientAccount', related_name='market_orders')
+    # Also has 'execution_requests' field showing all the requests that went into this one order.
+    # Also has 'executions' once the request has had executions.
 
 
 class ExecutionRequest(models.Model):
@@ -2387,12 +2398,38 @@ class ExecutionRequest(models.Model):
     reason = models.IntegerField(choices=REASONS)
     goal = models.ForeignKey('Goal', related_name='execution_requests')
     asset = models.ForeignKey('Ticker', related_name='execution_requests')
-    volume = models.FloatField()
+    volume = models.FloatField(help_text="Will be negative for a sell.")
     order = models.ForeignKey(MarketOrderRequest, related_name='execution_requests')
+    # transaction can be null because once the request is complete, the transaction is removed.
+    transaction = models.OneToOneField('Transaction', related_name='execution_request', null=True)
+
+
+class Execution(models.Model):
+    """
+    - The time the execution was processed (The time the cash balance on the goal was updated) is the 'executed' time
+      on the related transaction.
+    """
+    asset = models.ForeignKey('Ticker', related_name='executions')
+    volume = models.FloatField(help_text="Will be negative for a sell.")
+    order = models.ForeignKey(MarketOrderRequest, related_name='executions')
+    price = models.FloatField(help_text="The raw price paid/received per share. Not including fees etc.")
+    executed = models.DateTimeField(help_text='The time the trade was executed.')
+    amount = models.FloatField(help_text="The realised amount that was transferred into the account (specified on the "
+                                         "order) taking into account external fees etc.")
+    # Also has field 'distributions' from the ExecutionDistribution model describing to what goals this execution was
+    # distributed
+
+
+class ExecutionDistribution(models.Model):
+    # One execution can contribute many distributions.
+    execution = models.ForeignKey('Execution', related_name='distributions')
+    transaction = models.OneToOneField('Transaction', related_name='execution_distribution')
+    volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
 
 
 class Transaction(models.Model):
     """
+    A transaction is a flow of funds to or from a goal.
     Deposits have a to_goal, withdrawals have a from_goal, transfers have both
     Every Transaction must have one or both.
     When one is null, it means it was to the account's cash.
@@ -2417,6 +2454,9 @@ class Transaction(models.Model):
     new_balance = models.FloatField(default=0)
     inversion = models.FloatField(default=0)
     return_fraction = models.FloatField(default=0)
+
+    # May also have 'execution_request' field from the ExecutionRequest model if it has reason ORDER
+    # May also have 'execution_distribution' field from the ExecutionDistribution model if it has reason EXECUTION
 
     def save(self, *args, **kwargs):
         if self.from_goal is None and self.to_goal is None:
