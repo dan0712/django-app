@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
 from api.v1.goals.serializers import PortfolioStatelessSerializer
-from main.models import Goal, GoalType, Transaction
+from main.models import Goal, GoalType, Transaction, HistoricalBalance
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios
 from portfolios.management.commands.risk_profiler import recommend_ttl_risks
@@ -244,6 +244,20 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
                                          reason__in=Transaction.CASH_FLOW_REASONS)
         txs = txs.order_by('executed').values_list('to_goal', 'executed', 'amount')
         return Response([((tx[1].date() - EPOCH_DT).days, tx[2] if tx[0] else -tx[2]) for tx in txs])
+
+    @detail_route(methods=['get'], url_path='balance-history')
+    def balance_history(self, request, pk=None):
+        """
+        Returns the balance history for this goal.
+        :param request: The web request
+        :param pk: THe id of the goal
+        :return: A django rest framework response object
+        """
+        # Get the goal even though we don't need it (we could ust use the pk)
+        # so we can ensure we have permission to do so.
+        goal = self.get_object()
+        rows = HistoricalBalance.objects.filter(goal=goal).order_by('date').values_list('date', 'balance')
+        return Response([((row[0] - EPOCH_DT).days, row[1]) for row in rows])
 
     @staticmethod
     def build_portfolio_data(item, risk_score=None):
