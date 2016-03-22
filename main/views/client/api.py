@@ -12,9 +12,9 @@ from portfolios.bl_model import OptimizationException
 #from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
-from ...models import Transaction, ClientAccount, TRANSACTION_STATUS_PENDING, Goal, TransactionMemo, \
-    RecurringTransaction, TRANSACTION_REASON_WITHDRAWAL, Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory, \
-    TRANSACTION_STATUS_EXECUTED, TRANSACTION_REASON_FEE, CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
+from ...models import Transaction, ClientAccount, Goal, TransactionMemo, \
+    RecurringTransaction, Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory, \
+    CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass, Position
 
 from django.http.response import Http404
@@ -200,7 +200,7 @@ class ClientAccounts(ClientView, TemplateView):
                     new_position.save()
                     p.delete()
 
-                transfer_transaction.status = TRANSACTION_STATUS_EXECUTED
+                transfer_transaction.status = Transaction.STATUS_EXECUTED
                 transfer_transaction.executed = datetime.now()
                 transfer_transaction.save()
 
@@ -208,7 +208,7 @@ class ClientAccounts(ClientView, TemplateView):
                 # wdw all the money
                 wdw_transaction = Transaction()
                 wdw_transaction.account = goal
-                wdw_transaction.type = TRANSACTION_REASON_WITHDRAWAL
+                wdw_transaction.type = Transaction.REASON_WITHDRAWAL
                 wdw_transaction.amount = goal.total_balance
                 wdw_transaction.save()
         goal.save()
@@ -353,10 +353,10 @@ class NewTransactionsView(ClientView):
                                      pk=goal_pk,
                                      account__primary_owner=self.client)
             query_set = goal.transactions.order_by("executed").filter(
-                status=TRANSACTION_STATUS_EXECUTED)
+                status=Transaction.STATUS_EXECUTED)
         else:
             query_set = Transaction.objects.order_by("executed").filter(
-                status=TRANSACTION_STATUS_EXECUTED,
+                status=Transaction.STATUS_EXECUTED,
                 account__account__primary_owner=self.client)
 
         if days_ago:
@@ -446,7 +446,7 @@ class NewTransactionsView(ClientView):
                     "canBeCanceled": False
                 }
 
-                if transaction.type in (TRANSACTION_REASON_WITHDRAWAL, TRANSACTION_REASON_FEE):
+                if transaction.type in (Transaction.REASON_WITHDRAWAL, Transaction.REASON_FEE):
                     ctx["change"] = "{:.2f}".format(-float(ctx["change"]))
 
                 transactions.append(ctx)
@@ -518,7 +518,7 @@ class NewTransactionsView(ClientView):
                 new_position, is_new = Position.objects.get_or_create(goal=new_transaction.to_account, ticker=p.ticker)
                 new_position.share += transfer_share_size
                 new_position.save()
-            new_transaction.status = TRANSACTION_STATUS_EXECUTED
+            new_transaction.status = Transaction.STATUS_EXECUTED
             new_transaction.executed = datetime.now()
             new_transaction.save()
 
@@ -780,7 +780,7 @@ class Withdrawals(ClientView):
         new_transaction.account = goal
         new_transaction.from_account = None
         new_transaction.to_account = None
-        new_transaction.type = TRANSACTION_REASON_WITHDRAWAL
+        new_transaction.type = Transaction.REASON_WITHDRAWAL
         new_transaction.amount = payload["amount"]
         new_transaction.save()
 

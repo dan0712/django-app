@@ -171,31 +171,6 @@ PERSONAL_DATA_WIDGETS = {
         attrs={"placeholder": "Street address"})
 }
 
-TRANSACTION_REASON_DIVIDEND = 0
-TRANSACTION_REASON_DEPOSIT = 1
-TRANSACTION_REASON_WITHDRAWAL = 2
-TRANSACTION_REASON_REBALANCE = 3
-TRANSACTION_REASON_TRANSFER = 4
-TRANSACTION_REASON_FEE = 5
-# Transaction is for a MarketOrderRequest. It's a transient transaction, for reserving funds. It will always be pending.
-# It will have it's amount reduced over time (converted to executions or rejections) until it's eventually removed.
-TRANSACTION_REASON_ORDER = 6
-TRANSACTION_REASON_EXECUTION = 7  # Transaction is for an Asset Execution that occurred. Will always be in executed state.
-TRANSACTION_REASONS = (
-    (TRANSACTION_REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
-    (TRANSACTION_REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
-    (TRANSACTION_REASON_WITHDRAWAL, 'WITHDRAWAL'),  # Withdrawal from the goal to the account
-    (TRANSACTION_REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal.
-    (TRANSACTION_REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
-    (TRANSACTION_REASON_FEE, 'FEE'),
-    (TRANSACTION_REASON_ORDER, 'ORDER'),
-    (TRANSACTION_REASON_ORDER, 'EXECUTION'),
-)
-
-TRANSACTION_STATUS_PENDING = 'PENDING'
-TRANSACTION_STATUS_EXECUTED = 'EXECUTED'
-TRANSACTION_STATUSES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
-
 ASSET_FEE_EVENTS = ((0, 'Day End'),
                     (1, 'Complete Day'),
                     (2, 'Month End'),
@@ -1998,7 +1973,7 @@ class Goal(models.Model):
 
     @property
     def pending_transactions(self):
-        return Transaction.objects.filter(Q(to_goal=self) | Q(from_goal=self) & Q(status=TRANSACTION_STATUS_PENDING))
+        return Transaction.objects.filter(Q(to_goal=self) | Q(from_goal=self) & Q(status=Transaction.STATUS_PENDING))
 
     @property
     def pending_amount(self):
@@ -2013,14 +1988,14 @@ class Goal(models.Model):
     @property
     def pending_incomings(self):
         pd = 0.0
-        for d in Transaction.objects.filter(to_goal=self, status=TRANSACTION_STATUS_PENDING):
+        for d in Transaction.objects.filter(to_goal=self, status=Transaction.STATUS_PENDING):
             pd += d.amount
         return pd
 
     @property
     def pending_outgoings(self):
         pw = 0.0
-        for w in Transaction.objects.filter(from_goal=self, status=TRANSACTION_STATUS_PENDING):
+        for w in Transaction.objects.filter(from_goal=self, status=Transaction.STATUS_PENDING):
             pw += w.amount
         return pw
 
@@ -2028,8 +2003,8 @@ class Goal(models.Model):
     def requested_incomings(self):
         pd = 0.0
         for d in Transaction.objects.filter(to_goal=self,
-                                            status=TRANSACTION_STATUS_EXECUTED).exclude(reason__in=(TRANSACTION_REASON_FEE,
-                                                                                                    TRANSACTION_REASON_DIVIDEND)):
+                                            status=Transaction.STATUS_EXECUTED).exclude(reason__in=(Transaction.REASON_FEE,
+                                                                                                    Transaction.REASON_DIVIDEND)):
             pd += d.amount
         return pd
 
@@ -2037,17 +2012,17 @@ class Goal(models.Model):
     def requested_outgoings(self):
         pw = 0.0
         for w in Transaction.objects.filter(from_goal=self,
-                                            status=TRANSACTION_STATUS_EXECUTED).exclude(reason__in=(TRANSACTION_REASON_FEE,
-                                                                                                    TRANSACTION_REASON_DIVIDEND)):
+                                            status=Transaction.STATUS_EXECUTED).exclude(reason__in=(Transaction.REASON_FEE,
+                                                                                                    Transaction.REASON_DIVIDEND)):
             pw -= w.amount
         return pw
 
     @property
     def total_dividends(self):
         divs = 0.0
-        for t in Transaction.objects.filter(Q(status=TRANSACTION_STATUS_EXECUTED) &
+        for t in Transaction.objects.filter(Q(status=Transaction.STATUS_EXECUTED) &
                                             (Q(to_goal=self) | Q(from_goal=self)) &
-                                            (Q(reason=TRANSACTION_REASON_DIVIDEND))):
+                                            (Q(reason=Transaction.REASON_DIVIDEND))):
             divs += t.amount if self == t.to_goal else -t.amount
         return divs
 
@@ -2061,9 +2036,9 @@ class Goal(models.Model):
         :return: The total amount of the deposits into the goal from the account cash. Excluding pending.
         """
         inputs = 0.0
-        for t in Transaction.objects.filter(status=TRANSACTION_STATUS_EXECUTED,
+        for t in Transaction.objects.filter(status=Transaction.STATUS_EXECUTED,
                                             to_goal=self,
-                                            reason=TRANSACTION_REASON_DEPOSIT):
+                                            reason=Transaction.REASON_DEPOSIT):
             inputs += t.amount
         return inputs
 
@@ -2073,9 +2048,9 @@ class Goal(models.Model):
         :return: The total amount of the withdrawals from the goal to the account cash. Excluding pending.
         """
         inputs = 0.0
-        for t in Transaction.objects.filter(status=TRANSACTION_STATUS_EXECUTED,
+        for t in Transaction.objects.filter(status=Transaction.STATUS_EXECUTED,
                                             to_goal=self,
-                                            reason=TRANSACTION_REASON_WITHDRAWAL):
+                                            reason=Transaction.REASON_WITHDRAWAL):
             inputs += t.amount
         return inputs
 
@@ -2087,9 +2062,9 @@ class Goal(models.Model):
 
         """
         inputs = 0.0
-        for t in Transaction.objects.filter(Q(status=TRANSACTION_STATUS_EXECUTED) &
+        for t in Transaction.objects.filter(Q(status=Transaction.STATUS_EXECUTED) &
                                             (Q(to_goal=self) | Q(from_goal=self)) &
-                                            (~Q(reason__in=(TRANSACTION_REASON_FEE, TRANSACTION_REASON_DIVIDEND)))):
+                                            (~Q(reason__in=(Transaction.REASON_FEE, Transaction.REASON_DIVIDEND)))):
             inputs += t.amount if self == t.to_goal else -t.amount
         return inputs
 
@@ -2108,9 +2083,9 @@ class Goal(models.Model):
     @property
     def total_fees(self):
         fees = 0.0
-        for t in Transaction.objects.filter(Q(status=TRANSACTION_STATUS_EXECUTED) &
+        for t in Transaction.objects.filter(Q(status=Transaction.STATUS_EXECUTED) &
                                             (Q(to_goal=self) | Q(from_goal=self)) &
-                                            (Q(reason=TRANSACTION_REASON_FEE))):
+                                            (Q(reason=Transaction.REASON_FEE))):
             fees += t.amount if self == t.to_goal else -t.amount
         return fees
 
@@ -2443,9 +2418,36 @@ class Transaction(models.Model):
     A transaction is a flow of funds to or from a goal.
     Deposits have a to_goal, withdrawals have a from_goal, transfers have both
     Every Transaction must have one or both.
-    When one is null, it means it was to the account's cash.
+    When one is null, it means it was to/from the account's cash.
     """
-    reason = models.IntegerField(choices=TRANSACTION_REASONS, db_index=True)
+    STATUS_PENDING = 'PENDING'
+    STATUS_EXECUTED = 'EXECUTED'
+    STATUSES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
+
+    REASON_DIVIDEND = 0
+    REASON_DEPOSIT = 1
+    REASON_WITHDRAWAL = 2
+    REASON_REBALANCE = 3
+    REASON_TRANSFER = 4
+    REASON_FEE = 5
+    # Transaction is for a MarketOrderRequest. It's a transient transaction, for reserving funds. It will always be pending.
+    # It will have it's amount reduced over time (converted to executions or rejections) until it's eventually removed.
+    REASON_ORDER = 6
+    REASON_EXECUTION = 7  # Transaction is for an Asset Execution that occurred. Will always be in executed state.
+    REASONS = (
+        (REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
+        (REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
+        (REASON_WITHDRAWAL, 'WITHDRAWAL'),  # Withdrawal from the goal to the account
+        (REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal.
+        (REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
+        (REASON_FEE, 'FEE'),
+        (REASON_ORDER, 'ORDER'),
+        (REASON_EXECUTION, 'EXECUTION'),
+    )
+    # The set of Transaction reasons that are considered investor cash flow in or out of the goal.
+    CASH_FLOW_REASONS = [REASON_DEPOSIT, REASON_WITHDRAWAL, REASON_REBALANCE, REASON_TRANSFER]
+
+    reason = models.IntegerField(choices=REASONS, db_index=True)
     from_goal = models.ForeignKey(Goal,
                                   related_name="transactions_from",
                                   null=True,
@@ -2457,9 +2459,7 @@ class Transaction(models.Model):
                                 blank=True,
                                 db_index=True)
     amount = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
-    status = models.CharField(max_length=20,
-                              choices=TRANSACTION_STATUSES,
-                              default=TRANSACTION_STATUS_PENDING)
+    status = models.CharField(max_length=20, choices=STATUSES, default=STATUS_PENDING)
     created = models.DateTimeField(auto_now_add=True)
     executed = models.DateTimeField(null=True)
     new_balance = models.FloatField(default=0)

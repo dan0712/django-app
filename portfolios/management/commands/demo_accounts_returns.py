@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from main.models import Platform, Performer, Ticker, SymbolReturnHistory, PERFORMER_GROUP_STRATEGY, Goal, Transaction, TRANSACTION_TYPE_MARKET_CHANGE, TRANSACTION_STATUS_EXECUTED
-from portfolios.api.yahoo import YahooApi
+from main.models import Platform, Performer, Ticker, SymbolReturnHistory, PERFORMER_GROUP_STRATEGY, Goal, Transaction,
+#from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
 from portfolios.bl_model import handle_data
 import json
@@ -59,7 +59,7 @@ def demo_accounts_returns():
                                                                     account=goal)
             transaction.inversion = inv
             transaction.amount = goal_values[counter] - goal_values[counter-1]
-            transaction.status = TRANSACTION_STATUS_EXECUTED
+            transaction.status = Transaction.STATUS_EXECUTED
             transaction.executed = k
             transaction.return_fraction = (goal_values[counter] - goal_values[counter-1])/goal_values[counter-1]
             transaction.new_balance = goal_values[counter]

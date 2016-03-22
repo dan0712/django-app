@@ -1,11 +1,14 @@
+import datetime
 import ujson
+
+from django.db.models.query_utils import Q
 from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied, ValidationError, APIException
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
 from api.v1.goals.serializers import PortfolioStatelessSerializer
-from main.models import Goal, GoalType, TRANSACTION_REASON_DEPOSIT
+from main.models import Goal, GoalType, Transaction
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios
 from portfolios.management.commands.risk_profiler import recommend_ttl_risks
@@ -19,6 +22,7 @@ from ..permissions import (
 from . import serializers
 #import .filters
 
+EPOCH_DT = datetime.datetime.utcfromtimestamp(0).date()
 
 class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     queryset = Goal.objects.all() \
@@ -208,7 +212,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         goal = self.get_object()
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(to_goal=goal, reason=TRANSACTION_REASON_DEPOSIT)
+        serializer.save(to_goal=goal, reason=Transaction.REASON_DEPOSIT)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -223,6 +227,23 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         except ValueError:
             raise ValidationError("Query parameter 'years' must be an integer")
         return Response(recommend_ttl_risks(setting, years))
+
+    @detail_route(methods=['get'], url_path='cash-flow')
+    def cash_flow(self, request, pk=None):
+        """
+        Returns all the cash-flow events for this goal.
+        :param request:
+        :param pk:
+        :return:
+        """
+        # Get the goal even though we don't need it (we could ust use the pk)
+        # so we can ensure we have permission to do so.
+        goal = self.get_object()
+        txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                         status=Transaction.STATUS_EXECUTED,
+                                         reason__in=Transaction.CASH_FLOW_REASONS)
+        txs = txs.order_by('executed').values_list('to_goal', 'executed', 'amount')
+        return Response([((tx[1].date() - EPOCH_DT).days, tx[2] if tx[0] else -tx[2]) for tx in txs])
 
     @staticmethod
     def build_portfolio_data(item, risk_score=None):

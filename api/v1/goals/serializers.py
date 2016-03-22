@@ -15,7 +15,7 @@ from main.models import (
     Position, Portfolio, PortfolioItem,
     RecurringTransaction,
     StandardAssetFeatureValues,
-    Transaction, TRANSACTION_REASON_DEPOSIT, GoalMetricGroup, Ticker)
+    Transaction, GoalMetricGroup, Ticker)
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
@@ -566,7 +566,7 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
             # Add the initial deposit if specified.
             initial_dep = validated_data.pop('initial_deposit', None)
             if initial_dep is not None:
-                Transaction.objects.create(reason=TRANSACTION_REASON_DEPOSIT,
+                Transaction.objects.create(reason=Transaction.REASON_DEPOSIT,
                                            to_goal=goal,
                                            amount=initial_dep)
 

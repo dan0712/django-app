@@ -21,7 +21,7 @@ from ..base import LegalView
 from ...forms import EmailInviteForm
 from ...models import AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section, \
     PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
-    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, TRANSACTION_REASON_WITHDRAWAL, TRANSACTION_REASON_DEPOSIT, TRANSACTION_REASON_FEE, Position, TRANSACTION_STATUS_EXECUTED, TRANSACTION_STATUS_PENDING, TRANSACTION_REASON_REBALANCE
+    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, Position
 
 __all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
            'NewConfirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
@@ -392,13 +392,13 @@ class AdminExecuteTransaction(TemplateView, AdminView):
                 for p in positions:
                     cs += p.share
             current_shares.append(cs)
-        if self.transaction.status == TRANSACTION_STATUS_PENDING:
-            if self.transaction.type == TRANSACTION_REASON_WITHDRAWAL and \
+        if self.transaction.status == Transaction.STATUS_PENDING:
+            if self.transaction.type == Transaction.REASON_WITHDRAWAL and \
                     ((self.transaction.account.total_balance - self.transaction.amount) > 0):
                 result_a = list(map(lambda x: -x, solve_shares_wdw(current_shares, tickers_prices,
                                                                    target_allocation, self.transaction.amount)))
 
-            if self.transaction.type == TRANSACTION_REASON_DEPOSIT:
+            if self.transaction.type == Transaction.REASON_DEPOSIT:
                 result_a = solve_shares_deposit(current_shares, tickers_prices, target_allocation,
                                                 self.transaction.amount * (
                                                 1 - self.transaction.account.account.fee / 1000))
@@ -420,7 +420,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         ctx["result_dict"] = result_dict
         ctx["account"] = json.dumps(ctx["account"])
         ctx["tickers"] = serializers.serialize('json', ctx["tickers"])
-        ctx["is_executed"] = self.transaction.status == TRANSACTION_STATUS_EXECUTED
+        ctx["is_executed"] = self.transaction.status == Transaction.STATUS_EXECUTED
         return ctx
 
     def dispatch(self, request, *args, **kwargs):
@@ -454,29 +454,29 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         # save new
         # mark transaction as executed
         self.transaction.executed = datetime.now()
-        if self.transaction.type == TRANSACTION_REASON_WITHDRAWAL:
+        if self.transaction.type == Transaction.REASON_WITHDRAWAL:
             fee = amount * self.transaction.account.account.fee / 1000
             self.transaction.amount = amount * (1 - self.transaction.account.account.fee / 1000)
             # save fee transaction
             fee_t = Transaction()
             fee_t.account = self.transaction.account
-            fee_t.type = TRANSACTION_REASON_FEE
+            fee_t.type = Transaction.REASON_FEE
             fee_t.amount = fee
-            fee_t.status = TRANSACTION_STATUS_EXECUTED
+            fee_t.status = Transaction.STATUS_EXECUTED
             fee_t.executed = datetime.now()
             fee_t.new_balance = old_amount - fee
             fee_t.save()
             self.transaction.new_balance = new_amount
 
-        if self.transaction.type == TRANSACTION_REASON_DEPOSIT:
+        if self.transaction.type == Transaction.REASON_DEPOSIT:
             fee = self.transaction.amount * self.transaction.account.account.fee / 1000
             self.transaction.amount = amount
             # save fee transaction
             fee_t = Transaction()
             fee_t.account = self.transaction.account
-            fee_t.type = TRANSACTION_REASON_FEE
+            fee_t.type = Transaction.REASON_FEE
             fee_t.amount = fee
-            fee_t.status = TRANSACTION_STATUS_EXECUTED
+            fee_t.status = Transaction.STATUS_EXECUTED
             fee_t.executed = datetime.now()
             fee_t.save()
             self.transaction.new_balance = new_amount
@@ -484,7 +484,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         if self.transaction.type == TRANSACTION_TYPE_ALLOCATION:
             pass
 
-        self.transaction.status = TRANSACTION_STATUS_EXECUTED
+        self.transaction.status = Transaction.STATUS_EXECUTED
         self.transaction.save()
         list(map(lambda x: x.save(), positions))
 
@@ -533,7 +533,7 @@ class GoalRebalance(TemplateView, AdminView):
                 for p in positions:
                     cs += p.share
             current_shares.append(cs)
-        if self.transaction.status == TRANSACTION_STATUS_PENDING:
+        if self.transaction.status == Transaction.STATUS_PENDING:
 
             if self.transaction.type == TRANSACTION_TYPE_ALLOCATION:
                 result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
@@ -552,7 +552,7 @@ class GoalRebalance(TemplateView, AdminView):
         ctx["result_dict"] = result_dict
         ctx["account"] = json.dumps(ctx["account"])
         ctx["tickers"] = serializers.serialize('json', ctx["tickers"])
-        ctx["is_executed"] = self.transaction.status == TRANSACTION_STATUS_EXECUTED
+        ctx["is_executed"] = self.transaction.status == Transaction.STATUS_EXECUTED
         return ctx
 
     def dispatch(self, request, *args, **kwargs):
@@ -560,7 +560,7 @@ class GoalRebalance(TemplateView, AdminView):
         self.transaction = Transaction(account=self.goal,
                                        amount=self.goal.allocation,
                                        type=TRANSACTION_TYPE_ALLOCATION,
-                                       status=TRANSACTION_STATUS_PENDING,
+                                       status=Transaction.STATUS_PENDING,
                                        created=datetime.today())
         response = super(GoalRebalance, self).dispatch(request, *args, **kwargs)
         return response
@@ -592,8 +592,8 @@ class GoalRebalance(TemplateView, AdminView):
         # mark transaction as executed
         self.transaction.executed = datetime.now()
 
-        self.transaction.type = TRANSACTION_REASON_REBALANCE
-        self.transaction.status = TRANSACTION_STATUS_EXECUTED
+        self.transaction.type = Transaction.REASON_REBALANCE
+        self.transaction.status = Transaction.STATUS_EXECUTED
 
         list(map(lambda x: x.save(), positions))
         self.transaction.save()
