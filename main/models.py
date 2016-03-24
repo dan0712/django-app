@@ -23,6 +23,7 @@ from django.core.validators import (
     MaxValueValidator, MinLengthValidator
 )
 from django.db import models, transaction
+from django.db.models.deletion import PROTECT, CASCADE
 from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
@@ -52,6 +53,16 @@ def validate_module(value):
     module_spec = importlib.util.find_spec(value)
     if module_spec is None:
         raise ValidationError("The supplied module: {} could not be found.".format(value))
+
+
+@unique
+class ChoiceEnum(Enum):
+    """
+    ChoiceEnum is used when you want to use an enumeration for the choices of an integer django field.
+    """
+    @classmethod
+    def choices(cls):
+        return [(item.value, item.name) for item in cls]
 
 
 @unique
@@ -974,7 +985,10 @@ class AccountGroup(models.Model):
     We use the term 'Households' on the Advisor page for this as well.
     """
 
-    advisor = models.ForeignKey(Advisor, related_name="primary_account_groups")
+    advisor = models.ForeignKey(Advisor,
+                                related_name="primary_account_groups",
+                                on_delete=PROTECT  # Must reassign account groups before removing advisor
+                               )
     secondary_advisors = models.ManyToManyField(
         Advisor,
         related_name='secondary_account_groups')
@@ -1260,8 +1274,15 @@ class ClientAccount(models.Model):
 
 
 class JointAccount(models.Model):
-    joined = models.ForeignKey(ClientAccount, related_name='joint_holder')
-    client = models.ForeignKey('Client', related_name='joint_accounts')
+    joined = models.ForeignKey(ClientAccount,
+                               related_name='joint_holder',
+                               # Delete an account and you delete any joint accounts they are joined with
+                               on_delete=CASCADE,
+                              )
+    client = models.ForeignKey('Client',
+                               related_name='joint_accounts',
+                               on_delete=CASCADE,  # Delete a client, you delete any joint accounts they are a part of
+                              )
 
 
 class TaxFileNumberValidator(object):
@@ -1312,7 +1333,10 @@ class MedicareNumberValidator(object):
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
-    advisor = models.ForeignKey(Advisor, related_name="all_clients")
+    advisor = models.ForeignKey(Advisor,
+                                related_name="all_clients",
+                                on_delete=PROTECT,  # Must reassign clients before removing advisor
+                               )
     secondary_advisors = models.ManyToManyField(
         Advisor,
         related_name='secondary_clients',
@@ -1890,7 +1914,32 @@ class GoalMetricGroup(models.Model):
         return risk, features
 
 
+class InvalidStateError(Exception):
+    """
+    If an action was attempted on a stateful object and the current state was not once of the valid ones for the action
+    """
+    def __init__(self, current, required):
+        self.current = current
+        self.required = required
+
+    def __str__(self):
+        return "Invalid state: {}. Should have been one of: {}".format(self.current, self.required)
+
+
 class Goal(models.Model):
+    class State(ChoiceEnum):
+        # The goal is currently active and ready for action.
+        ACTIVE = 0
+        # A request to archive the goal has been made, but is waiting approval.
+        # The goal can be reinstated by simply changing the state back to ACTIVE
+        ARCHIVE_REQUESTED = 1
+        # A request to archive the goal has been approved, and is currently in process.
+        # No further actions can be performed on the goal to reactivate it.
+        CLOSING = 2
+        # The goal no longer owns any assets, and has a zero balance.
+        # This goal is archived. No further actions can be performed on the goal
+        ARCHIVED = 3
+
     account = models.ForeignKey(ClientAccount, related_name="all_goals")
     name = models.CharField(max_length=100)
     type = models.ForeignKey(GoalType)
@@ -1928,9 +1977,10 @@ class Goal(models.Model):
     drift_score = models.FloatField(default=0.0, help_text='The maximum ratio of current drift to maximum allowable'
                                                            ' drift from any metric on this goal.')
     rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing on this goal?')
-    archived = models.BooleanField(default=False, help_text='An archived goal is "deleted"')
+    state = models.IntegerField(choices=State.choices(), default=State.ACTIVE.value)
+    supervised = models.BooleanField(default=True, help_text='Is this goal supervised by an advisor?')
 
-    # Also has reverse 'positions' field from Position model.
+    # Also has 'positions' field from Position model.
 
     objects = GoalQuerySet.as_manager()
 
@@ -1939,6 +1989,24 @@ class Goal(models.Model):
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
+
+    @transaction.atomic
+    def archive(self):
+        """
+        Archives a goal, creating a closing order to neutralise any positions.
+        :return: None
+        """
+        from main.ordering import OrderManager
+        if self.State(self.state) != self.State.ARCHIVE_REQUESTED:
+            raise InvalidStateError(self.State(self.state), self.State.ARCHIVE_REQUESTED)
+
+        FinancialPlanAccount.objects.filter(account=self).delete()
+
+        # Remove outstanding orders and close existing positions
+        async_id = OrderManager.close_positions(self)
+
+        self.state = self.State.ARCHIVED.value if async_id is None else self.State.CLOSING.value
+        self.save()
 
     @transaction.atomic
     def set_selected(self, setting):
@@ -2353,41 +2421,60 @@ class Position(models.Model):
 
 
 class MarketOrderRequest(models.Model):
-    STATE_PENDING = 0  # Raised somehow, but not yet approved to send to market
-    STATE_APPROVED = 1  # Approved to send to market, but not yet sent.
-    STATE_SENT = 2  # Sent to the broker (at least partially outstanding).
-    STATE_COMPLETE = 3  # May be fully or partially executed, but there is none left outstanding.
-    STATES = (
-        (STATE_PENDING, 'Pending'),
-        (STATE_APPROVED, 'Approved'),
-        (STATE_SENT, 'Sent'),
-        (STATE_COMPLETE, 'Complete'),
-    )
-    state = models.IntegerField(choices=STATES, default=STATE_PENDING)
-    account = models.ForeignKey('ClientAccount', related_name='market_orders')
+    """
+    A Market Order Request defines a request for an order to buy or sell one or more assets on a market.
+    """
+    class State(ChoiceEnum):
+        PENDING = 0  # Raised somehow, but not yet approved to send to market
+        APPROVED = 1  # Approved to send to market, but not yet sent.
+        SENT = 2  # Sent to the broker (at least partially outstanding).
+        CANCEL_PENDING = 3 # Sent, but have also sent a cancel
+        COMPLETE = 4  # May be fully or partially executed, but there is none left outstanding.
+
+    # The list of Order states that are still considered open.
+    OPEN_STATES = [State.PENDING.value, State.APPROVED.value, State.SENT.value]
+
+    state = models.IntegerField(choices=State.choices(), default=State.PENDING.value)
+    account = models.ForeignKey('ClientAccount', related_name='market_orders', on_delete=PROTECT)
     # Also has 'execution_requests' field showing all the requests that went into this one order.
     # Also has 'executions' once the request has had executions.
 
+    def __str__(self):
+        return "[{}] - {}".format(self.id, self.State(self.state).name)
+
+    def __repr__(self):
+        return {
+            'state': self.state,
+            'account': self.account,
+            'execution_requests': list(self.execution_requests) if hasattr(self, 'execution_requests') else [],
+            'executions': list(self.executions) if hasattr(self, 'executions') else [],
+        }
 
 class ExecutionRequest(models.Model):
-    REASON_DRIFT = 0  # The Request was made to neutralise drift on the goal
-    REASON_WITHDRAWAL = 1  # The request was made because a withdrawal was requested from the goal.
-    REASON_DEPOSIT = 2  # The request was made because a deposit was made to the goal
-    REASON_METRIC_CHANGE = 3  # The request was made because the inputs to the optimiser were changed.
-    REASONS = (
-        (REASON_DRIFT, 'Drift'),
-        (REASON_WITHDRAWAL, 'Withdrawal'),
-        (REASON_DEPOSIT, 'Deposit'),
-        (REASON_METRIC_CHANGE, 'Metric Change'),
-    )
+    """
+    An execution request should be immutable. It should not be modified after creation. It can only be
+    """
+    class Reason(ChoiceEnum):
+        DRIFT = 0  # The Request was made to neutralise drift on the goal
+        WITHDRAWAL = 1  # The request was made because a withdrawal was requested from the goal.
+        DEPOSIT = 2  # The request was made because a deposit was made to the goal
+        METRIC_CHANGE = 3  # The request was made because the inputs to the optimiser were changed.
 
-    reason = models.IntegerField(choices=REASONS)
-    goal = models.ForeignKey('Goal', related_name='execution_requests')
-    asset = models.ForeignKey('Ticker', related_name='execution_requests')
+    reason = models.IntegerField(choices=Reason.choices())
+    goal = models.ForeignKey('Goal', related_name='execution_requests', on_delete=PROTECT)
+    asset = models.ForeignKey('Ticker', related_name='execution_requests', on_delete=PROTECT)
     volume = models.FloatField(help_text="Will be negative for a sell.")
     order = models.ForeignKey(MarketOrderRequest, related_name='execution_requests')
     # transaction can be null because once the request is complete, the transaction is removed.
     transaction = models.OneToOneField('Transaction', related_name='execution_request', null=True)
+
+    def __repr__(self):
+        return {
+            'reason': str(self.reason),
+            'goal': str(self.goal),
+            'asset': str(self.ticker),
+            'volume': self.volume
+        }
 
 
 class Execution(models.Model):
@@ -2395,9 +2482,9 @@ class Execution(models.Model):
     - The time the execution was processed (The time the cash balance on the goal was updated) is the 'executed' time
       on the related transaction.
     """
-    asset = models.ForeignKey('Ticker', related_name='executions')
+    asset = models.ForeignKey('Ticker', related_name='executions', on_delete=PROTECT)
     volume = models.FloatField(help_text="Will be negative for a sell.")
-    order = models.ForeignKey(MarketOrderRequest, related_name='executions')
+    order = models.ForeignKey(MarketOrderRequest, related_name='executions', on_delete=PROTECT)
     price = models.FloatField(help_text="The raw price paid/received per share. Not including fees etc.")
     executed = models.DateTimeField(help_text='The time the trade was executed.')
     amount = models.FloatField(help_text="The realised amount that was transferred into the account (specified on the "
@@ -2408,8 +2495,8 @@ class Execution(models.Model):
 
 class ExecutionDistribution(models.Model):
     # One execution can contribute many distributions.
-    execution = models.ForeignKey('Execution', related_name='distributions')
-    transaction = models.OneToOneField('Transaction', related_name='execution_distribution')
+    execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
+    transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
 
 
@@ -2452,19 +2539,20 @@ class Transaction(models.Model):
                                   related_name="transactions_from",
                                   null=True,
                                   blank=True,
-                                  db_index=True)
+                                  db_index=True,
+                                  on_delete=PROTECT  # Cannot remove a goal that has transactions
+                                 )
     to_goal = models.ForeignKey(Goal,
                                 related_name="transactions_to",
                                 null=True,
                                 blank=True,
-                                db_index=True)
+                                db_index=True,
+                                on_delete=PROTECT  # Cannot remove a goal that has transactions
+                               )
     amount = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
     status = models.CharField(max_length=20, choices=STATUSES, default=STATUS_PENDING)
     created = models.DateTimeField(auto_now_add=True)
     executed = models.DateTimeField(null=True)
-    new_balance = models.FloatField(default=0)
-    inversion = models.FloatField(default=0)
-    return_fraction = models.FloatField(default=0)
 
     # May also have 'execution_request' field from the ExecutionRequest model if it has reason ORDER
     # May also have 'execution_distribution' field from the ExecutionDistribution model if it has reason EXECUTION
@@ -2487,7 +2575,10 @@ class TransactionMemo(models.Model):
     category = models.CharField(max_length=255)
     comment = models.TextField()
     transaction_type = models.CharField(max_length=20)
-    transaction = models.ForeignKey(Transaction, related_name="memos")
+    transaction = models.ForeignKey(Transaction,
+                                    related_name="memos",
+                                    on_delete=CASCADE,  # Delete any memos where there is no longer a transaction
+                                   )
 
 
 class SymbolReturnHistory(models.Model):
@@ -2605,11 +2696,11 @@ class MarketCap(models.Model):
         unique_together = ("instrument_content_type", "instrument_object_id", "date")
 
     # An instrument should be a subclass of financial instrument
-    # TODO: REmove this null bit
+    # TODO: Remove this null bit
     instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
     instrument_object_id = models.PositiveIntegerField(null=True)
     instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
-    # TODO: REmove this null bit
+    # TODO: Remove this null bit
     date = models.DateField(null=True)
     value = models.FloatField()
 

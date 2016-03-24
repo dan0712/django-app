@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 
 def site_contact(request):
-    # return the value you want as a dictionnary. you may add multiple values in there.
+    # return the value you want as a dictionary. you may add multiple values in there.
     csrf_meta = """<meta content="csrfmiddlewaretoken" name="csrf-param">
     <meta content="{0}" name="csrf-token">""".format(request.META["CSRF_COOKIE"])
 

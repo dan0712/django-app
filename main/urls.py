@@ -134,6 +134,7 @@ urlpatterns = patterns(
         AdvisorClientAccountChangeFee.as_view()),
     url(r'^betasmartz_admin/rebalance/(?P<pk>\d+)$', GoalRebalance.as_view()),
     url('^impersonate/(?P<pk>\d+)$', ImpersonateView.as_view()),
+
     # Client views
     url(r'^client/login',
         client_login,

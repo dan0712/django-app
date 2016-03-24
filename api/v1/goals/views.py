@@ -1,13 +1,16 @@
 import datetime
 import ujson
 
+from django.db import transaction
 from django.db.models.query_utils import Q
 from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
+from api.v1.exceptions import APIInvalidStateError
 from api.v1.goals.serializers import PortfolioStatelessSerializer
+from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios
@@ -23,6 +26,15 @@ from . import serializers
 #import .filters
 
 EPOCH_DT = datetime.datetime.utcfromtimestamp(0).date()
+
+
+def check_state(current, required):
+    if isinstance(required, (list, tuple)):
+        if current not in required:
+            raise APIInvalidStateError(current, required)
+    elif current != required:
+        raise APIInvalidStateError(current, required)
+
 
 class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     queryset = Goal.objects.all() \
@@ -44,6 +56,33 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     filter_fields = ('name',)
     search_fields = ('name',)
 
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        """
+        Override this method as we don't want to actually delete the goal, just disable it.
+        :param instance: The goal to disable
+        :return: None
+        """
+        goal = self.get_object()
+        # If I'm an adviser or the goal is unsupervised, archive the goal immediately.
+        if not goal.supervised or self.request.user.is_advisor:
+            check_state(Goal.State(goal.state), [Goal.State.ACTIVE, Goal.State.ARCHIVE_REQUESTED])
+            Event.ARCHIVE_GOAL.log('{} {}'.format(self.request.method, self.request.path),
+                                   user=self.request.user,
+                                   obj=goal)
+            # Set the state to archive requested, as the call to archive() requires it.
+            goal.state = Goal.State.ARCHIVE_REQUESTED.value
+            goal.archive()
+        else:
+            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+            Event.ARCHIVE_GOAL_REQUESTED.log('{} {}'.format(self.request.method, self.request.path),
+                                             user=self.request.user,
+                                             obj=goal)
+            # Flag the goal as archive requested.
+            goal.state = Goal.State.ARCHIVE_REQUESTED.value
+            goal.save()
+        return Response(serializers.GoalSerializer(goal).data)
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return serializers.GoalSerializer
@@ -60,7 +99,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         if self.action == 'list':
             qs = qs.prefetch_related()
             qs = qs.select_related('selected_settings')
-            qs = qs.filter(archived=False)
+            qs = qs.exclude(state=Goal.State.ARCHIVED.value)
 
         # show "permissioned" records only
         user = self.request.user
@@ -78,6 +117,10 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         goal_types = GoalType.objects.all().order_by('name')
         serializer = serializers.GoalGoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
+
+    @list_route(methods=['get'])
+    def states(self, request):
+        return Response(Goal.State.choices())
 
     @detail_route(methods=['get'])
     def positions(self, request, pk=None):
@@ -103,6 +146,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             return Response(serializer.data)
 
         if request.method == 'POST':
+            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
             serializer = serializers.GoalSettingWritableSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             settings = serializer.save(goal=goal)
@@ -137,6 +181,8 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         goal = self.get_object()
 
+        check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+
         if user.advisor not in goal.account.advisors:
             raise PermissionDenied("You do not advise the client for this goal.")
 
@@ -151,6 +197,8 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         Called to calculate a portfolio object for a set of supplied settings.
         """
         goal = self.get_object()
+
+        check_state(Goal.State(goal.state), Goal.State.ACTIVE)
 
         setting_str = request.query_params.get('setting', None)
         if not setting_str:
@@ -182,6 +230,8 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         """
         goal = self.get_object()
 
+        check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+
         setting_str = request.query_params.get('setting', None)
         if not setting_str:
             raise ValidationError("Query parameter 'setting' must be specified and a valid JSON string")
@@ -210,6 +260,9 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     @detail_route(methods=['post'])
     def deposit(self, request, pk=None):
         goal = self.get_object()
+
+        check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(to_goal=goal, reason=Transaction.REASON_DEPOSIT)

@@ -4,11 +4,12 @@ import logging
 
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 
 from rest_framework.fields import FloatField, IntegerField
 
 from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer
+from main.event import Event
 from main.models import (
     ClientAccount,
     Goal, GoalSetting, GoalMetric, GoalType,
@@ -594,12 +595,16 @@ class GoalUpdateSerializer(NoCreateModelSerializer):
     """
     For write (PUT/...) requests only
     """
+    # Only allow resetting the goal to active
+    state = serializers.ChoiceField(required=False, choices=[Goal.State.ACTIVE.value])
+
     class Meta:
         model = Goal
         fields = (
             'name',
             'type',
             'portfolio_set',
+            'state'
         )  # list fields explicitly
 
     def __init__(self, *args, **kwargs):
@@ -611,12 +616,25 @@ class GoalUpdateSerializer(NoCreateModelSerializer):
         if not request:
             return # for swagger's dummy calls only
 
-        #user = request.user
+    # Override the update method so we can make sure that only advisors can update state,
+    # and only if the last state was ARCHIVE_REQUESTED
+    @transaction.atomic
+    def update(self, goal, validated_data):
+        request = self.context.get('request')
+        new_state = validated_data.get('state', None)
+        if new_state is not None and new_state != goal.state:
+            if new_state != Goal.State.ACTIVE.value:
+                raise PermissionDenied("The only state transition allowed is to {}".format(Goal.State.ACTIVE))
+            if goal.state != Goal.State.ARCHIVE_REQUESTED.value:
+                raise PermissionDenied("The only state transition allowed is from {}".format(Goal.State.ARCHIVE_REQUESTED))
+            if not request.user.is_advisor:
+                raise PermissionDenied("Only an advisor can reactivate a goal")
+            Event.REACTIVATE_GOAL.log('{} {}'.format(request.method, request.path),
+                                      user=request.user,
+                                      obj=goal)
+        # Finally, if we pass the validation, allow the update
+        return super(GoalUpdateSerializer, self).update(goal, validated_data)
 
-        # experimental / for advisors only
-        #if user.is_advisor:
-        #    self.fields['account'].queryset = \
-        #        self.fields['account'].queryset.filter_by_advisor(user.advisor)
 
 
 class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
