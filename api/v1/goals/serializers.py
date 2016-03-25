@@ -558,12 +558,6 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                     configured_val=1  # Start with 100% ethical.
                 )
 
-            portfolio = Portfolio.objects.create(
-                setting=settings,
-                stdev=0,
-                er=0,
-            )
-
             # Add the initial deposit if specified.
             initial_dep = validated_data.pop('initial_deposit', None)
             if initial_dep is not None:
@@ -574,14 +568,16 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
             # Calculate the optimised portfolio
             try:
                 weights, er, stdev = calculate_portfolio(settings, idata)
+                portfolio = Portfolio.objects.create(
+                    setting=settings,
+                    stdev=stdev,
+                    er=er,
+                )
                 items = [PortfolioItem(portfolio=portfolio,
                                        asset=Ticker.objects.get(id=tid),
                                        weight=weight,
                                        volatility=idata[0].loc[tid, tid]) for tid, weight in weights.iteritems()]
                 PortfolioItem.objects.bulk_create(items)
-                portfolio.stdev = stdev
-                portfolio.er = er
-                portfolio.save()
             except Unsatisfiable:
                 # We detect when loading a goal in the allocation screen if there has been no portfolio created
                 # and return a message to the user. It it perfectly reasonable for a goal to be created without a

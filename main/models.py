@@ -5,7 +5,9 @@ import logging
 import uuid
 from datetime import date
 from enum import Enum, unique
-from itertools import chain
+from itertools import chain, zip_longest, repeat
+
+import scipy.stats as st
 
 from django import forms
 from django.conf import settings
@@ -29,6 +31,7 @@ from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
+from recurrence.base import deserialize
 from rest_framework.authtoken.models import Token
 from django_pandas.managers import DataFrameManager
 
@@ -1851,6 +1854,23 @@ class RecurringTransaction(models.Model):
     def next_transaction(self):
         return self.recurrence.after(datetime.datetime.now(), inc=True)
 
+    @staticmethod
+    def get_events(recurring_transactions, start, end):
+        """
+        :param start: A datetime for the start
+        :param end: A datetime for the end
+        :param recurring_transactions:
+        :return: a list of (date, amount) tuples for all the recurring transaction events between the given dates.
+        Not guarateed to return them in sorted order.
+        """
+        res = []
+        for r in recurring_transactions.all():
+            if not r.enabled:
+                continue
+            rrule = deserialize(r.recurrence)
+            res.extend(zip(rrule.between(start, end), repeat(r.amount)))
+        return res
+
 
 class Portfolio(models.Model):
     setting = models.OneToOneField('GoalSetting', related_name='portfolio')
@@ -1872,8 +1892,8 @@ class GoalSetting(models.Model):
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
     metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings')
-    # also has 'recurring_transactions' field from RecurringTransaction model.
-    # also has 'portfolio' field from Portfolio model.
+    # also may have a 'recurring_transactions' field from RecurringTransaction model.
+    # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
 
     @property
     def goal(self):
@@ -1964,7 +1984,6 @@ class Goal(models.Model):
                   'and will become active the next time the goal is rebalanced.',
         blank=True,
         null=True)
-    # TODO: Remove null bit below once everyone is running this code.
     selected_settings = models.OneToOneField(
         GoalSetting,
         related_name='goal_selected',
@@ -2186,23 +2205,59 @@ class Goal(models.Model):
                 'fees': self.total_fees,
                }
 
+    def balance_at(self, future_dt, confidence=0.5):
+        """
+        Calculates the predicted balance at the given date with the given confidence based on the current
+        selected-settings.
+        :param date: The date to get the predicted balance for.
+        :param confidence: The confidence level to get the prediction at.
+        :return: Float predicted balance.
+        """
+        # If we don't have a selected portfolio, we can say nothing, so return the current balance
+        if self.selected_settings is None:
+            return self.total_balance
+
+        # Get the z-multiplier for the given confidence
+        z_mult = -st.norm.ppf(confidence)
+
+        # If no portfolio has been calculated, er and stdev are assumed 0.
+        if not hasattr(self.selected_settings, 'portfolio'):
+            er = 1.0
+            stdev = 0.0
+        else:
+            er = 1 + self.selected_settings.portfolio.er
+            stdev = self.selected_settings.portfolio.stdev
+
+        now = datetime.datetime.now()
+        # Get the predicted cash-flow events until the provided future date
+        cf_events = [(now, self.total_balance)]
+        if hasattr(self.selected_settings, 'recurring_transactions'):
+            cf_events += RecurringTransaction.get_events(self.selected_settings.recurring_transactions,
+                                                         now,
+                                                         datetime.datetime.combine(future_dt, datetime.time()))
+
+        # TODO: Add estimated fee events to this.
+
+        # Calculate the predicted_balance based on cash flow events, er, stdev and z_mult
+        predicted = 0
+        for dt, val in cf_events:
+            tdelta = dt - now
+            y_delta = (tdelta.days + tdelta.seconds/86400.0)/365.2425
+            predicted += val * (er ** y_delta + z_mult * stdev * (y_delta ** 0.5))
+
+        return predicted
+
     @property
     def on_track(self):
-        return False  # TODO: Make this work.
-        term = self.get_term
-        expected_return = self.target_portfolio["expectedReturn"] / 100 - self.total_fees / 1000.0 \
-                          + self.portfolio_set.risk_free_rate
-        expected_value = self.current_balance * (1 + expected_return) ** term
-        # TODO: Add recurring transactions to this.
-        if hasattr(self, "auto_deposit"):
-            #ada = self.auto_deposit.get_annualized
-            for i in range(0, term):
-                expected_value += ada * (1 + expected_return) ** (term - i - 1)
-        if hasattr(self, "auto_withdrawal"):
-            #ada = self.auto_withdrawal.get_annualized
-            for i in range(0, term):
-                expected_value -= ada * (1 + expected_return) ** (term - i - 1)
-        return expected_value >= self.target
+        if self.selected_settings is None:
+            return False
+
+        # If we don't have a target or completion date, we have no concept of OnTrack.
+        if self.selected_settings.target is None or self.selected_settings.completion is None:
+            return False
+
+        predicted_balance = self.balance_at(self.selected_settings.completion)
+        return predicted_balance >= self.selected_settings.target
 
     @property
     def total_balance(self):
