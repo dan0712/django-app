@@ -329,13 +329,13 @@ class GoalSettingWritableSerializer(NoUpdateModelSerializer):
             # Get the current portfolio statistics of the given weights if specified.
             if port_data is not None:
                 port_items_data = port_data.pop('items')
-                er, stdev, idatas = current_stats_from_weights([(item['asset'],
+                er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                  item['weight']) for item in port_items_data])
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
                 PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
                                                                  asset=i_data['asset'],
                                                                  weight=i_data['weight'],
-                                                                 volatility=idatas[i_data['asset']]) for i_data in port_items_data])
+                                                                 volatility=idatas[i_data['asset'].id]) for i_data in port_items_data])
 
             if tx_data is not None:
                 RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting,
