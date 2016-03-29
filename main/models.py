@@ -84,7 +84,7 @@ class StandardAssetFeatures(Enum):
             self.REGION: 'Region',
             # TODO: Add the rest
         }
-        return AssetFeature.objects.get_or_create(name=names[self.value])[0]
+        return AssetFeature.objects.get_or_create(name=names[self])[0]
 
 
 @unique
@@ -107,8 +107,8 @@ class StandardAssetFeatureValues(Enum):
             self.FUND_TYPE_SATELLITE: (StandardAssetFeatures.FUND_TYPE, 'Satellite'),
             self.REGION_AUSTRALIAN: (StandardAssetFeatures.REGION, 'Australian'),
         }
-        return AssetFeatureValue.objects.get_or_create(name=data[self.value][1],
-                                                       defaults={'feature': data[self.value][0].get_object()})[0]
+        return AssetFeatureValue.objects.get_or_create(name=data[self][1],
+                                                       defaults={'feature': data[self][0].get_object()})[0]
 
 
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
