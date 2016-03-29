@@ -72,12 +72,16 @@ class ChoiceEnum(Enum):
 class StandardAssetFeatures(Enum):
     SRI = 0
     ASSET_TYPE = 1
+    FUND_TYPE = 2
+    REGION = 3
 
     def get_object(self):
         names = {
             # feature_tag: feature_name
             self.SRI: 'Social Responsibility',
             self.ASSET_TYPE: 'Asset Type',
+            self.FUND_TYPE: 'Fund Type',
+            self.REGION: 'Region',
             # TODO: Add the rest
         }
         return AssetFeature.objects.get_or_create(name=names[self.value])[0]
@@ -88,6 +92,9 @@ class StandardAssetFeatureValues(Enum):
     SRI_OTHER = 0
     ASSET_TYPE_STOCK = 1
     ASSET_TYPE_BOND = 2
+    FUND_TYPE_CORE = 3
+    FUND_TYPE_SATELLITE = 4
+    REGION_AUSTRALIAN = 5
     # TODO: Add the rest
 
     def get_object(self):
@@ -96,6 +103,9 @@ class StandardAssetFeatureValues(Enum):
             self.SRI_OTHER: (StandardAssetFeatures.SRI, 'Non-specific Social Responsibility Initiative'),
             self.ASSET_TYPE_STOCK: (StandardAssetFeatures.ASSET_TYPE, 'Stocks only'),
             self.ASSET_TYPE_BOND: (StandardAssetFeatures.ASSET_TYPE, 'Bonds only'),
+            self.FUND_TYPE_CORE: (StandardAssetFeatures.FUND_TYPE, 'Core'),
+            self.FUND_TYPE_SATELLITE: (StandardAssetFeatures.FUND_TYPE, 'Satellite'),
+            self.REGION_AUSTRALIAN: (StandardAssetFeatures.REGION, 'Australian'),
         }
         return AssetFeatureValue.objects.get_or_create(name=data[self.value][1],
                                                        defaults={'feature': data[self.value][0].get_object()})[0]
@@ -1633,6 +1643,8 @@ class Ticker(FinancialInstrument):
     daily_prices = GenericRelation('DailyPrice',
                                    content_type_field='instrument_content_type',
                                    object_id_field='instrument_object_id')
+
+    # Also may have 'features' property from the AssetFeatureValue model.
 
     def __str__(self):
         return self.symbol

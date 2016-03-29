@@ -114,14 +114,15 @@ def convert_constraints():
         ac_feat = AssetFeatureValue.objects.get_or_create(name=ticker.asset_class.name, defaults={'feature': ac_feature})[0]
         curr_feat = AssetFeatureValue.objects.get_or_create(name=ticker.currency, defaults={'feature': curr_feature})[0]
         at_feat = stock_type_feature_value if ticker.asset_class.investment_type == "STOCKS" else bond_type_feature_value
+        ticker.features.clear()
         ticker.features.add(r_feat, ac_feat, curr_feat, at_feat)
         if ticker.ethical:
             ticker.features.add(eth_feature_value)
         ticker.features.add(core_feature_value if ticker.etf else satellite_feature_value)
 
     ## POPULATE the metrics for goals ##
-    for goal in Goal.objects.all():
-        convert_goal(goal)
+    #for goal in Goal.objects.all():
+    #    convert_goal(goal)
 
 
 class Command(BaseCommand):
