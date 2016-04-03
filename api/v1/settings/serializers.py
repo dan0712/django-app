@@ -25,9 +25,7 @@ class AssetClassListSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = AssetClass
-        exclude = (
-            'asset_class_explanation', 'tickers_explanation',
-        )
+
 
 class TickerListSerializer(serializers.ModelSerializer):
     """
