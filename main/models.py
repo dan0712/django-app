@@ -125,11 +125,11 @@ EMAIL_INVITATION_STATUSES = (
 
 EMPLOYMENT_STATUS_FULL_TIME = 0
 EMPLOYMENT_STATUS_PART_TIME = 1
-EMPLOYMENT_STATUS_SELF_EMPLOYED = 1
-EMPLOYMENT_STATUS_STUDENT = 2
-EMPLOYMENT_STATUS_RETIRED = 3
-EMPLOYMENT_STATUS_HOMEMAKER = 4
-EMPLOYMENT_STATUS_UNEMPLOYED = 5
+EMPLOYMENT_STATUS_SELF_EMPLOYED = 2
+EMPLOYMENT_STATUS_STUDENT = 3
+EMPLOYMENT_STATUS_RETIRED = 4
+EMPLOYMENT_STATUS_HOMEMAKER = 5
+EMPLOYMENT_STATUS_UNEMPLOYED = 6
 EMPLOYMENT_STATUSES = (
     (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
     (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
@@ -1109,7 +1109,7 @@ class ClientAccount(models.Model):
 
     @property
     def goals(self):
-        return self.all_goals.filter(archived=False)
+        return self.all_goals.exclude(state=Goal.State.ARCHIVED.value)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1385,7 +1385,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         default=False,
         choices=YES_NO)
 
-    employment_status = models.IntegerField(choices=EMPLOYMENT_STATUSES)
+    employment_status = models.IntegerField(choices=EMPLOYMENT_STATUSES, null=True)
     net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
@@ -1401,8 +1401,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         self.secondary_advisors.clear()
         # gell all the accounts
         for account in self.accounts.all():
-            for secondary_advisor in account.account_group.secondary_advisors.all(
-            ):
+            for secondary_advisor in account.account_group.secondary_advisors.all():
                 self.secondary_advisors.add(secondary_advisor)
 
     @property
@@ -1539,7 +1538,11 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                  update_fields)
 
         if create_personal_account:
-            new_ac = ClientAccount(primary_owner=self)
+            new_ac = ClientAccount(
+                primary_owner=self,
+                account_type=ACCOUNT_TYPE_PERSONAL,
+                default_portfolio_set=self.advisor.default_portfolio_set,
+            )
             new_ac.save()
             new_ac.remove_from_group()
 

@@ -949,7 +949,7 @@ class BuildConfirm(AdvisorView, TemplateView):
                     self.object.user, key, "")))
         user_dict = dict(zip(user_verbose_names, user_values))
         user_dict["Full Name"] = "{0} {1} {2}".format(
-            user_dict.pop("First Name"), user_dict.pop("Middle Name"),
+            user_dict.pop("First Name"), user_dict.pop("Middle Name(S)"),
             user_dict.pop("Last Name"))
 
         verbose_names = []

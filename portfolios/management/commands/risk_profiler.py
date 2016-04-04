@@ -68,7 +68,7 @@ def get_setting_params(setting):
             worth += joint_holder.net_worth
 
         # TODO: Maybe we want the "best" status, or maybe the status of the youngest?, Or maybe an average.
-        status = primary_owner.employment_status
+        status = EMPLOYMENT_STATUS_UNEMPLOYED if primary_owner.employment_status is None else primary_owner.employment_status
     else:
         age = None
         status = None
