@@ -137,7 +137,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer = serializers.PortfolioSerializer(portfolio)
         return Response(serializer.data)
 
-    @detail_route(methods=['get', 'post'], url_path='selected-settings')
+    @detail_route(methods=['get', 'post', 'put'], url_path='selected-settings')
     def selected_settings(self, request, pk=None):
         goal = self.get_object()
 
@@ -151,6 +151,17 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             settings = serializer.save(goal=goal)
             headers = self.get_success_headers(serializer.data)
+            serializer = serializers.GoalSettingSerializer(settings)
+            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+        elif request.method == 'PUT':
+            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+            setting = goal.selected_settings
+            serializer = serializers.GoalSettingWritableSerializer(setting, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            settings = serializer.save(goal=goal)
+            headers = self.get_success_headers(serializer.data)
+            # We use a different serializer to send the new settings, as the update serializer is limited.
             serializer = serializers.GoalSettingSerializer(settings)
             return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 

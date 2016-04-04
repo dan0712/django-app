@@ -1906,6 +1906,7 @@ class GoalSetting(models.Model):
     target = models.FloatField(default=0)
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
+    # metric_group is a foreignkey rather than onetoone since a metric group can be used by more than one setting object
     metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings')
     # also may have a 'recurring_transactions' field from RecurringTransaction model.
     # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
@@ -2056,9 +2057,14 @@ class Goal(models.Model):
         self.selected_settings = setting
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
-            if old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM:
+            custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
+            last_user = old_setting.metric_group.settings.count() == 1
+            if custom_group and last_user:
                 # This will also delete the setting as the metric group is a foreign key.
                 old_setting.metric_group.delete()
+            else:
+                # We are using a shared group, or we're not the last user. Just delete the setting object.
+                old_setting.delete()
 
     @transaction.atomic
     def approve_selected(self):

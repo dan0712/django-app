@@ -182,7 +182,7 @@ class GoalSettingSerializer(ReadOnlyModelSerializer):
         model = GoalSetting
 
 
-class GoalSettingWritableSerializer(NoUpdateModelSerializer):
+class GoalSettingWritableSerializer(serializers.ModelSerializer):
     metric_group = GoalMetricGroupCreateSerializer()
     recurring_transactions = RecurringTransactionCreateSerializer(many=True, required=False)
     portfolio = PortfolioCreateSerializer(required=False)
@@ -198,7 +198,6 @@ class GoalSettingWritableSerializer(NoUpdateModelSerializer):
             'portfolio',
         )
 
-    ''' NOT Used ATM
     def update(self, setting, validated_data):
         """
         Overwrite update to deal with nested writes.
@@ -217,36 +216,38 @@ class GoalSettingWritableSerializer(NoUpdateModelSerializer):
             setting = copy.copy(setting)
             setting.pk = None
             for attr, value in validated_data.items():
+                if attr not in ['target', 'completion', 'hedge_fx']:
+                    raise ValidationError({"msg": "{} is not a valid field for updating a goal setting.".format(attr)})
                 setattr(setting, attr, value)
-            if metrics_data is None:
-                # Copy the metric group if it's custom.
-                if setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM:
-                    new_mg = copy.copy(setting.metric_group)
-                    pxs = new_mg.metrics.all()
-                    new_mg.id = None
-                    new_mg.save()
-                    setting.metric_group = new_mg
-                    for metric in pxs:
-                        metric.id = None
-                        metric.group = new_mg
-                        metric.save()
-            else:
+            if metrics_data is not None:
                 gid = metrics_data.get('id', None)
                 if gid is None:
                     group = GoalMetricGroup.objects.create()
+                    setting.metric_group = group
                     metrics = metrics_data.get('metrics')
                     mo = []
                     for i_data in metrics:
                         if 'measured_val' in i_data:
                             raise ValidationError({"msg": "measured_val is read-only"})
-                        mo.append(GoalMetric(group=group, **i_data))
+                        mo.append(
+                            GoalMetric(
+                                group=group,
+                                type=i_data['type'],
+                                feature=i_data.get('feature', None),
+                                comparison=i_data['comparison'],
+                                rebalance_type=i_data['rebalance_type'],
+                                rebalance_thr=i_data['rebalance_thr'],
+                                configured_val=i_data['configured_val'],
+                            )
+                        )
                     GoalMetric.objects.bulk_create(mo)
-                    setting.metric_group = group
                 else:
                     setting.metric_group = GoalMetricGroup.objects.get(gid)
+            # Otherwise we just use the old settings object metric group that will be copied in the above copy()
+
             setting.save()
 
-            # Create a new portfolio to match.
+            # Do the portfolio.
             if port_data is None:
                 # We can't just change the setting object the portfolio is pointing at as the old setting may still be
                 # active as an approved setting. WE need to create a new portfolio by copying the old one.
@@ -262,29 +263,35 @@ class GoalSettingWritableSerializer(NoUpdateModelSerializer):
                         item.portfolio = new_port
                         item.save()
             else:
-                port_items_data = port_data.pop('items', None)
+                port_items_data = port_data.pop('items')
                 # Get the current portfolio statistics of the given weights.
                 er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                  item['weight']) for item in port_items_data])
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
                 PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
-                                                                 **i_data,
+                                                                 asset=i_data['asset'],
+                                                                 weight=i_data['weight'],
                                                                  volatility=idatas[i_data['asset'].id]) for i_data in port_items_data])
 
             # Do the recurring transactions
             if tx_data is None:
+                # We cannot simply reassign the transaction to the different setting, as the old setting may be used for
+                # the active or approved setting.
                 for item in old_setting.recurring_transactions.all():
                     new_tx = copy.copy(item)
                     new_tx.id = None
                     new_tx.setting = setting
                     new_tx.save()
             else:
-                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting, **i_data) for i_data in tx_data])
+                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting,
+                                                                               recurrence=i_data['recurrence'],
+                                                                               enabled=i_data['enabled'],
+                                                                               amount=i_data['amount']) for i_data in
+                                                          tx_data])
 
             goal.set_selected(setting)
 
         return setting
-        '''
 
     def create(self, validated_data):
         """
