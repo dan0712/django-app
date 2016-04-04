@@ -2013,13 +2013,14 @@ class Goal(models.Model):
     rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing on this goal?')
     state = models.IntegerField(choices=State.choices(), default=State.ACTIVE.value)
     supervised = models.BooleanField(default=True, help_text='Is this goal supervised by an advisor?')
+    order = models.IntegerField(default=0, help_text="The desired position in the list of Goals")
 
     # Also has 'positions' field from Position model.
 
     objects = GoalQuerySet.as_manager()
 
     class Meta:
-        ordering = ['name']
+        ordering = ['order']
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name

@@ -614,7 +614,8 @@ class GoalUpdateSerializer(NoCreateModelSerializer):
             'name',
             'type',
             'portfolio_set',
-            'state'
+            'state',
+            'order',
         )  # list fields explicitly
 
     def __init__(self, *args, **kwargs):
