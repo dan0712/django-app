@@ -13,7 +13,7 @@ from api.v1.goals.serializers import PortfolioStatelessSerializer
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
-    calculate_portfolios
+    calculate_portfolios, current_stats_from_weights
 from portfolios.management.commands.risk_profiler import recommend_ttl_risks
 from ..views import ApiViewMixin
 from ..permissions import (
@@ -208,6 +208,23 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer = serializers.GoalSettingSerializer(goal.approved_settings)
 
         return Response(serializer.data)
+
+
+    @detail_route(methods=['get'], url_path='calculate-performance')
+    def calculate_performance(self, request, pk=None):
+        port_items_str = request.query_params.get('items', None)
+        errstr = "Query parameter 'items' must be specified and a valid JSON string [[asset_id, weight], ...]"
+        if not port_items_str:
+            raise ValidationError(errstr)
+        try:
+            port_items = ujson.loads(port_items_str)
+        except ValueError:
+            raise ValidationError(errstr)
+        total_weight = sum([item[1] for item in port_items])
+        if total_weight > 1.0001:
+            raise ValidationError("Sum of item weights must be less than or equal to 1")
+        er, stdev, _ = current_stats_from_weights(port_items)
+        return Response({'er': er, 'stdev': stdev})
 
     @detail_route(methods=['get'], url_path='calculate-portfolio')
     def calculate_portfolio(self, request, pk=None):

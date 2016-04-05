@@ -751,7 +751,7 @@ def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, 
 
 def current_stats_from_weights(weights):
     """
-    :param weights: A list of (ticker_id, weight) tuples.
+    :param weights: A list of (ticker_id, weight) tuples. Weights must add to <= 1.
     :return: (portfolio_er, portfolio_stdev, {ticker_id: ticker_variance})
     """
     covars, samples, instruments, masks = get_instruments()
