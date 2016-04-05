@@ -256,7 +256,8 @@ class GoalSettingAdmin(admin.ModelAdmin):
 
 
 class GoalTypeAdmin(admin.ModelAdmin):
-    model = GoalType
+    list_display = ('name', 'group', 'default_term', 'risk_sensitivity', 'order')
+    list_editable = ('group', 'default_term', 'risk_sensitivity', 'order')
 
 
 class GoalAdmin(admin.ModelAdmin):
@@ -352,7 +353,7 @@ admin.site.register(Performer, PerformerAdmin)
 #admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
-admin.site.register(GoalType)
+admin.site.register(GoalType, GoalTypeAdmin)
 admin.site.register(MarketIndex)
 admin.site.register(GoalSetting, GoalSettingAdmin)
 admin.site.register(GoalMetricGroup, GoalMetricGroupAdmin)

@@ -91,7 +91,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
     @list_route(methods=['get'])
     def types(self, request):
-        goal_types = GoalType.objects.all().order_by('name')
+        goal_types = GoalType.objects.all().order_by('order')
         serializer = serializers.GoalGoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
 

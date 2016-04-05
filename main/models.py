@@ -1851,6 +1851,10 @@ class GoalType(models.Model):
     risk_sensitivity = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
                                          help_text="Default risk sensitivity for this goal type. "
                                                    "0 = not sensitive, 10 = Very sensitive (No risk tolerated)")
+    order = models.IntegerField(default=0, help_text="The order of the type in the list.")
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
