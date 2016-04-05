@@ -1908,6 +1908,7 @@ class GoalSetting(models.Model):
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
     # metric_group is a foreignkey rather than onetoone since a metric group can be used by more than one setting object
     metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings')
+    rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing?')
     # also may have a 'recurring_transactions' field from RecurringTransaction model.
     # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
 
@@ -2011,7 +2012,6 @@ class Goal(models.Model):
     # As such it should not be written to anywhere else than that.
     drift_score = models.FloatField(default=0.0, help_text='The maximum ratio of current drift to maximum allowable'
                                                            ' drift from any metric on this goal.')
-    rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing on this goal?')
     state = models.IntegerField(choices=State.choices(), default=State.ACTIVE.value)
     supervised = models.BooleanField(default=True, help_text='Is this goal supervised by an advisor?')
     order = models.IntegerField(default=0, help_text="The desired position in the list of Goals")

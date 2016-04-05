@@ -193,6 +193,7 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             'target',
             'completion',
             'hedge_fx',
+            'rebalance',
             'metric_group',
             'recurring_transactions',
             'portfolio',
@@ -216,7 +217,7 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             setting = copy.copy(setting)
             setting.pk = None
             for attr, value in validated_data.items():
-                if attr not in ['target', 'completion', 'hedge_fx']:
+                if attr not in ['target', 'completion', 'hedge_fx', 'rebalance']:
                     raise ValidationError({"msg": "{} is not a valid field for updating a goal setting.".format(attr)})
                 setattr(setting, attr, value)
             if metrics_data is not None:
@@ -331,6 +332,7 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
                                                  target=validated_data['target'],
                                                  completion=validated_data['completion'],
                                                  hedge_fx=validated_data['hedge_fx'],
+                                                 rebalance=validated_data.get('rebalance', True),
                                                  )
 
             # Get the current portfolio statistics of the given weights if specified.
@@ -449,7 +451,7 @@ class GoalSerializer(ReadOnlyModelSerializer):
         dividends = serializers.FloatField()
         fees = serializers.FloatField()
 
-    # property fields
+    # @property fields
     on_track = serializers.BooleanField()
     balance = serializers.FloatField(source='current_balance')
     earnings = serializers.FloatField(source='total_earnings')
@@ -652,7 +654,6 @@ class GoalUpdateSerializer(NoCreateModelSerializer):
                                       obj=goal)
         # Finally, if we pass the validation, allow the update
         return super(GoalUpdateSerializer, self).update(goal, validated_data)
-
 
 
 class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):

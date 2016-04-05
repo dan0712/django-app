@@ -187,7 +187,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer = serializers.GoalSettingSerializer(goal.active_settings)
         return Response(serializer.data)
 
-    @detail_route(methods=['get'], url_path='approve-selected')
+    @detail_route(methods=['put'], url_path='approve-selected')
     def approve_selected(self, request, pk=None):
         """
         Called to make the currently selected settings approved by the advisor,
