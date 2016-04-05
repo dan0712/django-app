@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError, MethodN
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
-from api.v1.exceptions import APIInvalidStateError
+from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from api.v1.goals.serializers import PortfolioStatelessSerializer
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
@@ -301,6 +301,22 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(to_goal=goal, reason=Transaction.REASON_DEPOSIT)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @detail_route(methods=['post'])
+    def withdraw(self, request, pk=None):
+        goal = self.get_object()
+
+        check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+
+        serializer = serializers.TransactionCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Make sure the total amount for the goal is larger than the pending withdrawal amount.
+        if goal.current_balance + 0.0000001 < serializer.validated_data['amount']:
+            emsg = "Goal's current balance: {} is less than the desired withdrawal amount: {}"
+            raise SystemConstraintError(emsg.format(goal.current_balance, serializer.validated_data['amount']))
+        serializer.save(from_goal=goal, reason=Transaction.REASON_WITHDRAWAL)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
