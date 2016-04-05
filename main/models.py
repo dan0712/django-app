@@ -2026,6 +2026,7 @@ class Goal(models.Model):
 
     class Meta:
         ordering = ['order']
+        unique_together = ('account', 'name')
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
@@ -2046,6 +2047,17 @@ class Goal(models.Model):
         async_id = OrderManager.close_positions(self)
 
         self.state = self.State.ARCHIVED.value if async_id is None else self.State.CLOSING.value
+
+        # Change the name to _ARCHIVED so it doesn't affect the way the client can name any new goals, as there is a
+        # unique index on account and name
+        self.name += '_ARCHIVED'
+        names = self.objects.filter(account=self.account).values_list('name', flat=True)
+        if self.name in names:
+            suf = 1
+            while '{}_{}'.format(self.name, suf) in names:
+                suf += 1
+            self.name += '_{}'.format(suf)
+
         self.save()
 
     @transaction.atomic
