@@ -4,7 +4,7 @@ import ujson
 from django.db import transaction
 from django.db.models.query_utils import Q
 from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError, MethodNotAllowed
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
@@ -56,32 +56,9 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     filter_fields = ('name',)
     search_fields = ('name',)
 
-    @transaction.atomic
+    # We can never delete goals from the API. Only archive them.
     def destroy(self, request, *args, **kwargs):
-        """
-        Override this method as we don't want to actually delete the goal, just disable it.
-        :param instance: The goal to disable
-        :return: None
-        """
-        goal = self.get_object()
-        # If I'm an adviser or the goal is unsupervised, archive the goal immediately.
-        if not goal.supervised or self.request.user.is_advisor:
-            check_state(Goal.State(goal.state), [Goal.State.ACTIVE, Goal.State.ARCHIVE_REQUESTED])
-            Event.ARCHIVE_GOAL.log('{} {}'.format(self.request.method, self.request.path),
-                                   user=self.request.user,
-                                   obj=goal)
-            # Set the state to archive requested, as the call to archive() requires it.
-            goal.state = Goal.State.ARCHIVE_REQUESTED.value
-            goal.archive()
-        else:
-            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-            Event.ARCHIVE_GOAL_REQUESTED.log('{} {}'.format(self.request.method, self.request.path),
-                                             user=self.request.user,
-                                             obj=goal)
-            # Flag the goal as archive requested.
-            goal.state = Goal.State.ARCHIVE_REQUESTED.value
-            goal.save()
-        return Response(serializers.GoalSerializer(goal).data)
+        raise MethodNotAllowed('DELETE')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -121,6 +98,36 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
     @list_route(methods=['get'])
     def states(self, request):
         return Response(Goal.State.choices())
+
+    @detail_route(methods=['put'])
+    @transaction.atomic  # Atomic so the log doesn't get written if the whole thing rolls back.
+    def archive(self, request, pk=None):
+        """
+        Override this method as we don't want to actually delete the goal, just disable it.
+        :param instance: The goal to disable
+        :return: None
+        """
+        goal = self.get_object()
+        # If I'm an adviser or the goal is unsupervised, archive the goal immediately.
+        if not goal.supervised or self.request.user.is_advisor:
+            check_state(Goal.State(goal.state), [Goal.State.ACTIVE, Goal.State.ARCHIVE_REQUESTED])
+            Event.ARCHIVE_GOAL.log('{} {}'.format(self.request.method, self.request.path),
+                                   user=self.request.user,
+                                   obj=goal)
+            # Set the state to archive requested, as the call to archive() requires it.
+            goal.state = Goal.State.ARCHIVE_REQUESTED.value
+            goal.archive()
+        else:
+            # I'm a client with a supervised goal, just change the status to ARCHIVE_REQUESTED, and add a notification
+            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+            Event.ARCHIVE_GOAL_REQUESTED.log('{} {}'.format(self.request.method, self.request.path),
+                                             user=self.request.user,
+                                             obj=goal)
+            # Flag the goal as archive requested.
+            goal.state = Goal.State.ARCHIVE_REQUESTED.value
+            # TODO: Add a notification to the advisor that the goal is archive requested.
+            goal.save()
+        return Response(serializers.GoalSerializer(goal).data)
 
     @detail_route(methods=['get'])
     def positions(self, request, pk=None):
