@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # $1 = commit to checkout
 # $2 = domain to deploy to. Eg. 'v2' or 'demo'
 
@@ -11,15 +12,20 @@ main() {
     then
         DBPW='Exu!&L+6}/!-m(-}'
         REDDB=2
+    elif [[ ${2} == 'dev' ]]
+    then
+        DBPW='0ZUbnZ5+:msz:*1O'
+        REDDB=3
     else
         echo "Unsupported auto-deployment for domain: ${2}" >&2
 	exit 1
     fi
     pushd repo/betasmartz
-    echo fetching
+    echo fetching latest repo
     git fetch
-    echo checking out
+    echo checking out revision spec ${1}
     git checkout $1
+    echo building docker image
     docker build -t betasmartz/backend:${2}_cd .
     docker stop ${2}_betasmartz_app
     docker rm ${2}_betasmartz_app_rollback
