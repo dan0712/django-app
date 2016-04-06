@@ -3,8 +3,9 @@ import os
 environment = os.environ["ENVIRONMENT"]
 
 if environment in ["prod", "demo", "dev"]:
-    ALLOWED_HOSTS = ["app.betasmartz.com"]
-    SITE_URL = "http://app.betasmartz.com"
+    hn = 'app' if environment == 'prod' else environment
+    ALLOWED_HOSTS = ["{}.betasmartz.com".format(hn)]
+    SITE_URL = "http://{}.betasmartz.com".format(hn)
     DEBUG = False
 else:
     SITE_URL = "http://{}.betasmartz.com".format(environment)
