@@ -656,6 +656,17 @@ def run_bl(instruments, covars, target_instruments, samples, portfolio_set):
                          vers,
                          samples)
 
+    if logger.level == logging.DEBUG:
+        msg = "Ran BL with samples: {}, index: {}\ncovars:\n{}\nWeights:{}\nGot mu:\n{}\nsigma:\n{}"
+        logger.debug(msg.format(
+            samples,
+            lcovars.index.tolist(),
+            lcovars.values.tolist(),
+            market_caps.values.tolist(),
+            mu.tolist(),
+            sigma.tolist())
+        )
+
     # modify the mu and sigma to only be the funds, then return just those.
     return mu[len(blabels):], sigma[len(blabels):, len(blabels):]
 

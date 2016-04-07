@@ -3,7 +3,7 @@ from django.test import TestCase
 from unittest.mock import Mock
 from statsmodels.stats.correlation_tools import cov_nearest
 
-from main.models import Region, Ticker, AssetClass, Goal, MonthlyPrices, View, MarketCap
+from main.models import Region, AssetClass, View
 from portfolios.management.commands.portfolio_calculation import *
 
 
