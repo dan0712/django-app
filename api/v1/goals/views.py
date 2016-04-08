@@ -209,7 +209,6 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-
     @detail_route(methods=['get'], url_path='calculate-performance')
     def calculate_performance(self, request, pk=None):
         port_items_str = request.query_params.get('items', None)
@@ -223,7 +222,10 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         total_weight = sum([item[1] for item in port_items])
         if total_weight > 1.0001:
             raise ValidationError("Sum of item weights must be less than or equal to 1")
-        er, stdev, _ = current_stats_from_weights(port_items)
+        try:
+            er, stdev, _ = current_stats_from_weights(port_items)
+        except Unsatisfiable as e:
+            raise ValidationError(e.msg)
         return Response({'er': er, 'stdev': stdev})
 
     @detail_route(methods=['get'], url_path='calculate-portfolio')

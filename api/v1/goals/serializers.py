@@ -263,8 +263,11 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             else:
                 port_items_data = port_data.pop('items')
                 # Get the current portfolio statistics of the given weights.
-                er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
-                                                                 item['weight']) for item in port_items_data])
+                try:
+                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
+                                                                     item['weight']) for item in port_items_data])
+                except Unsatisfiable as e:
+                    raise ValidationError(e.msg)
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
                 PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
                                                                  asset=i_data['asset'],
@@ -335,8 +338,11 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             # Get the current portfolio statistics of the given weights if specified.
             if port_data is not None:
                 port_items_data = port_data.pop('items')
-                er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
-                                                                 item['weight']) for item in port_items_data])
+                try:
+                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
+                                                                     item['weight']) for item in port_items_data])
+                except Unsatisfiable as e:
+                    raise ValidationError(e.msg)
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
                 PortfolioItem.objects.bulk_create([PortfolioItem(portfolio=port,
                                                                  asset=i_data['asset'],

@@ -772,11 +772,12 @@ def current_stats_from_weights(weights):
     res = {}
     wts = []
     for tid, weight in weights:
+        if tid not in ix:
+            raise Unsatisfiable("Statistics for asset id: {} are not currently available.".format(tid))
         iloc = ix.get_loc(tid)
         ilocs.append(iloc)
         res[tid] = covars.iloc[iloc, iloc]
         wts.append(weight)
-
 
     # Generate portfolio stdev and expected return
     nweights = np.array(wts)

@@ -2008,7 +2008,7 @@ class Goal(models.Model):
         # Change the name to _ARCHIVED so it doesn't affect the way the client can name any new goals, as there is a
         # unique index on account and name
         self.name += '_ARCHIVED'
-        names = self.objects.filter(account=self.account).values_list('name', flat=True)
+        names = Goal.objects.filter(account=self.account).exclude(id=self.id).values_list('name', flat=True)
         if self.name in names:
             suf = 1
             while '{}_{}'.format(self.name, suf) in names:
