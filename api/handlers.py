@@ -1,8 +1,14 @@
+import datetime
+import logging
+
 from django.conf import settings
 
 from rest_framework.response import Response
-from rest_framework import status, exceptions
+from rest_framework import exceptions
+from rest_framework.status import HTTP_500_INTERNAL_SERVER_ERROR
 from rest_framework.views import exception_handler
+
+logger = logging.getLogger('api_exceptions')
 
 
 def api_exception_handler(exc, context):
@@ -14,11 +20,15 @@ def api_exception_handler(exc, context):
     }
 
     if response is None:
+        # It's not an api exception, but a bug. Log it.
+        logger.exception("Uncaught Non-API exception")
+        # If we're in DEBUG mode, return the full exception (Returning None makes DRF do this).
         if settings.DEBUG:
-            return response # it's not an api exception (certainly the bug)
+            return None
         else:
-            error['code'] = 400
-
+            msg = 'A Betasmartz internal error has occurred at time: {}. Please quote incident number: {}'
+            error['code'] = HTTP_500_INTERNAL_SERVER_ERROR
+            error['message'] = msg.format(datetime.datetime.now(), 'TODO')
     else:
         error['code'] = response.status_code
         detail = getattr(exc, 'detail', {})
