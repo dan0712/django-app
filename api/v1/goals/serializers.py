@@ -1,5 +1,4 @@
 import copy
-import datetime
 import logging
 
 from django.db import transaction
@@ -11,12 +10,10 @@ from rest_framework.fields import FloatField, IntegerField
 from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.event import Event
 from main.models import (
-    ClientAccount,
     Goal, GoalSetting, GoalMetric, GoalType,
     Position, Portfolio, PortfolioItem,
     RecurringTransaction,
-    StandardAssetFeatureValues,
-    Transaction, GoalMetricGroup, Ticker)
+    Transaction, GoalMetricGroup, Ticker, AssetFeatureValue)
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
@@ -558,14 +555,14 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                                       configured_val=recommended_risk)
             GoalMetric.objects.create(group=metric_group,
                                       type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
-                                      feature=StandardAssetFeatureValues.FUND_TYPE_CORE.get_object(),
+                                      feature=AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object(),
                                       comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
                                       rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
                                       rebalance_thr=0.05,
                                       configured_val=1.0)
             GoalMetric.objects.create(group=metric_group,
                                       type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
-                                      feature=StandardAssetFeatureValues.REGION_AUSTRALIAN.get_object(),
+                                      feature=AssetFeatureValue.Standard.REGION_AUSTRALIAN.get_object(),
                                       comparison=GoalMetric.METRIC_COMPARISON_MINIMUM,
                                       rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
                                       rebalance_thr=0.05,
@@ -574,7 +571,7 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                 GoalMetric.objects.create(
                     group=metric_group,
                     type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
-                    feature=StandardAssetFeatureValues.SRI_OTHER.get_object(),
+                    feature=AssetFeatureValue.Standard.SRI_OTHER.get_object(),
                     comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
                     rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
                     rebalance_thr=0.05,

@@ -68,49 +68,6 @@ class ChoiceEnum(Enum):
         return [(item.value, item.name) for item in cls]
 
 
-@unique
-class StandardAssetFeatures(Enum):
-    SRI = 0
-    ASSET_TYPE = 1
-    FUND_TYPE = 2
-    REGION = 3
-
-    def get_object(self):
-        names = {
-            # feature_tag: feature_name
-            self.SRI: 'Social Responsibility',
-            self.ASSET_TYPE: 'Asset Type',
-            self.FUND_TYPE: 'Fund Type',
-            self.REGION: 'Region',
-            # TODO: Add the rest
-        }
-        return AssetFeature.objects.get_or_create(name=names[self])[0]
-
-
-@unique
-class StandardAssetFeatureValues(Enum):
-    SRI_OTHER = 0
-    ASSET_TYPE_STOCK = 1
-    ASSET_TYPE_BOND = 2
-    FUND_TYPE_CORE = 3
-    FUND_TYPE_SATELLITE = 4
-    REGION_AUSTRALIAN = 5
-    # TODO: Add the rest
-
-    def get_object(self):
-        data = {
-            # feature_value_tag: (feature_tag, feature_value_name)
-            self.SRI_OTHER: (StandardAssetFeatures.SRI, 'Non-specific Social Responsibility Initiative'),
-            self.ASSET_TYPE_STOCK: (StandardAssetFeatures.ASSET_TYPE, 'Stocks only'),
-            self.ASSET_TYPE_BOND: (StandardAssetFeatures.ASSET_TYPE, 'Bonds only'),
-            self.FUND_TYPE_CORE: (StandardAssetFeatures.FUND_TYPE, 'Core'),
-            self.FUND_TYPE_SATELLITE: (StandardAssetFeatures.FUND_TYPE, 'Satellite'),
-            self.REGION_AUSTRALIAN: (StandardAssetFeatures.REGION, 'Australian'),
-        }
-        return AssetFeatureValue.objects.get_or_create(name=data[self][1],
-                                                       defaults={'feature': data[self][0].get_object()})[0]
-
-
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
                   " following a BetaSmartz approval."
 
@@ -572,7 +529,7 @@ class AssetClass(models.Model):
         validators=[RegexValidator(
             regex=r'^[0-9a-zA-Z_]+$',
             message="Invalid character only accept (0-9a-zA-Z_) ")],
-        db_index=True)
+        unique=True)
     display_order = models.PositiveIntegerField(db_index=True)
     primary_color = ColorField()
     foreground_color = ColorField()
@@ -581,7 +538,7 @@ class AssetClass(models.Model):
                                                default="",
                                                null=False)
     tickers_explanation = models.TextField(blank=True, default="", null=False)
-    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
+    display_name = models.CharField(max_length=255, unique=True)
     investment_type = models.CharField(max_length=255,
                                        choices=INVESTMENT_TYPES,
                                        blank=False,
@@ -2395,6 +2352,29 @@ class HistoricalBalance(models.Model):
 
 
 class AssetFeature(models.Model):
+    @unique
+    class Standard(Enum):
+        SRI = 0
+        ASSET_TYPE = 1
+        FUND_TYPE = 2
+        REGION = 3
+        ASSET_CLASS = 4
+        CURRENCY = 5
+        # TODO: Add the rest
+
+        def get_object(self):
+            names = {
+                # feature_tag: feature_name
+                self.SRI: 'Social Responsibility',
+                self.ASSET_TYPE: 'Asset Type',
+                self.FUND_TYPE: 'Fund Type',
+                self.REGION: 'Region',
+                self.ASSET_CLASS: 'Asset Class',
+                self.CURRENCY: 'Currency',
+                # TODO: Add the rest
+            }
+            return AssetFeature.objects.get_or_create(name=names[self])[0]
+
     name = models.CharField(max_length=127, unique=True, help_text="This should be a noun such as 'Region'.")
     description = models.TextField(blank=True, null=True)
 
@@ -2403,10 +2383,37 @@ class AssetFeature(models.Model):
 
 
 class AssetFeatureValue(models.Model):
-    name = models.CharField(max_length=127, unique=True, help_text="This should be an adjective.")
+    @unique
+    class Standard(Enum):
+        SRI_OTHER = 0
+        ASSET_TYPE_STOCK = 1
+        ASSET_TYPE_BOND = 2
+        FUND_TYPE_CORE = 3
+        FUND_TYPE_SATELLITE = 4
+        REGION_AUSTRALIAN = 5
+        # TODO: Add the rest
+
+        def get_object(self):
+            data = {
+                # feature_value_tag: (feature_tag, feature_value_name)
+                self.SRI_OTHER: (AssetFeature.Standard.SRI, 'Socially Responsible Investments'),
+                self.ASSET_TYPE_STOCK: (AssetFeature.Standard.ASSET_TYPE, 'Stocks only'),
+                self.ASSET_TYPE_BOND: (AssetFeature.Standard.ASSET_TYPE, 'Bonds only'),
+                self.FUND_TYPE_CORE: (AssetFeature.Standard.FUND_TYPE, 'Core (ETFs)'),
+                self.FUND_TYPE_SATELLITE: (AssetFeature.Standard.FUND_TYPE, 'Satellite (Actively Managed)'),
+                self.REGION_AUSTRALIAN: (AssetFeature.Standard.REGION, 'Australian'),
+            }
+            return AssetFeatureValue.objects.get_or_create(name=data[self][1],
+                                                           defaults={'feature': data[self][0].get_object()})[0]
+
+    class Meta:
+        unique_together = ('name', 'feature')
+
+    name = models.CharField(max_length=127, help_text="This should be an adjective.")
     description = models.TextField(blank=True, null=True, help_text="A clarification of what this value means.")
     feature = models.ForeignKey(AssetFeature,
                                 related_name='values',
+                                on_delete=PROTECT,
                                 help_text="The asset feature this is one value for.")
     assets = models.ManyToManyField(Ticker, related_name='features')
 
@@ -2453,7 +2460,7 @@ class GoalMetric(models.Model):
 
     group = models.ForeignKey('GoalMetricGroup', related_name='metrics')
     type = models.IntegerField(choices=metric_types.items())
-    feature = models.ForeignKey(AssetFeatureValue, null=True)
+    feature = models.ForeignKey(AssetFeatureValue, null=True, on_delete=PROTECT)
     comparison = models.IntegerField(default=1, choices=comparisons.items())
     rebalance_type = models.IntegerField(choices=rebalance_types.items(),
                                          help_text='Is the rebalance threshold an absolute threshold or relative (percentage difference) threshold?')
@@ -2542,6 +2549,7 @@ class MarketOrderRequest(models.Model):
             'execution_requests': list(self.execution_requests) if hasattr(self, 'execution_requests') else [],
             'executions': list(self.executions) if hasattr(self, 'executions') else [],
         }
+
 
 class ExecutionRequest(models.Model):
     """
