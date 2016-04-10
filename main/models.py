@@ -2055,7 +2055,7 @@ class Goal(models.Model):
 
     @property
     def pending_transactions(self):
-        return Transaction.objects.filter(Q(to_goal=self) | Q(from_goal=self) & Q(status=Transaction.STATUS_PENDING))
+        return Transaction.objects.filter((Q(to_goal=self) | Q(from_goal=self)) & Q(status=Transaction.STATUS_PENDING))
 
     @property
     def pending_amount(self):
@@ -2146,7 +2146,19 @@ class Goal(models.Model):
         inputs = 0.0
         for t in Transaction.objects.filter(Q(status=Transaction.STATUS_EXECUTED) &
                                             (Q(to_goal=self) | Q(from_goal=self)) &
-                                            (~Q(reason__in=(Transaction.REASON_FEE, Transaction.REASON_DIVIDEND)))):
+                                            (Q(reason__in=Transaction.CASH_FLOW_REASONS))):
+            inputs += t.amount if self == t.to_goal else -t.amount
+        return inputs
+
+    @property
+    def net_executions(self):
+        """
+        :return: The net realised amount invested in funds(Sum Order type transactions)
+        """
+        inputs = 0.0
+        for t in Transaction.objects.filter(Q(status=Transaction.STATUS_EXECUTED) &
+                                            (Q(to_goal=self) | Q(from_goal=self)) &
+                                            Q(reason=Transaction.REASON_EXECUTION)):
             inputs += t.amount if self == t.to_goal else -t.amount
         return inputs
 
@@ -2289,8 +2301,10 @@ class Goal(models.Model):
         """
         :return: The Time-Weighted Return for this goal
         """
-        # TODO: Do it
-        return 0
+        # TODO: Do it properly
+        fund_bal = self.total_balance - self.cash_balance
+        exec_total = self.net_executions
+        return (fund_bal + exec_total) / -exec_total if exec_total else 0
 
     @property
     def stocks_percentage(self):
