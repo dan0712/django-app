@@ -109,7 +109,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         """
         goal = self.get_object()
         # If I'm an adviser or the goal is unsupervised, archive the goal immediately.
-        if not goal.supervised or self.request.user.is_advisor:
+        if not goal.account.supervised or self.request.user.is_advisor:
             check_state(Goal.State(goal.state), [Goal.State.ACTIVE, Goal.State.ARCHIVE_REQUESTED])
             Event.ARCHIVE_GOAL.log('{} {}'.format(self.request.method, self.request.path),
                                    user=self.request.user,

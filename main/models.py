@@ -1061,6 +1061,7 @@ class ClientAccount(models.Model):
     asset_fee_plan = models.ForeignKey(AssetFeePlan, null=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
     cash_balance = models.FloatField(default=0, help_text='The amount of cash in this account available to be used.')
+    supervised = models.BooleanField(default=True, help_text='Is this account supervised by an advisor?')
 
     objects = ClientAccountQuerySet.as_manager()
 
@@ -1974,7 +1975,6 @@ class Goal(models.Model):
     drift_score = models.FloatField(default=0.0, help_text='The maximum ratio of current drift to maximum allowable'
                                                            ' drift from any metric on this goal.')
     state = models.IntegerField(choices=State.choices(), default=State.ACTIVE.value)
-    supervised = models.BooleanField(default=True, help_text='Is this goal supervised by an advisor?')
     order = models.IntegerField(default=0, help_text="The desired position in the list of Goals")
 
     # Also has 'positions' field from Position model.
