@@ -1,18 +1,18 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import list_route
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric
 from ..views import ApiViewMixin
 from ..permissions import (
-    IsAdvisor, IsClient,
     IsAdvisorOrClient,
 )
 
 from . import serializers
 
 
-class SettingsViewSet(ApiViewMixin, viewsets.GenericViewSet):
+class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.GenericViewSet):
     """
     Experimental
     """

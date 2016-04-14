@@ -36,6 +36,7 @@ from rest_framework.authtoken.models import Token
 from django_pandas.managers import DataFrameManager
 
 from main.management.commands.build_returns import get_price_returns
+from main.managers import ClientQuerySet
 from main.slug import unique_slugify
 from .fields import ColorField
 from .managers import (
@@ -1045,6 +1046,10 @@ ACCOUNT_TYPES = (
 
 
 class ClientAccount(models.Model):
+    """
+    A ClientAccount is not just for Personal accounts. It is our base account, from which other data can be attached.
+    It is the primary financial entity in the Betasmartz system.
+    """
     account_group = models.ForeignKey(AccountGroup,
                                       related_name="accounts_all",
                                       null=True)
@@ -1062,6 +1067,9 @@ class ClientAccount(models.Model):
     default_portfolio_set = models.ForeignKey(PortfolioSet)
     cash_balance = models.FloatField(default=0, help_text='The amount of cash in this account available to be used.')
     supervised = models.BooleanField(default=True, help_text='Is this account supervised by an advisor?')
+    signatories = models.ManyToManyField('Client',
+                                         related_name='signatory_accounts',
+                                         help_text='Other clients authorised to operate the account.')
 
     objects = ClientAccountQuerySet.as_manager()
 
@@ -1244,18 +1252,6 @@ class ClientAccount(models.Model):
             self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
-class JointAccount(models.Model):
-    joined = models.ForeignKey(ClientAccount,
-                               related_name='joint_holder',
-                               # Delete an account and you delete any joint accounts they are joined with
-                               on_delete=CASCADE,
-                              )
-    client = models.ForeignKey('Client',
-                               related_name='joint_accounts',
-                               on_delete=CASCADE,  # Delete a client, you delete any joint accounts they are a part of
-                              )
-
-
 class TaxFileNumberValidator(object):
     def __call__(self, value):
 
@@ -1352,6 +1348,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)
 
+    objects = ClientQuerySet.as_manager()
+
     def __str__(self):
         return self.user.get_full_name()
 
@@ -1365,7 +1363,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def accounts_all(self):
         # TODO: Make this work
-        #return self.primary_accounts.get_queryset() | self.joint_accounts.select_related('joined')
+        #return self.primary_accounts.get_queryset() | self.signatories.select_related('account')
         return self.primary_accounts
 
     @property

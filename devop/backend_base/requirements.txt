@@ -41,6 +41,8 @@ django-taggit==0.17.5
 django-test-without-migrations==0.4
 djangorestframework==3.3.1
 git+git://github.com/arthanson/django-genericadmin  # For user friendly generic foreign keys in admin interface
+# Using the below git link until drf-extensions==0.3.0 becomes available in pip.
+git+git://github.com/chibisov/drf-extensions@0a82b4c57ab95e53c56e5e71cfe71f5a33812a65 # For nested viewsets
 ecos==2.0.4
 Markdown==2.6.5
 pexpect==4.0.1
@@ -66,4 +68,4 @@ django-rest-swagger==0.3.5
 django-address>=0.1.4
 django-model-utils==2.3.1
 django-notifications-hq>=1.0 # upgrade to 1.0 later
-django-extensions>=1.5.5 # temp. to visualize models
+django-extensions>=1.6.1 # to visualize models

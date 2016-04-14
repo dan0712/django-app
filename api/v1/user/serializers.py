@@ -3,24 +3,24 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import exceptions, serializers
 
+from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import User, Advisor, Client
 
 
 __all__ = (
-    #'FieldUserSerializer',
     'AuthTokenSerializer', 'UserSerializer',
     'SignupSerializer', 'ResetSerializer', 'ResetEmailSerializer',
 )
 
 
-class FieldUserSerializer(serializers.ModelSerializer):
+class FieldUserSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = User
         exclude = (
             'is_staff', 'is_superuser',
             'password', 'last_login',
             'user_permissions', 'groups',
-            #'is_active'
+            'prepopulated', 'is_active'
         )
 
 

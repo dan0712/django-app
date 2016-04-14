@@ -6,19 +6,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-# TODO: drop unused imports after removing obsoleted endpoints
 from api.v1.user.serializers import UserAdvisorSerializer, UserClientSerializer
-from main.models import User, ClientAccount, Goal
-
-from ..clients import serializers as clients_serializers
-from ..goals import serializers as goals_serializers
 from ..views import ApiViewMixin
-from ..permissions import (
-    IsAdvisor,
-    IsClient,
-    IsMyAdvisorCompany,
-    IsAdvisorOrClient,
-)
 from . import serializers
 
 
@@ -89,19 +78,6 @@ class MeView(ApiViewMixin, views.APIView):
         #advisor = serializer_advisor.save()
 
         serializer = self.serializer_class(user)
-        return Response(serializer.data)
-
-
-class MeAccountsView(ApiViewMixin, views.APIView):
-    serializer_class = clients_serializers.ClientAccountListSerializer
-    permission_classes = (IsClient,)
-
-    def get(self, request):
-        user = self.request.user
-        client = user.client
-        accounts = client.accounts_all.all()
-
-        serializer = self.serializer_class(accounts, many=True)
         return Response(serializer.data)
 
 

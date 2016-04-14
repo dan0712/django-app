@@ -8,22 +8,18 @@ from rest_framework.exceptions import PermissionDenied, ValidationError, MethodN
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 
+from rest_framework_extensions.mixins import NestedViewSetMixin
+
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
-from api.v1.goals.serializers import PortfolioStatelessSerializer
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios, current_stats_from_weights
 from portfolios.management.commands.risk_profiler import recommend_ttl_risks
 from ..views import ApiViewMixin
-from ..permissions import (
-    IsAdvisor,
-    IsMyAdvisorCompany,
-    IsAdvisorOrClient,
-)
+from ..permissions import IsAdvisorOrClient
 
 from . import serializers
-#import .filters
 
 EPOCH_DT = datetime.datetime.utcfromtimestamp(0).date()
 
@@ -36,13 +32,15 @@ def check_state(current, required):
         raise APIInvalidStateError(current, required)
 
 
-class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
+class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+    # We define the queryset because our get_queryset calls super.
     queryset = Goal.objects.all() \
         .select_related('account') \
         .select_related('selected_settings') \
         .prefetch_related('selected_settings__metric_group')
         # , 'approved_settings', 'selected_settings') \
-        #.defer('account__data') \
+        # .defer('account__data') \
+
     serializer_class = serializers.GoalSerializer
     # We don't want pagination on goals for now, as the UI can't handle it. We can add it back of we need to.
     pagination_class = None
@@ -70,7 +68,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
                 return serializers.GoalUpdateSerializer
 
     def get_queryset(self):
-        qs = self.queryset
+        qs = super(GoalViewSet, self).get_queryset()
 
         # hide "slow" fields for list view
         if self.action == 'list':
@@ -83,25 +81,26 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
 
         if user.is_advisor:
             qs = qs.filter_by_advisor(user.advisor)
-
-        if user.is_client:
+        elif user.is_client:
             qs = qs.filter_by_client(user.client)
+        else:
+            raise PermissionDenied('Only Advisors or Clients are allowed to access goals.')
 
         return qs
 
     @list_route(methods=['get'])
-    def types(self, request):
+    def types(self, request, **kwargs):
         goal_types = GoalType.objects.all().order_by('order')
         serializer = serializers.GoalGoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
 
     @list_route(methods=['get'])
-    def states(self, request):
+    def states(self, request, **kwargs):
         return Response(Goal.State.choices())
 
     @detail_route(methods=['put'])
     @transaction.atomic  # Atomic so the log doesn't get written if the whole thing rolls back.
-    def archive(self, request, pk=None):
+    def archive(self, request, pk=None, **kwargs):
         """
         Override this method as we don't want to actually delete the goal, just disable it.
         :param instance: The goal to disable
@@ -130,7 +129,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(serializers.GoalSerializer(goal).data)
 
     @detail_route(methods=['get'])
-    def positions(self, request, pk=None):
+    def positions(self, request, pk=None, **kwargs):
         goal = self.get_object()
 
         positions = goal.positions.all()
@@ -138,14 +137,14 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='selected-portfolio')
-    def selected_portfolio(self, request, pk=None):
+    def selected_portfolio(self, request, pk=None, **kwargs):
         goal = self.get_object()
         portfolio = goal.selected_settings.portfolio
         serializer = serializers.PortfolioSerializer(portfolio)
         return Response(serializer.data)
 
     @detail_route(methods=['get', 'post', 'put'], url_path='selected-settings')
-    def selected_settings(self, request, pk=None):
+    def selected_settings(self, request, pk=None, **kwargs):
         goal = self.get_object()
 
         if request.method == 'GET':
@@ -173,13 +172,13 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @detail_route(methods=['get'], url_path='approved-settings')
-    def approved_settings(self, request, pk=None):
+    def approved_settings(self, request, pk=None, **kwargs):
         goal = self.get_object()
         serializer = serializers.GoalSettingSerializer(goal.approved_settings)
         return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='active-settings')
-    def active_settings(self, request, pk=None):
+    def active_settings(self, request, pk=None, **kwargs):
         """
         Handy for backups....
         """
@@ -188,7 +187,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @detail_route(methods=['put'], url_path='approve-selected')
-    def approve_selected(self, request, pk=None):
+    def approve_selected(self, request, pk=None, **kwargs):
         """
         Called to make the currently selected settings approved by the advisor,
         and ready to be activated next time the account is processed (rebalance).
@@ -210,7 +209,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='calculate-performance')
-    def calculate_performance(self, request, pk=None):
+    def calculate_performance(self, request, pk=None, **kwargs):
         port_items_str = request.query_params.get('items', None)
         errstr = "Query parameter 'items' must be specified and a valid JSON string [[asset_id, weight], ...]"
         if not port_items_str:
@@ -229,7 +228,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response({'er': er, 'stdev': stdev})
 
     @detail_route(methods=['get'], url_path='calculate-portfolio')
-    def calculate_portfolio(self, request, pk=None):
+    def calculate_portfolio(self, request, pk=None, **kwargs):
         """
         Called to calculate a portfolio object for a set of supplied settings.
         """
@@ -261,7 +260,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
 
     @detail_route(methods=['get'], url_path='calculate-all-portfolios')
-    def calculate_all_portfolios(self, request, pk=None):
+    def calculate_all_portfolios(self, request, pk=None, **kwargs):
         """
         Called to calculate all the portfolio objects for 100 different risk scores for the supplied settings.
         """
@@ -295,7 +294,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
             return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
 
     @detail_route(methods=['post'])
-    def deposit(self, request, pk=None):
+    def deposit(self, request, pk=None, **kwargs):
         goal = self.get_object()
 
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
@@ -307,7 +306,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @detail_route(methods=['post'])
-    def withdraw(self, request, pk=None):
+    def withdraw(self, request, pk=None, **kwargs):
         goal = self.get_object()
 
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
@@ -323,7 +322,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @detail_route(methods=['get'], url_path='recommended-risk-scores')
-    def recommended_risk_scores(self, request, pk=None):
+    def recommended_risk_scores(self, request, pk=None, **kwargs):
         setting = self.get_object().selected_settings
         years = request.query_params.get('years', None)
         if not years:
@@ -335,7 +334,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response(recommend_ttl_risks(setting, years))
 
     @detail_route(methods=['get'], url_path='cash-flow')
-    def cash_flow(self, request, pk=None):
+    def cash_flow(self, request, pk=None, **kwargs):
         """
         Returns all the cash-flow events for this goal.
         :param request:
@@ -352,7 +351,7 @@ class GoalViewSet(ApiViewMixin, viewsets.ModelViewSet):
         return Response([((tx[1].date() - EPOCH_DT).days, tx[2] if tx[0] else -tx[2]) for tx in txs])
 
     @detail_route(methods=['get'], url_path='balance-history')
-    def balance_history(self, request, pk=None):
+    def balance_history(self, request, pk=None, **kwargs):
         """
         Returns the balance history for this goal.
         :param request: The web request
