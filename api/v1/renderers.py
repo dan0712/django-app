@@ -22,7 +22,7 @@ class ApiRenderer(JSONRenderer):
             wrapper['error'] = data['error']
             del data['error']
 
-        if data:
+        if data is not None:
             wrapper['data'] = data
 
         return super(ApiRenderer, self).render(wrapper, media_type, renderer_context)
