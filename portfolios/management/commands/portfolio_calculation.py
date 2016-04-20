@@ -235,6 +235,8 @@ def build_instruments():
         returns = fund_returns[ticker.id]
         bid = bch_map[ticker.id]
 
+        # logger.debug("returns for {}: {}".format(ticker.symbol, list(returns.iteritems())))
+
         # Build annualised expected return with all the data we have.
         er = (1 + returns.mean()) ** WEEKDAYS_PER_YEAR - 1
 
@@ -255,6 +257,7 @@ def build_instruments():
             irows.append((bid, ber, bmw, None, None, [], [], bid, None))
 
         ctable[ticker.id] = returns
+        # logger.debug("Adding ticker: {} to ctable with returns: {}".format(ticker.id, returns))
         irows.append((ticker.symbol,
                       er,
                       0,  # For now we're using 0 for market caps of the funds, as they will 'inherit' the market cap of their benchmark
@@ -277,12 +280,13 @@ def build_instruments():
     instruments = pd.DataFrame.from_records(irows,
                                             columns=['symbol', 'exp_ret', 'mkt_cap', 'ac',
                                                      'price', 'features', 'pids', 'id', 'bid'],
-                                            exclude=['features', 'pids']).set_index('symbol')
+                                            ).set_index('symbol')
 
     # Reindex the instrument and returns tables to have the benchmark instruments first.
-    index_ids = [iid for iid in instruments.index if iid is str and '_' in iid]
+    index_ids = [iid for iid in ctable.columns if '_' in str(iid)]
+
     instruments = instruments.reindex(index_ids + [iid for iid in instruments.index if iid not in index_ids])
-    ctable = ctable.reindex(columns=index_ids + [iid for iid in ctable.index if iid not in index_ids])
+    ctable = ctable.reindex(ctable.index, columns=index_ids + [iid for iid in ctable.columns if iid not in index_ids])
 
     masks = pd.DataFrame(False, index=instruments.index, columns=AssetFeatureValue.objects.values_list('id', flat=True))
 
@@ -297,20 +301,22 @@ def build_instruments():
         psid_miloc[psid] = masks.columns.get_loc(mid)
 
     # Add the feature masks
-    for ix, row in enumerate(irows):
+    for ix, row in enumerate(instruments.itertuples()):
         for fid in row[5]:
             masks.iloc[ix, masks.columns.get_loc(fid)] = True
         for psid in row[6]:
             masks.iloc[ix, psid_miloc[psid]] = True
 
-    logger.debug("Returns as table: {}".format(ctable.to_dict('list')))
-    #logger.debug("Prices as list: {}".format(ptable.values.tolist()))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("id_map: {}".format(list(zip(ctable.columns[len(index_ids):], instruments.index[len(index_ids):]))))
+        logger.debug("Returns as dict: {}".format(ctable.to_dict('list')))
+        logger.debug("Market Caps as table: {}".format(instruments['mkt_cap'].to_dict()))
+        logger.debug("Using symbols: {}".format([(row[0] + "[{}]".format(ix), row[5]) for ix, row in enumerate(irows)]))
 
     sk_cov = get_covars_v2(ctable, len(index_ids), bch_map)
     samples = ctable.shape[0]
 
-    logger.debug("Market Caps as table: {}".format(instruments['mkt_cap'].to_dict()))
-    logger.debug("Using symbols: {}".format([(row[0] + "[{}]".format(ix), row[5]) for ix, row in enumerate(irows)]))
+    instruments.drop(['features', 'pids'], axis=1, inplace=True)
 
     return sk_cov, samples, instruments, masks
 
@@ -324,9 +330,12 @@ def get_covars_v2(returns, benchmarks, benchmark_map):
     :param benchmark_map: Map from fund id to benchmark id.
     :return: A covariance matrix suitable for use in Black-Litterman calculations.
     """
-    TE = (pd.DataFrame({f: (returns[f] - returns[i]) for f, i in benchmark_map.items()})
-          .reindex(columns=returns.index[benchmarks:])
-         )
+    TE = pd.DataFrame({f: (returns[f] - returns[i]) for f, i in benchmark_map.items()}, index=returns.index)
+    TE = TE.reindex(index=TE.index, columns=returns.columns[benchmarks:])
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("TE as table: {}".format(TE.to_dict('list')))
+
     # This is the covariance matrix for all the funds' tracking errors
     te_cov = get_covars(TE)
 
@@ -341,9 +350,9 @@ def get_covars_v2(returns, benchmarks, benchmark_map):
 
     # Build the P matrix
     P = pd.DataFrame(np.zeros((benchmarks, len(te_cov))),
-                     index=returns.index[:benchmarks],
-                     columns=returns.index[benchmarks:])
-    for f, i in benchmark_map.iteritems():
+                     index=returns.columns[:benchmarks],
+                     columns=returns.columns[benchmarks:])
+    for f, i in benchmark_map.items():
         P.loc[i, f] = 1
 
     # Build the cov(I,I) matrix
@@ -357,6 +366,9 @@ def get_covars_v2(returns, benchmarks, benchmark_map):
 
 def get_covars(returns):
     co_vars = returns.cov() * WEEKDAYS_PER_YEAR
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Calcing covars as table: {}".format(returns.to_dict('list')))
 
     # Shrink the covars (Ledoit and Wolff)
     sk = OAS(assume_centered=True)
@@ -404,7 +416,8 @@ def get_settings_masks(settings, masks):
 
     # Do the removals
     settings_mask = np.logical_not(removals)
-    logger.debug("Mask for settings: {} after removals: {} ({} items)".format(settings, settings_mask, len(settings_mask.nonzero())))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Mask for settings: {} after removals: {} ({} items)".format(settings, settings_mask, len(settings_mask.nonzero())))
 
     # Only use funds.
     settings_mask &= masks[FUND_MASK_NAME]
@@ -412,11 +425,13 @@ def get_settings_masks(settings, masks):
     # Only use the instruments from the specified portfolio set.
     settings_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(settings.goal.portfolio_set.id)]
 
-    logger.debug("Usable indices in our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Usable indices in our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
     cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}
-    logger.debug("CVX masks for settings: {}: {}".format(settings, cvx_masks))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("CVX masks for settings: {}: {}".format(settings, cvx_masks))
 
     return settings_mask.nonzero()[0].tolist(), cvx_masks
 
@@ -477,13 +492,16 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None):
                 emsg = "Settings metric: {} is not satisfiable. There are no funds available to fulfil the constraint."
                 raise Unsatisfiable(emsg.format(metric))
             if metric.comparison == 0:
-                logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) >= val)
             elif metric.comparison == 1:
-                logger.debug("Adding constraint that symbols: {} must be exactly {}".format(feature_assets, val))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("Adding constraint that symbols: {} must be exactly {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) == val)
             elif metric.comparison == 2:
-                logger.debug("Adding constraint that symbols: {} must be maximum {}".format(feature_assets, val))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("Adding constraint that symbols: {} must be maximum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) <= val)
             else:
                 raise Exception("Unknown metric comparison value: {} found for settings: {}".format(metric.comparison, settings))
@@ -562,7 +580,8 @@ def get_views(portfolio_set, instruments):
                 views[vi][si] = float(val)
             except KeyError:
                 mstr = "Ignoring view: {} in portfolio set: {} as symbol: {} is not active"
-                logger.debug(mstr.format(vi, portfolio_set.name, _symbol))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(mstr.format(vi, portfolio_set.name, _symbol))
                 masked_views.append(vi)
         qs.append(view.q)
 
@@ -583,22 +602,26 @@ def calculate_portfolios(setting):
             - portfolio is the same as the return value of calculate_portfolio.
                 portfolio will be None if no satisfiable portfolio could be found for this risk_score
     """
-    logger.debug("Calculate Portfolios Requested")
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Calculate Portfolios Requested")
     try:
         idata = get_instruments()
-        logger.debug("Got instruments")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Got instruments")
         # We don't need to recalculate the inputs for every risk score, as the risk score is just passed back.
         # We can do that directly
         opt_inputs = calc_opt_inputs(setting, idata)
         xs, sigma, mu, _, constraints, setting_instruments, setting_symbol_ixs, instruments, lcovars = opt_inputs
-        logger.debug("Optimising for 100 portfolios using mu: {}\ncovars: {}\nsigma: {}".format(mu, lcovars, sigma))
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Optimising for 100 portfolios using mu: {}\ncovars: {}\nsigma: {}".format(mu, lcovars, sigma))
         # TODO: Use a parallel approach here.
         portfolios = []
         found = False
         max_funds = 0  # Maximum required amount off any of the unsatisfiable errors
         for risk_score in list(np.arange(0, 1.01, 0.01)):
             lam = risk_score_to_lambda(risk_score)
-            logger.debug("Doing risk_score: {}, giving lambda: {}".format(risk_score, lam))
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("Doing risk_score: {}, giving lambda: {}".format(risk_score, lam))
             try:
                 weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, constraints)
                 if not weights.any():
@@ -626,7 +649,8 @@ def calculate_portfolios(setting):
                 found = True
 
             except Unsatisfiable as e:
-                logger.debug("No allocation possible for lambda: {}".format(lam))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("No allocation possible for lambda: {}".format(lam))
                 last_err = e
                 if e.req_funds:
                     max_funds = max(max_funds, e.req_funds)
@@ -662,7 +686,8 @@ def optimize_settings(settings, idata):
     """
     # Optimise for the instrument weights given the constraints
     xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = calc_opt_inputs(settings, idata)
-    logger.debug("Optimising settings using lambda: {}, mu: {}\ncovars: {}\nsigma: {}".format(lam, mu, lcovars, sigma))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Optimising settings using lambda: {}, mu: {}\ncovars: {}\nsigma: {}".format(lam, mu, lcovars, sigma))
     weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, constraints)
 
     if not weights.any():
@@ -729,7 +754,8 @@ def calc_opt_inputs(settings, idata, metric_overrides=None):
     xs, constraints = get_core_constraints(len(settings_symbol_ixs))
     lam, mconstraints = get_metric_constraints(settings, cvx_masks, xs, metric_overrides)
     constraints += mconstraints
-    logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
     mu, sigma = run_bl(instruments, covars, settings_instruments, samples, settings.goal.portfolio_set)
@@ -749,7 +775,8 @@ def calculate_portfolio(settings, idata=None):
     """
     if idata is None:
         idata = get_instruments()
-    logger.debug("Calculating portfolio for settings: {}".format(settings))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Calculating portfolio for settings: {}".format(settings))
 
     odata = optimize_settings(settings, idata)
     weights, cost, xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = odata
@@ -798,10 +825,11 @@ def get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, 
 
     # Generate portfolio variance and expected return
     er = weights.dot(settings_instruments['exp_ret'])
-    logger.debug("Generated asset weights: {}".format(weights))
-    logger.debug("Generated portfolio expected return of {} using asset returns: {}".format(er, settings_instruments['exp_ret']))
     variance = weights.dot(lcovars).dot(weights.T)
-    logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, lcovars))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Generated asset weights: {}".format(weights))
+        logger.debug("Generated portfolio expected return of {} using asset returns: {}".format(er, settings_instruments['exp_ret']))
+        logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, lcovars))
 
     # Convert variance to stdev
     return ret_weights, er, variance ** (1 / 2)
@@ -831,9 +859,10 @@ def current_stats_from_weights(weights):
     lcovars = covars.iloc[ilocs, ilocs]
     lers = instruments['exp_ret'].iloc[ilocs]
     er = nweights.dot(lers)
-    logger.debug("Generated portfolio expected return of {} using current asset returns: {}".format(er, lers))
     variance = nweights.dot(lcovars).dot(nweights.T)
-    logger.debug("Generated portfolio variance of {} using current asset covars: {}".format(variance, lcovars))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Generated portfolio expected return of {} using current asset returns: {}".format(er, lers))
+        logger.debug("Generated portfolio variance of {} using current asset covars: {}".format(variance, lcovars))
 
     return er, variance ** (1 / 2), res
 
