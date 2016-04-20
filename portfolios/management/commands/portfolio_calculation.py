@@ -3,6 +3,7 @@ import math
 import datetime
 import logging
 
+import itertools
 import pandas as pd
 import numpy as np
 from cvxpy import sum_entries, Variable
@@ -279,6 +280,11 @@ def build_instruments():
                                                      'price', 'features', 'pids', 'id', 'bid'],
                                             exclude=['features', 'pids']).set_index('symbol')
 
+    # Reindex the instrument and returns tables to have the benchmark instruments first.
+    index_ids = [iid for iid in instruments.index if iid is str and '_' in iid]
+    instruments = instruments.reindex(index_ids + [iid for iid in instruments.index if iid not in index_ids])
+    ctable = ctable.reindex(columns=index_ids + [iid for iid in ctable.index if iid not in index_ids])
+
     masks = pd.DataFrame(False, index=instruments.index, columns=AssetFeatureValue.objects.values_list('id', flat=True))
 
     # Add the benchmark instruments mask
@@ -301,20 +307,62 @@ def build_instruments():
     logger.debug("Returns as table: {}".format(ctable.to_dict('list')))
     #logger.debug("Prices as list: {}".format(ptable.values.tolist()))
 
-    # Annualise the returns so we can get annualised covariance
-    #ctable_annual = (ctable + 1) ** WEEKDAYS_PER_YEAR - 1
-    co_vars = ctable.cov() * WEEKDAYS_PER_YEAR
-
-    # Shrink the covars (Ledoit and Wolff)
-    sk = OAS(assume_centered=True)
-    sk.fit(ctable.values)
+    sk_cov = get_covars_v2(ctable, len(index_ids), bch_map)
     samples = ctable.shape[0]
-    sk_cov = ((1-sk.shrinkage_)*co_vars + sk.shrinkage_*np.trace(co_vars)/len(co_vars)*np.identity(len(co_vars)))
 
     logger.debug("Market Caps as table: {}".format(instruments['mkt_cap'].to_dict()))
     logger.debug("Using symbols: {}".format([(row[0] + "[{}]".format(ix), row[5]) for ix, row in enumerate(irows)]))
 
     return sk_cov, samples, instruments, masks
+
+
+def get_covars_v2(returns, benchmarks, benchmark_map):
+    """
+    Calculates a constrained covariance matrix.
+    :param returns: |
+        A pandas dataframe of daily returns for the funds and benchmarks. Benchmarks must be listed first
+    :param benchmarks: How many benchmarks are there?
+    :param benchmark_map: Map from fund id to benchmark id.
+    :return: A covariance matrix suitable for use in Black-Litterman calculations.
+    """
+    TE = (pd.DataFrame({f: (returns[f] - returns[i]) for f, i in benchmark_map.items()})
+          .reindex(columns=returns.index[benchmarks:])
+         )
+    # This is the covariance matrix for all the funds' tracking errors
+    te_cov = get_covars(TE)
+
+    # Build the related fund tracking error covariance matrix. (Zero out funds not sharing same index)
+    te_cov_rel = pd.DataFrame(np.zeros(te_cov.shape), index=te_cov.index, columns=te_cov.columns)
+    index_to_fund = defaultdict(list)
+    for f, i in benchmark_map.items():
+        index_to_fund[i].append(f)
+    for rfs in index_to_fund.values():
+        for r, c in itertools.product(rfs, repeat=2):
+            te_cov_rel.loc[r, c] = te_cov.loc[r, c]
+
+    # Build the P matrix
+    P = pd.DataFrame(np.zeros((benchmarks, len(te_cov))),
+                     index=returns.index[:benchmarks],
+                     columns=returns.index[benchmarks:])
+    for f, i in benchmark_map.iteritems():
+        P.loc[i, f] = 1
+
+    # Build the cov(I,I) matrix
+    sig_ii = get_covars(returns.iloc[:, :benchmarks])
+
+    # Put the full martix together and return it.
+    mu_covars_l = pd.concat([sig_ii, P.T.dot(sig_ii)])
+    mu_covars_r = pd.concat([sig_ii.dot(P), P.T.dot(sig_ii).dot(P) + te_cov_rel])
+    return pd.concat([mu_covars_l, mu_covars_r], axis=1)
+
+
+def get_covars(returns):
+    co_vars = returns.cov() * WEEKDAYS_PER_YEAR
+
+    # Shrink the covars (Ledoit and Wolff)
+    sk = OAS(assume_centered=True)
+    sk.fit(returns.values)
+    return (1 - sk.shrinkage_) * co_vars + sk.shrinkage_ * np.trace(co_vars) / len(co_vars) * np.identity(len(co_vars))
 
 
 def get_instruments():
