@@ -49,7 +49,6 @@ MINIMUM_PRICE_SAMPLES = 250
 WEEKDAYS_PER_YEAR = 260
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
-#logger.setLevel(logging.DEBUG)
 logger.setLevel(logging.INFO)
 
 # Raise exceptions if we're doing something dumb with pandas slices
@@ -1036,4 +1035,5 @@ class Command(BaseCommand):
     help = 'Calculate all the optimal portfolios for all the goals in the system.'
 
     def handle(self, *args, **options):
+        logger.setLevel(logging.DEBUG)
         get_all_optimal_portfolios()
