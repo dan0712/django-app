@@ -138,7 +138,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     @detail_route(methods=['get'], url_path='selected-portfolio')
     def selected_portfolio(self, request, pk=None, **kwargs):
         goal = self.get_object()
-        portfolio = goal.selected_settings.portfolio
+        portfolio = getattr(goal.selected_settings, 'portfolio', None)
         serializer = serializers.PortfolioSerializer(portfolio)
         return Response(serializer.data)
 
