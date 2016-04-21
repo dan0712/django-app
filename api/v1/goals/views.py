@@ -11,6 +11,7 @@ from rest_framework.decorators import list_route, detail_route
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
+from common.constants import EPOCH_DT
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
@@ -20,8 +21,6 @@ from ..views import ApiViewMixin
 from ..permissions import IsAdvisorOrClient
 
 from . import serializers
-
-EPOCH_DT = datetime.datetime.utcfromtimestamp(0).date()
 
 
 def check_state(current, required):

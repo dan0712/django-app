@@ -6,6 +6,7 @@ from rest_framework import views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from common.constants import EPOCH_DT
 from main.models import Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory
 
 from ..views import ApiViewMixin
@@ -26,32 +27,15 @@ class ReturnsView(ApiViewMixin, views.APIView):
             else:
                 obj["name"] = "{0} ({1})".format(p.name, p.symbol)
 
-            obj['id'] = p.id
             obj["group"] = p.group
-            obj["initial"] = False
-            obj["lineID"] = counter
-            obj["returns"] = []
-            returns = SymbolReturnHistory.objects.filter(
-                symbol=p.symbol).order_by('date').all()
-            if returns:
-                b_date = returns[0].date - datetime.timedelta(days=1)
-                obj["returns"].append({
-                    "d": "{0}".format(int(1000 * time.mktime(b_date.timetuple(
-                    )))),
-                    "i": 0,
-                    "ac": 1,
-                    "zero_balance": True
-                })
-            for r in returns:
-                r_obj = {
-                    "d":
-                        "{0}".format(int(1000 * time.mktime(r.date.timetuple()))),
-                    "i": r.return_number
-                }
-                if p.group == PERFORMER_GROUP_STRATEGY:
-                    r_obj["ac"] = p.allocation
-                obj["returns"].append(r_obj)
+            returns = (SymbolReturnHistory
+                       .objects
+                       .filter(symbol=p.symbol)
+                       .order_by('date')
+                       .values_list('date', 'return_number')
+                       )
 
+            obj["returns"] = [((row[0] - EPOCH_DT).days, row[1]) for row in returns]
             ret.append(obj)
 
         return Response(ret)
