@@ -150,25 +150,34 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             serializer = serializers.GoalSettingSerializer(goal.selected_settings)
             return Response(serializer.data)
 
-        if request.method == 'POST':
-            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-            serializer = serializers.GoalSettingWritableSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            settings = serializer.save(goal=goal)
-            headers = self.get_success_headers(serializer.data)
-            serializer = serializers.GoalSettingSerializer(settings)
-            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+        with transaction.atomic(): # So both the log and change get committed.
+            if request.method == 'POST':
+                check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+                serializer = serializers.GoalSettingWritableSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                settings = serializer.save(goal=goal)
+                Event.SET_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
+                                                request.data,
+                                                user=self.request.user,
+                                                obj=goal)
+                headers = self.get_success_headers(serializer.data)
+                serializer = serializers.GoalSettingSerializer(settings)
+                return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
-        elif request.method == 'PUT':
-            check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-            setting = goal.selected_settings
-            serializer = serializers.GoalSettingWritableSerializer(setting, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            settings = serializer.save(goal=goal)
-            headers = self.get_success_headers(serializer.data)
-            # We use a different serializer to send the new settings, as the update serializer is limited.
-            serializer = serializers.GoalSettingSerializer(settings)
-            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+            elif request.method == 'PUT':
+                check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+                settings = goal.selected_settings
+                Event.UPDATE_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
+                                                   request.data,
+                                                   user=self.request.user,
+                                                   obj=goal)
+                serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                settings = serializer.save(goal=goal)
+                headers = self.get_success_headers(serializer.data)
+                # We use a different serializer to send the new settings, as the update serializer is limited.
+                serializer = serializers.GoalSettingSerializer(settings)
+                return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @detail_route(methods=['get'], url_path='approved-settings')
     def approved_settings(self, request, pk=None, **kwargs):
@@ -185,6 +194,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         serializer = serializers.GoalSettingSerializer(goal.active_settings)
         return Response(serializer.data)
 
+    @transaction.atomic  # Atomic so both the log and the change have to be written.
     @detail_route(methods=['put'], url_path='approve-selected')
     def approve_selected(self, request, pk=None, **kwargs):
         """
@@ -196,14 +206,32 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             raise PermissionDenied('Only an advisor can approve selections.')
 
         goal = self.get_object()
-
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-
-        if user.advisor not in goal.account.advisors:
-            raise PermissionDenied("You do not advise the client for this goal.")
-
+        Event.APPROVE_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
+                                            user=self.request.user,
+                                            obj=goal)
         goal.approve_selected()
+
         serializer = serializers.GoalSettingSerializer(goal.approved_settings)
+
+        return Response(serializer.data)
+
+    @transaction.atomic  # Atomic so both the log and the change have to be written.
+    @detail_route(methods=['put'], url_path='revert-selected')
+    def revert_selected(self, request, pk=None, **kwargs):
+        """
+        Called to revert the current selected-settings to the approved-settings.
+        Returns a validation error if there is no approved-settings.
+        """
+        goal = self.get_object()
+        check_state(Goal.State(goal.state), Goal.State.ACTIVE)
+        if not goal.approved_settings:
+            raise ValidationError("No settings have yet been approved for this Goal, cannot revert to last approved.")
+        Event.REVERT_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
+                                           user=self.request.user,
+                                           obj=goal)
+        goal.revert_selected()
+        serializer = serializers.GoalSettingSerializer(goal.selected_settings)
 
         return Response(serializer.data)
 
@@ -297,7 +325,10 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         goal = self.get_object()
 
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-
+        Event.GOAL_DEPOSIT.log('{} {}'.format(self.request.method, self.request.path),
+                               request.data,
+                               user=self.request.user,
+                               obj=goal)
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(to_goal=goal, reason=Transaction.REASON_DEPOSIT)
@@ -309,7 +340,10 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         goal = self.get_object()
 
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-
+        Event.GOAL_WITHDRAWAL.log('{} {}'.format(self.request.method, self.request.path),
+                                  request.data,
+                                  user=self.request.user,
+                                  obj=goal)
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # Make sure the total amount for the goal is larger than the pending withdrawal amount.

@@ -2047,6 +2047,17 @@ class Goal(models.Model):
         if old_setting != self.active_settings:
             old_setting.delete()
 
+    @transaction.atomic
+    def revert_selected(self):
+        if self.approved_settings is None:
+            raise ValidationError("There are no current approved settings. Cannot revert.")
+        old_setting = self.selected_settings
+        if self.approved_settings == old_setting:
+            return
+        self.selected_settings = self.approved_settings
+        self.save()
+        old_setting.delete()
+
     @property
     def available_balance(self):
         return self.total_balance - self.pending_outgoings

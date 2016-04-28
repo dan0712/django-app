@@ -26,6 +26,12 @@ class Event(Enum):
     ARCHIVE_GOAL_REQUESTED = (2, [])
     ARCHIVE_GOAL = (3, [])
     REACTIVATE_GOAL = (4, [])
+    APPROVE_SELECTED_SETTINGS = (5, [])
+    REVERT_SELECTED_SETTINGS = (6, [])
+    SET_SELECTED_SETTINGS = (7, ['request'])
+    UPDATE_SELECTED_SETTINGS = (8, ['request'])
+    GOAL_WITHDRAWAL = (9, ['request'])
+    GOAL_DEPOSIT = (10, ['request'])
 
     def __init__(self, value, log_keys):
         if 'reason' in log_keys:
