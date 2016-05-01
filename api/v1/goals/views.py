@@ -40,10 +40,8 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         # , 'approved_settings', 'selected_settings') \
         # .defer('account__data') \
 
-    serializer_class = serializers.GoalSerializer
     # We don't want pagination on goals for now, as the UI can't handle it. We can add it back of we need to.
     pagination_class = None
-    serializer_response_class = serializers.GoalSerializer
     permission_classes = (
         IsAdvisorOrClient,
         #IsMyAdvisorCompany,

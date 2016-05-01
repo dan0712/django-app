@@ -17,6 +17,7 @@ urlpatterns = patterns(
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^admin/filebrowser/', include(site.urls)),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^nested_admin/', include('nested_admin.urls')),  # For nested stackable admin
     url(r'^support/', include('pages.urls')),
 
     url(r'^session',

@@ -1,10 +1,7 @@
 from django.db.models.query_utils import Q
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.exceptions import PermissionDenied, NotFound
-from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework_extensions.mixins import NestedViewSetMixin
-
-from rest_framework_extensions.settings import extensions_api_settings
 
 from api.v1.views import ApiViewMixin
 
@@ -13,11 +10,13 @@ from main.models import ClientAccount
 from . import serializers
 
 
-class AccountViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class AccountViewSet(ApiViewMixin,
+                     NestedViewSetMixin,
+                     mixins.UpdateModelMixin,
+                     viewsets.ReadOnlyModelViewSet):
     model = ClientAccount
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
     queryset = ClientAccount.objects.all()
-    serializer_class = serializers.ClientAccountSerializer
     pagination_class = None
 
     # Override this method so we can also look for accounts from signatories
@@ -41,6 +40,12 @@ class AccountViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelVie
                 raise NotFound()
         else:
             return queryset
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializers.ClientAccountSerializer
+        elif self.request.method == 'PUT':
+            return serializers.ClientAccountUpdateSerializer
 
     def get_queryset(self):
         """

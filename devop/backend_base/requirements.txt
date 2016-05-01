@@ -33,6 +33,7 @@ django-import-export==0.4.0
 django-localflavor-au-tjh==1.1.2
 django-mptt==0.7.4
 django_nose==1.4.3
+django-nested-admin==3.0.2
 git+git://github.com/ITCase-django/django-tinymce-4
 django-page-cms==1.8.1
 django-recurrence==1.2.0

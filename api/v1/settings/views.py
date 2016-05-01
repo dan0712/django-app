@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import list_route
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric
+from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric, RiskProfileGroup
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisorOrClient,
@@ -70,3 +70,9 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.GenericViewSet)
             } for key, value in dict(GoalMetric.comparisons).items()
         ]
         return Response(res)
+
+    @list_route(methods=['get'], url_path='risk-profile-groups')
+    def risk_profile_groups(self, request, **kwargs):
+        risk_profile_groups = RiskProfileGroup.objects.all()
+        serializer = serializers.RiskProfileGroupSerializer(risk_profile_groups, many=True)
+        return Response(serializer.data)

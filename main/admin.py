@@ -1,4 +1,7 @@
+from django.db.models.fields import TextField
+from django.forms.widgets import Textarea
 from genericadmin.admin import GenericAdminModelAdmin, BaseGenericModelAdmin
+import nested_admin
 
 from advisors import models as advisor_models
 from django.conf import settings
@@ -15,7 +18,7 @@ from main.models import (
     TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
-    GoalType, GoalMetricGroup, MarketIndex)
+    GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer)
 #from portfolios.management.commands.get_historical_returns import \
 #    get_historical_returns as internal_get_historical_returns
 from suit.admin import SortableModelAdmin, SortableTabularInline
@@ -318,7 +321,6 @@ class AdvisorChangeDealerGroupAdmin(admin.ModelAdmin):
     list_display = ('advisor', 'new_email', 'old_firm', 'new_firm', 'approved', 'create_at', 'approved_at')
     list_filter = ('advisor', 'old_firm', 'new_firm', 'approved')
     actions = (approve_changes,)
-    pass
 
 
 class AdvisorBulkInvestorTransferAdmin(admin.ModelAdmin):
@@ -327,19 +329,39 @@ class AdvisorBulkInvestorTransferAdmin(admin.ModelAdmin):
     list_filter = ('from_advisor', 'to_advisor', 'approved')
     actions = (approve_changes,)
 
-    pass
-
 
 class AdvisorSingleInvestorTransferAdmin(admin.ModelAdmin):
     list_display = ('from_advisor', 'to_advisor', 'firm', 'investor', 'approved', 'create_at', 'approved_at')
     list_filter = ('from_advisor', 'to_advisor', 'investor', 'approved')
     actions = (approve_changes,)
-    pass
 
 
 class CostOfLivingIndexAdmin(admin.ModelAdmin):
     list_display = ('state', 'value')
-    pass
+
+
+class RiskProfileAnswerInline(nested_admin.NestedTabularInline):
+    model = RiskProfileAnswer
+    sortable_field_name = "order"
+    formfield_overrides = {
+        TextField: {'widget': Textarea(attrs={'rows': 1, 'cols': 100})},
+    }
+    extra = 0
+
+
+class RiskProfileQuestionInline(nested_admin.NestedTabularInline):
+    model = RiskProfileQuestion
+    sortable_field_name = "order"
+    formfield_overrides = {
+        TextField: {'widget': Textarea(attrs={'rows': 1, 'cols': 100})},
+    }
+    extra = 0
+    inlines = [RiskProfileAnswerInline]
+
+
+class RiskProfileGroupAdmin(nested_admin.NestedModelAdmin):
+    list_display = ('name', 'description',)
+    inlines = [RiskProfileQuestionInline]
 
 
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
@@ -368,3 +390,4 @@ admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
+admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)

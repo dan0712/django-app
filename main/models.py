@@ -943,8 +943,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
                     site_url=settings.SITE_URL))
 
 
-class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData
-                               ):
+class AuthorisedRepresentative(NeedApprobation, NeedConfirmation, PersonalData):
     user = models.OneToOneField(User, related_name='authorised_representative')
     firm = models.ForeignKey(Firm, related_name='authorised_representatives')
     letter_of_authority = models.FileField()
@@ -1070,6 +1069,9 @@ class ClientAccount(models.Model):
     signatories = models.ManyToManyField('Client',
                                          related_name='signatory_accounts',
                                          help_text='Other clients authorised to operate the account.')
+    risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='accounts')
+    # The account must not be used until the risk_profile_responses are set.
+    risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
     objects = ClientAccountQuerySet.as_manager()
 
@@ -1909,6 +1911,51 @@ class GoalMetricGroup(models.Model):
             else:
                 features[metric.feature] = (metric.comparison, metric.feature, metric.configured_val)
         return risk, features
+
+
+class RiskProfileGroup(models.Model):
+    """
+    A way to group a set of predefined risk profile questions to be asked together.
+    """
+    name = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+
+    # Also has property 'accounts' which is all the accounts this group is used on.
+    # Also has property 'questions' which is all the risk profile questions that form this group.
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+
+
+class RiskProfileQuestion(models.Model):
+    """
+    The set of predefined risk profile questions.
+    """
+    group = models.ForeignKey(RiskProfileGroup, related_name='questions')
+    order = models.IntegerField()
+    text = models.TextField()
+
+    # Also has property 'answers' which is all the predefined answers for this question.
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ('group', 'order')
+
+
+class RiskProfileAnswer(models.Model):
+    """
+    The set of predefined answers to a risk profile question.
+    """
+    question = models.ForeignKey(RiskProfileQuestion, related_name='answers')
+    order = models.IntegerField()
+    text = models.TextField()
+    score = models.FloatField()
+
+    # Also has property 'responses' which is all the responses given that use this answer.
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ('question', 'order')
 
 
 class InvalidStateError(Exception):
