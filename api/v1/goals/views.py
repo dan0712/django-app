@@ -51,6 +51,10 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     filter_fields = ('name',)
     search_fields = ('name',)
 
+    # We set the response serializer because for the 'create' methods, we have custom fields,
+    # and when we return the response, we want to use the full goal serializer. See api/v1/views.py
+    serializer_response_class = serializers.GoalSerializer
+
     # We can never delete goals from the API. Only archive them.
     def destroy(self, request, *args, **kwargs):
         raise MethodNotAllowed('DELETE')
