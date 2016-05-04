@@ -31,6 +31,7 @@ from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
+from jsonfield.fields import JSONField
 from recurrence.base import deserialize
 from rest_framework.authtoken.models import Token
 from django_pandas.managers import DataFrameManager
@@ -1810,6 +1811,7 @@ class GoalType(models.Model):
                                          help_text="Default risk sensitivity for this goal type. "
                                                    "0 = not sensitive, 10 = Very sensitive (No risk tolerated)")
     order = models.IntegerField(default=0, help_text="The order of the type in the list.")
+    risk_factor_weights = JSONField(null=True, blank=True)
 
     class Meta:
         ordering = ['order']
@@ -1895,9 +1897,12 @@ class GoalMetricGroup(models.Model):
         (TYPE_PRESET, 'Preset'),  # Exists on it's own.
     )
     type = models.IntegerField(choices=TYPES, default=TYPE_CUSTOM)
-    name = models.CharField(max_length=100, null=True)  #
+    name = models.CharField(max_length=100, null=True)
     # also has field 'metrics' from GoalMetric
     # Also has field 'settings' from GoalSetting
+
+    def __str__(self):
+        return "[{}:{}] {}".format(self.id, GoalMetricGroup.TYPES[self.type][1], self.name)
 
     def constraint_inputs(self):
         """

@@ -4,7 +4,6 @@ import logging
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, PermissionDenied
-
 from rest_framework.fields import FloatField, IntegerField
 
 from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer
@@ -14,11 +13,10 @@ from main.models import (
     Position, Portfolio, PortfolioItem,
     RecurringTransaction,
     Transaction, GoalMetricGroup, Ticker, AssetFeatureValue)
+from main.risk_profiler import recommend_risk
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
-from portfolios.management.commands.risk_profiler import recommend_risk
-
 
 __all__ = (
     'GoalSerializer',

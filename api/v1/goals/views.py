@@ -1,26 +1,23 @@
-import datetime
 import ujson
 
 from django.db import transaction
 from django.db.models.query_utils import Q
 from rest_framework import viewsets, status
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import PermissionDenied, ValidationError, MethodNotAllowed
 from rest_framework.response import Response
-from rest_framework.decorators import list_route, detail_route
-
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from common.constants import EPOCH_DT
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
+from main.risk_profiler import recommend_ttl_risks
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios, current_stats_from_weights
-from portfolios.management.commands.risk_profiler import recommend_ttl_risks
-from ..views import ApiViewMixin
-from ..permissions import IsAdvisorOrClient
-
 from . import serializers
+from ..permissions import IsAdvisorOrClient
+from ..views import ApiViewMixin
 
 
 def check_state(current, required):
