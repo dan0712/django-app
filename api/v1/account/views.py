@@ -13,11 +13,16 @@ from . import serializers
 class AccountViewSet(ApiViewMixin,
                      NestedViewSetMixin,
                      mixins.UpdateModelMixin,
+                     mixins.CreateModelMixin,
                      viewsets.ReadOnlyModelViewSet):
     model = ClientAccount
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
     queryset = ClientAccount.objects.all()
     pagination_class = None
+
+    # Set the response serializer because we want to use the 'get' serializer for responses from the 'create' methods.
+    # See api/v1/views.py
+    serializer_response_class = serializers.ClientAccountSerializer
 
     # Override this method so we can also look for accounts from signatories
     def filter_queryset_by_parents_lookups(self, queryset):
@@ -42,10 +47,13 @@ class AccountViewSet(ApiViewMixin,
             return queryset
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return serializers.ClientAccountSerializer
-        elif self.request.method == 'PUT':
+        if self.request.method == 'PUT':
             return serializers.ClientAccountUpdateSerializer
+        elif self.request.method == 'POST':
+            return serializers.ClientAccountCreateSerializer
+        else:
+            # Default for get and other requests is the read only serializer
+            return serializers.ClientAccountSerializer
 
     def get_queryset(self):
         """

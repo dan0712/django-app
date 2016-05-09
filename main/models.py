@@ -1076,6 +1076,9 @@ class ClientAccount(models.Model):
 
     objects = ClientAccountQuerySet.as_manager()
 
+    class Meta:
+        unique_together = ('primary_owner', 'account_name')
+
     @property
     def goals(self):
         return self.all_goals.exclude(state=Goal.State.ARCHIVED.value)

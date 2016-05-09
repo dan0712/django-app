@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import list_route
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric, RiskProfileGroup
+from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric, RiskProfileGroup, ACCOUNT_TYPES
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisorOrClient,
@@ -30,6 +30,16 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.GenericViewSet)
         goal_types = GoalType.objects.all().order_by('name')
         serializer = serializers.GoalTypeListSerializer(goal_types, many=True)
         return Response(serializer.data)
+
+    @list_route(methods=['get'], url_path='account-types')
+    def account_types(self, request):
+        res = [
+            {
+                "id": key,
+                "name": value
+            } for key, value in ACCOUNT_TYPES
+        ]
+        return Response(res)
 
     @list_route(methods=['get'], url_path='asset-classes')
     def asset_classes(self, request):
