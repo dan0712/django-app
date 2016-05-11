@@ -5,20 +5,19 @@ import logging
 import uuid
 from datetime import date
 from enum import Enum, unique
-from itertools import chain, zip_longest, repeat
+from itertools import chain, repeat
 
 import scipy.stats as st
-
 from django import forms
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, _,
     UserManager, timezone,
     send_mail
 )
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
@@ -31,11 +30,12 @@ from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
+from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from recurrence.base import deserialize
 from rest_framework.authtoken.models import Token
-from django_pandas.managers import DataFrameManager
 
+from common.structures import ChoiceEnum
 from main.management.commands.build_returns import get_price_returns
 from main.managers import ClientQuerySet
 from main.slug import unique_slugify
@@ -58,16 +58,6 @@ def validate_module(value):
     module_spec = importlib.util.find_spec(value)
     if module_spec is None:
         raise ValidationError("The supplied module: {} could not be found.".format(value))
-
-
-@unique
-class ChoiceEnum(Enum):
-    """
-    ChoiceEnum is used when you want to use an enumeration for the choices of an integer django field.
-    """
-    @classmethod
-    def choices(cls):
-        return [(item.value, item.name) for item in cls]
 
 
 SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
@@ -204,6 +194,21 @@ SUPER_ASSET_CLASSES = (
     ("FIXED_INCOME_AS", "FIXED_INCOME_AS"),
     ("FIXED_INCOME_CN", "FIXED_INCOME_CN"))
 
+YES_NO = ((False, "No"), (True, "Yes"))
+
+ACCOUNT_TYPE_PERSONAL = 0
+ACCOUNT_TYPE_JOINT = 1
+ACCOUNT_TYPE_TRUST = 2
+ACCOUNT_TYPE_SMSF = 3
+ACCOUNT_TYPE_CORPORATE = 4
+ACCOUNT_TYPES = (
+    (ACCOUNT_TYPE_PERSONAL, "Personal Account"),
+    (ACCOUNT_TYPE_JOINT, "Joint Account"),
+    (ACCOUNT_TYPE_TRUST, "Trust Account"),
+    (ACCOUNT_TYPE_SMSF, "Self Managed Superannuation Fund"),
+    (ACCOUNT_TYPE_CORPORATE, "Corporate Account"),
+)
+
 
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
@@ -276,9 +281,6 @@ class Section:
         self.fields = []
         for field_name in section["fields"]:
             self.fields.append(form[field_name])
-
-
-YES_NO = ((False, "No"), (True, "Yes"))
 
 
 class NeedApprobation(models.Model):
@@ -1029,20 +1031,6 @@ class AccountGroup(models.Model):
 
     def __str__(self):
         return self.name
-
-
-ACCOUNT_TYPE_PERSONAL = 0
-ACCOUNT_TYPE_JOINT = 1
-ACCOUNT_TYPE_TRUST = 2
-ACCOUNT_TYPE_SMSF = 3
-ACCOUNT_TYPE_CORPORATE = 4
-ACCOUNT_TYPES = (
-    (ACCOUNT_TYPE_PERSONAL, "Personal Account"),
-    (ACCOUNT_TYPE_JOINT, "Joint Account"),
-    (ACCOUNT_TYPE_TRUST, "Trust Account"),
-    (ACCOUNT_TYPE_SMSF, "Self Managed Superannuation Fund"),
-    (ACCOUNT_TYPE_CORPORATE, "Corporate Account"),
-)
 
 
 class ClientAccount(models.Model):
@@ -2679,87 +2667,6 @@ class ExecutionDistribution(models.Model):
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
 
 
-class Transaction(models.Model):
-    """
-    A transaction is a flow of funds to or from a goal.
-    Deposits have a to_goal, withdrawals have a from_goal, transfers have both
-    Every Transaction must have one or both.
-    When one is null, it means it was to/from the account's cash.
-    """
-    STATUS_PENDING = 'PENDING'
-    STATUS_EXECUTED = 'EXECUTED'
-    STATUSES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
-
-    REASON_DIVIDEND = 0
-    REASON_DEPOSIT = 1
-    REASON_WITHDRAWAL = 2
-    REASON_REBALANCE = 3
-    REASON_TRANSFER = 4
-    REASON_FEE = 5
-    # Transaction is for a MarketOrderRequest. It's a transient transaction, for reserving funds. It will always be pending.
-    # It will have it's amount reduced over time (converted to executions or rejections) until it's eventually removed.
-    REASON_ORDER = 6
-    REASON_EXECUTION = 7  # Transaction is for an Asset Execution that occurred. Will always be in executed state.
-    REASONS = (
-        (REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
-        (REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
-        (REASON_WITHDRAWAL, 'WITHDRAWAL'),  # Withdrawal from the goal to the account
-        (REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal.
-        (REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
-        (REASON_FEE, 'FEE'),
-        (REASON_ORDER, 'ORDER'),
-        (REASON_EXECUTION, 'EXECUTION'),
-    )
-    # The set of Transaction reasons that are considered investor cash flow in or out of the goal.
-    CASH_FLOW_REASONS = [REASON_DEPOSIT, REASON_WITHDRAWAL, REASON_REBALANCE, REASON_TRANSFER]
-
-    reason = models.IntegerField(choices=REASONS, db_index=True)
-    from_goal = models.ForeignKey(Goal,
-                                  related_name="transactions_from",
-                                  null=True,
-                                  blank=True,
-                                  db_index=True,
-                                  on_delete=PROTECT  # Cannot remove a goal that has transactions
-                                 )
-    to_goal = models.ForeignKey(Goal,
-                                related_name="transactions_to",
-                                null=True,
-                                blank=True,
-                                db_index=True,
-                                on_delete=PROTECT  # Cannot remove a goal that has transactions
-                               )
-    amount = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
-    status = models.CharField(max_length=20, choices=STATUSES, default=STATUS_PENDING)
-    created = models.DateTimeField(auto_now_add=True)
-    executed = models.DateTimeField(null=True)
-
-    # May also have 'execution_request' field from the ExecutionRequest model if it has reason ORDER
-    # May also have 'execution_distribution' field from the ExecutionDistribution model if it has reason EXECUTION
-
-    def save(self, *args, **kwargs):
-        if self.from_goal is None and self.to_goal is None:
-            raise ValidationError("One or more of from_goal and to_goal is required")
-        if self.from_goal == self.to_goal:
-            raise ValidationError("Cannot transact with myself.")
-        super(Transaction, self).save(*args, **kwargs)
-
-
-class DataApiDict(models.Model):
-    api = models.CharField(choices=API_CHOICES, max_length=50)
-    platform_symbol = models.CharField(max_length=20)
-    api_symbol = models.CharField(max_length=20)
-
-
-class TransactionMemo(models.Model):
-    category = models.CharField(max_length=255)
-    comment = models.TextField()
-    transaction_type = models.CharField(max_length=20)
-    transaction = models.ForeignKey(Transaction,
-                                    related_name="memos",
-                                    on_delete=CASCADE,  # Delete any memos where there is no longer a transaction
-                                   )
-
-
 class SymbolReturnHistory(models.Model):
     return_number = models.FloatField(default=0)
     symbol = models.CharField(max_length=20)
@@ -2959,3 +2866,149 @@ class View(models.Model):
     q = models.FloatField()
     assets = models.TextField()
     portfolio_set = models.ForeignKey(PortfolioSet, related_name="views")
+
+
+class Transaction(models.Model):
+    """
+    A transaction is a flow of funds to or from a goal.
+    Deposits have a to_goal, withdrawals have a from_goal, transfers have both
+    Every Transaction must have one or both.
+    When one is null, it means it was to/from the account's cash.
+    """
+    # Import event here so we have it within our transaction.
+    from main.event import Event
+
+    STATUS_PENDING = 'PENDING'
+    STATUS_EXECUTED = 'EXECUTED'
+    STATUSES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
+
+    REASON_DIVIDEND = 0
+    REASON_DEPOSIT = 1
+    REASON_WITHDRAWAL = 2
+    REASON_REBALANCE = 3
+    REASON_TRANSFER = 4
+    REASON_FEE = 5
+    # Transaction is for a MarketOrderRequest. It's a transient transaction, for reserving funds. It will always be pending.
+    # It will have it's amount reduced over time (converted to executions or rejections) until it's eventually removed.
+    REASON_ORDER = 6
+    REASON_EXECUTION = 7  # Transaction is for an Asset Execution that occurred. Will always be in executed state.
+    REASONS = (
+        (REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
+        (REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
+        (REASON_WITHDRAWAL, 'WITHDRAWAL'),  # Withdrawal from the goal to the account
+        (REASON_REBALANCE, 'REBALANCE'),  # As part of a rebalance, we may transfer from goal to goal.
+        (REASON_TRANSFER, 'TRANSFER'),  # Amount transferred from one goal to another.
+        (REASON_FEE, 'FEE'),
+        (REASON_ORDER, 'ORDER'),
+        (REASON_EXECUTION, 'EXECUTION'),
+    )
+    # The set of Transaction reasons that are considered investor cash flow in or out of the goal.
+    CASH_FLOW_REASONS = [REASON_DEPOSIT, REASON_WITHDRAWAL, REASON_REBALANCE, REASON_TRANSFER]
+
+    # The list of events that are related to transaction executions
+    EXECUTION_EVENTS = [
+        Event.GOAL_DIVIDEND_DISTRIBUTION,
+        Event.GOAL_DEPOSIT_EXECUTED,
+        Event.GOAL_WITHDRAWAL_EXECUTED,
+        Event.GOAL_REBALANCE_EXECUTED,
+        Event.GOAL_TRANSFER_EXECUTED,
+        Event.GOAL_FEE_LEVIED,
+        Event.GOAL_ORDER_DISTRIBUTION,
+    ]
+
+    reason = models.IntegerField(choices=REASONS, db_index=True)
+    from_goal = models.ForeignKey(Goal,
+                                  related_name="transactions_from",
+                                  null=True,
+                                  blank=True,
+                                  db_index=True,
+                                  on_delete=PROTECT  # Cannot remove a goal that has transactions
+                                 )
+    to_goal = models.ForeignKey(Goal,
+                                related_name="transactions_to",
+                                null=True,
+                                blank=True,
+                                db_index=True,
+                                on_delete=PROTECT  # Cannot remove a goal that has transactions
+                               )
+    amount = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
+    status = models.CharField(max_length=20, choices=STATUSES, default=STATUS_PENDING)
+    created = models.DateTimeField(auto_now_add=True)
+    executed = models.DateTimeField(null=True, db_index=True)
+
+    # May also have 'execution_request' field from the ExecutionRequest model if it has reason ORDER
+    # May also have 'execution_distribution' field from the ExecutionDistribution model if it has reason EXECUTION
+
+    def save(self, *args, **kwargs):
+        if self.from_goal is None and self.to_goal is None:
+            raise ValidationError("One or more of from_goal and to_goal is required")
+        if self.from_goal == self.to_goal:
+            raise ValidationError("Cannot transact with myself.")
+        super(Transaction, self).save(*args, **kwargs)
+
+
+class TransactionMemo(models.Model):
+    category = models.CharField(max_length=255)
+    comment = models.TextField()
+    transaction_type = models.CharField(max_length=20)
+    transaction = models.ForeignKey(Transaction,
+                                    related_name="memos",
+                                    on_delete=CASCADE,  # Delete any memos where there is no longer a transaction
+                                   )
+
+
+class ActivityLog(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    format_str = models.TextField()
+    format_args = models.TextField(null=True,
+                                   blank=True,
+                                   help_text="Dotted '.' dictionary path into the event 'extra' field for each arg "
+                                             "in the format_str. Each arg path separated by newline."
+                                             "Eg. 'request.amount'")
+    # Also has field 'events' from ActivityLogEvent
+
+
+class ActivityLogEvent(models.Model):
+    # Import event here so we have it within our activitylogevent.
+    from main.event import Event
+
+    id = models.IntegerField(choices=Event.choices(), primary_key=True)
+    activity_log = models.ForeignKey(ActivityLog, related_name='events')
+
+    @classmethod
+    def get(cls, event: Event):
+        # Import event here so we have it within our activitylogevent.
+        from main.event import Event
+
+        ale = cls.objects.filter(id=event.value).first()
+        if ale is not None:
+            return ale
+
+        if event == Event.GOAL_DIVIDEND_DISTRIBUTION:
+            alog = ActivityLog.objects.create(name='Dividend Transaction',
+                                              format_str='Dividend payment of {{}}{} into goal'.format(SYSTEM_CURRENCY),
+                                              format_args='transaction.amount')
+        elif event == Event.GOAL_DEPOSIT_EXECUTED:
+            alog = ActivityLog.objects.create(name='Goal Deposit Transaction',
+                                              format_str='Deposit of {{}}{} from Account to Goal'.format(SYSTEM_CURRENCY),
+                                              format_args='transaction.amount')
+        elif event == Event.GOAL_WITHDRAWAL_EXECUTED:
+            alog = ActivityLog.objects.create(name='Goal Withdrawal Transaction',
+                                              format_str='Withdrawal of {{}}{} from Goal to Account'.format(SYSTEM_CURRENCY),
+                                              format_args='transaction.amount')
+        elif event == Event.GOAL_REBALANCE_EXECUTED:
+            alog = ActivityLog.objects.create(name='Goal Rebalance Transaction', format_str='Rebalance Applied')
+        elif event == Event.GOAL_TRANSFER_EXECUTED:
+            alog = ActivityLog.objects.create(name='Goal Transfer Transaction', format_str='Transfer Applied')
+        elif event == Event.GOAL_FEE_LEVIED:
+            alog = ActivityLog.objects.create(name='Goal Fee Transaction',
+                                              format_str='Fee of {{}}{} applied'.format(SYSTEM_CURRENCY),
+                                              format_args='transaction.amount')
+        elif event == Event.GOAL_ORDER_DISTRIBUTION:
+            alog = ActivityLog.objects.create(name='Order Distribution Transaction', format_str='Order Distributed')
+        elif event == Event.GOAL_BALANCE_CALCULATED:
+            alog = ActivityLog.objects.create(name='Daily Balance', format_str='Daily Balance')
+        else:
+            alog = ActivityLog.objects.create(name=event.name, format_str='DEFAULT_TEXT: {}'.format(event.name))
+
+        return ActivityLogEvent.objects.create(id=event.value, activity_log=alog)

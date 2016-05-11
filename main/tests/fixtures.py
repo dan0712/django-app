@@ -1,7 +1,12 @@
 import datetime
 
+from django.utils import timezone
+from pinax.eventlog.models import Log
+
+from main.event import Event
 from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, Client, Advisor, User, Firm, PortfolioSet, \
-    RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer
+    RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer, Transaction, \
+    HistoricalBalance
 
 
 class Fixture1:
@@ -150,3 +155,39 @@ class Fixture1:
                                           type=Fixture1.goal_type1(),
                                           portfolio_set=Fixture1.portfolioset1(),
                                           selected_settings=Fixture1.settings1())[0]
+
+    @classmethod
+    def settings_event1(cls):
+        return Log.objects.get_or_create(user=Fixture1.client1_user(),
+                                         timestamp=timezone.make_aware(datetime.datetime(2000, 1, 1)),
+                                         action=Event.APPROVE_SELECTED_SETTINGS.name,
+                                         extra={'reason': 'Just because'},
+                                         defaults={'obj': Fixture1.goal1()})[0]
+
+    @classmethod
+    def transaction_event1(cls):
+        # This will populate the associated Transaction as well.
+        return Log.objects.get_or_create(user=Fixture1.client1_user(),
+                                         timestamp=timezone.make_aware(datetime.datetime(2001, 1, 1)),
+                                         action=Event.GOAL_DEPOSIT_EXECUTED.name,
+                                         extra={'reason': 'Goal Deposit',
+                                                'txid': Fixture1.transaction1().id},
+                                         defaults={'obj': Fixture1.goal1()})[0]
+
+    @classmethod
+    def transaction1(cls):
+        return Transaction.objects.get_or_create(reason=Transaction.REASON_DEPOSIT,
+                                                 to_goal=Fixture1.goal1(),
+                                                 amount=3000,
+                                                 status=Transaction.STATUS_EXECUTED,
+                                                 created=timezone.make_aware(datetime.datetime(2000, 1, 1)),
+                                                 executed=timezone.make_aware(datetime.datetime(2001, 1, 1)))[0]
+
+    @classmethod
+    def populate_balance1(cls):
+        HistoricalBalance.objects.get_or_create(goal=Fixture1.goal1(),
+                                                date=datetime.date(2000, 12, 31),
+                                                balance=0)
+        HistoricalBalance.objects.get_or_create(goal=Fixture1.goal1(),
+                                                date=datetime.date(2001, 1, 1),
+                                                balance=3000)

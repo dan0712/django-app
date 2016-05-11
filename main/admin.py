@@ -14,13 +14,13 @@ from import_export.admin import ImportExportModelAdmin
 from main.models import (
     Firm, Advisor, User, Performer,
     AuthorisedRepresentative, FirmData, Client, ClientAccount,
-    Goal, GoalMetric, GoalSetting, Platform, Position, Transaction,
-    TransactionMemo, DataApiDict, CostOfLivingIndex, Dividend,
+    Goal, GoalMetric, GoalSetting, Position, Transaction,
+    TransactionMemo, CostOfLivingIndex, Dividend,
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
-    GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer)
-#from portfolios.management.commands.get_historical_returns import \
-#    get_historical_returns as internal_get_historical_returns
+    GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog,
+    ActivityLogEvent)
+
 from suit.admin import SortableModelAdmin, SortableTabularInline
 
 
@@ -215,16 +215,6 @@ def invite_supervisor(modeladmin, request, queryset):
         return HttpResponseRedirect('/betasmartz_admin/firm/{pk}/invite_supervisor?next=/admin/main/firm/'
                                     .format(pk=queryset.all()[0].pk))
 
-'''
-def get_historical_returns(modeladmin, request, queryset):
-    try:
-        internal_get_historical_returns()
-    except BaseException as e:
-        messages.error(request, "Please try again, the script for get historical returns has failed: %s" % (str(e)))
-        return
-
-    messages.success(request, "The historical returns for all the symbols has been completed")
-'''
 
 class FirmAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -236,8 +226,6 @@ class AuthorisedRepresentativeAdmin(admin.ModelAdmin):
     list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
-
-    pass
 
 
 class ClientAccountAdmin(admin.ModelAdmin):
@@ -255,7 +243,6 @@ class GoalMetricGroupAdmin(admin.ModelAdmin):
 
 class GoalSettingAdmin(admin.ModelAdmin):
     model = GoalSetting
-    #inlines = (GoalMetricGroupAdmin,)
 
 
 class GoalTypeAdmin(admin.ModelAdmin):
@@ -267,15 +254,9 @@ class GoalAdmin(admin.ModelAdmin):
     list_display = ('account', 'name', 'type')
     actions = (rebalance,)
 
-'''
-class PlatformAdminAdmin(admin.ModelAdmin):
-    actions = (get_historical_returns,)
-    pass
-'''
 
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('goal', 'ticker', 'value')
-    pass
 
 
 class PortfolioItemInline(admin.StackedInline):
@@ -284,13 +265,11 @@ class PortfolioItemInline(admin.StackedInline):
 
 class PortfolioAdmin(admin.ModelAdmin):
     inlines = (PortfolioItemInline,)
-    pass
 
 
 class PortfolioSetAdmin(admin.ModelAdmin):
     filter_horizontal = ('asset_classes',)
     inlines = (PortfolioViewsInline,)
-    pass
 
 
 class TransactionAdmin(admin.ModelAdmin):
@@ -302,13 +281,6 @@ class TransactionAdmin(admin.ModelAdmin):
 
 class PerformerAdmin(admin.ModelAdmin):
     list_display = ('symbol', 'name', 'group', 'allocation')
-    pass
-
-
-class DataApiDictAdmin(admin.ModelAdmin):
-    list_display = ('api', 'platform_symbol', 'api_symbol')
-    list_filter = ('api', 'platform_symbol')
-    pass
 
 
 def approve_changes(modeladmin, request, queryset):
@@ -364,15 +336,24 @@ class RiskProfileGroupAdmin(nested_admin.NestedModelAdmin):
     inlines = [RiskProfileQuestionInline]
 
 
+class ActivityLogEventAdminInline(admin.TabularInline):
+    model = ActivityLogEvent
+
+
+class ActivityLogAdmin(admin.ModelAdmin):
+    list_display = ('name', 'format_str', 'format_args')
+    list_editable = ('name', 'format_str', 'format_args')
+    formfield_overrides = {
+        TextField: {'widget': Textarea(attrs={'rows': 1, 'cols': 100})},
+    }
+    inlines = (ActivityLogEventAdminInline,)
+
+
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
-
 admin.site.register(CostOfLivingIndex, CostOfLivingIndexAdmin)
-
-admin.site.register(DataApiDict, DataApiDictAdmin)
 admin.site.register(Performer, PerformerAdmin)
-#admin.site.register(Platform, PlatformAdminAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
 admin.site.register(GoalType, GoalTypeAdmin)
@@ -391,3 +372,4 @@ admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)
+admin.site.register(ActivityLog, ActivityLogAdmin)

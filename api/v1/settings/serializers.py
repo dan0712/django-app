@@ -3,7 +3,7 @@ from rest_framework import serializers
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import (
     AssetClass, Ticker, GoalType,
-    RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer)
+    RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog)
 
 __all__ = (
     'GoalTypeListSerializer',
@@ -26,6 +26,12 @@ class AssetClassListSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = AssetClass
+
+
+class ActivityLogSerializer(ReadOnlyModelSerializer):
+    class Meta:
+        model = ActivityLog
+        exclude = ('format_args',)
 
 
 class TickerListSerializer(serializers.ModelSerializer):

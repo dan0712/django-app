@@ -1,3 +1,4 @@
 import datetime
 
-EPOCH_DT = datetime.datetime.utcfromtimestamp(0).date()
+EPOCH_TM = datetime.datetime.utcfromtimestamp(0)
+EPOCH_DT = EPOCH_TM.date()

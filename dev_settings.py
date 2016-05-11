@@ -1,6 +1,4 @@
-import os
-
-environment = os.environ["ENVIRONMENT"]
+environment = 'dev'
 
 # This is my local debug settings, so always have debug on
 SITE_URL = "http://{}.betasmartz.com".format(environment)
@@ -11,6 +9,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'dev_database.sqlite3',
+        'TEST': {'NAME': 'test_database.sqlite3'}
     }
 }
 

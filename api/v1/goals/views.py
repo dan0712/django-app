@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
+from api.v1.utils import activity
 from common.constants import EPOCH_DT
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance
@@ -133,6 +134,11 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         positions = goal.positions.all()
         serializer = serializers.GoalPositionListSerializer(positions, many=True)
         return Response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def activity(self, request, pk=None, **kwargs):
+        goal = self.get_object()
+        return activity.get(request, goal)
 
     @detail_route(methods=['get'], url_path='selected-portfolio')
     def selected_portfolio(self, request, pk=None, **kwargs):

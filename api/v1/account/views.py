@@ -1,8 +1,11 @@
 from django.db.models.query_utils import Q
 from rest_framework import viewsets, mixins
+from rest_framework.decorators import detail_route
 from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
+from api.v1.permissions import IsAdvisorOrClient
+from api.v1.utils import activity
 from api.v1.views import ApiViewMixin
 
 from main.models import ClientAccount
@@ -19,6 +22,8 @@ class AccountViewSet(ApiViewMixin,
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
     queryset = ClientAccount.objects.all()
     pagination_class = None
+
+    permission_classes = (IsAdvisorOrClient,)
 
     # Set the response serializer because we want to use the 'get' serializer for responses from the 'create' methods.
     # See api/v1/views.py
@@ -73,3 +78,8 @@ class AccountViewSet(ApiViewMixin,
             raise PermissionDenied('Only Advisors or Clients are allowed to access goals.')
 
         return qs
+
+    @detail_route(methods=['get'])
+    def activity(self, request, pk=None, **kwargs):
+        account = self.get_object()
+        return activity.get(request, account)

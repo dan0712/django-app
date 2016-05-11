@@ -30,6 +30,14 @@ class ReadOnlyModelSerializer(serializers.ModelSerializer):
             field.read_only = True
 
 
+class QueryParamSerializer(serializers.Serializer):
+    @classmethod
+    def parse(cls, query_params):
+        serializer = QueryParamSerializer(data=query_params)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
+
+
 class NonNullModelSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """
