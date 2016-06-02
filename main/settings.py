@@ -37,26 +37,31 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'django.contrib.humanize',
     'django_cron',
     'genericadmin',  # Allows nice selection of generic foreign keys in admin interface
     'nested_admin', # for nested inlines
     'django_extensions', # temp. to visualize models only
     'test_without_migrations',
-    'corsheaders',
     'tinymce_4',
     'import_export',
     'filebrowser',
     'suit',
     'compat',
     'pages',
-
     'recurrence',
+
+    'notifications', # move to django-notifications-hq>=1.0 after fixing 
+    'corsheaders',
     'pinax.eventlog',  # For our activity tracking
+
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_swagger',
+    'bootstrap3',
 
     'main',
+    'user',
     'advisors',
     'portfolios',
 )
@@ -131,6 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = (
@@ -156,6 +162,9 @@ gettext_noop = lambda s: s
 PAGE_LANGUAGES = (
     ('en-us', gettext_noop('US English')),
 )
+
+LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = '/'
 
 CMS_UNIHANDECODE_HOST = '/static/unihandecode/'
 CMS_UNIHANDECODE_VERSION = '1.0.0'

@@ -1,0 +1,30 @@
+<div class="row m-b">
+  <div class="col-sm-3 text-center">
+     <span class="{% if step == 1 %}text-primary{% endif %}">Select Account Process</span>
+  </div>
+  <div class="col-sm-3 text-center">
+     <span class="{% if step == 2 %}text-primary{% endif %}">Select Account Type</span>
+  </div>
+  <div class="col-sm-3 text-center">
+     <span class="{% if step == 3 %}text-primary{% endif %}">Enter Client Details</span>
+  </div>
+  <div class="col-sm-3 text-center">
+     <span class="{% if step == 4 %}text-primary{% endif %}">Confirm</span>
+  </div>
+</div>
+
+<div class="col-xs-12 hidden-xs">
+  <div class="row" style="margin-top: -10px">
+    <div class="col-sm-3 {% if step >= 1 %}bg-primary{% else %}bg-gray-lighter{% endif %}" style="height: 0.2em">
+    </div>
+    <div class="col-sm-3 {% if step >= 2 %}bg-primary{% else %}bg-gray-lighter{% endif %}" style="height: 0.2em">
+    </div>
+    <div class="col-sm-3 {% if step >= 3 %}bg-primary{% else %}bg-gray-lighter{% endif %}" style="height: 0.2em">
+    </div>
+    <div class="col-sm-3 {% if step >= 4 %}bg-primary{% else %}bg-gray-lighter{% endif %}" style="height: 0.2em">
+    </div>
+  </div>
+</div>
+
+
+<div class="row m-b-md"></div>

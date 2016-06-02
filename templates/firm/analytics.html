@@ -1,0 +1,117 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+    <div class="row m-t">
+      <div class="col-sm-6">
+        {% include "firm/partials/menu-analytics.html" %}
+      </div>
+
+      <form>
+        <!-- RESERVED
+        {% comment %}
+        <div class="col-sm-3">
+          {% bootstrap_field filter.form.group show_label=False show_help=False %}
+        </div>
+        {% endcomment %}
+        -->
+        <div class="col-sm-offset-3 col-sm-3">
+          {% bootstrap_field filter.form.worth show_label=False show_help=False %}
+        </div>
+
+        <!-- Semi-hidden fields -->
+        <span class="hidden">
+          {% bootstrap_field filter.form.risk show_label=False show_help=False %}
+        </span>
+      </form>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-3">
+        {% for item in risks %}
+        <div onclick="onChangeRisk(event, {{ item.level }})" class="statcard statcard-analytics {% if item.level|stringformat:'i' == filter.form.risk.value %}statcard-primary{% else %}statcard-default{% endif %} {% if not forloop.first %}m-t{% endif %}">
+          <div class="p-a">
+            <span class="statcard-desc">{{ item.name }} <span class="icon icon-help-with-circle text-muted" data-toggle="tooltip" data-placement="right" title="Fill me with your feelings"></span></span>
+            <h4>
+              {{ item.value|currency }}
+              <small>{{ item.value_percent|percentage100 }}</small>
+            </h4>
+            <div><a href="{% url 'firm:analytics-overview-metric' %}?risk={{ item.level }}" class="btn btn-xs btn-pill btn-primary-outline" data-toggle="modal" data-target="#analyticsMetricModal">Explore</a></div>
+          </div>
+        </div>
+        {% endfor %}
+        <script>
+          var onChangeRisk = function(event, value) {
+            // pass if clicking on child elements
+            if (event.target.tagName == 'A') { return; }
+
+            // change "risk" form control manually
+            elemRisk = document.getElementById('id_risk');
+            event = document.createEvent('Event');
+            event.initEvent('change', true, false);
+
+            // set or clear (if click on "active" item) risk filter
+            elemRisk.value = value !== {{ filter.form.risk.value|default:'null' }} ? value : null;
+            elemRisk.dispatchEvent(event);
+          }
+        </script>
+      </div>
+
+      <div class="col-sm-9">
+        <div>
+          <div>
+            <canvas id="lineChartA" width="300" height="100"></canvas>
+          </div>
+
+          <div class="m-t-md">
+            <h5>Segments</h5>
+            <table class="table table-borderless">
+              <tbody>
+                <tr>
+                  <td width="33.3%" class="text-center">
+                    <canvas id="doughnutChartA" width="100" height="100"></canvas>
+                    <div>
+                      Asset&nbsp;Class&nbsp;<span class="icon icon-help-with-circle text-muted" data-toggle="tooltip" data-placement="right" title="Fill me with your feelings"></span>
+                    </div>
+                  </td>
+                  <td width="33.3%" class="text-center">
+                    <canvas id="doughnutChartB" width="100" height="100"></canvas>
+                    <div>
+                      Region&nbsp;<span class="icon icon-help-with-circle text-muted" data-toggle="tooltip" data-placement="right" title="Fill me with your feelings"></span>
+                    </div>
+                  </td>
+                  <td width="33.3%" class="text-center">
+                    <canvas id="doughnutChartC" width="100" height="100"></canvas>
+                    <div>
+                      Type&nbsp;<span class="icon icon-help-with-circle text-muted" data-toggle="tooltip" data-placement="right" title="Fill me with your feelings"></span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="m-t-md">
+            <h5>Change point analysis</h5>
+            <canvas id="lineChartB" width="300" height="100"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% include "firm/partials/modal-analytics-metric.html" %}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+{% include "firm/partials/chart-worth.html" %}
+{% include "firm/partials/chart-events.html" %}
+{% include "firm/partials/chart-trinity.html" %}
+{% endblock %}
+

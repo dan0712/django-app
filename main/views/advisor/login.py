@@ -4,6 +4,7 @@ from advisors.models import ChangeDealerGroup, SingleInvestorTransfer, BulkInves
 from django import forms
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.http import QueryDict
@@ -88,7 +89,7 @@ class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
 class AdvisorSignUpView(CreateView):
     template_name = "registration/firm_form.html"
     form_class = AdvisorUserForm
-    success_url = "/firm/login"
+    success_url = reverse_lazy('login')
 
     def __init__(self, *args, **kwargs):
         self.firm = None
@@ -175,7 +176,7 @@ class ChangeDealerGroupForm(forms.ModelForm):
 
 
 class AdvisorChangeDealerGroupView(AdvisorView, CreateView):
-    template_name = "advisor/firm_form.html"
+    template_name = "advisor/form-firm.html"
     success_url = "/advisor/support/forms"
     form_class = ChangeDealerGroupForm
 
@@ -201,7 +202,7 @@ class AdvisorChangeDealerGroupView(AdvisorView, CreateView):
 
 
 class AdvisorChangeDealerGroupUpdateView(AdvisorView, UpdateView):
-    template_name = "advisor/firm_form.html"
+    template_name = "advisor/form-firm.html"
     success_url = "/advisor/support/forms"
     form_class = ChangeDealerGroupForm
     model = ChangeDealerGroup
@@ -258,7 +259,7 @@ class SingleInvestorTransferForm(forms.ModelForm):
 
 
 class AdvisorSingleInvestorTransferView(AdvisorView, CreateView):
-    template_name = "advisor/firm_form.html"
+    template_name = "advisor/form-firm.html"
     success_url = "/advisor/support/forms"
     form_class = SingleInvestorTransferForm
 
@@ -284,7 +285,7 @@ class AdvisorSingleInvestorTransferView(AdvisorView, CreateView):
 
 
 class AdvisorSingleInvestorTransferUpdateView(AdvisorView, UpdateView):
-    template_name = "advisor/firm_form.html"
+    template_name = "advisor/form-firm.html"
     success_url = "/advisor/support/forms"
     form_class = SingleInvestorTransferForm
     model = SingleInvestorTransfer
@@ -347,7 +348,7 @@ class BulkInvestorTransferForm(forms.ModelForm):
 
 
 class AdvisorBulkInvestorTransferView(AdvisorView, CreateView):
-    template_name = "advisor/firm_form.html"
+    template_name = "advisor/form-firm.html"
     success_url = "/advisor/support/forms"
     form_class = BulkInvestorTransferForm
 
@@ -373,7 +374,7 @@ class AdvisorBulkInvestorTransferView(AdvisorView, CreateView):
 
 
 class AdvisorBulkInvestorTransferUpdateView(AdvisorView, UpdateView):
-    template_name = "advisor/firm_form.html"
+    template_name = "advisor/form-firm.html"
     success_url = "/advisor/support/forms"
     form_class = BulkInvestorTransferForm
     model = BulkInvestorTransfer

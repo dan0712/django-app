@@ -1,0 +1,191 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row">
+      <div class="col-sm-9">
+          <h3>{{ client.full_name }}</h3>
+      </div>
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'advisor:clients-account-invites-create' client.pk %}">Add account</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total balance</span>
+            <h2>
+              {{ client.total_balance|currency }}
+              <!-- <small class="delta-indicator delta-positive">5%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total returns</span>
+            <h2>
+              {{ client.total_returns|percentage }}
+              <!-- <small class="delta-indicator delta-negative">2%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total allocation</span>
+            <h2>
+              {{ client.stocks_percentage|percentage:0 }}&nbsp;<small>stocks</small>
+              {{ client.bonds_percentage|percentage:0 }}&nbsp;<small>bonds</small>
+              <!-- <small class="delta-indicator delta-positive">3%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODO: add sorting by table columns -->
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Account Type</th>
+              <th>Status</th>
+              <th>Balance</th>
+              <th><!-- Intentionally left blank for spacing --></th>
+              <th>Household</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for account in client.accounts.all %}
+              <tr>
+                <td>{{ account.account_type_name }}</td>
+                <td>
+                  {% if account.on_track == True %}
+                    <span class="text-success">On track</span>
+                  {% else %}
+                    <span class="text-danger">Off track</span>
+                  {% endif %}
+                </td>
+                <td>{{ account.total_balance|currency }}</td>
+                <td><!-- Intentionally left blank for spacing --></td>
+                <td>
+                  {% if account.account_group %}
+                    <a href="{% url 'advisor:composites-detail' account.account_group.pk %}">
+                      {{ account.account_group.name }}
+                    </a>
+                  {% else %}
+                    &nbsp;
+                  {% endif %}
+                </td>
+              </tr>
+             {% empty %}
+              <tr>
+                <td colspan="5" class="text-center">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row m-t">
+      <div class="col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">Personal information</div>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Member since</td>
+                <td>{{ client.user.date_joined|date:'d/m/y' }}</td>
+              </tr>
+              <tr>
+                <td>Date of birth</td>
+                <td>{{ client.date_of_birth|date:'d/m/Y' }}</td>
+              </tr>
+              <tr>
+                <td>Age</td>
+                <td>{{ client.age }}</td>
+              </tr>
+              <tr>
+                <td>Address line 1</td>
+                <td>{{ client.address_line_1 }}</td>
+              </tr>
+              {% if client.address_line_2 %}
+              <tr>
+                <td>Address line 2</td>
+                <td>{{ client.address_line_2 }}</td>
+              </tr>
+              {% endif %}
+              <tr>
+                <td>City</td>
+                <td>{{ client.city }}</td>
+              </tr>
+              <tr>
+                <td>State</td>
+                <td>{{ client.state }}</td>
+              </tr>
+              <tr>
+                <td>Postcode</td>
+                <td>{{ client.post_code }}</td>
+              </tr>
+              <tr>
+                <td>Phone</td>
+                <td>{{ client.phone_number }}</td>
+              </tr>
+              <tr>
+                <td>Email</td>
+                <td><a href="mailto:{{ client.user.email }}">{{ client.user.email }}</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">Employment and income</div>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Employment status</td>
+                <td>{{ client.get_employment_status_display|default:'-' }}</td>
+              </tr>
+              <tr>
+                <td>Occupation</td>
+                <td>{{ client.occupation|default:'-' }}</td>
+              </tr>
+              <tr>
+                <td>Employer</td>
+                <td>{{ client.employer|default:'-' }}</td>
+              </tr>
+              <tr>
+                <td>Annual income</td>
+                <td>{{ client.income|currency }}</td>
+              </tr>
+              <tr>
+                <td>Liquid net worth</td>
+                <td>{{ client.net_worth|currency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

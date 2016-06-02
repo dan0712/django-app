@@ -1,0 +1,13 @@
+{% load filters %}
+
+
+<ul class="nav nav-pills">
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:clients' }}">
+    <a href="{% url 'advisor:clients' %}">Overview</a>
+  </li>
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:clients-invites' }}">
+    <a href="{% url 'advisor:clients-invites' %}">Invites</a>
+  </li>
+</ul>
+
+<div class="visible-xs m-b"></div>

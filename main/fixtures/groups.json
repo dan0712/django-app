@@ -1,0 +1,30 @@
+[
+  {
+    "model": "auth.Group",
+    "pk": 11,
+    "fields": {
+      "name": "Advisors"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 12,
+    "fields": {
+      "name": "AuthorizedRepresentatives"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 13,
+    "fields": {
+      "name": "Supervisors"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 21,
+    "fields": {
+      "name": "Clients"
+    }
+  }
+]

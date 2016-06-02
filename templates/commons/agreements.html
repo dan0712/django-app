@@ -1,119 +1,90 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts_new/base.html" %}
 {% load i18n %}
-{% load  app_filters %}
+{% load filters %}
 
-{% block nav_agreements %} depressed {% endblock %}
-{% block firm_nav_agreements %} depressed {% endblock %}
 
 {% block main_content %}
-    {% include "advisor/firm-logo.html" %}
-    <div class="client-agreement-signatures">
-        <div class="intro">
-            <p>
-                Below is a list of clients that have electronically executed your advisory agreement.
-                If you would like to add or update your agreement, please email a PDF of your advisory agreement to <a
-                    href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.
-                To learn more about this feature please visit our <a href="#">Client Agreement</a> page.
+  <div class="container">
+    {% include "advisor/logo.html" %}
 
-            </p>
-            </br>
-        </div>
-
-        <section class="client-agreement-signature-panel">
-            <div class="header">
-                <h2>Client agreements and KYC
-                    <div class="composites-index" style="padding: 10px;">
-                        <div class="composites-panel">
-                            <div class="composite-search">
-                                <input type="search" placeholder="Search" value="{{ search }}">
-                             </div>
-                        </div>
-                    </div>
-                </h2>
-            </div>
-            <div class="body">
-
-
-                <table id="agreements-table">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Date executed</th>
-                        <th>Agreement</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for client in clients %}
-                        <tr>
-                            <td>{{ client.full_name }}</td>
-                            <td>{{ client.email }}</td>
-                            <td>{{ client.create_date |b_datetime }}</td>
-                            <td><a href="{{ MEDIA_URL }}{{ client.client_agreement }}" target="_blank">View</a></td>
-                        </tr>
-                    {% endfor %}
-
-
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="footnotes">
-            <ul>
-
-                <li>This list does not include your clients who signed up while your company or dealer group had no
-                    active agreement.
-                </li>
-                <li>'Date executed' means the date on which the client electronically signed your advisory agreement.
-                </li>
-                <li>The agreements made available on this page are the agreements between you and your client
-                    that your client executed electronically through BetaSmartz's technology on the date provided.
-                    If you and your client have updated and/or amended your agreement, the version provided on this page
-                    will no longer be accurate. BetaSmartz has no responsibility for storing and/or making available any
-                    subsequently updated and/or amended agreements that you may have entered into with your clients
-                    outside
-                    of BetaSmartz's technology. BetaSmartz has not reviewed your agreements with your clients and takes
-                    no
-                    responsibility for the contents of those agreements. This file also contains the Know Your Client
-                    information gathered for your client. Should you wish to include an Agreement that has been executed
-                    or amended outside of BetaSmartz's technology than please email a copy to support@betasmartz.com.
-                </li>
-            </ul>
-        </section>
-
-
+    <div class="row">
+      <div class="col-sm-12">
+        <p>
+          Below is a list of clients that have electronically executed your advisory agreement.
+          If you would like to add or update your agreement, please email a PDF of your advisory agreement to 
+          <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.
+          To learn more about this feature please visit our <a href="#">Client Agreement</a> page.
+        </p>
+      </div>
     </div>
 
-    <script>
-        $(document).ready(function () {
-            var search = function (t) {
-                        $.pjax({
-                            url: search_url(),
-                            container: "#agreements-table"
-                        }).success(function () {
-                            t && t()
-                        })
-                    },
-                    e = _.debounce(search, 1000),
-                    search_url = function () {
-                        var t = $(".composite-search input").val();
-                        return "?search=" + encodeURIComponent(t)
-                    },
-                    r = $(".composites-panel");
-            r.pjax("a[data-pjax]", "#agreements-table"), r.on("pjax:start", function () {
-                r.find(".loading").show()
-            }), r.on("pjax:success", function () {
-                r.find(".loading").hide()
-            }), r.on("keyup search", ".composite-search input", function () {
-                var t = $(this);
-                e(function () {
-                    t.focus()
-                })
-            })
-        })
-    </script>
+    <div class="row m-t">
+      <div class="col-sm-8">
+          <h3>Client agreements and KYC</h3>
+      </div>
+      <div class="col-sm-4">
+        <form>
+          <div class="form-group">
+            <div class="input-group">
+              <span class="input-group-addon" id="search"><span class="icon icon-magnifying-glass"></span></span>
+              <input type="search" name="search" placeholder="Search advisors..." value="{{ search }}" class="form-control" onchange="this.form.submit();" aria-describedby="search">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Date executed</th>
+            <th>Agreement</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for client in clients %}
+            <tr>
+              <td>{{ client.full_name }}</td>
+              <td>{{ client.email }}</td>
+              <td>{{ client.create_date|date:'d/m/y H:i' }}</td>
+              <td><a href="{{ MEDIA_URL }}{{ client.client_agreement }}" target="_blank">View</a></td>
+            </tr>
+           {% empty %}
+            <tr>
+              <td colspan="4" class="text-center">
+                No entries
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-muted m-t">
+      <div>Notes:</div>
+      <ul>
+        <li>This list does not include your clients who signed up while your company or dealer group had no
+          active agreement.
+        </li>
+        <li>'Date executed' means the date on which the client electronically signed your advisory agreement.
+        </li>
+        <li>The agreements made available on this page are the agreements between you and your client
+          that your client executed electronically through BetaSmartz's technology on the date provided.
+          If you and your client have updated and/or amended your agreement, the version provided on this page
+          will no longer be accurate. BetaSmartz has no responsibility for storing and/or making available any
+          subsequently updated and/or amended agreements that you may have entered into with your clients
+          outside
+          of BetaSmartz's technology. BetaSmartz has not reviewed your agreements with your clients and takes
+          no
+          responsibility for the contents of those agreements. This file also contains the Know Your Client
+          information gathered for your client. Should you wish to include an Agreement that has been executed
+          or amended outside of BetaSmartz's technology than please email a copy to support@betasmartz.com.
+        </li>
+      </ul>
+    </div>
+  </div>
 {% endblock %}
-
-
 

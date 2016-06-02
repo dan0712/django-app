@@ -1,0 +1,50 @@
+[
+  {
+      "model": "main.transaction",
+      "pk": 1,
+      "fields": {
+          "reason": 1,
+          "to_goal": 27,
+          "amount": 2000,
+          "status": "EXECUTED",
+          "executed": "2016-03-03T11:11:11.111Z",
+          "created": "2016-03-01T11:11:11.111Z"
+      }
+  },
+  {
+      "model": "main.transaction",
+      "pk": 2,
+      "fields": {
+          "reason": 2,
+          "from_goal": 27,
+          "amount": 500,
+          "status": "EXECUTED",
+          "executed": "2016-03-04T11:11:11.111Z",
+          "created": "2016-03-01T11:11:11.111Z"
+      }
+  },
+  {
+      "model": "main.transaction",
+      "pk": 3,
+      "fields": {
+          "reason": 1,
+          "to_goal": 41,
+          "amount": 5000,
+          "status": "EXECUTED",
+          "executed": "2016-03-05T11:11:11.111Z",
+          "created": "2016-03-01T11:11:11.111Z"
+      }
+  },
+  {
+      "model": "main.transaction",
+      "pk": 4,
+      "fields": {
+          "reason": 2,
+          "from_goal": 41,
+          "amount": 1500,
+          "status": "EXECUTED",
+          "executed": "2016-03-06T11:11:11.111Z",
+          "created": "2016-03-01T11:11:11.111Z"
+      }
+  }
+]

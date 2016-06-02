@@ -1,0 +1,179 @@
+/*
+@font-face {
+  font-family: 'Roboto';
+  src:  url('../fonts/Roboto-Thin.eot');
+  src:  local('Roboto Thin'),
+        local('Roboto-Thin'),
+        url('../fonts/Roboto-Thin.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Roboto-Thin.woff2') format('woff2'),
+        url('../fonts/Roboto-Thin.woff') format('woff'),
+        url('../fonts/Roboto-Thin.ttf') format('truetype'),
+        url('../fonts/Roboto-Thin.svg#Roboto') format('svg');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src:  url('../fonts/Roboto-Light.eot');
+  src:  local('Roboto Light'),
+        local('Roboto-Light'),
+        url('../fonts/Roboto-Light.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Roboto-Light.woff2') format('woff2'),
+        url('../fonts/Roboto-Light.woff') format('woff'),
+        url('../fonts/Roboto-Light.ttf') format('truetype'),
+        url('../fonts/Roboto-Light.svg#Roboto') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src:  url('../fonts/Roboto-Regular.eot');
+  src:  local('Roboto Regular'),
+        local('Roboto-Regular'),
+        url('../fonts/Roboto-Regular.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Roboto-Regular.woff2') format('woff2'),
+        url('../fonts/Roboto-Regular.woff') format('woff'),
+        url('../fonts/Roboto-Regular.ttf') format('truetype'),
+        url('../fonts/Roboto-Regular.svg#Roboto') format('svg');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src:  url('../fonts/Roboto-RegularItalic.eot');
+  src:  local('Roboto RegularItalic'),
+        local('Roboto-RegularItalic'),
+        url('../fonts/Roboto-RegularItalic.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Roboto-RegularItalic.woff2') format('woff2'),
+        url('../fonts/Roboto-RegularItalic.woff') format('woff'),
+        url('../fonts/Roboto-RegularItalic.ttf') format('truetype'),
+        url('../fonts/Roboto-RegularItalic.svg#Roboto') format('svg');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src:  url('../fonts/Roboto-Bold.eot');
+  src:  local('Roboto Bold'),
+        local('Roboto-Bold'),
+        url('../fonts/Roboto-Bold.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Roboto-Bold.woff2') format('woff2'),
+        url('../fonts/Roboto-Bold.woff') format('woff'),
+        url('../fonts/Roboto-Bold.ttf') format('truetype'),
+        url('../fonts/Roboto-Bold.svg#Roboto') format('svg');
+  font-weight: 700;
+  font-style: normal;
+}
+*/
+
+/* global body padding */
+body {
+  padding-top: 0px;
+  padding-bottom: 20px;
+}
+
+/* global spacing overrides */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  margin-top: 0;
+}
+hr {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+.navbar-fixed-top,
+.navbar-static-top {
+  border-bottom: 0;
+}
+.nav > li > a {
+  text-transform: uppercase;
+}
+
+/* TEMP */
+h3.header {
+  line-height: 1.5em;
+}
+
+.bg-gray-darker {
+  background-color: #111; /* $gray-darker */
+  color: #fff;
+}
+.bg-gray-dark {
+  background-color: #222; /* $gray-dark */
+  color: #fff;
+}
+.bg-gray {
+  background-color: #555; /* $gray */
+  color: #fff;
+}
+.bg-gray-light {
+  background-color: #aaa; /* $gray-light */
+}
+.bg-gray-lighter {
+  background-color: #f5f5f5; /* $gray-lighter */
+}
+
+.link {
+  cursor: pointer;
+}
+.link-colorless {
+  color: inherit;
+}
+.link-decorless:hover {
+  text-decoration: none;
+}
+
+.statcard-default {
+    background-color: #f5f5f5; /* $gray-lighter */
+}
+.statcard-default {
+    border-radius: 3px; /* replace with scss */
+}
+.statcard-analytics {
+    cursor: pointer;
+}
+/* TEMP */
+.statcard-primary small,
+.statcard-success small,
+.statcard-info small,
+.statcard-warning small,
+.statcard-danger small {
+  color: rgba(255, 255, 255, 0.65);
+}
+.statcard-primary .text-muted,
+.statcard-success .text-muted,
+.statcard-info .text-muted,
+.statcard-warning .text-muted,
+.statcard-danger .text-muted {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.badge {
+  font-weight: 400;
+}
+.table-borderless-top tr:first-child th,
+.table-borderless-top tr:first-child td {
+  border-top: none;
+}
+.table-borderless > tbody > tr > th,
+.table-borderless > tbody > tr > td,
+.table-borderless > thead > tr > th,
+.table-borderless > thead > tr > td,
+.table-borderless > tfoot > tr > th,
+.table-borderless > tfoot > tr > td {
+  border-top: none;
+}
+.table thead .tr-borderless td,
+.table thead .tr-borderless th,
+.table tbody .tr-borderless td,
+.table tbody .tr-borderless th {
+  border-top: none !important;
+}
+.table .tr-middle > th,
+.table .tr-middle > td {
+  vertical-align: middle;
+}

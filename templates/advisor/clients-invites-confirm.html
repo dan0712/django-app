@@ -1,0 +1,28 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <h3>New Account Confirmation</h3>
+
+    <p>Your advisor have create a new account for you. Once confirmed, the account will be opened and ready for funding.</p>
+
+    <h4>Account for {{ profile.full_name }}</h4>
+    <h4 class="m-t">Account type: {{ object.get_account_class_display }}</h4>
+
+    <div class="m-t">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="confirmed" value="True">
+
+        <button type="submit" class="btn btn-primary">Confirm</button>
+        <!-- TODO: original link "client/app" -->
+        <a class="btn btn-danger-outline" href="{% url 'advisor:summary' %}">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

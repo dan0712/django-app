@@ -1,0 +1,15 @@
+[
+    { 
+        "model": "main.user",
+        "pk": 1000000,
+        "fields": {
+            "username": "admin",
+            "email": "savvaoff@gmail.com",
+            "password": "pbkdf2_sha256$20000$RdRSsnC8SiTt$Iy1+swgCFoBeVJ1CQ2ZcwIIiR7j/jVbRmq9JSruPZWc=",
+            "first_name": "Admin",
+            "last_name": "Admin",
+            "is_superuser": true,
+            "is_staff": true
+        }
+    }
+]

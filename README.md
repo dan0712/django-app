@@ -13,12 +13,25 @@ source env/bin/activate # run virtual env
 (replace numpy version in requirements): numpy==1.10.4
 pip install -r devop/backend_base/requirements.txt # - install packages
 
-./manage.py migrate # migrate db
-./manage.py loaddata main/fixtures/goal_types.json # load fixtures
-./manage.py loaddata main/fixtures/data.json # (optional) load fixtures
+python manage.py migrate # migrate db
+python manage.py loaddata main/fixtures/groups.json # load fixtures
+# obsoleted # python manage.py loaddata main/fixtures/goal_types.json # load fixtures
+python manage.py loaddata main/fixtures/data.json # (optional) load fixtures (data.json.gz)
+python manage.py loaddata main/fixtures/transactions.json
+python manage.py loaddata main/fixtures/goal-settings.json
 
 cp local_settings_docker.py local_settings.py # create local settings
 ./manage.py runserver # run server
+```
+
+NB.  
+The app legacy issues with circle-import or something 
+that creates error on first db migration.
+To prevent the errors and create/migrate the db table, try per-app migration:
+```
+python manage.py migrate main
+...possible other apps
+python manage.py migrate
 ```
 
 
@@ -28,6 +41,7 @@ http://demo.betasmartz.com/
 http://demo.betasmartz.com/docs  
 
 credentials (username/pass):  
+firm: legal@example.org/123
 advisor: advisor@example.org/123  
 client: obama@demo.org/123  
 

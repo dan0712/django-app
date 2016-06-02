@@ -55891,7 +55891,7 @@ var requirejs, require, define;
                 this.$(".user-links a").removeClass("selected")
             },
             logout: function(e) {
-                window.location.replace("/sign_out");
+                window.location.replace("/logout");
                 /*e && e.preventDefault(), BMT.vent.trigger("logout", {
                     timeout: !1
                 })*/
@@ -57407,7 +57407,7 @@ var requirejs, require, define;
                     })
                 })
             }), BMT.vent.bind("logout", function(e) {
-                window.location.replace("/sign_out");
+                window.location.replace("/logout");
                 /*
                 var n = BMT.isTest() || BMT.isLocal() || BMT.user.isAdvised(),
                     r = t.extend({

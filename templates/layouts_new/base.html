@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+      {% if is_client %}
+        {% if firm %}
+          {{ firm.name }}
+        {% else %}
+          BetaSmartz
+        {% endif %}
+      {% else %}
+        BetaSmartz
+      {% endif %}
+    </title>
+
+    <link href="{{ STATIC_URL }}images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+
+    <!--link href="{{ STATIC_URL }}bower_components/tether/dist/css/tether.min.css" rel="stylesheet" -->
+    <link href="{{ STATIC_URL }}bower_components/roboto-fontface/css/roboto-fontface.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}vendor/theme/dist/toolkit-light.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}css_new/app.css" rel="stylesheet">
+
+    <script src="{{ STATIC_URL }}bower_components/jquery/dist/jquery.min.js"></script>
+  </head>
+
+  <body class="{% block body_class %}{% endblock %}">
+    {% include "partials_new/header.html" %}
+
+    <div class="m-t">
+      {% include "partials_new/flashes.html" %}
+    </div>
+
+    {% block main_content %}
+    {% endblock %}
+
+    {% include "partials_new/footer.html" %}
+  </body>
+
+  {% block scripts %}
+    <!-- script src="{{ STATIC_URL }}bower_components/tether/dist/js/tether.min.js"></script -->
+    <script src="{{ STATIC_URL }}bower_components/moment/min/moment.min.js"></script>
+    <script src="{{ STATIC_URL }}bower_components/Chart.js/dist/Chart.min.js"></script>
+    <script src="{{ STATIC_URL }}vendor/theme/dist/toolkit.min.js"></script>
+
+    <script src="{{ STATIC_URL }}js_new/app.js"></script>
+  {% endblock %}
+</html>

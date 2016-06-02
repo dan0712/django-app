@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
 from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
 from django.utils.safestring import mark_safe
@@ -24,7 +25,7 @@ from ...models import AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_
     INVITATION_TYPE_DICT, SUCCESS_MESSAGE, Position
 
 __all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
-           'NewConfirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
+           'Confirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
            "GoalRebalance"]
 
 
@@ -98,7 +99,7 @@ class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
 class AuthorisedRepresentativeSignUp(CreateView):
     template_name = "registration/firm_form.html"
     form_class = AuthorisedRepresentativeUserForm
-    success_url = "/firm/login"
+    success_url = reverse_lazy('login')
 
     def __init__(self, *args, **kwargs):
         self.firm = None
@@ -315,10 +316,11 @@ class EmailConfirmationView(View):
             db_object.confirmation_key = None
             db_object.save()
 
-        return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(reverse_lazy('login'))
 
 
-class NewConfirmation(TemplateView):
+class Confirmation(TemplateView):
+    # TODO: add a real django form instead of "homebrewed" stuff
     template_name = 'registration/confirmation.html'
 
     def post(self, request, *args, **kwargs):
@@ -329,7 +331,7 @@ class NewConfirmation(TemplateView):
             user = User.objects.get(email=email)
         except ObjectDoesNotExist:
             messages.error(request, "Account not found")
-            return HttpResponseRedirect("/login")
+            return HttpResponseRedirect(reverse_lazy('login'))
 
         confirmations = 0
 
@@ -344,10 +346,10 @@ class NewConfirmation(TemplateView):
 
         if not confirmations:
             messages.error(request, "Account already confirmed")
-            return HttpResponseRedirect("/login")
+            return HttpResponseRedirect(reverse_lazy('login'))
 
         messages.info(request, "The new confirmation email has been sent")
-        return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(reverse_lazy('login'))
 
 
 class AdminExecuteTransaction(TemplateView, AdminView):

@@ -1,0 +1,32 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <!--
+    <div class="row m-t">
+      <div class="col-sm-8">
+          <h3>Application manager</h3>
+      </div>
+      <div class="col-sm-4 text-sm-right">
+        <div class="form-group">
+        </div>
+      </div>
+    </div>
+    -->
+
+    <div class="m-t">
+      <p>
+        Open the application manager to manage client applicaions,
+        verification, AML and compliance processes and documentation.
+      </p>
+      <p>
+        <a class="btn btn-primary">Open application manager</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

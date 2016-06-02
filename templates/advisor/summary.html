@@ -1,12 +1,187 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts_new/base.html" %}
 {% load i18n %}
-{% block nav_summary %} depressed {% endblock %}
+{% load filters %}
+
+
 {% block main_content %}
-{% include "advisor/firm-logo.html" %}
-<div id="content-main">
+  <div class="container">
+    {% include "advisor/logo.html" %}
 
-</div>
+    <div class="row">
+      <div class="col-sm-9">
+          <h3>Overview</h3>
+      </div>
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <!-- TODO: refactor as django_filter form field -->
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Add household</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total AUM</span>
+            <h2>
+              {{ profile.total_balance|currency }}
+              <!-- <small class="delta-indicator delta-positive">5%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total households</span>
+            <h2>
+              {{ profile.total_account_groups }}
+              <!-- <small class="delta-indicator delta-negative">2%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Average balance</span>
+            <h2>
+              {{ profile.average_balance|currency }}
+              <!-- <small class="delta-indicator delta-positive">3%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <form>
+        <div class="col-sm-4">
+          <div class="form-group">
+            <select name="filter" class="form-control" onchange="this.form.submit();">
+                <option value="0">-- Type --</option>
+                <option value="0" {% if  filter == "0" %}selected="selected"{% endif %}>All</option>
+                <option value="1" {% if  filter == "1" %}selected="selected"{% endif %}>Primary</option>
+                <option value="2" {% if  filter == "2" %}selected="selected"{% endif %}>Secondary</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-sm-4 col-sm-offset-4">
+          <div class="form-group">
+            <!-- TODO: refactor as django_filter form field -->
+            <div class="input-group">
+              <span class="input-group-addon" id="search"><span class="icon icon-magnifying-glass"></span></span>
+              <input type="search" placeholder="Search households..." value="{{ search }}" name="search" class="form-control" onchange="this.form.submit();" aria-describedby="search">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- TODO: add sorting by table columns -->
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Total balance</th>
+              <th>Total return</th>
+              <th>Stock/Bonds</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for group in groups %}
+              <tr onclick="window.location='{% url 'advisor:composites-detail' group.0 %}'">
+                <td>{{ group.0 }}</td>
+                <td>
+                  <div>
+                    <a href="{% url 'advisor:composites-detail' group.0 %}">
+                      {% with group.1 as household %}<span class="icon icon-users"></span>{% endwith %}
+                      {{ group.2 }}
+                    </a>
+                  </div>
+                  <div>{{ group.3 }}</div>
+                  <div>{{ group.4 }}</div>
+                </td>
+                <td>
+                  {% if group.5 %}
+                    <span class="text-success">On track</span>
+                  {% else %}
+                    <span class="text-danger">Off track</span>
+                  {% endif %}
+                </td>
+                <td>{{ group.6|currency }}</td>
+                <td>
+                  <div>{{ group.7|percentage }}</div>
+                  <div class="text-muted"><small><span>since</span> {{ group.8 }}</small></div>
+                </td>
+                <td>{{ group.10|percentage }} / {{ group.11|percentage }}</td>
+              </tr>
+             {% empty %}
+              <tr>
+                <td colspan="6" class="text-center">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% comment %}
+    <ul id="dashboard">
+      <li class="composites-table-header">
+        <div><a class="{% if sort_col == "name" %}active {{ sort_dir }}{% endif %}"              data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=name&amp;sort_dir={{ sort_inverse }}">Name</a></div>
+        <div><a class="{% if sort_col == "goal_status" %}active {{ sort_dir }}{% endif %}"       data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=goal_status&amp;sort_dir={{ sort_inverse }}">Status</a></div>
+        <div><a class="{% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}"   data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total balance</a></div>
+        <div><a class="{% if sort_col == "return_percentage" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=return_percentage&amp;sort_dir={{ sort_inverse }}">Total return</a></div>
+        <div><a class="{% if sort_col == "allocation" %}active {{ sort_dir }}{% endif %}"        data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Stocks / Bonds</a></div>
+      </li>
+      {% for group in groups %}
+        <li class="composites-table-row" data-composite-id="group.0">
+          <a data-track-location="Summary" data-track-name="Info" href="/composites/{{ group.0 }}">
+            <div>
+                <div class="composite-icon">
+                    {% with group.1 as household %}
+                        {% include "advisor/partials/icon-household.html" %}
+                    {% endwith %}
+                </div>
+                <h4>{{ group.2 }}</h4>
+                <h5>{{ group.3 }}</h5>
+                <h6>{{ group.4 }}</h6>
+            </div>
+            <div>
+                <h4>
+                    {% if group.5 %}
+                        <span class="on-track">On track</span>
+                    {% else %}
+                         <span class="off-track">Off track</span>
+                    {% endif %}
+                    </h4>
+            </div>
+            <div>
+                <h4>${{ group.6|currency}}</h4>
+            </div>
+            <div>
+                <h4>{{ group.7 }}%</h4>
+                <h5><span>Since</span>{{ group.8|date:'d/m/y'}}</h5>
+            </div>
+            <div>
+                <h4>{{ group.10 }}% / {{ group.11 }}%</h4>
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+
+      <div class="pager">
+      </div>
+    </ul>
+    {% endcomment %}
+
+  </div>
 {% endblock %}
-
-
-

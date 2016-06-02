@@ -1,40 +1,46 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts_new/base.html" %}
 {% load i18n %}
+{% load bootstrap3 %}
+
 {% block main_content %}
+<section class="container m-t-lg">
+  <h1 class="text-center m-t-md m-b-md">Log in to your {{ user_group }} account</h1>
 
+  <div class="row">
+    <div class="col-sm-8 col-md-6 col-lg-6 col-sm-offset-2 col-md-offset-3 col-lg-offset-3">
 
-<div id="content-main">
+      <form method="post">{% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+        {% csrf_token %}
+        
+        {% bootstrap_form_errors form %}
 
-<div class="advisor-signin">
-    <h1>Log in to your {{ user_class_name }} account</h1>
+        <div class="form-group">
+          <input name="{{ form.username.html_name }}" type="text" placeholder="{{ form.username.label }}" class="form-control" required>
+        </div>
 
-    <form  accept-charset="UTF-8" action="{{ app_path }}" method="post" id="login-form" class="simple_form new_advisor">{% csrf_token %}
-     <div class="form-inputs">
-        <div class="input email optional advisor_email"><input autofocus="autofocus" class="string email optional" id="advisor_email" name="username" placeholder="Email" type="email" value=""></div>
-        <div class="input password optional advisor_password"><input class="password optional" id="advisor_password" name="password" placeholder="Password" type="password"></div>
-      </div>
+        <div class="form-group">
+          <input name="{{ form.password.html_name }}" type="password" placeholder="{{ form.password.label }}" class="form-control" required>
+        </div>
 
-      <div class="form-actions">
-        <input class="btn" data-disable-with="Signing in..." name="commit" type="submit" value="Sign in">
-      </div>
-    </form>
+        <!--
+        <div class="checkbox m-b">
+          <label>
+            <input name="{{ form.remember_me.html_name }}" type="checkbox"/>
+            {{ form.remember_me.label }}
+          </label>
+        </div>
+        -->
+        <button type="submit" class="btn btn-primary btn-block">{% trans 'Login In' %}</button>
+      </form>
 
-    <ul class="advisor-links">
-
-    <li><a href="/password/reset/">Forgot your password?</a></li>
-
-    <li><a href="/confirmation/new">Didn't receive confirmation instructions?</a></li>
-
-</ul>
-
-</div>
-
-
-
-<script type="text/javascript">
-//document.getElementById('id_username').focus()
-</script>
-</div>
+      <ul class="list-unstyled text-center m-t-md">
+        <li><a href="{% url 'password_reset' %}">Forgot your password?</a></li>
+        <li><a href="{% url 'confirmation' %}">Didn't receive confirmation instructions?</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
 {% endblock %}
 
 

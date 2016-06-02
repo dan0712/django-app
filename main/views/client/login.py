@@ -6,13 +6,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, UpdateView
-from main.models import Client, Firm, Advisor, User, BetaSmartzGenericUSerSignupForm, PERSONAL_DATA_WIDGETS, \
-    PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE, ClientAccount, TaxFileNumberValidator, MedicareNumberValidator
-from ..utils.login import create_login
 
-__all__ = ["client_login", 'ClientSignUp', "ClientSignUpPrepopulated"]
+from main.models import (
+    Client, Firm, Advisor, User,
+    BetaSmartzGenericUSerSignupForm,
+    ClientAccount, TaxFileNumberValidator, MedicareNumberValidator,
+    PERSONAL_DATA_WIDGETS, PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE,
+)
 
-client_login = create_login(Client, 'client', '')
+__all__ = ['ClientSignUp', 'ClientSignUpPrepopulated']
 
 client_sign_up_form_header_1 = """<span class="left blue-circle">1</span>
 <h3 class="left">Information to establish your account</h3>"""

@@ -50,25 +50,6 @@ pyvenv.cfg
 .idea/
 # if you remove the above rule, at least ignore the following:
 
-# User-specific stuff:
-# .idea/workspace.xml
-# .idea/tasks.xml
-# .idea/dictionaries
-
-# Sensitive or high-churn files:
-# .idea/dataSources.ids
-# .idea/dataSources.xml
-# .idea/sqlDataSources.xml
-# .idea/dynamic.xml
-# .idea/uiDesigner.xml
-
-# Gradle:
-# .idea/gradle.xml
-# .idea/libraries
-
-# Mongo Explorer plugin:
-# .idea/mongoSettings.xml
-
 ## File-based project format:
 *.ipr
 *.iws
@@ -101,15 +82,16 @@ __pycache__
 # Distribution / packaging
 .Python
 env/
-build/
+#build/
 develop-eggs/
-dist/
+#dist/
 downloads/
 eggs/
 lib64/
 parts/
 sdist/
 var/
+/tags
 *.egg-info/
 .installed.cfg
 *.egg
@@ -145,8 +127,6 @@ docs/_build/
 # PyBuilder
 target/
 
-
-
 pip-selfcheck.json
 db.sqlite3
 local_settings.py
@@ -154,3 +134,5 @@ local_settings.py
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+#/src/static/bower_components/

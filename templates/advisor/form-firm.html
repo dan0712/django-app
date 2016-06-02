@@ -1,0 +1,174 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <h3>{{ form_name }}</h3>
+
+    {% if object %}
+    <div class="alert alert-warning m-t">
+      <div><strong>You’re almost there!</strong></div>
+      <div>Waiting for approbation, update the form if is need</div>
+    </div>
+    {% endif %}
+
+
+    <div class="row m-t-md">
+      <div class="col-sm-8 col-md-6">
+        <form id="basicContact" action="" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="firm" value="{{ firm.pk }}">
+
+          {% for section in form.sections %}
+              <div class="m-b">
+                <h4 class="m-b">
+                  <span class="bg-primary" style="padding: 3px 9px; border-radius: 100em">{{ forloop.counter }}</span>&nbsp;
+                  {{ section.header }}
+                </h4>
+                {%  if section.detail %}
+                  <p class="section-details">{{ section.detail }}</p>
+                {% endif %}
+
+                {% for field in section.fields %}
+                  {% if section.fields.count > 1%}
+                    {% bootstrap_field field %}
+                  {% else %}
+                    {% bootstrap_field field show_label=False %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <hr/>
+          {% endfor %}
+
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+      </div>
+
+      <div class="m-t visible-xs"></div>
+
+      <div class="col-sm-4 col-md-4 col-md-offset-2 col-lg-3 col-lg-offset-3">
+       <div class="panel panel-default">
+          <div class="panel-heading">Support</div>
+          <div class="panel-body">Questions? Talk to us.</div>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td width="1%"><span class="icon icon-phone"></span></td>
+                <td>{{ SUPPORT_PHONE|phone }}</td>
+              </tr>
+              <tr>
+                <td width="1%"><span class="icon icon-mail"></span></td>
+                <td><a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">Technical support</div>
+          <div class="panel-body">For technical questions, contact one of our support specialists.</div>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td width="1%"><span class="icon icon-phone"></span></td>
+                <td>{{ SUPPORT_PHONE|phone }}</td>
+              </tr>
+              <tr>
+                <td width="1%"><span class="icon icon-mail"></span></td>
+                <td><a href="mailto:{{ SUPPORT_EMAIL }}">Email Support</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      var set_tfn = function() {
+        var value = $("ul#id_provide_tfn input:radio:checked").val();
+        if (value !== 0) {
+          $("input[name=tax_file_number]").parent().parent().hide();
+        }
+        else {
+          $("input[name=tax_file_number]").parent().parent().show();
+        }
+      };
+
+      set_tfn();
+
+      $("ul#id_provide_tfn input:radio").click(function() {
+        set_tfn();
+      });
+    });
+  </script>
+{% endblock %}
+
+
+
+
+{% comment %}
+</div>
+</div>
+
+<div class="panel card body big-form identity-correction-form" style="display: none;">
+<div class="clearfix">
+<h2 class="form-header">Please verify the following and submit again.</h2>
+</div>
+
+<!-- SECTION 7 - identity correction -->
+<form id="identityCorrection"></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="right-rail">
+
+<div class="benefits-pane">
+</div>
+
+<div class="panel card body post-account-signup unadvised-user-only">
+<h4>After signing up for a personal account you can:</h4>
+<ul>
+<li>Set up a Joint Account</li>
+<li>Create a Trust Account</li>
+</ul>
+</div>
+
+
+
+
+</div>
+
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+      <div class="row">
+        <div class="col-sm-6">
+          {% bootstrap_field form.address_line_1 %}
+          {% bootstrap_field form.address_line_2 %}
+          {% bootstrap_field form.city %}
+    </form>
+
+
+{% endcomment %}
+
+

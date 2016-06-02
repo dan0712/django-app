@@ -1,36 +1,28 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts_new/base.html" %}
 {% load i18n %}
-{% block nav_support %} depressed {% endblock %}
+{% load filters %}
+
+
 {% block main_content %}
-
-<div id="content-main">
-<div class="support">
-    <div class="shared-header">
-        <h1>Support</h1>
-        <nav class="sub-nav">
-            <div>
-                <ul>
-                    <li class="">
-                        <a href="/advisor/support">Contact</a>
-                    </li>
-                    <li class="">
-                        <a href="/advisor/support/forms">Forms</a>
-                    </li>
-                    <li class="depressed">
-                        <a href="/advisor/support/getting-started">Getting Started</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+  <div class="container">
+    <div class="row m-t">
+      <div class="col-sm-8">
+          <!--h3 class="header">Support</h3 -->
+      </div>
     </div>
 
-   <p class="main-body">Review our getting started guide that contains various resources to help you take advantage of all of the great features available to you and your clients.</p>
-   <a class="big-primary-button view-guide" data-track-advisor-id="461" data-track-event="ElementClicked" data-track-location="SupportGettingStarted" data-track-module="Dashboard" data-track-name="ViewGuide" data-track-type="Button" href="#" target="_blank">View the guide</a>
+    <div>
+      {% include "advisor/partials/menu-support.html" %}
     </div>
-</div>
 
-</div>
+    <div class="m-t">
+      <p>
+        Review our getting started guide that contains various resources to help you 
+        take advantage of all of the great features available to you and your clients.
+      </p>
+      <p>
+        <a class="btn btn-primary">View the guide</a>
+      </p>
+    </div>
+  </div>
 {% endblock %}
-
-
-

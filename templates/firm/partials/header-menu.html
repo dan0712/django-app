@@ -1,0 +1,22 @@
+{% load i18n %}
+{% load filters %}
+
+
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:summary' }}">
+  <a href="{% url 'firm:summary' %}">{% trans 'Summary' %}</a>
+</li>
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:supervisors, firm:supervisors-create, firm:supervisors-edit, firm:supervisors-delete' }}">
+  <a href="{% url 'firm:supervisors' %}">{% trans 'Supervisors' %}</a>
+</li>
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:activity' }}">
+  <a href="{% url 'firm:activity' %}">{% trans 'Activity' %}</a>
+</li>
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:application' }}">
+  <a href="{% url 'firm:application' %}">{% trans 'Application manager' %}</a>
+</li>
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics, firm:analytics-advisors, firm:analytics-clients' }}">
+  <a href="{% url 'firm:analytics' %}">{% trans 'Analytics' %}</a>
+</li>
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:support, firm:support-forms, firm:support-pricing' }}">
+  <a href="{% url 'firm:support' %}">{% trans 'Support' %}</a>
+</li>

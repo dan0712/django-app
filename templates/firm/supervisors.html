@@ -1,0 +1,55 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row m-t">
+      <div class="col-sm-8">
+          <h3>Your company supervisors</h3>
+      </div>
+      <div class="col-sm-4 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'firm:supervisors-create' %}">Add user</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Authorization</th>
+              <th class="text-right"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for supervisor in supervisors %}
+              <tr>
+                <td>{{ supervisor.user.full_name }}</td>
+                <td><a href="mailto:{{ supervisor.user.email }}">{{ supervisor.user.email }}</a></td>
+                <td>{% if supervisor.can_write %} Full Access {% else %} Read Only {% endif %}</td>
+                <td class="text-right">
+                  <a class="btn btn-default-outline btn-sm" href="{% url 'firm:supervisors-edit' supervisor.user.pk %}">Edit</a>
+                  <a class="btn btn-danger-outline btn-sm" href="{% url 'firm:supervisors-delete' supervisor.user.pk %}">Delete</a>
+                </td>
+              </tr>
+             {% empty %}
+              <tr class="text-center">
+                <td colspan="4">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

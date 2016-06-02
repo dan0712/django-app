@@ -1,0 +1,114 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    {% with step=3 %}
+      {% include "advisor/partials/menu-invites.html" %}
+    {% endwith %}
+
+    <h3>Client Personal Details (Optional)</h3>
+
+    <p class="m-t-md">Enter your client's personal details</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="col-sm-6">
+          {% bootstrap_field form.address_line_1 %}
+          {% bootstrap_field form.address_line_2 %}
+          {% bootstrap_field form.city %}
+
+          <div class="row">
+            <div class="col-sm-8">
+              {% bootstrap_field form.state %}
+            </div>
+
+            <div class="col-sm-4">
+              {% bootstrap_field form.post_code %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="form-group">
+            {% bootstrap_field form.phone_number %}
+          </div>
+
+          <div class="form-group">
+            <label class="date optional control-label" for="client_invite_date_of_birth_2i">Date of Birth</label>
+
+            <div class="row">
+              <div class="col-xs-4">
+                <select class="form-control" id="client_invite_date_of_birth_3i" name="day">
+                  <option value="">Day</option>
+                  {% for day in days %}
+                    <option value="{{day}}" {% if day == form.day.value %} selected{% endif %}>{{day}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-xs-4">
+                <select class="form-control" id="client_invite_date_of_birth_2i" name="month">
+                  <option value="">Month</option>
+                  <option value="1"  {% if form.month.value == 1 %} selected{% endif %}>January</option>
+                  <option value="2"  {% if form.month.value == 2 %} selected{% endif %}>February</option>
+                  <option value="3" {% if form.month.value == 3 %} selected{% endif %}>March</option>
+                  <option value="4" {% if form.month.value == 4 %} selected{% endif %}>April</option>
+                  <option value="5" {% if form.month.value == 5 %} selected{% endif %}>May</option>
+                  <option value="6" {% if form.month.value == 6 %} selected{% endif %}>June</option>
+                  <option value="7" {% if form.month.value == 7 %} selected{% endif %}>July</option>
+                  <option value="8" {% if form.month.value == 8 %} selected{% endif %}>August</option>
+                  <option value="9" {% if form.month.value == 9 %} selected{% endif %}>September</option>
+                  <option value="10" {% if form.month.value == 10 %} selected{% endif %}>October</option>
+                  <option value="11" {% if form.month.value == 11 %} selected{% endif %}>November</option>
+                  <option value="12" {% if form.month.value == 12 %} selected{% endif %}>December</option>
+                </select>
+              </div>
+
+              <div class="col-xs-4">
+                <select class="form-control" id="client_invite_date_of_birth_1i" name="year">
+                  <option value="">Year</option>
+                  {% for year in years %}
+                    <option value="{{year}}" {% if year == form.year.value %} selected{% endif %}>{{year}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <span>{{ form.date_of_birth.errors }}</span>
+          </div>
+
+          <div class="form-group">
+            <label>Gender</label>
+
+            <div class="radio">
+              <label>
+                <input type="radio" id="radio1" name="gender" type="radio" value="Male" {% if form.gender.value == "Male" %} checked{%  endif %}>
+                Male
+              </label>
+            </div>
+
+            <div class="radio">
+              <label>
+                <input type="radio" id="radio1" name="gender" type="radio" value="Female" {% if form.gender.value == "Female" %} checked{%  endif %}>
+                Female
+              </label>
+            </div>
+
+            <span class="text-danger">{{ form.gender.errors }}</span>
+          </div>
+
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Continue</button>
+    </form>
+  </div>
+{% endblock %}

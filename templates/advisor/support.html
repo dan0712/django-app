@@ -1,93 +1,71 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts_new/base.html" %}
 {% load i18n %}
-{% block nav_support %} depressed {% endblock %}
+{% load filters %}
+
+
 {% block main_content %}
-
-<div id="content-main">
-<div class="support">
-    <div class="shared-header">
-        <h1>Support</h1>
-        <nav class="sub-nav">
-            <div>
-                <ul>
-                    <li class="depressed">
-                        <a href="/advisor/support">Contact</a>
-                    </li>
-                    <li class="">
-                        <a href="/advisor/support/forms">Forms</a>
-                    </li>
-
-                    <li class="">
-                        <a href="/advisor/support/getting-started">Getting Started</a>
-                    </li>
-
-
-                </ul>
-            </div>
-        </nav>
+  <div class="container">
+    <div class="row m-t">
+      <div class="col-sm-8">
+          <!--h3 class="header">Support</h3 -->
+      </div>
     </div>
 
-
-    <div class="contact">
-        <div class="advisor-table">
-            <table>
-                <thead>
-        <tr>
-            <th colspan="2">Support for you</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="phone">
-            <td><img alt="Phone" src="{{ STATIC_URL }}images/phone_45a018_68.png"></td>
-            <td>1888-888-888</td>
-        </tr>
-        <tr class="email">
-            <td><img alt="Email" src="{{ STATIC_URL }}images/envelope_45a018_68.png"></td>
-            <td>{{ SUPPORT_EMAIL }}</td>
-        </tr>
-        <tr class="hours">
-            <td><img alt="Clock" src="{{ STATIC_URL }}images/clock-o_45a018_68.png"></td>
-            <td>
-                Monday - Friday: 9AM - 8PM AEST <br>
-                Saturday - Sunday: 11AM - 6PM AEST
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-
-        <div class="client-table">
-    <table>
-        <thead>
-        <tr>
-            <th colspan="2">Support for your clients</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="phone">
-            <td><img alt="Phone" src="{{ STATIC_URL }}images/phone_45a018_68.png"></td>
-            <td>1888-888-888</td>
-        </tr>
-        <tr class="email">
-            <td><img alt="Email" src="{{ STATIC_URL }}images/envelope_45a018_68.png"></td>
-            <td>{{ SUPPORT_EMAIL }}</td>
-        </tr>
-        <tr class="hours">
-            <td><img alt="Clock" src="{{ STATIC_URL }}images/clock-o_45a018_68.png"></td>
-            <td>
-                Monday - Friday: 9AM - 8PM AEST <br>
-                Saturday - Sunday: 11AM - 6PM AEST
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-
+    <div>
+      {% include "advisor/partials/menu-support.html" %}
     </div>
-</div>
 
-</div>
+    <div class="row m-t">
+      <div class="col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">Support for you</div>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td width="1%"><span class="icon icon-phone"></span></td>
+                <td>{{ SUPPORT_PHONE|phone }}</td>
+              </tr>
+              <tr>
+                <td width="1%"><span class="icon icon-mail"></span></td>
+                <td><a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a></td>
+              </tr>
+              <tr>
+                <td width="1%"><span class="icon icon-stopwatch"></span></td>
+                <td>
+                  Monday - Friday: 9AM - 8PM AEST
+                  <br>
+                  Saturday - Sunday: 11AM - 6PM AEST
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">Support for your clients</div>
+          <table class="table">
+            <tbody>
+              <tr>
+                <td width="1%"><span class="icon icon-phone"></span></td>
+                <td>{{ SUPPORT_PHONE|phone }}</td>
+              </tr>
+              <tr>
+                <td width="1%"><span class="icon icon-mail"></span></td>
+                <td><a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a></td>
+              </tr>
+              <tr>
+                <td width="1%"><span class="icon icon-stopwatch"></span></td>
+                <td>
+                  Monday - Friday: 9AM - 8PM AEST
+                  <br>
+                  Saturday - Sunday: 11AM - 6PM AEST
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
-
-
-

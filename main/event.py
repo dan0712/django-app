@@ -37,7 +37,7 @@ class Event(ChoiceEnum):
     # It's here so we can easily process it for the account activity endpoint.
     GOAL_BALANCE_CALCULATED = (11, [], main.Goal)
 
-    # Events listed in the Transaction.TRANSACTION_EVENTS get a 'transaction' field populated in the 'extra' field when
+    # Events listed in the Transaction.EXECUTION_EVENTS get a 'transaction' field populated in the 'extra' field when
     # viewing the event activity.
     GOAL_WITHDRAWAL_EXECUTED = (12, ['txid'], main.Goal)
     GOAL_DEPOSIT_EXECUTED = (13, ['txid'], main.Goal)

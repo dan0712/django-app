@@ -1,0 +1,21 @@
+<div class="container">
+  {% if messages %}
+    <ul class="list-unstyled">
+      {% for message in messages %}
+        <li class="alert alert-success alert-dismissible m-b" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          {{ message }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if form.errors and not form.non_field_errors %}
+    <ul class="list-unstyled">
+      <li class="alert alert-danger alert-dismissible m-b" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        Please correct the error below.
+      </li>
+    </ul>
+  {% endif %}
+</div>

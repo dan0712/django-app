@@ -1,0 +1,183 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row">
+      <div class="col-sm-9">
+          <h3><span class="icon icon-users"></span> {{ object.name }}</h3>
+      </div>
+      <div class="col-sm-3 text-sm-right">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-9">
+        {% include "advisor/partials/menu-composites.html" %}
+      </div>
+      {% if object.advisor == profile %}
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-edit' object.pk %}">Edit household</a>
+        </div>
+      </div>
+      {%  endif %}
+    </div>
+
+    <div class="row">
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total balance</span>
+            <h2>
+              {{ object.total_balance|currency }}
+              <!-- <small class="delta-indicator delta-positive">5%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total returns</span>
+            <h2>
+              {{ object.total_returns|percentage }}
+              <!-- <small class="delta-indicator delta-negative">2%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total allocation</span>
+            <h2>
+              {{ object.stocks_percentage|percentage:0 }}&nbsp;<small>stocks</small>
+              {{ object.bonds_percentage|percentage:0 }}&nbsp;<small>bonds</small>
+              <!-- <small class="delta-indicator delta-positive">3%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% for account in object.accounts.all %}
+      <div class="row">
+        <div class="col-sm-9">
+          <h4 class="m-b-0">{{ account.account_type_name|default:'Undefined account type' }}</h4>
+          <div>
+            <a href="{% url 'advisor:composites-detail-clients' object.pk %}">{{ account.primary_owner.full_name }}</a>
+            /
+            Pricing plan: {{ account.fee }}
+            bps <a data-remote="true" data-target="#formPricingPlan" href="{% url 'advisor:composites-client-accounts-fee' account.pk %}"><span class="icon icon-pencil"></span></a>
+          </div>
+        </div>
+        <div class="col-sm-3 text-sm-right">
+          <div class="form-group">
+            <a class="btn btn-info-outline" href="{% url 'impersonate' account.primary_owner.user.pk %}?next=/composites/{{ object.pk }}" rel="nofollow">Log in</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="formPricingPlannn"></div>
+
+      <div class="row">
+        <div class="col-sm-4 m-b">
+          <div class="statcard statcard-default">
+            <div class="p-a">
+              <span class="statcard-desc">Total balance</span>
+              <h2>
+                {{ account.total_balance|currency }}
+                <!-- <small class="delta-indicator delta-positive">5%</small> -->
+              </h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4 m-b">
+          <div class="statcard statcard-default">
+            <div class="p-a">
+              <span class="statcard-desc">Total returns</span>
+              <h2>
+                {{ account.total_returns|percentage }}
+                <!-- <small class="delta-indicator delta-negative">2%</small> -->
+              </h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4 m-b">
+          <div class="statcard statcard-default">
+            <div class="p-a">
+              <span class="statcard-desc">Total allocation</span>
+              <h2>
+                {{ account.stocks_percentage|percentage:0 }}&nbsp;<small>stocks</small>
+                {{ account.bonds_percentage|percentage:0 }}&nbsp;<small>bonds</small>
+                <!-- <small class="delta-indicator delta-positive">3%</small> -->
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Goal name</th>
+                <th>Status</th>
+                <th>Balance</th>
+                <th>Return</th>
+                <th>Stocks/Bonds</th>
+                <th>Auto<br>frequency</th>
+                <th>Auto<br>amount</th>
+                <th>Term</th>
+                <th>Target</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for goal in account.goals.all %}
+                <tr>
+                  <td>
+                     {{ goal.name }}
+                  </td>
+                  <td>
+                    {% if goal.on_track == True %}
+                      <span class="text-success">On track</span>
+                    {% else %}
+                      <span class="text-danger">Off track</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ goal.total_balance|currency }}</td>
+                  <td>{{ goal.total_return|percentage }}</td>
+                  <td>
+                    {{ goal.stocks_percentage|percentage }} / {{ goal.bonds_percentage|percentage }}
+                  </td>
+                  <td>{{ goal.auto_frequency }}</td>
+                  <td>{{ goal.auto_amount|intcomma }}</td>
+                  <td>{{ goal.auto_term }}</td>
+                  <td>{{ goal.target|currency }}</td>
+                </tr>
+               {% empty %}
+                <tr>
+                  <td colspan="9" class="text-center">
+                    No entries
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endfor %}
+
+  </div>
+
+  <script type="text/javascript">
+
+  </script>
+{% endblock %}

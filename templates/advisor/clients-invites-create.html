@@ -1,0 +1,79 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    {% with step=1 %}
+      {% include "advisor/partials/menu-invites.html" %}
+    {% endwith %}
+
+    <h3>How would you like to complete the account opening process?</h3>
+
+    <div class="row m-t-md">
+      <div class="col-sm-6">
+        <div 
+          class="statcard statcard-default link"
+          onmouseover="$(this).removeClass('statcard-default'); $(this).addClass('statcard-primary')"
+          onmouseout="$(this).addClass('statcard-default'); $(this).removeClass('statcard-primary')"
+          onclick="window.location='{% url 'advisor:clients-invites' %}?invite_type=blank'"
+          >
+          <div class="p-a text-center">
+            <div>
+              <span >
+                <img alt="Blank form" src="{{STATIC_URL}}images/blank_form-0cd613ad1479c8051b678d3a2fe55bda.svg" class="bg-gray-light" style="width: 7em; border-radius: 100em; padding: 0 0.8em" />
+              </span>
+            </div>
+
+            <h4 class="m-t">Email a blank form to my client</h4>
+
+            <hr>
+
+            <p>
+              Select the type of account you would like to open. 
+              Your client will receive an email to complete the account opening process.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="visible-xs m-t"></div>
+
+      <div class="col-sm-6">
+        <div 
+          class="statcard statcard-default link"
+          onmouseover="$(this).removeClass('statcard-default'); $(this).addClass('statcard-primary')"
+          onmouseout="$(this).addClass('statcard-default'); $(this).removeClass('statcard-primary')"
+          onclick="window.location='{% url 'advisor:clients-invites' %}?invite_type=prepopulated'"
+          >
+          <div class="p-a text-center">
+            <div>
+              <span >
+                <img alt="Prepopulated form" src="{{STATIC_URL}}images/prepopulated_form-4686e7062f547272a603aaca71b7239b.svg" class="bg-gray-light" style="width: 7em; border-radius: 100em; padding: 0 0em" />
+              </span>
+            </div>
+
+            <h4 class="m-t">Pre-populate the form for my client</h4>
+
+            <hr>
+
+            <p>
+              Provide your client’s information for them
+              to review and approve the opening of their account.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-t-lg text-center">
+        <p>You can also copy your invite link:</p>
+        <a href="{{profile.get_invite_url}}">{{profile.get_invite_url}}</a>
+    </div>
+
+  </div>
+{% endblock %}
+

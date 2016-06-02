@@ -1,0 +1,16 @@
+{% load filters %}
+
+
+<ul class="nav nav-pills">
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:support' }}">
+    <a href="{% url 'advisor:support' %}">Contact</a>
+  </li>
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:support-forms' }}">
+    <a href="{% url 'advisor:support-forms' %}">Forms</a>
+  </li>
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:support-getting-started' }}">
+    <a href="{% url 'advisor:support-getting-started' %}">Getting started</a>
+  </li>
+</ul>
+
+<div class="visible-xs m-b"></div>

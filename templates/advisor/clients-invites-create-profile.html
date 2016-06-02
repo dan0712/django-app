@@ -1,0 +1,43 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    {% with step=3 %}
+      {% include "advisor/partials/menu-invites.html" %}
+    {% endwith %}
+
+    <h3>Enter your client's details</h3>
+
+    <p class="m-t-md">Enter your client's name and email to invite them to open their account.</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="col-sm-8 col-md-6">
+
+          <div class="row">
+            <div class="col-sm-6">
+              {% bootstrap_field form.first_name %}
+            </div>
+
+            <div class="col-sm-6">
+              {% bootstrap_field form.middle_name %}
+            </div>
+          </div>
+
+          {% bootstrap_field form.last_name %}
+          {% bootstrap_field form.email %}
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Continue</button>
+    </form>
+  </div>
+{% endblock %}

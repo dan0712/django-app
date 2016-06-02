@@ -18,7 +18,9 @@ def add_class(value, index):
 
 @register.filter
 def b_date(value):
-    return "%02d/%02d/%d" % (value.day, value.month, value.year)
+    if not value:
+        return '' 
+    return '%02d/%02d/%d' % (value.day, value.month, value.year)
 
 
 @register.filter

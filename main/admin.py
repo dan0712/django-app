@@ -24,6 +24,10 @@ from main.models import (
 from suit.admin import SortableModelAdmin, SortableTabularInline
 
 
+from main.models import AccountGroup
+admin.site.register(AccountGroup)
+
+
 class AssetResource(resources.ModelResource):
     class Meta:
         model = ProxyAssetClass

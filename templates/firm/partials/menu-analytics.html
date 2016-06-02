@@ -1,0 +1,16 @@
+{% load filters %}
+
+
+<ul class="nav nav-pills">
+  <li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics' }}">
+    <a href="{% url 'firm:analytics' %}">Overview</a>
+  </li>
+  <li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics-advisors' }}">
+    <a href="{% url 'firm:analytics-advisors' %}">Advisers</a>
+  </li>
+  <li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics-clients' }}">
+    <a href="{% url 'firm:analytics-clients' %}">Clients</a>
+  </li>
+</ul>
+
+<div class="visible-xs m-b"></div>

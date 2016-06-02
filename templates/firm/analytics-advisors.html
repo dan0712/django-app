@@ -1,0 +1,59 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row m-t">
+      <div class="col-sm-9">
+        {% include "firm/partials/menu-analytics.html" %}
+      </div>
+
+      <form>
+        <div class="col-sm-3">
+          {% bootstrap_field filter.form.search show_label=False show_help=False %}
+        </div>
+      </form>
+    </div>
+
+    <div>
+      Below is the list of advisers. Click on the name to see their individual analytics.
+    </div>
+
+    <div class="panel panel-default m-t">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <th>#</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Email</th>
+          </thead>
+          <tbody>
+            {% for item in filter %}
+              <tr>
+                <td>{{ item.pk }}</td>
+                <td><a href="{% url 'firm:analytics-advisors-detail' item.pk %}" data-toggle="modal" data-target="#analyticsAdvisorModal">{{ item.user.get_full_name }}</a></td>
+                <td>{{ item.address_line_1 }} {{ item.address_line_2 }}, {{ item.city }}, {{ item.state }} {{ item.post_code }}</td>
+                <td><a href="mailto:{{ item.email }}">{{ item.email }}</a></td>
+              </tr>
+            {% empty %}
+              <tr class="text-center">
+                <td colspan="5">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% include "firm/partials/modal-analytics-advisor.html" %}
+{% endblock %}
+

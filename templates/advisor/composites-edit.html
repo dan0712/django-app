@@ -1,0 +1,161 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6">
+        <h3>
+          <span class="icon icon-users"></span>
+          <span id="nameView">
+            {{ object.name }}
+            <small> <a onclick="$('#nameEdit').toggle(); $('#nameView').toggle();" class="icon icon-pencil"></a></small>
+          </span>
+
+          <span id="nameEdit" style="display: none">
+            <form method="post" class="form-inline" style="display: inline">
+              {% csrf_token %}
+              <input name="advisor" type="hidden" value="{{ profile.pk }}" />
+              {% bootstrap_field form.name show_label=false %}
+              <button class="btn btn-primary" type="submit">Save</button>
+            </form>
+          </span>
+        <h3>
+      </div>
+    </div>
+
+    <h4 class="m-t">Select client to add accounts from</h4>
+    <div class="row">
+      <div class="col-sm-6">
+        <form>
+          <div class="form-group">
+            <!-- TODO: make it searchable select -->
+            <select name="client_id" class="form-control" onchange="this.form.submit();">
+              <option value="">- Select client -</option>
+              {%  for client in profile.clients.all %}
+                  <option value="{{ client.pk }}" {% if client_id == client.pk %}selected="selected"{% endif %}>{{ client.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <!-- TODO: oh my god :/ dreaming of total refactoring -->
+      <input name="advisor" type="hidden" value="{{ profile.pk }}" />
+      <input name="name" type="hidden" value="{{ object.name }}" />
+
+      <h4 class="m-t">Select accounts to add to the household</h4>
+      <div class="panel panel-default">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th width="1%"></th>
+                <th>Account</th>
+                <th>Balance</th>
+                <th>Owners</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in accounts.all %}
+                <tr>
+                  <td>
+                    <input name="accounts" type="checkbox" value="{{ item.pk }}">
+                  </td>
+                  <td>{{ item.account_type_name }}</td>
+                  <td>{{ item.total_balance|currency }}</td>
+                  <td>{{ item.owners }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center">
+                    No entries
+                  </td>
+                </tr>
+              {% endfor %}
+
+              {% if accounts.count %}
+                <tr>
+                  <td colspan="4">
+                     <input type="submit" value="Add accounts" class="btn btn-primary">
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </form>
+
+    <h4 class="m-t">Accounts added to household</h4>
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Balance</th>
+              <th>Owners</th>
+              <th class="text-xs-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in object.accounts.all %}
+              <tr>
+                <td>{{ item.account_type_name }}</td>
+                <td>{{ item.total_balance|currency }}</td>
+                <td>{{ item.owners }}</td>
+                <td class="text-xs-right">
+                  <a class="btn btn-danger btn-xs" data-toggle="modal" data-target="#addedAccountGroup{{ item.pk }}">Remove</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  {% for item in object.accounts.all %}
+    <div id="addedAccountGroup{{ item.pk }}" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Remove account</h4>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to remove the account: 
+              <strong>
+                {{ item.account_type_name }} ({{ item.total_balance|currency }})
+              </strong>
+              ?
+            </p>
+          </div>
+          <div class="modal-footer">
+            <form method="post" action="{% url 'advisor:composites-detail-account-groups-delete' item.pk object.pk %}?next=/">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Remove</a>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+{% endblock %}

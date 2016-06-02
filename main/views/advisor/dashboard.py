@@ -3,26 +3,26 @@ from datetime import datetime
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import (
-    load_backend, BACKEND_SESSION_KEY, login as auth_login, logout as auth_logout)
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import PermissionDenied
+    load_backend, BACKEND_SESSION_KEY,
+    login as auth_login, logout as auth_logout,
+)
+from django.contrib.auth import authenticate, login, logout
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
-from django.http import Http404
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from django.views.generic import CreateView
-from django.views.generic import DetailView
-from django.views.generic import TemplateView
-from django.views.generic import UpdateView
-from django.views.generic import View
+from django.views.generic import (
+    CreateView, DetailView, TemplateView, UpdateView, View,
+)
+
 from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
 from operator import itemgetter
 from ..base import AdvisorView, ClientView
 from ...forms import EmailInviteForm
 from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_TYPES
-from django.contrib.auth import authenticate, login, logout
 
 __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
@@ -30,7 +30,7 @@ __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView',
            'AdvisorAccountGroupClients',
            'AdvisorAccountGroupSecondaryDetailView',
-           'AdvisorAccountGroupSecondaryNewView',
+           'AdvisorAccountGroupSecondaryCreateView',
            'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary',
            'ImpersonateView', 'Logout', 'AdvisorClientAccountChangeFee',
            "AdvisorSupportGettingStarted", "AdvisorClientInviteNewView",
@@ -43,7 +43,7 @@ __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
 
 class AdvisorClientInvites(CreateView, AdvisorView):
     form_class = EmailInviteForm
-    template_name = 'advisor/client-invites.html'
+    template_name = 'advisor/clients-invites.html'
 
     def get_success_url(self):
         messages.info(self.request, "Invite sent successfully!")
@@ -53,7 +53,7 @@ class AdvisorClientInvites(CreateView, AdvisorView):
         invite_type = request.GET.get('invite_type', None)
         if invite_type is not None and invite_type in ("prepopulated",
                                                        "blank"):
-            self.template_name = 'advisor/client-invite-account-type.html'
+            self.template_name = 'advisor/clients-invites-create-account-type.html'
         response = super(CreateView, self).get(request, *args, **kwargs)
         response.context_data["invite_type_new_client"] = invite_type
         return response
@@ -84,7 +84,7 @@ class AdvisorSummary(TemplateView, AdvisorView):
 
 
 class AdvisorClientDetails(TemplateView, AdvisorView):
-    template_name = "advisor/client-details.html"
+    template_name = "advisor/clients-detail.html"
     client = None
 
     def get(self, request, *args, **kwargs):
@@ -109,7 +109,7 @@ class AdvisorClientDetails(TemplateView, AdvisorView):
 class AdvisorClientInviteNewView(TemplateView, AdvisorView):
     """Docstring for AdvisorClientInviteNewView. """
 
-    template_name = 'advisor/client_invites_new.html'
+    template_name = 'advisor/clients-invites-create.html'
 
 
 class AdvisorClients(TemplateView, AdvisorView):
@@ -212,7 +212,7 @@ class AdvisorSupport(TemplateView, AdvisorView):
 
 
 class AdvisorForms(TemplateView, AdvisorView):
-    template_name = "advisor/forms.html"
+    template_name = "advisor/support-forms.html"
 
 
 class AdvisorCompositeForm:
@@ -246,15 +246,18 @@ class AdvisorCompositeForm:
 
     def form_valid(self, form):
         response = super(AdvisorCompositeForm, self).form_valid(form)
-        for account in self.account_list:
-            account.add_to_account_group(self.object)
+
+        if self.account_list:
+            for account in self.account_list:
+                account.add_to_account_group(self.object)
+
         return response
 
     def get_success_url(self):
         if self.object:
-            return '/composites/{0}/edit'.format(self.object.pk)
+            return reverse_lazy('advisor:composites-edit', kwargs={'pk': self.object.pk})
         else:
-            return '/composites/new'
+            return reverse_lazy('advisor:composites-create')
 
     def get_queryset(self):
         return super(AdvisorCompositeForm, self).get_queryset().filter(
@@ -262,32 +265,35 @@ class AdvisorCompositeForm:
 
 
 class AdvisorCompositeNew(AdvisorCompositeForm, CreateView, AdvisorView):
-    template_name = "advisor/composite-form.html"
+    template_name = "advisor/composites-create.html"
     model = AccountGroup
     fields = ('advisor', 'name')
     account_list = None
 
+    """
     def post(self, request, *args, **kwargs):
         account_list = request.POST.getlist('accounts')
         account_list = ClientAccount.objects.filter(
             pk__in=account_list,
             primary_owner__advisor=self.advisor)
         if account_list.count() == 0:
-            messages.error(
-                request,
+            redirect = reverse_lazy('advisor:composites-create')
+            messages.error(request,
                 'Failed to create household. Make sure you add at least one account')
-            return HttpResponseRedirect('/composites/new')
+            return HttpResponseRedirect(redirect)
         self.account_list = account_list
         return super(AdvisorCompositeNew, self).post(request, *args, **kwargs)
+    """
 
     def get_success_url(self):
         messages.info(self.request, mark_safe(
             '<span class="mpicon accept"></span>Successfully created household'))
+
         return super(AdvisorCompositeNew, self).get_success_url()
 
 
 class AdvisorCompositeEdit(AdvisorCompositeForm, UpdateView, AdvisorView):
-    template_name = "advisor/composite-form.html"
+    template_name = "advisor/composites-edit.html"
     model = AccountGroup
     fields = ('advisor', 'name')
     account_list = None
@@ -318,15 +324,18 @@ class AdvisorRemoveAccountFromGroupView(AdvisorView):
         group_name = account.remove_from_group()
 
         if group_name:
-            return HttpResponseRedirect('/composites/new?name={0}'.format(
-                group_name))
+            # account group deleted (cause no accounts in it any more)
+            redirect = reverse_lazy('advisor:summary')
         else:
-            return HttpResponseRedirect('/composites/{0}/edit'.format(
-                account_group_id))
+            # account group not deleted (just the account)
+            redirect = reverse_lazy('advisor:composites-edit',
+                kwargs={'pk': account_group_id})
+
+        return HttpResponseRedirect(redirect)
 
 
 class AdvisorAccountGroupDetails(DetailView, AdvisorView):
-    template_name = "advisor/account-group-details.html"
+    template_name = "advisor/composites-detail.html"
     model = AccountGroup
 
     def get_queryset(self):
@@ -341,7 +350,7 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
 
 
 class AdvisorAccountGroupClients(DetailView, AdvisorView):
-    template_name = "advisor/account-group-clients.html"
+    template_name = "advisor/composites-detail-clients.html"
     model = AccountGroup
 
     def get_queryset(self):
@@ -360,7 +369,7 @@ class AdvisorAccountGroupClients(DetailView, AdvisorView):
 
 
 class AdvisorAccountGroupSecondaryDetailView(DetailView, AdvisorView):
-    template_name = "advisor/account_group_sharing_form.html"
+    template_name = "advisor/composites-detail-secondary-advisors.html"
     model = AccountGroup
 
     def get_queryset(self):
@@ -368,14 +377,14 @@ class AdvisorAccountGroupSecondaryDetailView(DetailView, AdvisorView):
                      self).get_queryset().filter(advisor=self.advisor)
 
 
-class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
-    template_name = "advisor/account_group_sharing_form.html"
+class AdvisorAccountGroupSecondaryCreateView(UpdateView, AdvisorView):
+    template_name = "advisor/composites-detail-secondary-advisors.html"
     model = AccountGroup
     fields = ('secondary_advisors',)
     secondary_advisor = None
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupSecondaryNewView,
+        return super(AdvisorAccountGroupSecondaryCreateView,
                      self).get_queryset().filter(advisor=self.advisor)
 
     def get_success_url(self):
@@ -383,12 +392,14 @@ class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
         msg += 'Successfully added {0} as a secondary advisor to {1}'
         msg = msg.format(self.secondary_advisor.user.get_full_name().title(),
                          self.object.name)
+
         messages.info(self.request, mark_safe(msg))
-        return '/composites/{0}/composite_secondary_advisors/new'.format(
-            self.object.pk)
+
+        return reverse_lazy('advisor:composites-detail-secondary-advisors-create',
+                kwargs={'pk': self.object.pk})
 
     def get_form(self, form_class=None):
-        form = super(AdvisorAccountGroupSecondaryNewView,
+        form = super(AdvisorAccountGroupSecondaryCreateView,
                      self).get_form(form_class)
 
         def save_m2m():
@@ -422,7 +433,7 @@ class AdvisorAccountGroupSecondaryNewView(UpdateView, AdvisorView):
         return form
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupSecondaryNewView,
+        ctx = super(AdvisorAccountGroupSecondaryCreateView,
                     self).get_context_data(**kwargs)
         ctx["new"] = True
         ctx["s_advisors"] = self.advisor.firm.advisors.exclude(
@@ -463,13 +474,14 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
             'advisor from {0}'.format(account_group.name)))
 
         return HttpResponseRedirect(
-            '/composites/{0}/composite_secondary_advisors/new'.format(
-                account_group_pk))
+            reverse_lazy('advisor:composites-detail-secondary-advisors-create',
+                kwargs={'pk': account_group_pk})
+        )
 
 
 class AdvisorCompositeSummary(TemplateView, AdvisorView):
     model = AccountGroup
-    template_name = 'advisor/composite-summary.html'
+    template_name = 'advisor/summary.html'
     col_dict = {
         "name": 2,
         "goal_status": 5,
@@ -638,6 +650,7 @@ class Logout(ImpersonateBase):
     def get(self, request, *args, **kwargs):
         self.request = request
         imposter, redirect_url = self.get_imposter()
+
         if imposter:
             backend = self.get_used_backend()
             imposter.backend = "%s.%s" % (backend.__module__,
@@ -646,7 +659,8 @@ class Logout(ImpersonateBase):
             return HttpResponseRedirect(redirect_url)
 
         # we will remove everything in session.
-        for key in request.session.keys():
+        session_keys = [key for key in request.session.keys()] # should be real copy
+        for key in session_keys:
             del request.session[key]
 
         logout(request)
@@ -657,7 +671,7 @@ class Logout(ImpersonateBase):
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
     model = ClientAccount
     fields = ('custom_fee',)
-    template_name = 'advisor/fee_override.js'
+    template_name = 'advisor/form-fee.js'
     content_type = 'text/javascript'
 
     def get_context_data(self, **kwargs):
@@ -666,7 +680,7 @@ class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
         ctx["object"] = self.object
         ctx["platform"] = Platform.objects.first()
         ctx["firm"] = self.advisor.firm
-        html_output = render_to_string("advisor/change_fee_form.html",
+        html_output = render_to_string("advisor/form-fee.html",
                                        RequestContext(self.request, ctx))
         html_output = mark_safe(html_output.replace("\n", "\\n").replace(
             '"', '\\"').replace("'", "\\'"))
@@ -735,9 +749,8 @@ class PrepopulatedUserForm(forms.ModelForm):
 
 
 class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
-    template_name = 'advisor/create_new_client.html'
+    template_name = 'advisor/clients-invites-create-profile.html'
     form_class = PrepopulatedUserForm
-    success_url = '/advisor/client_invites/{0}/build/personal_details'
     account_type = None
     invite_type = None
 
@@ -745,6 +758,7 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
 
         try:
             user = User.objects.get(email=request.POST.get("email", None))
+
             if not user.prepopulated:
                 messages.error(request, "User already exists")
                 response = super(CreateNewClientPrepopulatedView, self).get(
@@ -753,8 +767,10 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
                     data=request.POST)
                 return response
             else:
-                return HttpResponseRedirect(self.success_url.format(
-                    user.client.pk))
+                return HttpResponseRedirect(
+                    reverse_lazy('advisor:clients-invites-create-personal-details',
+                        kwargs={'pk': user.client.pk})
+                )
 
         except ObjectDoesNotExist:
             pass
@@ -767,8 +783,10 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
             user = form.save()
             if self.invite_type == "blank":
                 return HttpResponseRedirect(
-                    "/advisor/client_invites/{0}/build/confirm?invitation_type=blank".format(
-                        user.client.pk))
+                    reverse_lazy('advisor:clients-invites-create-confirm',
+                        kwargs={'pk': user.client.pk}) + '?invitation_type=blank'
+                )
+
             else:
                 return HttpResponseRedirect(self.success_url.format(
                     user.client.pk))
@@ -787,9 +805,11 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
 
         if self.account_type not in ["joint_account", "trust_account"]:
             messages.error(request, "Please select an account type")
+
             return HttpResponseRedirect(
-                '/advisor/client_invites?invite_type={0}'.format(
-                    self.invite_type))
+                reverse_lazy('advisor:clients-invites') \
+                + '?invitation_type={0}'.format(self.invite_type)
+            )
 
         return super(CreateNewClientPrepopulatedView, self).dispatch(
             request, *args, **kwargs)
@@ -803,6 +823,8 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
                              self).get_context_data(**kwargs)
         context_data["account_type"] = self.account_type
         context_data["invite_type_new_email"] = self.invite_type
+        context_data['form'] = self.form_class()
+
         return context_data
 
 
@@ -862,10 +884,9 @@ class BuildPersonalDetailsForm(forms.ModelForm):
 
 
 class BuildPersonalDetails(AdvisorView, UpdateView):
-    template_name = 'advisor/build_personal_details.html'
+    template_name = 'advisor/clients-invites-create-personal-details.html'
     model = Client
     form_class = BuildPersonalDetailsForm
-    success_url = '/advisor/client_invites/{0}/build/financial_details'
 
     def get_queryset(self):
         q = super(BuildPersonalDetails, self).get_queryset()
@@ -873,7 +894,8 @@ class BuildPersonalDetails(AdvisorView, UpdateView):
         return q
 
     def get_success_url(self):
-        return self.success_url.format(self.object.pk)
+        return reverse_lazy('advisor:clients-invites-create-financial-details',
+                kwargs={'pk': self.object.pk})
 
     def get_context_data(self, **kwargs):
         context_data = super(BuildPersonalDetails, self).get_context_data(
@@ -904,10 +926,9 @@ class BuildFinancialDetailsForm(forms.ModelForm):
 
 
 class BuildFinancialDetails(AdvisorView, UpdateView):
-    template_name = 'advisor/build_financial_details.html'
+    template_name = 'advisor/clients-invites-create-financial-details.html'
     model = Client
     form_class = BuildFinancialDetailsForm
-    success_url = '/advisor/client_invites/{0}/build/confirm'
 
     def get_queryset(self):
         q = super(BuildFinancialDetails, self).get_queryset()
@@ -915,11 +936,12 @@ class BuildFinancialDetails(AdvisorView, UpdateView):
         return q
 
     def get_success_url(self):
-        return self.success_url.format(self.object.pk)
+        return reverse_lazy('advisor:clients-invites-create-confirm',
+                kwargs={'pk': self.object.pk})
 
 
 class BuildConfirm(AdvisorView, TemplateView):
-    template_name = 'advisor/build_confirm.html'
+    template_name = 'advisor/clients-invites-create-confirm.html'
     object = None
     invitation_type = None
 
@@ -998,7 +1020,7 @@ class BuildConfirm(AdvisorView, TemplateView):
 
 
 class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, TemplateView):
-    template_name = "advisor/account-invite-account-type.html"
+    template_name = "advisor/clients-invites-create-account-type.html"
     client = None
 
     def dispatch(self, request, *args, **kwargs):
@@ -1021,7 +1043,7 @@ class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, Tem
 
 
 class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
-    template_name = "advisor/account_invite_confirm.html"
+    template_name = "advisor/clients-invites-confirm-account.html"
     model = ClientAccount
     fields = ('primary_owner', 'account_class')
     client = None
@@ -1029,7 +1051,7 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
 
     def get_success_url(self):
         messages.success(self.request, "New account confirmation email sent successfully.")
-        return "/advisor/client/{0}".format(self.client.pk)
+        return reverse_lazy('advisor:clients-detail', kwargs={'pk': self.client.pk})
 
     def dispatch(self, request, *args, **kwargs):
         client_pk = kwargs["pk"]
@@ -1085,7 +1107,7 @@ class ConfirmClientNewAccountForm(forms.ModelForm):
 class ConfirmClientNewAccount(ClientView, UpdateView):
     model = ClientAccount
     form_class = ConfirmClientNewAccountForm
-    template_name = "advisor/client_account_invite_confirm.html"
+    template_name = "advisor/clients-invites-confirm.html"
     success_url = "/client/app"
 
     def post(self, request, *args, **kwargs):

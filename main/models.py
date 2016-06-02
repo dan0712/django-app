@@ -1,8 +1,8 @@
-import datetime
-import importlib
 import json
-import logging
 import uuid
+import logging
+import importlib
+import datetime
 from datetime import date
 from enum import Enum, unique
 from itertools import chain, repeat
@@ -41,7 +41,10 @@ from main.managers import ClientQuerySet
 from main.slug import unique_slugify
 from .fields import ColorField
 from .managers import (
-    ClientAccountQuerySet, GoalQuerySet,
+    ClientQuerySet,
+    ClientAccountQuerySet,
+    GoalQuerySet,
+    PositionQuerySet,
 )
 
 logger = logging.getLogger('main.models')
@@ -213,6 +216,7 @@ ACCOUNT_TYPES = (
 class BetaSmartzAgreementForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(BetaSmartzAgreementForm, self).clean()
+
         if not (cleaned_data["betasmartz_agreement"] is True):
             self._errors['betasmartz_agreement'] = mark_safe(
                 '<ul class="errorlist">'
@@ -435,9 +439,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     Username, password and email are required. Other fields are optional.
     """
 
-    first_name = models.CharField(_('first name'), max_length=30)
+    first_name = models.CharField(_('first name'), max_length=30) # db_index=True
     middle_name = models.CharField(_('middle name(s)'), max_length=30, blank=True)
-    last_name = models.CharField(_('last name'), max_length=30)
+    last_name = models.CharField(_('last name'), max_length=30, db_index=True)
     username = models.CharField(max_length=30, editable=False, default='')
     email = models.EmailField(
         _('email address'),
@@ -459,6 +463,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
     prepopulated = models.BooleanField(default=False)
+    notifications = GenericRelation('notifications.Notification', related_query_name='users',
+        content_type_field='actor_content_type_id', object_id_field='actor_object_id') # aka activity
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -482,6 +489,17 @@ class User(AbstractBaseUser, PermissionsMixin):
             #self._is_advisor = self.groups.filter(name=User.GROUP_ADVISOR).exists()
 
         return self._is_advisor
+
+    @property
+    def is_authorised_representative(self):
+        """
+        Custom helper method for User class to check user type/profile.
+        """
+        if not hasattr(self, '_is_authorised_representative'):
+            self._is_authorised_representative = hasattr(self, 'authorised_representative')
+            #self._is_authorised_representative = self.groups.filter(name=User.GROUP_AUTHORISED_REPRESENTATIVE).exists()
+
+        return self._is_authorised_representative
 
     @property
     def is_client(self):
@@ -538,17 +556,13 @@ class AssetClass(models.Model):
     primary_color = ColorField()
     foreground_color = ColorField()
     drift_color = ColorField()
-    asset_class_explanation = models.TextField(blank=True,
-                                               default="",
-                                               null=False)
-    tickers_explanation = models.TextField(blank=True, default="", null=False)
-    display_name = models.CharField(max_length=255, unique=True)
-    investment_type = models.CharField(max_length=255,
-                                       choices=INVESTMENT_TYPES,
-                                       blank=False,
-                                       null=False)
-    super_asset_class = models.CharField(max_length=255,
-                                         choices=SUPER_ASSET_CLASSES)
+    asset_class_explanation = models.TextField(blank=True, default='', null=False)
+    tickers_explanation = models.TextField(blank=True, default='', null=False)
+    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
+    investment_type = models.CharField(max_length=255, choices=INVESTMENT_TYPES,
+        blank=False, null=False, db_index=True) # TODO: should be converted to Integer
+    super_asset_class = models.CharField(max_length=255, choices=SUPER_ASSET_CLASSES,
+        db_index=True) # TODO: should be converted to Integer
 
     def save(self,
              force_insert=False,
@@ -1305,7 +1319,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     create_date = models.DateTimeField(auto_now_add=True)
     client_agreement = models.FileField()
 
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, related_name='client')
     tax_file_number = models.CharField(max_length=9, null=True, blank=True)
     provide_tfn = models.IntegerField(verbose_name="Provide TFN?",
                                       choices=TFN_CHOICES,
@@ -1333,7 +1347,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         default=False,
         choices=YES_NO)
 
-    employment_status = models.IntegerField(choices=EMPLOYMENT_STATUSES, null=True)
+    employment_status = models.IntegerField(choices=EMPLOYMENT_STATUSES, null=True, blank=True)
     net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
@@ -1794,13 +1808,30 @@ class AssetFee(models.Model):
 
 
 class GoalType(models.Model):
+    # OBSOLETED # see RISK_LEVEL for GoalMetric
+    RISK_LEVEL_PROTECTED = 0 # 0.0
+    RISK_LEVEL_SEMI_PROTECTED = 20 # 0.2
+    RISK_LEVEL_MODERATE = 40 # 0.4
+    RISK_LEVEL_SEMI_DYNAMIC = 60 # 0.6
+    RISK_LEVEL_DYNAMIC = 80 # 0.8
+
+    RISK_LEVELS = (
+        (RISK_LEVEL_PROTECTED, 'Protected'),
+        (RISK_LEVEL_SEMI_PROTECTED, 'Semi-protected'),
+        (RISK_LEVEL_MODERATE, 'Moderate'),
+        (RISK_LEVEL_SEMI_DYNAMIC, 'Semi-dynamic'),
+        (RISK_LEVEL_DYNAMIC, 'Dynamic'),
+    )
+
     name = models.CharField(max_length=255, null=False, db_index=True)
     description = models.TextField(null=True, blank=True)
     default_term = models.IntegerField(null=False)
     group = models.CharField(max_length=255, null=True)
-    risk_sensitivity = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
-                                         help_text="Default risk sensitivity for this goal type. "
-                                                   "0 = not sensitive, 10 = Very sensitive (No risk tolerated)")
+    risk_sensitivity = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
+        help_text="Default risk sensitivity for this goal type. "
+            "0 = not sensitive, 10 = Very sensitive (No risk tolerated)"
+    )
     order = models.IntegerField(default=0, help_text="The order of the type in the list.")
     risk_factor_weights = JSONField(null=True, blank=True)
 
@@ -1809,6 +1840,17 @@ class GoalType(models.Model):
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
+
+    def __str__(self):
+        result = u'%s' % (self.name)
+        return result
+
+    # OBSOLETED
+    @classmethod
+    def risk_level_range(cls, risk_level):
+        risk_min = risk_level
+        risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
+        return [risk_min, risk_max]
 
 
 class RecurringTransaction(models.Model):
@@ -1849,6 +1891,10 @@ class Portfolio(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     # Also has 'items' field from PortfolioItem
 
+    def __str__(self):
+        result = u'Portfolio #%s' % (self.id)
+        return result
+
 
 class PortfolioItem(models.Model):
     portfolio = models.ForeignKey(Portfolio, related_name='items')
@@ -1866,6 +1912,10 @@ class GoalSetting(models.Model):
     rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing?')
     # also may have a 'recurring_transactions' field from RecurringTransaction model.
     # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
+
+    def __str__(self):
+        result = u'Goal Settings #%s (%s)' % (self.id, self.portfolio)
+        return result
 
     @property
     def goal(self):
@@ -2387,17 +2437,17 @@ class Goal(models.Model):
         today = date.today()
         # check if goal is part of the retirement plan
         financial_plan_accounts = self.account.primary_owner.financial_plan_accounts.filter(account=self).all()
+
         if financial_plan_accounts:
             retirement_age = self.account.primary_owner.financial_plan.retirement_age
             current_age = today.year - self.account.primary_owner.date_of_birth.year
-            term = retirement_age - current_age
-            if term > 0:
-                return term
-            return 0
+            term = max(retirement_age - current_age, 0)
 
         else:
-            term = self.completion_date.year - today.year
-            return term
+            term = self.selected_settings.completion.year - today.year \
+                if self.selected_settings else None
+
+        return term
 
     @property
     def auto_term(self):
@@ -2524,6 +2574,22 @@ class GoalMetric(models.Model):
         REBALANCE_TYPE_RELATIVE: 'Relative',
     }
 
+    # Experimental
+    RISK_LEVEL_PROTECTED = 0 # 0.0
+    RISK_LEVEL_SEMI_PROTECTED = 20 # 0.2
+    RISK_LEVEL_MODERATE = 40 # 0.4
+    RISK_LEVEL_SEMI_DYNAMIC = 60 # 0.6
+    RISK_LEVEL_DYNAMIC = 80 # 0.8
+
+    RISK_LEVELS = (
+        (RISK_LEVEL_PROTECTED, 'Protected'),
+        (RISK_LEVEL_SEMI_PROTECTED, 'Semi-protected'),
+        (RISK_LEVEL_MODERATE, 'Moderate'),
+        (RISK_LEVEL_SEMI_DYNAMIC, 'Semi-dynamic'),
+        (RISK_LEVEL_DYNAMIC, 'Dynamic'),
+    )
+
+    # OBSOLETED # setting = models.ForeignKey(GoalSetting, related_name='metrics', null=True)
     group = models.ForeignKey('GoalMetricGroup', related_name='metrics')
     type = models.IntegerField(choices=metric_types.items())
     feature = models.ForeignKey(AssetFeatureValue, null=True, on_delete=PROTECT)
@@ -2534,6 +2600,12 @@ class GoalMetric(models.Model):
         help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
     measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
+
+    @classmethod
+    def risk_level_range(cls, risk_level):
+        risk_min = risk_level
+        risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
+        return [risk_min, risk_max]
 
     @property
     def drift_score(self):
@@ -2573,6 +2645,8 @@ class Position(models.Model):
     goal = models.ForeignKey(Goal, related_name='positions')
     ticker = models.ForeignKey(Ticker)
     share = models.FloatField(default=0)
+
+    objects = PositionQuerySet.as_manager()
 
     @property
     def is_stock(self):
@@ -2811,7 +2885,7 @@ class Supervisor(models.Model):
     # has full authorization to make action in name of advisor and clients
     can_write = models.BooleanField(default=False,
                                     verbose_name="Has Full Access?",
-                                    help_text="A supervisor with 'full access' can impersonate advisors and clients "
+                                    help_text="A supervisor with 'full access' can impersonate advisers and clients "
                                               "and make any action as them.")
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -2882,7 +2956,7 @@ class Transaction(models.Model):
     STATUS_EXECUTED = 'EXECUTED'
     STATUSES = (('PENDING', 'PENDING'), ('EXECUTED', 'EXECUTED'))
 
-    REASON_DIVIDEND = 0
+    REASON_DIVIDEND = 0 # TODO: don't use 0 for that, never (for very special values only)
     REASON_DEPOSIT = 1
     REASON_WITHDRAWAL = 2
     REASON_REBALANCE = 3
@@ -3012,3 +3086,8 @@ class ActivityLogEvent(models.Model):
             alog = ActivityLog.objects.create(name=event.name, format_str='DEFAULT_TEXT: {}'.format(event.name))
 
         return ActivityLogEvent.objects.create(id=event.value, activity_log=alog)
+
+
+import advisor.connectors # just to init all the connectors, don't remove it
+import client.connectors # just to init all the connectors, don't remove it
+

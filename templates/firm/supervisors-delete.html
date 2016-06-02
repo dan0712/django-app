@@ -1,0 +1,32 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row m-t">
+      <div class="col-sm-8">
+          <h3>Confirm supervisor deletion</h3>
+      </div>
+      <div class="col-sm-4 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'firm:supervisors' %}">Back to supervisors</a></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-t">
+      Are you sure you want to delete the supervisor {{ object.get_full_name }}?
+
+      <form method="post" class="m-t">
+      {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{% url 'firm:supervisors' %}" class="btn btn-success m-l">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

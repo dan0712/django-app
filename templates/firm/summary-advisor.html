@@ -1,0 +1,96 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Total balance</span>
+            <h2>
+              {{ object.total_balance|currency }}
+              <!-- <small class="delta-indicator delta-positive">5%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-danger">
+          <div class="p-a">
+            <span class="statcard-desc">Total returns</span>
+            <h2>
+              {{ object.total_return|currency }}
+              <!-- <small class="delta-indicator delta-negative">2%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 m-b">
+        <div class="statcard statcard-success">
+          <div class="p-a">
+            <span class="statcard-desc">Number of clients</span>
+            <h2>
+              {{ object.primary_clients_size }}&nbsp;<small>primary</small> 
+              {{ object.secondary_clients_size }}&nbsp;<small>secondary</small>
+              <!-- <small class="delta-indicator delta-positive">3%</small> -->
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Client accounts</h3>
+
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <th>#</th>
+            <th>Client name</th>
+            <th>Goals</th>
+            <th>Status</th>
+            <th>Balance</th>
+            <th>Return</th>
+            <th>Stocks/Bonds</th>
+            <th>Fee plan(bps)</th>
+            <th>Average term</th>
+            <th>Average target</th>
+          </thead>
+          <tbody>
+            {% for item in object.client_accounts %}
+              <tr>
+                <td>{{ item.pk }}</td>
+                <td>{{ item.primary_owner.user.get_full_name }}</td>
+                <td><a>{{ item.goals_length }}</a></td>
+                <td>
+                  {% if item.on_track %}
+                    <span class="badge badge-danger">On track</span>
+                  {% else %}
+                   <span class="off-track">Off track</span>
+                  {% endif %}
+                </td>
+                <td>{{ item.total_balance|currency }}</td>
+                <td>{{ item.total_returns }}</td>
+                <td>{{ item.stocks_percentage|percentage }} / {{ item.bonds_percentage|percentage }}</td>
+                <td>{{ item.fee }}</td>
+                <td>{{ item.get_term|default:'-' }}</td>
+                <td>{{ item.selected_settings.target|currency|default:'-' }}</td>
+             </tr>
+            {% empty %}
+              <tr class="text-center">
+                <td colspan="10">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

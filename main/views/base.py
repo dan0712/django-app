@@ -8,37 +8,15 @@ from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import View
 
+from user.decorators import is_advisor, is_authorized_representative, is_client
+
 __all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
-
-
-def advisor_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
-    return user_passes_test(
-        lambda u: u.is_active and hasattr(u, "advisor"),
-        login_url=login_url,
-        redirect_field_name=redirect_field_name
-    )(view_func)
-
-
-def legal_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
-    return user_passes_test(
-        lambda u: u.is_active and hasattr(u, "authorised_representative"),
-        login_url=login_url,
-        redirect_field_name=redirect_field_name
-    )(view_func)
-
-
-def client_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME, login_url='/login'):
-    return user_passes_test(
-        lambda u: u.is_active and hasattr(u, "client"),
-        login_url=login_url,
-        redirect_field_name=redirect_field_name
-    )(view_func)
 
 
 class AdvisorView(View):
     advisor = None
 
-    @method_decorator(advisor_member_required)
+    @method_decorator(is_advisor)
     def dispatch(self, request, *args, **kwargs):
         self.advisor = request.user.advisor
         if request.method == "POST":
@@ -46,10 +24,12 @@ class AdvisorView(View):
                 raise PermissionDenied()
 
         response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
+
         if hasattr(response, 'context_data'):
             response.context_data["profile"] = request.user.advisor
             response.context_data["firm"] = request.user.advisor.firm
             response.context_data["is_advisor_view"] = True
+
         return response
 
 
@@ -58,7 +38,7 @@ class LegalView(View):
         self.firm = None
         super(LegalView, self).__init__(*args, **kwargs)
 
-    @method_decorator(legal_member_required)
+    @method_decorator(is_authorized_representative)
     def dispatch(self, request, *args, **kwargs):
         self.firm = request.user.authorised_representative.firm
         if request.method == "POST":
@@ -77,7 +57,7 @@ class ClientView(View):
     client = None
     is_advisor = None
 
-    @method_decorator(client_member_required)
+    @method_decorator(is_client)
     def dispatch(self, request, *args, **kwargs):
         self.client = self.request.user.client
         self.is_advisor = self.request.session.get("is_advisor", False)

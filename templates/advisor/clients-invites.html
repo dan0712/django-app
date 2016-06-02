@@ -1,0 +1,68 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row">
+      <div class="col-sm-9">
+        <div>
+          {% include "advisor/partials/menu-clients.html" %}
+        </div>
+      </div>
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'advisor:clients-invites-create' %}">Invite client</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Sent date</th>
+              <th class="text-xs-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for client_invite in invites %}
+              {% if client_invite.get_status_name != "Active" %}
+                <tr>
+                  <td><a href="mailto:{{ client_invite.email }}">{{ client_invite.email }}</a></td>
+                  <td>{{ client_invite.send_date|date:'d/m/y' }}</td>
+                  <td class="text-xs-right">
+                    {% if client_invite.get_status != 0 %}
+                      {{ client_invite.get_status_name }}
+                    {% else %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
+                        <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
+                        <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
+                        <input type="hidden" name= "email" value="{{ client_invite.email }}">
+                        <button type="submit" class="btn btn-primary-outline btn-xs">Resend</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endif %}
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

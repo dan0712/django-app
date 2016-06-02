@@ -1,107 +1,108 @@
 {% load app_filters %}
- <div id="content-main">
-        <div class="client-invites">
-            <section class="client-invites-header-panel">
-                <div class="invite-form">
-                    <div class="label">
-                        Invite a {{ invite_type }} via email
-                    </div>
 
-                    <form accept-charset="UTF-8" action=""
-                    class="simple_form new_client_invite" id=
-                    "new_client_invite" method="post" name="new_client_invite"
-                    novalidate="novalidate">
-                        {% csrf_token %}
-                        <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
-                        <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
-                        <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
-
-
-                        <div class=
-                        "input email required client_invite_client_email">
-                            <input class="string email required" id=
-                            "client_invite_client_email" name= "email" placeholder=
-                            "Enter client email address here" type="email">
-                             {% for field in form %}
-                                 {{ field.errors }}
-                             {% endfor %}
-                        </div><input name="commit" type="submit" value="Send invitation">
-                    </form>
-                </div>
-
-                <div class="invite-link">
-                    <div class="label">
-                        Copy your invite link
-                    </div>
-
-                    <form accept-charset="UTF-8" action="/client_invites"
-                    class="simple_form invite_link" method="get" novalidate=
-                    "novalidate">
-                        <div style="display:none">
-                            <input name="utf8" type="hidden" value="✓">
-                        </div>
-
-                        <div class=
-                        "input string required readonly invite_link_link">
-                            <input class="string required readonly" id=
-                            "invite_link_link" name="invite_link[link]"
-                            readonly="readonly" type="text" value=
-                            "{{ invite_url }}">
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <section class="client-invites-panel">
-                <div class="header">
-                    <h2>{{ invite_type }} invitations</h2>
-                </div>
-
-                <div class="body">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-
-                                <th>Sent Date</th>
-
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {% for client_invite in invites %}
-                            <tr>
-                                <td>{{ client_invite.email }}</td>
-
-                                <td>{{ client_invite.send_date |b_datetime}}</td>
-
-                                <td>
-                                    {% if client_invite.get_status != 0 %}
-                                    {{ client_invite.get_status_name }}
-                                    {% else %}
-                                    <form accept-charset="UTF-8" action="" class=
-                                    "simple_form edit_client_invite" id=
-                                    "edit_client_invite_1466" method="post"
-                                    name="edit_client_invite_1466" novalidate=
-                                    "novalidate">
-                                        <div style="display:none">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
-                                            <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
-                                            <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
-                                            <input type="hidden" name= "email" value="{{ client_invite.email }}">
-                                        </div>
-                                        <input name="commit" type=
-                                        "submit" value="Resend invite">
-                                    </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+<div id="content-main">
+  <div class="client-invites">
+    <section class="client-invites-header-panel">
+      <div class="invite-form">
+        <div class="label">
+          Invite a {{ invite_type }} via email
         </div>
-    </div>
+
+        <form accept-charset="UTF-8" action=""
+        class="simple_form new_client_invite" id=
+        "new_client_invite" method="post" name="new_client_invite"
+        novalidate="novalidate">
+          {% csrf_token %}
+          <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
+          <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
+          <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
+
+
+          <div class=
+          "input email required client_invite_client_email">
+            <input class="string email required" id=
+            "client_invite_client_email" name= "email" placeholder=
+            "Enter client email address here" type="email">
+             {% for field in form %}
+               {{ field.errors }}
+             {% endfor %}
+          </div><input name="commit" type="submit" value="Send invitation">
+        </form>
+      </div>
+
+      <div class="invite-link">
+        <div class="label">
+          Copy your invite link
+        </div>
+
+        <form accept-charset="UTF-8" action="/clients/invites"
+        class="simple_form invite_link" method="get" novalidate=
+        "novalidate">
+          <div style="display:none">
+            <input name="utf8" type="hidden" value="✓">
+          </div>
+
+          <div class=
+          "input string required readonly invite_link_link">
+            <input class="string required readonly" id=
+            "invite_link_link" name="invite_link[link]"
+            readonly="readonly" type="text" value=
+            "{{ invite_url }}">
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="client-invites-panel">
+      <div class="header">
+        <h2>{{ invite_type }} invitations</h2>
+      </div>
+
+      <div class="body">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+
+              <th>Sent Date</th>
+
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for client_invite in invites %}
+            <tr>
+              <td>{{ client_invite.email }}</td>
+
+              <td>{{ client_invite.send_date |b_datetime}}</td>
+
+              <td>
+                {% if client_invite.get_status != 0 %}
+                {{ client_invite.get_status_name }}
+                {% else %}
+                <form accept-charset="UTF-8" action="" class=
+                "simple_form edit_client_invite" id=
+                "edit_client_invite_1466" method="post"
+                name="edit_client_invite_1466" novalidate=
+                "novalidate">
+                  <div style="display:none">
+                    {% csrf_token %}
+                    <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
+                    <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
+                    <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
+                    <input type="hidden" name= "email" value="{{ client_invite.email }}">
+                  </div>
+                  <input name="commit" type=
+                  "submit" value="Resend invite">
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

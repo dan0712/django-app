@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% block nav_clients %} depressed {% endblock %}
+{% block body_class %}composite_secondary_advisors new primary-advisor{% endblock %}
+{% block main_content %}
+
+
+<div class="composite-secondary-advisors-index">
+    <div class="composite-header">
+    <div class="return-link">
+        <span class="modern-icon">&#8250;</span>
+        <a href="/advisor/summary">Back to Dashboard</a>
+    </div>
+
+    <div class="composite-name">
+
+        <div class="composite-icon">
+         {% with object as household %}
+
+             {% include "advisor/partials/household-icon.html" %}
+         {% endwith %}
+        </div>
+        <h1>{{ object.name }}</h1>
+    </div>
+
+    <nav class="nav-bar composite-subnav">
+        <div>
+            <ul>
+                <li class="">
+                    <a href="/composites/{{ object.pk }}">Overview</a>
+                </li>
+                <li class="">
+                    <a href="/composites/{{ object.pk }}/clients">Clients</a>
+                </li>
+                <li class="depressed">
+                    <a href="/composites/{{ object.pk }}/composite_secondary_advisors">Sharing Settings</a>
+                </li>
+            </ul>
+
+              <div class="edit-composite">
+                  <a href="/composites/{{ object.pk }}/edit">Edit Household</a>
+              </div>
+        </div>
+    </nav>
+</div>
+
+
+    <div class="secondary-advisors-panel">
+        <div class="header">
+            <h2>Advisers</h2>
+            <div class="add-an-advisor primary-advisor-only"><a href="/composites/{{ object.pk }}/composite_secondary_advisors/new">Add a secondary advisor
+                <img alt="Green plus" src="{{ STATIC_URL }}images/plus_logo.png" /></a></div>
+        </div>
+        <div class="body">
+            {% if new %}
+            <div class="add-advisor-form">
+                <form accept-charset="UTF-8" action="/composites/{{ object.pk }}/composite_secondary_advisors/new" class="simple_form new_composite_secondary_advisor" id="new_composite_secondary_advisor" method="post" novalidate="novalidate">
+                    <div style="display:none">{% csrf_token %}</div>
+        <div class="input select required composite_secondary_advisor_advisor_id">
+            <select class="select required advisor-dropdown" id="composite_secondary_advisor_advisor_id" name="secondary_advisors" placeholder="Search for an advisor">
+                <option value=""></option>
+                {% for s_advisor in s_advisors %}
+                    <option value="{{ s_advisor.pk }}">{{ s_advisor.user.get_full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <input name="commit" type="submit" value="Add" />
+</form></div>
+            {% endif %}
+<p class="disclaimer">Secondary advisors have full access to this household from their dashboard, including the ability to co-browse, adjust allocations, and add
+    goals.</p>
+
+
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Adviser Name</th>
+                    <th>Role</th>
+                    <th>Email Address</th>
+                    <th class="primary-advisor-only">Remove</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+    <td>{{ object.advisor.user.get_full_name | title}}</td>
+    <td>Primary</td>
+    <td><a href="{{ object.advisor.email }}">{{ object.advisor.email }}</a></td>
+    <td class="primary-advisor-only"></td>
+</tr>
+                {% for advisor in object.secondary_advisors.all %}
+                  <tr>
+                        <td>
+                            {{ advisor.user.get_full_name | title }}
+                        </td>
+                        <td>
+                            Secondary
+                        </td>
+                        <td>
+                            <a href="{{ advisor.email }}">{{ advisor.email }}</a>
+                        </td>
+                        <td class="primary-advisor-only"><a data-method="delete" href="/composites/{{ object.pk }}/composite_secondary_advisors/{{ advisor.pk }}" rel="nofollow">&times;</a></td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

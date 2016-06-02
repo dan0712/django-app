@@ -1,0 +1,70 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row">
+      <div class="col-sm-9">
+          <h3><span class="icon icon-users"></span> {{ object.name }}</h3>
+      </div>
+      <div class="col-sm-3 text-sm-right">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-9">
+        {% include "advisor/partials/menu-composites.html" %}
+      </div>
+      {% if object.advisor == profile %}
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-edit' object.pk %}">Edit household</a>
+        </div>
+      </div>
+      {%  endif %}
+    </div>
+
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th class="text-xs-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for client in household_clients %}
+              <tr>
+                <td>{{ client.id }}</td>
+                <td>{{ client.full_name }}</td>
+                <td><a href="{{ client.email }}">{{ client.email }}</a></td>
+                <td>{{ client.phone_number|phone }}</td>
+                <td class="text-xs-right">
+                  <a class="btn btn-primary-outline btn-xs" href="{% url 'advisor:clients-detail' client.pk %}">View Profile</a>
+                  <a class="btn btn-info-outline btn-xs" href="{% url 'impersonate' client.user.pk %}?next={% url 'advisor:composites-detail-clients' object.pk %}">Log in</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}
+

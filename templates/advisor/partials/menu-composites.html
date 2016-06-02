@@ -1,0 +1,18 @@
+{% load filters %}
+
+
+<ul class="nav nav-pills">
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:composites-detail' }}">
+    <a href="{% url 'advisor:composites-detail' object.pk %}">Overview</a>
+  </li>
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:composites-detail-clients' }}">
+    <a href="{% url 'advisor:composites-detail-clients' object.pk %}">Clients</a>
+  </li>
+  {% if object.advisor == profile %}
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:composites-detail-secondary-advisors, advisor:composites-detail-secondary-advisors-create' }}">
+    <a href="{% url 'advisor:composites-detail-secondary-advisors' object.pk %}">Sharing Settings</a>
+  </li>
+  {%  endif %}
+</ul>
+
+<div class="visible-xs m-b"></div>

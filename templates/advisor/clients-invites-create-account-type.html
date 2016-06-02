@@ -1,0 +1,61 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    {% with step=2 %}
+      {% include "advisor/partials/menu-invites.html" %}
+    {% endwith %}
+
+    <h3>What type of account are you creating?</h3>
+
+    <div class="row m-t-md">
+      <div class="col-sm-8">
+        <p>Select an account type to create on behalf of your new client.</p>
+
+        <form action="{% url 'advisor:clients-invites-create-profile' %}">
+          <input type="hidden" value="{{ invite_type_new_client }}" name="invite_type">
+
+          <div class="form-group">
+            <label>Account type</label>
+
+            <select class="form-control" name="account_type">
+              <option value="">Select Account Type</option>
+              <option value="joint_account">Personal Account</option>
+              <option value="trust_account">SMSF/Trust Account</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Continue</button>
+        </form>
+      </div>
+
+      <div class="visible-xs m-t"></div>
+
+      <div class="col-sm-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Frequently Asked Questions
+          </div>
+          <div class="panel-body">
+            <div id="accordion" role="tablist" aria-multiselectable="true">
+              <div>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Can I add more than one account at a time?
+                </a>
+              </div>
+              <div id="collapseOne" class="collapse out" role="tabpanel" aria-labelledby="headingOne">
+                Currently, you can only open one account at a time for a client.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

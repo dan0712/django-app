@@ -1,0 +1,53 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    {% with step=4 %}
+      {% include "advisor/partials/menu-invites.html" %}
+    {% endwith %}
+
+    <h3>Confirm your client's details</h3>
+
+    <div class="row">
+      <div class="col-sm-6">
+
+        <p class="m-t-md">Confirm your client's details below. Your client will receive an email to complete the account opening process.</p>
+
+        <p class="m-t-md">Please note that the link to sign up will expire in 14 days. You can view the status and resend invitations from the Clients tab.</p>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th colspan="2">Client details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attr in attributes %}
+              <tr>
+                <td>{{ attr.name }}</td>
+                <td>{{ attr.value }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <form action="{% url 'advisor:clients-invites' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="inviter_type" value="{{ inviter_type }}">
+          <input type="hidden" name="inviter_id" value="{{ inviter_id }}">
+          <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
+          <input type="hidden" name="email" value="{{ email }}">
+
+          <button class="btn btn-primary" type="submit">Send email to client for review</button>
+           <a class="btn btn-danger-outline" href="{% url 'advisor:clients' %}">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

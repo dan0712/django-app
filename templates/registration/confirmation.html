@@ -1,53 +1,35 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts_new/base.html" %}
 {% load i18n %}
+{% load bootstrap3 %}
+
 {% block main_content %}
-{% if form.errors and not form.non_field_errors %}
-<p class="errornote">
-{% if form.errors.items|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
-</p>
-{% endif %}
+<section class="container m-t-lg">
+  <h1 class="text-center m-t-md m-b-md">Didn't receive confirmation instructions?</h1>
 
-{% if form.non_field_errors %}
-{% for error in form.non_field_errors %}
-<p class="errornote">
-    {{ error }}
-</p>
-{% endfor %}
-{% endif %}
+  <div class="row">
+    <div class="col-sm-8 col-md-6 col-lg-6 col-sm-offset-2 col-md-offset-3 col-lg-offset-3">
+     <p>If you didn't receive an email with confirmation instructions, please enter the email address associated with your account to resend your confirmation instructions.</p>
 
-<div id="content-main">
+      <form method="post">{% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+        {% csrf_token %}
+        
+        {% comment %}
+        {% bootstrap_form_errors form %}
+        {% endcomment%}
 
-<div class="advisor-signin">
-    <h1>Didn't receive confirmation instructions?</h1>
+        <div class="form-group">
+            <input name="id_email" type="text" placeholder="Email" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">{% trans 'Send' %}</button>
+      </form>
 
-    <form  accept-charset="UTF-8" action="{{ app_path }}" method="post" id="login-form" class="simple_form new_advisor">{% csrf_token %}
-     <p style="min-width: 400px">If you didn't receive an email with confirmation instructions, please enter the email address associated with your account to resend your confirmation instructions.</p>
-      <br>
-     <div class="form-inputs">
-        <div class="input email optional advisor_email"><input autofocus="autofocus" class="string email optional" id="advisor_email" name="email" placeholder="Email" type="email" value=""></div>
-     </div>
+      <ul class="list-unstyled text-center m-t-md">
+        <li><a href="{% url 'login' %}">Login</a></li>
+        <li><a href="{% url 'password_reset' %}">Forgot your password?</a></li>
+      </ul>
+    </div>
+  </div>
 
-      <div class="form-actions">
-        <input class="btn" data-disable-with="Sending ..." name="commit" type="submit" value="Send">
-      </div>
-    </form>
-
-     <ul class="advisor-links">
-
-    <li><a href="/login">Log in</a></li>
-
-    <li><a href="/password/reset/">Forgot your password?</a></li>
-     </ul>
-
-</div>
-
-
-
-<script type="text/javascript">
-document.getElementById('id_username').focus()
-</script>
-</div>
+</section>
 {% endblock %}
-
-
-

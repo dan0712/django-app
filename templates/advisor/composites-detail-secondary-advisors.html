@@ -1,0 +1,117 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row">
+      <div class="col-sm-9">
+          <h3><span class="icon icon-users"></span> {{ object.name }}</h3>
+      </div>
+      <div class="col-sm-3 text-sm-right">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-9">
+        {% include "advisor/partials/menu-composites.html" %}
+      </div>
+      {% if object.advisor == profile %}
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-edit' object.pk %}">Edit household</a>
+        </div>
+      </div>
+      {%  endif %}
+    </div>
+
+    <div class="row">
+      <div class="col-sm-9">
+        <h4>Advisers</h4>
+      </div>
+      {% if object.advisor == profile %}
+      <div class="col-sm-3 text-sm-right">
+        <div class="form-group">
+          <a href="{% url 'advisor:composites-detail-secondary-advisors-create' object.pk %}">
+            <span class="icon icon-circle-with-plus"></span> Add a secondary advisor
+          </a>
+        </div>
+      </div>
+      {%  endif %}
+    </div>
+
+    {% if new %}
+      <div class="panel panel-default">
+        <div class="panel-heading">Add secondary adviser</div>
+        <div class="panel-body">
+          <form class="form-inline" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <!-- TODO: make it auto-complete select, as it was before -->
+              <select class="form-control" id="composite_secondary_advisor_advisor_id" name="secondary_advisors">
+                <option value="">- Select adviser -</option>
+                {% for s_advisor in s_advisors %}
+                  <option value="{{ s_advisor.pk }}">{{ s_advisor.user.get_full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <input type="submit" value="Add" class="btn btn-primary" />
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    <p>
+      Secondary advisors have full access to this household from their dashboard,
+      including the ability to co-browse, adjust allocations, and add goals.
+    </p>
+
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Email</th>
+              <th class="text-xs-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ object.advisor.user.get_full_name | title}}</td>
+              <td>Primary</td>
+              <td><a href="{{ object.advisor.email }}">{{ object.advisor.email }}</a></td>
+              <td class="primary-advisor-only"></td>
+            </tr>
+            {% for advisor in object.secondary_advisors.all %}
+              <tr>
+                <td>{{ advisor.user.get_full_name }}</td>
+                <td>Secondary</td>
+                <td><a href="{{ advisor.email }}">{{ advisor.email }}</a></td>
+                <td class="text-xs-right">
+                  <form action="{% url 'advisor:composites-detail-secondary-advisors-delete' object.pk advisor.pk %}" method="post" class="form-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger-outline btn-xs">Remove</form>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}

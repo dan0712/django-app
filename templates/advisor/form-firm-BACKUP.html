@@ -1,0 +1,213 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    {% with step=3 %}
+      {% include "advisor/partials/menu-invites.html" %}
+    {% endwith %}
+
+    <h3>Client Personal Details (Optional)</h3>
+
+    <p class="m-t-md">Enter your client's personal details</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="col-sm-6">
+          {% bootstrap_field form.address_line_1 %}
+          {% bootstrap_field form.address_line_2 %}
+          {% bootstrap_field form.city %}
+    </form>
+{% endblock %}
+
+
+
+
+
+{% extends "layouts/form-base.html" %}
+{% load i18n %}
+{% load app_filters %}
+{% block main_content %}
+
+<div id="signup">
+
+<h1 class="tab-header" id="signupWelcomeHeader">{{ form_name }}</h1>
+
+<div class="left">
+    {% if form.errors and not form.non_field_errors %}
+<div class="panel card error_card" id="welcomeBackPanel" style="display: block;">
+<h2>You’re almost there!</h2>
+<p>
+        {% if form.errors.items|length == 1 %}
+            Please correct the error below.
+        {% else %}
+            Please correct the errors below.
+        {% endif %}
+
+</p>
+
+</div>
+{% endif %}
+
+
+ {% if object %}
+<div class="panel card success_card" id="welcomeBackPanel" style="display: block;">
+<h2>You’re almost there!</h2>
+<p>
+        Waiting for approbation, update the form if is need
+
+</p>
+
+</div>
+{% endif %}
+
+
+<div class="panel card body big-form">
+    <div class="clearfix">
+
+
+
+</div>
+
+<div>
+
+<form id="basicContact" action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="firm" value="{{ firm.pk }}">
+    {% for section in form.sections %}
+        <div class="section-container {{ section.css_class }}">
+        <div class="guest-form">
+
+            <div class="section-header">
+                <span class="left blue-circle">{{ forloop.counter }}</span>
+                <h3 class="left">{{ section.header }}</h3>
+                {%  if section.detail %}
+                <p class="section-details">{{ section.detail }}</p>
+                {% endif %}
+            </div>
+        {% for field in section.fields %}
+            <div class="input-line">
+            {{ field.label_tag }}
+                <span class="input-area">
+                    {{ field | add_class:'white' }}
+                    {% if field.help_text %}
+                        <h3 class="help_text">{{ field.help_text }}</h3>
+                    {% endif %}
+                    <div class="conversation-text"><span class="bad">{{ field.errors }}</span></div>
+                </span>
+            </div>
+        {% endfor %}
+        </div>
+        </div>
+        <hr>
+    {% endfor %}
+
+<div class="buttons" style="clear:both;">
+<input type="submit" class="blue ok" id="signup-complete">
+</div>
+</form>
+
+
+</div>
+</div>
+
+<div class="panel card body big-form identity-correction-form" style="display: none;">
+<div class="clearfix">
+<h2 class="form-header">Please verify the following and submit again.</h2>
+</div>
+
+<!-- SECTION 7 - identity correction -->
+<form id="identityCorrection"></form>
+
+<div class="buttons" style="clear:both;">
+<button class="blue ok" id="signup-complete">Submit</button>
+</div>
+</div>
+</div>
+
+<div class="right-rail">
+
+<div class="benefits-pane">
+</div>
+
+<div class="panel card body post-account-signup unadvised-user-only">
+<h4>After signing up for a personal account you can:</h4>
+<ul>
+<li>Set up a Joint Account</li>
+<li>Create a Trust Account</li>
+</ul>
+</div>
+
+
+
+<div class="panel card body support unadvised-user-only">
+<h5>Support</h5>
+<h4>Questions? Talk to us.</h4>
+
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">{{ SUPPORT_PHONE }}</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a></span>
+</li>
+</ul>
+</div>
+
+<div class="panel card body support advised-user-only">
+
+<h4>Technical support</h4>
+<p>For technical questions, contact one of our support specialists.</p>
+<ul>
+<li>
+<span class="icon"><span class="phone-icon"></span></span>
+<span class="text">{{ SUPPORT_PHONE | phone_format}}</span>
+</li>
+<li>
+<span class="icon"><span class="mail-icon"></span></span>
+<span class="text"><a href="mailto:{{ SUPPORT_EMAIL }}">Email Support</a></span>
+</li>
+
+</ul>
+</div>
+
+
+</div>
+
+</div>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script>
+$(document).ready(function(){
+    var set_tfn = function(){
+        var value = $("ul#id_provide_tfn input:radio:checked").val();
+        if(value !=0){
+            $("input[name=tax_file_number]").parent().parent().hide();
+
+        }
+        else{
+            $("input[name=tax_file_number]").parent().parent().show();
+        }
+
+    };
+    set_tfn();
+    $("ul#id_provide_tfn input:radio").click(function() {
+        set_tfn();
+    });
+});
+
+
+</script>
+
+{% endblock %}
+
+
+

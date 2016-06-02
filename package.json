@@ -1,0 +1,23 @@
+{
+  "name": "BetasmartZ",
+  "version": "1.0.0",
+  "description": "BetasmartZ App",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://bitbucket.org/kopyandpaste/betasmartz.git"
+  },
+  "author": "Savva Belloff",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://bitbucket.org/kopyandpaste/betasmartz/issues"
+  },
+  "homepage": "https://bitbucket.org/kopyandpaste/betasmartz/overview",
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

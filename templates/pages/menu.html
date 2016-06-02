@@ -1,13 +1,14 @@
 {% load pages_tags cache %}
+
 {% if page.status %}
-<li class="menu-item {% ifequal page current_page %} current-menu-item  current_page_item {% endifequal %}">
-<a href="{% show_absolute_url page %}" class="shiftnav-target">{% show_content page "title" %}</a>
+  <li class="menu-item {% ifequal page current_page %} current-menu-item  current_page_item {% endifequal %}">
+  <a href="{% show_absolute_url page %}" class="shiftnav-target">{% show_content page "title" %}</a>
     {% if children %}
     <ul class="sub-menu">
     {% for child in children %}
-        {% pages_menu child %}
+      {% pages_menu child %}
     {% endfor %}
     </ul>
     {% endif %}
-</li>
+  </li>
 {% endif %}

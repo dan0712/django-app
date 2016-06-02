@@ -1,0 +1,66 @@
+{% extends "layouts_new/base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load filters %}
+
+
+{% block main_content %}
+  <div class="container">
+    {% include "advisor/logo.html" %}
+
+    <div class="row m-t">
+      <div class="col-sm-6">
+          <h3>View your company activity</h3>
+      </div>
+      <form>
+        <div class="col-sm-2">
+          {% bootstrap_field filter.form.group show_label=False show_help=False %}
+        </div>
+        <div class="col-sm-2">
+          {% bootstrap_field filter.form.verb show_label=False show_help=False %}
+        </div>
+        <div class="col-sm-2">
+          {% bootstrap_field filter.form.timestamp show_label=False show_help=False %}
+        </div>
+      </form>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <th>#</th>
+            <th>User name</th>
+            <th>Email</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Description</th>
+          </thead>
+          <tbody>
+            {% for item in filter %}
+              <tr>
+                <td>{{ item.actor.pk }}</td>
+                <td>{{ item.actor.get_full_name }}</td>
+                <td><a href="mailto:{{ item.actor.email }}">{{ item.actor.email }}</a></td>
+                <td>{{ item.timestamp|date:'d/m/y' }}</td>
+                <td>{{ item.timestamp|date:'H:i' }}</td>
+                <td>{{ item.verb }}<!-- : {{ item.description }} --></td>
+              </tr>
+            {% empty %}
+              <tr class="text-center">
+                <td colspan="5">
+                  No entries
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <a href="">Download Activity as CSV</a>
+    </div>
+  </div>
+{% endblock %}
+
