@@ -39,9 +39,9 @@ class ClientQuerySet(models.query.QuerySet):
 
         # TODO: check and refactor to fit new models
         qs = self.filter(
-            primary_accounts__all_goals__selected_settings__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            primary_accounts__all_goals__selected_settings__metrics__configured_val__gte=risk_min,
-            primary_accounts__all_goals__selected_settings__metrics__configured_val__lt=risk_max
+            primary_accounts__all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+            primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
+            primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max
         )
         return qs
 
@@ -99,9 +99,9 @@ class ClientAccountQuerySet(models.query.QuerySet):
 
         # TODO: check and refactor to fit new models
         qs = self.filter(
-            all_goals__selected_settings__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            all_goals__selected_settings__metrics__configured_val__gte=risk_min,
-            all_goals__selected_settings__metrics__configured_val__lt=risk_max
+            all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+            all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
+            all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max
         )
         return qs
 
@@ -169,9 +169,9 @@ class GoalQuerySet(models.query.QuerySet):
 
         # TODO: check and refactor to fit new models
         qs = self.filter(
-            selected_settings__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            selected_settings__metrics__configured_val__gte=risk_min,
-            selected_settings__metrics__configured_val__lt=risk_max
+            selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+            selected_settings__metric_group__metrics__configured_val__gte=risk_min,
+            selected_settings__metric_group__metrics__configured_val__lt=risk_max
         )
         return qs
 
@@ -219,9 +219,9 @@ class PositionQuerySet(models.query.QuerySet):
 
         # TODO: check and refactor to fit new models
         qs = self.filter(
-            goal__selected_settings__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            goal__selected_settings__metrics__configured_val__gte=risk_min,
-            goal__selected_settings__metrics__configured_val__lt=risk_max
+            goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+            goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
+            goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max
         )
         return qs
 
