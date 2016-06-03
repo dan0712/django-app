@@ -462,20 +462,21 @@ class GoalSerializer(ReadOnlyModelSerializer):
     invested = InvestedSerializer(source='investments')
     earned = EarnedSerializer(source='earnings')
     selected_settings = GoalSettingSerializer()
+    approved_settings = GoalSettingSerializer()
+    active_settings = GoalSettingSerializer()
 
     class Meta:
         model = Goal
 
 
-class GoalListSerializer(ReadOnlyModelSerializer):
+class GoalListSerializer(GoalSerializer):
     """
     Light version of GoalSerializer
     """
-    on_track = serializers.BooleanField()
-    balance = serializers.FloatField(source='current_balance')
-    earnings = serializers.FloatField(source='total_earnings')
-    selected_settings = GoalSettingSerializer()
+    approved_settings = serializers.PrimaryKeyRelatedField(read_only=True)
+    active_settings = serializers.PrimaryKeyRelatedField(read_only=True)
 
+    # The Meta class is not inherited, so we need to define it again.
     class Meta:
         model = Goal
 
