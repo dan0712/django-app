@@ -664,8 +664,9 @@ class Logout(ImpersonateBase):
             del request.session[key]
 
         logout(request)
-
-        return HttpResponseRedirect('/')
+        response = HttpResponseRedirect(reverse_lazy('login'))
+        response.delete_cookie('token')
+        return response
 
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):

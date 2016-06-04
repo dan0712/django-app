@@ -11,17 +11,12 @@ from django.contrib.auth import (
 
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.shortcuts import resolve_url
 from django.template.response import TemplateResponse
-from django.utils.http import is_safe_url
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate
 from django.core.urlresolvers import reverse_lazy
-
-from main.models import User, AuthorisedRepresentative, Advisor, Client
 
 __all__ = ['login', 'logout']
 
@@ -67,12 +62,14 @@ def login(request, template_name='registration/login.html',
         )
 
         if redirect_to:
-            return HttpResponseRedirect(redirect_to)
+            response = HttpResponseRedirect(redirect_to)
+            response.set_cookie('token', user.get_token())
 
     return response
 
 
 def logout(request):
     auth_logout(request)
-
-    return HttpResponseRedirect(reverse_lazy('login'))
+    response = HttpResponseRedirect(reverse_lazy('login'))
+    response.delete_cookie('token')
+    return response
