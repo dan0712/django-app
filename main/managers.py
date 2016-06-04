@@ -37,7 +37,6 @@ class ClientQuerySet(models.query.QuerySet):
         from .models import GoalMetric
         risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
-        # TODO: check and refactor to fit new models
         qs = self.filter(
             primary_accounts__all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
             primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
@@ -97,7 +96,6 @@ class ClientAccountQuerySet(models.query.QuerySet):
         from .models import GoalMetric
         risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
-        # TODO: check and refactor to fit new models
         qs = self.filter(
             all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
             all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
@@ -167,7 +165,6 @@ class GoalQuerySet(models.query.QuerySet):
         from .models import GoalMetric
         risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
-        # TODO: check and refactor to fit new models
         qs = self.filter(
             selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
             selected_settings__metric_group__metrics__configured_val__gte=risk_min,
@@ -217,7 +214,6 @@ class PositionQuerySet(models.query.QuerySet):
         from .models import GoalMetric
         risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
-        # TODO: check and refactor to fit new models
         qs = self.filter(
             goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
             goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,

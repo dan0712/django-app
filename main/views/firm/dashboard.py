@@ -490,9 +490,8 @@ class FirmAnalyticsOverviewView(FirmAnalyticsMixin, TemplateView, LegalView):
         data = []
         for risk_level_tuple in GoalType.RISK_LEVELS:
 
-            # TODO: put it as first filter - # .filter_by_risk_level(risk_level_tuple[0]) \
             value = qs_goals \
-                .filter() \
+                .filter_by_risk_level(risk_level_tuple[0]) \
                 .values('account__primary_owner__id') \
                 .annotate(positions_sum=Coalesce(Sum(
                     F('positions__share') * F('positions__ticker__unit_price')
