@@ -9,7 +9,6 @@ from django.views.generic import TemplateView
 
 from main.models import AssetFeature, PortfolioSet
 from portfolios.bl_model import OptimizationException
-#from portfolios.management.commands.calculate_portfolios import calculate_portfolios_for_goal
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, Goal, TransactionMemo, \
