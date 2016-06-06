@@ -232,5 +232,11 @@ SWAGGER_SETTINGS = {
     #'resource_access_handler': 'api.views.resource_access_handler',
 }
 
+# The inflation rate
+BETASMARTZ_CPI = 2
+
+# From http://www.aihw.gov.au/deaths/life-expectancy/
+MALE_LIFE_EXPECTANCY = 80
+FEMALE_LIFE_EXPECTANCY = 84
 
 from local_settings import *

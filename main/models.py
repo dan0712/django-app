@@ -37,7 +37,7 @@ from rest_framework.authtoken.models import Token
 
 from common.structures import ChoiceEnum
 from main.management.commands.build_returns import get_price_returns
-from main.managers import ClientQuerySet
+from main.managers import ClientQuerySet, RetirementPlanQuerySet
 from main.slug import unique_slugify
 from .fields import ColorField
 from .managers import (
@@ -371,6 +371,10 @@ class PersonalData(models.Model):
     class Meta:
         abstract = True
 
+    class CivilStatus(ChoiceEnum):
+        SINGLE = 0
+        MARRIED = 1  # May be married, or any other financially recognised relationship.
+
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
     gender = models.CharField(max_length=20,
                               default="Male",
@@ -390,6 +394,7 @@ class PersonalData(models.Model):
     security_answer_1 = models.CharField(max_length=255, verbose_name="Answer", default="")
     security_answer_2 = models.CharField(max_length=255, verbose_name="Answer", default="")
     medicare_number = models.CharField(max_length=50, default="")
+    civil_status = models.IntegerField(null=True)
 
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
@@ -1146,8 +1151,7 @@ class ClientAccount(models.Model):
         if self.custom_fee != 0:
             return self.custom_fee + Platform.objects.first().fee
         else:
-            return self.primary_owner.advisor.firm.fee + Platform.objects.first(
-            ).fee
+            return self.primary_owner.advisor.firm.fee + Platform.objects.first().fee
 
     @property
     def fee_fraction(self):
@@ -1509,6 +1513,66 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             )
             new_ac.save()
             new_ac.remove_from_group()
+
+
+class TransferPlan(models.Model):
+    """
+    Because a TransferPlan has no owner, we could end up with orphan transfer plans. Whatever component is using a
+    TransferPlan needs to be sure to delete it when done.
+    """
+    begin_date = models.DateField()
+    amount = models.IntegerField()
+    growth = models.FloatField(help_text="Annualized rate to increase or decrease the amount by as of the begin_date")
+    schedule = models.TextField()  # RRULE to specify when the transfer happens.
+
+
+class RetirementPlan(models.Model):
+    name = models.CharField(max_length=128)
+    description = models.TextField(null=True, blank=True)
+    client = models.ForeignKey(Client)
+    # Assigning a partner_plan gives anyone with permissions to modify the partner_plan authority to modify this plan.
+    partner_plan = models.OneToOneField('RetirementPlan',
+                                        related_name='partner_plan_reverse',
+                                        null=True,
+                                        on_delete=models.SET_NULL)
+    begin_date = models.DateField(auto_now_add=True, help_text="Date the retirement plan is supposed to begin.")
+    retirement_date = models.DateField()
+    life_expectancy = models.IntegerField(help_text="Until what age do we want to plan retirement spending?")
+    spendable_income = models.IntegerField(default=0, help_text="The current annual spendable income. This must be identical across partner plans as they have a common spendable income.")
+    # For the moment all these TransferPlan fields are one to one, but there's no reason why they couldn't be 1-to-N
+    btc = models.OneToOneField(TransferPlan,
+                               related_name="retirement_plan_btc",
+                               help_text="The before tax contributions into the retirement account until retirement date")
+    atc = models.OneToOneField(TransferPlan,
+                               related_name="retirement_plan_atc",
+                               help_text="The after tax contributions into the retirement account until retirement date")
+    desired_income = models.IntegerField(default=0, help_text="The desired annual spendable income in retirement")
+    # Each account can have at most one retirement plan. Hence the relationship goes this way.
+    smsf_account = models.OneToOneField(ClientAccount,
+                                        related_name='retirement_plan',
+                                        help_text="The associated SMSF account.",
+                                        null=True)
+
+    # Install the custom manager that knows how to filter.
+    objects = RetirementPlanQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ('name', 'client')
+
+    def save(self, *args, **kwargs):
+        """
+        Override save() so we can do some custom validation of partner plans.
+        """
+        reverse_plan = getattr(self, 'partner_plan_reverse', None)
+        if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
+            raise ValidationError("Partner plan relationship must be symmetric.")
+
+        super(RetirementPlan, self).save(*args, **kwargs)
+
+
+class RetirementPlanExternalIncome(models.Model):
+    plan = models.ForeignKey(RetirementPlan, related_name='external_income')
+    income = models.OneToOneField('TransferPlan', related_name='retirement_plan_einc')
 
 
 class MarkowitzScale(models.Model):
@@ -2809,7 +2873,6 @@ class FinancialPlan(models.Model):
 class FinancialProfile(models.Model):
     client = models.OneToOneField(Client, related_name="financial_profile")
     complete = models.BooleanField(default=False)
-    marital_status = models.CharField(default="single", max_length=100)
     retired = models.BooleanField(default=False)
     life_expectancy = models.FloatField(default=70, null=True)
     pretax_income_cents = models.FloatField(default=0, null=True)

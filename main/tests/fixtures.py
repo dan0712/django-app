@@ -6,7 +6,7 @@ from pinax.eventlog.models import Log
 from main.event import Event
 from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, Client, Advisor, User, Firm, PortfolioSet, \
     RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer, Transaction, \
-    HistoricalBalance
+    HistoricalBalance, RetirementPlan, TransferPlan
 
 
 class Fixture1:
@@ -53,6 +53,14 @@ class Fixture1:
         return User.objects.get_or_create(email="client@example.com", defaults=params)[0]
 
     @classmethod
+    def client2_user(cls):
+        params = {
+            'first_name': "test",
+            'last_name': "client_2",
+        }
+        return User.objects.get_or_create(email="client2@example.com", defaults=params)[0]
+
+    @classmethod
     def client1(cls):
         params = {
             'advisor': Fixture1.advisor1(),
@@ -60,6 +68,115 @@ class Fixture1:
             'date_of_birth': datetime.date(1970, 1, 1)
         }
         return Client.objects.get_or_create(id=1, defaults=params)[0]
+
+    @classmethod
+    def client2(cls):
+        params = {
+            'advisor': Fixture1.advisor1(),
+            'user': Fixture1.client2_user(),
+            'date_of_birth': datetime.date(1980, 1, 1)
+        }
+        return Client.objects.get_or_create(id=2, defaults=params)[0]
+
+    @classmethod
+    def tx1(cls):
+        params = {
+            'begin_date': datetime.date(2016, 1, 1),
+            'amount': 1000,
+            'growth': 0,
+            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
+        }
+        return TransferPlan.objects.get_or_create(id=1, defaults=params)[0]
+
+    @classmethod
+    def tx2(cls):
+        params = {
+            'begin_date': datetime.date(2016, 1, 1),
+            'amount': 0,
+            'growth': 0,
+            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
+        }
+        return TransferPlan.objects.get_or_create(id=2, defaults=params)[0]
+
+    @classmethod
+    def tx3(cls):
+        params = {
+            'begin_date': datetime.date(2016, 1, 1),
+            'amount': 500,
+            'growth': 0,
+            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
+        }
+        return TransferPlan.objects.get_or_create(id=3, defaults=params)[0]
+
+    @classmethod
+    def tx4(cls):
+        params = {
+            'begin_date': datetime.date(2016, 1, 1),
+            'amount': 200,
+            'growth': 0.01,
+            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
+        }
+        return TransferPlan.objects.get_or_create(id=4, defaults=params)[0]
+
+    @classmethod
+    def tx5(cls):
+        params = {
+            'begin_date': datetime.date(2016, 1, 1),
+            'amount': 500,
+            'growth': 0,
+            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
+        }
+        return TransferPlan.objects.get_or_create(id=5, defaults=params)[0]
+
+    @classmethod
+    def tx6(cls):
+        params = {
+            'begin_date': datetime.date(2016, 1, 1),
+            'amount': 200,
+            'growth': 0.01,
+            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
+        }
+        return TransferPlan.objects.get_or_create(id=6, defaults=params)[0]
+
+    @classmethod
+    def client1_retirementplan1(cls):
+        return RetirementPlan.objects.get_or_create(id=1, defaults={
+                                                    'name': 'Plan1',
+                                                    'client': Fixture1.client1(),
+                                                    'retirement_date': datetime.date(2055, 1, 1),
+                                                    'life_expectancy': 80,
+                                                    'btc': Fixture1.tx1(),
+                                                    'atc': Fixture1.tx2()})[0]
+
+    @classmethod
+    def client2_retirementplan1(cls):
+        return RetirementPlan.objects.get_or_create(id=2, defaults={
+                                                    'name': 'Plan1',
+                                                    'client': Fixture1.client2(),
+                                                    'retirement_date': datetime.date(2055, 1, 1),
+                                                    'life_expectancy': 84,
+                                                    'btc': Fixture1.tx3(),
+                                                    'atc': Fixture1.tx4()})[0]
+
+    @classmethod
+    def client2_retirementplan2(cls):
+        return RetirementPlan.objects.get_or_create(id=4, defaults={
+                                                    'name': 'Plan2',
+                                                    'client': Fixture1.client2(),
+                                                    'retirement_date': datetime.date(2055, 1, 1),
+                                                    'life_expectancy': 84,
+                                                    'btc': Fixture1.tx5(),
+                                                    'atc': Fixture1.tx6()})[0]
+
+    @classmethod
+    def client1_partneredplan(cls):
+        plan1 = Fixture1.client1_retirementplan1()
+        plan2 = Fixture1.client2_retirementplan1()
+        plan1.partner_plan = plan2
+        plan2.partner_plan = plan1
+        plan1.save()
+        plan2.save()
+        return plan1
 
     @classmethod
     def risk_profile_group1(cls):

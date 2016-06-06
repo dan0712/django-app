@@ -1,5 +1,4 @@
 from rest_framework import viewsets
-from rest_framework.exceptions import PermissionDenied
 
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -20,13 +19,5 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
     def get_queryset(self):
         qs = super(ClientViewSet, self).get_queryset()
 
-        # show "permissioned" records only
-        user = self.request.user
-        if user.is_advisor:
-            qs = qs.filter_by_advisor(user.advisor)
-        elif user.is_client:
-            qs = qs.filter_by_client(user.client)
-        else:
-            raise PermissionDenied('Only Advisors or Clients are allowed to access clients.')
-
-        return qs
+        # Only return Clients the user has access to.
+        return qs.filter_by_user(self.request.user)
