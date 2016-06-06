@@ -247,7 +247,7 @@ urlpatterns = patterns(
     url(r'^confirmation$', Confirmation.as_view(), name='confirmation'),
 
     url(r'^betasmartz_admin/rebalance/(?P<pk>\d+)$', GoalRebalance.as_view()),
-    #url('^impersonate/(?P<pk>\d+)$', ImpersonateView.as_view(), name='impersonate'),
+    url('^impersonate/(?P<pk>\d+)$', ImpersonateView.as_view(), name='impersonate'),
 
     url(r'^password/reset/$',
         'django.contrib.auth.views.password_reset',
