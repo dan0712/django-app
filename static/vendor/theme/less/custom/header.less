@@ -1,0 +1,63 @@
+.btn-header {
+	background-color: transparent;
+	border-color: #999;
+	color: #fff;
+	font-size: 16px;
+	&:hover {
+		border-color: #fff;
+		color: #fff;
+	}
+	&:active, &:focus {
+		background-color: #999;
+		color: #fff;
+	}
+}
+
+.header-inner {
+	@media (max-width: 991px) {
+		.navbar-brand {
+			img {
+				width: 170px;
+				margin-top: -7px;
+			}
+		}
+	}
+	@media (min-width: 992px) {
+		height: 100px;
+		display: table;
+		width: 100%;
+		.navbar-brand {
+			float: none;
+			margin: 0 !important;
+			padding: 0 !important;
+			img {
+				max-width: 100%;
+				max-height: 70px;
+			}
+		}
+	}
+}
+
+.navbar-header {
+	@media (min-width: 992px) {
+		display: table-cell;
+		vertical-align: middle;
+		width: 70%;
+		float: none;
+		padding: 10px 0;
+	}
+}
+
+.header-actions {
+	@media (min-width: 992px) {
+		display: table-cell;
+		vertical-align: middle;
+		text-align: right;
+		position: relative;
+	}
+}
+
+.header-action-btn {
+	position: relative;
+	display: inline-block;
+}
