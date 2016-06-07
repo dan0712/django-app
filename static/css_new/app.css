@@ -105,33 +105,3 @@ h3.header {
 .table .tr-middle > td {
   vertical-align: middle;
 }
-
-/* Make sure footer stay at the bottom. */
-html {
-  height: 100%;
-}
-body {
-  min-height: 100%;
-  position: relative;
-}
-@media (min-width: 768px) {
-  body {
-    padding-bottom: 405px;
-  }
-  #footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
-}
-@media (min-width: 992px) {
-  body {
-    padding-bottom: 360px;
-  }
-}
-@media (min-width: 1200px) {
-  body {
-    padding-bottom: 350px;
-  }
-}

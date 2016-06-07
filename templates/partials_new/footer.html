@@ -1,18 +1,58 @@
-<footer id="footer" class="m-t-lg">
-  <section class="container">
-    <div class="footer-wrapper">
-      <div class="text-center">
-        {% if is_client %}
-          <div>Powered by</div>
-        {% endif %}
-        <div>&copy; BetaSmartz Pty Ltd </div>
-
-        <div class="p-t">By initiating transactions in your BetaSmartz account you agree to BetaSmartz's Terms &amp; Conditions.</div>
-        <div><strong>This website is operated and maintained by BetaSmartz Pty Ltd, AFSL No. 888888.</strong></div>
-        <div>Brokerage services provided to clients of BetaSmartz by Interactive Brokers LLC, AFSL 245574.</div>
-      </div>
-
-      <p class="p-t">Investments: Not Insured  &bull; No Bank Guarantee  &bull; May Lose Value. Investing in securities involves risks, and the income derived from them can go down as well as up. Past performance is not a reliable indicator of future returns and you may not get back your original investment, all investment outcomes being hypothetical in nature. Before investing, consider your investment objectives and BetaSmartz's charges and expenses. See full disclosures for more information. Not an offer, solicitation of an offer, or advice to buy or sell securities in jurisdictions where BetaSmartz is not registered. BetaSmartz is a trademark of BetaSmartz Pty Ltd.</p>
+<footer class="main-footer">
+  <div class="footer-links">
+    <div className="container">
+      <ul class="advised-user-only">
+        <li>Technical support</li>
+        <li>
+          <MdMailOutline size="18" class="classes.icon" />&nbsp;
+          <a href="mailto:support@betasmartz.com">Email us</a>
+        </li>
+        <li>
+          <MdLocalPhone size="18" class="classes.icon" /> Call 1800-888-8888
+        </li>
+      </ul>
     </div>
-  </section>
+  </div>
+  <div class="container disclosure">
+    <div class="powered-by">Powered by</div>
+    <figure class="footer-logo text-center"><img src="{{ STATIC_URL }}images/white_logo_mini.png"
+      alt="BetaSmartz" /></figure>
+    <figcaption>© BetaSmartz Pty Ltd </figcaption>
+    <p class="pad">
+      By initiating transactions in your BetaSmartz account you agree to
+      BetaSmartz's&nbsp;
+      <a href="http://www.betasmartz.com/terms-and-conditions/">
+        <u>Terms &amp; Conditions</u>
+      </a>.
+    </p>
+    <p>
+      This website is operated and maintained by BetaSmartz
+      Pty Ltd ABN 80 609 111 140, a Corporate Authorised
+      Representative (No. 001239522) of BR Securities Australia Pty
+      Ltd (AFS Licence No. 456663). Any advice contained in this website
+      is general advice only and has been prepared without considering
+      your objectives, financial situation or needs except in
+      circumstances where you have provided your personal financial
+      details via our online application process and received a Statement
+      of Advice from us. Before making any investment decision we
+      recommend that you consider whether it is appropriate for your
+      situation and seek appropriate taxation and legal advice. Please
+      read our <a href="http://www.betasmartz.com/fsg/">Financial Services
+      Guide</a> before deciding whether to obtain financial services from
+      us.
+    </p>
+    <p>
+      Investing in securities involves risks, and the income derived from
+      them can go down as well as up. Past performance is not a reliable
+      indicator of future returns and you may not get back your original
+      investment, all investment outcomes being hypothetical in nature.
+      Before investing, consider your investment objectives and
+      BetaSmartz's charges and expenses. Not an offer, solicitation of an
+      offer, or advice to buy or sell securities in jurisdictions where
+      BetaSmartz is not registered.
+    </p>
+    <p>
+      BetaSmartz and RetireSmartz are trademarks of BetaSmartz Pty Ltd.
+    </p>
+  </div>
 </footer>
