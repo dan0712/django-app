@@ -196,7 +196,7 @@ urlpatterns_client = patterns(
     #     ConfirmClientNewAccount.as_view()),
 
     # The React code should pick up this route. If it doesn't, there is a configuration problem.
-    url(r'^token',
+    url(r'^(?P<pk>\d+)/token',
         ClientAppMissing.as_view(),
         name='app'),
 
@@ -236,7 +236,7 @@ urlpatterns = patterns(
     url(r'^$', lambda x: HttpResponseRedirect(reverse_lazy('login'))),
 
     url(r'^login$', login, name='login'),
-    url(r'^logout$', Logout.as_view(), name='logout'),
+    url(r'^logout$', logout, name='logout'),
     url(r'^(?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/legal_signup$',
         AuthorisedRepresentativeSignUp.as_view(),
         name='representative_signup'),
@@ -247,7 +247,6 @@ urlpatterns = patterns(
     url(r'^confirmation$', Confirmation.as_view(), name='confirmation'),
 
     url(r'^betasmartz_admin/rebalance/(?P<pk>\d+)$', GoalRebalance.as_view()),
-    url('^impersonate/(?P<pk>\d+)$', ImpersonateView.as_view(), name='impersonate'),
 
     url(r'^password/reset/$',
         'django.contrib.auth.views.password_reset',

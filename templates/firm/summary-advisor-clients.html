@@ -30,7 +30,7 @@
                       <td>{{ client.phone_number |phone_format}}</td>
                       <td class="composite-actions">
                           <a href="/firm/advisor/{{ object.pk }}/client/{{ client.pk }}">View Profile</a>
-                          <a href="/impersonate/{{ client.user.pk }}?next=/composites/{{ object.pk }}/clients">Log in</a>
+                          <a href="{% url 'client:app' client.pk %}" target="_blank">Log in</a>
                       </td>
                   </tr>
                   {% endfor %}

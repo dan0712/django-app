@@ -2948,8 +2948,7 @@ class Supervisor(models.Model):
     # has full authorization to make action in name of advisor and clients
     can_write = models.BooleanField(default=False,
                                     verbose_name="Has Full Access?",
-                                    help_text="A supervisor with 'full access' can impersonate advisers and clients "
-                                              "and make any action as them.")
+                                    help_text="A supervisor with 'full access' can perform actions for their advisers and clients.")
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

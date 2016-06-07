@@ -50,7 +50,7 @@
                 <td>{{ client.phone_number|phone }}</td>
                 <td class="text-xs-right">
                   <a class="btn btn-primary-outline btn-xs" href="{% url 'advisor:clients-detail' client.pk %}">View Profile</a>
-                  <a class="btn btn-info-outline btn-xs" href="{% url 'impersonate' client.user.pk %}?next={% url 'advisor:composites-detail-clients' object.pk %}">Log in</a>
+                  <a class="btn btn-info-outline btn-xs" href="{% url 'client:app' client.pk %}" target="_blank">Log in</a>
                 </td>
               </tr>
             {% empty %}

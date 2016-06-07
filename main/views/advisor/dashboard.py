@@ -32,7 +32,7 @@ __all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
            'AdvisorAccountGroupSecondaryDetailView',
            'AdvisorAccountGroupSecondaryCreateView',
            'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary',
-           'ImpersonateView', 'Logout', 'AdvisorClientAccountChangeFee',
+           'AdvisorClientAccountChangeFee',
            "AdvisorSupportGettingStarted", "AdvisorClientInviteNewView",
            'CreateNewClientPrepopulatedView', "BuildPersonalDetails",
            "BuildFinancialDetails", "BuildConfirm", "AdvisorForms",
@@ -556,117 +556,6 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
             "groups": self.groups
         })
         return ctx
-
-
-class ImpersonateBase(View):
-    request = None
-
-    def get_used_backend(self):
-        backend_str = self.request.session[BACKEND_SESSION_KEY]
-        backend = load_backend(backend_str)
-        return backend
-
-
-class ImpersonateView(ImpersonateBase):
-    def get(self, request, *args, **kwargs):
-        self.request = request
-
-        imposter = request.user
-
-        if not (hasattr(imposter, 'advisor') or hasattr(imposter,
-                                                        'supervisor')):
-            raise PermissionDenied
-
-        user_id = kwargs["pk"]
-        user = None
-
-        if hasattr(imposter, 'advisor'):
-
-            try:
-                condition = (Q(client__advisor=imposter.advisor) | Q(
-                    client__secondary_advisors__in=[imposter.advisor]))
-                user = User.objects.filter(condition).distinct().get(
-                    pk=user_id)
-            except ObjectDoesNotExist:
-                raise PermissionDenied
-
-            add_history = (imposter.pk, 'advisor', request.GET.get(
-                'next', '/advisor/summary'))
-
-        elif hasattr(imposter, 'supervisor'):
-            try:
-                condition = Q(advisor__firm=imposter.firm)
-                user = User.objects.filter(condition).distinct().get(
-                    pk=user_id)
-            except ObjectDoesNotExist:
-                raise PermissionDenied
-
-            add_history = (imposter.pk, 'supervisor', request.GET.get(
-                'next', '/supervisor/summary'))
-
-        if not user:
-            raise PermissionDenied
-
-        backend = self.get_used_backend()
-        user.backend = "%s.%s" % (backend.__module__,
-                                  backend.__class__.__name__)
-        auth_login(request, user)
-
-        impersonate_history = request.session.get('impersonate_history', [])
-        impersonate_history.append(add_history)
-        request.session['impersonate_history'] = impersonate_history
-
-        if add_history[1] == 'advisor':
-            request.session['is_advisor'] = True
-            return HttpResponseRedirect('/client/app')
-
-        elif add_history[1] == 'supervisor':
-            request.session['is_supervisor'] = True
-            return HttpResponseRedirect('/advisor/summary')
-
-
-class Logout(ImpersonateBase):
-    def get_imposter(self):
-        impersonate_history = self.request.session.get('impersonate_history',[])
-
-        if impersonate_history:
-            record = impersonate_history.pop()
-            imposter_id = record[0]
-
-            try:
-                imposter = User.objects.get(pk=imposter_id)
-            except ObjectDoesNotExist:
-                return None, None
-
-            if record[1] == 'advisor':
-                self.request.session.pop('is_advisor', None)
-            elif record[1] == 'supervisor':
-                self.request.session.pop('is_supervisor', None)
-
-            return imposter, record[2]
-
-        return None, None
-
-    def get(self, request, *args, **kwargs):
-        self.request = request
-        imposter, redirect_url = self.get_imposter()
-
-        if imposter:
-            backend = self.get_used_backend()
-            imposter.backend = "%s.%s" % (backend.__module__,
-                                          backend.__class__.__name__)
-            auth_login(request, imposter)
-            return HttpResponseRedirect(redirect_url)
-
-        # we will remove everything in session.
-        session_keys = [key for key in request.session.keys()] # should be real copy
-        for key in session_keys:
-            del request.session[key]
-
-        logout(request)
-        response = HttpResponseRedirect(reverse_lazy('login'))
-        response.delete_cookie('token')
-        return response
 
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):

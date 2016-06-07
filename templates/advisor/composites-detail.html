@@ -79,7 +79,7 @@
         </div>
         <div class="col-sm-3 text-sm-right">
           <div class="form-group">
-            <a class="btn btn-info-outline" href="{% url 'impersonate' account.primary_owner.user.pk %}?next=/composites/{{ object.pk }}" rel="nofollow">Log in</a>
+            <a class="btn btn-info-outline" href="{% url 'client:app' account.primary_owner.pk %}" target="_blank">Log in</a>
           </div>
         </div>
       </div>
