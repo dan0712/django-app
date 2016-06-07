@@ -9706,7 +9706,9 @@ fieldset[disabled] .btn-danger-outline.active {
     padding: 0 !important;
   }
   .header-inner .navbar-brand img {
-    max-width: 100%;
+    max-width: 280px;
+    width: 100%;
+    height: auto;
     max-height: 80px;
   }
 }
