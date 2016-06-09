@@ -19,7 +19,7 @@ from main.models import (
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
     GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog,
-    ActivityLogEvent)
+    ActivityLogEvent, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution, Ticker)
 
 from suit.admin import SortableModelAdmin, SortableTabularInline
 
@@ -41,6 +41,18 @@ class TickerInline(BaseGenericModelAdmin, SortableTabularInline):
         'ct_field': 'benchmark_content_type',
         'fk_field': 'benchmark_object_id',
     }]
+
+
+class DailyPriceAdmin(GenericAdminModelAdmin):
+    model = DailyPrice
+    list_display = ('date', 'price', 'instrument_content_type', 'instrument_object_id')
+    #sortable = 'date'
+    #extra = 0
+    generic_fk_fields = [{
+        'ct_field': 'instrument_content_type',
+        'fk_field': 'instrument_object_id',
+    }]
+    list_editable = ('date', 'price', 'instrument_content_type', 'instrument_object_id')
 
 
 class ClientAccountInline(admin.StackedInline):
@@ -377,3 +389,10 @@ admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
+# The below are commented as non-devs should not be editing them.
+# admin.site.register(DailyPrice, DailyPriceAdmin)
+# admin.site.register(MarketOrderRequest)
+# admin.site.register(Execution)
+# admin.site.register(ExecutionDistribution)
+# admin.site.register(Ticker)
+# End non-dev section

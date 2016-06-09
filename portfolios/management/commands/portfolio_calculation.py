@@ -14,7 +14,6 @@ from django.core.cache import cache
 from sklearn.covariance.shrunk_covariance_ import OAS
 
 from main import redis
-from main.management.commands.build_returns import get_price_returns
 
 from main.models import (
     SYSTEM_CURRENCY,

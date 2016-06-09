@@ -37,7 +37,7 @@ from rest_framework.authtoken.models import Token
 
 from common.structures import ChoiceEnum
 from main.management.commands.build_returns import get_price_returns
-from main.managers import ClientQuerySet, RetirementPlanQuerySet
+from main.managers import RetirementPlanQuerySet
 from main.slug import unique_slugify
 from .fields import ColorField
 from .managers import (
@@ -554,7 +554,7 @@ class AssetClass(models.Model):
     name = models.CharField(
         max_length=255,
         validators=[RegexValidator(
-            regex=r'^[0-9a-zA-Z_]+$',
+            regex=r'^[0-9A-Z_]+$',
             message="Invalid character only accept (0-9a-zA-Z_) ")],
         unique=True)
     display_order = models.PositiveIntegerField(db_index=True)
@@ -1609,6 +1609,7 @@ class FinancialInstrument(models.Model):
     url = models.URLField()
     currency = models.CharField(max_length=10, default="AUD")
     region = models.ForeignKey(Region)
+    # TODO: Remove the nulls below
     data_api = models.CharField(help_text='The module that will be used to get the data for this ticker',
                                 choices=[('portfolios.api.bloomberg', 'Bloomberg')],
                                 max_length=30,
@@ -1662,7 +1663,7 @@ class Ticker(FinancialInstrument):
                               help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
     # A benchmark should be a subclass of financial instrument
     limit = models.Q(app_label='main', model='marketindex')  # Only using index benchmarks at the moment, but may do more later
-    # TODO: REmove this null bit
+    # TODO: Remove this null bit
     benchmark_content_type = models.ForeignKey(ContentType,
                                                on_delete=models.CASCADE,
                                                null=True,
@@ -2797,9 +2798,12 @@ class Execution(models.Model):
     # Also has field 'distributions' from the ExecutionDistribution model describing to what goals this execution was
     # distributed
 
+    def __str__(self):
+        return '{}|{}|{}|{}@{}'.format(self.id, self.executed, self.asset, self.volume, self.price)
+
 
 class ExecutionDistribution(models.Model):
-    # One execution can contribute many distributions.
+    # One execution can contribute to many distributions.
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
@@ -2901,11 +2905,11 @@ class DailyPrice(models.Model):
         unique_together = ("instrument_content_type", "instrument_object_id", "date")
 
     # An instrument should be a subclass of financial instrument
-    # TODO: REmove this null bit
-    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
-    instrument_object_id = models.PositiveIntegerField(null=True)
+    # TODO: Remove this null bit
+    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, db_index=True)
+    instrument_object_id = models.PositiveIntegerField(null=True, db_index=True)
     instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     price = models.FloatField(null=True)
 
 
@@ -3027,7 +3031,8 @@ class Transaction(models.Model):
     # Transaction is for a MarketOrderRequest. It's a transient transaction, for reserving funds. It will always be pending.
     # It will have it's amount reduced over time (converted to executions or rejections) until it's eventually removed.
     REASON_ORDER = 6
-    REASON_EXECUTION = 7  # Transaction is for an Asset Execution that occurred. Will always be in executed state.
+    # Transaction is for an Order Execution Distribution that occurred. Will always be in executed state.
+    REASON_EXECUTION = 7
     REASONS = (
         (REASON_DIVIDEND, "DIVIDEND"),  # Dividend re-investment from an asset owned by the goal
         (REASON_DEPOSIT, "DEPOSIT"),  # Deposit from the account to the goal
@@ -3081,6 +3086,9 @@ class Transaction(models.Model):
         if self.from_goal == self.to_goal:
             raise ValidationError("Cannot transact with myself.")
         super(Transaction, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return '{}|{}|{}|{}|{}'.format(self.id, self.created, self.reason, self.status, self.amount)
 
 
 class TransactionMemo(models.Model):

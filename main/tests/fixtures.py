@@ -1,12 +1,14 @@
 import datetime
 
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from pinax.eventlog.models import Log
 
 from main.event import Event
 from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, Client, Advisor, User, Firm, PortfolioSet, \
-    RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer, Transaction, \
-    HistoricalBalance, RetirementPlan, TransferPlan
+    RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer, \
+    Transaction, HistoricalBalance, RetirementPlan, TransferPlan, Ticker, AssetClass, STOCKS, SUPER_ASSET_CLASSES, \
+    MarketIndex, Region, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution
 
 
 class Fixture1:
@@ -308,3 +310,136 @@ class Fixture1:
         HistoricalBalance.objects.get_or_create(goal=Fixture1.goal1(),
                                                 date=datetime.date(2001, 1, 1),
                                                 balance=3000)
+
+    @classmethod
+    def asset_class1(cls):
+        params = {
+            'display_order': 0,
+            'display_name': 'Test Asset Class 1',
+            'investment_type': STOCKS,
+            'super_asset_class': SUPER_ASSET_CLASSES[0][0]
+        }
+        # Asset class name needs to be upper case.
+        return AssetClass.objects.get_or_create(name='ASSETCLASS1', defaults=params)[0]
+
+    @classmethod
+    def region1(cls):
+        return Region.objects.get_or_create(name='TestRegion1')[0]
+
+    @classmethod
+    def market_index1(cls):
+        params = {
+            'display_name': 'Test Market Index 1',
+            'url': 'nowhere.com',
+            'currency': 'AUD',
+            'region': Fixture1.region1()
+        }
+        return MarketIndex.objects.get_or_create(id=1, defaults=params)[0]
+
+    @classmethod
+    def market_index2(cls):
+        params = {
+            'display_name': 'Test Market Index 2',
+            'url': 'nowhere.com',
+            'currency': 'AUD',
+            'region': Fixture1.region1()
+        }
+        return MarketIndex.objects.get_or_create(id=1, defaults=params)[0]
+
+    @classmethod
+    def fund1(cls):
+        params = {
+            'display_name': 'Test Fund 1',
+            'url': 'nowhere.com/1',
+            'currency': 'AUD',
+            'region': Fixture1.region1(),
+            'ordering': 0,
+            'asset_class': Fixture1.asset_class1(),
+            'benchmark': Fixture1.market_index1()
+        }
+        return Ticker.objects.get_or_create(symbol='TESTSYMBOL1', defaults=params)[0]
+
+    @classmethod
+    def fund2(cls):
+        params = {
+            'display_name': 'Test Fund 2',
+            'url': 'nowhere.com/2',
+            'currency': 'AUD',
+            'region': Fixture1.region1(),
+            'ordering': 1,
+            'asset_class': Fixture1.asset_class1(),
+            'benchmark': Fixture1.market_index2()
+        }
+        return Ticker.objects.get_or_create(symbol='TESTSYMBOL2', defaults=params)[0]
+
+    @classmethod
+    def set_prices(cls, prices):
+        """
+        Sets the prices for the given instruments and dates.
+        :param prices:
+        :return:
+        """
+        for asset, dstr, price in prices:
+            DailyPrice.objects.update_or_create(instrument_object_id=asset.id,
+                                                instrument_content_type=ContentType.objects.get_for_model(asset),
+                                                date=datetime.datetime.strptime(dstr, '%Y%m%d'),
+                                                defaults={'price': price})
+
+    @classmethod
+    def add_orders(cls, order_details):
+        """
+        Adds a bunch of orders to the system
+        :param order_details: Iterable of (account, order_state) tuples.
+        :return: the newly created orders as a list.
+        """
+        res = []
+        for account, state in order_details:
+            res.append(MarketOrderRequest.objects.create(state=state.value, account=account))
+        return res
+
+    @classmethod
+    def add_executions(cls, execution_details):
+        """
+        Adds a bunch of order executions to the system
+        :param execution_details: Iterable of (asset, order, volume, price, amount, time) tuples.
+        :return: the newly created executions as a list.
+        """
+        res = []
+        for asset, order, volume, price, amount, time in execution_details:
+            res.append(Execution.objects.create(asset=asset,
+                                                volume=volume,
+                                                order=order,
+                                                price=price,
+                                                executed=timezone.make_aware(datetime.datetime.strptime(time, '%Y%m%d')),
+                                                amount=amount))
+        return res
+
+    @classmethod
+    def add_execution_distributions(cls, distribution_details):
+        """
+        Adds a bunch of order execution distributions to the system
+        :param distribution_details: Iterable of (execution, volume, goal) tuples.
+        :return: the newly created distributions as a list.
+        """
+        res = []
+        for execution, volume, goal in distribution_details:
+            amount = abs(execution.amount * volume / execution.volume)
+            if volume > 0:
+                tx = Transaction.objects.create(reason=Transaction.REASON_EXECUTION,
+                                                from_goal=goal,
+                                                amount=amount,
+                                                status=Transaction.STATUS_EXECUTED,
+                                                created=execution.executed,
+                                                executed=execution.executed)
+            else:
+                tx = Transaction.objects.create(reason=Transaction.REASON_EXECUTION,
+                                                to_goal=goal,
+                                                amount=amount,
+                                                status=Transaction.STATUS_EXECUTED,
+                                                created=execution.executed,
+                                                executed=execution.executed)
+
+            res.append(ExecutionDistribution.objects.create(execution=execution,
+                                                            transaction=tx,
+                                                            volume=volume))
+        return res
