@@ -10,7 +10,10 @@
 
     <div class="row">
       <div class="col-sm-9">
-          <h3><span class="icon icon-users"></span> {{ object.name }}</h3>
+          <h3>
+             <span class="icon {% if object.accounts.count == 1 %}icon-user{% else %}icon-users{% endif %}"></span>
+            {{ object.name }}
+          </h3>
       </div>
       <div class="col-sm-3 text-sm-right">
       </div>

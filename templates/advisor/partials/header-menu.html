@@ -2,8 +2,8 @@
 {% load filters %}
 
 
-<li class="{{ request.resolver_match.view_name|menu_active:'advisor:summary' }}">
-  <a href="{% url 'advisor:summary' %}">{% trans 'Summary' %}</a>
+<li class="{{ request.resolver_match.view_name|menu_active:'advisor:overview' }}">
+  <a href="{% url 'advisor:overview' %}">{% trans 'Overview' %}</a>
 </li>
 <li class="{{ request.resolver_match.view_name|menu_active:'advisor:clients, advisor:clients-invites, advisor:clients-invites-create, advisor:clients-invites-create-confirm, advisor:clients-invites-create-account-type, advisor:clients-invites-create-financial-details, advisor:clients-invites-create-personal-details, advisor:clients-detail, advisor:clients-account-invites, advisor:clients-account-invites-create, advisor:clients-account-invites-profile, advisor:composites-detail, advisor:composites-create, advisor:composites-edit, advisor:composites-detail-clients, advisor:composites-detail-secondary-advisors, advisor:composites-detail-secondary-advisors-create' }}">
   <a href="{% url 'advisor:clients' %}">{% trans 'Clients' %}</a>

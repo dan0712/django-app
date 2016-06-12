@@ -105,3 +105,10 @@ h3.header {
 .table .tr-middle > td {
   vertical-align: middle;
 }
+
+table thead .icon-sort {
+  display: none;
+}
+table thead .active .icon-sort {
+  display: initial;
+}

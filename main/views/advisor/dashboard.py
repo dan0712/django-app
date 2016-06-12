@@ -24,14 +24,14 @@ from ..base import AdvisorView, ClientView
 from ...forms import EmailInviteForm
 from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_TYPES
 
-__all__ = ['AdvisorClientInvites', 'AdvisorSummary', 'AdvisorClients',
+__all__ = ['AdvisorClientInvites', 'AdvisorOverview', 'AdvisorClients',
            'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
            'AdvisorCompositeNew', 'AdvisorAccountGroupDetails',
            'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView',
            'AdvisorAccountGroupClients',
            'AdvisorAccountGroupSecondaryDetailView',
            'AdvisorAccountGroupSecondaryCreateView',
-           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeSummary',
+           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeOverview',
            'AdvisorClientAccountChangeFee',
            "AdvisorSupportGettingStarted", "AdvisorClientInviteNewView",
            'CreateNewClientPrepopulatedView', "BuildPersonalDetails",
@@ -79,8 +79,8 @@ class AdvisorClientInvites(CreateView, AdvisorView):
         return response
 
 
-class AdvisorSummary(TemplateView, AdvisorView):
-    template_name = "advisor/summary.html"
+class AdvisorOverview(TemplateView, AdvisorView):
+    template_name = "advisor/overview.html"
 
 
 class AdvisorClientDetails(TemplateView, AdvisorView):
@@ -325,7 +325,7 @@ class AdvisorRemoveAccountFromGroupView(AdvisorView):
 
         if group_name:
             # account group deleted (cause no accounts in it any more)
-            redirect = reverse_lazy('advisor:summary')
+            redirect = reverse_lazy('advisor:overview')
         else:
             # account group not deleted (just the account)
             redirect = reverse_lazy('advisor:composites-edit',
@@ -479,9 +479,9 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
         )
 
 
-class AdvisorCompositeSummary(TemplateView, AdvisorView):
+class AdvisorCompositeOverview(TemplateView, AdvisorView):
     model = AccountGroup
-    template_name = 'advisor/summary.html'
+    template_name = 'advisor/overview.html'
     col_dict = {
         "name": 2,
         "goal_status": 5,
@@ -491,7 +491,7 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
     }
 
     def __init__(self, *args, **kwargs):
-        super(AdvisorCompositeSummary, self).__init__(*args, **kwargs)
+        super(AdvisorCompositeOverview, self).__init__(*args, **kwargs)
         self.filter = "0"
         self.search = ""
         self.sort_col = "name"
@@ -503,13 +503,12 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         self.search = request.GET.get("search", self.search)
         self.sort_col = request.GET.get("sort_col", self.sort_col)
         self.sort_dir = request.GET.get("sort_dir", self.sort_dir)
-        response = super(AdvisorCompositeSummary, self).get(request, *args,
+        response = super(AdvisorCompositeOverview, self).get(request, *args,
                                                             **kwargs)
         return response
 
     @property
     def groups(self):
-
         pre_groups = self.model.objects
 
         if self.filter == "1":
@@ -533,7 +532,7 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
                 continue
 
             groups.append(
-                [group.pk, group, group.name, first_account.account_type_name,
+                [group.pk, group, group.name, first_account,
                  relationship, group.on_track, group.total_balance,
                  group.total_returns, group.since, group.allocation,
                  group.stocks_percentage, group.bonds_percentage])
@@ -546,7 +545,7 @@ class AdvisorCompositeSummary(TemplateView, AdvisorView):
         return groups
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorCompositeSummary, self).get_context_data(**kwargs)
+        ctx = super(AdvisorCompositeOverview, self).get_context_data(**kwargs)
         ctx.update({
             "filter": self.filter,
             "search": self.search,

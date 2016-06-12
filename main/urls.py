@@ -85,7 +85,7 @@ urlpatterns_advisor = patterns(
     url(r'^support/forms/transfer/bulk$', AdvisorBulkInvestorTransferView.as_view(), name='support-forms-transfer-bulk'),
     url(r'^support/forms/transfer/bulk/update/(?P<pk>\d+)$', AdvisorBulkInvestorTransferUpdateView.as_view()),
     url(r'^support/getting-started$', AdvisorSupportGettingStarted.as_view(), name='support-getting-started'),
-    url(r'^summary', AdvisorCompositeSummary.as_view(), name='summary'),
+    url(r'^summary', AdvisorCompositeOverview.as_view(), name='overview'),
 )
 
 # TODO: modularize later

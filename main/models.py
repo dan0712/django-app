@@ -1874,19 +1874,19 @@ class AssetFee(models.Model):
 
 class GoalType(models.Model):
     # OBSOLETED # see RISK_LEVEL for GoalMetric
-    RISK_LEVEL_PROTECTED = 0 # 0.0
-    RISK_LEVEL_SEMI_PROTECTED = 20 # 0.2
-    RISK_LEVEL_MODERATE = 40 # 0.4
-    RISK_LEVEL_SEMI_DYNAMIC = 60 # 0.6
-    RISK_LEVEL_DYNAMIC = 80 # 0.8
+    #RISK_LEVEL_PROTECTED = 0 # 0.0
+    #RISK_LEVEL_SEMI_PROTECTED = 20 # 0.2
+    #RISK_LEVEL_MODERATE = 40 # 0.4
+    #RISK_LEVEL_SEMI_DYNAMIC = 60 # 0.6
+    #RISK_LEVEL_DYNAMIC = 80 # 0.8
 
-    RISK_LEVELS = (
-        (RISK_LEVEL_PROTECTED, 'Protected'),
-        (RISK_LEVEL_SEMI_PROTECTED, 'Semi-protected'),
-        (RISK_LEVEL_MODERATE, 'Moderate'),
-        (RISK_LEVEL_SEMI_DYNAMIC, 'Semi-dynamic'),
-        (RISK_LEVEL_DYNAMIC, 'Dynamic'),
-    )
+    #RISK_LEVELS = (
+    #    (RISK_LEVEL_PROTECTED, 'Protected'),
+    #    (RISK_LEVEL_SEMI_PROTECTED, 'Semi-protected'),
+    #    (RISK_LEVEL_MODERATE, 'Moderate'),
+    #    (RISK_LEVEL_SEMI_DYNAMIC, 'Semi-dynamic'),
+    #    (RISK_LEVEL_DYNAMIC, 'Dynamic'),
+    #)
 
     name = models.CharField(max_length=255, null=False, db_index=True)
     description = models.TextField(null=True, blank=True)
@@ -1911,11 +1911,11 @@ class GoalType(models.Model):
         return result
 
     # OBSOLETED
-    @classmethod
-    def risk_level_range(cls, risk_level):
-        risk_min = risk_level
-        risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
-        return [risk_min, risk_max]
+    #@classmethod
+    #def risk_level_range(cls, risk_level):
+    #    risk_min = risk_level
+    #    risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
+    #    return [risk_min, risk_max]
 
 
 class RecurringTransaction(models.Model):
@@ -2379,6 +2379,18 @@ class Goal(models.Model):
                 'fees': self.total_fees,
                }
 
+    @property
+    def risk_level(self):
+        # Experimental
+        goal_metric = GoalMetric.objects \
+            .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE) \
+            .filter(group__settings__goal_approved=self) \
+            .first()
+
+        if goal_metric:
+            risk_level = goal_metric.get_risk_level_display()
+            return risk_level
+
     def balance_at(self, future_dt, confidence=0.5):
         """
         Calculates the predicted balance at the given date with the given confidence based on the current
@@ -2671,6 +2683,19 @@ class GoalMetric(models.Model):
         risk_min = risk_level
         risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
         return [risk_min, risk_max]
+
+    def get_risk_level(self):
+        for risk_level_choice in self.RISK_LEVELS:
+            risk_min, risk_max = self.risk_level_range(risk_level_choice[0])
+
+            if self.configured_val < risk_max / 100:
+                return risk_min
+
+    def get_risk_level_display(self):
+        risk_level = self.get_risk_level()
+
+        if risk_level is not None:
+            return dict(self.RISK_LEVELS)[risk_level]
 
     @property
     def drift_score(self):
