@@ -91,7 +91,8 @@
               <th><a class="link-colorless link-decorless {% if sort_col == "goal_status" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=goal_status&amp;sort_dir={{ sort_inverse }}">Status <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
               <th><a class="link-colorless link-decorless {% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total balance <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
               <th><a class="link-colorless link-decorless {% if sort_col == "return_percentage" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=return_percentage&amp;sort_dir={{ sort_inverse }}">Total return <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "allocation" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Core/Satellite <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
+              <th><a class="link-colorless link-decorless {% if sort_col == "allocation" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Stock/Bond <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
+              <th><a class="link-colorless link-decorless {% if sort_col == "xxx" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Core/Satellite <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
               <th>Risk</th>
               <th>Net worth</th>
             </tr>
@@ -128,7 +129,8 @@
                   <div>{{ group.7|percentage }}</div>
                   <div class="text-muted"><small><span>since</span> {{ group.8|date:'M j, Y' }}</small></div>
                 </td>
-                <td>#REPLACE#{{ group.10|percentage }} / {{ group.11|percentage }}</td>
+                <td>{{ group.10|percentage }} / {{ group.11|percentage }}</td>
+                <td>-</td>
                 <td>
                   <div>{% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.goals.first.risk_level }}{% endif %}</div>
                 </td>
