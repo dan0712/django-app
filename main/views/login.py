@@ -30,7 +30,8 @@ def login(request, template_name='registration/login.html',
 
     # TODO: maybe to add expected user role (based on url) to extra_context 
     response = auth_views_login(request,
-        authentication_form=authentication_form, extra_context=extra_context)
+                                authentication_form=authentication_form,
+                                extra_context=extra_context)
 
     user = request.user
 
@@ -55,7 +56,7 @@ def login(request, template_name='registration/login.html',
             return TemplateResponse(request, template_name, context)
 
         # custom redirect
-        redirect_to = (reverse_lazy('client:app') if user.is_client
+        redirect_to = (reverse_lazy('client:app', args=(user.client.id,)) if user.is_client
             else reverse_lazy('advisor:summary') if user.is_advisor
             else reverse_lazy('firm:summary') if user.is_authorised_representative
             else None

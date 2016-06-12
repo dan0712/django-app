@@ -5,7 +5,7 @@ from rest_framework.fields import SkipField
 
 
 class NoUpdateModelSerializer(serializers.ModelSerializer):
-    def update(self, validated_data):
+    def update(self, instance, validated_data):
         raise NotImplementedError('update is not a valid operation for a NoUpdateModelSerializer')
 
 

@@ -7,6 +7,7 @@ from .client import views as client_views
 from .goals import views as goals_views
 from .account import views as account_views
 from .analysis import views as analysis_views
+from .retiresmartz import views as retiresmartz_views
 
 
 router = ExtendedSimpleRouter(trailing_slash=False)
@@ -18,6 +19,10 @@ client_accounts_router = client_router.register(r'accounts',
                                                 account_views.AccountViewSet,
                                                 base_name='client-accounts',
                                                 parents_query_lookups=['primary_owner'])
+retirement_plans_router = client_router.register(r'retirement-plans',
+                                                retiresmartz_views.RetiresmartzViewSet,
+                                                base_name='client-retirement-plans',
+                                                parents_query_lookups=['client'])
 goals_router = router.register(r'goals',
                                goals_views.GoalViewSet)
 account_router = router.register(r'accounts',

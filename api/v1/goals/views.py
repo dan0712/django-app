@@ -1,7 +1,15 @@
+import datetime
+import decimal
+import operator
 import ujson
+from collections import defaultdict
+
+import pandas as pd
+from django.contrib.contenttypes.models import ContentType
 
 from django.db import transaction
 from django.db.models.query_utils import Q
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.exceptions import PermissionDenied, ValidationError, MethodNotAllowed
@@ -12,13 +20,16 @@ from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from api.v1.utils import activity
 from common.constants import EPOCH_DT
 from main.event import Event
-from main.models import Goal, GoalType, Transaction, HistoricalBalance
+from main.models import Goal, GoalType, Transaction, HistoricalBalance, Ticker, DailyPrice
 from main.risk_profiler import recommend_ttl_risks
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios, current_stats_from_weights
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
+
+# Make unsafe float operations with decimal fail
+decimal.getcontext().traps[decimal.FloatOperation] = True
 
 
 def check_state(current, required):
@@ -404,6 +415,102 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         goal = self.get_object()
         rows = HistoricalBalance.objects.filter(goal=goal).order_by('date').values_list('date', 'balance')
         return Response([((row[0] - EPOCH_DT).days, row[1]) for row in rows])
+
+    @detail_route(methods=['get'], url_path='performance-history')
+    def performance_history(self, request, pk=None, **kwargs):
+        """
+        Returns the performance history for this goal. I.e. The raw performance given the periods of stocks held.
+        This doesn't consider the price the stocks were actually bought or sold, just the movement of the market prices
+        considering the volumes held by the goal over time. I.e. Execution costs (fees, spread etc) are not considered.
+        :param request: The web request
+        :param pk: The id of the goal
+        :return: A django rest framework response object with date, perf tuples
+                 eg. [[112234232,0.00312],[112234233,-0.00115], ...]
+        """
+        # Get the goal even though we don't need it (we could just use the pk)
+        # so we can ensure we have permission to do so.
+        goal = self.get_object()
+
+        # - Get all the transaction with this goal involved that are of reason 'Execution'.
+        #   We want the volume, ticker id, date ordered by date. [(date, {ticker: vol}, ...]
+        qs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                        reason=Transaction.REASON_EXECUTION).order_by('executed')
+        txs = qs.values_list('execution_distribution__execution__executed',
+                             'execution_distribution__execution__asset__id',
+                             'execution_distribution__volume')
+        ts = []
+        entry = (None,)
+        aids = set()
+        # If there were no transactions, there can be no performance
+        if len(txs) == 0:
+            return Response([])
+
+        # Because executions are stored with timezone, but other things are just as date, we need to make datetimes
+        # naive before doing date arithmetic on them.
+        bd = timezone.make_naive(txs[0][0]).date()
+        ed = datetime.date.today()
+        for tx in txs:
+            aids.add(tx[1])
+            txd = timezone.make_naive(tx[0]).date()
+            if txd == entry[0]:
+                entry[1][tx[1]] += tx[2]
+            else:
+                if entry[0] is not None:
+                    ts.append(entry)
+                entry = (txd, defaultdict(int))
+                entry[1][tx[1]] = tx[2]
+        ts.append(entry)
+
+        # - Get the time-series of prices for each instrument from the first transaction date until now.
+        #   Fill empty dates with previous value [(date, {ticker: price}, ...]
+        pqs = DailyPrice.objects.filter(date__range=(bd, ed),
+                                        instrument_content_type=ContentType.objects.get_for_model(Ticker).id,
+                                        instrument_object_id__in=aids)
+        prices = pqs.to_timeseries(fieldnames=['price', 'date', 'instrument_object_id'],
+                                   index='date',
+                                   storage='long',
+                                   pivot_columns='instrument_object_id',
+                                   values='price')
+        # Remove negative prices and fill missing values
+        # We replace negs with None so they are interpolated.
+        prices[prices <= 0] = None
+        prices = prices.reindex(pd.date_range(bd, ed), method='ffill').fillna(method='bfill')
+
+        # For each day, calculate the performance
+        piter = prices.itertuples()
+        res = []
+        # Process the first day - it's special
+        row = next(piter)
+        p_m1 = row[1:]
+        vols_m1 = [0] * len(prices.columns)
+        tidlocs = {tid: ix for ix, tid in enumerate(prices.columns)}
+        for tid, vd in ts.pop(0)[1].items():
+            vols_m1[tidlocs[tid]] += vd
+        res.append(((row[0].date() - EPOCH_DT).days, 0))  # First day has no performance as there wasn't a move
+        # Process the rest
+        for row in piter:
+            # row[0] (a datetime) is a naive timestamp, so we don't need to convert it
+            if ts and row[0].date() == ts[0][0]:
+                vols = vols_m1.copy()
+                dtrans = ts.pop(0)[1]  # The transactions for the current processed day.
+                for tid, vd in dtrans.items():
+                    vols[tidlocs[tid]] += vd
+                # The exposed assets for the day. These are the assets we know for sure were exposed for the move.
+                pvol = list(map(min, vols, vols_m1))
+            else:
+                vols = vols_m1
+                pvol = vols
+            pdelta = list(map(operator.sub, row[1:], p_m1))  # The change in price from yesterday
+            impact = sum(map(operator.mul, pvol, pdelta))  # The total portfolio impact due to price moves for exposed assets.
+            b_m1 = sum(map(operator.mul, pvol, p_m1))  # The total portfolio value yesterday for the exposed assets.
+            # row[0] (a datetime) is a naive timestamp, so we don't need to convert it
+            perf = 0 if b_m1 == 0 else impact / b_m1
+            res.append(((row[0].date() - EPOCH_DT).days,
+                        decimal.Decimal.from_float(perf).quantize(decimal.Decimal('1.000000'))))
+            p_m1 = row[1:]
+            vols_m1 = vols[:]
+
+        return Response(res)
 
     @staticmethod
     def build_portfolio_data(item, risk_score=None):
