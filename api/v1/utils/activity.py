@@ -1,10 +1,11 @@
 import datetime
 import operator
+import decimal
 
+from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.aggregates import Sum
 from django.db.models.query_utils import Q
-from django.forms.models import model_to_dict
 from django.utils import timezone
 from pinax.eventlog.models import Log
 
@@ -12,9 +13,12 @@ from rest_framework import serializers
 from rest_framework.response import Response
 
 from api.v1.serializers import QueryParamSerializer
-from common.constants import EPOCH_TM
+from common.constants import EPOCH_TM, DEC_2PL
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, Transaction, Goal, ClientAccount, HistoricalBalance
+
+# Make unsafe float operations with decimal fail
+decimal.getcontext().traps[decimal.FloatOperation] = True
 
 
 # Map of transaction reason to event
@@ -27,6 +31,7 @@ TX2E = {
     Transaction.REASON_REBALANCE: Event.GOAL_REBALANCE_EXECUTED,
     Transaction.REASON_TRANSFER: Event.GOAL_TRANSFER_EXECUTED,
 }
+
 
 class ActivityQueryParamSerializer(QueryParamSerializer):
     sd = serializers.DateField(required=False)
@@ -53,6 +58,29 @@ def parse_event_logs(logs, transactions, goal):
     eid2aid = dict(ActivityLog.objects.all().values_list('events__id', 'id'))
     aid2args = dict(ActivityLog.objects.all().values_list('id', 'format_args'))
 
+    def _get_extra_data(aid, fields):
+        NA = object()
+
+        # Get any extra arguments for this activity type
+        args = aid2args.get(aid, None)
+        data = []
+        if args:
+            for locstr in map(str.strip, args.strip().splitlines()):
+                in_trans = False
+                item = fields
+                for branch in locstr.split('.'):
+                    if in_trans:
+                        item = getattr(item, branch, NA)
+                    else:
+                        item = item.get(branch, NA)
+                        if branch == 'transaction':
+                            in_trans = True
+                    if item == NA:
+                        item = '{} not available'.format(locstr)
+                        break
+                data.append(item)
+        return data
+
     items = []
     for log in logs:
         e = Event[log.action]
@@ -76,23 +104,15 @@ def parse_event_logs(logs, transactions, goal):
             tx = transactions.pop(txid, None)
             if tx is None:
                 raise Exception("Transaction matching event log: {} does not exist.".format(log.id))
+            log.extra['transaction'] = tx
 
-            # Only show goal-goal transfers once per account.
-            if goal is None and tx.to_goal is not None and tx.from_goal is not None and tx.from_goal.id == max(tx.from_goal.id, tx.to_goal.id):
-                continue
-            log.extra['transaction'] = model_to_dict(tx)
+            # Transactions are Goal-level things and do not impact the account-level balance, so only add amount if it's
+            # the goal-level we're looking at.
             if goal is not None:
                 result['amount'] = tx.amount if tx.to_goal is not None and tx.to_goal.id == goal.id else -tx.amount
 
-        # Get extra data if necessary
-        args = aid2args.get(tp, None)
-        if args:
-            data = []
-            for locstr in map(str.strip, args.strip().splitlines()):
-                item = log.extra
-                for branch in locstr.split('.'):
-                    item = item[branch]
-                data.append(item)
+        data = _get_extra_data(tp, log.extra)
+        if data:
             result['data'] = data
 
         # Get Goal if necessary
@@ -101,30 +121,33 @@ def parse_event_logs(logs, transactions, goal):
         items.append(result)
 
     # Process any remaining transactions that have no log.
-    if goal is not None:
-        for tx in transactions.values():
-            aid = eid2aid.get(TX2E[tx.reason].value, None)
-            # if there is no aid, the transaction probably is still there as it wasn't processed as part of the event logs.
-            if aid is None:
-                continue
+    for tx in transactions.values():
+        aid = eid2aid.get(TX2E[tx.reason].value, None)
 
-            result = {
-                'type': aid,
-                'time': int((timezone.make_naive(tx.executed) - EPOCH_TM).total_seconds()),
-                'amount': tx.amount if tx.to_goal is not None and tx.to_goal.id == goal.id else -tx.amount
-            }
-            args = aid2args.get(aid, None)
-            if args:
-                tx_as_dict = {'transaction': model_to_dict(tx)}
-                data = []
-                for locstr in map(str.strip, args.strip().splitlines()):
-                    item = tx_as_dict
-                    for branch in locstr.split('.'):
-                        if item != 'UNKNOWN':
-                            item = item.get(branch, 'UNKNOWN')
-                    data.append(item)
-                result['data'] = data
-            items.append(result)
+        # if there is no aid, the transaction probably is still there
+        # as it wasn't processed as part of the event logs. I.e. The system is configured to NOT show that activity.
+        if aid is None:
+            continue
+
+        result = {
+            'type': aid,
+            'time': int((timezone.make_naive(tx.executed) - EPOCH_TM).total_seconds())
+        }
+
+        if goal is None:
+            # account level, so we need to work out the goal.
+            result['goal'] = tx.from_goal.id if tx.to_goal is None else tx.to_goal.id
+        else:
+            # goal-level, so add the amount, an Transactions are Goal-level things and do not impact the
+            # account-level balance.
+            result['amount'] = tx.amount if tx.to_goal is not None and tx.to_goal.id == goal.id else -tx.amount
+
+        # Set the data element.
+        data = _get_extra_data(aid, {'transaction': tx})
+        if data:
+            result['data'] = data
+
+        items.append(result)
 
     return items
 
@@ -133,15 +156,15 @@ def get(request, obj):
     if isinstance(obj, Goal):
         goal = obj
         goal_ids = [goal.id]
+        gct = ContentType.objects.get_for_model(Goal)
+        el_filter = (Q(content_type=gct, object_id__in=goal_ids))
+    elif isinstance(obj, ClientAccount):
+        goal = None
+        goal_ids = obj.goals.values_list('id', flat=True)
         # Filter for only the events where the object is account or goal
         ctm = ContentType.objects.get_for_models(ClientAccount, Goal)
         el_filter = (Q(content_type=ctm[ClientAccount], object_id=obj.id) |
                      Q(content_type=ctm[Goal], object_id__in=goal_ids))
-    elif isinstance(obj, ClientAccount):
-        goal = None
-        goal_ids = obj.goals.values_list('id', flat=True)
-        gct = ContentType.objects.get_for_model(Goal)
-        el_filter = (Q(content_type=gct, object_id__in=goal_ids))
     else:
         raise Exception("object type: {} not supported.".format(type(obj)))
 
@@ -168,5 +191,5 @@ def get(request, obj):
     # Join the two lists to one sorted on date
     items.extend([{'type': tp,
                    'time': int((datetime.datetime.combine(bal['date'], datetime.time()) - EPOCH_TM).total_seconds()),
-                   'balance': bal['sum']} for bal in qs])
+                   'balance': Decimal.from_float(bal['sum']).quantize(DEC_2PL)} for bal in qs])
     return Response(sorted(items, key=operator.itemgetter("time")))
