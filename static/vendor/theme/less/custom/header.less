@@ -63,7 +63,20 @@
 	}
 }
 
-.header-action-btn {
+.header-action-right {
 	position: relative;
 	display: inline-block;
+	color: white;
+	.welcome-text {
+		font-size: 16px;
+		display: inline-block;
+		padding-top: 14px;
+		vertical-align: middle;
+	}
+	.navbar-toggle {
+		display: none;
+		@media (min-width: 992px) {
+			display: block;
+		}
+	}
 }

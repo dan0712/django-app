@@ -9732,9 +9732,24 @@ fieldset[disabled] .btn-danger-outline.active {
     background-color: rgba(255, 255, 255, 0.98);
   }
 }
-.header-action-btn {
+.header-action-right {
   position: relative;
   display: inline-block;
+  color: white;
+}
+.header-action-right .welcome-text {
+  font-size: 16px;
+  display: inline-block;
+  padding-top: 14px;
+  vertical-align: middle;
+}
+.header-action-right .navbar-toggle {
+  display: none;
+}
+@media (min-width: 992px) {
+  .header-action-right .navbar-toggle {
+    display: block;
+  }
 }
 .main-footer {
   width: 100%;
