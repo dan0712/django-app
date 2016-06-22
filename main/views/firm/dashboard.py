@@ -488,7 +488,7 @@ class FirmAnalyticsOverviewView(FirmAnalyticsMixin, TemplateView, LegalView):
         qs_goals = self.get_queryset_goals_filterless()
 
         data = []
-        for risk_level_tuple in GoalType.RISK_LEVELS:
+        for risk_level_tuple in GoalMetric.RISK_LEVELS:
 
             value = qs_goals \
                 .filter_by_risk_level(risk_level_tuple[0]) \
