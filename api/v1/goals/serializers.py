@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.fields import FloatField, IntegerField
 
-from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer
+from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer, EventMemoMixin
 from main.event import Event
 from main.models import (
     Goal, GoalSetting, GoalMetric, GoalType,
@@ -177,8 +177,8 @@ class GoalSettingSerializer(ReadOnlyModelSerializer):
         model = GoalSetting
 
 
-class GoalSettingWritableSerializer(serializers.ModelSerializer):
-    metric_group = GoalMetricGroupCreateSerializer()
+class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer):
+    metric_group = GoalMetricGroupCreateSerializer(required=True)
     recurring_transactions = RecurringTransactionCreateSerializer(many=True, required=False)
     portfolio = PortfolioCreateSerializer(required=False)
 
@@ -192,6 +192,16 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
             'metric_group',
             'recurring_transactions',
             'portfolio',
+            # These 2 are from the EventMemoMixin, and since we specify fields explicitly, we need to include them.
+            'event_memo',
+            'event_memo_staff',
+        )
+
+        required_fields = (
+            # I don't know why, but these are not getting propagated from the model. Atually, they're even getting
+            # ignored here.
+            'hedge_fx',
+            'completion',
         )
 
     def update(self, setting, validated_data):
@@ -297,9 +307,13 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
         Puts the passed settings into the 'selected_settings' field on the passed goal.
         """
         goal = validated_data.pop('goal')
+        # MEtric group and hedge_fx are required on the model. I have no idea why I have to check it again here.
         metrics_data = validated_data.pop('metric_group', None)
         if metrics_data is None:
             raise ValidationError({"metric_group": "is required"})
+        hedge_fx = validated_data.pop('hedge_fx', None)
+        if hedge_fx is None:
+            raise ValidationError({"hedge_fx": "is required"})
         tx_data = validated_data.pop('recurring_transactions', None)
         port_data = validated_data.pop('portfolio', None)
         with transaction.atomic():
@@ -327,9 +341,10 @@ class GoalSettingWritableSerializer(serializers.ModelSerializer):
                 metric_group = GoalMetricGroup.objects.get(gid)
 
             setting = GoalSetting.objects.create(metric_group=metric_group,
-                                                 target=validated_data['target'],
+                                                 # Target not required, so use default from model if omitted.
+                                                 target=validated_data.get('target', 0),
                                                  completion=validated_data['completion'],
-                                                 hedge_fx=validated_data['hedge_fx'],
+                                                 hedge_fx=hedge_fx,
                                                  rebalance=validated_data.get('rebalance', True),
                                                  )
 

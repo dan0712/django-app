@@ -24,7 +24,7 @@ from django.core.validators import (
     MaxValueValidator, MinLengthValidator
 )
 from django.db import models, transaction
-from django.db.models.deletion import PROTECT, CASCADE
+from django.db.models.deletion import PROTECT
 from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
@@ -32,6 +32,7 @@ from django.utils.safestring import mark_safe
 from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
+from pinax.eventlog import models as el_models
 from recurrence.base import deserialize
 from rest_framework.authtoken.models import Token
 
@@ -1991,9 +1992,6 @@ class GoalSetting(models.Model):
         # Must be an active goal
         return self.goal_active
 
-    def __str__(self):
-        return str(self.id)
-
 
 class GoalMetricGroup(models.Model):
     TYPE_CUSTOM = 0
@@ -3116,14 +3114,15 @@ class Transaction(models.Model):
         return '{}|{}|{}|{}|{}'.format(self.id, self.created, self.reason, self.status, self.amount)
 
 
-class TransactionMemo(models.Model):
-    category = models.CharField(max_length=255)
+class EventMemo(models.Model):
+    event = models.ForeignKey(el_models.Log,
+                              related_name="memos",
+                              on_delete=PROTECT,  # We shouldn't be deleting event logs anyway.
+                             )
     comment = models.TextField()
-    transaction_type = models.CharField(max_length=20)
-    transaction = models.ForeignKey(Transaction,
-                                    related_name="memos",
-                                    on_delete=CASCADE,  # Delete any memos where there is no longer a transaction
-                                   )
+    staff = models.BooleanField(help_text="Staff memos can only be seen by staff members of the firm."
+                                          " Non-Staff memos inherit the permissions of the logged event."
+                                          " I.e. Whoever can see the event, can see the memo.")
 
 
 class ActivityLog(models.Model):

@@ -169,33 +169,38 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             serializer = serializers.GoalSettingSerializer(goal.selected_settings)
             return Response(serializer.data)
 
-        with transaction.atomic(): # So both the log and change get committed.
+        with transaction.atomic():  # So both the log and change get committed.
             if request.method == 'POST':
                 check_state(Goal.State(goal.state), Goal.State.ACTIVE)
                 serializer = serializers.GoalSettingWritableSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
+                event = Event.SET_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
+                                                        request.data,
+                                                        user=self.request.user,
+                                                        obj=goal)
+                # Write any event memo for the event. All the details are wrapped by the serializer.
+                serializer.write_memo(event)
                 settings = serializer.save(goal=goal)
-                Event.SET_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
-                                                request.data,
-                                                user=self.request.user,
-                                                obj=goal)
-                headers = self.get_success_headers(serializer.data)
+                # We use the read-only serializer to send the settings object, not the update serializer.
                 serializer = serializers.GoalSettingSerializer(settings)
+                headers = self.get_success_headers(serializer.data)
                 return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
             elif request.method == 'PUT':
                 check_state(Goal.State(goal.state), Goal.State.ACTIVE)
                 settings = goal.selected_settings
-                Event.UPDATE_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
-                                                   request.data,
-                                                   user=self.request.user,
-                                                   obj=goal)
+                event = Event.UPDATE_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
+                                                           request.data,
+                                                           user=self.request.user,
+                                                           obj=goal)
                 serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
+                # Write any event memo for the event. All the details are wrapped by the serializer.
+                serializer.write_memo(event)
                 settings = serializer.save(goal=goal)
-                headers = self.get_success_headers(serializer.data)
-                # We use a different serializer to send the new settings, as the update serializer is limited.
+                # We use the read-only serializer to send the settings object, not the update serializer.
                 serializer = serializers.GoalSettingSerializer(settings)
+                headers = self.get_success_headers(serializer.data)
                 return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @detail_route(methods=['get'], url_path='approved-settings')

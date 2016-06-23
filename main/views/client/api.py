@@ -11,7 +11,7 @@ from main.models import AssetFeature, PortfolioSet
 from portfolios.bl_model import OptimizationException
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
-from ...models import Transaction, ClientAccount, Goal, TransactionMemo, \
+from ...models import Transaction, ClientAccount, Goal, \
     RecurringTransaction, Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory, \
     CostOfLivingIndex, FinancialPlan, FinancialProfile, FinancialPlanAccount, \
     FinancialPlanExternalAccount, AssetClass, Position
@@ -21,7 +21,7 @@ from django.http.response import Http404
 __all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisitor', 'ClientAdvisor',
            'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
            'ClientAccountPositions', 'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView',
-           'ChangeAllocation', 'NewTransactionMemoView', 'ChangeGoalView', 'SetAutoDepositView',
+           'SetAutoDepositView',
            'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances', 'AssetFeaturesView',
            'SetAutoWithdrawalView', 'ZipCodes', 'FinancialProfileView',
            'FinancialPlansView', 'FinancialPlansAccountAdditionView', 'FinancialPlansAccountDeletionView',
@@ -540,165 +540,6 @@ class NewTransactionsView(ClientView):
 
         return HttpResponse(ujson.dumps(nt_return),
                             content_type='application/json')
-
-
-class ChangeAllocation(ClientView):
-    def post(self, request, *args, **kwargs):
-        goal = get_object_or_404(Goal,
-                                 pk=kwargs["pk"],
-                                 account__primary_owner=self.client)
-        payload = ujson.loads(request.body.decode("utf-8"))
-        goal.allocation = payload["allocation"]
-        if payload["satelliteAlloc"] != goal.satellite_pct:
-            goal.satellite_pct = payload["satelliteAlloc"]
-            has_changed = True
-        else:
-            has_changed = False
-
-        '''
-        new_t = Transaction()
-        new_t.account = goal
-        new_t.amount = goal.allocation
-        new_t.satelliteAlloc = goal.satellite_pct
-        new_t.type = TRANSACTION_TYPE_ALLOCATION
-        # remove all the pending allocation transactions for this account
-        Transaction.objects.filter(account=goal,
-                                   type=TRANSACTION_TYPE_ALLOCATION,
-                                   status=TRANSACTION_STATUS_PENDING).all().delete()
-        new_t.save()
-        '''
-
-        if has_changed:
-            if goal.is_custom_size:
-                try:
-                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
-                except OptimizationException as e:
-                    logger.exception(e)
-                    return HttpResponse('null',
-                                        content_type="application/json",
-                                        status=500)
-            else:
-                goal.portfolios = None
-
-        goal.save()
-        return HttpResponse(ujson.dumps({"transactionId": new_t.pk}),
-                            content_type="application/json")
-
-
-class NewTransactionMemoView(ClientView):
-    def get(self, request, *args, **kwargs):
-        return HttpResponse("[]", content_type="application/json")
-
-    def post(self, request, *args, **kwargs):
-        payload = ujson.loads(request.body.decode("utf-8"))
-        tr = get_object_or_404(
-            Transaction,
-            pk=payload["user_transaction_id"].replace("f", ""))
-        trm = TransactionMemo()
-        trm.transaction = tr
-        trm.category = payload["category"]
-        trm.comment = payload["comment"]
-        trm.transaction_type = payload["transaction_type"]
-        trm.save()
-        return HttpResponse(ujson.dumps({"success": "ok"}),
-                            content_type="application/json")
-
-
-class ChangeGoalView(ClientView):
-
-
-    def put(self, request, *args, **kwargs):
-        goal = get_object_or_404(Goal,
-                                 pk=kwargs["pk"],
-                                 account__primary_owner=self.client)
-        payload = ujson.loads(request.body.decode("utf-8"))
-        goal.name = payload["name"]
-        goal.completion_date = datetime.strptime(payload["goalCompletionDate"],
-                                                 '%Y%m%d%H%M%S')
-        goal.type = payload["goalType"]
-        goal.account_type = payload["accountType"]
-        goal.save()
-
-        has_changed = False
-        # clear payload
-        region_allocations = payload["regions_allocation"]
-
-        total_size = 0
-        allocation_keys = region_allocations.keys()
-        new_region_allocations = {}
-
-        for k in allocation_keys:
-            if int(region_allocations[k]["size"]*100) == 0:
-                continue
-            else:
-                new_region_allocations[k] = {"size": region_allocations[k]["size"]}
-            total_size += int(region_allocations[k]["size"]*100)
-
-        if total_size != 100:
-            region_allocations = None
-        else:
-            region_allocations = new_region_allocations
-
-        if region_allocations:
-            try:
-                custom_regions = ujson.loads(goal.custom_regions)
-            except (ValueError, TypeError):
-                logger.exception("Error decoding custom regions.")
-                custom_regions = {}
-            if len(custom_regions) > 0:
-                if custom_regions == region_allocations:
-                    has_changed = False
-                else:
-                    has_changed = True
-                    goal.custom_regions = ujson.dumps(region_allocations)
-            else:
-                has_changed = True
-                goal.custom_regions = ujson.dumps(region_allocations)
-
-        # check optimization model
-        optimization_mode = payload["optimization_mode"]
-        if optimization_mode != goal.optimization_mode:
-            goal.custom_optimization_mode = optimization_mode
-            has_changed = True
-
-        # check picked regions
-        picked_regions = list(set(payload["picked_regions"]))
-        if set(picked_regions) != set(ujson.loads(goal.picked_regions)):
-            goal.custom_picked_regions = ujson.dumps(picked_regions)
-            has_changed = True
-
-        if payload["satelliteAlloc"] != goal.satellite_pct:
-            goal.satellite_pct = payload["satelliteAlloc"]
-            has_changed = True
-
-        goal.custom_hedges = ujson.dumps(payload["hedges"])
-        goal.save()
-
-        if has_changed:
-            if goal.is_custom_size:
-                try:
-                    goal.portfolios = ujson.dumps(calculate_portfolios_for_goal(goal), double_precision=2)
-                except OptimizationException as e:
-                    print(e)
-                    return HttpResponse('null',
-                                        content_type="application/json",
-                                        status=500)
-            else:
-                goal.portfolios = None
-            goal.save()
-            '''
-            new_t = Transaction()
-            new_t.account = goal
-            new_t.amount = goal.allocation
-            new_t.type = TRANSACTION_TYPE_ALLOCATION
-            # remove all the pending allocation transactions for this account
-            Transaction.objects.filter(account=goal,
-                                       type=TRANSACTION_TYPE_ALLOCATION,
-                                       status=TRANSACTION_STATUS_PENDING).all().delete()
-            new_t.save()
-            '''
-
-        return HttpResponse('null', content_type="application/json")
 
 
 class SetAutoDepositView(ClientView):

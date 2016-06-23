@@ -3,6 +3,8 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework.fields import SkipField
 
+from main.models import EventMemo
+
 
 class NoUpdateModelSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
@@ -60,3 +62,24 @@ class NonNullModelSerializer(serializers.ModelSerializer):
                 ret[field.field_name] = represenation
 
         return ret
+
+
+class EventMemoMixin(serializers.Serializer):
+    """
+    This class is meant to be mixed into a DRF serializer. It uses the validated_data object, so should only be called
+    when it is populated.
+    It needs to subclass Serializer, and not just object so the fields are recognised.
+    """
+    event_memo = serializers.CharField(allow_null=True)
+    event_memo_staff = serializers.BooleanField(default=False)
+
+    def write_memo(self, event):
+        """
+        Pops the added event memo data from validated_data and writes an event memo based on it and the passed event.
+        Make sure you call this method before saving any model based on the validated_data.
+        :param event:
+        :return: The memo object that was written.
+        """
+        memo = self.validated_data.pop('event_memo', None)
+        memo_s = self.validated_data.pop('event_memo_staff', False)
+        return None if memo is None else EventMemo.objects.create(event=event, comment=memo, staff=memo_s)

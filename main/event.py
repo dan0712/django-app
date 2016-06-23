@@ -77,7 +77,7 @@ class Event(ChoiceEnum):
         :param obj: The object the event concerns.
                     Objects of a ClientAccount type will show up on the account activity stream.
                     Objects of a Goal type will show up on the goal and account activity streams.
-        :return:
+        :return: The event that was logged.
         """
         if not isinstance(obj, self.obj_class):
             raise TypeError("obj parameter: {} is not of required type: {}".format(type(obj), self.obj_class))
@@ -87,5 +87,5 @@ class Event(ChoiceEnum):
 
         log_data = dict(zip(self.log_keys, map(repr, args)))
         log_data['reason'] = reason
-        event_log(user, self.name, log_data, obj=obj)
+        return event_log(user, self.name, log_data, obj=obj)
 
