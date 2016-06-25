@@ -14,7 +14,7 @@ class ApiRenderer(JSONRenderer):
         """
 
         wrapper = {
-            'apiVersion': '2',
+            'version': '2',
         }
 
         # move error to the root level

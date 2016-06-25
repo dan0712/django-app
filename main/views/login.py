@@ -58,7 +58,7 @@ def login(request, template_name='registration/login.html',
         # custom redirect
         redirect_to = (reverse_lazy('client:app', args=(user.client.id,)) if user.is_client
             else reverse_lazy('advisor:overview') if user.is_advisor
-            else reverse_lazy('firm:summary') if user.is_authorised_representative
+            else reverse_lazy('firm:overview') if user.is_authorised_representative
             else None
         )
 

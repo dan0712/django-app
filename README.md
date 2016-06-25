@@ -74,7 +74,7 @@ https://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml#method.
 #### Success
 ```
 {
-    "apiVersion": "2",
+    "version": "2",
     "data": {
         "results": [{}, ...],
         "count": 777,

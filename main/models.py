@@ -1277,6 +1277,17 @@ class ClientAccount(models.Model):
     def goals_length(self):
         return len(self.goals.all())
 
+    def get_worth(self):
+        total_balance = self.total_balance
+
+        for worth_range in Client.WORTH_RANGES:
+            if total_balance >= worth_range[1] and total_balance < worth_range[2]:
+                return worth_range[0]
+
+    def get_worth_display(self):
+        worth = dict(Client.WORTH_CHOICES)
+        return worth.get(self.get_worth())
+
     @property
     def get_term(self):
         total_term = 0
@@ -1365,10 +1376,28 @@ class MedicareNumberValidator(object):
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
+    WORTH_AFFLUENT = 'affluent'
+    WORTH_HIGH = 'high'
+    WORTH_VERY_HIGH = 'very-high'
+    WORTH_ULTRA_HIGH = 'ultra-high'
+
+    WORTH_CHOICES = (
+        (WORTH_AFFLUENT, 'Mass affluent'),
+        (WORTH_HIGH, 'High net worth'),
+        (WORTH_VERY_HIGH, 'Ultra high net worth'),
+        (WORTH_ULTRA_HIGH, 'Very high net worth'),
+    )
+
+    WORTH_RANGES = (
+        (WORTH_AFFLUENT, 0, 100000),
+        (WORTH_HIGH, 100000, 1000000),
+        (WORTH_VERY_HIGH, 1000000, 10000000),
+        (WORTH_ULTRA_HIGH, 10000000, 1000000000),
+    )
+
     advisor = models.ForeignKey(Advisor,
-                                related_name="all_clients",
-                                on_delete=PROTECT,  # Must reassign clients before removing advisor
-                               )
+        related_name='all_clients',
+        on_delete=PROTECT)  # Must reassign clients before removing advisor
     secondary_advisors = models.ManyToManyField(
         Advisor,
         related_name='secondary_clients',
@@ -1378,9 +1407,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     user = models.OneToOneField(User, related_name='client')
     tax_file_number = models.CharField(max_length=9, null=True, blank=True)
-    provide_tfn = models.IntegerField(verbose_name="Provide TFN?",
-                                      choices=TFN_CHOICES,
-                                      default=TFN_YES)
+    provide_tfn = models.IntegerField(verbose_name='Provide TFN?',
+      choices=TFN_CHOICES, default=TFN_YES)
 
     associated_to_broker_dealer = models.BooleanField(
         verbose_name="Are employed by or associated with "
@@ -1496,6 +1524,18 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                                        "expected_inflation"])
 
         return mark_safe(json.dumps(data["fields"]))
+
+    def get_worth(self):
+        # why it should be a property? it shouldn't
+        total_balance = self.total_balance
+
+        for worth_range in self.WORTH_RANGES:
+            if total_balance >= worth_range[1] and total_balance < worth_range[2]:
+                return worth_range[0]
+
+    def get_worth_display(self):
+        worth = dict(self.WORTH_CHOICES)
+        return worth.get(self.get_worth())
 
     @property
     def external_accounts(self):

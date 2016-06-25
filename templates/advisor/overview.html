@@ -135,7 +135,7 @@
                   <div>{% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.goals.first.risk_level }}{% endif %}</div>
                 </td>
                 <td>
-                  <div>-</div>
+                  {% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.get_worth_display }}{% endif %}
                 </td>
               </tr>
              {% empty %}

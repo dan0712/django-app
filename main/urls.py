@@ -14,7 +14,7 @@ def ok_response_json(*args, **kwargs):
 # TODO: modularize later
 urlpatterns_firm = patterns(
     '',
-    url(r'^summary$', FirmSummary.as_view(), name='summary'),
+    url(r'^overview$', FirmOverview.as_view(), name='overview'),
     url(r'^analytics$', FirmAnalyticsOverviewView.as_view(), name='analytics'), # aka 'analytics-overview'
     url(r'^analytics/metric$', FirmAnalyticsOverviewMetricView.as_view(), name='analytics-overview-metric'),
     url(r'^analytics/advisors$', FirmAnalyticsAdvisorsView.as_view(), name='analytics-advisors'),
@@ -33,9 +33,9 @@ urlpatterns_firm = patterns(
 
     url(r'^edit$', FirmDataView.as_view(), name='edit'), # TODO: revamp
 
-    url(r'^summary/advisors/(?P<pk>\d+)$', FirmAdvisorAccountSummary.as_view(), name='summary-advisor'),
-    url(r'^summary/advisors/(?P<pk>\d+)/clients$', FirmAdvisorClients.as_view(), name='summary-advisor-clients'),
-    url(r'^summary/advisors/(?P<pk>\d+)/client/(?P<client_id>\d+)$', FirmAdvisorClientDetails.as_view(), name='summary-advisor-clients-detail'),
+    url(r'^overview/advisors/(?P<pk>\d+)$', FirmAdvisorAccountOverview.as_view(), name='overview-advisor'),
+    url(r'^overview/advisors/(?P<pk>\d+)/clients$', FirmAdvisorClients.as_view(), name='overview-advisor-clients'),
+    url(r'^overview/advisors/(?P<pk>\d+)/client/(?P<client_id>\d+)$', FirmAdvisorClientDetails.as_view(), name='overview-advisor-clients-detail'),
 
     # OBSOLETED # url(r'^agreements$', FirmAgreements.as_view()),
 
@@ -85,7 +85,7 @@ urlpatterns_advisor = patterns(
     url(r'^support/forms/transfer/bulk$', AdvisorBulkInvestorTransferView.as_view(), name='support-forms-transfer-bulk'),
     url(r'^support/forms/transfer/bulk/update/(?P<pk>\d+)$', AdvisorBulkInvestorTransferUpdateView.as_view()),
     url(r'^support/getting-started$', AdvisorSupportGettingStarted.as_view(), name='support-getting-started'),
-    url(r'^summary', AdvisorCompositeOverview.as_view(), name='overview'),
+    url(r'^overview', AdvisorCompositeOverview.as_view(), name='overview'),
 )
 
 # TODO: modularize later

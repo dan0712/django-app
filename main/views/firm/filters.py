@@ -83,11 +83,7 @@ class WorthFilter(filters.ChoiceFilter):
     WORTH_CHOICES = (
         (None, '- Worth -'),
         (None, 'Any'),
-        ('affluent', 'Mass affluent'),
-        ('high', 'High net worth'),
-        ('ultra-high', 'Ultra high net worth'),
-        ('very-high', 'Very high net worth'),
-    )
+    ) + Client.WORTH_CHOICES
 
     def __init__(self, *args, **kwargs):
         kwargs['choices'] = kwargs.get('choices', self.WORTH_CHOICES)

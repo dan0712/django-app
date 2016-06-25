@@ -72,9 +72,9 @@
           </thead>
           <tbody>
             {% for advisor in advisors %}
-              <tr onclick="window.location='{% url 'firm:summary-advisor' advisor.0 %}'">
+              <tr onclick="window.location='{% url 'firm:overview-advisor' advisor.0 %}'">
                 <td>{{ advisor.0 }}</td>
-                <td><a href="{% url 'firm:summary-advisor' advisor.0 %}">{{ advisor.2 }}</a></td>
+                <td><a href="{% url 'firm:overview-advisor' advisor.0 %}">{{ advisor.2 }}</a></td>
                 <td>{{ advisor.3|currency }}</td>
                 <td><div>{{ advisor.4 }}%</div> <small class="text-muted"><span>since </span>{{ advisor.7 }}</small></td>
                 <td><div>{{ advisor.5|currency }}</div> <small class="text-muted"><span>since </span>{{ advisor.7 }}</small></td>
@@ -96,7 +96,7 @@
     <ul id="dashboard">
       {% for group in groups %}
         <li class="composites-table-row" data-composite-id="group.0">
-          <a data-track-location="Summary" data-track-name="Info" href="/composites/{{ group.0 }}">
+          <a href="/composites/{{ group.0 }}">
             <div>
               <h4>
                 {% with group.1 as household %}<span class="icon icon-users"></span>{% endwith %}

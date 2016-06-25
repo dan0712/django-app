@@ -35,7 +35,7 @@ from .filters import (
     FirmAnalyticsClientsFilterSet,
 )
 
-__all__ = ['FirmSummary', 'FirmAdvisorAccountSummary', 'FirmAdvisorClients',
+__all__ = ['FirmOverview', 'FirmAdvisorAccountOverview', 'FirmAdvisorClients',
            'FirmAnalyticsOverviewView', 'FirmAnalyticsOverviewMetricView', 
            'FirmAnalyticsAdvisorsView', 'FirmAnalyticsClientsView',
            'FirmAnalyticsAdvisorsDetailView', 'FirmAnalyticsClientsDetailView',
@@ -661,21 +661,21 @@ class FirmAdvisorClients(DetailView, LegalView):
         return ctx
 
 
-class FirmAdvisorAccountSummary(DetailView, LegalView):
-    template_name = "firm/summary-advisor.html"
+class FirmAdvisorAccountOverview(DetailView, LegalView):
+    template_name = "firm/overview-advisor.html"
     model = Advisor
 
     def get_queryset(self):
-        return super(FirmAdvisorAccountSummary, self).get_queryset().filter(firm=self.firm)
+        return super(FirmAdvisorAccountOverview, self).get_queryset().filter(firm=self.firm)
 
     def get_context_data(self, **kwargs):
-        ctx = super(FirmAdvisorAccountSummary, self).get_context_data(
+        ctx = super(FirmAdvisorAccountOverview, self).get_context_data(
             **kwargs)
         return ctx
 
 
-class FirmSummary(TemplateView, LegalView):
-    template_name = 'firm/summary.html'
+class FirmOverview(TemplateView, LegalView):
+    template_name = 'firm/overview.html'
     col_dict = {
         "name": 2,
         "cs_number": 0,
@@ -686,7 +686,7 @@ class FirmSummary(TemplateView, LegalView):
     }
 
     def __init__(self, *args, **kwargs):
-        super(FirmSummary, self).__init__(*args, **kwargs)
+        super(FirmOverview, self).__init__(*args, **kwargs)
         self.filter = "0"
         self.search = ""
         self.sort_col = "name"
@@ -697,7 +697,7 @@ class FirmSummary(TemplateView, LegalView):
         self.search = request.GET.get("search", self.search)
         self.sort_col = request.GET.get("sort_col", self.sort_col)
         self.sort_dir = request.GET.get("sort_dir", self.sort_dir)
-        response = super(FirmSummary, self).get(request, *args, **kwargs)
+        response = super(FirmOverview, self).get(request, *args, **kwargs)
         return response
 
     @property
@@ -722,7 +722,7 @@ class FirmSummary(TemplateView, LegalView):
         return advisors
 
     def get_context_data(self, **kwargs):
-        ctx = super(FirmSummary, self).get_context_data(**kwargs)
+        ctx = super(FirmOverview, self).get_context_data(**kwargs)
         ctx.update({
             "filter": self.filter,
             "search": self.search,

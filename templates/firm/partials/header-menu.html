@@ -2,8 +2,8 @@
 {% load filters %}
 
 
-<li class="{{ request.resolver_match.view_name|menu_active:'firm:summary' }}">
-  <a href="{% url 'firm:summary' %}">{% trans 'Summary' %}</a>
+<li class="{{ request.resolver_match.view_name|menu_active:'firm:overview' }}">
+  <a href="{% url 'firm:overview' %}">{% trans 'Overview' %}</a>
 </li>
 <li class="{{ request.resolver_match.view_name|menu_active:'firm:supervisors, firm:supervisors-create, firm:supervisors-edit, firm:supervisors-delete' }}">
   <a href="{% url 'firm:supervisors' %}">{% trans 'Supervisors' %}</a>
