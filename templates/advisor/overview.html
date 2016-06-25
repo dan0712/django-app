@@ -130,7 +130,7 @@
                   <div class="text-muted"><small><span>since</span> {{ group.8|date:'M j, Y' }}</small></div>
                 </td>
                 <td>{{ group.10|percentage }} / {{ group.11|percentage }}</td>
-                <td>-</td>
+                <td>{{ group.12|percentage }} / {{ group.13|percentage }}</td>
                 <td>
                   <div>{% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.goals.first.risk_level }}{% endif %}</div>
                 </td>

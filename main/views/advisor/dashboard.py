@@ -535,7 +535,8 @@ class AdvisorCompositeOverview(TemplateView, AdvisorView):
                 [group.pk, group, group.name, first_account,
                  relationship, group.on_track, group.total_balance,
                  group.total_returns, group.since, group.allocation,
-                 group.stocks_percentage, group.bonds_percentage])
+                 group.stocks_percentage, group.bonds_percentage,
+                 group.core_percentage, group.satellite_percentage])
 
         reverse = self.sort_dir != "asc"
 

@@ -1013,6 +1013,20 @@ class AccountGroup(models.Model):
         return b
 
     @property
+    def core_balance(self):
+        b = 0
+        for account in self.accounts.all():
+            b += account.core_balance
+        return b
+
+    @property
+    def satellite_balance(self):
+        b = 0
+        for account in self.accounts.all():
+            b += account.satellite_balance
+        return b
+
+    @property
     def bond_balance(self):
         b = 0
         for account in self.accounts.all():
@@ -1030,6 +1044,18 @@ class AccountGroup(models.Model):
         if self.total_balance == 0:
             return 0
         return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
+
+    @property
+    def core_percentage(self):
+        if self.total_balance == 0:
+            return 0
+        return "{0}".format(int(round(self.core_balance / self.total_balance * 100)))
+
+    @property
+    def satellite_percentage(self):
+        if self.total_balance == 0:
+            return 0
+        return "{0}".format(int(round(self.satellite_balance / self.total_balance * 100)))
 
     @property
     def on_track(self):
@@ -1188,6 +1214,20 @@ class ClientAccount(models.Model):
         return b
 
     @property
+    def core_balance(self):
+        b = 0
+        for goal in self.goals.all():
+            b += goal.core_balance
+        return b
+
+    @property
+    def satellite_balance(self):
+        b = 0
+        for goal in self.goals.all():
+            b += goal.satellite_balance
+        return b
+
+    @property
     def total_returns(self):
         return 0
 
@@ -1202,6 +1242,18 @@ class ClientAccount(models.Model):
         if self.total_balance == 0:
             return 0
         return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
+
+    @property
+    def core_percentage(self):
+        if self.total_balance == 0:
+            return 0
+        return "{0}".format(int(round(self.core_balance / self.total_balance * 100)))
+
+    @property
+    def satellite_percentage(self):
+        if self.total_balance == 0:
+            return 0
+        return "{0}".format(int(round(self.satellite_balance / self.total_balance * 100)))
 
     @property
     def owners(self):
@@ -1691,6 +1743,20 @@ class Ticker(FinancialInstrument):
     @property
     def is_stock(self):
         return self.asset_class.investment_type == STOCKS
+
+    @property
+    def is_core(self):
+        # Experimental
+        # TODO: it will be deadly slow. need to to change all core models asap
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
+        return self.features.filter(pk=core_feature_value.pk).exists()
+
+    @property
+    def is_satellite(self):
+        # Experimental
+        # TODO: it will be deadly slow. need to to change all core models asap
+        satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
+        return self.features.filter(pk=satellite_feature_value.pk).exists()
 
     def value(self, goal):
         v = 0
@@ -2476,6 +2542,22 @@ class Goal(models.Model):
         return v
 
     @property
+    def core_balance(self):
+        v = 0
+        for p in self.positions.all():
+            if p.is_core:
+                v += p.value
+        return v
+
+    @property
+    def satellite_balance(self):
+        v = 0
+        for p in self.positions.all():
+            if p.is_satellite:
+                v += p.value
+        return v
+
+    @property
     def total_return(self):
         """
         :return: The Time-Weighted Return for this goal
@@ -2741,6 +2823,14 @@ class Position(models.Model):
     @property
     def is_stock(self):
         return self.ticker.is_stock
+
+    @property
+    def is_core(self):
+        return self.ticker.is_core
+
+    @property
+    def is_satellite(self):
+        return self.ticker.is_satellite
 
     @property
     def value(self):
