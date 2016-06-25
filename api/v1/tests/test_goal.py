@@ -1,9 +1,11 @@
 from decimal import Decimal
+
+from pinax.eventlog.models import Log
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from main.event import Event
-from main.models import ActivityLogEvent, DailyPrice, ClientAccount, MarketOrderRequest
+from main.models import ActivityLogEvent, MarketOrderRequest, EventMemo
 from main.tests.fixtures import Fixture1
 
 
@@ -118,3 +120,84 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data[4], (16806, Decimal('-0.019802')))
         self.assertEqual(response.data[5], (16807, Decimal('0.060606')))
         self.assertEqual(response.data[6], (16808, 0))
+
+    def test_put_settings_no_memo(self):
+        # Test PUT with no memo
+        old_events = Log.objects.count()
+        old_memos = EventMemo.objects.count()
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        settings_changes = {"target": 1928355}
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Make sure an event log was written
+        self.assertEqual(old_events + 1, Log.objects.count())
+        # Make sure no event memo was written
+        self.assertEqual(old_memos, EventMemo.objects.count())
+
+    def test_put_settings_with_memo_no_staff(self):
+        # Test with a memo but no staff
+        old_events = Log.objects.count()
+        old_memos = EventMemo.objects.count()
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        settings_changes = {
+            "target": 1928355,
+            "event_memo": "Changed the target because I took an arrow to the knee."
+        }
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Make sure an event log was written
+        self.assertEqual(old_events + 1, Log.objects.count())
+        # Make sure an event memo was written
+        self.assertEqual(old_memos + 1, EventMemo.objects.count())
+        # Make sure the memo was the text I passed, and the default for staff is false.
+        memo = EventMemo.objects.order_by('-id')[0]
+        self.assertFalse(memo.staff)
+        self.assertEqual(memo.comment, settings_changes['event_memo'])
+
+    def test_put_settings_with_memo_true_staff(self):
+        # Test with a memo and true staff
+        old_events = Log.objects.count()
+        old_memos = EventMemo.objects.count()
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        settings_changes = {
+            "target": 1928355,
+            "event_memo": "Changed the target because I took an arrow to the knee.",
+            "event_memo_staff": True,
+        }
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Make sure an event log was written
+        self.assertEqual(old_events + 1, Log.objects.count())
+        # Make sure an event memo was written
+        self.assertEqual(old_memos + 1, EventMemo.objects.count())
+        # Make sure the memo was the text I passed, and staff is true.
+        memo = EventMemo.objects.order_by('-id')[0]
+        self.assertTrue(memo.staff)
+        self.assertEqual(memo.comment, settings_changes['event_memo'])
+
+    def test_post_settings_with_memo_false_staff(self):
+        # Test POST with a memo and false staff
+        old_events = Log.objects.count()
+        old_memos = EventMemo.objects.count()
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        new_settings = {
+            "completion": "2016-01-01",
+            "metric_group": {"metrics": []},
+            "hedge_fx": False,
+            "event_memo": "Replaced because the old one smelled.",
+            "event_memo_staff": False,
+        }
+        response = self.client.post(url, new_settings)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Make sure an event log was written
+        self.assertEqual(old_events + 1, Log.objects.count())
+        # Make sure an event memo was written
+        self.assertEqual(old_memos + 1, EventMemo.objects.count())
+        # Make sure the memo was the text I passed, and staff is false.
+        memo = EventMemo.objects.order_by('-id')[0]
+        self.assertFalse(memo.staff)
+        self.assertEqual(memo.comment, new_settings['event_memo'])

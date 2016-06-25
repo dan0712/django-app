@@ -15,7 +15,7 @@ from main.models import (
     Firm, Advisor, User, Performer,
     AuthorisedRepresentative, FirmData, Client, ClientAccount,
     Goal, GoalMetric, GoalSetting, Position, Transaction,
-    TransactionMemo, CostOfLivingIndex, Dividend,
+    EventMemo, CostOfLivingIndex, Dividend,
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
     GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog,
@@ -59,8 +59,8 @@ class ClientAccountInline(admin.StackedInline):
     model = ClientAccount
 
 
-class TransactionMemoInline(admin.StackedInline):
-    model = TransactionMemo
+class EventMemoInline(admin.StackedInline):
+    model = EventMemo
     extra = 0
 
 
@@ -290,7 +290,6 @@ class PortfolioSetAdmin(admin.ModelAdmin):
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('reason', 'from_goal', 'to_goal', 'status', 'amount', 'created')
-    inlines = (TransactionMemoInline,)
     actions = (execute_transaction,)
     list_filter = ('status',)
 
