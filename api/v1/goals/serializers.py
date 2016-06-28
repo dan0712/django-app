@@ -18,13 +18,6 @@ from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
 
-__all__ = (
-    'GoalSerializer',
-    'GoalListSerializer',
-    'GoalUpdateSerializer',
-    'GoalTypeListSerializer',
-)
-
 
 logger = logging.getLogger('goal_serializer')
 
@@ -477,21 +470,7 @@ class GoalSerializer(ReadOnlyModelSerializer):
     invested = InvestedSerializer(source='investments')
     earned = EarnedSerializer(source='earnings')
     selected_settings = GoalSettingSerializer()
-    approved_settings = GoalSettingSerializer()
-    active_settings = GoalSettingSerializer()
 
-    class Meta:
-        model = Goal
-
-
-class GoalListSerializer(GoalSerializer):
-    """
-    Light version of GoalSerializer
-    """
-    approved_settings = serializers.PrimaryKeyRelatedField(read_only=True)
-    active_settings = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    # The Meta class is not inherited, so we need to define it again.
     class Meta:
         model = Goal
 

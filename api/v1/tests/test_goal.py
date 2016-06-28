@@ -10,6 +10,30 @@ from main.tests.fixtures import Fixture1
 
 
 class GoalTests(APITestCase):
+    def test_get_list(self):
+        goal = Fixture1.goal1()
+        goal.approve_selected()
+        url = '/api/v1/goals'
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        # Make sure for the list endpoint, selected settings is an object, but active and approved are null or integer.
+        self.assertEqual(response.data[0]['active_settings'], None)
+        self.assertEqual(response.data[0]['approved_settings'], response.data[0]['selected_settings']['id'])
+
+    def test_get_detail(self):
+        goal = Fixture1.goal1()
+        url = '/api/v1/goals/{}'.format(goal.id)
+        goal.approve_selected()
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], Fixture1.goal1().id)
+        # Make sure for the detail endpoint, selected settings is an object, but active and approved are null or integer.
+        self.assertEqual(response.data['active_settings'], None)
+        self.assertEqual(response.data['approved_settings'], response.data['selected_settings']['id'])
+
     def test_get_no_activity(self):
         url = '/api/v1/goals/{}/activity'.format(Fixture1.goal1().id)
         self.client.force_authenticate(user=Fixture1.client1().user)

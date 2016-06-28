@@ -70,10 +70,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            if self.action == 'list':
-                return serializers.GoalListSerializer
-            else:
-                return serializers.GoalSerializer
+            return serializers.GoalSerializer
         else:
             if self.action == 'create':
                 return serializers.GoalCreateSerializer
