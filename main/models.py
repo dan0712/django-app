@@ -3278,6 +3278,7 @@ class ActivityLogEvent(models.Model):
     from main.event import Event
 
     id = models.IntegerField(choices=Event.choices(), primary_key=True)
+    # foreign key as one Activity Log formatter can cover multiple events.
     activity_log = models.ForeignKey(ActivityLog, related_name='events')
 
     @classmethod

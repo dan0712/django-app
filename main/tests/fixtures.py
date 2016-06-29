@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from pinax.eventlog.models import Log
@@ -29,13 +30,25 @@ class Fixture1:
         }
         return Firm.objects.get_or_create(slug='example_inc', defaults=params)[0]
 
+
+    @classmethod
+    def user_group_advisors(cls):
+        return Group.objects.get_or_create(name=User.GROUP_ADVISOR)[0]
+
+    @classmethod
+    def user_group_clients(cls):
+        return Group.objects.get_or_create(name=User.GROUP_CLIENT)[0]
+
     @classmethod
     def advisor1_user(cls):
         params = {
             'first_name': "test",
             'last_name': "advisor",
         }
-        return User.objects.get_or_create(email="advisor@example.com", defaults=params)[0]
+        i, c = User.objects.get_or_create(email="advisor@example.com", defaults=params)
+        if c:
+            i.groups.add(Fixture1.user_group_advisors())
+        return i
 
     @classmethod
     def advisor1(cls):
@@ -52,7 +65,10 @@ class Fixture1:
             'first_name': "test",
             'last_name': "client",
         }
-        return User.objects.get_or_create(email="client@example.com", defaults=params)[0]
+        i, c = User.objects.get_or_create(email="client@example.com", defaults=params)
+        if c:
+            i.groups.add(Fixture1.user_group_clients())
+        return i
 
     @classmethod
     def client2_user(cls):
@@ -281,6 +297,14 @@ class Fixture1:
                                          timestamp=timezone.make_aware(datetime.datetime(2000, 1, 1)),
                                          action=Event.APPROVE_SELECTED_SETTINGS.name,
                                          extra={'reason': 'Just because'},
+                                         defaults={'obj': Fixture1.goal1()})[0]
+
+    @classmethod
+    def settings_event2(cls):
+        return Log.objects.get_or_create(user=Fixture1.client1_user(),
+                                         timestamp=timezone.make_aware(datetime.datetime(2000, 1, 1, 1)),
+                                         action=Event.UPDATE_SELECTED_SETTINGS.name,
+                                         extra={'reason': 'Just because 2'},
                                          defaults={'obj': Fixture1.goal1()})[0]
 
     @classmethod

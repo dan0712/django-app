@@ -53,7 +53,7 @@ def get_transactions(sd, ed, goal_ids):
     return {tx.id: tx for tx in qs}
 
 
-def parse_event_logs(logs, transactions, goal):
+def parse_event_logs(request, logs, transactions, goal):
     # Get the map from event 'action' code to ActivityLog id
     eid2aid = dict(ActivityLog.objects.all().values_list('events__id', 'id'))
     aid2args = dict(ActivityLog.objects.all().values_list('id', 'format_args'))
@@ -80,6 +80,9 @@ def parse_event_logs(logs, transactions, goal):
                         break
                 data.append(item)
         return data
+
+    def _is_authorised(user, staff):
+        return not staff or user.is_advisor or user.is_authorised_representative
 
     items = []
     for log in logs:
@@ -118,6 +121,12 @@ def parse_event_logs(logs, transactions, goal):
         # Get Goal if necessary
         if goal is None and isinstance(log.obj, Goal):
             result['goal'] = log.object_id
+
+        # Add any memos to the event
+        memos = [memo[0] for memo in log.memos.values_list('comment', 'staff') if _is_authorised(request.user, memo[1])]
+        if memos:
+            result['memos'] = memos
+
         items.append(result)
 
     # Process any remaining transactions that have no log.
@@ -178,11 +187,11 @@ def get(request, obj):
         date_constraint &= Q(date__gte=sd)
     if ed is not None:
         date_constraint &= Q(date__lte=ed)
-    events = Log.objects.filter(el_filter & date_constraint)
+    events = Log.objects.filter(el_filter & date_constraint).prefetch_related('memos')
 
     # Get all the transactions for the period
     transactions = get_transactions(sd, ed, goal_ids)
-    items = parse_event_logs(events, transactions, goal)
+    items = parse_event_logs(request, events, transactions, goal)
 
     # Get the balances
     tp = ActivityLogEvent.get(Event.GOAL_BALANCE_CALCULATED).activity_log.id

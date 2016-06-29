@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from main.event import Event
-from main.models import ActivityLogEvent, MarketOrderRequest, EventMemo
+from main.models import ActivityLogEvent, MarketOrderRequest, EventMemo, ActivityLog
 from main.tests.fixtures import Fixture1
 
 
@@ -46,6 +46,7 @@ class GoalTests(APITestCase):
         Fixture1.settings_event1()
         Fixture1.transaction_event1()
         Fixture1.populate_balance1()  # 2 Activity lines
+        # We also need to activate the activity logging for the desired event types.
         ActivityLogEvent.get(Event.APPROVE_SELECTED_SETTINGS)
         ActivityLogEvent.get(Event.GOAL_BALANCE_CALCULATED)
         ActivityLogEvent.get(Event.GOAL_DEPOSIT_EXECUTED)
@@ -69,6 +70,45 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data[3], {'balance': 3000.0,
                                             'time': 978307200,
                                             'type': ActivityLogEvent.get(Event.GOAL_BALANCE_CALCULATED).activity_log.id})  # Balance
+
+    def test_event_memo(self):
+        '''
+        Tests event memos and assigning multiple events to one activity log item.
+        :return:
+        '''
+        # Add a public settings event with a memo
+        se = Fixture1.settings_event1()
+        EventMemo.objects.create(event=se, comment='A memo for e1', staff=False)
+        # Add a staff settings event with a memo
+        se2 = Fixture1.settings_event2()
+        EventMemo.objects.create(event=se2, comment='A memo for e2', staff=True)
+        # Add a transaction event without a memo
+        Fixture1.transaction_event1()
+        # We also need to activate the activity logging for the desired event types.
+        # We add selected and update to the same une to test that too
+        al = ActivityLog.objects.create(name="Settings Funk", format_str='Settings messed with')
+        ActivityLogEvent.objects.create(id=Event.APPROVE_SELECTED_SETTINGS.value, activity_log=al)
+        ActivityLogEvent.objects.create(id=Event.UPDATE_SELECTED_SETTINGS.value, activity_log=al)
+        ActivityLogEvent.get(Event.GOAL_DEPOSIT_EXECUTED)
+
+        url = '/api/v1/goals/{}/activity'.format(Fixture1.goal1().id)
+        # Log in as a client and make sure I see the public settings event, and the transaction, not the staff entry.
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['memos'], ['A memo for e1'])
+        self.assertFalse('memos' in response.data[1])
+        self.assertFalse('memos' in response.data[2])
+
+        # Log in as the advisor and make sure I see all three events.
+        self.client.force_authenticate(user=Fixture1.advisor1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['memos'], ['A memo for e1'])
+        self.assertEqual(response.data[1]['memos'], ['A memo for e2'])
+        self.assertFalse('memos' in response.data[2])
 
     def test_performance_history_empty(self):
         url = '/api/v1/goals/{}/performance-history'.format(Fixture1.goal1().id)
