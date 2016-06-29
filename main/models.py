@@ -2135,8 +2135,10 @@ class RiskProfileGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
 
-    # Also has property 'accounts' which is all the accounts this group is used on.
-    # Also has property 'questions' which is all the risk profile questions that form this group.
+    # Also has properties:
+    #   'accounts' which is all the accounts this group is used on. From the ClientAccount model
+    #   'questions' which is all the risk profile questions that form this group. From the RiskProfileQuestion model
+    #   'account-types' which is all the account types where this group is the default group for the account type.
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
@@ -2171,6 +2173,11 @@ class RiskProfileAnswer(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ('question', 'order')
+
+
+class AccountTypeRiskProfileGroup(models.Model):
+    account_type = models.IntegerField(choices=ACCOUNT_TYPES, unique=True)
+    risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='account_types')
 
 
 class InvalidStateError(Exception):

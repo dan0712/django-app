@@ -19,7 +19,8 @@ from main.models import (
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
     GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog,
-    ActivityLogEvent, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution, Ticker)
+    ActivityLogEvent, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution, Ticker,
+    AccountTypeRiskProfileGroup)
 
 from suit.admin import SortableModelAdmin, SortableTabularInline
 
@@ -266,6 +267,11 @@ class GoalTypeAdmin(admin.ModelAdmin):
     list_editable = ('group', 'default_term', 'risk_sensitivity', 'order')
 
 
+class AccountTypeRiskProfileGroupAdmin(admin.ModelAdmin):
+    list_display = ('account_type', 'risk_profile_group')
+    list_editable = ('account_type', 'risk_profile_group')
+
+
 class GoalAdmin(admin.ModelAdmin):
     list_display = ('account', 'name', 'type')
     actions = (rebalance,)
@@ -387,6 +393,7 @@ admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)
+admin.site.register(AccountTypeRiskProfileGroup, AccountTypeRiskProfileGroupAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
 # The below are commented as non-devs should not be editing them.
 # admin.site.register(DailyPrice, DailyPriceAdmin)

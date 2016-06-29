@@ -4,7 +4,7 @@ from rest_framework.decorators import list_route
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric, RiskProfileGroup, ACCOUNT_TYPES, \
-    ActivityLog
+    ActivityLog, AccountTypeRiskProfileGroup
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisorOrClient,
@@ -34,12 +34,20 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.GenericViewSet)
 
     @list_route(methods=['get'], url_path='account-types')
     def account_types(self, request):
-        res = [
-            {
+        maps = dict(AccountTypeRiskProfileGroup.objects.all().values_list('account_type', 'risk_profile_group__id'))
+        res = []
+        for key, value in ACCOUNT_TYPES:
+            rpg = maps.get(key, None)
+            if rpg is None:
+                raise Exception(
+                    "Configuration Error: AccountType: {}({}) has no default Risk Profile Group.".format(value, key)
+                )
+            res.append({
                 "id": key,
-                "name": value
-            } for key, value in ACCOUNT_TYPES
-        ]
+                "name": value,
+                "default_risk_profile_group": rpg,
+            })
+
         return Response(res)
 
     @list_route(methods=['get'], url_path='activity-types')

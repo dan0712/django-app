@@ -27,9 +27,7 @@ class ClientAccountCreateSerializer(NoUpdateModelSerializer):
 
     def create(self, validated_data):
         ps = validated_data['primary_owner'].advisor.default_portfolio_set
-        rpg_name = 'default_natural' if validated_data['account_type'] in (ACCOUNT_TYPE_PERSONAL,
-                                                                           ACCOUNT_TYPE_JOINT) else 'default_corporate'
-        rpg = RiskProfileGroup.objects.get(name=rpg_name)
+        rpg = RiskProfileGroup.objects.get(account_types__account_type=validated_data['account_type'])
         validated_data.update({
             'default_portfolio_set': ps,
             'risk_profile_group': rpg

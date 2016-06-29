@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from main.event import Event
-from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, ActivityLogEvent
+from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, ActivityLogEvent, AccountTypeRiskProfileGroup
 from main.tests.fixtures import Fixture1
 
 
@@ -15,6 +15,9 @@ class AccountTests(APITestCase):
             'primary_owner': Fixture1.client1().id,
         }
         old_count = ClientAccount.objects.count()
+        # The account creator gets the risk profile group from the default for the account, so we need to set that up.
+        AccountTypeRiskProfileGroup.objects.create(account_type=ACCOUNT_TYPE_PERSONAL,
+                                                   risk_profile_group=Fixture1.risk_profile_group1())
         self.client.force_authenticate(user=Fixture1.client1_user())
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
