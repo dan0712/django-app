@@ -18,7 +18,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from api.v1.utils import activity
-from common.constants import EPOCH_DT
+from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance, Ticker, DailyPrice
 from main.risk_profiler import recommend_ttl_risks
@@ -417,6 +417,19 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         goal = self.get_object()
         rows = HistoricalBalance.objects.filter(goal=goal).order_by('date').values_list('date', 'balance')
         return Response([((row[0] - EPOCH_DT).days, row[1]) for row in rows])
+
+    @detail_route(methods=['get'], url_path='pending-transfers')
+    def pending_transfers(self, request, pk=None, **kwargs):
+        # Get the goal even though we don't need it (we could just use the pk)
+        # so we can ensure we have permission to do so, as permissions are checked in get_object()
+        goal = self.get_object()
+
+        qs = goal.pending_transactions.filter(reason__in=[Transaction.REASON_DEPOSIT, Transaction.REASON_WITHDRAWAL])\
+
+        values = qs.order_by('-created').values_list('id', 'created', 'amount', 'to_goal')
+        return Response([(item[0],
+                          int((timezone.make_naive(item[1], timezone.utc) - EPOCH_TM).total_seconds()),
+                          item[2] * (1 if item[3] else -1)) for item in values])
 
     @detail_route(methods=['get'], url_path='performance-history')
     def performance_history(self, request, pk=None, **kwargs):

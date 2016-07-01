@@ -265,3 +265,19 @@ class GoalTests(APITestCase):
         memo = EventMemo.objects.order_by('-id')[0]
         self.assertFalse(memo.staff)
         self.assertEqual(memo.comment, new_settings['event_memo'])
+
+    def test_get_pending_transfers(self):
+        # Populate an executed deposit and make sure no pending transfers are returned
+        tx1 = Fixture1.transaction1()
+        url = '/api/v1/goals/{}/pending-transfers'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+        # Populate 2 pending transfers (a deposit and withdrawal) and make sure they are both returned.
+        tx2 = Fixture1.pending_deposit1()
+        tx3 = Fixture1.pending_withdrawal1()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [(3, 946652400, -3500.0), (2, 946648800, 4000.0)])

@@ -319,12 +319,44 @@ class Fixture1:
 
     @classmethod
     def transaction1(cls):
-        return Transaction.objects.get_or_create(reason=Transaction.REASON_DEPOSIT,
+        i, c = Transaction.objects.get_or_create(reason=Transaction.REASON_DEPOSIT,
                                                  to_goal=Fixture1.goal1(),
                                                  amount=3000,
                                                  status=Transaction.STATUS_EXECUTED,
                                                  created=timezone.make_aware(datetime.datetime(2000, 1, 1)),
-                                                 executed=timezone.make_aware(datetime.datetime(2001, 1, 1)))[0]
+                                                 executed=timezone.make_aware(datetime.datetime(2001, 1, 1)))
+
+        if c:
+            i.created = timezone.make_aware(datetime.datetime(2000, 1, 1))
+            i.save()
+
+        return i
+
+    @classmethod
+    def pending_deposit1(cls):
+        i, c = Transaction.objects.get_or_create(reason=Transaction.REASON_DEPOSIT,
+                                                 to_goal=Fixture1.goal1(),
+                                                 amount=4000,
+                                                 status=Transaction.STATUS_PENDING,
+                                                 created=timezone.make_aware(datetime.datetime(2000, 1, 1, 1)))
+        if c:
+            i.created = timezone.make_aware(datetime.datetime(2000, 1, 1, 1))
+            i.save()
+
+        return i
+
+    @classmethod
+    def pending_withdrawal1(cls):
+        i, c = Transaction.objects.get_or_create(reason=Transaction.REASON_DEPOSIT,
+                                                 from_goal=Fixture1.goal1(),
+                                                 amount=3500,
+                                                 status=Transaction.STATUS_PENDING,
+                                                 created=timezone.make_aware(datetime.datetime(2000, 1, 1, 2)))
+        if c:
+            i.created = timezone.make_aware(datetime.datetime(2000, 1, 1, 2))
+            i.save()
+
+        return i
 
     @classmethod
     def populate_balance1(cls):
@@ -453,15 +485,15 @@ class Fixture1:
                                                 from_goal=goal,
                                                 amount=amount,
                                                 status=Transaction.STATUS_EXECUTED,
-                                                created=execution.executed,
                                                 executed=execution.executed)
             else:
                 tx = Transaction.objects.create(reason=Transaction.REASON_EXECUTION,
                                                 to_goal=goal,
                                                 amount=amount,
                                                 status=Transaction.STATUS_EXECUTED,
-                                                created=execution.executed,
                                                 executed=execution.executed)
+            tx.created = execution.executed
+            tx.save()
 
             res.append(ExecutionDistribution.objects.create(execution=execution,
                                                             transaction=tx,
