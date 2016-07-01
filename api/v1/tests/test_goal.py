@@ -280,4 +280,16 @@ class GoalTests(APITestCase):
         tx3 = Fixture1.pending_withdrawal1()
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, [(3, 946652400, -3500.0), (2, 946648800, 4000.0)])
+        data = [
+            {
+                "id": 3,
+                "time": 946652400,
+                "amount": -3500.0
+            },
+            {
+                "id": 2,
+                "time": 946648800,
+                "amount": 4000.0
+            }
+        ]
+        self.assertEqual(response.data, data)

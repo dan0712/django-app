@@ -427,9 +427,9 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         qs = goal.pending_transactions.filter(reason__in=[Transaction.REASON_DEPOSIT, Transaction.REASON_WITHDRAWAL])\
 
         values = qs.order_by('-created').values_list('id', 'created', 'amount', 'to_goal')
-        return Response([(item[0],
-                          int((timezone.make_naive(item[1], timezone.utc) - EPOCH_TM).total_seconds()),
-                          item[2] * (1 if item[3] else -1)) for item in values])
+        return Response([{"id": item[0],
+                          "time": int((timezone.make_naive(item[1], timezone.utc) - EPOCH_TM).total_seconds()),
+                          "amount": item[2] * (1 if item[3] else -1)} for item in values])
 
     @detail_route(methods=['get'], url_path='performance-history')
     def performance_history(self, request, pk=None, **kwargs):
