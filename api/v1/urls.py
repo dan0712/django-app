@@ -23,6 +23,10 @@ retirement_plans_router = client_router.register(r'retirement-plans',
                                                 retiresmartz_views.RetiresmartzViewSet,
                                                 base_name='client-retirement-plans',
                                                 parents_query_lookups=['client'])
+external_assets_router = client_router.register(r'external-assets',
+                                                client_views.ExternalAssetViewSet,
+                                                base_name='client-external-assets',
+                                                parents_query_lookups=['owner'])
 goals_router = router.register(r'goals',
                                goals_views.GoalViewSet)
 account_router = router.register(r'accounts',

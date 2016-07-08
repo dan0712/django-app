@@ -9,6 +9,7 @@ from django.contrib.auth import (
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.urlresolvers import reverse_lazy
+from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.template import RequestContext
@@ -18,6 +19,7 @@ from django.views.generic import (
     CreateView, DetailView, TemplateView, UpdateView, View,
 )
 
+from address.models import Address, Region
 from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
 from operator import itemgetter
 from ..base import AdvisorView, ClientView
@@ -606,6 +608,8 @@ class AdvisorSupportGettingStarted(AdvisorView, TemplateView):
 
 USER_DETAILS = ('first_name', 'middle_name', 'last_name', 'email')
 
+UNSET_ADDRESS_ID = '__XX_UNSET_XX__'
+
 
 class PrepopulatedUserForm(forms.ModelForm):
     advisor = None
@@ -621,16 +625,25 @@ class PrepopulatedUserForm(forms.ModelForm):
         model = User
         fields = USER_DETAILS
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
         self.instance = User(password="KONfLOP212=?hlokifksi21f6s1",
                              prepopulated=True,
                              **self.cleaned_data)
         self.instance.save()
         # create client instance
+        defs = {
+            'address': 'Default Unset Address',
+            'region': Region.objects.get_or_create(country='AU', name='New South Wales')[0]
+        }
+        # TODO: Change this so we only create a client once all the info is complete from external onboarding.
+        # TODO: Until then, they're just a user.
         new_client = Client(
             advisor=self.advisor,
             user=self.instance,
-            client_agreement=self.advisor.firm.client_agreement_url)
+            client_agreement=self.advisor.firm.client_agreement_url,
+            residential_address=Address.objects.get_or_create(global_id=UNSET_ADDRESS_ID, defaults=defs)[0]
+        )
         new_client.save()
         personal_account = new_client.accounts_all.all()[0]
         personal_account.account_class = self.account_class
@@ -678,8 +691,7 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
                 )
 
             else:
-                return HttpResponseRedirect(self.success_url.format(
-                    user.client.pk))
+                return HttpResponseRedirect(self.get_success_url())
 
         else:
             response = super(CreateNewClientPrepopulatedView, self).get(
@@ -708,6 +720,10 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
         return super(CreateNewClientPrepopulatedView, self).get(request, *args,
                                                                 **kwargs)
 
+    def get_success_url(self):
+        messages.info(self.request, "Invite sent successfully!")
+        return reverse_lazy('advisor:clients-invites')
+
     def get_context_data(self, **kwargs):
         context_data = super(CreateNewClientPrepopulatedView,
                              self).get_context_data(**kwargs)
@@ -718,9 +734,7 @@ class CreateNewClientPrepopulatedView(AdvisorView, TemplateView):
         return context_data
 
 
-PERSONAL_DETAILS = ('address_line_1', 'address_line_2', 'city', 'state',
-                    'post_code', 'phone_number', 'date_of_birth', "month",
-                    "day", "year", "gender")
+PERSONAL_DETAILS = ('date_of_birth', "month", "day", "year", "gender", "phone_num", "residential_address")
 
 
 class BuildPersonalDetailsForm(forms.ModelForm):

@@ -37,13 +37,21 @@ class RetiresmartzTests(APITestCase):
                 'amount': 1000,
                 'growth': 0.025,
                 'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
-            }
+            },
+            "external_income": [{
+                'begin_date': datetime.date.today(),
+                'amount': 2000,
+                'growth': 0.01,
+                'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
+            }],
         }
         response = self.client.post(url, plan_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['btc']['amount'], 1000)
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
         self.assertEqual(saved_plan.btc.amount, 1000)
+        self.assertEqual(saved_plan.external_income.count(), 1)
+        self.assertEqual(saved_plan.external_income.first().amount, 2000)
 
     def test_add_plan_smsf_account_ignored(self):
         '''
@@ -93,6 +101,7 @@ class RetiresmartzTests(APITestCase):
         Test update partner_plan after tax contribution
         """
         plan1 = Fixture1.client1_partneredplan()
+        Fixture1.retirement_plan_atc3()
         plan2 = plan1.partner_plan
         url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client2().id, plan2.id)
         self.client.force_authenticate(user=Fixture1.client1().user)

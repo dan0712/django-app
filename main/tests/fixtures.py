@@ -1,5 +1,6 @@
 import datetime
 
+import address.models as ad
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
@@ -8,8 +9,9 @@ from pinax.eventlog.models import Log
 from main.event import Event
 from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, Client, Advisor, User, Firm, PortfolioSet, \
     RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer, \
-    Transaction, HistoricalBalance, RetirementPlan, TransferPlan, Ticker, AssetClass, STOCKS, SUPER_ASSET_CLASSES, \
-    MarketIndex, Region, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution
+    Transaction, HistoricalBalance, RetirementPlan, Ticker, AssetClass, STOCKS, SUPER_ASSET_CLASSES, \
+    MarketIndex, Region, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution, ExternalAsset, \
+    RetirementPlanATC, RetirementPlanBTC
 
 
 class Fixture1:
@@ -51,11 +53,22 @@ class Fixture1:
         return i
 
     @classmethod
+    def address1(cls):
+        region = ad.Region.objects.get_or_create(name='Here', country='AU')[0]
+        return ad.Address.objects.get_or_create(address='My House', post_code='1000', region=region)[0]
+
+    @classmethod
+    def address2(cls):
+        region = ad.Region.objects.get_or_create(name='Here', country='AU')[0]
+        return ad.Address.objects.get_or_create(address='My House 2', post_code='1000', region=region)[0]
+
+    @classmethod
     def advisor1(cls):
         params = {
             'firm': Fixture1.firm1(),
             'betasmartz_agreement': True,
             'default_portfolio_set': Fixture1.portfolioset1(),
+            'residential_address': Fixture1.address1(),
         }
         return Advisor.objects.get_or_create(user=Fixture1.advisor1_user(), defaults=params)[0]
 
@@ -83,7 +96,8 @@ class Fixture1:
         params = {
             'advisor': Fixture1.advisor1(),
             'user': Fixture1.client1_user(),
-            'date_of_birth': datetime.date(1970, 1, 1)
+            'date_of_birth': datetime.date(1970, 1, 1),
+            'residential_address': Fixture1.address2(),
         }
         return Client.objects.get_or_create(id=1, defaults=params)[0]
 
@@ -92,69 +106,76 @@ class Fixture1:
         params = {
             'advisor': Fixture1.advisor1(),
             'user': Fixture1.client2_user(),
-            'date_of_birth': datetime.date(1980, 1, 1)
+            'date_of_birth': datetime.date(1980, 1, 1),
+            'residential_address': Fixture1.address2(),
         }
         return Client.objects.get_or_create(id=2, defaults=params)[0]
 
     @classmethod
     def tx1(cls):
         params = {
+            'plan': Fixture1.client1_retirementplan1(),
             'begin_date': datetime.date(2016, 1, 1),
             'amount': 1000,
             'growth': 0,
             'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
         }
-        return TransferPlan.objects.get_or_create(id=1, defaults=params)[0]
+        return RetirementPlanBTC.objects.get_or_create(id=1, defaults=params)[0]
 
     @classmethod
-    def tx2(cls):
+    def retirement_plan_atc1(cls):
         params = {
+            'plan': Fixture1.client1_retirementplan1(),
             'begin_date': datetime.date(2016, 1, 1),
             'amount': 0,
             'growth': 0,
             'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
         }
-        return TransferPlan.objects.get_or_create(id=2, defaults=params)[0]
+        return RetirementPlanATC.objects.get_or_create(id=2, defaults=params)[0]
 
     @classmethod
     def tx3(cls):
         params = {
+            'plan': Fixture1.client1_retirementplan1(),
             'begin_date': datetime.date(2016, 1, 1),
             'amount': 500,
             'growth': 0,
             'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
         }
-        return TransferPlan.objects.get_or_create(id=3, defaults=params)[0]
+        return RetirementPlanBTC.objects.get_or_create(id=3, defaults=params)[0]
 
     @classmethod
-    def tx4(cls):
+    def retirement_plan_atc2(cls):
         params = {
+            'plan': Fixture1.client1_retirementplan1(),
             'begin_date': datetime.date(2016, 1, 1),
             'amount': 200,
             'growth': 0.01,
             'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
         }
-        return TransferPlan.objects.get_or_create(id=4, defaults=params)[0]
+        return RetirementPlanATC.objects.get_or_create(id=4, defaults=params)[0]
 
     @classmethod
     def tx5(cls):
         params = {
+            'plan': Fixture1.client2_retirementplan1(),
             'begin_date': datetime.date(2016, 1, 1),
             'amount': 500,
             'growth': 0,
             'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
         }
-        return TransferPlan.objects.get_or_create(id=5, defaults=params)[0]
+        return RetirementPlanBTC.objects.get_or_create(id=5, defaults=params)[0]
 
     @classmethod
-    def tx6(cls):
+    def retirement_plan_atc3(cls):
         params = {
+            'plan': Fixture1.client2_retirementplan1(),
             'begin_date': datetime.date(2016, 1, 1),
             'amount': 200,
             'growth': 0.01,
             'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
         }
-        return TransferPlan.objects.get_or_create(id=6, defaults=params)[0]
+        return RetirementPlanATC.objects.get_or_create(id=6, defaults=params)[0]
 
     @classmethod
     def client1_retirementplan1(cls):
@@ -163,8 +184,7 @@ class Fixture1:
                                                     'client': Fixture1.client1(),
                                                     'retirement_date': datetime.date(2055, 1, 1),
                                                     'life_expectancy': 80,
-                                                    'btc': Fixture1.tx1(),
-                                                    'atc': Fixture1.tx2()})[0]
+                                                    })[0]
 
     @classmethod
     def client2_retirementplan1(cls):
@@ -173,8 +193,7 @@ class Fixture1:
                                                     'client': Fixture1.client2(),
                                                     'retirement_date': datetime.date(2055, 1, 1),
                                                     'life_expectancy': 84,
-                                                    'btc': Fixture1.tx3(),
-                                                    'atc': Fixture1.tx4()})[0]
+                                                    })[0]
 
     @classmethod
     def client2_retirementplan2(cls):
@@ -183,8 +202,7 @@ class Fixture1:
                                                     'client': Fixture1.client2(),
                                                     'retirement_date': datetime.date(2055, 1, 1),
                                                     'life_expectancy': 84,
-                                                    'btc': Fixture1.tx5(),
-                                                    'atc': Fixture1.tx6()})[0]
+                                                    })[0]
 
     @classmethod
     def client1_partneredplan(cls):
@@ -388,7 +406,9 @@ class Fixture1:
             'display_name': 'Test Market Index 1',
             'url': 'nowhere.com',
             'currency': 'AUD',
-            'region': Fixture1.region1()
+            'region': Fixture1.region1(),
+            'data_api': 'portfolios.api.bloomberg',
+            'data_api_param': 'MI1',
         }
         return MarketIndex.objects.get_or_create(id=1, defaults=params)[0]
 
@@ -398,7 +418,9 @@ class Fixture1:
             'display_name': 'Test Market Index 2',
             'url': 'nowhere.com',
             'currency': 'AUD',
-            'region': Fixture1.region1()
+            'region': Fixture1.region1(),
+            'data_api': 'portfolios.api.bloomberg',
+            'data_api_param': 'MI2',
         }
         return MarketIndex.objects.get_or_create(id=1, defaults=params)[0]
 
@@ -411,7 +433,9 @@ class Fixture1:
             'region': Fixture1.region1(),
             'ordering': 0,
             'asset_class': Fixture1.asset_class1(),
-            'benchmark': Fixture1.market_index1()
+            'benchmark': Fixture1.market_index1(),
+            'data_api': 'portfolios.api.bloomberg',
+            'data_api_param': 'FUND1',
         }
         return Ticker.objects.get_or_create(symbol='TESTSYMBOL1', defaults=params)[0]
 
@@ -424,9 +448,41 @@ class Fixture1:
             'region': Fixture1.region1(),
             'ordering': 1,
             'asset_class': Fixture1.asset_class1(),
-            'benchmark': Fixture1.market_index2()
+            'benchmark': Fixture1.market_index2(),
+            'data_api': 'portfolios.api.bloomberg',
+            'data_api_param': 'FUND2',
         }
         return Ticker.objects.get_or_create(symbol='TESTSYMBOL2', defaults=params)[0]
+
+    @classmethod
+    def external_debt_1(cls):
+        params = {
+            'type': ExternalAsset.Type.PROPERTY_LOAN.value,
+            # description intentionally omitted to test optionality
+            'valuation': '-145000',
+            'valuation_date': datetime.date(2016, 7, 5),
+            'growth': '0.03',
+            'acquisition_date': datetime.date(2016, 7, 3),
+        }
+        return ExternalAsset.objects.get_or_create(name='My Home Loan', owner=Fixture1.client1(), defaults=params)[0]
+
+    @classmethod
+    def external_asset_1(cls):
+        '''
+        Creates and returns an asset with an associated debt.
+        :return:
+        '''
+        params = {
+            'type': ExternalAsset.Type.FAMILY_HOME.value,
+            'description': 'This is my beautiful home',
+            'valuation': '345000.014',
+            'valuation_date': datetime.date(2016, 7, 5),
+            'growth': '0.01',
+            # trasfer_plan intentionally omitted as there isn't one
+            'acquisition_date': datetime.date(2016, 7, 3),
+            'debt': Fixture1.external_debt_1(),
+        }
+        return ExternalAsset.objects.get_or_create(name='My Home', owner=Fixture1.client1(), defaults=params)[0]
 
     @classmethod
     def set_prices(cls, prices):

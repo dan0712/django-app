@@ -4,7 +4,7 @@ from rest_framework.decorators import list_route
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from main.models import AssetClass, Ticker, GoalType, AssetFeature, GoalMetric, RiskProfileGroup, ACCOUNT_TYPES, \
-    ActivityLog, AccountTypeRiskProfileGroup
+    ActivityLog, AccountTypeRiskProfileGroup, PersonalData, EMPLOYMENT_STATUSES, ExternalAsset
 from ..views import ApiViewMixin
 from ..permissions import (
     IsAdvisorOrClient,
@@ -23,8 +23,20 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.GenericViewSet)
     )
 
     def list(self, request):
-        # TODO: return all the settings
-        raise NotImplementedError('Not implemented.')
+        data = {
+            'goal_types': self.goal_types(request).data,
+            'account_types': self.account_types(request).data,
+            'activity_types': self.activity_types(request).data,
+            'asset_classes': self.asset_classes(request).data,
+            'tickers': self.tickers(request).data,
+            'asset_features': self.asset_features(request).data,
+            'constraint_comparisons': self.constraint_comparisons(request).data,
+            'risk_profile_groups': self.risk_profile_groups(request).data,
+            'civil_statuses': [{"id": status.value, "name": status.name} for status in PersonalData.CivilStatus],
+            'employment_statuses': [{"id": sid, "name": name} for sid, name in EMPLOYMENT_STATUSES],
+            'external_asset_types': [{"id": choice[0], "name": choice[1]} for choice in ExternalAsset.Type.choices()],
+        }
+        return Response(data)
 
     @list_route(methods=['get'], url_path='goal-types')
     def goal_types(self, request):
@@ -97,7 +109,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.GenericViewSet)
         return Response(res)
 
     @list_route(methods=['get'], url_path='risk-profile-groups')
-    def risk_profile_groups(self, request, **kwargs):
+    def risk_profile_groups(self, request):
         risk_profile_groups = RiskProfileGroup.objects.all()
         serializer = serializers.RiskProfileGroupSerializer(risk_profile_groups, many=True)
         return Response(serializer.data)

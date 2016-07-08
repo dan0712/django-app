@@ -288,3 +288,42 @@ class PositionQuerySet(models.query.QuerySet):
         """
         qs = self.aggregate(value=Coalesce(Sum(F('share') * F('ticker__unit_price')), 0))
         return qs
+
+
+class ExternalAssetQuerySet(models.query.QuerySet):
+    def filter_by_user(self, user):
+        if user.is_advisor:
+            return self.filter_by_advisor(user.advisor)
+        elif user.is_client:
+            return self.filter_by_client(user.client)
+        else:
+            return self.none()
+
+    def filter_by_firm(self, firm):
+        """
+        For now we only allow firms of the asset's owner's primary advisor
+        """
+        return self.filter(owner__advisor__firm=firm)
+
+    def filter_by_advisor(self, advisor):
+        """
+        For any asset, the list of authorised advisors is as follows:
+        - Primary advisor of the asset owner
+        - One of the secondary advisors of the asset owner
+
+        This method filters out any assets where the given advisor is not one of the authorised advisors.
+        """
+        return self.filter(
+            Q(owner__advisor=advisor) |
+            Q(owner__secondary_advisors__pk=advisor.pk)
+        )
+
+    def filter_by_client(self, client):
+        """
+        For any asset, the list of authorised clients is as follows:
+        - asset owner
+
+        This method filters out any assets where the given client is not one of the authorised clients.
+        """
+        return self.filter(owner=client)
+

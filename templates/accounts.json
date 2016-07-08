@@ -19,8 +19,6 @@
       },
       "accountGroupId": {{ account.pk }},
       "portfolioSetId": {{goal.portfolio_set_id}},
-      "financialPlanId": {{goal.get_financial_plan_id}},
-      "financialPlan": {{goal.get_financial_plan}},
       "accountType": "{{goal.account_type}}",
       "createdDate": "{{goal.created |c_datetime}}",
       "goalAmount": {% if goal.target != None %}"{{goal.target}}" {% else %} null{% endif %},

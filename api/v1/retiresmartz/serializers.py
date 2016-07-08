@@ -6,8 +6,8 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from api.v1.serializers import ReadOnlyModelSerializer, NoUpdateModelSerializer, NoCreateModelSerializer
-from main.models import RetirementPlan, TransferPlan, Client
+from api.v1.serializers import ReadOnlyModelSerializer
+from main.models import RetirementPlan, Client, RetirementPlanBTC, RetirementPlanEinc, RetirementPlanATC
 
 
 def get_default_tx_plan():
@@ -27,14 +27,49 @@ def get_default_retirement_date(client):
     return datetime.date(client.date_of_birth.year + 67, client.date_of_birth.month, client.date_of_birth.day)
 
 
-class TransferPlanSerializer(ReadOnlyModelSerializer):
+class BTCSerializer(ReadOnlyModelSerializer):
     class Meta:
-        model = TransferPlan
+        model = RetirementPlanBTC
+        exclude = ('plan',)
 
 
-class TransferPlanWritableSerializer(serializers.ModelSerializer):
+class ATCSerializer(ReadOnlyModelSerializer):
     class Meta:
-        model = TransferPlan
+        model = RetirementPlanATC
+        exclude = ('plan',)
+
+
+class EincSerializer(ReadOnlyModelSerializer):
+    class Meta:
+        model = RetirementPlanEinc
+        exclude = ('plan',)
+
+
+class BTCWritableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RetirementPlanBTC
+        fields = (
+            'begin_date',
+            'amount',
+            'growth',
+            'schedule',
+        )
+
+
+class ATCWritableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RetirementPlanATC
+        fields = (
+            'begin_date',
+            'amount',
+            'growth',
+            'schedule',
+        )
+
+
+class EincWritableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RetirementPlanEinc
         fields = (
             'begin_date',
             'amount',
@@ -44,15 +79,18 @@ class TransferPlanWritableSerializer(serializers.ModelSerializer):
 
 
 class RetirementPlanSerializer(ReadOnlyModelSerializer):
-    btc = TransferPlanSerializer()
-    atc = TransferPlanSerializer()
+    btc = BTCSerializer()
+    atc = ATCSerializer()
+    external_income = EincSerializer(many=True)
+
     class Meta:
         model = RetirementPlan
 
 
-class RetirementPlanCreateSerializer(NoUpdateModelSerializer):
-    btc = TransferPlanWritableSerializer(required=False)
-    atc = TransferPlanWritableSerializer(required=False)
+class RetirementPlanWritableSerializer(serializers.ModelSerializer):
+    btc = BTCWritableSerializer(required=False)
+    atc = ATCWritableSerializer(required=False)
+    external_income = EincWritableSerializer(required=False, many=True)
     life_expectancy = serializers.IntegerField(required=False)
     retirement_date = serializers.DateField(required=False)
 
@@ -61,87 +99,53 @@ class RetirementPlanCreateSerializer(NoUpdateModelSerializer):
         fields = (
             'name',
             'description',
-            'client',
             'partner_plan',
             'retirement_date',
             'life_expectancy',
             'spendable_income',
             'btc',
             'atc',
+            'external_income',
             'desired_income',
         )
 
     def __init__(self, *args, **kwargs):
-        super(RetirementPlanCreateSerializer, self).__init__(*args, **kwargs)
+        super(RetirementPlanWritableSerializer, self).__init__(*args, **kwargs)
 
         # request-based validation
         request = self.context.get('request')
-        user = request.user
-
-        if user.is_client:
-            self.fields['client'].required = False
-            self.fields['client'].default = user.client
+        if request.method == 'PUT':
+            for field in self.fields.values():
+                field.required = False
 
     @transaction.atomic
     def create(self, validated_data):
-        """
-        Override the default create because we need to check permissions for the user against the client in the request
-        data.
-        :param validated_data:
-        :return: The created RetirementPlan
-        """
-        request = self.context.get('request')
-        client = Client.objects.filter_by_user(request.user).filter(pk=validated_data['client'].pk).first()
-        if not client:
-            return PermissionDenied("Not authorised for Client: {}".format(validated_data['client']))
+        btc = validated_data.pop('btc', None) or get_default_tx_plan()
+        atc = validated_data.pop('atc', None) or get_default_tx_plan()
+        einc = validated_data.pop('external_income', None)
+        client = validated_data['client']
 
-        if 'btc' not in validated_data:
-            validated_data['btc'] = get_default_tx_plan()
-        if 'atc' not in validated_data:
-            validated_data['atc'] = get_default_tx_plan()
         if 'life_expectancy' not in validated_data:
             validated_data['life_expectancy'] = get_default_life_expectancy(client)
         if 'retirement_date' not in validated_data:
             validated_data['retirement_date'] = get_default_retirement_date(client)
 
-        ser = TransferPlanWritableSerializer(data=validated_data['btc'])
+        plan = RetirementPlan.objects.create(**validated_data)
+
+        ser = BTCWritableSerializer(data=btc)
         ser.is_valid(raise_exception=True)
-        validated_data['btc'] = ser.save()
+        ser.save(plan=plan)
 
-        ser = TransferPlanWritableSerializer(data=validated_data['atc'])
+        ser = ATCWritableSerializer(data=atc)
         ser.is_valid(raise_exception=True)
-        validated_data['atc'] = ser.save()
+        ser.save(plan=plan)
 
-        return RetirementPlan.objects.create(**validated_data)
+        if einc is not None:
+            ser = EincWritableSerializer(data=einc, many=True)
+            ser.is_valid(raise_exception=True)
+            ser.save(plan=plan)
 
-
-class RetirementPlanUpdateSerializer(NoCreateModelSerializer):
-    btc = TransferPlanWritableSerializer()
-    atc = TransferPlanWritableSerializer()
-
-    class Meta:
-        model = RetirementPlan
-        fields = (
-            'name',
-            'description',
-            'client',
-            'partner_plan',
-            'retirement_date',
-            'life_expectancy',
-            'spendable_income',
-            'btc',
-            'atc',
-            'desired_income',
-        )
-
-    def __init__(self, *args, **kwargs):
-        """
-        Override init to enable partial updates
-        :param args:
-        :param kwargs:
-        """
-        kwargs.pop('partial', None)
-        super(RetirementPlanUpdateSerializer, self).__init__(*args, partial=True, **kwargs)
+        return plan
 
     @transaction.atomic
     def update(self, instance, validated_data):
@@ -151,17 +155,10 @@ class RetirementPlanUpdateSerializer(NoCreateModelSerializer):
         :param validated_data:
         :return: The updated RetirementPlan
         """
-        btc = validated_data.pop('btc', None)
-        if btc:
-            ser = TransferPlanWritableSerializer(data=btc)
-            ser.is_valid(raise_exception=True)
-            instance.btc = ser.save()
 
+        btc = validated_data.pop('btc', None)
         atc = validated_data.pop('atc', None)
-        if atc:
-            ser = TransferPlanWritableSerializer(data=atc)
-            ser.is_valid(raise_exception=True)
-            instance.atc = ser.save()
+        einc = validated_data.pop('external_income', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -173,4 +170,24 @@ class RetirementPlanUpdateSerializer(NoCreateModelSerializer):
             raise ValidationError(emsg)
 
         instance.save()
+
+        if btc:
+            if instance.btc is not None:
+                instance.btc.delete()
+            ser = BTCWritableSerializer(data=btc)
+            ser.is_valid(raise_exception=True)
+            ser.save(plan=instance)
+        if atc:
+            if instance.atc is not None:
+                instance.atc.delete()
+            ser = ATCWritableSerializer(data=atc)
+            ser.is_valid(raise_exception=True)
+            ser.save(plan=instance)
+        if einc:
+            if instance.external_income is not None:
+                instance.external_income.all().delete()
+            ser = EincWritableSerializer(data=einc, many=True)
+            ser.is_valid(raise_exception=True)
+            ser.save(plan=instance)
+
         return instance

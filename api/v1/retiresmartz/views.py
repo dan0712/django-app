@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.views import ApiViewMixin
-from main.models import RetirementPlan
+from main.models import RetirementPlan, Client
 
 from . import serializers
 
@@ -25,20 +25,30 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            if self.action == 'list':
-                return serializers.RetirementPlanSerializer
-            else:
-                return serializers.RetirementPlanSerializer
-        else:
-            if self.action == 'create':
-                return serializers.RetirementPlanCreateSerializer
-            else:
-                return serializers.RetirementPlanUpdateSerializer
+            return serializers.RetirementPlanSerializer
+        elif self.request.method == 'POST':
+            return serializers.RetirementPlanWritableSerializer
+        elif self.request.method == 'PUT':
+            return serializers.RetirementPlanWritableSerializer
 
     def get_queryset(self):
+        """
+        The nested viewset takes care of only returning results for the client we are looking at.
+        We need to add logic to only allow access to users that can view the plan.
+        """
         qs = super(RetiresmartzViewSet, self).get_queryset()
         # Check user object permissions
         return qs.filter_by_user(self.request.user)
+
+    def perform_create(self, serializer):
+        """
+        We don't allow users to create retirement plans for others... So we set the client from the URL and validate
+        the user has access to it.
+        :param serializer:
+        :return:
+        """
+        client = Client.objects.filter_by_user(self.request.user).get(id=int(self.get_parents_query_dict()['client']))
+        return serializer.save(client=client)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
     def suggested_retirement_income(self):

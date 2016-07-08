@@ -1,4 +1,3 @@
-import json
 import uuid
 import logging
 import importlib
@@ -18,27 +17,27 @@ from django.contrib.auth.models import (
 )
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core import serializers
 from django.core.validators import (
     RegexValidator, ValidationError, MinValueValidator,
     MaxValueValidator, MinLengthValidator
 )
 from django.db import models, transaction
-from django.db.models.deletion import PROTECT
+from django.db.models.deletion import PROTECT, SET_NULL, CASCADE
 from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from django_localflavor_au.models import AUPhoneNumberField, AUStateField, AUPostCodeField
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
+from phonenumber_field.modelfields import PhoneNumberField
 from pinax.eventlog import models as el_models
 from recurrence.base import deserialize
 from rest_framework.authtoken.models import Token
 
+from address.models import Address
 from common.structures import ChoiceEnum
 from main.management.commands.build_returns import get_price_returns
-from main.managers import RetirementPlanQuerySet
+from main.managers import RetirementPlanQuerySet, ExternalAssetQuerySet
 from main.slug import unique_slugify
 from .fields import ColorField
 from .managers import (
@@ -122,30 +121,12 @@ TFN_CHOICES = (
     (TFN_CLAIM, "I want to claim an exemption"),
     (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
 
-Q1 = "What was the name of your primary school?"
-Q2 = "What is your mother's maiden name?"
-Q3 = "What was the name of your first pet?"
-Q4 = "What was your first car?"
-Q5 = "What was your favourite subject at school?"
-Q6 = "In what month was your father born?"
-
-QUESTION_1_CHOICES = ((Q1, Q1), (Q2, Q2), (Q3, Q3))
-
-QUESTION_2_CHOICES = ((Q4, Q4), (Q5, Q5), (Q6, Q6))
-
-PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender', 'address_line_1',
-                        'address_line_2', 'city', 'state', 'post_code',
-                        'phone_number', 'security_question_1',
-                        "security_question_2", "security_answer_1",
-                        "security_answer_2", 'medicare_number')
+PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender',
+                        'phone_num', 'medicare_number')
 
 PERSONAL_DATA_WIDGETS = {
     "gender": forms.RadioSelect(),
     "date_of_birth": forms.TextInput(attrs={"placeholder": "DD-MM-YYYY"}),
-    'address_line_1':
-        forms.TextInput(attrs={"placeholder": "House name, Unit/House number"}),
-    "address_line_2": forms.TextInput(
-        attrs={"placeholder": "Street address"})
 }
 
 ASSET_FEE_EVENTS = ((0, 'Day End'),
@@ -167,9 +148,6 @@ ASSET_FEE_LEVEL_TYPES = (
     (0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
     (1, 'Replace')  # Once the next level is reached, the value from that level is used for the entire amount
 )
-
-# TODO: Make the system currency a setting for the site
-SYSTEM_CURRENCY = 'AUD'
 
 BONDS = "BONDS"  # Bonds only Fund
 STOCKS = "STOCKS"  # Stocks only Fund
@@ -380,22 +358,10 @@ class PersonalData(models.Model):
     gender = models.CharField(max_length=20,
                               default="Male",
                               choices=(("Male", "Male"), ("Female", "Female")))
-    address_line_1 = models.CharField(max_length=255, default="")
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=255, default="", verbose_name="City/Town")
-    state = AUStateField(default='QLD')
-    post_code = AUPostCodeField(null=True)
-    phone_number = AUPhoneNumberField(null=True)
-    security_question_1 = models.CharField(max_length=255,
-                                           default="",
-                                           choices=QUESTION_1_CHOICES)
-    security_question_2 = models.CharField(max_length=255,
-                                           default="",
-                                           choices=QUESTION_2_CHOICES)
-    security_answer_1 = models.CharField(max_length=255, verbose_name="Answer", default="")
-    security_answer_2 = models.CharField(max_length=255, verbose_name="Answer", default="")
+    residential_address = models.ForeignKey(Address, related_name='+')
+    phone_num = PhoneNumberField(null=True, max_length=16)  # A person may not have a phone.
     medicare_number = models.CharField(max_length=50, default="")
-    civil_status = models.IntegerField(null=True)
+    civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
 
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
@@ -407,11 +373,6 @@ class PersonalData(models.Model):
     @property
     def name(self):
         return self.user.first_name + " " + self.user.last_name
-
-    @property
-    def phone(self):
-        return self.work_phone[0:4] + "-" + self.work_phone[
-                                            4:7] + "-" + self.work_phone[7:10]
 
     @property
     def states_codes(self):
@@ -586,6 +547,48 @@ class AssetClass(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ExternalAsset(models.Model):
+    class Type(ChoiceEnum):
+        FAMILY_HOME = (0, 'Family Home')
+        INVESTMENT_PROPERTY = (1, 'Investment Property')
+        INVESTMENT_PORTFOLIO = (2, 'Investment Portfolio')
+        SAVINGS_ACCOUNT = (3, 'Savings Account')
+        PROPERTY_LOAN = (4, 'Property Loan')
+        TRANSACTION_ACCOUNT = (5, 'Transaction Account')
+        RETIREMENT_ACCOUNT = (6, 'Retirement Account')
+        OTHER = (7, 'Other')
+
+    type = models.IntegerField(choices=Type.choices())
+    name = models.CharField(max_length=128)
+    owner = models.ForeignKey('Client', related_name='external_assets')
+    description = models.TextField(blank=True, null=True)
+    valuation = models.DecimalField(decimal_places=2,
+                                    max_digits=15, # Up to 9.9... trillion
+                                    help_text='In the system currency. Could be negative if a debt')
+    valuation_date = models.DateField(help_text='Date when the asset was valued')
+    growth = models.DecimalField(decimal_places=4,
+                                 max_digits=5,
+                                 help_text='Modeled annualized growth of the asset - pos or neg. 0.0 is no growth')
+    acquisition_date = models.DateField(help_text="Could be in the future if it's a future acquisition")
+    debt = models.OneToOneField('ExternalAsset',
+                                related_name='for_asset',
+                                help_text="Any debt that is directly associated to the asset.",
+                                null=True,
+                                on_delete=SET_NULL)
+    # Also has a 'transfer_plan' field from ExternalAssetTransfer
+
+    # Override the manager with one that has permission capabilities.
+    objects = ExternalAssetQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ('name', 'owner')
+
+
+class ExternalAccount(ExternalAsset):
+    institution = models.CharField(max_length=128, help_text='Institute where the account is held.')
+    account_id = models.CharField(max_length=64)
 
 
 class PortfolioSet(models.Model):
@@ -804,28 +807,13 @@ class FirmData(models.Model):
     firm = models.OneToOneField(Firm, related_name='firm_details')
     afsl_asic = models.CharField("AFSL/ASIC number", max_length=50)
     afsl_asic_document = models.FileField("AFSL/ASIC doc.")
-    office_address_line_1 = models.CharField("Office address 1",
-                                             max_length=255)
-    office_address_line_2 = models.CharField("Office address 2",
-                                             max_length=255,
-                                             null=True,
-                                             blank=True)
-    office_state = AUStateField()
-    office_city = models.CharField(max_length=255)
-    office_post_code = AUPostCodeField()
-    postal_address_line_1 = models.CharField("Postal address 1",
-                                             max_length=255)
-    postal_address_line_2 = models.CharField("Postal address 2",
-                                             max_length=255,
-                                             null=True,
-                                             blank=True)
-    postal_state = AUStateField()
-    same_address = models.BooleanField(default=False)
-    postal_city = models.CharField(max_length=255)
-    postal_post_code = AUPostCodeField()
-    daytime_phone_number = AUPhoneNumberField()
-    mobile_phone_number = AUPhoneNumberField()
-    fax_number = AUPhoneNumberField()
+    office_address = models.ForeignKey(Address, related_name='+')
+    postal_address = models.ForeignKey(Address, related_name='+')
+
+    daytime_phone_num = PhoneNumberField(max_length=16)  # A firm MUST have some number to contact them by.
+    mobile_phone_num = PhoneNumberField(null=True, max_length=16)  # A firm may not have a mobile number as well.
+    fax_num = PhoneNumberField(null=True, max_length=16)  # Not all businesses have a fax.
+
     alternate_email_address = models.EmailField("Email address",
                                                 null=True,
                                                 blank=True)
@@ -845,7 +833,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
     token = models.CharField(max_length=36, null=True, editable=False)
     firm = models.ForeignKey(Firm, related_name="advisors")
     letter_of_authority = models.FileField()
-    work_phone = AUPhoneNumberField(null=True)
+    work_phone_num = PhoneNumberField(null=True, max_length=16)
     betasmartz_agreement = models.BooleanField()
     last_action = models.DateTimeField(null=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
@@ -1407,8 +1395,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     user = models.OneToOneField(User, related_name='client')
     tax_file_number = models.CharField(max_length=9, null=True, blank=True)
-    provide_tfn = models.IntegerField(verbose_name='Provide TFN?',
-      choices=TFN_CHOICES, default=TFN_YES)
+    provide_tfn = models.IntegerField(verbose_name='Provide TFN?', choices=TFN_CHOICES, default=TFN_YES)
 
     associated_to_broker_dealer = models.BooleanField(
         verbose_name="Are employed by or associated with "
@@ -1463,68 +1450,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def accounts(self):
         return self.accounts_all.filter(confirmed=True)
 
-    @property
-    def get_financial_plan(self):
-        if hasattr(self, 'financial_plan'):
-            plan = self.financial_plan
-        else:
-            return ""
-
-        if plan is None:
-            return ""
-        betasmartz_externals = json.loads(serializers.serialize(
-            "json", self.financial_plan_external_accounts.all()))
-        external_accounts = []
-
-        for be in betasmartz_externals:
-            be["fields"]["id"] = be["pk"]
-            external_accounts.append(be["fields"])
-
-        betasmartz_goals = []
-
-        for account in self.financial_plan_accounts.all():
-            obj = dict()
-            obj["id"] = account.pk
-            obj["bettermentdb_account_id"] = account.account.pk
-            obj["annual_contribution_cents"] = account.annual_contribution_cents
-            betasmartz_goals.append(obj)
-
-        plan = json.loads(serializers.serialize("json", [plan]))[0]
-        plan["fields"]["id"] = plan["pk"]
-        plan["fields"]["accounts"] = betasmartz_goals
-        plan["fields"]["external_accounts"] = external_accounts
-        plan["fields"]["income_replacement_ratio"] = plan["fields"][
-            "income_replacement_ratio"]
-        plan["fields"]["other_retirement_income_cents"] = plan["fields"][
-            "other_retirement_income_cents"]
-        plan["fields"]["desired_retirement_income_cents"] = plan["fields"][
-            "desired_retirement_income_cents"]
-
-        del plan["fields"]["client"]
-        return mark_safe(json.dumps(plan["fields"]))
-
-    @property
-    def get_financial_profile(self):
-
-        if hasattr(self, 'financial_profile'):
-            profile = self.financial_profile
-        else:
-            return "null"
-
-        data = json.loads(serializers.serialize("json", [profile]))[0]
-        data["fields"]["id"] = data["pk"]
-        del data["fields"]["client"]
-        data["fields"]["social_security_percent_expected"] = str(data[
-                                                                     "fields"]["social_security_percent_expected"])
-        data["fields"]["annual_salary_percent_growth"] = str(data["fields"][
-                                                                 "annual_salary_percent_growth"])
-        data["fields"]["social_security_percent_expected"] = str(data[
-                                                                     "fields"]["social_security_percent_expected"])
-        data["fields"]["expected_inflation"] = str(data["fields"][
-                                                       "expected_inflation"])
-
-        return mark_safe(json.dumps(data["fields"]))
-
     def get_worth(self):
         # why it should be a property? it shouldn't
         total_balance = self.total_balance
@@ -1536,17 +1461,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def get_worth_display(self):
         worth = dict(self.WORTH_CHOICES)
         return worth.get(self.get_worth())
-
-    @property
-    def external_accounts(self):
-        betasmartz_externals = json.loads(serializers.serialize(
-            "json", self.financial_plan_external_accounts.all()))
-        external_accounts = []
-
-        for be in betasmartz_externals:
-            be["fields"]["id"] = be["pk"]
-            external_accounts.append(be["fields"])
-        return mark_safe(json.dumps(external_accounts))
 
     @property
     def firm(self):
@@ -1599,24 +1513,17 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                  update_fields)
 
         if create_personal_account:
+            risk_profile_group = AccountTypeRiskProfileGroup.objects.all().filter(account_type=ACCOUNT_TYPE_PERSONAL).first()
+            if risk_profile_group is None:
+                raise ValidationError("No risk profile group associated with account type: ACCOUNT_TYPE_PERSONAL")
             new_ac = ClientAccount(
                 primary_owner=self,
                 account_type=ACCOUNT_TYPE_PERSONAL,
                 default_portfolio_set=self.advisor.default_portfolio_set,
+                risk_profile_group=risk_profile_group.risk_profile_group
             )
             new_ac.save()
             new_ac.remove_from_group()
-
-
-class TransferPlan(models.Model):
-    """
-    Because a TransferPlan has no owner, we could end up with orphan transfer plans. Whatever component is using a
-    TransferPlan needs to be sure to delete it when done.
-    """
-    begin_date = models.DateField()
-    amount = models.IntegerField()
-    growth = models.FloatField(help_text="Annualized rate to increase or decrease the amount by as of the begin_date")
-    schedule = models.TextField()  # RRULE to specify when the transfer happens.
 
 
 class RetirementPlan(models.Model):
@@ -1632,19 +1539,13 @@ class RetirementPlan(models.Model):
     retirement_date = models.DateField()
     life_expectancy = models.IntegerField(help_text="Until what age do we want to plan retirement spending?")
     spendable_income = models.IntegerField(default=0, help_text="The current annual spendable income. This must be identical across partner plans as they have a common spendable income.")
-    # For the moment all these TransferPlan fields are one to one, but there's no reason why they couldn't be 1-to-N
-    btc = models.OneToOneField(TransferPlan,
-                               related_name="retirement_plan_btc",
-                               help_text="The before tax contributions into the retirement account until retirement date")
-    atc = models.OneToOneField(TransferPlan,
-                               related_name="retirement_plan_atc",
-                               help_text="The after tax contributions into the retirement account until retirement date")
     desired_income = models.IntegerField(default=0, help_text="The desired annual spendable income in retirement")
     # Each account can have at most one retirement plan. Hence the relationship goes this way.
     smsf_account = models.OneToOneField(ClientAccount,
                                         related_name='retirement_plan',
                                         help_text="The associated SMSF account.",
                                         null=True)
+    # Also has fields btc, atc and external_income from related models.
 
     # Install the custom manager that knows how to filter.
     objects = RetirementPlanQuerySet.as_manager()
@@ -1663,9 +1564,31 @@ class RetirementPlan(models.Model):
         super(RetirementPlan, self).save(*args, **kwargs)
 
 
-class RetirementPlanExternalIncome(models.Model):
+class TransferPlan(models.Model):
+    begin_date = models.DateField()
+    amount = models.IntegerField()
+    growth = models.FloatField(help_text="Annualized rate to increase or decrease the amount by as of the begin_date."
+                                         " 0.0 for no modelled change")
+    schedule = models.TextField()  # RRULE to specify when the transfer happens.
+
+    class Meta:
+        abstract = True
+
+
+class ExternalAssetTransfer(TransferPlan):
+    asset = models.OneToOneField(ExternalAsset, related_name='transfer_plan', on_delete=CASCADE)
+
+
+class RetirementPlanBTC(TransferPlan):
+    plan = models.OneToOneField(RetirementPlan, related_name='btc')
+
+
+class RetirementPlanATC(TransferPlan):
+    plan = models.OneToOneField(RetirementPlan, related_name='atc')
+
+
+class RetirementPlanEinc(TransferPlan):
     plan = models.ForeignKey(RetirementPlan, related_name='external_income')
-    income = models.OneToOneField('TransferPlan', related_name='retirement_plan_einc')
 
 
 class MarkowitzScale(models.Model):
@@ -1702,16 +1625,13 @@ class FinancialInstrument(models.Model):
     url = models.URLField()
     currency = models.CharField(max_length=10, default="AUD")
     region = models.ForeignKey(Region)
-    # TODO: Remove the nulls below
     data_api = models.CharField(help_text='The module that will be used to get the data for this ticker',
                                 choices=[('portfolios.api.bloomberg', 'Bloomberg')],
-                                max_length=30,
-                                null=True)
+                                max_length=30)
     data_api_param = models.CharField(help_text='Structured parameter string appropriate for the data api. The '
                                                 'first component would probably be id appropriate for the given api',
                                       unique=True,
-                                      max_length=30,
-                                      null=True)
+                                      max_length=30)
 
     def __str__(self):
         return self.display_name
@@ -1756,10 +1676,8 @@ class Ticker(FinancialInstrument):
                               help_text='Is this an Exchange Traded Fund (True) or Mutual Fund (False)?')
     # A benchmark should be a subclass of financial instrument
     limit = models.Q(app_label='main', model='marketindex')  # Only using index benchmarks at the moment, but may do more later
-    # TODO: Remove this null bit
     benchmark_content_type = models.ForeignKey(ContentType,
                                                on_delete=models.CASCADE,
-                                               null=True,
                                                limit_choices_to=limit,
                                                verbose_name='Benchmark Type')
     benchmark_object_id = models.PositiveIntegerField(null=True,
@@ -2027,7 +1945,7 @@ class GoalType(models.Model):
 
 class RecurringTransaction(models.Model):
     # Note: Only settings that are active will have their recurring transactions processed.
-    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', null=True)  # TODO remove the null
+    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions')
     # Note: https://www.npmjs.com/package/rrule and https://www.npmjs.com/package/rrecur for UI side of below
     recurrence = models.TextField()
     enabled = models.BooleanField(default=True)
@@ -2264,8 +2182,6 @@ class Goal(models.Model):
         from main.ordering import OrderManager
         if self.State(self.state) != self.State.ARCHIVE_REQUESTED:
             raise InvalidStateError(self.State(self.state), self.State.ARCHIVE_REQUESTED)
-
-        FinancialPlanAccount.objects.filter(account=self).delete()
 
         # Remove outstanding orders and close existing positions
         async_id = OrderManager.close_positions(self)
@@ -2639,17 +2555,9 @@ class Goal(models.Model):
     @property
     def get_term(self):
         today = date.today()
-        # check if goal is part of the retirement plan
-        financial_plan_accounts = self.account.primary_owner.financial_plan_accounts.filter(account=self).all()
 
-        if financial_plan_accounts:
-            retirement_age = self.account.primary_owner.financial_plan.retirement_age
-            current_age = today.year - self.account.primary_owner.date_of_birth.year
-            term = max(retirement_age - current_age, 0)
-
-        else:
-            term = self.selected_settings.completion.year - today.year \
-                if self.selected_settings else None
+        term = self.selected_settings.completion.year - today.year \
+            if self.selected_settings else None
 
         return term
 
@@ -2998,63 +2906,6 @@ class Performer(models.Model):
     portfolio_set = models.IntegerField()
 
 
-class CostOfLivingIndex(models.Model):
-    state = AUStateField(unique=True)
-    value = models.FloatField(default=80.99)
-
-
-class FinancialPlanAccount(models.Model):
-    client = models.ForeignKey(Client, related_name="financial_plan_accounts")
-    account = models.ForeignKey(Goal)
-    annual_contribution_cents = models.CharField(max_length=100, null=True)
-
-
-class FinancialPlanExternalAccount(models.Model):
-    client = models.ForeignKey(Client,
-                               related_name="financial_plan_external_accounts")
-    account_type = models.CharField(max_length=100)
-    balance_cents = models.FloatField(default=0, null=True)
-    annual_contribution_cents = models.FloatField(default=0, null=True)
-    account_owner = models.CharField(max_length=100, null=True)
-    institution_name = models.CharField(max_length=255, null=True)
-    investment_type = models.CharField(max_length=100, null=True)
-    advisor_fee_percent = models.CharField(max_length=100, null=True)
-
-
-class FinancialPlan(models.Model):
-    client = models.OneToOneField(Client, related_name="financial_plan")
-    name = models.CharField(max_length=100)
-    other_retirement_income_cents = models.FloatField(default=0)
-    complete = models.BooleanField(default=False)
-    retirement_zip = AUPostCodeField()
-    income_replacement_ratio = models.FloatField(null=True)
-    retirement_age = models.PositiveIntegerField(null=True)
-    spouse_retirement_age = models.PositiveIntegerField(null=True)
-    desired_retirement_income_cents = models.FloatField(default=0)
-    savings_advice_chance = models.CharField(max_length=100, null=True)
-
-
-class FinancialProfile(models.Model):
-    client = models.OneToOneField(Client, related_name="financial_profile")
-    complete = models.BooleanField(default=False)
-    retired = models.BooleanField(default=False)
-    life_expectancy = models.FloatField(default=70, null=True)
-    pretax_income_cents = models.FloatField(default=0, null=True)
-    social_security_monthly_amount_cents = models.FloatField(default=0,
-                                                             null=True)
-    expected_inflation = models.FloatField(default=2.5)
-    social_security_percent_expected = models.FloatField(default=0, null=True)
-    annual_salary_percent_growth = models.FloatField(default=0, null=True)
-    average_tax_percent = models.FloatField(default=0, null=True)
-    spouse_name = models.CharField(max_length=100, null=True)
-    spouse_estimated_birthdate = models.DateTimeField(null=True)
-    spouse_retired = models.BooleanField(default=False)
-    spouse_life_expectancy = models.FloatField(default=80, null=True)
-    spouse_pretax_income_cents = models.FloatField(default=0, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
 class DailyPrice(models.Model):
     """
     If a Financial Instrument is tradable, it will have a price.
@@ -3065,9 +2916,8 @@ class DailyPrice(models.Model):
         unique_together = ("instrument_content_type", "instrument_object_id", "date")
 
     # An instrument should be a subclass of financial instrument
-    # TODO: Remove this null bit
-    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, db_index=True)
-    instrument_object_id = models.PositiveIntegerField(null=True, db_index=True)
+    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, db_index=True)
+    instrument_object_id = models.PositiveIntegerField(db_index=True)
     instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
     date = models.DateField(db_index=True)
     price = models.FloatField(null=True)
@@ -3083,12 +2933,10 @@ class MarketCap(models.Model):
         unique_together = ("instrument_content_type", "instrument_object_id", "date")
 
     # An instrument should be a subclass of financial instrument
-    # TODO: Remove this null bit
-    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
-    instrument_object_id = models.PositiveIntegerField(null=True)
+    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    instrument_object_id = models.PositiveIntegerField()
     instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
-    # TODO: Remove this null bit
-    date = models.DateField(null=True)
+    date = models.DateField()
     value = models.FloatField()
 
 
@@ -3292,15 +3140,15 @@ class ActivityLogEvent(models.Model):
 
         if event == Event.GOAL_DIVIDEND_DISTRIBUTION:
             alog = ActivityLog.objects.create(name='Dividend Transaction',
-                                              format_str='Dividend payment of {{}}{} into goal'.format(SYSTEM_CURRENCY),
+                                              format_str='Dividend payment of {{}}{} into goal'.format(settings.SYSTEM_CURRENCY),
                                               format_args='transaction.amount')
         elif event == Event.GOAL_DEPOSIT_EXECUTED:
             alog = ActivityLog.objects.create(name='Goal Deposit Transaction',
-                                              format_str='Deposit of {{}}{} from Account to Goal'.format(SYSTEM_CURRENCY),
+                                              format_str='Deposit of {{}}{} from Account to Goal'.format(settings.SYSTEM_CURRENCY),
                                               format_args='transaction.amount')
         elif event == Event.GOAL_WITHDRAWAL_EXECUTED:
             alog = ActivityLog.objects.create(name='Goal Withdrawal Transaction',
-                                              format_str='Withdrawal of {{}}{} from Goal to Account'.format(SYSTEM_CURRENCY),
+                                              format_str='Withdrawal of {{}}{} from Goal to Account'.format(settings.SYSTEM_CURRENCY),
                                               format_args='transaction.amount')
         elif event == Event.GOAL_REBALANCE_EXECUTED:
             alog = ActivityLog.objects.create(name='Goal Rebalance Transaction', format_str='Rebalance Applied')
@@ -3308,7 +3156,7 @@ class ActivityLogEvent(models.Model):
             alog = ActivityLog.objects.create(name='Goal Transfer Transaction', format_str='Transfer Applied')
         elif event == Event.GOAL_FEE_LEVIED:
             alog = ActivityLog.objects.create(name='Goal Fee Transaction',
-                                              format_str='Fee of {{}}{} applied'.format(SYSTEM_CURRENCY),
+                                              format_str='Fee of {{}}{} applied'.format(settings.SYSTEM_CURRENCY),
                                               format_args='transaction.amount')
         elif event == Event.GOAL_ORDER_DISTRIBUTION:
             alog = ActivityLog.objects.create(name='Order Distribution Transaction', format_str='Order Distributed')

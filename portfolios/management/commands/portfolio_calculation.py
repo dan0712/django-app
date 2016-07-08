@@ -16,8 +16,7 @@ from sklearn.covariance.shrunk_covariance_ import OAS
 from main import redis
 
 from main.models import (
-    SYSTEM_CURRENCY,
-    Goal, Ticker, AssetFeatureValue, 
+    Goal, Ticker, AssetFeatureValue,
     MarkowitzScale, PortfolioSet,
     MarketCap)
 
@@ -938,7 +937,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         if budget < req_budget:
             emsg = "The budget of {0} {1} is insufficient to purchase all the assets in the portfolio with allocated " \
                    "proportions over {2}%. Please increase the budget to at least {3} {1} to purchase this portfolio."
-            raise Unsatisfiable(emsg.format(budget, SYSTEM_CURRENCY, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget)),
+            raise Unsatisfiable(emsg.format(budget, settings.SYSTEM_CURRENCY, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget)),
                                 math.ceil(req_budget))
 
     inactive_ilocs = inactive_unit.nonzero()[0].tolist()

@@ -61,6 +61,7 @@ INSTALLED_APPS = (
     'bootstrap3',
 
     'main',
+    'address',
     'user',
     'advisors',
     'portfolios',
@@ -82,6 +83,9 @@ MIDDLEWARE_CLASSES = (
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
+    # JSON numbers don't suffer from precision loss, they are fixed point. Therefore we want to represent numeric data
+    # as numeric data, not as string.
+    'COERCE_DECIMAL_TO_STRING': False,
     'PAGE_SIZE_QUERY_PARAM': 'page_size',  # allow client to override, using `?page_size=xxx`.
     'MAX_PAGE_SIZE': 1000,  # maximum limit allowed when using `?page_size=xxx`.
     'DEFAULT_PERMISSION_CLASSES': (
@@ -238,5 +242,11 @@ BETASMARTZ_CPI = 2
 # From http://www.aihw.gov.au/deaths/life-expectancy/
 MALE_LIFE_EXPECTANCY = 80
 FEMALE_LIFE_EXPECTANCY = 84
+
+# Do you want the security questions to be case sensitive?
+#SECURITY_QUESTIONS_CASE_SENSITIVE = False
+
+# What is the system currency?
+SYSTEM_CURRENCY = 'AUD'
 
 from local_settings import *

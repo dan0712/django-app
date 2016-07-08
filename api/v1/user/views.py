@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import exceptions, parsers, views, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -30,6 +31,8 @@ class MeView(ApiViewMixin, views.APIView):
         elif user.is_client:
             role = 'client'
             data.update(UserClientSerializer(user.client).data)
+        else:
+            raise PermissionDenied("User is not in the client or advisor groups.")
         data.update({ 'role': role })
         return Response(data)
 

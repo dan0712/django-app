@@ -15,11 +15,12 @@ from main.models import (
     Firm, Advisor, User, Performer,
     AuthorisedRepresentative, FirmData, Client, ClientAccount,
     Goal, GoalMetric, GoalSetting, Position, Transaction,
-    EventMemo, CostOfLivingIndex, Dividend,
+    EventMemo, Dividend,
     ProxyAssetClass, ProxyTicker, PortfolioSet,
     Portfolio, PortfolioItem, View,
     GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog,
-    ActivityLogEvent, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution, Ticker,
+    ActivityLogEvent, DailyPrice,
+    MarketOrderRequest, Execution, ExecutionDistribution, Ticker, # These are activated at the bottom
     AccountTypeRiskProfileGroup)
 
 from suit.admin import SortableModelAdmin, SortableTabularInline
@@ -135,7 +136,7 @@ approve_application.short_description = "Approve application(s)"
 
 
 class AdvisorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
 
@@ -143,7 +144,7 @@ class AdvisorAdmin(admin.ModelAdmin):
 
 
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted',)
     actions = (approve_application,)
     inlines = (ClientAccountInline,)
@@ -240,7 +241,7 @@ class FirmAdmin(admin.ModelAdmin):
 
 
 class AuthorisedRepresentativeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
 
@@ -329,10 +330,6 @@ class AdvisorSingleInvestorTransferAdmin(admin.ModelAdmin):
     actions = (approve_changes,)
 
 
-class CostOfLivingIndexAdmin(admin.ModelAdmin):
-    list_display = ('state', 'value')
-
-
 class RiskProfileAnswerInline(nested_admin.NestedTabularInline):
     model = RiskProfileAnswer
     sortable_field_name = "order"
@@ -373,7 +370,6 @@ class ActivityLogAdmin(admin.ModelAdmin):
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
-admin.site.register(CostOfLivingIndex, CostOfLivingIndexAdmin)
 admin.site.register(Performer, PerformerAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)

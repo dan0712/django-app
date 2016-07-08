@@ -58,7 +58,7 @@ class MultipleSerializersModelViewMixin(object):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # patch
+        # patch to use the object returned from save
         saved = self.perform_create(serializer)
         serializer_response_class = getattr(self, 'serializer_response_class', None)
         serializer = self.get_serializer(instance=saved, serializer_class=serializer_response_class)
@@ -67,7 +67,7 @@ class MultipleSerializersModelViewMixin(object):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        # patch
+        # patch to return the object
         return serializer.save()
 
     def update(self, request, *args, **kwargs):
@@ -80,7 +80,7 @@ class MultipleSerializersModelViewMixin(object):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
 
-        # patch
+        # patch to use the object returned from update
         saved = self.perform_update(serializer)
         serializer_response_class = getattr(self, 'serializer_response_class', None)
         serializer = self.get_serializer(instance=saved, serializer_class=serializer_response_class)
@@ -88,6 +88,7 @@ class MultipleSerializersModelViewMixin(object):
         return Response(serializer.data)
 
     def perform_update(self, serializer):
+        # patch to return the object
         return serializer.save()
 
 

@@ -31,9 +31,6 @@
         "in_free_trial": false,
         "free_days_remaining": null
     },
-    "financialProfile": {{profile.get_financial_profile}},
-    "externalAccounts": {{profile.external_accounts}},
-    "financialPlans": [{{profile.get_financial_plan}}],
     "annualIncome": {{profile.income}},
     "netWorth": {{profile.net_worth}},
     "iraSignup": false,
@@ -48,7 +45,6 @@
         "firmId": {{profile.advisor.firm.pk}},
         "firmName": " {{profile.advisor.firm.name | title}}"
     },
-    "securityQuestions": ["{{profile.security_question_1}}", "{{profile.security_question_2}}"],
     "referralProgram": {
         "promotionId": 26,
         "senderPrize": "30 days free",

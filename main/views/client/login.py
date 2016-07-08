@@ -1,5 +1,3 @@
-__author__ = 'cristian'
-
 from django import forms
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,8 +11,6 @@ from main.models import (
     ClientAccount, TaxFileNumberValidator, MedicareNumberValidator,
     PERSONAL_DATA_WIDGETS, PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE,
 )
-
-__all__ = ['ClientSignUp', 'ClientSignUpPrepopulated']
 
 client_sign_up_form_header_1 = """<span class="left blue-circle">1</span>
 <h3 class="left">Information to establish your account</h3>"""
@@ -79,7 +75,7 @@ class ClientSignUpForm(BetaSmartzGenericUSerSignupForm):
 
         self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
                                            'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
-                                           'address_line_2', 'city', 'state', 'post_code', 'phone_number'),
+                                           'address_line_2', 'city', 'state', 'phone_number'),
                                 "header": "Information to establish your account"},
                                {"fields": ('medicare_number',),
                                 "header": "Identity verification",

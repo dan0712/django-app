@@ -5,12 +5,6 @@ from main.models import (
     AssetClass, Ticker, GoalType,
     RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog)
 
-__all__ = (
-    'GoalTypeListSerializer',
-    'AssetClassListSerializer',
-    'TickerListSerializer',
-)
-
 
 class GoalTypeListSerializer(serializers.ModelSerializer):
     """
@@ -18,6 +12,7 @@ class GoalTypeListSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = GoalType
+        exclude = ('risk_sensitivity', 'order', 'risk_factor_weights')
 
 
 class AssetClassListSerializer(serializers.ModelSerializer):

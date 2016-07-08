@@ -47,15 +47,10 @@ class Event(ChoiceEnum):
     GOAL_TRANSFER_EXECUTED = (17, ['txid'], main.Goal)
     GOAL_ORDER_DISTRIBUTION = (18, ['txid'], main.Goal)
 
-    # Override __new__ so we can use the normal "value" semantics for the enum.
-    def __new__(cls, *args):
-        obj = object.__new__(cls)
-        obj._value_ = args[0]
-        return obj
 
     def __init__(self, id, log_keys, obj_class):
         """
-        Create an Event enumeration
+        Create an Event enumeration. This is overridden to have all the extra data we want.
         :param value:
         :param log_keys:
         :param obj_class: What is the required class of the obj logged?
