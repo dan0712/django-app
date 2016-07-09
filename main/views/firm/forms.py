@@ -71,10 +71,6 @@ class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
                                 "header": "Identity verification",
                                 "detail": "We use your Medicare number to verify your identity and protect "
                                           "against fraud."},
-                               {"fields": ('security_question_1', 'security_answer_1', 'security_question_2',
-                                           'security_answer_2'),
-                                "header": "Security",
-                                "detail": "We ask for security questions to protect your account."},
                                {"fields": ('letter_of_authority',),
                                 "header": "Authorization",
                                 "detail": "BetaSmartz requires a Letter of Authority (PDF) from the new Dealer Group"

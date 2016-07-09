@@ -2,6 +2,7 @@
 FROM betasmartz/backend_base:backend_build
 
 ENV PYTHONUNBUFFERED 1
+ENV TERM xterm
 
 ADD . ./betasmartz
 

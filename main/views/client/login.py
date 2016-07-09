@@ -87,10 +87,6 @@ class ClientSignUpForm(BetaSmartzGenericUSerSignupForm):
                                           " have to deduct tax at the highest marginal tax rate (BetaSmartz "
                                           "recommends you provide your TFN, claim exemption or advise us of"
                                           " your non-resident status."},
-                               {"fields": ('security_question_1', 'security_answer_1', 'security_question_2',
-                                           'security_answer_2'),
-                                "header": "Security",
-                                "detail": "We ask for security questions to protect your account."},
                                {"fields": ("employment_status", "occupation", "employer", "net_worth", "income"),
                                 "header": "Employment and financial background",
                                 "detail": "We are required to ask for your employment and financial background, "

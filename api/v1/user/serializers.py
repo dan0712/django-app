@@ -64,8 +64,6 @@ class UserAdvisorSerializer(serializers.ModelSerializer):
         exclude = (
             'user',
             'confirmation_key',
-            'security_question_1', 'security_question_2',
-            'security_answer_1', 'security_answer_2',
             'letter_of_authority', 'betasmartz_agreement',
         )
 
@@ -77,8 +75,6 @@ class UserClientSerializer(serializers.ModelSerializer):
         model = Client
         exclude = (
             'user',
-            'security_question_1', 'security_question_2',
-            'security_answer_1', 'security_answer_2',
             'client_agreement',
             'confirmation_key',
             # filter out more fields if needed
