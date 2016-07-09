@@ -47,7 +47,7 @@
                 <td>{{ client.id }}</td>
                 <td>{{ client.full_name }}</td>
                 <td><a href="{{ client.email }}">{{ client.email }}</a></td>
-                <td>{{ client.phone_number|phone }}</td>
+                <td>{{ client.phone_num|phone }}</td>
                 <td class="text-xs-right">
                   <a class="btn btn-primary-outline btn-xs" href="{% url 'advisor:clients-detail' client.pk %}">View Profile</a>
                   <a class="btn btn-info-outline btn-xs" href="{% url 'client:app' client.pk %}" target="_blank">Log in</a>

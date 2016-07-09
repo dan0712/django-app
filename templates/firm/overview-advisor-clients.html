@@ -27,7 +27,7 @@
                    <tr>
                       <td>{{ client.full_name }}</td>
                       <td><a href="{{ client.email }}">{{ client.email }}</a></td>
-                      <td>{{ client.phone_number |phone_format}}</td>
+                      <td>{{ client.phone_num |phone_format}}</td>
                       <td class="composite-actions">
                           <a href="/firm/advisor/{{ object.pk }}/client/{{ client.pk }}">View Profile</a>
                           <a href="{% url 'client:app' client.pk %}" target="_blank">Log in</a>

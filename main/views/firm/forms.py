@@ -64,8 +64,7 @@ class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
         self.initial.update(self.profile_form.initial)
 
         self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
-                                           'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
-                                           'address_line_2', 'city', 'state', 'post_code', 'phone_number'),
+                                           'confirm_password', 'date_of_birth', 'gender', 'phone_num'),
                                 "header": "Information to establish your account"},
                                {"fields": ('medicare_number',),
                                 "header": "Identity verification",
@@ -202,10 +201,6 @@ class FirmDataForm(forms.ModelForm):
     class Meta:
         model = FirmData
         fields = "__all__"
-        widgets = {'office_address_line_1': forms.TextInput(attrs={"placeholder": "Street address"}),
-                   "office_address_line_2": forms.TextInput(attrs={"placeholder": "Unit, Floor (optional)"}),
-                   'postal_address_line_1': forms.TextInput(attrs={"placeholder": "Street address"}),
-                   "postal_address_line_2": forms.TextInput(attrs={"placeholder": "Unit, Floor (optional)"})}
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('label_suffix', '')
@@ -215,11 +210,8 @@ class FirmDataForm(forms.ModelForm):
                                 "header": "Dealer Group Details",
                                 "detail": "Please provide the adviser’s AFSL Number/ASIC Authorised "
                                           "Representative Number and attach a copy of AFSL."},
-                               {"fields": ('office_address_line_1', 'office_address_line_2',
-                                           'office_city', 'office_state', 'office_post_code', 'same_address',
-                                           'postal_address_line_1', 'postal_address_line_2',
-                                           'postal_city', 'postal_state', 'postal_post_code', 'daytime_phone_number',
-                                           'mobile_phone_number', 'fax_number', 'alternate_email_address'),
+                               {"fields": ('daytime_phone_num',
+                                           'mobile_phone_num', 'fax_num', 'alternate_email_address'),
                                 "header": "Dealer contact details"},
                                {"fields": ('fee_bank_account_name', 'fee_bank_account_branch_name',
                                            'fee_bank_account_bsb_number', 'fee_bank_account_number',
@@ -241,14 +233,6 @@ class FirmDataForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(FirmDataForm, self).clean()
         self._validate_unique = False
-
-        if cleaned_data.get('same_address', None):
-            cleaned_data["postal_address_line_1"] = cleaned_data["office_address_line_1"]
-            cleaned_data["postal_address_line_2"] = cleaned_data["office_address_line_2"]
-            cleaned_data["postal_city"] = cleaned_data["office_city"]
-            cleaned_data["postal_state"] = cleaned_data["office_state"]
-            cleaned_data["postal_post_code"] = cleaned_data["office_post_code"]
-
         self.cleaned_data = cleaned_data
 
     def save(self, *args, **kw):

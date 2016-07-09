@@ -94,28 +94,12 @@
             <td>{{ client.age }}</td>
           </tr>
           <tr class="address-1">
-            <td>Address line 1</td>
-            <td>{{ client.address_line_1 }}</td>
-          </tr>
-          <tr class="address-2">
-            <td>Address line 2</td>
-            <td>{{ client.address_line_2 }}</td>
-          </tr>
-          <tr class="city">
-            <td>City</td>
-            <td>{{ client.city }}</td>
-          </tr>
-          <tr class="state">
-            <td>State</td>
-            <td>{{ client.state }}</td>
-          </tr>
-          <tr class="zip">
-            <td>Postcode</td>
-            <td>{{ client.post_code }}</td>
+            <td>Address</td>
+            <td>{{ client.residential_address.address }}</td>
           </tr>
           <tr class="phone">
             <td>Phone</td>
-            <td>{{ client.phone_number |phone_format }}</td>
+            <td>{{ client.phone_num |phone_format }}</td>
           </tr>
           <tr class="email">
             <td>Email</td>

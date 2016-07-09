@@ -1,8 +1,9 @@
+from phonenumber_field.modelfields import PhoneNumberField
+
 __author__ = 'cristian'
 
 from django.db import models
 from main.models import Firm, Advisor, Client
-from django_localflavor_au.models import AUStateField, AUPostCodeField, AUPhoneNumberField
 from datetime import datetime
 
 __all__ = ["ChangeDealerGroup", "SingleInvestorTransfer", "BulkInvestorTransfer"]
@@ -15,7 +16,7 @@ class ChangeDealerGroup(models.Model):
     approved = models.BooleanField(default=False)
     create_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
-    work_phone = AUPhoneNumberField()
+    work_phone = PhoneNumberField()
     new_email = models.EmailField()
     letter_previous_group = models.FileField(verbose_name="Prev. Group Letter")
     letter_new_group = models.FileField("New Group Letter")
@@ -25,7 +26,7 @@ class ChangeDealerGroup(models.Model):
         self.approved = True
         self.advisor.firm = self.new_firm
         self.advisor.user.email = self.new_email
-        self.advisor.work_phone = self.work_phone
+        self.advisor.work_phone_num = self.work_phone
         """
         self.advisor.office_address_line_1 = self.office_address_line_1
         self.advisor.office_address_line_2 = self.office_address_line_2

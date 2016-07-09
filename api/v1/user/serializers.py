@@ -109,7 +109,7 @@ class UserClientAdvisorSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'gender',
-            'work_phone',
+            'work_phone_num',
             'user',
             'firm',
             'email'

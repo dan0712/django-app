@@ -54,8 +54,7 @@ class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
         self.initial.update(self.profile_form.initial)
 
         self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
-                                           'confirm_password', 'date_of_birth', 'gender', 'address_line_1',
-                                           'address_line_2', 'city', 'state', 'post_code', 'phone_number'),
+                                           'confirm_password', 'date_of_birth', 'gender', 'phone_num'),
                                 "header": "Information to establish your account"},
                                {"fields": ('medicare_number',),
                                 "header": "Identity verification",

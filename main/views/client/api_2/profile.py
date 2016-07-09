@@ -9,8 +9,7 @@ __all__ = ["PersonalInfoViewSet", "UserViewSet"]
 class PersonalInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ('pk', 'net_worth', 'income', 'city', 'state', 'address_line_1', 'address_line_2',
-                  'post_code', 'phone', 'employment_status', 'create_date', 'states_codes')
+        fields = ('pk', 'net_worth', 'income', 'phone_num', 'employment_status', 'create_date', 'states_codes')
         read_only_fields = ('states_codes', )
 
 

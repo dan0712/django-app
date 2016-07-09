@@ -1,5 +1,5 @@
 {
-  "workPhone": "{{profile.advisor.work_phone | default:1888888888}}",
+  "workPhone": "{{profile.advisor.work_phone_num | default:1888888888}}",
   "email": "{{profile.advisor.email}}",
   "id": {{profile.advisor.pk}},
   "name": "{{profile.advisor.user.get_full_name}}",

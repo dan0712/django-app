@@ -38,7 +38,7 @@
               <tr>
                 <td>{{ item.pk }}</td>
                 <td><a href="{% url 'firm:analytics-clients-detail' item.pk %}" data-toggle="modal" data-target="#analyticsClientModal">{{ item.user.get_full_name }}</a></td>
-                <td>{{ item.address_line_1 }} {{ item.address_line_2 }}, {{ item.city }}, {{ item.state }} {{ item.post_code }}</td>
+                <td>{{ item.residential_address.address }}, {{ item.residential_address.region.name }}</td>
                 <td><a href="mailto:{{ item.email }}">{{ item.email }}</a></td>
               </tr>
             {% empty %}
