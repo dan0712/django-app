@@ -1,1 +1,0 @@
-Contributor: Elger Lindgren <bilddigital.se>

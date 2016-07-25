@@ -1,2 +1,0 @@
-[17-Nov-2015 06:47:01 America/Chicago] PHP Fatal error:  Class 'lavaBase' not found in /home/sduri0ke/public_html/wp-content/plugins/password-protect-wordpress/pluginCallbacks.php on line 3
-[17-Nov-2015 06:47:24 America/Chicago] PHP Fatal error:  Class 'lavaExtension' not found in /home/sduri0ke/public_html/wp-content/plugins/password-protect-wordpress/vendor.php on line 9
