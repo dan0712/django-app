@@ -1,5 +1,5 @@
 # You need to tag the backend_base build you want to use for the backend build you're going to use to do this build.
-FROM betasmartz/backend_base:latest
+FROM betasmartz/backend_base:backend_build
 
 ENV PYTHONUNBUFFERED 1
 ENV TERM xterm
