@@ -1,10 +1,11 @@
-import datetime
 from dateutil.relativedelta import relativedelta
 
 from django import forms
 from django.contrib.auth.models import Group
 from django.db.models import Q
 import django_filters as filters
+from django.utils.timezone import now
+
 from notifications.models import Notification
 
 from main.models import Advisor, Client, Goal, GoalMetric
@@ -45,7 +46,7 @@ class PeriodFilter(filters.ChoiceFilter):
         if not value:
             return qs
 
-        dt = datetime.date.today()
+        dt = now().today()
         dt = dt - relativedelta(days=int(value))
 
         qs = qs.filter(timestamp__gte=dt)

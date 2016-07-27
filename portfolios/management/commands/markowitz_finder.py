@@ -1,9 +1,9 @@
-import datetime
 import logging
 import numpy as np
 
 from cvxpy import mul_elemwise
 from django.core.management.base import BaseCommand
+from django.utils.timezone import now
 from scipy.optimize.minpack import curve_fit
 
 from main.models import MarkowitzScale
@@ -85,7 +85,7 @@ def get_extremes():
     vals, _ = curve_fit(func, x, y)
     logger.info("Found function fit using params: {}".format(vals))
 
-    MarkowitzScale.objects.create(date=datetime.datetime.today(),
+    MarkowitzScale.objects.create(date=now().today(),
                                   min=min_lambda,
                                   max=max_lambda,
                                   a=vals[0],

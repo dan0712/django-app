@@ -1,8 +1,7 @@
-import datetime
-
 import math
 
 from django.db.models.aggregates import Max, Min, Sum
+from django.utils.timezone import now
 
 from main.models import ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_SMSF, EMPLOYMENT_STATUS_FULL_TIME, \
     EMPLOYMENT_STATUS_PART_TIME, EMPLOYMENT_STATUS_STUDENT, EMPLOYMENT_STATUS_RETIRED, EMPLOYMENT_STATUS_HOMEMAKER, \
@@ -63,7 +62,7 @@ def recommend_ttl_risks(setting, years):
 def get_risk_factors(setting):
     # If the account is a Joint or Personal, use age of youngest owner, otherwise, use None
     account = setting.goal.account
-    today = datetime.datetime.today().date()
+    today = now().date()
     if account.account_type in (ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF, ACCOUNT_TYPE_JOINT):
         primary_owner = account.primary_owner
         age = years_between(primary_owner.date_of_birth, today)

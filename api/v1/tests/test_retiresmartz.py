@@ -1,5 +1,4 @@
-import datetime
-
+from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -33,13 +32,13 @@ class RetiresmartzTests(APITestCase):
             "name": "Personal Plan",
             "description": "My solo plan",
             "btc": {
-                'begin_date': datetime.date.today(),
+                'begin_date': now().today(),
                 'amount': 1000,
                 'growth': 0.025,
                 'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
             },
             "external_income": [{
-                'begin_date': datetime.date.today(),
+                'begin_date': now().today(),
                 'amount': 2000,
                 'growth': 0.01,
                 'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',

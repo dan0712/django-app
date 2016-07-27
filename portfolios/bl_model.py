@@ -1,8 +1,10 @@
-from numpy import dot, cov, transpose, sqrt, isnan
-from numpy.linalg import inv
 import numpy as np
 import scipy.optimize
+from numpy import dot, cov, transpose, sqrt
+from numpy.linalg import inv
 from sklearn.covariance import OAS
+
+from portfolios.exceptions import OptimizationException
 
 
 def calculate_co_vars(assets_len, table):
@@ -28,10 +30,6 @@ def calculate_co_vars(assets_len, table):
     # annualized
     sk_co_var = ((1-sk.shrinkage_)*co_vars + sk.shrinkage_*np.trace(co_vars)/assets_len*np.identity(assets_len))
     return sk_co_var, co_vars
-
-
-class OptimizationException(BaseException):
-    pass
 
 
 # Compute the expected return of the portfolio.

@@ -1,7 +1,7 @@
 from collections import defaultdict
-import datetime
 import logging
 import math
+from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -52,7 +52,7 @@ def fx_convert(val, date, currency):
 
     def make_weekday(date):
         if date.weekday() > 4:
-            new_date = date - datetime.timedelta(days=date.weekday() - 4)
+            new_date = date - timedelta(days=date.weekday() - 4)
             msg = "Not attempting currency conversion for weekend day: {}. Trying previous workday: {}."
             logger.info(msg.format(date.date(), new_date.date()))
             date = new_date
@@ -67,7 +67,7 @@ def fx_convert(val, date, currency):
         # if len(rate) == 0 or not rate[0] or not rate[0][0] or not math.isfinite(rate[0][0]):
         if len(rate) == 0 or not rate[0] or not math.isfinite(rate[0]):
             old_dt = date
-            date = make_weekday(date - datetime.timedelta(days=1))
+            date = make_weekday(date - timedelta(days=1))
             msg = "Cannot convert currency: {} for date: {} as I don't have the exchange rate. Maybe run load_fx_rates?"
             msg2 = " Trying the previous workday: {}."
             logger.warn((msg + msg2).format(currency, old_dt.date(), date.date()))
@@ -146,7 +146,7 @@ def load_price_data(begin_date, end_date):
 
 
 def parse_date(val):
-    return datetime.datetime.strptime(val, '%Y%m%d').date()
+    return datetime.strptime(val, '%Y%m%d').date()
 
 
 class Command(BaseCommand):

@@ -1,10 +1,10 @@
+from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
 
 __author__ = 'cristian'
 
 from django.db import models
 from main.models import Firm, Advisor, Client
-from datetime import datetime
 
 __all__ = ["ChangeDealerGroup", "SingleInvestorTransfer", "BulkInvestorTransfer"]
 
@@ -45,7 +45,7 @@ class ChangeDealerGroup(models.Model):
         self.advisor.alternate_email_address = self.advisor.alternate_email_address
         """
         self.advisor.save()
-        self.approved_at = datetime.now()
+        self.approved_at = now()
         self.save()
 
 
@@ -75,7 +75,7 @@ class SingleInvestorTransfer(models.Model):
             account.remove_from_group()
             account.save()
         self.approved = True
-        self.approved_at = datetime.now()
+        self.approved_at = now()
         self.save()
 
 
@@ -107,5 +107,5 @@ class BulkInvestorTransfer(models.Model):
                 account.save()
 
         self.approved = True
-        self.approved_at = datetime.now()
+        self.approved_at = now()
         self.save()

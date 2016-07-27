@@ -1,9 +1,10 @@
-import datetime
 import logging
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.aggregates import Max
 from django.core.management.base import BaseCommand
+from django.utils.timezone import now
 
 from main.models import DailyPrice, Ticker
 
@@ -11,7 +12,7 @@ logger = logging.getLogger("set_prices")
 
 
 def populate_current_prices():
-    m1w = (datetime.datetime.today() - datetime.timedelta(days=7)).date()
+    m1w = (now().today() - timedelta(days=7)).date()
 
     # Set the unit price to the latest we have in the DB.
     for price in DailyPrice.objects.exclude(price__isnull=True).values('instrument_content_type_id',
