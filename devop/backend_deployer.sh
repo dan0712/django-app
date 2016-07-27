@@ -16,6 +16,22 @@ main() {
     then
         DBPW='0ZUbnZ5+:msz:*1O'
         REDDB=3
+    elif [[ ${2} == 'beta' ]]
+    then
+        DBPW='Beta02jzjdne*10'
+        REDDB=4
+    elif [[ ${2} == 'aus' ]]
+    then
+        DBPW='Ausliejivjljl*20'
+        REDDB=5
+    elif [[ ${2} == 'betastaging' ]]
+    then
+        DBPW='BetaStagingMGIS129013923i!'
+        REDDB=6
+    elif [[ ${2} == 'staging' ]]
+    then
+        DBPW='StagingOgacahi8971*!'
+        REDDB=7
     else
         echo "Unsupported auto-deployment for domain: ${2}" >&2
 	exit 1
@@ -38,8 +54,7 @@ main() {
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                --net=betasmartz-local \
                --name=${2}_betasmartz_app \
-               -d \
-               betasmartz/backend:${2}_cd
+               -d betasmartz/backend:${2}_cd
     docker exec nginx nginx -s reload
     popd
 }
