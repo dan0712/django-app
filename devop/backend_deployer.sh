@@ -24,6 +24,10 @@ main() {
     then
         DBPW='Ausliejivjljl*20'
         REDDB=5
+    elif [[ ${2} == 'betastaging' ]]
+    then
+        DBPW='BetaStagingMGIS129013923i!'
+        REDDB=6
     else
         echo "Unsupported auto-deployment for domain: ${2}" >&2
 	exit 1

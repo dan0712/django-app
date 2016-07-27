@@ -5,8 +5,9 @@ docker run --link prod_betasmartz_app:app \
            --link demo_betasmartz_app:demo \
            --link dev_betasmartz_app:dev \
            --link v2_betasmartz_app:v2 \
+           --link aus_betasmartz_app:aus \
            --link beta_betasmartz_app:beta \
-           --link aus_betasmartz_app:aus
+           --link betastaging_betasmartz_app:betastaging \
            -v /home/bsmartz/dev_static:/betasmartz/dev/collected_static \
            -v /home/bsmartz/dev_media:/betasmartz/dev/media \
            -v /home/bsmartz/v2_static:/betasmartz/v2/collected_static \
@@ -19,6 +20,10 @@ docker run --link prod_betasmartz_app:app \
            -v /home/bsmartz/beta_static:/betasmartz/beta/collected_static \
            -v /home/bsmartz/beta_media:/betasmartz/aus/media \
            -v /home/bsmartz/beta_static:/betasmartz/aus/collected_static \
+           -v /home/bsmartz/beta_media:/betasmartz/beta/media \
+           -v /home/bsmartz/beta_static:/betasmartz/beta/collected_static \
+           -v /home/bsmartz/beta_media:/betasmartz/betastaging/media \
+           -v /home/bsmartz/beta_static:/betasmartz/betastaging/collected_static \
            -v /home/bsmartz/ui_dist:/betasmartz/v2_ui/dist \
            -v /home/bsmartz/nginx_conf:/etc/nginx/conf.d \
            -v /home/bsmartz/nginx_ssl:/etc/nginx/ssl \
