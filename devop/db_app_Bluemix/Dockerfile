@@ -11,6 +11,7 @@ ADD /prod.sh /docker-entrypoint-initdb.d/prod.sh
 ADD /aus.sh /docker-entrypoint-initdb.d/aus.sh
 ADD /beta.sh /docker-entrypoint-initdb.d/beta.sh
 ADD /betastaging.sh /docker-entrypoint-initdb.d/betastaging.sh
+ADD /staging.sh /docker-entrypoint-initdb.d/staging.sh
 
 #COPY ./docker-entrypoint.sh /
 
@@ -20,5 +21,6 @@ RUN chmod +x /docker-entrypoint-initdb.d/prod.sh
 RUN chmod +x /docker-entrypoint-initdb.d/aus.sh
 RUN chmod +x /docker-entrypoint-initdb.d/beta.sh
 RUN chmod +x /docker-entrypoint-initdb.d/betastaging.sh
+RUN chmod +x /docker-entrypoint-initdb.d/staging.sh
 
 #CMD ["/docker-entrypoint.sh"]
