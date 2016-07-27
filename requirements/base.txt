@@ -44,6 +44,7 @@ ecos==2.0.4
 Markdown==2.6.5
 pexpect==4.0.1
 Pillow==3.0.0
+pydenticon==0.2
 pinax-eventlog==1.1.1
 psycopg2==2.6.1
 ptyprocess==0.5
