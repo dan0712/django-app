@@ -1,7 +1,7 @@
-import uuid
-import logging
-import importlib
 import datetime
+import importlib
+import logging
+import uuid
 from datetime import date
 from enum import Enum, unique
 from itertools import chain, repeat
@@ -406,8 +406,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     Username, password and email are required. Other fields are optional.
     """
 
-    first_name = models.CharField(_('first name'), max_length=30) # db_index=True
-    middle_name = models.CharField(_('middle name(s)'), max_length=30, blank=True)
+    first_name = models.CharField(_('first name'), max_length=30)
+    middle_name = models.CharField(_('middle name(s)'), max_length=30,
+                                   blank=True)
     last_name = models.CharField(_('last name'), max_length=30, db_index=True)
     username = models.CharField(max_length=30, editable=False, default='')
     email = models.EmailField(
@@ -430,8 +431,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
     prepopulated = models.BooleanField(default=False)
-    notifications = GenericRelation('notifications.Notification', related_query_name='users',
-        content_type_field='actor_content_type_id', object_id_field='actor_object_id') # aka activity
+
+    avatar = models.ImageField(_('avatar'), blank=True, null=True)
+
+    # aka activity
+    notifications = GenericRelation('notifications.Notification',
+                                    related_query_name='users',
+                                    content_type_field='actor_content_type_id',
+                                    object_id_field='actor_object_id')
 
     objects = UserManager()
 
@@ -453,7 +460,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         if not hasattr(self, '_is_advisor'):
             self._is_advisor = hasattr(self, 'advisor')
-            #self._is_advisor = self.groups.filter(name=User.GROUP_ADVISOR).exists()
 
         return self._is_advisor
 
@@ -463,8 +469,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_authorised_representative'):
-            self._is_authorised_representative = hasattr(self, 'authorised_representative')
-            #self._is_authorised_representative = self.groups.filter(name=User.GROUP_AUTHORISED_REPRESENTATIVE).exists()
+            ar = hasattr(self, 'authorised_representative')
+            self._is_authorised_representative = ar
 
         return self._is_authorised_representative
 
@@ -475,7 +481,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         if not hasattr(self, '_is_client'):
             self._is_client = hasattr(self, 'client')
-            #self._is_client = self.groups.filter(name=User.GROUP_CLIENT).exists()
 
         return self._is_client
 
@@ -505,7 +510,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return self._token
 
-    def email_user(self, subject, message, from_email=settings.DEFAULT_FROM_EMAIL, **kwargs):
+    def email_user(self, subject, message,
+                   from_email=settings.DEFAULT_FROM_EMAIL, **kwargs):
         """
         Sends an email to this User.
         """
@@ -3167,7 +3173,4 @@ class ActivityLogEvent(models.Model):
 
         return ActivityLogEvent.objects.create(id=event.value, activity_log=alog)
 
-
-import advisor.connectors # just to init all the connectors, don't remove it
-import client.connectors # just to init all the connectors, don't remove it
 
