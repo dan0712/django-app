@@ -4,6 +4,8 @@
 
 
 main() {
+    # postgres on multiple environment VM
+    POSTGRES_PASSWORD='gD6OA22yXjMgrzLI4pT9*B63o^'
     if [[ ${2} == 'proto' ]]
     then
         DBPW='4T*-!r37H.L+hn'
@@ -32,6 +34,13 @@ main() {
     then
         DBPW='StagingOgacahi8971*!'
         REDDB=7
+    elif [[ ${2} == 'production' ]]
+    then
+        # production deployment on separate machine
+        # storing sensitive production info in environment
+        DBPW=${PRODUCTION_DBPW}
+        POSTGRES_PASSWORD=${PRODUCTION_POSTGRES}
+        REDDB=1
     else
         echo "Unsupported auto-deployment for domain: ${2}" >&2
 	exit 1
@@ -49,7 +58,7 @@ main() {
     docker run -v /home/bsmartz/${2}_media:/betasmartz/media \
                -v /home/bsmartz/${2}_static:/collected_static \
                -e "DB_PASSWORD=${DBPW}" \
-               -e 'POSTGRES_PASSWORD=gD6OA22yXjMgrzLI4pT9*B63o^' \
+               -e 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}' \
                -e ENVIRONMENT=${2} \
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                --net=betasmartz-local \
