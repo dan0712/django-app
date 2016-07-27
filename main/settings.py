@@ -120,11 +120,11 @@ ROOT_URLCONF = 'main.urls'
 
 WSGI_APPLICATION = 'main.wsgi.application'
 
-TEMPLATE_CONTEXT_PROCESSORS = TCP + [
+TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     "pages.context_processors.media",
     'django.core.context_processors.request',
     'main.context_processors.site_contact'
-]
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
