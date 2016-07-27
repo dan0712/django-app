@@ -57,6 +57,7 @@ def get_position_weights(goal):
 def get_held_weights(goal):
     """
     Returns a dict of weights for each asset held by a goal against the goal's available balance.
+    We use the available balance, not the total held so we can automatically apply any unused cash if possible.
     :param goal:
     :return: dict from symbol to current weight in that goal.
     """
@@ -76,10 +77,12 @@ def metrics_changed(goal):
 
 def build_positions(goal, weights, instruments):
     """
-
+    Returns a set of positions corresponding to the given weights.
     :param goal:
     :param weights:
-    :param instruments:
+        An iterable of proportions of each instrument in the portfolio. Position matches instruments.
+        The weights should be aligned to orderable quantities.
+    :param instruments: Pandas DataFrame of instruments
     :return: A dict from asset id to qty.
     """
     # Establish the positions required for the new weights.
@@ -90,8 +93,8 @@ def build_positions(goal, weights, instruments):
     for ix, weight in enumerate(weights):
         if weight > MIN_PORTFOLIO_PCT:
             res[instruments.iloc[ix, idloc]] = avail * weight / instruments.iloc[ix, ploc]
-
-    # TODO: Make sure we are no out of drift now we have made the weights orderable.
+    # TODO: Make sure we have landed very near to orderable quantities.
+    # TODO: Make sure we are not out of drift now we have made the weights orderable.
 
     return res
 
@@ -146,13 +149,15 @@ def process_risk(weights, min_weights):
 
 def perturbate_risk(min_weights, removals):
     """
+    Weighted vol is not the right metric here to rate removability. We want to look at what happens to portfolio risk
+    (currently historic variance) when the instrument is removed, rather than looking at the instrument in isolation.
     - While we have drift due to risk > 25% of our threshold,
     - For each performance group, starting from the top, remove assets from the minimal set:
       - If the current risk is higher:
         - Build a group of assets that have increased in volatility*current_weight against the active-portfolio.
             - Prefer an asset that has already been removed
             - Choose the highest volatility*weight delta.
-            - Remove enough units to from minimal set bring it's volatility*weight down to the active-portfolio level.
+            - Remove enough units from minimal set to bring it's volatility*weight down to the active-portfolio level.
       - If the current risk is lower:
         - Build a group of assets that have decreased in volatility/current_weight against the active-portfolio.
             - Prefer an asset that has already been removed
@@ -169,11 +174,11 @@ def perturbate_withdrawal(perf_groups):
     - For each performance group, starting from the top, remove assets until we have a <1 min weight sum scenario.
         - Calculate the drift due to portfolio mix metrics using current minimums
         - while we have overweight drift due to portfolio mix metrics:
-            - For each performance group, starting from the top,
+            - For each performance group, starting from    the top,
                 - Build a group of assets from the overweight features in the current performance group.
                     - Choose the most overweight
                     - Remove enough units to bring its weight to the port weight, available from the active-settings.
-        - Then biggest looser / weakest winner first, preferring assets we have already removed..
+            - Then biggest looser / weakest winner first, preferring assets we have already removed..
     :return: A set of weights tht sum to < 1
     """
     pass
@@ -198,7 +203,8 @@ def get_perf_groups(goal):
     - Assets with a short-term loss (< 1 year)
     - Assets with a long-term loss (> 1 year)
     - Assets with a long-term gain (> 1 year)
-    - Assets with a short-term gain (< 1 year)
+    - Assets with a short-term gain (< 1 year) (the remaining)
+
 
     :return: (STL Perf, LTL Perf, LTG Perf, STG Perf)
         Where a Perf is dict asset_id -> [(perf, volume)]. The list is ordered from biggest loser to biggest winner.
@@ -206,6 +212,12 @@ def get_perf_groups(goal):
             The reason we have many volumes per ticker is because we can buy or sell lots at different times,
             and hold times are per lot.
     """
+
+    # Assuming the tax rules are FIFO, for each asset, search backwards through the executions until the sum of the buys
+    # is greater than or equal to the current position.
+    # As I am working back, add each lot to the appropriate result list
+
+    positions = Position.objects.filter()
     executions = Execution.objects.filter()
     pass
 
@@ -273,6 +285,7 @@ def rebalance(goal, idata):
         # The important metrics weren't changed, so try and perturbate.
         weights, reason = perturbate(goal, idata)
 
-        # TODO: check the difference in execution cost between optimal and weights, use whichever better.
+        # TODO: check the difference in execution cost (including tax impact somehow) between optimal and weights,
+        # TODO: use whichever better.
     new_positions = build_positions(goal, weights, settings_instruments)
     return create_request(goal, new_positions, reason)

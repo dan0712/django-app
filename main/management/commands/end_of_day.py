@@ -12,8 +12,9 @@ Overnight Process
 - Download New Data
 - Clear redis instruments cache and recalculate for the day, setting a 4 day timeout to cover weekends/holidays.
 - Calculate the new markowitz lambda bounds.
-- Process any position adjustments
+- Process any position adjustments from market fills
     - update the Position model and the Execution/ExecutionDistribution/Transaction models accordingly
+- Process any external transfers that were executed in or out from each account.
 - Write the days balance for each goal to the HistoricalBalance model. Calculate from yesterday's figure.
 - Measure all metrics on goals
   - This calculates drift
