@@ -184,6 +184,10 @@ SUIT_CONFIG = {
     # 'LIST_PER_PAGE': 15
 }
 
+BLOOMBERG_HOSTNAME = 'dlsftp.bloomberg.com'
+BLOOMBERG_USERNAME = 'dl788259'
+BLOOMBERG_PASSWORD = '+gT[zfV9Bu]Ms.4'
+
 CRON_CLASSES = [
     "portfolios.cron.CalculatePortfoliosCron",
     # ...
