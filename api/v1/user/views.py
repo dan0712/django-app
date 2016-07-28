@@ -4,8 +4,9 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from api.v1.user.serializers import UserAdvisorSerializer, UserClientSerializer
+from user.autologout import keep_alive
 from . import serializers
+from ..user.serializers import UserAdvisorSerializer, UserClientSerializer
 from ..views import ApiViewMixin
 
 
@@ -129,3 +130,11 @@ class ResetEmailView(ApiViewMixin, views.APIView):
             pass
             return Response(status=status.HTTP_200_OK)
         return Response('User is blocked', status=status.HTTP_403_FORBIDDEN)
+
+
+class KeepAliveView(ApiViewMixin, views.APIView):
+    permission_classes = IsAuthenticated,
+
+    def get(self, request):
+        keep_alive(request)
+        return Response('ok', status=status.HTTP_200_OK)
