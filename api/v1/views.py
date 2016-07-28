@@ -1,10 +1,7 @@
 import re
-
-from rest_framework import authentication, status, views, exceptions
+from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.renderers import BrowsableAPIRenderer # temp
 
-from .authentication import ExtraTokenAuthentication
 from .renderers import ApiRenderer
 
 
@@ -27,6 +24,7 @@ def get_nested_data(data, namespace):
     return nested_data
 
 
+# noinspection PyUnresolvedReferences,PyUnusedLocal,PyMethodMayBeStatic
 class MultipleSerializersModelViewMixin(object):
     """
     Experimental
@@ -38,6 +36,7 @@ class MultipleSerializersModelViewMixin(object):
     serializer_class = ItemSerializer
     serializer_response_class = ItemReponseSerializer
     """
+
     def get_serializer(self, *args, **kwargs):
         """
         Let to override default serializer passing it as an extra param.
@@ -53,18 +52,21 @@ class MultipleSerializersModelViewMixin(object):
     def create(self, request, *args, **kwargs):
         """
         Override CreateModelMixin to use "response" serializer
-        https://github.com/tomchristie/django-rest-framework/blob/master/rest_framework/mixins.py
+        https://github.com/tomchristie/django-rest-framework/blob/master/
+            rest_framework/mixins.py
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # patch to use the object returned from save
         saved = self.perform_create(serializer)
-        serializer_response_class = getattr(self, 'serializer_response_class', None)
-        serializer = self.get_serializer(instance=saved, serializer_class=serializer_response_class)
+        klass = getattr(self, 'serializer_response_class', None)
+        serializer = self.get_serializer(instance=saved,
+                                         serializer_class=klass)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     def perform_create(self, serializer):
         # patch to return the object
@@ -73,17 +75,20 @@ class MultipleSerializersModelViewMixin(object):
     def update(self, request, *args, **kwargs):
         """
         Override UpdateModelMixin to use "response" serializer
-        https://github.com/tomchristie/django-rest-framework/blob/master/rest_framework/mixins.py
+        https://github.com/tomchristie/django-rest-framework/blob/master/
+            rest_framework/mixins.py
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data,
+                                         partial=partial)
         serializer.is_valid(raise_exception=True)
 
         # patch to use the object returned from update
         saved = self.perform_update(serializer)
-        serializer_response_class = getattr(self, 'serializer_response_class', None)
-        serializer = self.get_serializer(instance=saved, serializer_class=serializer_response_class)
+        klass = getattr(self, 'serializer_response_class', None)
+        serializer = self.get_serializer(instance=saved,
+                                         serializer_class=klass)
 
         return Response(serializer.data)
 
@@ -92,18 +97,12 @@ class MultipleSerializersModelViewMixin(object):
         return serializer.save()
 
 
+# noinspection PyUnresolvedReferences,PyUnusedLocal,PyMethodMayBeStatic
 class ApiViewMixin(MultipleSerializersModelViewMixin, object):
-    authentication_classes = (ExtraTokenAuthentication,)
     renderer_classes = (
         ApiRenderer,
-        #BrowsableAPIRenderer, # temp
     )
 
     def get_nested_data(self, namespace):
         data = self.request.data
         return get_nested_data(data, namespace)
-
-
-class IndexView(ApiViewMixin, views.APIView):
-    def get(self, request, format=None):
-        return Response('Welcome to API')

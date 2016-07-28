@@ -44,7 +44,6 @@ INSTALLED_APPS = (
     'pinax.eventlog',  # For our activity tracking
 
     'rest_framework',
-    'rest_framework.authtoken',
     'rest_framework_swagger',
     'bootstrap3',
 
@@ -83,8 +82,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.DjangoFilterBackend',

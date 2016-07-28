@@ -1,16 +1,9 @@
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
-
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import User, Advisor, Client
-
-
-__all__ = (
-    'AuthTokenSerializer', 'UserSerializer',
-    'SignupSerializer', 'ResetSerializer', 'ResetEmailSerializer',
-)
 
 
 class FieldUserSerializer(ReadOnlyModelSerializer):
@@ -24,8 +17,10 @@ class FieldUserSerializer(ReadOnlyModelSerializer):
         )
 
 
-# based on rest_framework.authtoken.serializers.AuthTokenSerializer
-class AuthTokenSerializer(serializers.Serializer):
+class AuthSerializer(serializers.Serializer):
+    """
+    based on rest_framework.authtoken.serializers.AuthTokenSerializer
+    """
     email = serializers.CharField(required=False)
     username = serializers.CharField(required=False)
     password = serializers.CharField(style={'input_type': 'password'})
@@ -57,8 +52,6 @@ class AuthTokenSerializer(serializers.Serializer):
 
 
 class UserAdvisorSerializer(serializers.ModelSerializer):
-    #firm = UserFirmSerializer()
-
     class Meta:
         model = Advisor
         exclude = (
@@ -120,8 +113,6 @@ class UserSerializer(serializers.ModelSerializer):
     """
     For read (GET) requests only
     """
-    token = serializers.SerializerMethodField(read_only=True)
-
     class Meta:
         model = User
         exclude = (
@@ -130,11 +121,6 @@ class UserSerializer(serializers.ModelSerializer):
             'password',
             'user_permissions',
         )
-
-    def get_token(self, obj):
-        user = obj
-        token = user.get_token()
-        return token.key
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
