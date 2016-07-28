@@ -59,6 +59,7 @@ TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'user.autologout.SessionExpireMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -114,6 +115,9 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_LENGTH = 300
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
