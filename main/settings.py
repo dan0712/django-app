@@ -1,14 +1,3 @@
-"""
-Django settings for main project.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
-"""
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -52,11 +41,9 @@ INSTALLED_APPS = (
     'recurrence',
 
     'notifications', # move to django-notifications-hq>=1.0 after fixing 
-    'corsheaders',
     'pinax.eventlog',  # For our activity tracking
 
     'rest_framework',
-    'rest_framework.authtoken',
     'rest_framework_swagger',
     'bootstrap3',
 
@@ -71,7 +58,7 @@ TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'user.autologout.SessionExpireMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -95,8 +82,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.DjangoFilterBackend',
@@ -106,15 +92,6 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.handlers.api_exception_handler',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_HEADERS = (
-    'x-requested-with',
-    'content-type',
-    'accept',
-    'origin',
-    'authorization',
-)
 
 ROOT_URLCONF = 'main.urls'
 
@@ -136,6 +113,9 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_LENGTH = 300
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/

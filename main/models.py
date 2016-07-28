@@ -23,7 +23,6 @@ from django.core.validators import (
 from django.db import models, transaction
 from django.db.models.deletion import PROTECT, SET_NULL, CASCADE
 from django.db.models.query_utils import Q
-from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
@@ -32,7 +31,6 @@ from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
 from pinax.eventlog import models as el_models
 from recurrence.base import deserialize
-from rest_framework.authtoken.models import Token
 
 from address.models import Address
 from common.structures import ChoiceEnum
@@ -494,21 +492,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         " Returns the short name for the user."
         return self.first_name
-
-    def get_token(self):
-        """
-        Custom helper method for User class to get user token.
-        see: rest_framework.authentication.TokenAuthentication
-        """
-        if not hasattr(self, '_token'):
-            try:
-                self._token, _ = Token.objects.get_or_create(user=self)
-
-            except IntegrityError:
-                # hint: threading and concurrency makes me sick
-                self._token = Token.objects.get(user=self)
-
-        return self._token
 
     def email_user(self, subject, message,
                    from_email=settings.DEFAULT_FROM_EMAIL, **kwargs):

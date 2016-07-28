@@ -89,12 +89,9 @@ urlpatterns_advisor = patterns(
 )
 
 urlpatterns_client = patterns(
-    '',
-
-    # The React code should pick up this route. If it doesn't, there is a configuration problem.
-    url(r'^(?P<pk>\d+)/token',
-        ClientAppMissing.as_view(),
-        name='app'),
+    # The React code should pick up this route.
+    # If it doesn't, there is a configuration problem.
+    '', url(r'^(?P<pk>\d+)/app', ClientAppMissing.as_view(), name='app'),
 )
 
 urlpatterns = patterns(
