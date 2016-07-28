@@ -1,14 +1,3 @@
-"""
-Django settings for main project.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
-"""
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -52,7 +41,6 @@ INSTALLED_APPS = (
     'recurrence',
 
     'notifications', # move to django-notifications-hq>=1.0 after fixing 
-    'corsheaders',
     'pinax.eventlog',  # For our activity tracking
 
     'rest_framework',
@@ -71,7 +59,6 @@ TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -106,15 +93,6 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.handlers.api_exception_handler',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_HEADERS = (
-    'x-requested-with',
-    'content-type',
-    'accept',
-    'origin',
-    'authorization',
-)
 
 ROOT_URLCONF = 'main.urls'
 
