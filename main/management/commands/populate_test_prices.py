@@ -1,10 +1,11 @@
-import datetime
 import logging
+from datetime import timedelta
 
 import numpy as np
 
 from django.core.management.base import BaseCommand
 from django.db import connection
+from django.utils.timezone import now
 
 from main.models import MarketIndex, DailyPrice, MarketCap, Ticker
 
@@ -26,7 +27,7 @@ def delete_data():
 
 def populate_prices(days):
     prices = []
-    today = datetime.date.today()
+    today = now().today()
 
     # Do the prices and market caps for the indices
     for ind in MarketIndex.objects.all():
@@ -37,7 +38,7 @@ def populate_prices(days):
             initial += -ps[-1]
         ps += initial
         for i, p in enumerate(ps):
-            prices.append(DailyPrice(instrument=ind, date=today - datetime.timedelta(days=i), price=p))
+            prices.append(DailyPrice(instrument=ind, date=today - timedelta(days=i), price=p))
         MarketCap.objects.create(instrument=ind, date=today, value=np.random.uniform(10000000, 50000000000000))
 
     # Do the prices for the funds
@@ -49,7 +50,7 @@ def populate_prices(days):
             initial += -ps[-1]
         ps += initial
         for i, p in enumerate(ps):
-            prices.append(DailyPrice(instrument=fund, date=today - datetime.timedelta(days=i), price=p))
+            prices.append(DailyPrice(instrument=fund, date=today - timedelta(days=i), price=p))
 
     DailyPrice.objects.bulk_create(prices)
 

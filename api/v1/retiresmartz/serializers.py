@@ -1,7 +1,7 @@
-import datetime
-
+from datetime import date
 from django.conf import settings
 from django.db import transaction
+from django.utils.timezone import now
 
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -12,7 +12,7 @@ from main.models import RetirementPlan, Client, RetirementPlanBTC, RetirementPla
 
 def get_default_tx_plan():
     return {
-        'begin_date': datetime.date.today(),
+        'begin_date': now().today(),
         'amount': 0,
         'growth': settings.BETASMARTZ_CPI,
         'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
@@ -24,7 +24,7 @@ def get_default_life_expectancy(client):
 
 
 def get_default_retirement_date(client):
-    return datetime.date(client.date_of_birth.year + 67, client.date_of_birth.month, client.date_of_birth.day)
+    return date(client.date_of_birth.year + 67, client.date_of_birth.month, client.date_of_birth.day)
 
 
 class BTCSerializer(ReadOnlyModelSerializer):

@@ -1,9 +1,10 @@
 import sys
 import math
-import datetime
 import logging
 
 import itertools
+from datetime import timedelta
+
 import pandas as pd
 import numpy as np
 from cvxpy import sum_entries, Variable
@@ -11,6 +12,7 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 from django.core.cache import cache
+from django.utils.timezone import now
 from sklearn.covariance.shrunk_covariance_ import OAS
 
 from main import redis
@@ -86,7 +88,7 @@ def get_returns(funds, start_date, end_date, end_tol=0, min_days=None):
               Column names are their content_type ids.
             - mappings is a dict from ticker ids to content_type ids, so we know which goes with which.
     """
-    min_end = end_date - datetime.timedelta(days=end_tol)
+    min_end = end_date - timedelta(days=end_tol)
     fund_returns = pd.DataFrame()
     benchmark_returns = pd.DataFrame()
     mappings = {}  # Map from fund to benchmark
@@ -216,9 +218,10 @@ def build_instruments():
     minloc = None
 
     # Allow 5 days slippage just to be sure we have a trading day last.
+    today = now().today()
     fund_returns, benchmark_returns, bch_map = get_returns(funds=tickers,
-                                                           start_date=datetime.date.today() - datetime.timedelta(days=365*5),
-                                                           end_date=datetime.date.today(),
+                                                           start_date=today - timedelta(days=365 * 5),
+                                                           end_date=today,
                                                            end_tol=5,
                                                            min_days=MINIMUM_PRICE_SAMPLES)
 
@@ -375,7 +378,7 @@ def get_covars(returns):
 
 
 def get_instruments():
-    key = redis.KEY_INSTRUMENTS(datetime.date.today().isoformat())
+    key = redis.KEY_INSTRUMENTS(now().today().isoformat())
     data = cache.get(key)
 
     if data is None:
@@ -517,7 +520,7 @@ def risk_score_to_lambda(risk_score):
     scale = MarkowitzScale.objects.order_by('-date').first()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
-    if scale.date < (datetime.date.today() - datetime.timedelta(days=7)):
+    if scale.date < (now().today() - timedelta(days=7)):
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
     return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
 
@@ -527,7 +530,7 @@ def lambda_to_risk_score(lam):
     scale = MarkowitzScale.objects.order_by('-date').first()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The Markowitz lambda into a risk score.")
-    if scale.date < (datetime.date.today() - datetime.timedelta(days=7)):
+    if scale.date < (now().today() - timedelta(days=7)):
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
     return (math.log((lam - scale.c)/scale.a, scale.b) + 50) / 100
 

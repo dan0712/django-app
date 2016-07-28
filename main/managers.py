@@ -1,10 +1,10 @@
-from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from django.db import models
 from django.db.models import F, Sum
 from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
+from django.utils.timezone import now
 
 
 class RetirementPlanQuerySet(models.query.QuerySet):
@@ -201,8 +201,9 @@ class GoalQuerySet(models.query.QuerySet):
         """
         Experimental
         """
-        now = date.today()
-        range_dates = map(lambda x: now - relativedelta(years=x), [age_max, age_min]) # yes, max goes first
+        current_date = now().today()
+        range_dates = map(lambda x: current_date - relativedelta(years=x),
+                          [age_max, age_min]) # yes, max goes first
 
         qs = self.filter(account__primary_owner__date_of_birth__range=range_dates)
         return qs

@@ -1,7 +1,8 @@
+from django.utils.timezone import now
+
 __author__ = 'cristian'
 
 import json
-from datetime import datetime
 
 from django import forms
 from django.contrib import messages
@@ -435,7 +436,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         self.transaction.account.positions.all().delete()
         # save new
         # mark transaction as executed
-        self.transaction.executed = datetime.now()
+        self.transaction.executed = now()
         if self.transaction.type == Transaction.REASON_WITHDRAWAL:
             fee = amount * self.transaction.account.account.fee / 1000
             self.transaction.amount = amount * (1 - self.transaction.account.account.fee / 1000)
@@ -445,7 +446,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             fee_t.type = Transaction.REASON_FEE
             fee_t.amount = fee
             fee_t.status = Transaction.STATUS_EXECUTED
-            fee_t.executed = datetime.now()
+            fee_t.executed = now()
             fee_t.new_balance = old_amount - fee
             fee_t.save()
             self.transaction.new_balance = new_amount
@@ -459,7 +460,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             fee_t.type = Transaction.REASON_FEE
             fee_t.amount = fee
             fee_t.status = Transaction.STATUS_EXECUTED
-            fee_t.executed = datetime.now()
+            fee_t.executed = now()
             fee_t.save()
             self.transaction.new_balance = new_amount
 
@@ -543,7 +544,7 @@ class GoalRebalance(TemplateView, AdminView):
                                        amount=self.goal.allocation,
                                        type=TRANSACTION_TYPE_ALLOCATION,
                                        status=Transaction.STATUS_PENDING,
-                                       created=datetime.today())
+                                       created=now().today())
         response = super(GoalRebalance, self).dispatch(request, *args, **kwargs)
         return response
 
@@ -572,7 +573,7 @@ class GoalRebalance(TemplateView, AdminView):
         self.transaction.account.positions.all().delete()
         # save new
         # mark transaction as executed
-        self.transaction.executed = datetime.now()
+        self.transaction.executed = now()
 
         self.transaction.type = Transaction.REASON_REBALANCE
         self.transaction.status = Transaction.STATUS_EXECUTED

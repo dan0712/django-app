@@ -1,8 +1,7 @@
-import datetime
-
 from django.template import Library
 from django.utils.safestring import mark_safe
 from django.contrib.humanize.templatetags.humanize import intcomma
+from django.utils.timezone import now
 
 register = Library()
 
@@ -45,7 +44,7 @@ def currency(value, decimals=2, symbol='$'):
 @register.filter
 def age(birthday, d=None):
     if d is None:
-        d = datetime.date.today()
+        d = now().today()
     return (d.year - birthday.year) - int((d.month, d.day) < (birthday.month, birthday.day))
 
 

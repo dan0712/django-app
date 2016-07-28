@@ -1,4 +1,3 @@
-import datetime
 import decimal
 import operator
 import ujson
@@ -463,7 +462,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         # Because executions are stored with timezone, but other things are just as date, we need to make datetimes
         # naive before doing date arithmetic on them.
         bd = timezone.make_naive(txs[0][0]).date()
-        ed = datetime.date.today()
+        ed = timezone.make_naive(timezone.now()).date()
         for tx in txs:
             aids.add(tx[1])
             txd = timezone.make_naive(tx[0]).date()

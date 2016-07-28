@@ -1,8 +1,7 @@
-import datetime
 import importlib
 import logging
 import uuid
-from datetime import date
+from datetime import datetime
 from enum import Enum, unique
 from itertools import chain, repeat
 
@@ -12,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, _,
-    UserManager, timezone,
+    UserManager,
     send_mail
 )
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -27,6 +26,7 @@ from django.db.models.query_utils import Q
 from django.db.utils import IntegrityError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -429,7 +429,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
 
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    date_joined = models.DateTimeField(_('date joined'), default=now)
     prepopulated = models.BooleanField(default=False)
 
     avatar = models.ImageField(_('avatar'), blank=True, null=True)
@@ -1483,7 +1483,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def age(self):
         born = self.date_of_birth
-        today = date.today()
+        today = now().today()
         return today.year - born.year - ((today.month, today.day) <
                                          (born.month, born.day))
 
@@ -1960,7 +1960,7 @@ class RecurringTransaction(models.Model):
 
     @property
     def next_transaction(self):
-        return self.recurrence.after(datetime.datetime.now(), inc=True)
+        return self.recurrence.after(now(), inc=True)
 
     @staticmethod
     def get_events(recurring_transactions, start, end):
@@ -2447,20 +2447,20 @@ class Goal(models.Model):
             er = 1 + self.selected_settings.portfolio.er
             stdev = self.selected_settings.portfolio.stdev
 
-        now = datetime.datetime.now()
+        current_time = now()
         # Get the predicted cash-flow events until the provided future date
-        cf_events = [(now, self.total_balance)]
+        cf_events = [(current_time, self.total_balance)]
         if hasattr(self.selected_settings, 'recurring_transactions'):
             cf_events += RecurringTransaction.get_events(self.selected_settings.recurring_transactions,
-                                                         now,
-                                                         datetime.datetime.combine(future_dt, datetime.time()))
+                                                         current_time,
+                                                         datetime.combine(future_dt, now().timetz()))
 
         # TODO: Add estimated fee events to this.
 
         # Calculate the predicted_balance based on cash flow events, er, stdev and z_mult
         predicted = 0
         for dt, val in cf_events:
-            tdelta = dt - now
+            tdelta = dt - current_time
             y_delta = (tdelta.days + tdelta.seconds/86400.0)/365.2425
             predicted += val * (er ** y_delta + z_mult * stdev * (y_delta ** 0.5))
 
@@ -2560,7 +2560,7 @@ class Goal(models.Model):
 
     @property
     def get_term(self):
-        today = date.today()
+        today = now().today()
 
         term = self.selected_settings.completion.year - today.year \
             if self.selected_settings else None

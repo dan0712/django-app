@@ -15,8 +15,7 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.utils.timezone import utc, localtime
-from django.utils import timezone
+from django.utils.timezone import utc, localtime, now
 import pytz
 import json
 
@@ -34,7 +33,7 @@ class NotificationTest(TestCase):
         to_user = User.objects.create(username="to", password="pwd", email="example@example.com")
         notify.send(from_user, recipient=to_user, verb='commented', action_object=from_user)
         notification = Notification.objects.get(recipient=to_user)
-        delta = timezone.now().replace(tzinfo=utc) - localtime(notification.timestamp, pytz.timezone(settings.TIME_ZONE))
+        delta = now().replace(tzinfo=utc) - localtime(notification.timestamp, pytz.timezone(settings.TIME_ZONE))
         self.assertTrue(delta.seconds < 60)
         # The delta between the two events will still be less than a second despite the different timezones
         # The call to now and the immediate call afterwards will be within a short period of time, not 8 hours as the
@@ -47,7 +46,7 @@ class NotificationTest(TestCase):
         to_user = User.objects.create(username="to2", password="pwd", email="example@example.com")
         notify.send(from_user, recipient=to_user, verb='commented', action_object=from_user)
         notification = Notification.objects.get(recipient=to_user)
-        delta = timezone.now() - notification.timestamp
+        delta = now() - notification.timestamp
         self.assertTrue(delta.seconds < 60)
 
 

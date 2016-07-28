@@ -1,4 +1,5 @@
-import datetime
+from datetime import datetime
+
 import operator
 import decimal
 
@@ -7,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.aggregates import Sum
 from django.db.models.query_utils import Q
 from django.utils import timezone
+from django.utils.timezone import now
 from pinax.eventlog.models import Log
 
 from rest_framework import serializers
@@ -199,6 +201,6 @@ def get(request, obj):
 
     # Join the two lists to one sorted on date
     items.extend([{'type': tp,
-                   'time': int((datetime.datetime.combine(bal['date'], datetime.time()) - EPOCH_TM).total_seconds()),
+                   'time': int((datetime.combine(bal['date'], now().time()) - EPOCH_TM).total_seconds()),
                    'balance': Decimal.from_float(bal['sum']).quantize(DEC_2PL)} for bal in qs])
     return Response(sorted(items, key=operator.itemgetter("time")))

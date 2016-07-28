@@ -1,7 +1,7 @@
-import datetime
 import logging
 
 from django.conf import settings
+from django.utils.timezone import now
 
 from rest_framework.response import Response
 from rest_framework import exceptions
@@ -28,7 +28,7 @@ def api_exception_handler(exc, context):
         else:
             msg = 'A Betasmartz internal error has occurred at time: {}. Please quote incident number: {}'
             error['code'] = HTTP_500_INTERNAL_SERVER_ERROR
-            error['message'] = msg.format(datetime.datetime.now(), 'TODO')
+            error['message'] = msg.format(now(), 'TODO')
     else:
         error['code'] = response.status_code
         detail = getattr(exc, 'detail', {})

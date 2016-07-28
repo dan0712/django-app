@@ -1,6 +1,8 @@
-import datetime
 from gzip import decompress
 from time import sleep
+from datetime import datetime
+
+from django.utils.timezone import now
 from io import StringIO
 import logging
 import pandas as pd
@@ -40,7 +42,7 @@ def parse_hist_security_response(response, begin_date, end_date, fields):
                     val = None
                     logger.debug("Could not convert val: {} to float".format(bits[2]))
                 if val:
-                    dframe.loc[datetime.datetime.strptime(bits[1], '%d/%m/%Y'), col] = val
+                    dframe.loc[datetime.strptime(bits[1], '%d/%m/%Y'), col] = val
 
         elif bits[0] == 'START SECURITY':
             in_sec = True
@@ -81,7 +83,7 @@ class Sftp(object):
     _end_of_data = '\nEND-OF-DATA\n'
 
     def __init__(self, host, username, password):
-        self._tstr = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self._tstr = now().strftime('%Y%m%d%H%M%S')
         self._request_id = 0
         self._host = host
         self._username = username

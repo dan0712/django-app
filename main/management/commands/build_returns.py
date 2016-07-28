@@ -1,8 +1,7 @@
-import datetime
 import logging
+from datetime import datetime, timedelta
 
 import pandas as pd
-
 from django.core.management.base import BaseCommand
 
 # The largest acceptable daily return. Anything above this will be filtered out and replaced with an average.
@@ -40,7 +39,7 @@ def get_prices(instrument, begin_date, end_date):
     :return:
     '''
     # Get the weekday prices for the instrument
-    pqs = instrument.daily_prices.filter(date__range=(begin_date - datetime.timedelta(days=1), end_date))
+    pqs = instrument.daily_prices.filter(date__range=(begin_date - timedelta(days=1), end_date))
     frame = pqs.to_timeseries(fieldnames=['price'], index='date').reindex(pd.bdate_range(begin_date, end_date))
 
     # Remove negative prices and fill missing values
@@ -111,7 +110,7 @@ def build_returns(begin_date, end_date):
 
 
 def parse_date(val):
-    return datetime.datetime.strptime(val, '%Y%m%d').date()
+    return datetime.strptime(val, '%Y%m%d').date()
 
 
 class Command(BaseCommand):

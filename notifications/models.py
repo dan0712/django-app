@@ -5,6 +5,8 @@ from django.utils import timezone
 
 from distutils.version import StrictVersion
 
+from django.utils.timezone import now
+
 if StrictVersion(get_version()) >= StrictVersion('1.8.0'):
     from django.contrib.contenttypes.fields import GenericForeignKey
 else:
@@ -245,7 +247,7 @@ def notify_handler(verb, **kwargs):
     ]
     public = bool(kwargs.pop('public', True))
     description = kwargs.pop('description', None)
-    timestamp = kwargs.pop('timestamp', timezone.now())
+    timestamp = kwargs.pop('timestamp', now())
     level = kwargs.pop('level', Notification.LEVELS.info)
 
     # Check if User or Group

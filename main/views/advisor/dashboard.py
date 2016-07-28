@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import (
@@ -15,6 +14,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 from django.views.generic import (
     CreateView, DetailView, TemplateView, UpdateView, View,
 )
@@ -779,7 +779,7 @@ class BuildPersonalDetailsForm(forms.ModelForm):
 
             if date_b:
                 cleaned_data["date_of_birth"] = date_b
-                date_diff = datetime.now().year - date_b.year
+                date_diff = now().year - date_b.year
                 if date_diff < 18:
                     self._errors['date_of_birth'] = \
                         mark_safe(u'<ul class="errorlist"><li>Client under 18 </li></ul>')
@@ -804,7 +804,7 @@ class BuildPersonalDetails(AdvisorView, UpdateView):
     def get_context_data(self, **kwargs):
         context_data = super(BuildPersonalDetails, self).get_context_data(
             **kwargs)
-        context_data["years"] = list(range(1895, datetime.now().year))
+        context_data["years"] = list(range(1895, now().year))
         context_data["days"] = list(range(1, 31))
         context_data["years"].reverse()
         return context_data

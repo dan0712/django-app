@@ -1,14 +1,15 @@
 import logging
 import ujson
-import time
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
+from time import mktime
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 from django.views.generic import TemplateView
 
 from main.models import AssetFeature, PortfolioSet
-from portfolios.bl_model import OptimizationException
+from portfolios.exceptions import OptimizationException
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
 from ..base import ClientView
 from ...models import Transaction, ClientAccount, Goal, \
@@ -196,7 +197,7 @@ class ClientAccounts(ClientView, TemplateView):
                     p.delete()
 
                 transfer_transaction.status = Transaction.STATUS_EXECUTED
-                transfer_transaction.executed = datetime.now()
+                transfer_transaction.executed = now()
                 transfer_transaction.save()
 
             else:
@@ -355,7 +356,7 @@ class NewTransactionsView(ClientView):
                 account__account__primary_owner=self.client)
 
         if days_ago:
-            days_ago = datetime.today() - timedelta(days=days_ago)
+            days_ago = now().today() - timedelta(days=days_ago)
             query_set = query_set.filter(executed__gte=days_ago)
 
         transactions = []
@@ -514,7 +515,7 @@ class NewTransactionsView(ClientView):
                 new_position.share += transfer_share_size
                 new_position.save()
             new_transaction.status = Transaction.STATUS_EXECUTED
-            new_transaction.executed = datetime.now()
+            new_transaction.executed = now()
             new_transaction.save()
 
         if not new_transaction.account:
@@ -554,8 +555,8 @@ class SetAutoDepositView(ClientView):
         ad.amount = payload.get("amount", 0)
         ad.frequency = payload["frequency"]
         ad.enabled = payload["enabled"]
-        ad.transaction_date_time_1 = datetime.strptime(
-            payload["transactionDateTime1"], '%Y%m%d%H%M%S')
+        ad.transaction_date_time_1 = datetime.strptime(payload["transactionDateTime1"],
+                                              '%Y%m%d%H%M%S')
         td2 = payload.get("transactionDateTime2", None)
         if td2:
             ad.transaction_date_time_2 = datetime.strptime(td2, '%Y%m%d%H%M%S')
@@ -677,7 +678,7 @@ class AnalysisReturns(ClientView):
             if returns:
                 b_date = returns[0].date - timedelta(days=1)
                 obj["returns"].append({
-                    "d": "{0}".format(int(1000 * time.mktime(b_date.timetuple(
+                    "d": "{0}".format(int(1000 * mktime(b_date.timetuple(
                     )))),
                     "i": 0,
                     "ac": 1,
@@ -686,7 +687,7 @@ class AnalysisReturns(ClientView):
             for r in returns:
                 r_obj = {
                     "d":
-                        "{0}".format(int(1000 * time.mktime(r.date.timetuple()))),
+                        "{0}".format(int(1000 * mktime(r.date.timetuple()))),
                     "i": r.return_number
                 }
                 if p.group == PERFORMER_GROUP_STRATEGY:
@@ -713,13 +714,13 @@ class AnalysisReturns(ClientView):
                 b_date_2 = trs[0].executed - timedelta(days=1)
 
                 obj["returns"] = [{
-                    "d": "{0}".format(int(1000 * time.mktime(
+                    "d": "{0}".format(int(1000 * mktime(
                         b_date_1.timetuple()))),
                     "i": 0,
                     "zero_balance": True,
                     "ac": goal.allocation
                 }, {
-                    "d": "{0}".format(int(1000 * time.mktime(
+                    "d": "{0}".format(int(1000 * mktime(
                         b_date_2.timetuple()))),
                     "i": 0,
                     "zero_balance": True
@@ -727,7 +728,7 @@ class AnalysisReturns(ClientView):
 
                 for transaction in trs:
                     r_obj = {
-                        "d": "{0}".format(int(1000 * time.mktime(
+                        "d": "{0}".format(int(1000 * mktime(
                             transaction.executed.timetuple()))),
                         "i": transaction.return_fraction
                     }
