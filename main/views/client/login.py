@@ -5,12 +5,10 @@ from django.http import Http404
 from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, UpdateView
 
-from main.models import (
-    Client, Firm, Advisor, User,
-    BetaSmartzGenericUSerSignupForm,
-    ClientAccount, TaxFileNumberValidator, MedicareNumberValidator,
-    PERSONAL_DATA_WIDGETS, PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE,
-)
+from main.constants import PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE
+from main.fields import MedicareNumberValidator, TaxFileNumberValidator
+from main.models import Client, ClientAccount, Advisor, Firm, User
+from main.forms import BetaSmartzGenericUserSignupForm, PERSONAL_DATA_WIDGETS
 
 client_sign_up_form_header_1 = """<span class="left blue-circle">1</span>
 <h3 class="left">Information to establish your account</h3>"""

@@ -1,48 +1,26 @@
 from datetime import date
-from dateutil.relativedelta import relativedelta
-from functools import reduce
 
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q, F, Sum, Avg
+from django.db.models import Avg, F, Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils.safestring import mark_safe
-from django.core.urlresolvers import reverse_lazy
-from django.views.generic import (
-    TemplateView, DetailView, ListView,
-    CreateView, UpdateView, DeleteView,
-)
-
-from notifications.models import Notification
-
-from main.models import (
-    Advisor, User,
-    Transaction, Position,
-    Goal, GoalType, GoalMetric,
-    EmailInvitation,
-)
-from main.models import INVITATION_ADVISOR, INVITATION_SUPERVISOR
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+    TemplateView, UpdateView)
+from functools import reduce
 from operator import itemgetter
-from ..base import LegalView
-from ...forms import EmailInviteForm
-from ...models import INVITATION_TYPE_DICT, Client, Advisor
-from ...models import Supervisor, BetaSmartzGenericUSerSignupForm
-from .filters import (
-    FirmActivityFilterSet, 
-    FirmAnalyticsOverviewFilterSet,
-    FirmAnalyticsAdvisorsFilterSet,
-    FirmAnalyticsClientsFilterSet,
-)
 
-__all__ = ['FirmOverview', 'FirmAdvisorAccountOverview', 'FirmAdvisorClients',
-           'FirmAnalyticsOverviewView', 'FirmAnalyticsOverviewMetricView', 
-           'FirmAnalyticsAdvisorsView', 'FirmAnalyticsClientsView',
-           'FirmAnalyticsAdvisorsDetailView', 'FirmAnalyticsClientsDetailView',
-           'FirmSupport', 'FirmAdvisorInvites', 'FirmSupervisorInvites', 
-           'FirmApplicationView', 'FirmActivityView', # 'FirmAgreements',
-           'FirmSupportForms', 'FirmAdvisorClientDetails', 'FirmSupportPricingView',
-           "FirmSupervisors", "FirmSupervisorsCreate", "FirmSupervisorsEdit", "FirmSupervisorDelete"]
+from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
+    INVITATION_TYPE_DICT)
+from main.models import (Advisor, Client, EmailInvitation, Goal, GoalMetric, GoalType,
+from main.forms import BetaSmartzGenericUserSignupForm, EmailInviteForm
+    Position, Supervisor, Transaction, User)
+from main.views.base import LegalView
+from notifications.models import Notification
+from .filters import (FirmActivityFilterSet, FirmAnalyticsAdvisorsFilterSet,
+    FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet)
 
 
 class FirmSupervisorDelete(DeleteView, LegalView):
@@ -63,7 +41,7 @@ class SupervisorProfile(forms.ModelForm):
         fields = ('can_write',)
 
 
-class SupervisorUserForm(BetaSmartzGenericUSerSignupForm):
+class SupervisorUserForm(BetaSmartzGenericUserSignupForm):
     user_profile_type = "supervisor"
     firm = None
     betasmartz_agreement = forms.BooleanField(initial=True, widget=forms.HiddenInput)

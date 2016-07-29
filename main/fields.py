@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+import importlib
 
 import re
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.template.loader import render_to_string
@@ -32,11 +33,48 @@ class ColorField(models.CharField):
         return super(ColorField, self).formfield(**kwargs)
 
 
-try:
-    from south.modelsinspector import add_introspection_rules
+class TaxFileNumberValidator(object):
+    def __call__(self, value):
 
-    add_introspection_rules([], ["^colorfield\.fields\.ColorField"])
-except ImportError:
-    pass
+        if len(value) != 9:
+            return False, 'Invalid TFN, check the digits.'
 
-# vim: et sw=4 sts=4
+        weights = [1, 4, 3, 7, 5, 8, 6, 9, 10]
+        _sum = 0
+
+        try:
+            for i in range(9):
+                _sum += int(value[i]) * weights[i]
+        except ValueError:
+            return False, 'Invalid TFN, check the digits.'
+
+        remainder = _sum % 11
+
+        if remainder != 0:
+            return False, 'Invalid TFN, check the digits.'
+
+        return True, ""
+
+
+class MedicareNumberValidator(object):
+    def __call__(self, value):
+
+        if len(value) != 11:
+            return False, 'Invalid Medicare number.'
+
+        weights = [1, 3, 7, 9, 1, 3, 7, 9]
+        _sum = 0
+
+        try:
+            check_digit = int(value[8])
+            for i in range(8):
+                _sum += int(value[i]) * weights[i]
+        except ValueError:
+            return False, 'Invalid Medicare number.'
+
+        remainder = _sum % 10
+
+        if remainder != check_digit:
+            return False, 'Invalid Medicare number.'
+
+        return True, ""

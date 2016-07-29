@@ -7,7 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from common.constants import EPOCH_DT
-from main.models import Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory
+from main.models import Performer, SymbolReturnHistory
+from main.constants import PERFORMER_GROUP_STRATEGY
 
 from ..views import ApiViewMixin
 

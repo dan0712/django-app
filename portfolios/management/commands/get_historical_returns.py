@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-from main.models import Platform, Performer, Ticker, SymbolReturnHistory, PERFORMER_GROUP_STRATEGY, PortfolioSet
+from main.models import Platform, Performer, Ticker, SymbolReturnHistory, \
+    PortfolioSet
+from main.constants import PERFORMER_GROUP_STRATEGY
 #from portfolios.api.yahoo import YahooApi
 from pandas import concat, ordered_merge, DataFrame
 import json

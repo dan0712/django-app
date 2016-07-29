@@ -23,7 +23,11 @@ from ..base import LegalView
 from ...forms import EmailInviteForm
 from ...models import AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section, \
     PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
-    INVITATION_TYPE_DICT, SUCCESS_MESSAGE, Position
+    INVITATION_TYPE_DICT, Position
+from main.constants import SUCCESS_MESSAGE, INVITATION_ADVISOR, \
+    AUTHORIZED_REPRESENTATIVE, INVITATION_SUPERVISOR, INVITATION_TYPE_DICT, \
+    PERSONAL_DATA_FIELDS
+from main.forms import PERSONAL_DATA_WIDGETS, BetaSmartzGenericUserSignupForm
 
 __all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
            'Confirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
@@ -46,7 +50,7 @@ class AuthorisedRepresentativeProfileForm(forms.ModelForm):
         widgets = PERSONAL_DATA_WIDGETS
 
 
-class AuthorisedRepresentativeUserForm(BetaSmartzGenericUSerSignupForm):
+class AuthorisedRepresentativeUserForm(BetaSmartzGenericUserSignupForm):
     user_profile_type = "authorised_representative"
 
     class Meta:

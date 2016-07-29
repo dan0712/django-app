@@ -1,11 +1,7 @@
 from datetime import datetime
+
 from django import forms
 from django.contrib import messages
-from django.contrib.auth import (
-    load_backend, BACKEND_SESSION_KEY,
-    login as auth_login, logout as auth_logout,
-)
-from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.urlresolvers import reverse_lazy
 from django.db import transaction
@@ -15,32 +11,16 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
-from django.views.generic import (
-    CreateView, DetailView, TemplateView, UpdateView, View,
-)
+from django.views.generic import (CreateView, DetailView, TemplateView, UpdateView)
+from operator import itemgetter
 
 from address.models import Address, Region
-from main.models import Advisor, User, EmailInvitation, AccountGroup, ClientAccount, Platform
-from operator import itemgetter
-from ..base import AdvisorView, ClientView
-from ...forms import EmailInviteForm
-from ...models import INVITATION_CLIENT, INVITATION_TYPE_DICT, Client, ACCOUNT_TYPES
-
-__all__ = ['AdvisorClientInvites', 'AdvisorOverview', 'AdvisorClients',
-           'AdvisorAgreements', 'AdvisorSupport', 'AdvisorClientDetails',
-           'AdvisorCompositeNew', 'AdvisorAccountGroupDetails',
-           'AdvisorCompositeEdit', 'AdvisorRemoveAccountFromGroupView',
-           'AdvisorAccountGroupClients',
-           'AdvisorAccountGroupSecondaryDetailView',
-           'AdvisorAccountGroupSecondaryCreateView',
-           'AdvisorAccountGroupSecondaryDeleteView', 'AdvisorCompositeOverview',
-           'AdvisorClientAccountChangeFee',
-           "AdvisorSupportGettingStarted", "AdvisorClientInviteNewView",
-           'CreateNewClientPrepopulatedView', "BuildPersonalDetails",
-           "BuildFinancialDetails", "BuildConfirm", "AdvisorForms",
-           "AdvisorCreateNewAccountForExistingClient",
-           "AdvisorCreateNewAccountForExistingClientSelectAccountType",
-           "ConfirmClientNewAccount"]
+from main.constants import (ACCOUNT_TYPES, INVITATION_CLIENT,
+                            INVITATION_TYPE_DICT)
+from main.forms import EmailInviteForm
+from main.models import (AccountGroup, Advisor, Client, ClientAccount,
+                         EmailInvitation, Platform, User)
+from main.views.base import AdvisorView, ClientView
 
 
 class AdvisorClientInvites(CreateView, AdvisorView):

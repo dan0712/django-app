@@ -1,29 +1,22 @@
 import logging
 import ujson
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from time import mktime
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
+from django.http.response import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.views.generic import TemplateView
 
-from main.models import AssetFeature, PortfolioSet
+from main.constants import PERFORMER_GROUP_STRATEGY
+from main.models import (AssetClass, ClientAccount, Goal, Performer, Position,
+    RecurringTransaction, SymbolReturnHistory)
+from main.views.base import ClientView
 from portfolios.exceptions import OptimizationException
 from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
-from ..base import ClientView
-from ...models import Transaction, ClientAccount, Goal, \
-    RecurringTransaction, Performer, PERFORMER_GROUP_STRATEGY, SymbolReturnHistory, \
-    AssetClass, Position
 
-from django.http.response import Http404
-
-__all__ = ['ClientAppData', 'ClientAssetClasses', 'ClientUserInfo', 'ClientVisitor', 'ClientAdvisor',
-           'ClientAccounts', 'PortfolioAssetClasses', 'PortfolioPortfolios', 'PortfolioRiskFreeRates',
-           'ClientAccountPositions', 'ClientFirm', 'NewTransactionsView', 'CancelableTransactionsView',
-           'SetAutoDepositView',
-           'Withdrawals', 'ContactPreference', 'AnalysisReturns', 'AnalysisBalances', 'AssetFeaturesView',
-           'SetAutoWithdrawalView', 'TaxHarvestingView']
 
 logger = logging.getLogger("client.api")
 

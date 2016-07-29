@@ -1,17 +1,19 @@
 import datetime
 
-import address.models as ad
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from pinax.eventlog.models import Log
 
+import address.models as ad
+from main.constants import ACCOUNT_TYPE_PERSONAL, STOCKS, SUPER_ASSET_CLASSES
 from main.event import Event
-from main.models import ClientAccount, ACCOUNT_TYPE_PERSONAL, Client, Advisor, User, Firm, PortfolioSet, \
-    RiskProfileGroup, GoalSetting, GoalMetricGroup, Goal, GoalType, RiskProfileQuestion, RiskProfileAnswer, \
-    Transaction, HistoricalBalance, RetirementPlan, Ticker, AssetClass, STOCKS, SUPER_ASSET_CLASSES, \
-    MarketIndex, Region, DailyPrice, MarketOrderRequest, Execution, ExecutionDistribution, ExternalAsset, \
-    RetirementPlanATC, RetirementPlanBTC
+from main.models import Advisor, AssetClass, DailyPrice, Execution, \
+    ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
+    GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
+    PortfolioSet, Region, RetirementPlan, RetirementPlanATC, \
+    RetirementPlanBTC, Ticker, Transaction, User, Client, ClientAccount, \
+    RiskProfileAnswer, RiskProfileGroup, RiskProfileQuestion
 
 
 class Fixture1:

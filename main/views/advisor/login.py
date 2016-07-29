@@ -11,7 +11,9 @@ from django.http import QueryDict
 from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, UpdateView
 from main.models import Advisor, User, PERSONAL_DATA_FIELDS, PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, \
-    Section, SUCCESS_MESSAGE, Firm
+    Section, Firm
+from main.constants import SUCCESS_MESSAGE, PERSONAL_DATA_FIELDS
+from main.forms import PERSONAL_DATA_WIDGETS, BetaSmartzGenericUserSignupForm
 from ..base import AdvisorView
 
 __all__ = ["AdvisorSignUpView", "AdvisorChangeDealerGroupView", "AdvisorChangeDealerGroupUpdateView",
@@ -35,7 +37,7 @@ class AdvisorProfile(forms.ModelForm):
         widgets = PERSONAL_DATA_WIDGETS
 
 
-class AdvisorUserForm(BetaSmartzGenericUSerSignupForm):
+class AdvisorUserForm(BetaSmartzGenericUserSignupForm):
     user_profile_type = "advisor"
 
     class Meta:

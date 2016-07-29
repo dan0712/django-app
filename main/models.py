@@ -1,31 +1,23 @@
-import importlib
 import logging
 import uuid
 from datetime import datetime
 from enum import Enum, unique
-from itertools import chain, repeat
+from itertools import repeat
 
 import scipy.stats as st
-from django import forms
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import (
-    AbstractBaseUser, PermissionsMixin, _,
-    UserManager,
-    send_mail
-)
+from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin,
+    UserManager, send_mail)
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import (
-    RegexValidator, ValidationError, MinValueValidator,
-    MaxValueValidator, MinLengthValidator
-)
+from django.core.validators import (MaxValueValidator, MinLengthValidator,
+    MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
-from django.db.models.deletion import PROTECT, SET_NULL, CASCADE
+from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
 from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
 from django.utils.timezone import now
+from django.utils.translation import ugettext as _
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -34,224 +26,16 @@ from recurrence.base import deserialize
 
 from address.models import Address
 from common.structures import ChoiceEnum
-from main.management.commands.build_returns import get_price_returns
-from main.managers import RetirementPlanQuerySet, ExternalAssetQuerySet
-from main.slug import unique_slugify
+from . import constants
+from .abstract import (FinancialInstrument, NeedApprobation,
+    NeedConfirmation, PersonalData, TransferPlan)
 from .fields import ColorField
-from .managers import (
-    ClientQuerySet,
-    ClientAccountQuerySet,
-    GoalQuerySet,
-    PositionQuerySet,
-)
+from .management.commands.build_returns import get_price_returns
+from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet, \
+    RetirementPlanQuerySet
+from .slug import unique_slugify
 
 logger = logging.getLogger('main.models')
-
-
-def validate_agreement(value):
-    if value is False:
-        raise ValidationError("You must accept the agreement to continue.")
-
-
-def validate_module(value):
-    if not value.strip():
-        raise ValidationError("The supplied module: {} cannot be blank.".format(value))
-    module_spec = importlib.util.find_spec(value)
-    if module_spec is None:
-        raise ValidationError("The supplied module: {} could not be found.".format(value))
-
-
-SUCCESS_MESSAGE = "Your application has been submitted successfully, you will receive a confirmation email" \
-                  " following a BetaSmartz approval."
-
-INVITATION_PENDING = 0
-INVITATION_SUBMITTED = 1
-INVITATION_ACTIVE = 3
-INVITATION_CLOSED = 4
-
-EMAIL_INVITATION_STATUSES = (
-    (INVITATION_PENDING, 'Pending'), (INVITATION_SUBMITTED, 'Submitted'),
-    (INVITATION_ACTIVE, 'Active'), (INVITATION_CLOSED, 'Closed'))
-
-EMPLOYMENT_STATUS_FULL_TIME = 0
-EMPLOYMENT_STATUS_PART_TIME = 1
-EMPLOYMENT_STATUS_SELF_EMPLOYED = 2
-EMPLOYMENT_STATUS_STUDENT = 3
-EMPLOYMENT_STATUS_RETIRED = 4
-EMPLOYMENT_STATUS_HOMEMAKER = 5
-EMPLOYMENT_STATUS_UNEMPLOYED = 6
-EMPLOYMENT_STATUSES = (
-    (EMPLOYMENT_STATUS_FULL_TIME, 'Employed (full-time)'),
-    (EMPLOYMENT_STATUS_PART_TIME, 'Employed (part-time)'),
-    (EMPLOYMENT_STATUS_SELF_EMPLOYED, 'Self-employed'),
-    (EMPLOYMENT_STATUS_STUDENT, 'Student'),
-    (EMPLOYMENT_STATUS_RETIRED, 'Retired'),
-    (EMPLOYMENT_STATUS_HOMEMAKER, 'Homemaker'),
-    (EMPLOYMENT_STATUS_UNEMPLOYED, "Not employed"),
-)
-
-INVITATION_ADVISOR = 0
-AUTHORIZED_REPRESENTATIVE = 1
-INVITATION_SUPERVISOR = 2
-INVITATION_CLIENT = 3
-INVITATION_TYPE_CHOICES = (
-    (INVITATION_ADVISOR, "Advisor"),
-    (AUTHORIZED_REPRESENTATIVE, 'Authorised representative'),
-    (INVITATION_SUPERVISOR, 'Supervisor'),
-    (INVITATION_CLIENT, 'Client'),
-)
-
-INVITATION_TYPE_DICT = {
-    str(INVITATION_ADVISOR): "advisor",
-    str(AUTHORIZED_REPRESENTATIVE): "authorised_representative",
-    str(INVITATION_CLIENT): "client",
-    str(INVITATION_SUPERVISOR): "supervisor"
-}
-
-TFN_YES = 0
-TFN_NON_RESIDENT = 1
-TFN_CLAIM = 2
-TFN_DONT_WANT = 3
-
-TFN_CHOICES = (
-    (TFN_YES, "Yes"),
-    (TFN_NON_RESIDENT, "I am a non-resident of Australia"),
-    (TFN_CLAIM, "I want to claim an exemption"),
-    (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
-
-PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender',
-                        'phone_num', 'medicare_number')
-
-PERSONAL_DATA_WIDGETS = {
-    "gender": forms.RadioSelect(),
-    "date_of_birth": forms.TextInput(attrs={"placeholder": "DD-MM-YYYY"}),
-}
-
-ASSET_FEE_EVENTS = ((0, 'Day End'),
-                    (1, 'Complete Day'),
-                    (2, 'Month End'),
-                    (3, 'Complete Month'),
-                    (4, 'Fiscal Month End'),
-                    (5, 'Entry Order'),
-                    (6, 'Entry Order Item'),
-                    (7, 'Exit Order'),
-                    (8, 'Exit Order Item'),
-                    (9, 'Transaction'))
-
-ASSET_FEE_UNITS = ((0, 'Asset Value'),  # total value of the asset
-                   (1, 'Asset Qty'),  # how many units of an asset
-                   (2, 'NAV Performance'))  # % positive change in the NAV
-
-ASSET_FEE_LEVEL_TYPES = (
-    (0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
-    (1, 'Replace')  # Once the next level is reached, the value from that level is used for the entire amount
-)
-
-BONDS = "BONDS"  # Bonds only Fund
-STOCKS = "STOCKS"  # Stocks only Fund
-MIXED = "MIXED"  # Mixture of stocks and bonds
-INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MIXED", "MIXED"))
-
-SUPER_ASSET_CLASSES = (
-    # EQUITY
-    ("EQUITY_AU", "EQUITY_AU"),
-    ("EQUITY_US", "EQUITY_US"),
-    ("EQUITY_EU", "EQUITY_EU"),
-    ("EQUITY_EM", "EQUITY_EM"),
-    ("EQUITY_INT", "EQUITY_INT"),
-    ("EQUITY_UK", "EQUITY_UK"),
-    ("EQUITY_JAPAN", "EQUITY_JAPAN"),
-    ("EQUITY_AS", "EQUITY_AS"),
-    ("EQUITY_CN", "EQUITY_CN"),
-    # FIXED_INCOME
-    ("FIXED_INCOME_AU", "FIXED_INCOME_AU"),
-    ("FIXED_INCOME_US", "FIXED_INCOME_US"),
-    ("FIXED_INCOME_EU", "FIXED_INCOME_EU"),
-    ("FIXED_INCOME_EM", "FIXED_INCOME_EM"),
-    ("FIXED_INCOME_INT", "FIXED_INCOME_INT"),
-    ("FIXED_INCOME_UK", "FIXED_INCOME_UK"),
-    ("FIXED_INCOME_JAPAN", "FIXED_INCOME_JAPAN"),
-    ("FIXED_INCOME_AS", "FIXED_INCOME_AS"),
-    ("FIXED_INCOME_CN", "FIXED_INCOME_CN"))
-
-YES_NO = ((False, "No"), (True, "Yes"))
-
-ACCOUNT_TYPE_PERSONAL = 0
-ACCOUNT_TYPE_JOINT = 1
-ACCOUNT_TYPE_TRUST = 2
-ACCOUNT_TYPE_SMSF = 3
-ACCOUNT_TYPE_CORPORATE = 4
-ACCOUNT_TYPES = (
-    (ACCOUNT_TYPE_PERSONAL, "Personal Account"),
-    (ACCOUNT_TYPE_JOINT, "Joint Account"),
-    (ACCOUNT_TYPE_TRUST, "Trust Account"),
-    (ACCOUNT_TYPE_SMSF, "Self Managed Superannuation Fund"),
-    (ACCOUNT_TYPE_CORPORATE, "Corporate Account"),
-)
-
-
-class BetaSmartzAgreementForm(forms.ModelForm):
-    def clean(self):
-        cleaned_data = super(BetaSmartzAgreementForm, self).clean()
-
-        if not (cleaned_data["betasmartz_agreement"] is True):
-            self._errors['betasmartz_agreement'] = mark_safe(
-                '<ul class="errorlist">'
-                '<li>You must accept the BetaSmartz\'s agreement'
-                ' to continue.</li></ul>')
-
-        return cleaned_data
-
-
-class BetaSmartzGenericUSerSignupForm(BetaSmartzAgreementForm):
-    confirm_password = forms.CharField(max_length=50,
-                                       widget=forms.PasswordInput())
-    password = forms.CharField(max_length=50, widget=forms.PasswordInput())
-    user_profile_type = None
-
-    def clean(self):
-        cleaned_data = super(BetaSmartzGenericUSerSignupForm, self).clean()
-        self._validate_unique = False
-
-        password1 = cleaned_data.get('password')
-        password2 = cleaned_data.get('confirm_password')
-
-        if password1 and (password1 != password2):
-            self._errors['confirm_password'] = mark_safe(
-                '<ul class="errorlist"><li>Passwords don\'t match.</li></ul>')
-
-        # check if user already exist
-        try:
-            user = User.objects.get(email=cleaned_data.get('email'))
-        except User.DoesNotExist:
-            user = None
-
-        if (user is not None) and (not user.prepopulated):
-            # confirm password
-            if not user.check_password(password1):
-                self._errors['email'] = mark_safe(u'<ul class="errorlist"><li>User already exists</li></ul>')
-            else:
-                if hasattr(user, self.user_profile_type):
-                    rupt = self.user_profile_type.replace("_", " ")
-                    self._errors['email'] = mark_safe(
-                        u'<ul class="errorlist"><li>User already has an'
-                        u' {0} account</li></ul>'.format(rupt))
-
-        cleaned_data["password"] = make_password(password1)
-        return cleaned_data
-
-    def save(self, *args, **kw):
-        # check if user already exist
-        try:
-            self.instance = User.objects.get(
-                email=self.cleaned_data.get('email'))
-        except User.DoesNotExist:
-            pass
-        instance = super(BetaSmartzGenericUSerSignupForm, self).save(*args, **kw)
-        instance.prepopulated = False
-        instance.password = self.cleaned_data["password"]
-        instance.save()
-        return instance
 
 
 class Section:
@@ -262,126 +46,6 @@ class Section:
         self.fields = []
         for field_name in section["fields"]:
             self.fields.append(form[field_name])
-
-
-class NeedApprobation(models.Model):
-    class Meta:
-        abstract = True
-
-    is_accepted = models.BooleanField(default=False, editable=False)
-
-    def approve(self):
-        if self.is_accepted is True:
-            return
-        self.is_accepted = True
-        self.save()
-        self.send_approve_email()
-
-    def send_approve_email(self):
-        account_type = self._meta.verbose_name
-
-        subject = "Your BetaSmartz new {0} account have been approved".format(
-            account_type)
-
-        context = {
-            'subject': subject,
-            'account_type': account_type,
-            'firm_name': self.firm.name
-        }
-
-        send_mail(subject,
-                  '',
-                  None,
-                  [self.email],
-                  html_message=render_to_string('email/approve_account.html',
-                                                context))
-
-
-class NeedConfirmation(models.Model):
-    class Meta:
-        abstract = True
-
-    confirmation_key = models.CharField(max_length=36,
-                                        null=True,
-                                        blank=True,
-                                        editable=False)
-    is_confirmed = models.BooleanField(default=False, editable=True)
-
-    @property
-    def content_type(self):
-        return ContentType.objects.get_for_model(self).pk
-
-    def get_confirmation_url(self):
-        if self.is_confirmed is False:
-            if self.confirmation_key is None:
-                self.confirmation_key = str(uuid.uuid4())
-                self.save()
-
-        if self.is_confirmed or (self.confirmation_key is None):
-            return None
-
-        return settings.SITE_URL + "/confirm_email/{0}/{1}".format(
-            self.content_type, self.confirmation_key)
-
-    def send_confirmation_email(self):
-        account_type = self._meta.verbose_name
-
-        subject = "BetaSmartz new {0} account confirmation".format(
-            account_type)
-
-        context = {
-            'subject': subject,
-            'account_type': account_type,
-            'confirmation_url': self.get_confirmation_url(),
-            'firm_name': self.firm.name
-        }
-
-        send_mail(
-            subject,
-            '',
-            None,
-            [self.email],
-            html_message=render_to_string('email/confirmation.html', context))
-
-
-class PersonalData(models.Model):
-    class Meta:
-        abstract = True
-
-    class CivilStatus(ChoiceEnum):
-        SINGLE = 0
-        MARRIED = 1  # May be married, or any other financially recognised relationship.
-
-    date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
-    gender = models.CharField(max_length=20,
-                              default="Male",
-                              choices=(("Male", "Male"), ("Female", "Female")))
-    residential_address = models.ForeignKey(Address, related_name='+')
-    phone_num = PhoneNumberField(null=True, max_length=16)  # A person may not have a phone.
-    medicare_number = models.CharField(max_length=50, default="")
-    civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
-
-    def __str__(self):
-        return self.user.first_name + " - " + self.firm.name
-
-    @property
-    def first_name(self):
-        return self.user.first_name
-
-    @property
-    def name(self):
-        return self.user.first_name + " " + self.user.last_name
-
-    @property
-    def states_codes(self):
-        states = []
-        for item in self._meta.get_field('state').choices:
-            states.append({"db_value": item[0], "name": item[1]})
-        return states
-
-    @property
-    def email(self):
-        return self.user.email
 
 
 class AssetFeePlan(models.Model):
@@ -512,13 +176,19 @@ class AssetClass(models.Model):
     primary_color = ColorField()
     foreground_color = ColorField()
     drift_color = ColorField()
-    asset_class_explanation = models.TextField(blank=True, default='', null=False)
+    asset_class_explanation = models.TextField(blank=True, null=False,
+                                               default='')
     tickers_explanation = models.TextField(blank=True, default='', null=False)
-    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
-    investment_type = models.CharField(max_length=255, choices=INVESTMENT_TYPES,
-        blank=False, null=False, db_index=True) # TODO: should be converted to Integer
-    super_asset_class = models.CharField(max_length=255, choices=SUPER_ASSET_CLASSES,
-        db_index=True) # TODO: should be converted to Integer
+    display_name = models.CharField(max_length=255, blank=False, null=False,
+                                    db_index=True)
+    # TODO: should be converted to Integer
+    investment_type = models.CharField(max_length=255,
+                                       choices=constants.INVESTMENT_TYPES,
+                                       blank=False, null=False, db_index=True)
+    # TODO: should be converted to Integer
+    super_asset_class = models.CharField(max_length=255,
+                                         choices=constants.SUPER_ASSET_CLASSES,
+                                         db_index=True)
 
     def save(self,
              force_insert=False,
@@ -778,11 +448,11 @@ class Firm(models.Model):
         return self.name
 
     def get_invite_url(self, application_type, email):
-        if application_type == AUTHORIZED_REPRESENTATIVE:
+        if application_type == constants.AUTHORIZED_REPRESENTATIVE:
             return self.authorised_representative_form_url
-        if application_type == INVITATION_ADVISOR:
+        if application_type == constants.INVITATION_ADVISOR:
             return self.advisor_invite_url
-        if application_type == INVITATION_SUPERVISOR:
+        if application_type == constants.INVITATION_SUPERVISOR:
             return self.supervisor_invite_url
 
     def __str__(self):
@@ -860,7 +530,8 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def households(self):
-        all_households = list(self.primary_account_groups.all()) + list(self.secondary_account_groups.all())
+        all_households = (list(self.primary_account_groups.all()) +
+                          list(self.secondary_account_groups.all()))
         active_households = []
         for h in all_households:
             if list(h.accounts.all()):
@@ -886,11 +557,12 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def primary_clients_size(self):
-        return len(Client.objects.filter(advisor=self, user__prepopulated=False))
+        return self.all_clients.filter(user__prepopulated=False).count()
 
     @property
     def secondary_clients_size(self):
-        return len(Client.objects.filter(secondary_advisors__in=[self], user__prepopulated=False).distinct())
+        return (self.secondary_clients.filter(user__prepopulated=False)
+                .distinct().count())
 
     @property
     def total_fees(self):
@@ -1305,53 +977,6 @@ class ClientAccount(models.Model):
             self.primary_owner.advisor.firm.name, self.account_type_name)
 
 
-class TaxFileNumberValidator(object):
-    def __call__(self, value):
-
-        if len(value) != 9:
-            return False, 'Invalid TFN, check the digits.'
-
-        weights = [1, 4, 3, 7, 5, 8, 6, 9, 10]
-        _sum = 0
-
-        try:
-            for i in range(9):
-                _sum += int(value[i]) * weights[i]
-        except ValueError:
-            return False, 'Invalid TFN, check the digits.'
-
-        remainder = _sum % 11
-
-        if remainder != 0:
-            return False, 'Invalid TFN, check the digits.'
-
-        return True, ""
-
-
-class MedicareNumberValidator(object):
-    def __call__(self, value):
-
-        if len(value) != 11:
-            return False, 'Invalid Medicare number.'
-
-        weights = [1, 3, 7, 9, 1, 3, 7, 9]
-        _sum = 0
-
-        try:
-            check_digit = int(value[8])
-            for i in range(8):
-                _sum += int(value[i]) * weights[i]
-        except ValueError:
-            return False, 'Invalid Medicare number.'
-
-        remainder = _sum % 10
-
-        if remainder != check_digit:
-            return False, 'Invalid Medicare number.'
-
-        return True, ""
-
-
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
     WORTH_AFFLUENT = 'affluent'
     WORTH_HIGH = 'high'
@@ -1553,17 +1178,6 @@ class RetirementPlan(models.Model):
         super(RetirementPlan, self).save(*args, **kwargs)
 
 
-class TransferPlan(models.Model):
-    begin_date = models.DateField()
-    amount = models.IntegerField()
-    growth = models.FloatField(help_text="Annualized rate to increase or decrease the amount by as of the begin_date."
-                                         " 0.0 for no modelled change")
-    schedule = models.TextField()  # RRULE to specify when the transfer happens.
-
-    class Meta:
-        abstract = True
-
-
 class ExternalAssetTransfer(TransferPlan):
     asset = models.OneToOneField(ExternalAsset, related_name='transfer_plan', on_delete=CASCADE)
 
@@ -1600,30 +1214,6 @@ class Region(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class FinancialInstrument(models.Model):
-    """
-    A financial instrument is an identifiable thing for which data can be gathered to generate a daily return.
-    """
-    class Meta:
-        abstract = True
-
-    display_name = models.CharField(max_length=255, blank=False, null=False, db_index=True)
-    description = models.TextField(blank=True, default="", null=False)
-    url = models.URLField()
-    currency = models.CharField(max_length=10, default="AUD")
-    region = models.ForeignKey(Region)
-    data_api = models.CharField(help_text='The module that will be used to get the data for this ticker',
-                                choices=[('portfolios.api.bloomberg', 'Bloomberg')],
-                                max_length=30)
-    data_api_param = models.CharField(help_text='Structured parameter string appropriate for the data api. The '
-                                                'first component would probably be id appropriate for the given api',
-                                      unique=True,
-                                      max_length=30)
-
-    def __str__(self):
-        return self.display_name
 
 
 class MarketIndex(FinancialInstrument):
@@ -1690,7 +1280,7 @@ class Ticker(FinancialInstrument):
 
     @property
     def is_stock(self):
-        return self.asset_class.investment_type == STOCKS
+        return self.asset_class.investment_type == constants.STOCKS
 
     @property
     def is_core(self):
@@ -1741,15 +1331,15 @@ class EmailInvitation(models.Model):
     inviter_object = GenericForeignKey('inviter_type', 'inviter_id')
     send_date = models.DateTimeField(auto_now=True)
     send_count = models.PositiveIntegerField(default=0)
-    status = models.PositiveIntegerField(choices=EMAIL_INVITATION_STATUSES,
-                                         default=INVITATION_PENDING)
+    status = models.PositiveIntegerField(choices=constants.EMAIL_INVITATION_STATUSES,
+                                         default=constants.INVITATION_PENDING)
     invitation_type = models.PositiveIntegerField(
-        choices=INVITATION_TYPE_CHOICES,
-        default=INVITATION_CLIENT)
+        choices=constants.INVITATION_TYPE_CHOICES,
+        default=constants.INVITATION_CLIENT)
 
     @property
     def get_status_name(self):
-        for i in EMAIL_INVITATION_STATUSES:
+        for i in constants.EMAIL_INVITATION_STATUSES:
             if self.status == i[0]:
                 return i[1]
 
@@ -1761,37 +1351,37 @@ class EmailInvitation(models.Model):
             user = None
 
         if user.prepopulated:
-            return INVITATION_PENDING
+            return constants.INVITATION_PENDING
 
         if user is not None:
             if not user.is_active:
-                self.status = INVITATION_CLOSED
+                self.status = constants.INVITATION_CLOSED
                 self.save()
 
-            for it in INVITATION_TYPE_CHOICES:
+            for it in constants.INVITATION_TYPE_CHOICES:
                 if self.invitation_type == it[0]:
-                    model = INVITATION_TYPE_DICT[str(it[0])]
+                    model = constants.INVITATION_TYPE_DICT[str(it[0])]
                     if hasattr(user, model):
                         # match advisor or firm
                         profile = getattr(user, model)
                         if (profile.firm == self.inviter_object) or \
                                 (getattr(profile, 'advisor', None) == self.inviter_object):
                             if profile.is_confirmed:
-                                self.status = INVITATION_ACTIVE
+                                self.status = constants.INVITATION_ACTIVE
                                 self.save()
                             else:
-                                self.status = INVITATION_SUBMITTED
+                                self.status = constants.INVITATION_SUBMITTED
                                 self.save()
         return self.status
 
     def send(self):
 
-        if self.get_status != INVITATION_PENDING:
+        if self.get_status != constants.INVITATION_PENDING:
             return
 
         application_type = ""
 
-        for itc in INVITATION_TYPE_CHOICES:
+        for itc in constants.INVITATION_TYPE_CHOICES:
             if itc[0] == self.invitation_type:
                 application_type = itc[1]
 
@@ -1819,17 +1409,12 @@ class EmailInvitation(models.Model):
         self.save()
 
 
-YAHOO_API = "YAHOO"
-GOOGLE_API = "GOOGLE"
-API_CHOICES = ((YAHOO_API, "YAHOO"), (GOOGLE_API, 'GOOGLE'))
-
-
 class Platform(models.Model):
     fee = models.PositiveIntegerField(default=0)
     portfolio_set = models.ForeignKey(PortfolioSet)
     api = models.CharField(max_length=20,
-                           default=YAHOO_API,
-                           choices=API_CHOICES)
+                           default=constants.YAHOO_API,
+                           choices=constants.API_CHOICES)
 
     def __str__(self):
         return "BetaSmartz"
@@ -1865,22 +1450,19 @@ class Company(models.Model):
         return "[{}] {}".format(self.id, self.name)
 
 
-_asset_fee_ht = "List of level transition points and the new values after that transition. Eg. '0: 0.001, 10000: 0.0'"
-
-
 class AssetFee(models.Model):
     name = models.CharField(max_length=127)
     plan = models.ForeignKey(AssetFeePlan)
     collector = models.ForeignKey(Company)
     asset = models.ForeignKey(Ticker)
-    applied_per = models.IntegerField(choices=ASSET_FEE_EVENTS)
-    fixed_level_unit = models.IntegerField(choices=ASSET_FEE_UNITS)
-    fixed_level_type = models.IntegerField(choices=ASSET_FEE_LEVEL_TYPES)
-    fixed_levels = models.TextField(help_text=_asset_fee_ht)
-    prop_level_unit = models.IntegerField(choices=ASSET_FEE_UNITS)
-    prop_apply_unit = models.IntegerField(choices=ASSET_FEE_UNITS)
-    prop_level_type = models.IntegerField(choices=ASSET_FEE_LEVEL_TYPES)
-    prop_levels = models.TextField(help_text=_asset_fee_ht)
+    applied_per = models.IntegerField(choices=constants.ASSET_FEE_EVENTS)
+    fixed_level_unit = models.IntegerField(choices=constants.ASSET_FEE_UNITS)
+    fixed_level_type = models.IntegerField(choices=constants.ASSET_FEE_LEVEL_TYPES)
+    fixed_levels = models.TextField(help_text=constants._asset_fee_ht)
+    prop_level_unit = models.IntegerField(choices=constants.ASSET_FEE_UNITS)
+    prop_apply_unit = models.IntegerField(choices=constants.ASSET_FEE_UNITS)
+    prop_level_type = models.IntegerField(choices=constants.ASSET_FEE_LEVEL_TYPES)
+    prop_levels = models.TextField(help_text=constants._asset_fee_ht)
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
@@ -2545,14 +2127,13 @@ class Goal(models.Model):
     def get_term(self):
         today = now().today()
 
-        term = self.selected_settings.completion.year - today.year \
-            if self.selected_settings else None
+        term = (self.selected_settings.completion.year - today.year
+                if self.selected_settings else None)
 
         return term
 
     @property
     def auto_term(self):
-        today = date.today()
         return "{0}y".format(self.get_term)
 
 
@@ -2872,24 +2453,12 @@ class SymbolReturnHistory(models.Model):
     date = models.DateField()
 
 
-PERFORMER_GROUP_STRATEGY = "PERFORMER_GROUP_STRATEGY"
-PERFORMER_GROUP_BENCHMARK = "PERFORMER_GROUP_BENCHMARK"
-PERFORMER_GROUP_BOND = "PERFORMER_GROUP_BOND"
-PERFORMER_GROUP_STOCK = "PERFORMER_GROUP_STOCK"
-PERFORMER_GROUP_CHOICE = (
-    (PERFORMER_GROUP_STRATEGY, "PERFORMER_GROUP_STRATEGY"),
-    (PERFORMER_GROUP_BENCHMARK, "PERFORMER_GROUP_BENCHMARK"),
-    (PERFORMER_GROUP_BOND, "PERFORMER_GROUP_BOND"),
-    (PERFORMER_GROUP_STOCK, "PERFORMER_GROUP_STOCK")
-)
-
-
 class Performer(models.Model):
     symbol = models.CharField(max_length=20, null=True, blank=True)
     name = models.CharField(max_length=100)
     group = models.CharField(max_length=20,
-                             choices=PERFORMER_GROUP_CHOICE,
-                             default=PERFORMER_GROUP_BENCHMARK)
+                             choices=constants.PERFORMER_GROUP_CHOICE,
+                             default=constants.PERFORMER_GROUP_BENCHMARK)
     allocation = models.FloatField(default=0)
     #portfolio_set = models.ForeignKey(PortfolioSet)
     portfolio_set = models.IntegerField()
@@ -3155,5 +2724,3 @@ class ActivityLogEvent(models.Model):
             alog = ActivityLog.objects.create(name=event.name, format_str='DEFAULT_TEXT: {}'.format(event.name))
 
         return ActivityLogEvent.objects.create(id=event.value, activity_log=alog)
-
-

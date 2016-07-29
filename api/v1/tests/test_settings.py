@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from main.constants import ACCOUNT_TYPE_CORPORATE, ACCOUNT_TYPE_JOINT, \
+    ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF, ACCOUNT_TYPE_TRUST
 from main.event import Event
-from main.models import ActivityLogEvent, ActivityLog, AccountTypeRiskProfileGroup, ACCOUNT_TYPE_PERSONAL, \
-    ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_CORPORATE, ACCOUNT_TYPE_SMSF, ACCOUNT_TYPE_TRUST
+from main.models import AccountTypeRiskProfileGroup, ActivityLog, ActivityLogEvent
 from main.tests.fixtures import Fixture1
 
 
