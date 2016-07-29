@@ -1959,7 +1959,9 @@ class RecurringTransaction(models.Model):
             if not r.enabled:
                 continue
             rrule = deserialize(r.recurrence)
-            res.extend(zip(rrule.between(start, end), repeat(r.amount)))
+            between = rrule.between(start.replace(tzinfo=None),
+                                    end.replace(tzinfo=None))
+            res.extend(zip(between, repeat(r.amount)))
         return res
 
 
