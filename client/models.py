@@ -483,3 +483,14 @@ class RiskProfileAnswer(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ('question', 'order')
+
+
+class EmailNotificationPrefs(models.Model):
+    client = models.ForeignKey('Client', related_name='email_prefs')
+    auto_deposit = models.BooleanField(
+        verbose_name=_('to remind me a day before my automatic '
+                       'deposits will be transferred'),
+        default=True)
+    hit_10mln = models.BooleanField(
+        verbose_name=_('when my account balance hits $10,000,000'),
+        default=False)
