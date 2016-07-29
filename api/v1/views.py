@@ -1,5 +1,6 @@
 import re
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .renderers import ApiRenderer
@@ -24,7 +25,6 @@ def get_nested_data(data, namespace):
     return nested_data
 
 
-# noinspection PyUnresolvedReferences,PyUnusedLocal,PyMethodMayBeStatic
 class MultipleSerializersModelViewMixin(object):
     """
     Experimental
@@ -34,7 +34,7 @@ class MultipleSerializersModelViewMixin(object):
 
     Example:
     serializer_class = ItemSerializer
-    serializer_response_class = ItemReponseSerializer
+    serializer_response_class = ItemResponseSerializer
     """
 
     def get_serializer(self, *args, **kwargs):
@@ -97,8 +97,9 @@ class MultipleSerializersModelViewMixin(object):
         return serializer.save()
 
 
-# noinspection PyUnresolvedReferences,PyUnusedLocal,PyMethodMayBeStatic
-class ApiViewMixin(MultipleSerializersModelViewMixin, object):
+class ApiViewMixin(MultipleSerializersModelViewMixin):
+    permission_classes = IsAuthenticated,
+
     renderer_classes = (
         ApiRenderer,
     )

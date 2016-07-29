@@ -1,9 +1,10 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, patterns, url
 from django.contrib import admin
-from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import HttpResponseRedirect, HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
+
 from main import settings
 from .views import *
 
@@ -91,7 +92,7 @@ urlpatterns_advisor = patterns(
 urlpatterns_client = patterns(
     # The React code should pick up this route.
     # If it doesn't, there is a configuration problem.
-    '', url(r'^(?P<pk>\d+)/app', ClientAppMissing.as_view(), name='app'),
+    '', url(r'^(?P<pk>\d+)/app', login_required(ClientAppMissing.as_view()), name='app'),
 )
 
 urlpatterns = patterns(

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # $1 = commit to checkout
 # $2 = domain to deploy to. Eg. 'v2' or 'demo'
 

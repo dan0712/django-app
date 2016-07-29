@@ -68,3 +68,6 @@ django-rest-swagger==0.3.5
 django-model-utils==2.3.1
 # re-enable after fixing # django-notifications-hq>=1.0 # upgrade to 1.0 later
 django-extensions==1.6.1 # to visualize models
+
+# testing
+django-test-without-migrations==0.4

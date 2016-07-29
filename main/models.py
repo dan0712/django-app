@@ -1113,7 +1113,8 @@ class RecurringTransaction(models.Model):
 
     @property
     def next_transaction(self):
-        return self.recurrence.after(now(), inc=True)
+        # doesn't seem to work but just in case make date to be naïve
+        return self.recurrence.after(now().replace(tzinfo=None), inc=True)
 
     @staticmethod
     def get_events(recurring_transactions, start, end):
@@ -1129,7 +1130,10 @@ class RecurringTransaction(models.Model):
             if not r.enabled:
                 continue
             rrule = deserialize(r.recurrence)
-            res.extend(zip(rrule.between(start, end), repeat(r.amount)))
+            # rrule uses naive dates
+            between = rrule.between(start.replace(tzinfo=None),
+                                    end.replace(tzinfo=None))
+            res.extend(zip(between, repeat(r.amount)))
         return res
 
 
@@ -1548,7 +1552,8 @@ class Goal(models.Model):
             er = 1 + self.selected_settings.portfolio.er
             stdev = self.selected_settings.portfolio.stdev
 
-        current_time = now()
+        # use naïve dates for calculations
+        current_time = now().replace(tzinfo=None)
         # Get the predicted cash-flow events until the provided future date
         cf_events = [(current_time, self.total_balance)]
         if hasattr(self.selected_settings, 'recurring_transactions'):
