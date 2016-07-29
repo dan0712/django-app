@@ -8,7 +8,8 @@ from django.utils.timezone import now
 
 from notifications.models import Notification
 
-from main.models import Advisor, Client, Goal, GoalMetric
+from main.models import Advisor, Goal, GoalMetric
+from client.models import Client
 
 ATTRS_ONCHANGE= {'onchange': 'this.form.submit();'}
 

@@ -3,7 +3,7 @@ import math
 from django.db.models.aggregates import Max, Min, Sum
 from django.utils.timezone import now
 
-from main.models import RiskProfileAnswer
+from client.models import RiskProfileAnswer
 from main.constants import ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_PERSONAL, \
     ACCOUNT_TYPE_SMSF, EMPLOYMENT_STATUS_FULL_TIME, \
     EMPLOYMENT_STATUS_HOMEMAKER, EMPLOYMENT_STATUS_PART_TIME, \

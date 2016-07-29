@@ -2,7 +2,8 @@ from django.db import transaction
 from rest_framework import serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import Client, ExternalAsset, ExternalAssetTransfer
+from main.models import ExternalAsset, ExternalAssetTransfer
+from client.models import Client
 
 from ..user.serializers import FieldUserSerializer
 

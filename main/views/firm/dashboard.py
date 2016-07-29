@@ -12,15 +12,16 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
 from functools import reduce
 from operator import itemgetter
 
+from client.models import Client
 from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
     INVITATION_TYPE_DICT)
-from main.models import (Advisor, Client, EmailInvitation, Goal, GoalMetric, GoalType,
 from main.forms import BetaSmartzGenericUserSignupForm, EmailInviteForm
+from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
     Position, Supervisor, Transaction, User)
 from main.views.base import LegalView
 from notifications.models import Notification
-from .filters import (FirmActivityFilterSet, FirmAnalyticsAdvisorsFilterSet,
-    FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet)
+from .filters import FirmActivityFilterSet, FirmAnalyticsAdvisorsFilterSet, \
+    FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet
 
 
 class FirmSupervisorDelete(DeleteView, LegalView):

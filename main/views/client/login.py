@@ -5,10 +5,11 @@ from django.http import Http404
 from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, UpdateView
 
+from client.models import Client, ClientAccount
 from main.constants import PERSONAL_DATA_FIELDS, SUCCESS_MESSAGE
 from main.fields import MedicareNumberValidator, TaxFileNumberValidator
-from main.models import Client, ClientAccount, Advisor, Firm, User
 from main.forms import BetaSmartzGenericUserSignupForm, PERSONAL_DATA_WIDGETS
+from main.models import Advisor, Firm, User
 
 client_sign_up_form_header_1 = """<span class="left blue-circle">1</span>
 <h3 class="left">Information to establish your account</h3>"""
@@ -49,7 +50,7 @@ class ClientForm(forms.ModelForm):
         widgets.update(PERSONAL_DATA_WIDGETS)
 
 
-class ClientSignUpForm(BetaSmartzGenericUSerSignupForm):
+class ClientSignUpForm(BetaSmartzGenericUserSignupForm):
     profile = None
     user_profile_type = "client"
     tax_file_number = forms.CharField(required=False)

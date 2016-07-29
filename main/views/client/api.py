@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.views.generic import TemplateView
 
+from client.models import ClientAccount
 from main.constants import PERFORMER_GROUP_STRATEGY
-from main.models import (AssetClass, ClientAccount, Goal, Performer, Position,
+from main.models import (AssetClass, Goal, Performer, Position,
     RecurringTransaction, SymbolReturnHistory)
 from main.views.base import ClientView
 from portfolios.exceptions import OptimizationException

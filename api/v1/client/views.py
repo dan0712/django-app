@@ -5,7 +5,8 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.views import ApiViewMixin
 
-from main.models import Client, ExternalAsset
+from main.models import ExternalAsset
+from client.models import Client
 
 from . import serializers
 

@@ -15,11 +15,12 @@ from django.views.generic import (CreateView, DetailView, TemplateView, UpdateVi
 from operator import itemgetter
 
 from address.models import Address, Region
+from client.models import Client, ClientAccount
 from main.constants import (ACCOUNT_TYPES, INVITATION_CLIENT,
                             INVITATION_TYPE_DICT)
 from main.forms import EmailInviteForm
-from main.models import (AccountGroup, Advisor, Client, ClientAccount,
-                         EmailInvitation, Platform, User)
+from main.models import (AccountGroup, Advisor, EmailInvitation,
+                         Platform, User)
 from main.views.base import AdvisorView, ClientView
 
 

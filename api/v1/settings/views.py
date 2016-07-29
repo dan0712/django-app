@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
+from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
 from . import serializers
@@ -44,10 +45,10 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'], url_path='account-types')
     def account_types(self, request):
-        maps = dict(models.AccountTypeRiskProfileGroup.objects
+        maps = dict(AccountTypeRiskProfileGroup.objects
                     .values_list('account_type', 'risk_profile_group__id'))
         res = []
-        for key, value in models.ACCOUNT_TYPES:
+        for key, value in constants.ACCOUNT_TYPES:
             rpg = maps.get(key, None)
             if rpg is None:
                 raise Exception("Configuration Error: AccountType: {}({}) "
@@ -106,19 +107,19 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'], url_path='risk-profile-groups')
     def risk_profile_groups(self, request):
-        groups = models.RiskProfileGroup.objects.all()
+        groups = RiskProfileGroup.objects.all()
         serializer = serializers.RiskProfileGroupSerializer(groups, many=True)
         return Response(serializer.data)
 
     @list_route(methods=['get'])
     def civil_statuses(self, request):
         return Response([{"id": status.value, "name": status.name}
-                         for status in models.PersonalData.CivilStatus])
+                         for status in PersonalData.CivilStatus])
 
     @list_route(methods=['get'])
     def employment_statuses(self, request):
         return Response([{"id": sid, "name": name}
-                         for sid, name in models.EMPLOYMENT_STATUSES])
+                         for sid, name in constants.EMPLOYMENT_STATUSES])
 
     @list_route(methods=['get'])
     def external_asset_types(self, request):

@@ -1,32 +1,22 @@
+from django.conf import settings
+from django.contrib import admin, messages
+from django.contrib.auth.hashers import make_password
 from django.db.models.fields import TextField
 from django.forms.widgets import Textarea
-from genericadmin.admin import GenericAdminModelAdmin, BaseGenericModelAdmin
-import nested_admin
-
-from advisors import models as advisor_models
-from django.conf import settings
-from django.contrib import admin
-from django.contrib import messages
-from django.contrib.auth.hashers import make_password
-from django.shortcuts import render_to_response, HttpResponseRedirect
+from django.shortcuts import HttpResponseRedirect, render_to_response
+from genericadmin.admin import BaseGenericModelAdmin, GenericAdminModelAdmin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from main.models import (
-    Firm, Advisor, User, Performer,
-    AuthorisedRepresentative, FirmData, Client, ClientAccount,
-    Goal, GoalMetric, GoalSetting, Position, Transaction,
-    EventMemo, Dividend,
-    ProxyAssetClass, ProxyTicker, PortfolioSet,
-    Portfolio, PortfolioItem, View,
-    GoalType, GoalMetricGroup, MarketIndex, RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog,
-    ActivityLogEvent, DailyPrice,
-    MarketOrderRequest, Execution, ExecutionDistribution, Ticker, # These are activated at the bottom
-    AccountTypeRiskProfileGroup)
-
 from suit.admin import SortableModelAdmin, SortableTabularInline
 
+from advisors import models as advisor_models
+from main.models import AccountGroup, ActivityLog, \
+    ActivityLogEvent, Advisor, AuthorisedRepresentative, Dividend, \
+    EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
+    GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
+    Position, ProxyAssetClass, ProxyTicker, \
+    Transaction, User, View
 
-from main.models import AccountGroup
 admin.site.register(AccountGroup)
 
 
@@ -43,22 +33,6 @@ class TickerInline(BaseGenericModelAdmin, SortableTabularInline):
         'ct_field': 'benchmark_content_type',
         'fk_field': 'benchmark_object_id',
     }]
-
-
-class DailyPriceAdmin(GenericAdminModelAdmin):
-    model = DailyPrice
-    list_display = ('date', 'price', 'instrument_content_type', 'instrument_object_id')
-    #sortable = 'date'
-    #extra = 0
-    generic_fk_fields = [{
-        'ct_field': 'instrument_content_type',
-        'fk_field': 'instrument_object_id',
-    }]
-    list_editable = ('date', 'price', 'instrument_content_type', 'instrument_object_id')
-
-
-class ClientAccountInline(admin.StackedInline):
-    model = ClientAccount
 
 
 class EventMemoInline(admin.StackedInline):
@@ -141,17 +115,6 @@ class AdvisorAdmin(admin.ModelAdmin):
     actions = (approve_application,)
 
     pass
-
-
-class ClientAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
-    list_filter = ('is_accepted',)
-    actions = (approve_application,)
-    inlines = (ClientAccountInline,)
-
-    def get_queryset(self, request):
-        qs = super(ClientAdmin, self).get_queryset(request)
-        return qs.filter(user__prepopulated=False)
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -246,10 +209,6 @@ class AuthorisedRepresentativeAdmin(admin.ModelAdmin):
     actions = (approve_application,)
 
 
-class ClientAccountAdmin(admin.ModelAdmin):
-    pass
-
-
 class GoalMetricInline(admin.StackedInline):
     model = GoalMetric
 
@@ -266,11 +225,6 @@ class GoalSettingAdmin(admin.ModelAdmin):
 class GoalTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'group', 'default_term', 'risk_sensitivity', 'order')
     list_editable = ('group', 'default_term', 'risk_sensitivity', 'order')
-
-
-class AccountTypeRiskProfileGroupAdmin(admin.ModelAdmin):
-    list_display = ('account_type', 'risk_profile_group')
-    list_editable = ('account_type', 'risk_profile_group')
 
 
 class GoalAdmin(admin.ModelAdmin):
@@ -330,30 +284,6 @@ class AdvisorSingleInvestorTransferAdmin(admin.ModelAdmin):
     actions = (approve_changes,)
 
 
-class RiskProfileAnswerInline(nested_admin.NestedTabularInline):
-    model = RiskProfileAnswer
-    sortable_field_name = "order"
-    formfield_overrides = {
-        TextField: {'widget': Textarea(attrs={'rows': 1, 'cols': 100})},
-    }
-    extra = 0
-
-
-class RiskProfileQuestionInline(nested_admin.NestedTabularInline):
-    model = RiskProfileQuestion
-    sortable_field_name = "order"
-    formfield_overrides = {
-        TextField: {'widget': Textarea(attrs={'rows': 1, 'cols': 100})},
-    }
-    extra = 0
-    inlines = [RiskProfileAnswerInline]
-
-
-class RiskProfileGroupAdmin(nested_admin.NestedModelAdmin):
-    list_display = ('name', 'description',)
-    inlines = [RiskProfileQuestionInline]
-
-
 class ActivityLogEventAdminInline(admin.TabularInline):
     model = ActivityLogEvent
 
@@ -371,7 +301,6 @@ admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAd
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
 admin.site.register(Performer, PerformerAdmin)
-admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(Goal, GoalAdmin)
 admin.site.register(GoalType, GoalTypeAdmin)
 admin.site.register(MarketIndex)
@@ -381,20 +310,34 @@ admin.site.register(Dividend)
 admin.site.register(ProxyAssetClass, AssetClassAdmin)
 admin.site.register(Firm, FirmAdmin)
 admin.site.register(Advisor, AdvisorAdmin)
-admin.site.register(Client, ClientAdmin)
 admin.site.register(AuthorisedRepresentative, AuthorisedRepresentativeAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
-admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)
-admin.site.register(AccountTypeRiskProfileGroup, AccountTypeRiskProfileGroupAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
-# The below are commented as non-devs should not be editing them.
-# admin.site.register(DailyPrice, DailyPriceAdmin)
-# admin.site.register(MarketOrderRequest)
-# admin.site.register(Execution)
-# admin.site.register(ExecutionDistribution)
-# admin.site.register(Ticker)
-# End non-dev section
+
+if settings.DEBUG:
+    from main.models import (MarketOrderRequest, Execution, DailyPrice,
+                             ExecutionDistribution, Ticker)
+
+
+    class DailyPriceAdmin(GenericAdminModelAdmin):
+        model = DailyPrice
+        list_display = (
+        'date', 'price', 'instrument_content_type', 'instrument_object_id')
+        # sortable = 'date'
+        # extra = 0
+        generic_fk_fields = [{
+            'ct_field': 'instrument_content_type',
+            'fk_field': 'instrument_object_id',
+        }]
+        list_editable = (
+        'date', 'price', 'instrument_content_type', 'instrument_object_id')
+
+    admin.site.register(DailyPrice, DailyPriceAdmin)
+    admin.site.register(MarketOrderRequest)
+    admin.site.register(Execution)
+    admin.site.register(ExecutionDistribution)
+    admin.site.register(Ticker)

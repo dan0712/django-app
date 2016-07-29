@@ -6,14 +6,15 @@ from django.utils import timezone
 from pinax.eventlog.models import Log
 
 import address.models as ad
+from client.models import Client, ClientAccount, RiskProfileAnswer,\
+    RiskProfileGroup, RiskProfileQuestion
 from main.constants import ACCOUNT_TYPE_PERSONAL, STOCKS, SUPER_ASSET_CLASSES
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
     PortfolioSet, Region, RetirementPlan, RetirementPlanATC, \
-    RetirementPlanBTC, Ticker, Transaction, User, Client, ClientAccount, \
-    RiskProfileAnswer, RiskProfileGroup, RiskProfileQuestion
+    RetirementPlanBTC, Ticker, Transaction, User
 
 
 class Fixture1:

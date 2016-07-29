@@ -136,3 +136,4 @@ local_settings.py
 !.elasticbeanstalk/*.global.yml
 
 #/src/static/bower_components/
+.vagrant

@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'bootstrap3',
 
     'main',
+    'client',
     'address',
     'user',
     'advisors',

@@ -7,7 +7,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import RetirementPlan, Client, RetirementPlanBTC, RetirementPlanEinc, RetirementPlanATC
+from main.models import RetirementPlan, RetirementPlanBTC, RetirementPlanEinc, RetirementPlanATC
+from client.models import Client
 
 
 def get_default_tx_plan():

@@ -4,7 +4,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 __author__ = 'cristian'
 
 from django.db import models
-from main.models import Firm, Advisor, Client
+from main.models import Firm, Advisor
+from client.models import Client
 
 __all__ = ["ChangeDealerGroup", "SingleInvestorTransfer", "BulkInvestorTransfer"]
 

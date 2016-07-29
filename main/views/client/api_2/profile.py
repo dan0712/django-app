@@ -1,4 +1,5 @@
-from main.models import Client, User
+from main.models import User
+from client.models import Client
 from rest_framework import serializers, viewsets
 from .urls import router
 

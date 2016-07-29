@@ -1,8 +1,7 @@
 from rest_framework import permissions
 
-from main.models import (
-    Advisor, Client, #Firm, Company,
-)
+from client.models import Client
+from main.models import Advisor
 
 
 class IsAdvisor(permissions.BasePermission):
@@ -17,7 +16,7 @@ class IsClient(permissions.BasePermission):
 
 class IsAdvisorOrClient(permissions.BasePermission):
     def has_permission(self, request, view):
-        return (request.user.is_authenticated() and 
+        return (request.user.is_authenticated() and
                 (request.user.is_advisor or request.user.is_client))
 
 
@@ -27,6 +26,7 @@ class IsMyAdvisorCompany(IsAdvisor):
     Note: user is supposed to be Advisor only
     (could be extrended later)
     """
+
     def has_permission(self, request, view):
         user = request.user
 
@@ -52,7 +52,7 @@ class IsMyAdvisorCompany(IsAdvisor):
         if isinstance(obj, Advisor):
             return obj.company == advisor.company
 
-        #if isinstance(obj, Company):
+        # if isinstance(obj, Company):
         #    return obj == advisor.company
 
         if isinstance(obj, Client):
@@ -63,7 +63,7 @@ class IsMyAdvisorCompany(IsAdvisor):
             except Client.DoesNotExist:
                 return False
 
-        #if isinstance(obj, Household):
+        # if isinstance(obj, Household):
         #    # "get_households" supposed to be role-awared
         #    try:
         #        advisor.get_households().get(pk=obj.pk)
@@ -71,7 +71,7 @@ class IsMyAdvisorCompany(IsAdvisor):
         #    except Household.DoesNotExist:
         #        return False
 
-        #if isinstance(obj, Portfolio):
+        # if isinstance(obj, Portfolio):
         #    # "get_portfolios" supposed to be role-awared
         #    try:
         #        advisor.get_portfolios().get(pk=obj.pk)
@@ -92,24 +92,26 @@ class IsMyAdvisorCompanyCustom(IsMyAdvisorCompany):
     Note: user is supposed to be Advisor only
     (could be extrended later)
     """
-    def __init__(self, obj=None, *args, **kwargs):
-        super(IsMyAdvisorCompanyCustom, self).__init__(*args, **kwargs)
+
+    def __init__(self, obj=None):
+        super(IsMyAdvisorCompanyCustom, self).__init__()
         if obj:
             self.obj = obj
 
     def has_permission(self, request, view):
         if hasattr(self, 'obj'):
-            return super(IsMyAdvisorCompanyCustom, self) \
-                .has_object_permission(request, view, self.obj)
+            return (super(IsMyAdvisorCompanyCustom, self)
+                    .has_object_permission(request, view, self.obj))
 
         return True
 
     def has_object_permission(self, request, view, obj):
         if hasattr(self, 'obj'):
-            return True # already checked above (see "has_permission" function)
+            # already checked above (see "has_permission" function)
+            return True
 
-        return super(IsMyAdvisorCompanyCustom, self) \
-            .has_object_permission(request, view, obj)
+        return (super(IsMyAdvisorCompanyCustom, self)
+                .has_object_permission(request, view, obj))
 
 
 # RESERVED

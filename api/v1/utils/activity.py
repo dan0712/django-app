@@ -1,23 +1,23 @@
+import decimal
 from datetime import datetime
+from decimal import Decimal
 
 import operator
-import decimal
-
-from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.aggregates import Sum
 from django.db.models.query_utils import Q
 from django.utils import timezone
 from django.utils.timezone import now
 from pinax.eventlog.models import Log
-
 from rest_framework import serializers
 from rest_framework.response import Response
 
 from api.v1.serializers import QueryParamSerializer
-from common.constants import EPOCH_TM, DEC_2PL
+from client.models import ClientAccount
+from common.constants import DEC_2PL, EPOCH_TM
 from main.event import Event
-from main.models import ActivityLog, ActivityLogEvent, Transaction, Goal, ClientAccount, HistoricalBalance
+from main.models import ActivityLog, ActivityLogEvent, Goal, HistoricalBalance, \
+    Transaction
 
 # Make unsafe float operations with decimal fail
 decimal.getcontext().traps[decimal.FloatOperation] = True

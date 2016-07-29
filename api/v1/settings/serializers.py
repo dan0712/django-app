@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import (
-    AssetClass, Ticker, GoalType,
-    RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, ActivityLog)
+from main.models import AssetClass, Ticker, GoalType, ActivityLog
+from client.models import RiskProfileGroup, RiskProfileQuestion, \
+    RiskProfileAnswer
 
 
 class GoalTypeListSerializer(serializers.ModelSerializer):

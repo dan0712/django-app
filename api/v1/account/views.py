@@ -8,7 +8,7 @@ from api.v1.permissions import IsAdvisorOrClient
 from api.v1.utils import activity
 from api.v1.views import ApiViewMixin
 
-from main.models import ClientAccount
+from client.models import ClientAccount
 
 from . import serializers
 
