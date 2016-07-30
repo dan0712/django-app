@@ -49,6 +49,47 @@ python manage.py migrate
 ```
 
 
+## Docker Development Environment Installation
+Install docker for whatever operating system you're running on.  https://docs.docker.com/engine/installation/
+
+Run this part for the initial setup and if project requirements are updated.
+
+````shell
+docker build -t betasmartz/backend_base:backend_build devop/backend_base
+````
+
+Start the necessary containers to run the development server.  The -d option detaches from your current shell so its in the background, but if you want to track stdout actively in a shell, then you can just run without the -d option.
+````shell
+docker-compose up --build -d
+````
+
+
+Run migrations for the initial setup or if you're making or pulling in new migrations.
+````shell
+alias deb="docker exec betasmartz_web_1 $*"
+deb ./betasmartz/manage.py migrate main
+deb ./betasmartz/manage.py migrate
+````
+
+
+Add http://local.betasmartz.com to your hosts
+````shell
+sudo sh -c 'echo "\n127.0.0.1 local.betasmartz.com\n" | sudo tee -a /etc/hosts'
+````
+
+Open http://local.betasmartz.com/login in a browser to access the django backend.
+
+
+Load data fixtures
+````shell
+alias deb="docker exec betasmartz_web_1 $*"
+deb ./betasmartz/manage.py loaddata betasmartz/main/fixtures/executions.json
+deb ./betasmartz/manage.py loaddata betasmartz/main/fixtures/groups.json
+deb ./betasmartz/manage.py loaddata betasmartz/main/fixtures/superuser.json
+deb ./betasmartz/manage.py loaddata betasmartz/main/fixtures/transactions.json
+````
+
+
 
 ## Demo
 http://demo.betasmartz.com/
