@@ -4,7 +4,7 @@ from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import User, Advisor
-from client.models import Client
+from client.models import Client, EmailNotificationPrefs
 
 
 class FieldUserSerializer(ReadOnlyModelSerializer):
@@ -223,3 +223,8 @@ class ResetEmailSerializer(serializers.Serializer):
 
         return value
 
+
+class EmailNotificationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailNotificationPrefs
+        exclude = 'id', 'client',

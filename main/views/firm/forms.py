@@ -21,9 +21,7 @@ from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, 
 from ..base import AdminView
 from ..base import LegalView
 from ...forms import EmailInviteForm
-from ...models import AUTHORIZED_REPRESENTATIVE, EmailInvitation, PERSONAL_DATA_FIELDS, Section, \
-    PERSONAL_DATA_WIDGETS, BetaSmartzGenericUSerSignupForm, INVITATION_ADVISOR, INVITATION_SUPERVISOR, \
-    INVITATION_TYPE_DICT, Position
+from ...models import EmailInvitation, Section, Position
 from main.constants import SUCCESS_MESSAGE, INVITATION_ADVISOR, \
     AUTHORIZED_REPRESENTATIVE, INVITATION_SUPERVISOR, INVITATION_TYPE_DICT, \
     PERSONAL_DATA_FIELDS
@@ -468,7 +466,7 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             fee_t.save()
             self.transaction.new_balance = new_amount
 
-        if self.transaction.type == TRANSACTION_TYPE_ALLOCATION:
+        if self.transaction.type ==  TRANSACTION_TYPE_ALLOCATION:
             pass
 
         self.transaction.status = Transaction.STATUS_EXECUTED

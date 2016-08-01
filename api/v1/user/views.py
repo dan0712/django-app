@@ -1,12 +1,16 @@
 from django.db import transaction
-from rest_framework import exceptions, parsers, views, status
+from rest_framework import exceptions, parsers, status, views
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from api.v1.permissions import IsClient
+from client.models import Client
 from user.autologout import keep_alive
 from . import serializers
-from ..user.serializers import UserAdvisorSerializer, UserClientSerializer
+from ..user.serializers import UserAdvisorSerializer, UserClientSerializer, \
+    EmailNotificationsSerializer
 from ..views import ApiViewMixin
 
 
@@ -138,3 +142,11 @@ class KeepAliveView(ApiViewMixin, views.APIView):
     def get(self, request):
         keep_alive(request)
         return Response('ok', status=status.HTTP_200_OK)
+
+
+class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
+    permission_classes = IsClient,
+    serializer_class = EmailNotificationsSerializer
+
+    def get_object(self):
+        return Client.objects.get(user=self.request.user).notification_prefs

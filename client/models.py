@@ -486,7 +486,7 @@ class RiskProfileAnswer(models.Model):
 
 
 class EmailNotificationPrefs(models.Model):
-    client = models.ForeignKey('Client', related_name='email_prefs')
+    client = models.OneToOneField('Client', related_name='notification_prefs')
     auto_deposit = models.BooleanField(
         verbose_name=_('to remind me a day before my automatic '
                        'deposits will be transferred'),

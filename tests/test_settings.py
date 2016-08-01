@@ -2,6 +2,7 @@ SECRET_KEY = 'fake-key'
 INSTALLED_APPS = [
     "tests",
     'main',
+    'client',
     'portfolios',
     'django.contrib.contenttypes',
     'django.contrib.auth',
