@@ -3,15 +3,30 @@
 
 
 ## Installation
-Non-Docker installation instructions (MacOS):  
+Non-Docker installation instructions (MacOS):
 ```sh
 brew install python3 # install python3.5
 export PATH=${PATH}:/usr/local/Cellar/python3/3.5.1/bin # check the path
 pyvenv-3.5 env # create virtual env
 source env/bin/activate # run virtual env
 
-(replace numpy version in requirements): numpy==1.10.4
-pip install -r devop/backend_base/requirements.txt # - install packages
+#ENVIRONMENT SETUP (as needed by RP on a Mac)
+export CC=gcc
+export PATH={path-to-your-pg_config-binary}:$PATH #obviously, put your own path in there. My export was export PATH=/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH 
+pip install numpy
+ln -s `which g++` ./env/bin/g++-4.2 #Mac-specific error
+
+#CHANGE FILE: Open ./devop/backend_base/requirements/base.txt
+# and alter the numpy line to read
+numpy==1.10.4
+
+#PACKAGE INSTALL
+pip install -r devop/backend_base/requirements/dev.txt # - install packages
+
+#COPY SETTINGS: Use dev instructions OR docker instructions
+cp dev_settings.py local_settings.py #create local settings from dev sample
+#OR
+cp local_settings_docker.py local_settings.py # create local settings
 
 python manage.py migrate # migrate db
 python manage.py loaddata main/fixtures/groups.json # load fixtures
@@ -20,7 +35,6 @@ python manage.py loaddata main/fixtures/data.json # (optional) load fixtures (da
 python manage.py loaddata main/fixtures/transactions.json
 python manage.py loaddata main/fixtures/goal-settings.json
 
-cp local_settings_docker.py local_settings.py # create local settings
 ./manage.py runserver # run server
 ```
 
