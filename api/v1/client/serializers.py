@@ -123,4 +123,6 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
         notify.send(client.advisor.user, recipient=client.user,
                     verb='update-personal-info')
 
+        # TODO generate a new SOA
+
         return instance
