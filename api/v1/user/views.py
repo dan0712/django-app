@@ -9,8 +9,8 @@ from api.v1.permissions import IsClient
 from client.models import Client
 from user.autologout import keep_alive
 from . import serializers
-from ..user.serializers import UserAdvisorSerializer, UserClientSerializer, \
-    EmailNotificationsSerializer
+from ..user.serializers import UserAdvisorSerializer, UserClientSerializer
+from api.v1.client.serializers import EmailNotificationsSerializer
 from ..views import ApiViewMixin
 
 
@@ -142,11 +142,3 @@ class KeepAliveView(ApiViewMixin, views.APIView):
     def get(self, request):
         keep_alive(request)
         return Response('ok', status=status.HTTP_200_OK)
-
-
-class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
-    permission_classes = IsClient,
-    serializer_class = EmailNotificationsSerializer
-
-    def get_object(self):
-        return Client.objects.get(user=self.request.user).notification_prefs
