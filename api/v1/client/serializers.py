@@ -4,6 +4,7 @@ from rest_framework import serializers
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import ExternalAsset, ExternalAssetTransfer
 from client.models import Client, EmailNotificationPrefs
+from notifications.signals import notify
 
 from ..user.serializers import FieldUserSerializer
 
@@ -112,8 +113,14 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         new_address = self.validated_data.pop('residential_address', None)
+        client = self.instance # client.Client
         if new_address:
-            current_address = self.instance.residential_address
+            current_address = client.residential_address
             current_address.address = new_address['address']
             current_address.save(update_fields=['address'])
-        return super(PersonalInfoSerializer, self).save(**kwargs)
+        instance = super(PersonalInfoSerializer, self).save(**kwargs)
+
+        notify.send(client.advisor.user, recipient=client.user,
+                    verb='update-personal-info')
+
+        return instance
