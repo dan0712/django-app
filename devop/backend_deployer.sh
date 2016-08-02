@@ -64,7 +64,7 @@ main() {
     docker run -v /home/bsmartz/${2}_media:/betasmartz/media \
                -v /home/bsmartz/${2}_static:/collected_static \
                -e "DB_PASSWORD=${DBPW}" \
-               -e 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}' \
+               -e 'POSTGRES_PASSWORD='${POSTGRES_PASSWORD} \
                -e ENVIRONMENT=${2} \
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                --net=betasmartz-local \
