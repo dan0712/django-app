@@ -6,7 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
 
 from main import settings
-from .views import *
+from main.views import *
+from main.views.client.app_missing import ClientAppMissing
 
 
 def ok_response_json(*args, **kwargs):
