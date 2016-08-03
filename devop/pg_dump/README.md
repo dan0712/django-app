@@ -9,7 +9,7 @@ docker run -it --link postgres:db --net betasmartz_default pg_dump -h db -U post
 
 
 # dump production
-docker run -it --link postgres:db --net betasmartz-local pg_dump -h db -U betasmartz_production -e PGPASSWORD=${PRODUCTION_DBPW} betasmartz_production > backups/betasmartz_production_latest.dump
+docker run -it --link postgres:db --net betasmartz-local -e PGPASSWORD=${PRODUCTION_DBPW} pg_dump -h db -U betasmartz_production betasmartz_production > backups/betasmartz_production_latest.dump
 
 
 # dump betasmartz_dev
