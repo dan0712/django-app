@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -34,6 +35,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
             'civil_statuses': self.civil_statuses(request).data,
             'employment_statuses': self.employment_statuses(request).data,
             'external_asset_types': self.external_asset_types(request).data,
+            'constants': self.constants(request).data,
         }
         return Response(data)
 
@@ -125,3 +127,9 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
     def external_asset_types(self, request):
         return Response([{"id": choice[0], "name": choice[1]}
                          for choice in models.ExternalAsset.Type.choices()])
+
+    @list_route(methods=['get'])
+    def constants(self, request):
+        return Response({
+            'session_length': settings.SESSION_LENGTH,
+        })
