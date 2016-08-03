@@ -8,3 +8,7 @@ pg_dump -U betasmartz_dev -Fc betasmartz_dev -h 127.0.0.1 > betasmartz_dev_lates
 ${DEV_DB_PASS}
 exit
 docker cp postgres:betasmartz_dev_latest.dump backups/betasmartz_dev_$(date +%s).dump
+
+
+# restore betasmartz_dev with:
+# pg_restore -U betasmartz_dev -h 127.0.0.1 --verbose --no-owner betasmartz_dev.dump
