@@ -5,12 +5,12 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from api.v1.permissions import IsClient
 from client.models import Client
-from user.autologout import keep_alive
+from user.autologout import SessionExpire
 from . import serializers
-from ..user.serializers import UserAdvisorSerializer, UserClientSerializer, \
-    EmailNotificationsSerializer
+from ..permissions import IsClient
+from ..user.serializers import EmailNotificationsSerializer, \
+    UserAdvisorSerializer, UserClientSerializer
 from ..views import ApiViewMixin
 
 
@@ -140,7 +140,7 @@ class KeepAliveView(ApiViewMixin, views.APIView):
     permission_classes = IsAuthenticated,
 
     def get(self, request):
-        keep_alive(request)
+        SessionExpire(request).keep_alive()
         return Response('ok', status=status.HTTP_200_OK)
 
 

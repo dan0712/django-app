@@ -1,7 +1,8 @@
-import json
+import logging
 
 from rest_framework.renderers import JSONRenderer
 
+from user.autologout import SessionExpire
 
 # format json response
 # https://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml
@@ -12,9 +13,11 @@ class ApiRenderer(JSONRenderer):
         NB. be sure that settings.REST_FRAMEWORK contains:
         'EXCEPTION_HANDLER': '...api_exception_handler',
         """
-
+        logger = logging.getLogger(__name__)
         wrapper = {
             'version': '2',
+            'data': {},
+            'meta': {},
         }
 
         # move error to the root level
@@ -25,4 +28,16 @@ class ApiRenderer(JSONRenderer):
         if data is not None:
             wrapper['data'] = data
 
-        return super(ApiRenderer, self).render(wrapper, media_type, renderer_context)
+        try:
+            response = renderer_context['response']
+            request = renderer_context['request']
+            if 200 <= response.status_code < 400:
+                meta = {}
+                session_expire = SessionExpire(request)
+                meta['session_expires_on'] = session_expire.expire_time()
+                wrapper['meta'] = meta
+        except (TypeError, KeyError) as e:
+            logger.error("Missing parameteres (%s)", e)
+
+        return super(ApiRenderer, self).render(wrapper, media_type,
+                                               renderer_context)
