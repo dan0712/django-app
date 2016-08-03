@@ -71,13 +71,7 @@ deb ./betasmartz/manage.py migrate main
 deb ./betasmartz/manage.py migrate
 ````
 
-
-Add http://local.betasmartz.com to your hosts
-````shell
-sudo sh -c 'echo "\n127.0.0.1 local.betasmartz.com\n" | sudo tee -a /etc/hosts'
-````
-
-Open http://local.betasmartz.com/login in a browser to access the django backend.
+Open http://0.0.0.0 in a browser to access the django backend.
 
 
 Load data fixtures
