@@ -1,4 +1,4 @@
-Django>=1.8,<1.9
+Django==1.8.14
 
 # rocket science
 numpy==1.9.2
