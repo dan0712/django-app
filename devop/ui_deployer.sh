@@ -23,7 +23,6 @@ main() {
       # switch to rollback
       docker rename ${2}_betasmartz_ui_rollback ${2}_betasmartz_ui
     fi
-    
     popd
 }
 
