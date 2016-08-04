@@ -1,7 +1,7 @@
 version: '2'
 services:
   postgres:
-    image: postgres
+    build: devop/db_app_Bluemix
   redis:
     image: redis
   web:
