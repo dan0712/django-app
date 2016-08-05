@@ -58,9 +58,9 @@ main() {
     git checkout $1
     echo building docker image
     docker build -t betasmartz/backend:${2}_cd .
-    docker stop ${2}_betasmartz_app
-    docker rm ${2}_betasmartz_app_rollback
-    docker rename ${2}_betasmartz_app ${2}_betasmartz_app_rollback
+    # run tests on a docker testing container before taking down
+    # currently serving container - ${2}_betasmartz_app_test
+    # this should minimize downtime switching old builds to new ones
     docker run -v /home/bsmartz/${2}_media:/betasmartz/media \
                -v /home/bsmartz/${2}_static:/collected_static \
                -e "DB_PASSWORD=${DBPW}" \
@@ -68,9 +68,28 @@ main() {
                -e ENVIRONMENT=${2} \
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                --net=betasmartz-local \
-               --name=${2}_betasmartz_app \
+               --name=${2}_betasmartz_app_test \
                -d betasmartz/backend:${2}_cd
-    docker exec nginx nginx -s reload
+    
+    docker exec ${2}_betasmartz_app_test python3.5 betasmartz/manage.py test --noinput
+    if [ $? -eq 0 ]  # tests ran successfully?
+    then
+        echo "Tests passed successfully, switching out current app container."
+        # tests passed ok, lets take down the current app and put the test container live
+        # delete old rollback
+        docker rm ${2}_betasmartz_app_rollback
+        
+        docker rename ${2}_betasmartz_app ${2}_betasmartz_app_rollback
+        docker rename ${2}_betasmartz_app_test ${2}_betasmartz_app
+
+        docker exec nginx nginx -s reload  # have nginx load new app
+        docker stop ${2}_betasmartz_app_rollback  # stop old container
+    else
+        echo "Tests failed, keeping current app container, removing test container."
+        # tests failed, keep current app container, rm test container
+        docker stop ${2}_betasmartz_app_test
+        docker rm ${2}_betasmartz_app_test
+    fi
     popd
 }
 
