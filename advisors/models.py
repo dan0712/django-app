@@ -5,7 +5,6 @@ __author__ = 'cristian'
 
 from django.db import models
 from main.models import Firm, Advisor
-from client.models import Client
 
 __all__ = ["ChangeDealerGroup", "SingleInvestorTransfer", "BulkInvestorTransfer"]
 
@@ -56,7 +55,7 @@ class SingleInvestorTransfer(models.Model):
     approved = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True)
     create_at = models.DateTimeField(auto_now_add=True)
-    investor = models.ForeignKey(Client)
+    investor = models.ForeignKey('client.Client')
     firm = models.ForeignKey(Firm, editable=False)
     signatures = models.FileField()
 
@@ -87,7 +86,7 @@ class BulkInvestorTransfer(models.Model):
     approved_at = models.DateTimeField(null=True)
     firm = models.ForeignKey(Firm, editable=False)
     create_at = models.DateTimeField(auto_now_add=True)
-    investors = models.ManyToManyField(Client)
+    investors = models.ManyToManyField('client.Client')
     signatures = models.FileField()
 
     def save(self, force_insert=False, force_update=False, using=None,
