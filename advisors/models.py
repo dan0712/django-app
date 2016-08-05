@@ -1,18 +1,12 @@
+from django.db import models
 from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
 
-__author__ = 'cristian'
-
-from django.db import models
-from main.models import Firm, Advisor
-
-__all__ = ["ChangeDealerGroup", "SingleInvestorTransfer", "BulkInvestorTransfer"]
-
 
 class ChangeDealerGroup(models.Model):
-    advisor = models.ForeignKey(Advisor)
-    old_firm = models.ForeignKey(Firm, related_name="old_advisors")
-    new_firm = models.ForeignKey(Firm, related_name="new_advisors")
+    advisor = models.ForeignKey('main.Advisor')
+    old_firm = models.ForeignKey('main.Firm', related_name="old_advisors")
+    new_firm = models.ForeignKey('main.Firm', related_name="new_advisors")
     approved = models.BooleanField(default=False)
     create_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
@@ -50,13 +44,13 @@ class ChangeDealerGroup(models.Model):
 
 
 class SingleInvestorTransfer(models.Model):
-    from_advisor = models.ForeignKey(Advisor)
-    to_advisor = models.ForeignKey(Advisor, verbose_name="To Advisor", related_name="single_transfer_to_advisors")
+    from_advisor = models.ForeignKey('main.Advisor')
+    to_advisor = models.ForeignKey('main.Advisor', verbose_name="To Advisor", related_name="single_transfer_to_advisors")
     approved = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True)
     create_at = models.DateTimeField(auto_now_add=True)
     investor = models.ForeignKey('client.Client')
-    firm = models.ForeignKey(Firm, editable=False)
+    firm = models.ForeignKey('main.Firm', editable=False)
     signatures = models.FileField()
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -80,11 +74,11 @@ class SingleInvestorTransfer(models.Model):
 
 
 class BulkInvestorTransfer(models.Model):
-    from_advisor = models.ForeignKey(Advisor)
-    to_advisor = models.ForeignKey(Advisor, verbose_name="To Advisor", related_name="bulk_transfer_to_advisors")
+    from_advisor = models.ForeignKey('main.Advisor')
+    to_advisor = models.ForeignKey('main.Advisor', verbose_name="To Advisor", related_name="bulk_transfer_to_advisors")
     approved = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True)
-    firm = models.ForeignKey(Firm, editable=False)
+    firm = models.ForeignKey('main.Firm', editable=False)
     create_at = models.DateTimeField(auto_now_add=True)
     investors = models.ManyToManyField('client.Client')
     signatures = models.FileField()
@@ -109,3 +103,7 @@ class BulkInvestorTransfer(models.Model):
         self.approved = True
         self.approved_at = now()
         self.save()
+
+
+# noinspection PyUnresolvedReferences
+from . import connectors
