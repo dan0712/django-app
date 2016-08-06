@@ -12,8 +12,8 @@ from django.utils.translation import gettext as _
 
 from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
-from main.managers import ClientAccountQuerySet, ClientQuerySet
 from main.models import AccountGroup, Goal, Platform
+from .managers import ClientAccountQuerySet, ClientQuerySet
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
