@@ -2,7 +2,7 @@ import os
 
 environment = os.environ["ENVIRONMENT"]
 
-if environment in ["prod", "demo", "dev"]:
+if environment in ["prod", "demo"]:
     hn = 'app' if environment == 'prod' else environment
     ALLOWED_HOSTS = ["{}.betasmartz.com".format(hn)]
     SITE_URL = "http://{}.betasmartz.com".format(hn)
