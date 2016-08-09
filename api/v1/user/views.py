@@ -1,21 +1,20 @@
 from django.db import transaction
-from rest_framework import exceptions, parsers, status, views
+from rest_framework import exceptions, parsers, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from client.models import Client
 from user.autologout import SessionExpire
 from . import serializers
-from ..permissions import IsClient
-from ..user.serializers import EmailNotificationsSerializer, \
+from .serializers import EmailNotificationsSerializer, \
     UserAdvisorSerializer, UserClientSerializer
-from ..views import ApiViewMixin
+from ..permissions import IsClient
+from ..views import ApiViewMixin, BaseApiView
 
 
-class MeView(ApiViewMixin, views.APIView):
-    permission_classes = (IsAuthenticated,)
+class MeView(BaseApiView):
     serializer_class = serializers.UserSerializer
 
     def get(self, request):
@@ -63,7 +62,7 @@ class MeView(ApiViewMixin, views.APIView):
         return Response(serializer.data)
 
 
-class LoginView(ApiViewMixin, views.APIView):
+class LoginView(BaseApiView):
     """
     Signin andvisors or any other type of users
     """
@@ -100,13 +99,11 @@ class LoginView(ApiViewMixin, views.APIView):
         return Response(serializer.data)
 
 
-class RegisterView(ApiViewMixin, views.APIView):
+class RegisterView(BaseApiView):
     pass
 
 
-class ResetView(ApiViewMixin, views.APIView):
-    permission_classes = (IsAuthenticated,)
-
+class ResetView(BaseApiView):
     def post(self, request):
         serializer = serializers.ResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -121,7 +118,7 @@ class ResetView(ApiViewMixin, views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ResetEmailView(ApiViewMixin, views.APIView):
+class ResetEmailView(BaseApiView):
     authentication_classes = ()
     permission_classes = (AllowAny,)
 
@@ -136,9 +133,7 @@ class ResetEmailView(ApiViewMixin, views.APIView):
         return Response('User is blocked', status=status.HTTP_403_FORBIDDEN)
 
 
-class KeepAliveView(ApiViewMixin, views.APIView):
-    permission_classes = IsAuthenticated,
-
+class KeepAliveView(BaseApiView):
     def get(self, request):
         SessionExpire(request).keep_alive()
         return Response('ok', status=status.HTTP_200_OK)
