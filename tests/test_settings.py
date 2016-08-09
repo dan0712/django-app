@@ -1,12 +1,6 @@
+from main.settings import *
+
 SECRET_KEY = 'fake-key'
-INSTALLED_APPS = [
-    "tests",
-    'main',
-    'client',
-    'portfolios',
-    'django.contrib.contenttypes',
-    'django.contrib.auth',
-]
 TEST_RUNNER = "tests.fast_test_runner.FastTestRunner"
 DATABASES = {
      'default': {
