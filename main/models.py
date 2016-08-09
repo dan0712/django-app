@@ -763,7 +763,7 @@ class RetirementPlan(models.Model):
         if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
             raise ValidationError("Partner plan relationship must be symmetric.")
 
-        if not self.smsf_account.confirmed:
+        if self.smsf_account and not self.smsf_account.confirmed:
             raise ValidationError('Account is not verified.')
 
         super(RetirementPlan, self).save(*args, **kwargs)

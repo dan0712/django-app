@@ -276,12 +276,13 @@ class Fixture1:
         Fixture1.personal_account1().risk_profile_responses.add(Fixture1.risk_profile_answer2a())
 
     @classmethod
-    def personal_account1(cls):
+    def personal_account1(cls) -> ClientAccount:
         params = {
             'account_type': ACCOUNT_TYPE_PERSONAL,
             'primary_owner': Fixture1.client1(),
             'default_portfolio_set': Fixture1.portfolioset1(),
             'risk_profile_group': Fixture1.risk_profile_group1(),
+            'confirmed': True,
         }
         return ClientAccount.objects.get_or_create(id=1, defaults=params)[0]
 
