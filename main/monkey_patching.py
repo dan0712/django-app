@@ -1,4 +1,5 @@
-from pages.widgets import *
+from django.forms import Textarea
+from pages.widgets_registry import register_widget
 
 
 class TinyMceTextArea(Textarea):
