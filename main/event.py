@@ -1,8 +1,11 @@
-from django.apps import AppConfig
 from django.utils import six
 from pinax.eventlog.models import log as event_log
-
 from common.structures import ChoiceEnum
+
+# using AppConfig is for Django 1.9+
+# from django.apps import AppConfig
+# use this instead for Django 1.7<1.9
+from django.db.models.loading import get_model
 
 
 class InvalidLogParams(Exception):
@@ -74,7 +77,10 @@ class Event(ChoiceEnum):
     def obj_class(self):
         if isinstance(self._obj_class, six.string_types):
             app_label, model_name = self._obj_class.rsplit('.', 1)
-            self._obj_class = AppConfig.get_model(app_label, model_name)
+            # using AppConfig only works for Django 1.9+
+            # self._obj_class = AppConfig.get_model(app_label, model_name)
+            # use this instead of Django 1.7<1.9
+            self._obj_class = get_model(app_label, model_name)
         return self._obj_class
 
     def log(self, reason, *args, user=None, obj=None):
