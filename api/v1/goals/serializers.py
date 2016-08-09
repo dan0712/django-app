@@ -519,6 +519,11 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
             self.fields['account'].queryset = \
                 self.fields['account'].queryset.filter_by_client(user.client)
 
+    def validate(self, attrs):
+        if not attrs['account'].confirmed:
+            raise ValidationError('Account is not verified.')
+        return super(GoalCreateSerializer, self).validate(attrs)
+
     def create(self, validated_data):
         """
         Override the default create because we need to generate a portfolio.

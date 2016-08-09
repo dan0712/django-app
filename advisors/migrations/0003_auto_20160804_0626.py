@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         ('client', '0001_initial'),
     ]
 
-    operations = [
+    state_operations = [
         migrations.AlterField(
             model_name='bulkinvestortransfer',
             name='investors',
@@ -22,4 +22,10 @@ class Migration(migrations.Migration):
             name='investor',
             field=models.ForeignKey(to='client.Client'),
         ),
+    ]
+
+    operations = [
+        migrations.SeparateDatabaseAndState(
+            state_operations=state_operations
+        )
     ]

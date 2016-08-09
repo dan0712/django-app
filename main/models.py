@@ -763,6 +763,9 @@ class RetirementPlan(models.Model):
         if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
             raise ValidationError("Partner plan relationship must be symmetric.")
 
+        if not self.smsf_account.confirmed:
+            raise ValidationError('Account is not verified.')
+
         super(RetirementPlan, self).save(*args, **kwargs)
 
 
@@ -1283,6 +1286,13 @@ class Goal(models.Model):
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.account.confirmed:
+            raise ValidationError('Account is not verified.')
+        return super(Goal, self).save(force_insert, force_update, using,
+                                      update_fields)
 
     @transaction.atomic
     def archive(self):
@@ -1934,6 +1944,14 @@ class MarketOrderRequest(models.Model):
             'executions': list(self.executions) if hasattr(self, 'executions') else [],
         }
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.account.confirmed:
+            raise ValidationError('Account is not verified.')
+        return super(MarketOrderRequest, self).save(force_insert, force_update,
+                                                    using, update_fields)
+
+
 
 class ExecutionRequest(models.Model):
     """
@@ -1960,6 +1978,13 @@ class ExecutionRequest(models.Model):
             'asset': str(self.ticker),
             'volume': self.volume
         }
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.account.confirmed:
+            raise ValidationError('Account is not verified.')
+        return super(ExecutionRequest, self).save(force_insert, force_update,
+                                                  using, update_fields)
 
 
 class Execution(models.Model):
