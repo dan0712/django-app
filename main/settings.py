@@ -51,6 +51,7 @@ INSTALLED_APPS = (
     'client',
     'address',
     'user',
+    'support',
     'advisors',
     'portfolios',
 )
