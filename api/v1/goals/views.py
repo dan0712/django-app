@@ -23,6 +23,7 @@ from main.models import Goal, GoalType, Transaction, HistoricalBalance, Ticker, 
 from main.risk_profiler import recommend_ttl_risks
 from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
     calculate_portfolios, current_stats_from_weights
+from support.models import SupportRequest
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
@@ -86,14 +87,14 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             qs = qs.exclude(state=Goal.State.ARCHIVED.value)
 
         # show "permissioned" records only
-        user = self.request.user
-
+        user = SupportRequest.target_user(self.request)
         if user.is_advisor:
             qs = qs.filter_by_advisor(user.advisor)
         elif user.is_client:
             qs = qs.filter_by_client(user.client)
         else:
-            raise PermissionDenied('Only Advisors or Clients are allowed to access goals.')
+            raise PermissionDenied('Only Advisors or Clients are allowed '
+                                   'to access goals.')
 
         return qs
 
@@ -117,10 +118,11 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         """
         goal = self.get_object()
         # If I'm an adviser or the goal is unsupervised, archive the goal immediately.
-        if not goal.account.supervised or self.request.user.is_advisor:
+        user = SupportRequest.target_user(self.request)
+        if not goal.account.supervised or user.is_advisor:
             check_state(Goal.State(goal.state), [Goal.State.ACTIVE, Goal.State.ARCHIVE_REQUESTED])
             Event.ARCHIVE_GOAL.log('{} {}'.format(self.request.method, self.request.path),
-                                   user=self.request.user,
+                                   user=user,
                                    obj=goal)
             # Set the state to archive requested, as the call to archive() requires it.
             goal.state = Goal.State.ARCHIVE_REQUESTED.value
@@ -129,7 +131,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             # I'm a client with a supervised goal, just change the status to ARCHIVE_REQUESTED, and add a notification
             check_state(Goal.State(goal.state), Goal.State.ACTIVE)
             Event.ARCHIVE_GOAL_REQUESTED.log('{} {}'.format(self.request.method, self.request.path),
-                                             user=self.request.user,
+                                             user=user,
                                              obj=goal)
             # Flag the goal as archive requested.
             goal.state = Goal.State.ARCHIVE_REQUESTED.value
@@ -166,13 +168,14 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             return Response(serializer.data)
 
         with transaction.atomic():  # So both the log and change get committed.
+            user = SupportRequest.target_user(request)
             if request.method == 'POST':
                 check_state(Goal.State(goal.state), Goal.State.ACTIVE)
                 serializer = serializers.GoalSettingWritableSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 event = Event.SET_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
                                                         request.data,
-                                                        user=self.request.user,
+                                                        user=user,
                                                         obj=goal)
                 # Write any event memo for the event. All the details are wrapped by the serializer.
                 serializer.write_memo(event)
@@ -187,7 +190,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
                 settings = goal.selected_settings
                 event = Event.UPDATE_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
                                                            request.data,
-                                                           user=self.request.user,
+                                                           user=user,
                                                            obj=goal)
                 serializer = serializers.GoalSettingWritableSerializer(settings, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
@@ -221,34 +224,38 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         Called to make the currently selected settings approved by the advisor,
         and ready to be activated next time the account is processed (rebalance).
         """
-        user = self.request.user
+        user = SupportRequest.target_user(request)
         if not user.is_advisor:
             raise PermissionDenied('Only an advisor can approve selections.')
 
         goal = self.get_object()
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-        Event.APPROVE_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
-                                            user=self.request.user,
-                                            obj=goal)
+        Event.APPROVE_SELECTED_SETTINGS.log('{} {}'.format(request.method,
+                                                           request.path),
+                                            user=user, obj=goal)
         goal.approve_selected()
 
         serializer = serializers.GoalSettingSerializer(goal.approved_settings)
 
         return Response(serializer.data)
 
-    @transaction.atomic  # Atomic so both the log and the change have to be written.
+    # Atomic so both the log and the change have to be written.
+    @transaction.atomic
     @detail_route(methods=['put'], url_path='revert-selected')
     def revert_selected(self, request, pk=None, **kwargs):
         """
-        Called to revert the current selected-settings to the approved-settings.
+        Called to revert the current selected-settings to the approved-settings
         Returns a validation error if there is no approved-settings.
         """
         goal = self.get_object()
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
         if not goal.approved_settings:
-            raise ValidationError("No settings have yet been approved for this Goal, cannot revert to last approved.")
-        Event.REVERT_SELECTED_SETTINGS.log('{} {}'.format(self.request.method, self.request.path),
-                                           user=self.request.user,
+            raise ValidationError("No settings have yet been approved for "
+                                  "this Goal, cannot revert to last approved.")
+        user = SupportRequest.target_user(request)
+        Event.REVERT_SELECTED_SETTINGS.log('{} {}'.format(request.method,
+                                                          request.path),
+                                           user=user,
                                            obj=goal)
         goal.revert_selected()
         serializer = serializers.GoalSettingSerializer(goal.selected_settings)
@@ -345,24 +352,27 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         goal = self.get_object()
 
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-        Event.GOAL_DEPOSIT.log('{} {}'.format(self.request.method, self.request.path),
+        user = SupportRequest.target_user(request)
+        Event.GOAL_DEPOSIT.log('{} {}'.format(request.method, request.path),
                                request.data,
-                               user=self.request.user,
+                               user=user,
                                obj=goal)
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(to_goal=goal, reason=Transaction.REASON_DEPOSIT)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     @detail_route(methods=['post'])
     def withdraw(self, request, pk=None, **kwargs):
         goal = self.get_object()
 
         check_state(Goal.State(goal.state), Goal.State.ACTIVE)
-        Event.GOAL_WITHDRAWAL.log('{} {}'.format(self.request.method, self.request.path),
+        user = SupportRequest.target_user(request)
+        Event.GOAL_WITHDRAWAL.log('{} {}'.format(request.method, request.path),
                                   request.data,
-                                  user=self.request.user,
+                                  user=user,
                                   obj=goal)
         serializer = serializers.TransactionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

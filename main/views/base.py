@@ -1,3 +1,5 @@
+from support.models import SupportRequest
+
 __author__ = 'cristian'
 
 from django.conf import settings
@@ -18,7 +20,8 @@ class AdvisorView(View):
 
     @method_decorator(is_advisor)
     def dispatch(self, request, *args, **kwargs):
-        self.advisor = request.user.advisor
+        user = SupportRequest.target_user(request)
+        self.advisor = user.advisor
         if request.method == "POST":
             if not self.advisor.is_accepted:
                 raise PermissionDenied()
@@ -26,8 +29,8 @@ class AdvisorView(View):
         response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
 
         if hasattr(response, 'context_data'):
-            response.context_data["profile"] = request.user.advisor
-            response.context_data["firm"] = request.user.advisor.firm
+            response.context_data["profile"] = user.advisor
+            response.context_data["firm"] = user.advisor.firm
             response.context_data["is_advisor_view"] = True
 
         return response
@@ -40,15 +43,16 @@ class LegalView(View):
 
     @method_decorator(is_authorized_representative)
     def dispatch(self, request, *args, **kwargs):
-        self.firm = request.user.authorised_representative.firm
+        user = SupportRequest.target_user(request)
+        self.firm = user.authorised_representative.firm
         if request.method == "POST":
-            if not request.user.authorised_representative.is_accepted:
+            if not user.authorised_representative.is_accepted:
                 raise PermissionDenied()
 
         response = super(LegalView, self).dispatch(request, *args, **kwargs)
         if hasattr(response, 'context_data'):
-            response.context_data["profile"] = request.user.authorised_representative
-            response.context_data["firm"] = request.user.authorised_representative.firm
+            response.context_data["profile"] = user.authorised_representative
+            response.context_data["firm"] = user.authorised_representative.firm
             response.context_data["is_legal_view"] = True
         return response
 
@@ -59,7 +63,8 @@ class ClientView(View):
 
     @method_decorator(is_client)
     def dispatch(self, request, *args, **kwargs):
-        self.client = self.request.user.client
+        user = SupportRequest.target_user(request)
+        self.client = user.client
         self.is_advisor = self.request.session.get("is_advisor", False)
 
         if request.method == "POST":
@@ -69,7 +74,8 @@ class ClientView(View):
 
     def get_context_data(self, **kwargs):
         ctx = super(ClientView, self).get_context_data(**kwargs)
-        ctx["profile"] = self.request.user.client
+        user = SupportRequest.target_user(self.request)
+        ctx["profile"] = user.client
         ctx["is_advisor"] = "true" if self.request.session.get("is_advisor", False) else "false"
         ctx["is_demo"] = "true" if settings.IS_DEMO else "false"
         return ctx

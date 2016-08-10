@@ -7,6 +7,7 @@ from api.v1.views import ApiViewMixin
 
 from main.models import ExternalAsset
 from client.models import Client
+from support.models import SupportRequest
 
 from . import serializers
 
@@ -33,7 +34,8 @@ class ExternalAssetViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewS
         qs = super(ExternalAssetViewSet, self).get_queryset()
 
         # Only return assets which the user has access to.
-        return qs.filter_by_user(self.request.user)
+        user = SupportRequest.target_user(self.request.user)
+        return qs.filter_by_user(user)
 
 
 class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -47,4 +49,5 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         qs = super(ClientViewSet, self).get_queryset()
 
         # Only return Clients the user has access to.
-        return qs.filter_by_user(self.request.user)
+        user = SupportRequest.target_user(self.request)
+        return qs.filter_by_user(user)

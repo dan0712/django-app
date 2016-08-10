@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from client.models import Client
+from support.models import SupportRequest
 from user.autologout import SessionExpire
 from . import serializers
 from .serializers import EmailNotificationsSerializer, \
@@ -24,7 +25,10 @@ class MeView(BaseApiView):
 
         response_serializer: serializers.UserSerializer
         """
-        user = request.user
+        user = SupportRequest.target_user(request)
+        if user.is_support_staff:
+            sr = SupportRequest.get_current(self.request, as_obj=True)
+            user = sr.user
         data = self.serializer_class(user).data
         if user.is_advisor:
             role = 'advisor'
@@ -47,7 +51,7 @@ class MeView(BaseApiView):
         request_serializer: serializers.UserUpdateSerializer
         response_serializer: serializers.UserSerializer
         """
-        user = self.request.user
+        user = SupportRequest.target_user(request)
         serializer = serializers.UserUpdateSerializer(user, data=request.data,
                                                       partial=True,
                                                       context={

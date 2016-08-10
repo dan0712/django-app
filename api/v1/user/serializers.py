@@ -5,6 +5,7 @@ from rest_framework import exceptions, serializers
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import User, Advisor
 from client.models import Client, EmailNotificationPrefs
+from support.models import SupportRequest
 
 
 class FieldUserSerializer(ReadOnlyModelSerializer):
@@ -183,7 +184,7 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
         if not request:
             return # for swagger's dummy calls only
 
-        user = request.user
+        user = SupportRequest.target_user(request)
 
         # experimental / for advisors only
         if user.is_advisor:

@@ -17,7 +17,7 @@ from main.risk_profiler import recommend_risk
 from portfolios.management.commands.portfolio_calculation import (
     get_instruments, calculate_portfolio, Unsatisfiable,
     current_stats_from_weights)
-
+from support.models import SupportRequest
 
 logger = logging.getLogger('goal_serializer')
 
@@ -504,7 +504,7 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
         if not request:
             return # for swagger's dummy calls only
 
-        user = request.user
+        user = SupportRequest.target_user(request)
 
         # experimental / for advisors
         if user.is_advisor:
@@ -648,10 +648,11 @@ class GoalUpdateSerializer(NoCreateModelSerializer):
                 raise PermissionDenied("The only state transition allowed is to {}".format(Goal.State.ACTIVE))
             if goal.state != Goal.State.ARCHIVE_REQUESTED.value:
                 raise PermissionDenied("The only state transition allowed is from {}".format(Goal.State.ARCHIVE_REQUESTED))
-            if not request.user.is_advisor:
+            user = SupportRequest.target_user(request)
+            if not user.is_advisor:
                 raise PermissionDenied("Only an advisor can reactivate a goal")
             Event.REACTIVATE_GOAL.log('{} {}'.format(request.method, request.path),
-                                      user=request.user,
+                                      user=user,
                                       obj=goal)
         # Finally, if we pass the validation, allow the update
         return super(GoalUpdateSerializer, self).update(goal, validated_data)

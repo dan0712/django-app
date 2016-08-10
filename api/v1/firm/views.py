@@ -3,6 +3,7 @@ from rest_framework.generics import RetrieveAPIView
 
 from api.v1.views import ApiViewMixin
 from main.models import Firm
+from support.models import SupportRequest
 from .serializers import FirmSerializer
 
 
@@ -10,7 +11,7 @@ class FirmSingleView(ApiViewMixin, RetrieveAPIView):
     serializer_class = FirmSerializer
 
     def get_queryset(self):
-        user = self.request.user
+        user = SupportRequest.target_user(self.request)
         fields = ['supervisor', 'advisor', 'authorised_representative']
         for field in fields:
             try:

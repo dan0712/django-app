@@ -7,6 +7,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from api.v1.views import ApiViewMixin
 from main.models import RetirementPlan
 from client.models import Client
+from support.models import SupportRequest
 
 from . import serializers
 
@@ -39,7 +40,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         """
         qs = super(RetiresmartzViewSet, self).get_queryset()
         # Check user object permissions
-        return qs.filter_by_user(self.request.user)
+        user = SupportRequest.target_user(self.request)
+        return qs.filter_by_user(user)
 
     def perform_create(self, serializer):
         """
@@ -48,7 +50,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         :param serializer:
         :return:
         """
-        client = Client.objects.filter_by_user(self.request.user).get(id=int(self.get_parents_query_dict()['client']))
+        user = SupportRequest.target_user(self.request)
+        client = Client.objects.filter_by_user(user).get(id=int(self.get_parents_query_dict()['client']))
         return serializer.save(client=client)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
