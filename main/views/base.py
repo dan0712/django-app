@@ -1,30 +1,24 @@
-from support.models import SupportRequest
-
-__author__ = 'cristian'
-
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import View
 
-from user.decorators import is_advisor, is_authorized_representative, is_client
-
-__all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
+from support.models import SupportRequest
 
 
 class AdvisorView(View):
     advisor = None
 
-    @method_decorator(is_advisor)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         user = SupportRequest.target_user(request)
-        self.advisor = user.advisor
-        if request.method == "POST":
-            if not self.advisor.is_accepted:
-                raise PermissionDenied()
+        try:
+            self.advisor = user.advisor
+        except AttributeError:
+            raise PermissionDenied()
+        if request.method == "POST" and not self.advisor.is_accepted:
+            raise PermissionDenied()
 
         response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
 
@@ -41,15 +35,19 @@ class LegalView(View):
         self.firm = None
         super(LegalView, self).__init__(*args, **kwargs)
 
-    @method_decorator(is_authorized_representative)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         user = SupportRequest.target_user(request)
-        self.firm = user.authorised_representative.firm
+        try:
+            self.firm = user.authorised_representative.firm
+        except AttributeError:
+            PermissionDenied()
         if request.method == "POST":
             if not user.authorised_representative.is_accepted:
                 raise PermissionDenied()
 
         response = super(LegalView, self).dispatch(request, *args, **kwargs)
+
         if hasattr(response, 'context_data'):
             response.context_data["profile"] = user.authorised_representative
             response.context_data["firm"] = user.authorised_representative.firm
@@ -61,10 +59,14 @@ class ClientView(View):
     client = None
     is_advisor = None
 
-    @method_decorator(is_client)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         user = SupportRequest.target_user(request)
-        self.client = user.client
+        try:
+            self.client = user.client
+        except AttributeError:
+            raise PermissionDenied()
+
         self.is_advisor = self.request.session.get("is_advisor", False)
 
         if request.method == "POST":
@@ -82,6 +84,8 @@ class ClientView(View):
 
 
 class AdminView(View):
-    @method_decorator(staff_member_required)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied()
         return super(AdminView, self).dispatch(request, *args, **kwargs)
