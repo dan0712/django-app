@@ -2,22 +2,44 @@ from rest_framework import permissions
 
 from client.models import Client
 from main.models import Advisor
+from support.models import SupportRequest
+
+__all__ = ['IsClient', 'IsAdvisor', 'IsSupportStaff']
+
+
+def is_support_stuff(request):
+    try:
+        return SupportRequest.get_current(request) and \
+               request.user.is_support_staff
+    except AttributeError:  # anonymous users don't have `is_support_staff`
+        pass
+
+
+class IsSupportStaff(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return is_support_stuff(request)
 
 
 class IsAdvisor(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated() and request.user.is_advisor
+        return request.user.is_authenticated() and (
+            is_support_stuff(request) or request.user.is_advisor
+        )
 
 
 class IsClient(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated() and request.user.is_client
+        return request.user.is_authenticated() and (
+            is_support_stuff(request) or request.user.is_client
+        )
 
 
-class IsAdvisorOrClient(permissions.BasePermission):
+class IsAdvisorOrClient(IsClient, IsAdvisor):
     def has_permission(self, request, view):
-        return (request.user.is_authenticated() and
-                (request.user.is_advisor or request.user.is_client))
+        return request.user.is_authenticated() and (
+            is_support_stuff(request) or
+            request.user.is_advisor or request.user.is_client
+        )
 
 
 # RESERVED
