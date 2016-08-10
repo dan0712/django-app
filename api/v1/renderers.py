@@ -2,6 +2,9 @@ import logging
 
 from rest_framework.renderers import JSONRenderer
 
+from api.v1.user.serializers import UserSerializer
+from common.constants import KEY_SUPPORT_TICKET
+from support.models import SupportRequest
 from user.autologout import SessionExpire
 
 # format json response
@@ -35,6 +38,14 @@ class ApiRenderer(JSONRenderer):
                 meta = {}
                 session_expire = SessionExpire(request)
                 meta['session_expires_on'] = session_expire.expire_time()
+
+                sr = SupportRequest.get_current(request, as_obj=True)
+                if sr:
+                    meta['support_request'] = {
+                        'ticket': sr.ticket,
+                        'user': UserSerializer(instance=sr.user).data,
+                    }
+
                 wrapper['meta'] = meta
         except (TypeError, KeyError) as e:
             logger.error("Missing parameteres (%s)", e)
