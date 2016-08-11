@@ -45,7 +45,7 @@ DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
 # static
 STATICFILES_STORAGE = 'swift.storage.StaticSwiftStorage'
 
-SWIFT_AUTH_URL = PRIVATE_SOFTLAYER_URL  # os.environ.get('ST_AUTH', PUBLIC_SOFTLAYER_URL)
+SWIFT_AUTH_URL = os.environ.get('ST_AUTH', PUBLIC_SOFTLAYER_URL)
 SWIFT_USERNAME = os.environ.get('ST_USER', '')
 SWIFT_KEY = os.environ.get('ST_KEY', '')
 SWIFT_CONTAINER_NAME = os.environ.get('SWIFT_CONTAINER_NAME', 'betasmartz_%s' % environment)  # media container
