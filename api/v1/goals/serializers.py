@@ -637,23 +637,30 @@ class GoalUpdateSerializer(NoCreateModelSerializer):
         if not request:
             return # for swagger's dummy calls only
 
-    # Override the update method so we can make sure that only advisors can update state,
-    # and only if the last state was ARCHIVE_REQUESTED
     @transaction.atomic
     def update(self, goal, validated_data):
+        # Override the update method so we can make sure that only advisors can
+        # update state, and only if the last state was ARCHIVE_REQUESTED
         request = self.context.get('request')
         new_state = validated_data.get('state', None)
         if new_state is not None and new_state != goal.state:
             if new_state != Goal.State.ACTIVE.value:
-                raise PermissionDenied("The only state transition allowed is to {}".format(Goal.State.ACTIVE))
+                raise PermissionDenied("The only state transition allowed is "
+                                       "to {}".format(Goal.State.ACTIVE))
             if goal.state != Goal.State.ARCHIVE_REQUESTED.value:
-                raise PermissionDenied("The only state transition allowed is from {}".format(Goal.State.ARCHIVE_REQUESTED))
-            user = SupportRequest.target_user(request)
+                raise PermissionDenied(
+                    "The only state transition allowed is from {}"
+                    .format(Goal.State.ARCHIVE_REQUESTED)
+                )
+            sr = SupportRequest.get_current(request, as_obj=True)
+            user, sr_id = (sr.user, sr.id) if sr else (request.user, None)
+            # check helped user instead if support request is active
             if not user.is_advisor:
                 raise PermissionDenied("Only an advisor can reactivate a goal")
-            Event.REACTIVATE_GOAL.log('{} {}'.format(request.method, request.path),
-                                      user=user,
-                                      obj=goal)
+            Event.REACTIVATE_GOAL.log('{} {}'.format(request.method,
+                                                     request.path),
+                                      user=request.user, obj=goal,
+                                      support_request_id=sr_id)
         # Finally, if we pass the validation, allow the update
         return super(GoalUpdateSerializer, self).update(goal, validated_data)
 
