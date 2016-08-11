@@ -90,13 +90,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def __str__(self):
         return self.user.get_full_name()
 
-    def rebuild_secondary_advisors(self):
-        self.secondary_advisors.clear()
-        # gell all the accounts
-        for account in self.accounts.all():
-            for secondary_advisor in account.account_group.secondary_advisors.all():
-                self.secondary_advisors.add(secondary_advisor)
-
     @property
     def accounts_all(self):
         # TODO: Make this work
@@ -246,7 +239,6 @@ class ClientAccount(models.Model):
 
         self.account_group = group
         self.save()
-        self.primary_owner.rebuild_secondary_advisors()
 
         if old_group:
             if old_group.accounts.count() == 0:
@@ -265,11 +257,10 @@ class ClientAccount(models.Model):
                 # delete account group
                 old_account_group.delete()
 
-        self.primary_owner.rebuild_secondary_advisors()
-
     @property
     def advisors(self):
-        return chain([self.primary_owner.advisor, self.account_group.advisor], self.account_group.secondary_advisors.all())
+        return chain([self.primary_owner.advisor, self.account_group.advisor],
+                     self.account_group.secondary_advisors.all())
 
     @property
     def target(self):

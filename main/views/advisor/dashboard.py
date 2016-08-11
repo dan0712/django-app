@@ -402,12 +402,6 @@ class AdvisorAccountGroupSecondaryCreateView(UpdateView, AdvisorView):
 
         def save(*args, **kwargs):
             save_m2m()
-            # rebuild secondary advisor for all the clients of this account
-            clients = set(map(lambda x: x.primary_owner,
-                              self.object.accounts.all()))
-            for client in clients:
-                client.rebuild_secondary_advisors()
-
             return self.object
 
         form.save = save
@@ -445,12 +439,6 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
             raise Http404()
 
         account_group.secondary_advisors.remove(advisor)
-
-        # rebuild secondary advisor for all the clients of this account
-        clients = set(map(lambda x: x.primary_owner,
-                          account_group.accounts.all()))
-        for client in clients:
-            client.rebuild_secondary_advisors()
 
         messages.info(request, mark_safe(
             '<span class="mpicon accept"></span>Successfully removed secondary '
