@@ -7,7 +7,7 @@ from support.models import SupportRequest
 __all__ = ['IsClient', 'IsAdvisor', 'IsSupportStaff']
 
 
-def is_support_stuff(request):
+def is_support_staff(request):
     try:
         return SupportRequest.get_current(request) and \
                request.user.is_support_staff
@@ -17,27 +17,27 @@ def is_support_stuff(request):
 
 class IsSupportStaff(permissions.BasePermission):
     def has_permission(self, request, view):
-        return is_support_stuff(request)
+        return is_support_staff(request)
 
 
 class IsAdvisor(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated() and (
-            is_support_stuff(request) or request.user.is_advisor
+            is_support_staff(request) or request.user.is_advisor
         )
 
 
 class IsClient(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated() and (
-            is_support_stuff(request) or request.user.is_client
+            is_support_staff(request) or request.user.is_client
         )
 
 
 class IsAdvisorOrClient(IsClient, IsAdvisor):
     def has_permission(self, request, view):
         return request.user.is_authenticated() and (
-            is_support_stuff(request) or
+            is_support_staff(request) or
             request.user.is_advisor or request.user.is_client
         )
 
