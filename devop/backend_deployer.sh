@@ -67,6 +67,9 @@ main() {
                -e 'POSTGRES_PASSWORD='${POSTGRES_PASSWORD} \
                -e ENVIRONMENT=${2} \
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
+               -e 'ST_AUTH='${ST_AUTH} \
+               -e 'ST_USER='${ST_USER} \
+               -e 'ST_KEY='${ST_KEY} \
                --net=betasmartz-local \
                --name=${2}_betasmartz_app_test \
                -d betasmartz/backend:${2}_cd

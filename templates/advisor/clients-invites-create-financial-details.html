@@ -1,7 +1,8 @@
 {% extends "layouts/base.html" %}
 {% load app_filters %}
 {% load i18n %}
-{% block main_js %}{{STATIC_URL}}js/application-1782c815118e7220b74c97651eab3e9b.js{% endblock %}
+{% load static %}
+{% block main_js %}{% static 'js/application-1782c815118e7220b74c97651eab3e9b.js' %}{% endblock %}
 {% block body_class %}clients/invites_build show {% endblock %}
 {% block nav_clients %}depressed {% endblock %}
 {% block main_content %}

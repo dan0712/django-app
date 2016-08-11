@@ -137,3 +137,4 @@ local_settings.py
 
 #/src/static/bower_components/
 .vagrant
+.DS_Store

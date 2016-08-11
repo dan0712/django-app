@@ -1,9 +1,20 @@
-# You need to tag the backend_base build you want to use for the backend build you're going to use to do this build.
-FROM betasmartz/backend_base:backend_build
-
+FROM python:3.5.0
 ENV PYTHONUNBUFFERED 1
 ENV TERM xterm
+# install requirements
+RUN apt-get update -y &&\
+    apt-get install -y gfortran libopenblas-dev liblapack-dev git cron supervisor vim less libmagic1 &&\
+    apt-get clean &&\
+    rm -rf /var/lib/apt/lists/*
 
+# We need to put the numpy here before installing the main requirements.txt, as the cvxpy dependency somehow isn't working properly
+# cache numpy and requirements installation to docker image
+RUN pip install numpy==1.9.2
+ADD requirements/base.txt ./betasmartz/requirements/base.txt
+ADD requirements/prod.txt ./betasmartz/requirements/prod.txt
+RUN pip install -r ./betasmartz/requirements/prod.txt
+
+# add everything else
 ADD . ./betasmartz
 
 EXPOSE 80

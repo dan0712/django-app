@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 <!DOCTYPE html >
 <html lang="en" ng-app="BetasmartzClientApp">
 <head>
@@ -6,7 +6,7 @@
 
     <!-- Do not add any more styles here, this is the output of compiling all styles together -->
     <link rel="stylesheet" type="text/css"
-          href="{{ STATIC_URL }}tinymce_4/tinymce/plugins/fontawesome/css/font-awesome.min.css">
+          href="{% static 'tinymce_4/tinymce/plugins/fontawesome/css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'client_app/public/css/client_app.css' %}">
 </head>
 <body>

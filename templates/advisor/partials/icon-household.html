@@ -1,9 +1,11 @@
+{% load static %}
+
 {% if household %}
     {% if household.accounts.count == 1 %}
-        <img alt="Household icon" src="{{ STATIC_URL }}images/household-single.svg" width="100%" />
+        <img alt="Household icon" src="{% static 'images/household-single.svg' %}" width="100%" />
     {% else %}
-        <img alt="Household icon" src="{{ STATIC_URL }}images/household-group.svg" width="100%" />
+        <img alt="Household icon" src="{% static 'images/household-group.svg' %}" width="100%" />
     {% endif %}
 {% else %}
-        <img alt="Household icon" src="{{ STATIC_URL }}images/household-group.svg" width="100%" />
+        <img alt="Household icon" src="{% static 'images/household-group.svg' %}" width="100%" />
 {% endif %}

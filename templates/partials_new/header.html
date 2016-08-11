@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load filters %}
-
+{% load static %}
 <nav class="navbar navbar-inverse navbar-static-top m-b-0">
   <div class="container">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -13,7 +13,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="#">
-          <img alt="BetaSmartz Institutional" src="{{ STATIC_URL }}images/white_logo.png">
+          <img alt="BetaSmartz Institutional" src="{% static 'images/white_logo.png' %}">
         </a>
       </div>
 

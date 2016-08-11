@@ -1,6 +1,7 @@
 {% extends "layouts_new/base.html" %}
 {% load i18n %}
 {% load filters %}
+{% load static %}
 
 
 {% block main_content %}
@@ -110,7 +111,7 @@
 {% endblock %}
 
 <!-- TODO: remove it later -->
-{% block main_js %}{{ STATIC_URL }}js/client.js{% endblock %}
+{% block main_js %}{% static 'js/client.js' %}{% endblock %}
 
 
 

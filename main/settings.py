@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'user',
     'advisors',
     'portfolios',
+    'swift',
 )
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
@@ -93,6 +94,7 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.handlers.api_exception_handler',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
+
 
 ROOT_URLCONF = 'main.urls'
 

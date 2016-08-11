@@ -1,15 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
 <title>BetaSmartz</title>
-    <link href="{{ STATIC_URL }}images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
-    <link data-turbolinks-track="true" href="{{ STATIC_URL }}css/app.css" media="all" rel="stylesheet" />
+    <link href="{% static 'images/favicon.ico' %}" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+    <link data-turbolinks-track="true" href="{% static 'css/app.css' %}" media="all" rel="stylesheet" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/js.cookie-2.0.3.min.js"></script>
-    <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/app.js"></script>
+    <script data-turbolinks-track="true" src="{% static 'js/js.cookie-2.0.3.min.js' %}"></script>
+    <script data-turbolinks-track="true" src="{% static 'js/app.js' %}"></script>
 
 
-    <script data-turbolinks-track="true" src="{{ STATIC_URL }}js/angular.min.js"></script>
+    <script data-turbolinks-track="true" src="{% static 'js/angular.min.js' %}"></script>
     <style>
         .composites-show .goal-details th:nth-child(1), .composites-show .goal-details td:nth-child(1) {
             width: auto;

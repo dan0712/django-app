@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,15 +18,14 @@
       {% endif %}
     </title>
 
-    <link href="{{ STATIC_URL }}images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+    <link href="{% static 'images/favicon.ico' %}" rel="shortcut icon" type="image/vnd.microsoft.icon" />
 
     <!--link href="{{ STATIC_URL }}bower_components/tether/dist/css/tether.min.css" rel="stylesheet" -->
     <!--<link href="{{ STATIC_URL }}bower_components/roboto-fontface/css/roboto-fontface.css" rel="stylesheet">-->
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,400italic" rel="stylesheet">
-    <link href="{{ STATIC_URL }}vendor/theme/dist/toolkit-light.css" rel="stylesheet">
-    <link href="{{ STATIC_URL }}css_new/app.css" rel="stylesheet">
-
-    <script src="{{ STATIC_URL }}bower_components/jquery/dist/jquery.min.js"></script>
+    <link href="{% static 'vendor/theme/dist/toolkit-light.css' %}" rel="stylesheet">
+    <link href="{% static 'css_new/app.css' %}" rel="stylesheet">
+    <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
   </head>
 
   <body class="{% block body_class %}{% endblock %}">
@@ -43,10 +43,10 @@
 
   {% block scripts %}
     <!-- script src="{{ STATIC_URL }}bower_components/tether/dist/js/tether.min.js"></script -->
-    <script src="{{ STATIC_URL }}bower_components/moment/min/moment.min.js"></script>
-    <script src="{{ STATIC_URL }}bower_components/Chart.js/dist/Chart.min.js"></script>
-    <script src="{{ STATIC_URL }}vendor/theme/dist/toolkit.min.js"></script>
+    <script src="{% static 'bower_components/moment/min/moment.min.js' %}"></script>
+    <script src="{% static 'bower_components/Chart.js/dist/Chart.min.js' %}"></script>
+    <script src="{% static 'vendor/theme/dist/toolkit.min.js' %}"></script>
 
-    <script src="{{ STATIC_URL }}js_new/app.js"></script>
+    <script src="{% static 'js_new/app.js' %}"></script>
   {% endblock %}
 </html>
