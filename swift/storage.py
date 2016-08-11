@@ -168,7 +168,8 @@ class SwiftStorage(Storage):
 
     def _save(self, name, content):
         # quick fix for '.' directories end up on softlayer strip the ./ from name
-        name = name[2:]
+        if name.startswith('./'):
+            name = name[2:]
         if self.name_prefix:
             name = self.name_prefix + name
 

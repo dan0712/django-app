@@ -1,10 +1,13 @@
 version: '2'
 services:
   postgres:
+    container_name: postgres
     build: devop/db_app_Bluemix
   redis:
+    container_name: redis
     image: redis
-  web:
+  django:
+    container_name: django
     build: .
     command: python betasmartz/manage.py runserver 0.0.0.0:8000
     volumes:
