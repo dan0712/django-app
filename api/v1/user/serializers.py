@@ -8,6 +8,10 @@ from client.models import Client, EmailNotificationPrefs
 from django.conf import settings
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives
+from user.models import SecurityQuestion, SecurityAnswer
+
+import logging
+logger = logging.getLogger('api.v1.user.serializers')
 
 
 class FieldUserSerializer(ReadOnlyModelSerializer):
@@ -239,15 +243,10 @@ class ResetPasswordSerializer(serializers.Serializer):
     """
     email = serializers.EmailField()
 
-    def validate(self, data):
-        email = data.get('email')
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            if settings.DEBUG:
-                raise serializers.ValidationError('User not found matching email address %s' % email)
-            # for security not returning validation error for missing user in prod
-        return data
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('User not found matching email address %s' % value)
+        return value
 
     def get_users(self, email):
         """Given an email, return matching user(s) who should receive a reset.
@@ -275,3 +274,23 @@ class ResetPasswordSerializer(serializers.Serializer):
             email_message.attach_alternative(html_email, 'text/html')
 
         email_message.send()
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
+    answer = serializers.CharField()
+
+    def validate_answer(self, value):
+        # check security answer matches security question
+        sa = SecurityAnswer.objects.get(user=self.context.get('request').user)
+        if sa.answer != value:
+            raise serializers.ValidationError('Wrong answer')
+        return value
+
+    def validate_old_password(self, value):
+        # check old password matches
+        if not self.context.get('request').user.check_password(value):
+            raise serializers.ValidationError('Wrong password')
+        return value

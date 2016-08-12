@@ -51,6 +51,7 @@ urlpatterns = patterns(
     # reserved # url(r'^register/reset/?$', user_views.ResetView.as_view(), name='user-reset'),
     # reserved # url(r'^register/send-reset-email/?$', user_views.SendResetEmailView.as_view(), name='user-send-reset-email'),
 
+    url(r'^me/password/?$', user_views.ChangePasswordView.as_view(), name='user-change-password'),
 
     url(r'^keep-alive/?$', user_views.KeepAliveView.as_view(), name='keep-alive'),
 

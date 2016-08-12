@@ -10,7 +10,8 @@ from user.autologout import SessionExpire
 from . import serializers
 from ..permissions import IsClient
 from ..user.serializers import EmailNotificationsSerializer, \
-    UserAdvisorSerializer, UserClientSerializer, ResetPasswordSerializer
+    UserAdvisorSerializer, UserClientSerializer, ResetPasswordSerializer, \
+    ChangePasswordSerializer
 from ..views import ApiViewMixin
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -19,10 +20,9 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.views import password_reset
 import logging
-from django.http import HttpResponseRedirect
 
 
-logger = logging.getLogger('api.v1.views')
+logger = logging.getLogger('api.v1.user.views')
 
 
 class MeView(ApiViewMixin, views.APIView):
@@ -180,60 +180,55 @@ class PasswordResetView(ApiViewMixin, views.APIView):
     def post(self, request):
         serializer = serializers.ResetPasswordSerializer(data=request.data)
         protocol = 'https' if request.is_secure else 'http'
-        if str(request.content_type) == 'application/json':
-            # request from client application
-            if serializer.is_valid():
-                current_site = get_current_site(request)
-                site_name = current_site.name
-                domain = current_site.domain
-                for user in serializer.get_users(serializer.validated_data['email']):
-                    ctx = {
-                        'email': user.email,
-                        'domain': domain,
-                        'site_name': site_name,
-                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                        'user': user,
-                        'token': default_token_generator.make_token(user),
-                        'protocol': protocol,
-                    }
-                    serializer.send_mail(
-                        subject_template_name='registration/password_reset_subject.txt',
-                        email_template_name='registration/password_reset_email.html',
-                        from_email=settings.SUPPORT_EMAIL,
-                        to_email=user.email,
-                        context=ctx,
-                    )
-                return Response('ok', status=status.HTTP_200_OK)
-            return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            # return typical html response
-            if serializer.is_valid():
-                current_site = get_current_site(request)
-                site_name = current_site.name
-                domain = current_site.domain
-                for user in serializer.get_users(serializer.validated_data['email']):
-                    ctx = {
-                        'email': user.email,
-                        'domain': domain,
-                        'site_name': site_name,
-                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                        'user': user,
-                        'token': default_token_generator.make_token(user),
-                        'protocol': protocol,
-                    }
-                    serializer.send_mail(
-                        subject_template_name='registration/password_reset_subject.txt',
-                        email_template_name='registration/password_reset_email.html',
-                        from_email=settings.SUPPORT_EMAIL,
-                        to_email=user.email,
-                        context=ctx,
-                    )
-                return HttpResponseRedirect(self.post_reset_redirect)
-            return self.get(request)
+
+        if serializer.is_valid():
+            logger.info('Resetting password for user %s' % serializer.validated_data['email'])
+            current_site = get_current_site(request)
+            site_name = current_site.name
+            domain = current_site.domain
+            for user in serializer.get_users(serializer.validated_data['email']):
+                ctx = {
+                    'email': user.email,
+                    'domain': domain,
+                    'site_name': site_name,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'user': user,
+                    'token': default_token_generator.make_token(user),
+                    'protocol': protocol,
+                }
+                serializer.send_mail(
+                    subject_template_name='registration/password_reset_subject.txt',
+                    email_template_name='registration/password_reset_email.html',
+                    from_email=settings.SUPPORT_EMAIL,
+                    to_email=user.email,
+                    context=ctx,
+                )
+            return Response('ok', status=status.HTTP_200_OK)
+
+        logger.error('Unauthorized login attempt using email %s' % serializer.data['email'])
+        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
 
 
 class ChangePasswordView(ApiViewMixin, views.APIView):
-    permission_classes = (IsAuthenticated,)
     # allows logged in users to change their password
-    # receives old password, new password, security question, and security question answer
-    pass
+    # receives old password, new password, and security question answer
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request):
+        # camelCase to snake_case
+        if 'oldPassword' in request.data:
+            request.data['old_password'] = request.data['oldPassword']
+            request.data.pop('oldPassword', None)
+        if 'newPassword' in request.data:
+            request.data['new_password'] = request.data['newPassword']
+            request.data.pop('newPassword', None)
+
+        serializer = serializers.ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            logger.info('Changing password for user %s' % request.user.email)
+            request.user.set_password(serializer.validated_data['new_password'])
+            request.user.save()
+            return Response('ok', status=status.HTTP_200_OK)
+        logger.error('Unauthorized change password attempt from user %s' % request.user.email)
+        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
