@@ -180,7 +180,6 @@ class PasswordResetView(ApiViewMixin, views.APIView):
     def post(self, request):
         serializer = serializers.ResetPasswordSerializer(data=request.data)
         protocol = 'https' if request.is_secure else 'http'
-
         if serializer.is_valid():
             logger.info('Resetting password for user %s' % serializer.validated_data['email'])
             current_site = get_current_site(request)

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives
 from user.models import SecurityQuestion, SecurityAnswer
+from django.core.exceptions import ObjectDoesNotExist
 
 import logging
 logger = logging.getLogger('api.v1.user.serializers')
@@ -245,7 +246,9 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('User not found matching email address %s' % value)
+            emsg = 'User not found matching email address %s' % value
+            logging.error(emsg)
+            raise serializers.ValidationError(emsg)
         return value
 
     def get_users(self, email):
@@ -284,7 +287,10 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate_answer(self, value):
         # check security answer matches security question
-        sa = SecurityAnswer.objects.get(user=self.context.get('request').user)
+        try:
+            sa = SecurityAnswer.objects.get(user=self.context.get('request').user)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError('User does not exist')
         if sa.answer != value:
             raise serializers.ValidationError('Wrong answer')
         return value
