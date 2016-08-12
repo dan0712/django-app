@@ -20,3 +20,6 @@ CACHES = {
 }
 
 STATIC_ROOT = "/collected_static"
+
+# Just email to console for local development
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

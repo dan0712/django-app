@@ -1,10 +1,13 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import User, Advisor
 from client.models import Client, EmailNotificationPrefs
+from django.conf import settings
+from django.template import loader
+from django.core.mail import EmailMultiAlternatives
 
 
 class FieldUserSerializer(ReadOnlyModelSerializer):
@@ -228,3 +231,47 @@ class EmailNotificationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailNotificationPrefs
         exclude = 'id', 'client',
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """
+    receives email address, checks if user exists, send password reset email
+    """
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        email = data.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            if settings.DEBUG:
+                raise serializers.ValidationError('User not found matching email address %s' % email)
+            # for security not returning validation error for missing user in prod
+        return data
+
+    def get_users(self, email):
+        """Given an email, return matching user(s) who should receive a reset.
+        This allows subclasses to more easily customize the default policies
+        that prevent inactive users and users with unusable passwords from
+        resetting their password.
+        """
+        active_users = get_user_model()._default_manager.filter(
+            email__iexact=email, is_active=True)
+        return (u for u in active_users if u.has_usable_password())
+
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        """
+        Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
+        """
+        subject = loader.render_to_string(subject_template_name, context)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+        body = loader.render_to_string(email_template_name, context)
+
+        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
+        if html_email_template_name is not None:
+            html_email = loader.render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_email, 'text/html')
+
+        email_message.send()

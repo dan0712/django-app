@@ -10,8 +10,19 @@ from user.autologout import SessionExpire
 from . import serializers
 from ..permissions import IsClient
 from ..user.serializers import EmailNotificationsSerializer, \
-    UserAdvisorSerializer, UserClientSerializer
+    UserAdvisorSerializer, UserClientSerializer, ResetPasswordSerializer
 from ..views import ApiViewMixin
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.views import password_reset
+import logging
+from django.http import HttpResponseRedirect
+
+
+logger = logging.getLogger('api.v1.views')
 
 
 class MeView(ApiViewMixin, views.APIView):
@@ -150,3 +161,79 @@ class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
 
     def get_object(self):
         return Client.objects.get(user=self.request.user).notification_prefs
+
+
+class PasswordResetView(ApiViewMixin, views.APIView):
+    # accepts post with email field
+    # resets password and then
+    # sends reset password email to matching user account
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    serializer_class = ResetPasswordSerializer
+    post_reset_redirect = '/password/reset/done/'
+
+    def get(self, request):
+        return password_reset(request,
+                              self.post_reset_redirect,
+                              template_name='registration/password_reset.html')
+
+    def post(self, request):
+        serializer = serializers.ResetPasswordSerializer(data=request.data)
+        protocol = 'https' if request.is_secure else 'http'
+        if str(request.content_type) == 'application/json':
+            # request from client application
+            if serializer.is_valid():
+                current_site = get_current_site(request)
+                site_name = current_site.name
+                domain = current_site.domain
+                for user in serializer.get_users(serializer.validated_data['email']):
+                    ctx = {
+                        'email': user.email,
+                        'domain': domain,
+                        'site_name': site_name,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'user': user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': protocol,
+                    }
+                    serializer.send_mail(
+                        subject_template_name='registration/password_reset_subject.txt',
+                        email_template_name='registration/password_reset_email.html',
+                        from_email=settings.SUPPORT_EMAIL,
+                        to_email=user.email,
+                        context=ctx,
+                    )
+                return Response('ok', status=status.HTTP_200_OK)
+            return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # return typical html response
+            if serializer.is_valid():
+                current_site = get_current_site(request)
+                site_name = current_site.name
+                domain = current_site.domain
+                for user in serializer.get_users(serializer.validated_data['email']):
+                    ctx = {
+                        'email': user.email,
+                        'domain': domain,
+                        'site_name': site_name,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'user': user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': protocol,
+                    }
+                    serializer.send_mail(
+                        subject_template_name='registration/password_reset_subject.txt',
+                        email_template_name='registration/password_reset_email.html',
+                        from_email=settings.SUPPORT_EMAIL,
+                        to_email=user.email,
+                        context=ctx,
+                    )
+                return HttpResponseRedirect(self.post_reset_redirect)
+            return self.get(request)
+
+
+class ChangePasswordView(ApiViewMixin, views.APIView):
+    permission_classes = (IsAuthenticated,)
+    # allows logged in users to change their password
+    # receives old password, new password, security question, and security question answer
+    pass

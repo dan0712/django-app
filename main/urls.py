@@ -7,6 +7,7 @@ from filebrowser.sites import site
 
 from main import settings
 from .views import *
+from api.v1.user.views import PasswordResetView
 
 
 def ok_response_json(*args, **kwargs):
@@ -141,15 +142,18 @@ urlpatterns = patterns(
 
     url(r'^betasmartz_admin/rebalance/(?P<pk>\d+)$', GoalRebalance.as_view()),
 
-    url(r'^password/reset/$',
-        'django.contrib.auth.views.password_reset',
-        {
-            'post_reset_redirect': '/password/reset/done/',
-            'template_name': 'registration/password_reset.html'
-        },
-        name="password_reset"),
+    # url(r'^password/reset/$',
+    #     'django.contrib.auth.views.password_reset',
+    #     {
+    #         'post_reset_redirect': '/password/reset/done/',
+    #         'template_name': 'registration/password_reset.html'
+    #     },
+    #     name="password_reset"),
+
+    # reset password API view
+    url(r'^password/reset/$', PasswordResetView.as_view(), name='password_reset'),
     url(r'^password/reset/done/$',
-        'django.contrib.auth.views.password_reset_done'),
+        'django.contrib.auth.views.password_reset_done', name='password_reset_done'),
     url(r'^password/reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         'django.contrib.auth.views.password_reset_confirm',
         {'post_reset_redirect': '/login'},
