@@ -110,5 +110,6 @@ class Event(ChoiceEnum):
 
         log_data = dict(zip(self.log_keys, map(repr, args)))
         log_data['reason'] = reason
-        log_data['support_request_id'] = support_request_id
+        if support_request_id:
+            log_data['support_request_id'] = support_request_id
         return event_log(user, self.name, log_data, obj=obj)
