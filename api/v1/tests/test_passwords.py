@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.core.urlresolvers import reverse
 from rest_framework import status
 from django.core import mail
 from rest_framework.test import APIClient, APITestCase
@@ -11,15 +12,12 @@ class PasswordsTests(APITestCase):
         self.user = UserFactory.create()
         self.user2 = UserFactory.create()
         self.user3 = UserFactory.create()
+        self.user4 = UserFactory.create()
         self.sa = SecurityAnswerFactory.create(user=self.user2)
+        self.sa2 = SecurityAnswerFactory.create(user=self.user4)
 
     def tearDown(self):
         self.client.logout()
-
-    def _get_token(self, url, data):
-        resp = self.client.get(url)
-        data['csrfmiddlewaretoken'] = resp.cookies['csrftoken'].value
-        return data
 
     # tests against api.v1.user.views.PasswordResetView
     def test_reset_password(self):
@@ -28,11 +26,10 @@ class PasswordsTests(APITestCase):
         can reset their password.  Does not test email backend.
         """
         # test good request
-        url = '/password/reset/'
+        url = reverse('password_reset')
         data = {
             'email': self.user.email,
         }
-        data = self._get_token(url, data)
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='200 returned by reset password request')
@@ -68,7 +65,7 @@ class PasswordsTests(APITestCase):
         """
         Test that an authenticated user can change their password.
         """
-        url = '/api/v1/me/password/'
+        url = reverse('api:v1:user-change-password')
         # userfactory has test for password on new users by default
         old_password = 'test'
         new_password = 'test2'
@@ -90,7 +87,8 @@ class PasswordsTests(APITestCase):
                          msg='200 returned by authenticated change password request')
 
         # ok, lets check these passwords out
-        self.assertTrue(self.user2.check_password(new_password))
+        self.assertTrue(self.user2.check_password(new_password),
+                        msg='New password works after change')
 
         # ok, lets test authenticated bad requests
         # old password mismatch
@@ -116,3 +114,16 @@ class PasswordsTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED,
                          msg='401 for authenticated request to change password with wrong security answer')
+
+        # lets try camelCase
+        old_password = 'test'
+        new_password = 'test4'
+        data = {
+            'oldPassword': old_password,
+            'newPassword': new_password,
+            'answer': self.sa2.answer,
+        }
+        self.client.force_authenticate(user=self.user4)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 returned by authenticated change password request with camelCase')

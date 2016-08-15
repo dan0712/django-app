@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import exceptions, parsers, status, views
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -11,7 +11,8 @@ from . import serializers
 from ..permissions import IsClient
 from ..user.serializers import EmailNotificationsSerializer, \
     UserAdvisorSerializer, UserClientSerializer, ResetPasswordSerializer, \
-    ChangePasswordSerializer
+    ChangePasswordSerializer, SecurityQuestionSerializer, SecurityAnswerSerializer, \
+    SecurityAnswerCheckSerializer
 from ..views import ApiViewMixin
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -19,6 +20,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.views import password_reset
+from user.models import SecurityQuestion, SecurityAnswer
 import logging
 
 
@@ -164,14 +166,17 @@ class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
 
 
 class PasswordResetView(ApiViewMixin, views.APIView):
-    # accepts post with email field
-    # resets password and then
-    # sends reset password email to matching user account
+    """
+    accepts post with email field
+    resets password and then
+    sends reset password email to matching user account
+    """
     authentication_classes = ()
     permission_classes = (AllowAny,)
     serializer_class = ResetPasswordSerializer
     post_reset_redirect = '/password/reset/done/'
 
+    # eventually just remove this
     def get(self, request):
         return password_reset(request,
                               self.post_reset_redirect,
@@ -209,8 +214,10 @@ class PasswordResetView(ApiViewMixin, views.APIView):
 
 
 class ChangePasswordView(ApiViewMixin, views.APIView):
-    # allows logged in users to change their password
-    # receives old password, new password, and security question answer
+    """
+    allows logged in users to change their password
+    receives old password, new password, and security question answer
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
 
@@ -230,4 +237,76 @@ class ChangePasswordView(ApiViewMixin, views.APIView):
             request.user.save()
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized change password attempt from user %s' % request.user.email)
+        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SecurityQuestionListView(ApiViewMixin, ListAPIView):
+    """
+    A read only list view.  Receives get request, returns
+    a list of the canned security questions.  Allows anyone
+    access.
+    """
+    queryset = SecurityQuestion.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = SecurityQuestionSerializer
+
+    def get(self, request):
+        # return set of canned security questions
+        queryset = self.get_queryset()
+        serializer = serializers.SecurityQuestionSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class SecurityQuestionAnswerView(ApiViewMixin, views.APIView):
+    """
+    allows a logged in user to set a new security question and answer
+    and allow a logged user to retriev their current security question
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = SecurityAnswerSerializer
+
+    def get(self, request):
+        # get the user's current security question
+        try:
+            sa = SecurityAnswer.objects.get(user=request.user)
+        except:
+            logger.error('Security question not found for %s' % request.user.email)
+            return Response('Not found', status=status.HTTP_404_NOT_FOUND)
+        data = {
+            'question': sa.question
+        }
+        serializer = serializers.SecurityUserQuestionSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            logger.info('Valid request to retrieve current security question for %s' % request.user.email)
+            return Response(serializer.validated_data)
+        logger.error('Unauthorized request to retrieve security question for %s' % request.user.email)
+        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+
+    def post(self, request):
+        # set new security question and answer combination
+        serializer = serializers.SecurityAnswerSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            logger.info('Valid request to set new security question and answer for %s' % request.user.email)
+            sa, created = SecurityAnswer.objects.get_or_create(user=request.user)
+            sa.question = serializer.validated_data['question']
+            sa.set_answer(serializer.validated_data['answer'])
+            sa.save()
+            return Response('ok', status=status.HTTP_200_OK)
+        logger.error('Unauthorized attempt to set new security question and answer for %s' % request.user.email)
+        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SecurityAnswerCheckView(ApiViewMixin, views.APIView):
+    """
+    allows authenticated request to check an answer is correct
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = SecurityAnswerCheckSerializer
+
+    def post(self, request):
+        serializer = serializers.SecurityAnswerCheckSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            logger.info('Valid request to set check security answer for %s' % request.user.email)
+            return Response('ok', status=status.HTTP_200_OK)
+        logger.error('Unauthorized attempt to check answer for %s' % request.user.email)
         return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)

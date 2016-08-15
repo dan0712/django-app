@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from main.models import User
 import factory
-from user.models import SecurityAnswer
+from user.models import SecurityQuestion, SecurityAnswer
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -17,10 +17,17 @@ class UserFactory(factory.django.DjangoModelFactory):
     is_active = True
 
 
+class SecurityQuestionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SecurityQuestion
+
+    question = factory.Sequence(lambda n: 'Question %d' % n)
+
+
 class SecurityAnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SecurityAnswer
 
     user = factory.SubFactory(UserFactory)
     question = factory.Sequence(lambda n: "Question %d" % n)
-    answer = factory.Sequence(lambda n: "Answer %d" % n)
+    answer = factory.PostGenerationMethodCall('set_answer', 'test')

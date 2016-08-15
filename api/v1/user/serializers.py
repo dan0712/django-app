@@ -280,7 +280,10 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-
+    """
+    checks old password matches current user password,
+    checks that answer matches current user security answer
+    """
     old_password = serializers.CharField()
     new_password = serializers.CharField()
     answer = serializers.CharField()
@@ -291,7 +294,7 @@ class ChangePasswordSerializer(serializers.Serializer):
             sa = SecurityAnswer.objects.get(user=self.context.get('request').user)
         except ObjectDoesNotExist:
             raise serializers.ValidationError('User does not exist')
-        if sa.answer != value:
+        if sa.check_answer(value):
             raise serializers.ValidationError('Wrong answer')
         return value
 
@@ -299,4 +302,70 @@ class ChangePasswordSerializer(serializers.Serializer):
         # check old password matches
         if not self.context.get('request').user.check_password(value):
             raise serializers.ValidationError('Wrong password')
+        return value
+
+
+class SecurityQuestionSerializer(serializers.ModelSerializer):
+    """
+    For read (GET) requests only
+    Returns list of canned security questions.
+    """
+    class Meta:
+        model = SecurityQuestion
+        fields = ['question', ]
+
+
+class SecurityUserQuestionSerializer(serializers.Serializer):
+    """
+
+    """
+    question = serializers.CharField()
+
+    def validate(self, data):
+        # validation handled in view for this mostly
+        # returns 404 if not found, otherwise the user's question
+        return data
+
+
+class SecurityAnswerSerializer(serializers.Serializer):
+    """
+    For POST requests only
+    Validates an old answer and sets a new question/answer
+    """
+    old_answer = serializers.CharField(required=False)
+    question = serializers.CharField()
+    answer = serializers.CharField()
+
+    def validate(self, data):
+        request = self.context.get('request')
+        user = request.user
+        try:
+            sa = SecurityAnswer.objects.get(user=user)
+        except:
+            # if the security answer doesn't exist for the current user
+            # that's ok, we're setting their security question/answer combo
+            # for the first time now
+            return data
+        if sa.has_usable_answer():  # check an answer was set
+            if not sa.check_answer(data.get('old_answer')):
+                raise serializers.ValidationError('Wrong answer')
+        return data
+
+
+class SecurityAnswerCheckSerializer(serializers.Serializer):
+    """
+    For POST requests only
+    Validates a security answer is correct for the current user
+    """
+
+    answer = serializers.CharField()
+
+    def validate_answer(self, value):
+        user = self.context.get('request').user
+        try:
+            sa = SecurityAnswer.objects.get(user=user)
+        except:
+            raise serializers.ValidationError('SecurityAnswer not found for user %s' % user.email)
+        if not sa.check_answer(value):
+            raise serializers.ValidationError('Wrong answer')
         return value
