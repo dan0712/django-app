@@ -1,5 +1,7 @@
 from main.settings import *
 
+INSTALLED_APPS += ('django_jenkins', )
+
 SECRET_KEY = 'fake-key'
 TEST_RUNNER = "tests.fast_test_runner.FastTestRunner"
 DATABASES = {
