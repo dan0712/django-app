@@ -1,2 +1,4 @@
 -r base.txt
 
+django-jenkins==0.19.0
+coverage==4.2
