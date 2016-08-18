@@ -1,21 +1,12 @@
-import datetime
-import time
-import ujson
-
-from rest_framework import views
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from common.constants import EPOCH_DT
-from main.models import Performer, SymbolReturnHistory
 from main.constants import PERFORMER_GROUP_STRATEGY
+from main.models import Performer, SymbolReturnHistory
+from ..views import BaseApiView
 
-from ..views import ApiViewMixin
 
-
-class ReturnsView(ApiViewMixin, views.APIView):
-    permission_classes = (IsAuthenticated,)
-
+class ReturnsView(BaseApiView):
     def get(self, request):
         # get all the performances
         ret = []

@@ -2,6 +2,7 @@ import re
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .renderers import ApiRenderer
 
@@ -107,3 +108,7 @@ class ApiViewMixin(MultipleSerializersModelViewMixin):
     def get_nested_data(self, namespace):
         data = self.request.data
         return get_nested_data(data, namespace)
+
+
+class BaseApiView(ApiViewMixin, APIView):
+    pass

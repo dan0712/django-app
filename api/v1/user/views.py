@@ -1,34 +1,36 @@
+import logging
+
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import password_reset
+from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
-from rest_framework import exceptions, parsers, status, views
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from rest_framework import exceptions, parsers, status
+from rest_framework import views
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from client.models import Client
+from support.models import SupportRequest
 from user.autologout import SessionExpire
+from user.models import SecurityAnswer, SecurityQuestion
 from . import serializers
-from ..permissions import IsClient
-from ..user.serializers import EmailNotificationsSerializer, \
-    UserAdvisorSerializer, UserClientSerializer, ResetPasswordSerializer, \
-    ChangePasswordSerializer, SecurityQuestionSerializer, SecurityAnswerSerializer, \
-    SecurityAnswerCheckSerializer
-from ..views import ApiViewMixin
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.views import password_reset
-from user.models import SecurityQuestion, SecurityAnswer
-import logging
-
+from ..user.serializers import ChangePasswordSerializer, \
+    ResetPasswordSerializer, SecurityAnswerCheckSerializer, \
+    SecurityAnswerSerializer, SecurityQuestionSerializer
 
 logger = logging.getLogger('api.v1.user.views')
+from .serializers import EmailNotificationsSerializer, \
+    UserAdvisorSerializer, UserClientSerializer
+from ..permissions import IsClient
+from ..views import ApiViewMixin, BaseApiView
 
 
-class MeView(ApiViewMixin, views.APIView):
-    permission_classes = (IsAuthenticated,)
+class MeView(BaseApiView):
     serializer_class = serializers.UserSerializer
 
     def get(self, request):
@@ -38,7 +40,10 @@ class MeView(ApiViewMixin, views.APIView):
 
         response_serializer: serializers.UserSerializer
         """
-        user = request.user
+        user = SupportRequest.target_user(request)
+        if user.is_support_staff:
+            sr = SupportRequest.get_current(self.request, as_obj=True)
+            user = sr.user
         data = self.serializer_class(user).data
         if user.is_advisor:
             role = 'advisor'
@@ -61,7 +66,7 @@ class MeView(ApiViewMixin, views.APIView):
         request_serializer: serializers.UserUpdateSerializer
         response_serializer: serializers.UserSerializer
         """
-        user = self.request.user
+        user = SupportRequest.target_user(request)
         serializer = serializers.UserUpdateSerializer(user, data=request.data,
                                                       partial=True,
                                                       context={
@@ -76,7 +81,7 @@ class MeView(ApiViewMixin, views.APIView):
         return Response(serializer.data)
 
 
-class LoginView(ApiViewMixin, views.APIView):
+class LoginView(BaseApiView):
     """
     Signin andvisors or any other type of users
     """
@@ -113,13 +118,11 @@ class LoginView(ApiViewMixin, views.APIView):
         return Response(serializer.data)
 
 
-class RegisterView(ApiViewMixin, views.APIView):
+class RegisterView(BaseApiView):
     pass
 
 
-class ResetView(ApiViewMixin, views.APIView):
-    permission_classes = (IsAuthenticated,)
-
+class ResetView(BaseApiView):
     def post(self, request):
         serializer = serializers.ResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -134,7 +137,7 @@ class ResetView(ApiViewMixin, views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ResetEmailView(ApiViewMixin, views.APIView):
+class ResetEmailView(BaseApiView):
     authentication_classes = ()
     permission_classes = (AllowAny,)
 
@@ -149,9 +152,7 @@ class ResetEmailView(ApiViewMixin, views.APIView):
         return Response('User is blocked', status=status.HTTP_403_FORBIDDEN)
 
 
-class KeepAliveView(ApiViewMixin, views.APIView):
-    permission_classes = IsAuthenticated,
-
+class KeepAliveView(BaseApiView):
     def get(self, request):
         SessionExpire(request).keep_alive()
         return Response('ok', status=status.HTTP_200_OK)

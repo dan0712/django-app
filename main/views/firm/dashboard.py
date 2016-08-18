@@ -20,6 +20,7 @@ from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
     Position, Supervisor, Transaction, User)
 from main.views.base import LegalView
 from notifications.models import Notification
+from support.models import SupportRequest
 from .filters import FirmActivityFilterSet, FirmAnalyticsAdvisorsFilterSet, \
     FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet
 
@@ -441,7 +442,7 @@ class FirmAnalyticsOverviewView(FirmAnalyticsMixin, TemplateView, LegalView):
     template_name = "firm/analytics.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
+        user = SupportRequest.target_user(self.request)
         self.firm  = user.authorised_representative.firm
         self.filter = FirmAnalyticsOverviewFilterSet(self.request.GET)
         return {
@@ -499,7 +500,7 @@ class FirmAnalyticsOverviewMetricView(FirmAnalyticsMixin, TemplateView, LegalVie
     template_name = "firm/partials/modal-analytics-metric-content.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
+        user = SupportRequest.target_user(self.request)
         self.firm  = user.authorised_representative.firm
         self.filter = FirmAnalyticsOverviewFilterSet(self.request.GET)
 

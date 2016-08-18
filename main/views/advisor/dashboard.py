@@ -22,6 +22,7 @@ from main.forms import EmailInviteForm
 from main.models import (AccountGroup, Advisor, EmailInvitation,
                          Platform, User)
 from main.views.base import AdvisorView, ClientView
+from support.models import SupportRequest
 
 
 class AdvisorClientInvites(CreateView, AdvisorView):
@@ -898,7 +899,8 @@ class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, Tem
 
     def dispatch(self, request, *args, **kwargs):
         client_pk = kwargs["pk"]
-        advisor = request.user.advisor
+        user = SupportRequest.target_user(request)
+        advisor = user.advisor
 
         try:
             client = advisor.clients.get(pk=client_pk)
@@ -907,7 +909,8 @@ class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, Tem
 
         self.client = client
 
-        return super(AdvisorCreateNewAccountForExistingClientSelectAccountType, self).dispatch(request, *args, **kwargs)
+        return super(AdvisorCreateNewAccountForExistingClientSelectAccountType,
+                     self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx_data = super(AdvisorCreateNewAccountForExistingClientSelectAccountType, self).get_context_data(**kwargs)
@@ -936,7 +939,8 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
         if account_class not in ["joint_account", "trust_account"]:
             raise Http404()
 
-        advisor = request.user.advisor
+        user = SupportRequest.target_user(request)
+        advisor = user.advisor
 
         try:
             client = advisor.clients.get(pk=client_pk)

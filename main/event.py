@@ -83,7 +83,7 @@ class Event(ChoiceEnum):
             self._obj_class = get_model(app_label, model_name)
         return self._obj_class
 
-    def log(self, reason, *args, user=None, obj=None):
+    def log(self, reason, *args, user=None, obj=None, support_request_id=None):
         """
         Log the event to the event log
         :param reason: The reason this event occurred. The cause of the event.
@@ -97,6 +97,8 @@ class Event(ChoiceEnum):
                         the account activity stream.
                     Objects of a Goal type will show up on the goal and
                         account activity streams.
+        :param support_request_id: if this action's been performed by support
+                                request
         :return: The event that was logged.
         """
         if not isinstance(obj, self.obj_class):
@@ -108,4 +110,6 @@ class Event(ChoiceEnum):
 
         log_data = dict(zip(self.log_keys, map(repr, args)))
         log_data['reason'] = reason
+        if support_request_id:
+            log_data['support_request_id'] = support_request_id
         return event_log(user, self.name, log_data, obj=obj)

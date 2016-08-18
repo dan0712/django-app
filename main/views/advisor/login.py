@@ -1,3 +1,5 @@
+from support.models import SupportRequest
+
 __author__ = 'cristian'
 
 from advisors.models import ChangeDealerGroup, SingleInvestorTransfer, BulkInvestorTransfer
@@ -191,7 +193,8 @@ class AdvisorChangeDealerGroupView(AdvisorView, CreateView):
     def dispatch(self, request, *args, **kwargs):
 
         try:
-            cdg = ChangeDealerGroup.objects.exclude(approved=True).get(advisor=request.user.advisor)
+            user = SupportRequest.target_user(request)
+            cdg = ChangeDealerGroup.objects.exclude(approved=True).get(advisor=user.advisor)
             return HttpResponseRedirect("/advisor/support/forms/change/firm/update/{0}".format(cdg.pk))
         except ObjectDoesNotExist:
             return super(AdvisorChangeDealerGroupView, self).dispatch(request, *args, **kwargs)
@@ -274,7 +277,8 @@ class AdvisorSingleInvestorTransferView(AdvisorView, CreateView):
     def dispatch(self, request, *args, **kwargs):
 
         try:
-            sit = SingleInvestorTransfer.objects.exclude(approved=True).get(from_advisor=request.user.advisor)
+            user = SupportRequest.target_user(request)
+            sit = SingleInvestorTransfer.objects.exclude(approved=True).get(from_advisor=user.advisor)
             return HttpResponseRedirect("/advisor/support/forms/transfer/single/update/{0}".format(sit.pk))
         except ObjectDoesNotExist:
             return super(AdvisorSingleInvestorTransferView, self).dispatch(request, *args, **kwargs)
@@ -363,7 +367,8 @@ class AdvisorBulkInvestorTransferView(AdvisorView, CreateView):
     def dispatch(self, request, *args, **kwargs):
 
         try:
-            sit = BulkInvestorTransfer.objects.exclude(approved=True).get(from_advisor=request.user.advisor)
+            user = SupportRequest.target_user(request)
+            sit = BulkInvestorTransfer.objects.exclude(approved=True).get(from_advisor=user.advisor)
             return HttpResponseRedirect("/advisor/support/forms/transfer/bulk/update/{0}".format(sit.pk))
         except ObjectDoesNotExist:
             return super(AdvisorBulkInvestorTransferView, self).dispatch(request, *args, **kwargs)

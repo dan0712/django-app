@@ -1,17 +1,18 @@
+import logging
+
 from django.contrib.auth import authenticate, get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import User, Advisor
 from client.models import Client, EmailNotificationPrefs
-from django.conf import settings
-from django.template import loader
-from django.core.mail import EmailMultiAlternatives
-from user.models import SecurityQuestion, SecurityAnswer
-from django.core.exceptions import ObjectDoesNotExist
+from main.models import Advisor, User
+from support.models import SupportRequest
+from user.models import SecurityAnswer, SecurityQuestion
 
-import logging
 logger = logging.getLogger('api.v1.user.serializers')
 
 
@@ -191,7 +192,7 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
         if not request:
             return # for swagger's dummy calls only
 
-        user = request.user
+        user = SupportRequest.target_user(request)
 
         # experimental / for advisors only
         if user.is_advisor:

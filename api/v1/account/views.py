@@ -9,6 +9,7 @@ from api.v1.utils import activity
 from api.v1.views import ApiViewMixin
 
 from client.models import ClientAccount
+from support.models import SupportRequest
 
 from . import serializers
 
@@ -62,20 +63,22 @@ class AccountViewSet(ApiViewMixin,
 
     def get_queryset(self):
         """
-        Because this viewset can have a primary owner and signatories, we don't use the queryset parsing features from
-        NestedViewSetMixin as it only allows looking at one field for the parent.
+        Because this viewset can have a primary owner and signatories,
+        we don't use the queryset parsing features from NestedViewSetMixin as
+        it only allows looking at one field for the parent.
         :return:
         """
         qs = super(AccountViewSet, self).get_queryset()
 
         # show "permissioned" records only
-        user = self.request.user
+        user = SupportRequest.target_user(self.request)
         if user.is_advisor:
             qs = qs.filter_by_advisor(user.advisor)
         elif user.is_client:
             qs = qs.filter_by_client(user.client)
         else:
-            raise PermissionDenied('Only Advisors or Clients are allowed to access goals.')
+            raise PermissionDenied('Only Advisors or Clients '
+                                   'are allowed to access goals.')
 
         return qs
 

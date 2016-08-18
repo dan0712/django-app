@@ -1,33 +1,30 @@
-__author__ = 'cristian'
-
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import View
 
-from user.decorators import is_advisor, is_authorized_representative, is_client
-
-__all__ = ["AdvisorView", "ClientView", "AdminView", "LegalView"]
+from support.models import SupportRequest
 
 
 class AdvisorView(View):
     advisor = None
 
-    @method_decorator(is_advisor)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        self.advisor = request.user.advisor
-        if request.method == "POST":
-            if not self.advisor.is_accepted:
-                raise PermissionDenied()
+        user = SupportRequest.target_user(request)
+        try:
+            self.advisor = user.advisor
+        except AttributeError:
+            raise PermissionDenied()
+        if request.method == "POST" and not self.advisor.is_accepted:
+            raise PermissionDenied()
 
         response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
 
         if hasattr(response, 'context_data'):
-            response.context_data["profile"] = request.user.advisor
-            response.context_data["firm"] = request.user.advisor.firm
+            response.context_data["profile"] = user.advisor
+            response.context_data["firm"] = user.advisor.firm
             response.context_data["is_advisor_view"] = True
 
         return response
@@ -38,17 +35,22 @@ class LegalView(View):
         self.firm = None
         super(LegalView, self).__init__(*args, **kwargs)
 
-    @method_decorator(is_authorized_representative)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        self.firm = request.user.authorised_representative.firm
+        user = SupportRequest.target_user(request)
+        try:
+            self.firm = user.authorised_representative.firm
+        except AttributeError:
+            PermissionDenied()
         if request.method == "POST":
-            if not request.user.authorised_representative.is_accepted:
+            if not user.authorised_representative.is_accepted:
                 raise PermissionDenied()
 
         response = super(LegalView, self).dispatch(request, *args, **kwargs)
+
         if hasattr(response, 'context_data'):
-            response.context_data["profile"] = request.user.authorised_representative
-            response.context_data["firm"] = request.user.authorised_representative.firm
+            response.context_data["profile"] = user.authorised_representative
+            response.context_data["firm"] = user.authorised_representative.firm
             response.context_data["is_legal_view"] = True
         return response
 
@@ -57,9 +59,14 @@ class ClientView(View):
     client = None
     is_advisor = None
 
-    @method_decorator(is_client)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        self.client = self.request.user.client
+        user = SupportRequest.target_user(request)
+        try:
+            self.client = user.client
+        except AttributeError:
+            raise PermissionDenied()
+
         self.is_advisor = self.request.session.get("is_advisor", False)
 
         if request.method == "POST":
@@ -69,13 +76,16 @@ class ClientView(View):
 
     def get_context_data(self, **kwargs):
         ctx = super(ClientView, self).get_context_data(**kwargs)
-        ctx["profile"] = self.request.user.client
+        user = SupportRequest.target_user(self.request)
+        ctx["profile"] = user.client
         ctx["is_advisor"] = "true" if self.request.session.get("is_advisor", False) else "false"
         ctx["is_demo"] = "true" if settings.IS_DEMO else "false"
         return ctx
 
 
 class AdminView(View):
-    @method_decorator(staff_member_required)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied()
         return super(AdminView, self).dispatch(request, *args, **kwargs)

@@ -7,7 +7,7 @@ from itertools import repeat
 import scipy.stats as st
 from django.conf import settings
 from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin,
-    UserManager, send_mail)
+                                        UserManager, send_mail, Group)
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
@@ -25,6 +25,7 @@ from pinax.eventlog import models as el_models
 from recurrence.base import deserialize
 
 from address.models import Address
+from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
@@ -145,6 +146,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             self._is_client = hasattr(self, 'client')
 
         return self._is_client
+
+    @property
+    def is_support_staff(self):
+        if not hasattr(self, '_is_support_staff'):
+            group = Group.objects.get(name=GROUP_SUPPORT_STAFF)
+            self._is_support_staff = group in self.groups.all()
+        return self._is_support_staff
 
     def get_full_name(self):
         """
