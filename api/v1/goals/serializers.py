@@ -1,23 +1,20 @@
-import copy
 import logging
 
+import copy
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.fields import FloatField, IntegerField
 
-from api.v1.serializers import NoCreateModelSerializer, NoUpdateModelSerializer, ReadOnlyModelSerializer, EventMemoMixin
+from api.v1.serializers import EventMemoMixin, NoCreateModelSerializer, \
+    NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.event import Event
-from main.models import (
-    Goal, GoalSetting, GoalMetric, GoalType,
-    Position, Portfolio, PortfolioItem,
-    RecurringTransaction,
-    Transaction, GoalMetricGroup, Ticker, AssetFeatureValue)
+from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
+    GoalSetting, GoalType, Portfolio, PortfolioItem, Position, \
+    RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
-from portfolios.management.commands.portfolio_calculation import (
-    get_instruments, calculate_portfolio, Unsatisfiable,
-    current_stats_from_weights)
-
+from portfolios.management.commands.portfolio_calculation import Unsatisfiable, \
+    calculate_portfolio, current_stats_from_weights, get_instruments
 
 logger = logging.getLogger('goal_serializer')
 
@@ -93,9 +90,11 @@ class RecurringTransactionCreateSerializer(NoUpdateModelSerializer):
     class Meta:
         model = RecurringTransaction
         fields = (
-            'recurrence',
+            'schedule',
+            'begin_date',
+            'amount',
+            'growth',
             'enabled',
-            'amount'
         )
 
 
@@ -285,11 +284,15 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                     new_tx.setting = setting
                     new_tx.save()
             else:
-                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting,
-                                                                               recurrence=i_data['recurrence'],
-                                                                               enabled=i_data['enabled'],
-                                                                               amount=i_data['amount']) for i_data in
-                                                          tx_data])
+                RecurringTransaction.objects.bulk_create(
+                    [RecurringTransaction(setting=setting,
+                                          schedule=i_data['schedule'],
+                                          enabled=i_data['enabled'],
+                                          begin_date=i_data['begin_date'],
+                                          growth=i_data['growth'],
+                                          amount=i_data['amount'])
+                     for i_data in tx_data]
+                )
 
             goal.set_selected(setting)
 
@@ -356,10 +359,15 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                                                                  volatility=idatas[i_data['asset'].id]) for i_data in port_items_data])
 
             if tx_data is not None:
-                RecurringTransaction.objects.bulk_create([RecurringTransaction(setting=setting,
-                                                                               recurrence=i_data['recurrence'],
-                                                                               enabled=i_data['enabled'],
-                                                                               amount=i_data['amount']) for i_data in tx_data])
+                RecurringTransaction.objects.bulk_create(
+                    [RecurringTransaction(setting=setting,
+                                          schedule=i_data['schedule'],
+                                          enabled=i_data['enabled'],
+                                          begin_date=i_data['begin_date'],
+                                          growth=i_data['growth'],
+                                          amount=i_data['amount'])
+                     for i_data in tx_data]
+                )
 
             goal.set_selected(setting)
 
