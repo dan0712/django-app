@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'advisors',
     'portfolios',
     'swift',
+    'django_jenkins',
 )
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
