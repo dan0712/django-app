@@ -3,7 +3,6 @@ import uuid
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail
-
 from django.db import models
 from django.template.loader import render_to_string
 from phonenumber_field.modelfields import PhoneNumberField
@@ -134,9 +133,11 @@ class NeedConfirmation(models.Model):
 class TransferPlan(models.Model):
     begin_date = models.DateField()
     amount = models.IntegerField()
-    growth = models.FloatField(help_text="Annualized rate to increase or decrease the amount by as of the begin_date."
-                                         " 0.0 for no modelled change")
-    schedule = models.TextField()  # RRULE to specify when the transfer happens.
+    growth = models.FloatField(
+        help_text="Daily rate to increase or decrease the amount by as of"
+                  " the begin_date. 0.0 for no modelled change")
+    schedule = models.TextField(help_text="RRULE to specify "
+                                          "when the transfer happens")
 
     class Meta:
         abstract = True

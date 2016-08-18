@@ -1104,15 +1104,16 @@ class GoalType(models.Model):
     #    risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
     #    return [risk_min, risk_max]
 
-
-class RecurringTransaction(models.Model):
-    # Note: Only settings that are active will have their recurring transactions processed.
-    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions')
-    # Note: https://www.npmjs.com/package/rrule and https://www.npmjs.com/package/rrecur for UI side of below
-    recurrence = models.TextField()
+class RecurringTransaction(TransferPlan):
+    """
+    Note: Only settings that are active will have their recurring
+          transactions processed.
+    """
+    setting = models.ForeignKey('GoalSetting',
+                                related_name='recurring_transactions')
     enabled = models.BooleanField(default=True)
-    amount = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     @property
     def next_transaction(self):
