@@ -1116,9 +1116,8 @@ class RecurringTransaction(TransferPlan):
     modified_at = models.DateTimeField(auto_now=True)
 
     @property
-    def next_transaction(self):
-        # doesn't seem to work but just in case make date to be naïve
-        return self.recurrence.after(now().replace(tzinfo=None), inc=True)
+    def next_transaction(self) -> datetime:
+        return self.get_next_date(now().date())
 
     @staticmethod
     def get_events(recurring_transactions, start, end):
@@ -1126,18 +1125,13 @@ class RecurringTransaction(TransferPlan):
         :param start: A datetime for the start
         :param end: A datetime for the end
         :param recurring_transactions:
-        :return: a list of (date, amount) tuples for all the recurring transaction events between the given dates.
+        :return: a list of (date, amount) tuples for all the recurring
+                 transaction events between the given dates.
         Not guarateed to return them in sorted order.
         """
         res = []
-        for r in recurring_transactions.all():
-            if not r.enabled:
-                continue
-            rrule = deserialize(r.recurrence)
-            # rrule uses naive dates
-            between = rrule.between(start.replace(tzinfo=None),
-                                    end.replace(tzinfo=None))
-            res.extend(zip(between, repeat(r.amount)))
+        for r in recurring_transactions.filter(enabled=True):
+            res.extend(r.get_between(start, end))
         return res
 
 

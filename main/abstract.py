@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from django.conf import settings
@@ -5,9 +6,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
+from django.utils.timezone import utc
 from phonenumber_field.modelfields import PhoneNumberField
+from recurrence import deserialize
 
 from common.structures import ChoiceEnum
+from main.utils import d2dt, dt2d
 
 
 class PersonalData(models.Model):
@@ -141,6 +145,39 @@ class TransferPlan(models.Model):
 
     class Meta:
         abstract = True
+
+    def transfer_amount(self, dt: datetime.date):
+        days = (dt - self.begin_date).days
+        return self.amount * pow(1 + self.growth, days)
+
+    def get_next_date(self, dt:datetime.datetime,
+                      inc=True) -> datetime.datetime:
+        rrule = deserialize(self.schedule)
+        start_date = max(dt.replace(tzinfo=None), d2dt(self.begin_date))
+        after =  rrule.after(start_date, inc=inc)
+        return after.replace(tzinfo=utc)
+
+    def get_next(self, dt:datetime.datetime) -> (datetime.datetime, float):
+        """
+        Returns next transfer on or after the given time
+
+        :return: tuple (datetime, amount)
+        """
+        next_date = self.get_next_date(dt).replace(tzinfo=utc)
+        return next_date, self.transfer_amount(next_date.date())
+
+    def get_between(self, begin:datetime.datetime, end:datetime.datetime,
+                    inc:bool=True) -> [(datetime.datetime, float)]:
+        """
+        Returns an iterable of transfers between the inclusive given times
+
+        :return: iterable of (date, amount) ordered ascending on datetime
+        """
+        rrule = deserialize(self.schedule)
+        begin = max(begin.replace(tzinfo=None), d2dt(self.begin_date))
+        between = rrule.between(begin, end.replace(tzinfo=None), inc=inc)
+        return [(b.replace(tzinfo=utc), self.transfer_amount(dt2d(b)))
+                for b in between]
 
 
 class FinancialInstrument(models.Model):
