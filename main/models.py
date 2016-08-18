@@ -27,8 +27,8 @@ from recurrence.base import deserialize
 from address.models import Address
 from common.structures import ChoiceEnum
 from . import constants
-from .abstract import (FinancialInstrument, NeedApprobation,
-    NeedConfirmation, PersonalData, TransferPlan)
+from .abstract import FinancialInstrument, NeedApprobation, \
+    NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
 from .management.commands.build_returns import get_price_returns
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet, \
@@ -1060,49 +1060,25 @@ class AssetFee(models.Model):
 
 
 class GoalType(models.Model):
-    # OBSOLETED # see RISK_LEVEL for GoalMetric
-    #RISK_LEVEL_PROTECTED = 0 # 0.0
-    #RISK_LEVEL_SEMI_PROTECTED = 20 # 0.2
-    #RISK_LEVEL_MODERATE = 40 # 0.4
-    #RISK_LEVEL_SEMI_DYNAMIC = 60 # 0.6
-    #RISK_LEVEL_DYNAMIC = 80 # 0.8
-
-    #RISK_LEVELS = (
-    #    (RISK_LEVEL_PROTECTED, 'Protected'),
-    #    (RISK_LEVEL_SEMI_PROTECTED, 'Semi-protected'),
-    #    (RISK_LEVEL_MODERATE, 'Moderate'),
-    #    (RISK_LEVEL_SEMI_DYNAMIC, 'Semi-dynamic'),
-    #    (RISK_LEVEL_DYNAMIC, 'Dynamic'),
-    #)
-
     name = models.CharField(max_length=255, null=False, db_index=True)
     description = models.TextField(null=True, blank=True)
     default_term = models.IntegerField(null=False)
     group = models.CharField(max_length=255, null=True)
     risk_sensitivity = models.FloatField(
         validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
-        help_text="Default risk sensitivity for this goal type. "
-            "0 = not sensitive, 10 = Very sensitive (No risk tolerated)"
+        help_text="Default risk sensitivity for this goal type. 0 = not "
+                  "sensitive, 10 = Very sensitive (No risk tolerated)"
     )
-    order = models.IntegerField(default=0, help_text="The order of the type in the list.")
+    order = models.IntegerField(default=0,
+                                help_text="The order of the type in the list.")
     risk_factor_weights = JSONField(null=True, blank=True)
 
     class Meta:
         ordering = ['order']
 
     def __str__(self):
-        return "[{}] {}".format(self.id, self.name)
+        return '%s' % self.name
 
-    def __str__(self):
-        result = u'%s' % (self.name)
-        return result
-
-    # OBSOLETED
-    #@classmethod
-    #def risk_level_range(cls, risk_level):
-    #    risk_min = risk_level
-    #    risk_max = min([r[0] for r in cls.RISK_LEVELS if r[0] > risk_min] or [100]) # 100% or 101%?
-    #    return [risk_min, risk_max]
 
 class RecurringTransaction(TransferPlan):
     """
