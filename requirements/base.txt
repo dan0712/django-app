@@ -72,7 +72,6 @@ django-extensions==1.6.1 # to visualize models
 # testing
 django-test-without-migrations==0.4
 
-coverage==4.2
 
 # factory boy for test fixtures
 factory-boy==2.7.0
