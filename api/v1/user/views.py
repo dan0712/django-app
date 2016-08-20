@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.auth import login
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset
 from django.contrib.sites.shortcuts import get_current_site
@@ -28,6 +29,7 @@ from .serializers import EmailNotificationsSerializer, \
     UserAdvisorSerializer, UserClientSerializer
 from ..permissions import IsClient
 from ..views import ApiViewMixin, BaseApiView
+
 
 
 class MeView(BaseApiView):
@@ -113,6 +115,9 @@ class LoginView(BaseApiView):
         # check if user is authenticated
         if not user.is_authenticated():
             raise exceptions.NotAuthenticated()
+
+        # initiate internal routine to login this user
+        login(request, user)
 
         serializer = self.serializer_class(user)
         return Response(serializer.data)
