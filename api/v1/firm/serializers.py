@@ -6,4 +6,4 @@ class FirmSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = Firm
-        fields = 'id', 'logo_url'
+        fields = 'id', 'logo'

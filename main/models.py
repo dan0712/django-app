@@ -318,19 +318,19 @@ class Firm(models.Model):
                                            null=True,
                                            blank=True)
     slug = models.CharField(max_length=100, editable=False, unique=True)
-    logo_url = models.ImageField(verbose_name="White logo",
-                                 null=True,
-                                 blank=True)
-    knocked_out_logo_url = models.ImageField(verbose_name="Colored logo",
-                                             null=True,
-                                             blank=True)
+    logo = models.ImageField(verbose_name="White logo",
+                             null=True,
+                             blank=True)
+    knocked_out_logo = models.ImageField(verbose_name="Colored logo",
+                                         null=True,
+                                         blank=True)
     client_agreement_url = models.FileField(
         verbose_name="Client Agreement (PDF)",
         null=True,
         blank=True)
-    form_adv_part2_url = models.FileField(verbose_name="Form Adv",
-                                          null=True,
-                                          blank=True)
+    form_adv_part2 = models.FileField(verbose_name="Form Adv",
+                                      null=True,
+                                      blank=True)
     token = models.CharField(max_length=36, editable=False)
     fee = models.PositiveIntegerField(default=0)
     can_use_ethical_portfolio = models.BooleanField(default=True)
@@ -362,22 +362,22 @@ class Firm(models.Model):
     @property
     def white_logo(self):
 
-        if self.logo_url is None:
+        if self.logo is None:
             return settings.STATIC_URL + 'images/white_logo.png'
-        elif not self.logo_url.name:
+        elif not self.logo.name:
             return settings.STATIC_URL + 'images/white_logo.png'
 
-        return settings.MEDIA_URL + self.logo_url.name
+        return settings.MEDIA_URL + self.logo.name
 
     @property
     def colored_logo(self):
 
-        if self.knocked_out_logo_url is None:
+        if self.knocked_out_logo is None:
             return settings.STATIC_URL + 'images/colored_logo.png'
-        elif not self.knocked_out_logo_url.name:
+        elif not self.knocked_out_logo.name:
             return settings.STATIC_URL + 'images/colored_logo.png'
 
-        return settings.MEDIA_URL + self.knocked_out_logo_url.name
+        return settings.MEDIA_URL + self.knocked_out_logo.name
 
     @property
     def total_revenue(self):
@@ -515,7 +515,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def firm_colored_logo(self):
-        return self.firm.knocked_out_logo_url
+        return self.firm.knocked_out_logo
 
     def get_invite_url(self, invitation_type=None, email=None):
         if self.token is None:
