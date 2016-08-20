@@ -170,13 +170,14 @@ class TransferPlan(models.Model):
                     inc:bool=True) -> [(datetime.datetime, float)]:
         """
         Returns an iterable of transfers between the inclusive given times
+        Dates are supposed to be in UTC
 
-        :return: iterable of (date, amount) ordered ascending on datetime
+        :return: iterable of (date NAIVE, amount) ordered ascending on datetime
         """
         rrule = deserialize(self.schedule)
         begin = max(begin.replace(tzinfo=None), d2dt(self.begin_date))
         between = rrule.between(begin, end.replace(tzinfo=None), inc=inc)
-        return [(b.replace(tzinfo=utc), self.transfer_amount(dt2d(b)))
+        return [(b, self.transfer_amount(dt2d(b)))
                 for b in between]
 
 
