@@ -2,12 +2,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
+from django.views.generic.base import ContextMixin
 from django.views.generic.edit import View
 
 from support.models import SupportRequest
 
 
-class AdvisorView(View):
+class AdvisorView(ContextMixin, View):
     advisor = None
 
     @method_decorator(login_required)
@@ -20,14 +21,16 @@ class AdvisorView(View):
         if request.method == "POST" and not self.advisor.is_accepted:
             raise PermissionDenied()
 
-        response = super(AdvisorView, self).dispatch(request, *args, **kwargs)
+        return super(AdvisorView, self).dispatch(request, *args, **kwargs)
 
-        if hasattr(response, 'context_data'):
-            response.context_data["profile"] = user.advisor
-            response.context_data["firm"] = user.advisor.firm
-            response.context_data["is_advisor_view"] = True
-
-        return response
+    def get_context_data(self, **kwargs):
+        cd = super(AdvisorView, self).get_context_data(**kwargs)
+        cd.update({
+            "profile": self.advisor,
+            "firm": self.advisor.firm,
+            "is_advisor_view": True,
+        })
+        return cd
 
 
 class LegalView(View):

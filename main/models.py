@@ -2,12 +2,11 @@ import logging
 import uuid
 from datetime import datetime
 from enum import Enum, unique
-from itertools import repeat
 
 import scipy.stats as st
 from django.conf import settings
-from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin,
-                                        UserManager, send_mail, Group)
+from django.contrib.auth.models import AbstractBaseUser, Group, \
+    PermissionsMixin, UserManager, send_mail
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
@@ -22,7 +21,6 @@ from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
 from pinax.eventlog import models as el_models
-from recurrence.base import deserialize
 
 from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
@@ -32,8 +30,8 @@ from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
 from .management.commands.build_returns import get_price_returns
-from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet, \
-    RetirementPlanQuerySet
+from .managers import AccountGroupQueryset, ExternalAssetQuerySet, \
+    GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
 from .slug import unique_slugify
 
 logger = logging.getLogger('main.models')
@@ -643,6 +641,8 @@ class AccountGroup(models.Model):
         Advisor,
         related_name='secondary_account_groups')
     name = models.CharField(max_length=100)
+
+    objects = AccountGroupQueryset.as_manager()
 
     @property
     def accounts(self):

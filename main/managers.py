@@ -1,13 +1,11 @@
 from dateutil.relativedelta import relativedelta
-
-from django.db import models
-from django.db.models import F, Sum
+from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
 from django.utils.timezone import now
 
 
-class RetirementPlanQuerySet(models.query.QuerySet):
+class RetirementPlanQuerySet(QuerySet):
     def filter_by_user(self, user):
         if user.is_advisor:
             return self.filter_by_advisor(user.advisor)
@@ -51,7 +49,7 @@ class RetirementPlanQuerySet(models.query.QuerySet):
         )
 
 
-class GoalQuerySet(models.query.QuerySet):
+class GoalQuerySet(QuerySet):
     def filter_by_firm(self, firm):
         """
         For now we only allow firms of the goal's account's primary owner's advisor
@@ -121,7 +119,7 @@ class GoalQuerySet(models.query.QuerySet):
         return qs
 
 
-class PositionQuerySet(models.query.QuerySet):
+class PositionQuerySet(QuerySet):
     def filter_by_firm(self, firm):
         qs = self.filter(goal__account__account_group__advisor__firm=firm.pk)
         return qs
@@ -186,7 +184,7 @@ class PositionQuerySet(models.query.QuerySet):
         return qs
 
 
-class ExternalAssetQuerySet(models.query.QuerySet):
+class ExternalAssetQuerySet(QuerySet):
     def filter_by_user(self, user):
         if user.is_advisor:
             return self.filter_by_advisor(user.advisor)
@@ -223,3 +221,10 @@ class ExternalAssetQuerySet(models.query.QuerySet):
         """
         return self.filter(owner=client)
 
+
+
+class AccountGroupQueryset(QuerySet):
+    def valid_accounts(self, *args, **kwargs):
+        return self.filter(*args, accounts_all__confirmed=True,
+                           accounts_all__primary_owner__user__prepopulated=False,
+                           **kwargs)
