@@ -1,11 +1,5 @@
 import logging
-<<<<<<< HEAD
-
 from django.conf import settings
-from django.contrib.auth import login
-=======
-from django.conf import settings
->>>>>>> BB-206
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset
 from django.contrib.sites.shortcuts import get_current_site
@@ -26,12 +20,8 @@ from user.models import SecurityAnswer, SecurityQuestion
 from . import serializers
 from ..user.serializers import ChangePasswordSerializer, \
     ResetPasswordSerializer, SecurityAnswerCheckSerializer, \
-<<<<<<< HEAD
-    SecurityAnswerSerializer, SecurityQuestionSerializer
-=======
     SecurityAnswerSerializer, SecurityQuestionSerializer, \
     SecurityQuestionAnswerUpdateSerializer
->>>>>>> BB-206
 
 logger = logging.getLogger('api.v1.user.views')
 from .serializers import EmailNotificationsSerializer, \
@@ -40,10 +30,6 @@ from ..permissions import IsClient
 from ..views import ApiViewMixin, BaseApiView
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> BB-206
 class MeView(BaseApiView):
     serializer_class = serializers.UserSerializer
 
