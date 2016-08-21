@@ -53,11 +53,12 @@ urlpatterns = patterns(
 
     url(r'^me/password/?$', user_views.ChangePasswordView.as_view(), name='user-change-password'),
 
-    url(r'me/question/?$', user_views.SecurityQuestionAnswerView.as_view(), name='user-security-question'),
+    url(r'me/security-questions/?$', user_views.SecurityQuestionAnswerView.as_view(), name='user-security-question'),
+    url(r'me/security-questions/(?P<pk>\d+)/?$', user_views.SecurityQuestionAnswerUpdateView.as_view(), name='user-security-question-update'),
+    url(r'me/security-questions/(?P<pk>\d+)/check/?$', user_views.SecurityAnswerCheckView.as_view(), name='user-check-answer'),
 
-    url(r'me/check/answer/?$', user_views.SecurityAnswerCheckView.as_view(), name='user-check-answer'),
-
-    url(r'security/questions/?$', user_views.SecurityQuestionListView.as_view(), name='security-questions'),
+    # canned security messages, not user specific
+    url(r'me/suggested-security-questions/?$', user_views.SecurityQuestionListView.as_view(), name='canned-security-questions'),
 
     url(r'^keep-alive/?$', user_views.KeepAliveView.as_view(), name='keep-alive'),
 

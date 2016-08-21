@@ -17,6 +17,14 @@ class UserFactory(factory.django.DjangoModelFactory):
     is_active = True
 
 
+class StaffUserFactory(UserFactory):
+    is_staff = True
+
+
+class SuperUserFactory(UserFactory):
+    is_superuser = True
+
+
 class SecurityQuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SecurityQuestion
