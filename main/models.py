@@ -606,6 +606,11 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
             return self.total_balance / self.total_account_groups
         return 0
 
+    @property
+    def average_client_balance(self):
+        balances = [client.total_aum_balance for client in self.clients]
+        return sum(balances) / len(balances)
+
     def get_inviter_name(self):
         return self.user.get_full_name()
 

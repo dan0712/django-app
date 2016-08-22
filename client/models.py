@@ -139,6 +139,11 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         return balance
 
     @property
+    def total_aum_balance(self):
+        return sum(account.total_balance + account.cash_balance
+                   for account in self.accounts.all())
+
+    @property
     def stocks_percentage(self):
         return 0
 
