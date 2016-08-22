@@ -291,8 +291,8 @@ class ClientAccount(models.Model):
             return "{0}'s Personal Account".format(
                 self.primary_owner.user.first_name)"""
 
-        return "{0}'s {1}".format(
-            self.primary_owner.user.first_name, self.get_account_class_display())
+        return "{0}'s {1}".format(self.primary_owner.user.first_name,
+                                  self.account_name.title())
 
     @property
     def total_balance(self):
