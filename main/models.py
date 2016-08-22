@@ -562,6 +562,14 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return b
 
     @property
+    def total_aum(self):
+        accounts = []
+        for ag in self.primary_account_groups.all():
+            accounts.extend(ag.accounts.all())
+        return sum(acc.cash_balance + acc.total_balance
+                   for acc in set(accounts))
+
+    @property
     def primary_clients_size(self):
         return self.all_clients.filter(user__prepopulated=False).count()
 
