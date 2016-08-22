@@ -118,9 +118,6 @@ class LoginView(BaseApiView):
         # Log the user in with a session as well.
         auth_login(request, user)
 
-        # initiate internal routine to login this user
-        login(request, user)
-
         serializer = self.serializer_class(user)
         return Response(serializer.data)
 
