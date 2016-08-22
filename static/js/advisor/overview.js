@@ -3,6 +3,8 @@
 
     $(document).ready(function () {
         var $accounts = $('#accounts'),
+            $search = $("#search"),
+            $clearSearch = $("#btn-clear-search"),
             table = $accounts.DataTable({
             paging: false,
             info: false,
@@ -26,8 +28,14 @@
                 }
             ]
         });
-        $("#search").keyup(function (e) {
+        $search.keyup(function (e) {
             table.search(this.value).draw();
+            this.value.length ? $clearSearch.show() : $clearSearch.hide();
+        });
+        $clearSearch.hide().click(function () {
+            $search.val('');
+            table.search('').draw();
+            $clearSearch.hide();
         });
         // hide lib's search box with disabling
         $(".dataTables_filter").hide();
