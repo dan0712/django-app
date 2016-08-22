@@ -220,11 +220,3 @@ class ExternalAssetQuerySet(QuerySet):
         This method filters out any assets where the given client is not one of the authorised clients.
         """
         return self.filter(owner=client)
-
-
-
-class AccountGroupQueryset(QuerySet):
-    def valid_accounts(self, *args, **kwargs):
-        return self.filter(*args, accounts_all__confirmed=True,
-                           accounts_all__primary_owner__user__prepopulated=False,
-                           **kwargs)

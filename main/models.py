@@ -30,7 +30,7 @@ from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
 from .management.commands.build_returns import get_price_returns
-from .managers import AccountGroupQueryset, ExternalAssetQuerySet, \
+from .managers import ExternalAssetQuerySet, \
     GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
 from .slug import unique_slugify
 
@@ -654,8 +654,6 @@ class AccountGroup(models.Model):
         Advisor,
         related_name='secondary_account_groups')
     name = models.CharField(max_length=100)
-
-    objects = AccountGroupQueryset.as_manager()
 
     @property
     def accounts(self):

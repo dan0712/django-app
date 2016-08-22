@@ -453,15 +453,18 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
 
 
 class AdvisorCompositeOverview(ListView, AdvisorView):
-    model = AccountGroup
+    model = ClientAccount
     template_name = 'advisor/overview.html'
-    context_object_name = 'groups'
+    context_object_name = 'accounts'
 
     def get_queryset(self):
         q = super(AdvisorCompositeOverview, self).get_queryset()
-        return q.valid_accounts(Q(advisor=self.advisor) |
-                                Q(secondary_advisors__in=[self.advisor]),
-                                accounts_all__isnull=False).distinct()
+        return q.filter(
+            Q(account_group__advisor=self.advisor) |
+            Q(account_group__secondary_advisors__in=[self.advisor]),
+            confirmed=True,
+            primary_owner__user__prepopulated=False,
+        )
 
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
