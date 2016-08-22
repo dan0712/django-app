@@ -13,7 +13,7 @@
       </div>
       <div class="col-sm-3 text-sm-right">
         <div class="form-group">
-          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Add grouping</a>
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Group</a>
         </div>
       </div>
     </div>
@@ -32,9 +32,9 @@
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
-            <span class="statcard-desc">Total groupings</span>
+            <span class="statcard-desc">Total clients</span>
             <h2>
-              {{ profile.total_account_groups }}
+              {{ profile.clients.count }}
             </h2>
           </div>
         </div>

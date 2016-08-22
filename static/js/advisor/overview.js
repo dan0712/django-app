@@ -34,7 +34,7 @@
             var url = this.dataset.url;
             $(this).click(function () {
                 window.location = url;
-            });
+            }).css("cursor", "pointer");
         });
         $("#search").keyup(function (e) {
             console.log(this.value);
