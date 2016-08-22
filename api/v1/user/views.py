@@ -1,5 +1,6 @@
 import logging
 from django.conf import settings
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset
 from django.contrib.sites.shortcuts import get_current_site
@@ -113,6 +114,9 @@ class LoginView(BaseApiView):
         # check if user is authenticated
         if not user.is_authenticated():
             raise exceptions.NotAuthenticated()
+
+        # Log the user in with a session as well.
+        auth_login(request, user)
 
         # initiate internal routine to login this user
         login(request, user)
