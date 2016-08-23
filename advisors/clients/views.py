@@ -1,20 +1,19 @@
 from __future__ import unicode_literals
 
+from django import http
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.http import Http404
 from django.views.generic import CreateView, TemplateView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import FormMixin
 from operator import itemgetter
 
-from advisors.clients.forms import EmailInvitationForm
-from client.models import Client, ClientAccount
-from main.constants import INVITATION_CLIENT, INVITATION_TYPE_DICT, \
-    ACCOUNT_TYPES
+from client.models import Client, ClientAccount, EmailInvite
+from main.constants import ACCOUNT_TYPES
 from main.forms import EmailInvitationForm
-from main.views import AdvisorView, EmailInvitation
+from main.views import AdvisorView, ListView
 from support.models import SupportRequest
 
 
@@ -95,7 +94,7 @@ class AdvisorClientDetails(TemplateView, AdvisorView):
             secondary_advisors__in=[self.advisor])).all()
 
         if not client:
-            raise Http404("Client not found")
+            raise http.Http404("Client not found")
 
         self.client = client[0]
 
@@ -126,7 +125,7 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
             account_class = request.POST.get("account_class", request.GET.get("account_class", None))
 
         if account_class not in ["joint_account", "trust_account"]:
-            raise Http404()
+            raise http.Http404()
 
         user = SupportRequest.target_user(request)
         advisor = user.advisor
@@ -158,42 +157,10 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
         return ctx_data
 
 
-class AdvisorClientInvites(CreateView, AdvisorView):
-    form_class = EmailInvitationForm
+class AdvisorClientInvites(ListView, AdvisorView):
     template_name = 'advisor/clients/invites/list.html'
-
-    def get_success_url(self):
-        messages.info(self.request, "Invite sent successfully!")
-        return self.request.get_full_path()
-
-    def get(self, request, *args, **kwargs):
-        invite_type = request.GET.get('invite_type', None)
-        if invite_type is not None and invite_type in ("prepopulated",
-                                                       "blank"):
-            self.template_name = 'advisor/clients/invites/create-account-type.html'
-        response = super(CreateView, self).get(request, *args, **kwargs)
-        response.context_data["invite_type_new_client"] = invite_type
-        return response
-
-    def dispatch(self, request, *args, **kwargs):
-        response = super(AdvisorClientInvites, self).dispatch(request, *args,
-                                                              **kwargs)
-        if hasattr(response, 'context_data'):
-            advisor = request.user.advisor
-            response.context_data["firm"] = advisor.firm
-            response.context_data["inviter"] = advisor
-            invitation_type = INVITATION_CLIENT
-            response.context_data["invitation_type"] = invitation_type
-            response.context_data["invite_url"] = advisor.get_invite_url(
-                invitation_type, None)
-            response.context_data["invite_type"] = INVITATION_TYPE_DICT[str(
-                invitation_type)].title()
-            response.context_data["next"] = request.GET.get("next", None)
-            response.context_data["invites"] = EmailInvitation.objects.filter(
-                invitation_type=invitation_type,
-                inviter_id=advisor.pk,
-                inviter_type=advisor.content_type, )
-        return response
+    queryset = EmailInvite.objects.all()
+    context_object_name = 'invites'
 
 
 class AdvisorNewClientInviteView(CreateView, FormMixin, AdvisorView):
@@ -227,3 +194,13 @@ class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, Tem
         ctx_data = super(AdvisorCreateNewAccountForExistingClientSelectAccountType, self).get_context_data(**kwargs)
         ctx_data["client"] = self.client
         return ctx_data
+
+
+class AdvisorNewClientResendInviteView(SingleObjectMixin, AdvisorView):
+    queryset = EmailInvite.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        invite = self.get_object()
+        invite.send()
+        messages.info(self.request, "Invite sent successfully!")
+        return http.HttpResponseRedirect(reverse('advisor:clients:invites'))

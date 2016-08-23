@@ -20,6 +20,7 @@ urlpatterns = patterns(
         name='account-invites-create'),
 
     url(r'^invites$', views.AdvisorClientInvites.as_view(), name='invites'),
+    url(r'^invites/(?P<pk>\d+)/resend$', views.AdvisorNewClientResendInviteView.as_view(), name='invites-resend'),
     url(r'^invites/new$', views.AdvisorNewClientInviteView.as_view(), name='invites-new'),
 
     url(r'^invites/create$', main_views.AdvisorClientInviteNewView.as_view(),

@@ -14,7 +14,7 @@
       </div>
       <div class="col-sm-3 text-sm-right">
         <div class="form-group">
-          <a class="btn btn-primary-outline" href="{% url 'advisor:clients:invites-create' %}">Invite client</a>
+          <a class="btn btn-primary-outline" href="{% url 'advisor:clients:invites-new' %}">Invite client</a>
         </div>
       </div>
     </div>
@@ -30,23 +30,19 @@
             </tr>
           </thead>
           <tbody>
-            {% for client_invite in invites %}
-              {% if client_invite.get_status_name != "Active" %}
+            {% for invite in invites %}
+              {% if invite.get_status_name != "Active" %}
                 <tr>
-                  <td><a href="mailto:{{ client_invite.email }}">{{ client_invite.email }}</a></td>
-                  <td>{{ client_invite.send_date|date:'d/m/y' }}</td>
+                  <td><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></td>
+                  <td>{{ invite.sent_date|date:'d/m/y'|default:"Never sent" }}</td>
                   <td class="text-xs-right">
-                    {% if client_invite.get_status != 0 %}
-                      {{ client_invite.get_status_name }}
-                    {% else %}
-                      <form method="post">
+                    {% if invite.can_resend %}
+                      <form method="post" action="{% url "advisors:clients:invites-resend" invite.id %}">
                         {% csrf_token %}
-                        <input type="hidden" name="inviter_type" value="{{ inviter.content_type }}">
-                        <input type="hidden" name="inviter_id" value="{{ inviter.pk }}">
-                        <input type="hidden" name="invitation_type" value="{{ invitation_type }}">
-                        <input type="hidden" name= "email" value="{{ client_invite.email }}">
                         <button type="submit" class="btn btn-primary-outline btn-xs">Resend</button>
                       </form>
+                    {% else %}
+                        {{ invite.get_status_name }}
                     {% endif %}
                   </td>
                 </tr>
