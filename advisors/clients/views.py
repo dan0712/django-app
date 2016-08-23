@@ -164,8 +164,10 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
 
 class AdvisorClientInvites(ListView, AdvisorView):
     template_name = 'advisor/clients/invites/list.html'
-    queryset = EmailInvite.objects.all()
     context_object_name = 'invites'
+
+    def get_queryset(self):
+        return self.advisor.invites.all()
 
 
 class AdvisorNewClientInviteView(CreateView, AdvisorView):
