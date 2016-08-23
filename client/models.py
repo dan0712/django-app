@@ -16,8 +16,8 @@ from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
 
-
 logger = logging.getLogger(__name__)
+
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
     WORTH_AFFLUENT = 'affluent'
@@ -98,7 +98,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def accounts_all(self):
         # TODO: Make this work
-        # return self.primary_accounts.get_queryset() | self.signatories.select_related('account')
+        # return self.primary_accounts.get_queryset() |
+        # self.signatories.select_related('account')
         return self.primary_accounts
 
     @property
@@ -544,37 +545,32 @@ class EmailInvite(models.Model):
 
     status = models.PositiveIntegerField(choices=STATUSES,
                                          default=CREATED)
+
+    def __unicode__(self):
+        return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
+                                      self.last_name, self.email)
+
     @property
     def can_resend(self):
         return self.status in [self.CREATED, self.SENT]
 
     def send(self):
-        pass
-    #     if self.get_status != self.SENT:
-    #         return
-    #
-    #     application_type = ""
-    #
-    #     for itc in constants.INVITATION_TYPE_CHOICES:
-    #         if itc[0] == self.invitation_type:
-    #             application_type = itc[1]
-    #
-    #     subject = "BetaSmartz client sign up form url"
-    #     inviter_type = self.inviter_object.get_inviter_type()
-    #     inviter_name = self.inviter_object.get_inviter_name()
-    #     invite_url = self.inviter_object.get_invite_url(self.invitation_type,
-    #                                                     self.email)
-    #
-    #     context = {
-    #         'subject': subject,
-    #         'invite_url': invite_url,
-    #         'inviter_name': inviter_type,
-    #         'inviter_class': inviter_name,
-    #         'application_type': application_type
-    #     }
-    #
-    #     send_mail(subject, '', None, [self.email],
-    #               html_message=render_to_string('email/invite.html', context))
-    #     self.send_count += 1
-    #
-    #     self.save()
+        if not self.can_resend:
+            raise ValidationError('Can be resend only in status '
+                                  'CREATED or SENT')
+
+        subject = "BetaSmartz client sign up form url"
+
+        context = {
+            'invite_url': self.advisor.get_invite_url('client', self.email),
+            'advisor': self.advisor,
+        }
+
+        html_message = render_to_string('advisor/clients/invites/email.html',
+                                        context)
+        send_mail(subject, '', None, [self.email], html_message=html_message)
+        self.last_sent_date = now()
+        self.status = self.SENT
+        self.send_count += 1
+
+        self.save(update_fields=['last_sent_date', 'send_count', 'status'])

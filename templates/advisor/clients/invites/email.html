@@ -1,0 +1,8 @@
+{% extends 'email/email.html' %}
+
+{% block message %}
+
+    Please follow this link <b><a href="{{ invite_url }}">{{ invite_url }}</a></b>
+    in order to complete your application as client of the {{ advisor }} advisor.
+
+{% endblock %}

@@ -1,20 +1,25 @@
 from __future__ import unicode_literals
 
+import logging
+
 from django import http
 from django.contrib import messages
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, \
+    ValidationError
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic.edit import FormMixin
 from operator import itemgetter
 
+from advisors.clients.forms import EmailInviteForm
 from client.models import Client, ClientAccount, EmailInvite
 from main.constants import ACCOUNT_TYPES
-from main.forms import EmailInvitationForm
-from main.views import AdvisorView, ListView
+from main.views.base import AdvisorView
 from support.models import SupportRequest
+
+
+logger = logging.getLogger(__name__)
 
 
 class AdvisorClients(TemplateView, AdvisorView):
@@ -163,12 +168,26 @@ class AdvisorClientInvites(ListView, AdvisorView):
     context_object_name = 'invites'
 
 
-class AdvisorNewClientInviteView(CreateView, FormMixin, AdvisorView):
-    """
-    Get profile data
-    """
+class AdvisorNewClientInviteView(CreateView, AdvisorView):
     template_name = 'advisor/clients/invites/new.html'
-    form_class = EmailInvitationForm
+    form_class = EmailInviteForm
+
+    def get_success_url(self):
+        return reverse('advisor:clients:invites')
+
+    def form_valid(self, form):
+        self.object = invite = form.save(commit=False)
+        invite.advisor = self.advisor
+        invite.save()
+        try:
+            invite.send()
+            messages.success(self.request, 'Invitation email sent.')
+        except ValidationError as e:
+            messages.error(self.request, str(e))
+        except Exception as e:
+            logger.error('Cannot send invitation email (%s)', e)
+            messages.error(self.request, 'Cannot send invitation email!')
+        return http.HttpResponseRedirect(self.get_success_url())
 
 
 class AdvisorCreateNewAccountForExistingClientSelectAccountType(AdvisorView, TemplateView):

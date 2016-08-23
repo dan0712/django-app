@@ -5,7 +5,7 @@
   <li class="{{ request.resolver_match.view_name|menu_active:'advisor:clients:list' }}">
     <a href="{% url 'advisor:clients:list' %}">Overview</a>
   </li>
-  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:clients:invites' }}">
+  <li class="{{ request.resolver_match.view_name|menu_active:'advisor:clients:invites,advisor:clients:invites-new' }}">
     <a href="{% url 'advisor:clients:invites' %}">Invites</a>
   </li>
 </ul>
