@@ -144,14 +144,14 @@ class NotificationTestPages(TestCase):
         return response
 
     def test_all_messages_page(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         response = self.client.get(reverse('notifications:all'))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['notifications']), len(self.to_user.notifications.all()))
 
     def test_unread_messages_pages(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         response = self.client.get(reverse('notifications:unread'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['notifications']), len(self.to_user.notifications.unread()))
@@ -174,7 +174,7 @@ class NotificationTestPages(TestCase):
         self.assertEqual(len(response.context['notifications']), 0)
 
     def test_next_pages(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         response = self.client.get(reverse('notifications:mark_all_as_read'), data={
             "next": reverse('notifications:unread'),
         })
@@ -193,7 +193,7 @@ class NotificationTestPages(TestCase):
         self.assertRedirects(response, reverse('notifications:unread'))
 
     def test_delete_messages_pages(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         slug = id2slug(self.to_user.notifications.first().id)
         response = self.client.get(reverse('notifications:delete', args=[slug]))
@@ -211,7 +211,7 @@ class NotificationTestPages(TestCase):
 
     @override_settings(NOTIFICATIONS_SOFT_DELETE=True)
     def test_soft_delete_messages_manager(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         slug = id2slug(self.to_user.notifications.first().id)
         response = self.client.get(reverse('notifications:delete', args=[slug]))
@@ -228,7 +228,7 @@ class NotificationTestPages(TestCase):
         self.assertEqual(len(response.context['notifications']), self.message_count-1)
 
     def test_unread_count_api(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         response = self.client.get(reverse('notifications:live_unread_notification_count'))
         data = json.loads(response.content.decode('utf-8'))
@@ -248,7 +248,7 @@ class NotificationTestPages(TestCase):
         self.assertEqual(data['unread_count'], 1)
 
     def test_unread_list_api(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         response = self.client.get(reverse('notifications:live_unread_notification_list'))
         data = json.loads(response.content.decode('utf-8'))
@@ -289,7 +289,7 @@ class NotificationTestPages(TestCase):
     def test_live_update_tags(self):
         from django.shortcuts import render
 
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         self.factory = RequestFactory()
 
         request = self.factory.get('/notification/live_updater')
