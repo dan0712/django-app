@@ -21,10 +21,7 @@ class SupportRequest(models.Model):
         """
         :rtype: main.User
         """
-        if isinstance(request, get_user_model()):
-            user = request
-        else:
-            user = request.user
+        user = request.user
         if user.is_authenticated() and user.is_support_staff:
             sr = SupportRequest.get_current(request, as_obj=True)
             if sr:
