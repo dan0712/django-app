@@ -100,12 +100,13 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         personal_accounts_worth = 0.0
         for ca in self.primary_accounts.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL):
             personal_accounts_worth += ca.cash_balance
-            for goal in ca.goals:
+            for goal in ca.all_goals.exclude(state=Goal.State.ARCHIVED.value):
                 personal_accounts_worth += goal.total_balance
         return assets_worth + personal_accounts_worth
 
     @property
     def net_worth(self):
+        # is it ok to use a property here to cache a client's net worth?
         return self._net_worth()
 
     @property

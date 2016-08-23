@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from main.models import ExternalAsset
+from main.models import ExternalAsset, Goal
 from .factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
                        RegionFactory, AddressFactory, RiskProfileGroupFactory, \
                        AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory, \
@@ -224,3 +224,11 @@ class ClientTests(APITestCase):
             accounts_sum += goal.cash_balance
         expected_net_worth = float(assets_sum) + accounts_sum
         self.assertTrue(self.betasmartz_client.net_worth == expected_net_worth)
+
+        # expecting client.net_worth using @property to have cached this initial result
+        # lets make sure the underlying client._net_worth() function is tracking the right info
+        # ok, let's add to the cash balance and check again
+        self.betasmartz_client_account.cash_balance += 2000.0
+        self.betasmartz_client_account.save()
+        expected_net_worth += 2000.0
+        self.assertTrue(self.betasmartz_client._net_worth() == expected_net_worth)
