@@ -3,9 +3,31 @@ from rest_framework.test import APITestCase
 
 from main.models import ExternalAsset
 from main.tests.fixtures import Fixture1
+from .factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
+                       RegionFactory, AddressFactory, RiskProfileGroupFactory, AccountTypeRiskProfileGroupFactory, \
+                       GroupFactory
+from main.constants import ACCOUNT_TYPE_PERSONAL
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class ClientTests(APITestCase):
+    def setUp(self):
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+        # client with some personal assets, cash balance and goals
+        self.region = RegionFactory.create()
+        self.betasmartz_client_address = AddressFactory(region=self.region)
+        self.risk_group = RiskProfileGroupFactory.create(name='Personal Risk Profile Group')
+        self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=0,
+                                                                               risk_profile_group=self.risk_group)
+        self.betasmartz_client = ClientFactory.create()
+
+        self.betasmartz_client_account = ClientAccountFactory(primary_owner=self.betasmartz_client, account_type=ACCOUNT_TYPE_PERSONAL)
+        self.external_asset1 = ExternalAssetFactory.create(owner=self.betasmartz_client)
+        self.external_asset2 = ExternalAssetFactory.create(owner=self.betasmartz_client)
+
+    def tearDown(self):
+        self.client.logout()
+
     def test_create_external_asset(self):
         url = '/api/v1/clients/{}/external-assets'.format(Fixture1.client1().id)
         old_count = ExternalAsset.objects.count()
@@ -177,3 +199,18 @@ class ClientTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # Correct code received
         self.assertEqual(len(response.data), 2)  # Assets available.
+
+    # Tests below this validate the client model's internal functionality
+    # they do not test api endpoints
+    def test_net_worth(self):
+        """
+        verify that the client's net worth property returns the expected
+        amount for the client's assets
+        """
+        # # expected net_worth here - ?
+        # expected_net_worth = 0.0
+        # total external assets valuation
+        assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
+        # accounts_sum = 
+        # self.assertTrue(client.net_worth == expected_net_worth)
+        pass

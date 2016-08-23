@@ -90,6 +90,25 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def __str__(self):
         return self.user.get_full_name()
 
+    def _net_worth(self):
+        # sum ExternalAssets for client
+        assets = self.external_assets.all()
+        assets_worth = 0.0
+        for a in assets:
+            assets_worth += a.valuation
+        # sum Personal type Betasmartz Accounts - the total balance for the account is
+        # ClientAccount.cash_balance + Goal.total_balance for all goals for the account.
+        personal_accounts_worth = 0.0
+        for ca in self.primary_accounts.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL):
+            personal_accounts_worth += ca.cash_balance
+            for goal in ca.goals:
+                personal_accounts_worth += goal.total_balance
+        return assets_worth + personal_accounts_worth
+
+    # @property
+    # def net_worth(self):
+    #     return self._net_worth()
+
     @property
     def accounts_all(self):
         # TODO: Make this work
