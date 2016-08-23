@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
-# from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model
 from common.constants import PERM_CAN_CREATE_SUPPORT_REQUESTS, \
     KEY_SUPPORT_TICKET
 
@@ -21,10 +21,10 @@ class SupportRequest(models.Model):
         """
         :rtype: main.User
         """
-        # if isinstance(request, get_user_model()):
-        #     user = request
-        # else:
-        user = request.user
+        if isinstance(request, get_user_model()):
+            user = request
+        else:
+            user = request.user
         if user.is_authenticated() and user.is_support_staff:
             sr = SupportRequest.get_current(request, as_obj=True)
             if sr:
