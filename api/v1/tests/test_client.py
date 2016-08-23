@@ -4,7 +4,8 @@ from rest_framework.test import APITestCase
 from main.models import ExternalAsset
 from .factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
                        RegionFactory, AddressFactory, RiskProfileGroupFactory, \
-                       AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory
+                       AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory, \
+                       GoalFactory
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from common.constants import GROUP_SUPPORT_STAFF
 
@@ -24,6 +25,9 @@ class ClientTests(APITestCase):
         self.betasmartz_client_account = ClientAccountFactory(primary_owner=self.betasmartz_client, account_type=ACCOUNT_TYPE_PERSONAL)
         self.external_asset1 = ExternalAssetFactory.create(owner=self.betasmartz_client)
         self.external_asset2 = ExternalAssetFactory.create(owner=self.betasmartz_client)
+
+        self.goal1 = GoalFactory.create(account=self.betasmartz_client_account)
+        self.goal2 = GoalFactory.create(account=self.betasmartz_client_account)
 
         self.betasmartz_client2 = ClientFactory.create()
 
@@ -205,15 +209,18 @@ class ClientTests(APITestCase):
 
     # Tests below this validate the client model's internal functionality
     # they do not test api endpoints
-    # def test_net_worth(self):
-    #     """
-    #     verify that the client's net worth property returns the expected
-    #     amount for the client's assets
-    #     """
-    #     # # expected net_worth here - ?
-    #     # expected_net_worth = 0.0
-    #     # total external assets valuation
-    #     assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
-    #     # accounts_sum = 
-    #     # self.assertTrue(client.net_worth == expected_net_worth)
-    #     pass
+    def test_net_worth(self):
+        """
+        verify that the client's net worth property returns the expected
+        amount for the client's assets
+        """
+        # expected_net_worth = 0.0
+        # total external assets valuation
+        assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
+        # a clientaccount with a cash balance and some goals
+        accounts_sum = 0.0
+        accounts_sum += self.betasmartz_client_account.cash_balance
+        for goal in self.betasmartz_client_account.goals:
+            accounts_sum += goal.cash_balance
+        expected_net_worth = float(assets_sum) + accounts_sum
+        self.assertTrue(self.betasmartz_client._net_worth() == expected_net_worth)

@@ -157,6 +157,7 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
     # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     confirmed = True
+    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
 
 
 class GoalTypeFactory(factory.django.DjangoModelFactory):
@@ -164,6 +165,8 @@ class GoalTypeFactory(factory.django.DjangoModelFactory):
         model = GoalType
 
     name = factory.Sequence(lambda n: "GoalType %d" % n)
+    default_term = factory.LazyAttribute(lambda n: int(random.randrange(100)))
+    risk_sensitivity = factory.LazyAttribute(lambda n: float(random.randrange(1000) / 100))
 
 
 class GoalFactory(factory.django.DjangoModelFactory):
@@ -171,8 +174,10 @@ class GoalFactory(factory.django.DjangoModelFactory):
         model = Goal
 
     account = factory.SubFactory(ClientAccountFactory)
+    name = factory.Sequence(lambda n: "Goal %d" % n)
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
     type = factory.SubFactory(GoalTypeFactory)
+    portfolio_set = factory.SubFactory(PortfolioSetFactory)
 
 
 class ExternalAssetFactory(factory.django.DjangoModelFactory):
