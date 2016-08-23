@@ -77,7 +77,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     employment_status = models.IntegerField(choices=constants.EMPLOYMENT_STATUSES,
                                             null=True, blank=True)
-    net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
     employer = models.CharField(max_length=255, null=True, blank=True)
@@ -105,9 +104,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                 personal_accounts_worth += goal.total_balance
         return assets_worth + personal_accounts_worth
 
-    # @property
-    # def net_worth(self):
-    #     return self._net_worth()
+    @property
+    def net_worth(self):
+        return self._net_worth()
 
     @property
     def accounts_all(self):
