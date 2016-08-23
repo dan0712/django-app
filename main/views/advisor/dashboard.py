@@ -781,7 +781,7 @@ class BuildPersonalDetails(AdvisorView, UpdateView):
 
 
 FINANCIAL_DETAILS = ('employment_status', 'occupation', 'employer', 'income',
-                     'net_worth', 'associated_to_broker_dealer',
+                     'associated_to_broker_dealer',
                      'ten_percent_insider', 'public_position_insider',
                      'us_citizen')
 

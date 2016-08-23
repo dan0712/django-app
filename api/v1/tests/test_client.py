@@ -223,4 +223,4 @@ class ClientTests(APITestCase):
         for goal in self.betasmartz_client_account.goals:
             accounts_sum += goal.cash_balance
         expected_net_worth = float(assets_sum) + accounts_sum
-        self.assertTrue(self.betasmartz_client._net_worth() == expected_net_worth)
+        self.assertTrue(self.betasmartz_client.net_worth == expected_net_worth)

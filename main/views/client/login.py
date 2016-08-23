@@ -37,7 +37,7 @@ class ClientForm(forms.ModelForm):
         model = Client
         fields = PERSONAL_DATA_FIELDS + ('advisor', 'tax_file_number', "provide_tfn", "associated_to_broker_dealer",
                                          "ten_percent_insider", 'public_position_insider', 'us_citizen',
-                                         "employment_status", "net_worth", "income", "occupation", "employer",
+                                         "employment_status", "income", "occupation", "employer",
                                          "betasmartz_agreement", "advisor_agreement")
 
         widgets = {"ten_percent_insider": forms.RadioSelect(),
@@ -85,7 +85,7 @@ class ClientSignUpForm(BetaSmartzGenericUserSignupForm):
                                           " have to deduct tax at the highest marginal tax rate (BetaSmartz "
                                           "recommends you provide your TFN, claim exemption or advise us of"
                                           " your non-resident status."},
-                               {"fields": ("employment_status", "occupation", "employer", "net_worth", "income"),
+                               {"fields": ("employment_status", "occupation", "employer", "income"),
                                 "header": "Employment and financial background",
                                 "detail": "We are required to ask for your employment and financial background, "
                                           "and your answers allow us to give you better advice. "
