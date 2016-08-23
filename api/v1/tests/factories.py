@@ -182,10 +182,11 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "ExternalAsset %d" % n)
     owner = factory.SubFactory(ClientFactory)
     valuation = factory.LazyAttribute(lambda n: decimal.Decimal(random.randrange(1000000)) / 100)
-    valuation_date = factory.LazyFunction(datetime.now)
-    type = factory.LazyAttribute(lambda n: random.randrange(7))
-    growth = decimal.Decimal('0.5')
+    valuation_date = factory.LazyAttribute(lambda n: datetime.now().date())
+    growth = decimal.Decimal('0.01')
     acquisition_date = factory.LazyFunction(datetime.now)
+
+    type = factory.LazyAttribute(lambda n: random.randrange(7))
     # class Type(ChoiceEnum):
     #     FAMILY_HOME = (0, 'Family Home')
     #     INVESTMENT_PROPERTY = (1, 'Investment Property')

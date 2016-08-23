@@ -2,10 +2,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from main.models import ExternalAsset
-from main.tests.fixtures import Fixture1
 from .factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
-                       RegionFactory, AddressFactory, RiskProfileGroupFactory, AccountTypeRiskProfileGroupFactory, \
-                       GroupFactory
+                       RegionFactory, AddressFactory, RiskProfileGroupFactory, \
+                       AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from common.constants import GROUP_SUPPORT_STAFF
 
@@ -19,25 +18,28 @@ class ClientTests(APITestCase):
         self.risk_group = RiskProfileGroupFactory.create(name='Personal Risk Profile Group')
         self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=0,
                                                                                risk_profile_group=self.risk_group)
-        self.betasmartz_client = ClientFactory.create()
+        self.user = UserFactory.create()
+        self.betasmartz_client = ClientFactory.create(user=self.user)
 
         self.betasmartz_client_account = ClientAccountFactory(primary_owner=self.betasmartz_client, account_type=ACCOUNT_TYPE_PERSONAL)
         self.external_asset1 = ExternalAssetFactory.create(owner=self.betasmartz_client)
         self.external_asset2 = ExternalAssetFactory.create(owner=self.betasmartz_client)
 
+        self.betasmartz_client2 = ClientFactory.create()
+
     def tearDown(self):
         self.client.logout()
 
     def test_create_external_asset(self):
-        url = '/api/v1/clients/{}/external-assets'.format(Fixture1.client1().id)
+        url = '/api/v1/clients/%s/external-assets' % self.betasmartz_client.id
         old_count = ExternalAsset.objects.count()
-        self.client.force_authenticate(user=Fixture1.client1_user())
+        self.client.force_authenticate(user=self.betasmartz_client.user)
 
         # First input details about the loan.
         loan_data = {
             'type': ExternalAsset.Type.PROPERTY_LOAN.value,
             'name': 'My Home Loan',
-            'owner': Fixture1.client1().id,
+            'owner': self.betasmartz_client.id,
             # description intentionally omitted to test optionality
             'valuation': -145000,
             'valuation_date': '2016-07-05',
@@ -67,7 +69,7 @@ class ClientTests(APITestCase):
         data = {
             'type': ExternalAsset.Type.FAMILY_HOME.value,
             'name': 'My Home',
-            'owner': Fixture1.client1().id,
+            'owner': self.betasmartz_client.id,
             'description': 'This is my beautiful home',
             'valuation': 345000.01,
             'valuation_date': '2016-07-05',
@@ -85,15 +87,15 @@ class ClientTests(APITestCase):
         self.assertEqual(house.name, 'My Home')
 
     def test_update_asset(self):
-        asset = Fixture1.external_asset_1()
-        url = '/api/v1/clients/{}/external-assets/{}'.format(Fixture1.client1().id, asset.id)
+        asset = self.external_asset1
+        url = '/api/v1/clients/%s/external-assets/%s' % (self.betasmartz_client.id, asset.id)
         test_name = 'Holy Pingalicious Test Asset'
         self.assertNotEqual(asset.name, test_name)
         data = {
             'name': test_name,
         }
         old_count = ExternalAsset.objects.count()
-        self.client.force_authenticate(user=Fixture1.client1_user())
+        self.client.force_authenticate(user=self.betasmartz_client.user)
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(ExternalAsset.objects.count(), old_count)  # No extra asset created
@@ -106,24 +108,24 @@ class ClientTests(APITestCase):
         """
         Make sure we can't update or set the id.
         """
-        self.client.force_authenticate(user=Fixture1.client1_user())
+        self.client.force_authenticate(user=self.betasmartz_client.user)
 
         # Try for update
-        asset = Fixture1.external_asset_1()
+        asset = self.external_asset1
         self.assertNotEqual(asset.id, 999)
-        url = '/api/v1/clients/{}/external-assets/{}'.format(Fixture1.client1().id, asset.id)
+        url = '/api/v1/clients/%s/external-assets/%s' % (self.betasmartz_client.id, asset.id)
         data = {'id': 999}
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], asset.id)
 
         # Try for create
-        url = '/api/v1/clients/{}/external-assets'.format(Fixture1.client1().id)
+        url = '/api/v1/clients/%s/external-assets' % (self.betasmartz_client.id)
         data = {
             'id': 999,
             'type': ExternalAsset.Type.FAMILY_HOME.value,
             'name': 'My Home 2',
-            'owner': Fixture1.client1().id,
+            'owner': self.betasmartz_client.id,
             'description': 'This is my beautiful home',
             'valuation': 345000.01,
             'valuation_date': '2016-07-05',
@@ -136,26 +138,27 @@ class ClientTests(APITestCase):
         self.assertNotEqual(response.data['id'], 999)
 
     def test_get_all_assets(self):
-        url = '/api/v1/clients/{}/external-assets'.format(Fixture1.client1().id)
-        self.client.force_authenticate(user=Fixture1.client1_user())
+        url = '/api/v1/clients/%s/external-assets' % (self.betasmartz_client.id)
+        self.client.force_authenticate(user=self.betasmartz_client.user)
 
         # First check when there are none, we get the appropriate response
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, [])
+        assets_count = ExternalAsset.objects.filter(owner=self.betasmartz_client).count()
+        self.assertEqual(len(response.data), assets_count)
 
         # Then add one and make sure it is returned
-        asset = Fixture1.external_asset_1()
+        asset = ExternalAssetFactory.create(owner=self.betasmartz_client)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # One for the asset, and 1 for the associated debt.
+        self.assertEqual(len(response.data), assets_count + 1)
         self.assertEqual(response.data[0]['name'], asset.debt.name)
         self.assertEqual(response.data[1]['name'], asset.name)
 
     def test_get_asset_detail(self):
-        url = '/api/v1/clients/{}/external-assets/{}'.format(Fixture1.client1().id, Fixture1.external_asset_1().id)
-        self.client.force_authenticate(user=Fixture1.client1_user())
-        asset = Fixture1.external_asset_1()
+        url = '/api/v1/clients/%s/external-assets/%s' % (self.betasmartz_client.id, self.external_asset1.id)
+        self.client.force_authenticate(user=self.betasmartz_client.user)
+        asset = self.external_asset1
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['type'], asset.type)
@@ -169,14 +172,14 @@ class ClientTests(APITestCase):
         self.assertEqual(response.data['debt'], asset.debt.id)
 
     def test_delete_asset(self):
-        asset1 = Fixture1.external_asset_1()
-        url = '/api/v1/clients/{}/external-assets/{}'.format(Fixture1.client1().id, asset1.id)
-        self.client.force_authenticate(user=Fixture1.client1_user())
+        asset1 = self.external_asset1
+        url = '/api/v1/clients/%s/external-assets/%s' % (self.betasmartz_client.id, asset1.id)
+        self.client.force_authenticate(user=self.betasmartz_client.user)
 
         old_count = ExternalAsset.objects.count()
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT) # Correct code received
-        self.assertEqual(response.data, None) # Nothing returned
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)  # Correct code received
+        self.assertEqual(response.data, None)  # Nothing returned
 
         # Check Item no longer in DB
         self.assertEqual(ExternalAsset.objects.count(), old_count - 1)  # Asset removed
@@ -187,30 +190,30 @@ class ClientTests(APITestCase):
         test that users cannot see assets they are not authorised to
         :return:
         """
-        asset1 = Fixture1.external_asset_1()
-        url = '/api/v1/clients/{}/external-assets'.format(Fixture1.client1().id)
-        self.client.force_authenticate(user=Fixture1.client2_user())
+        # asset1 = self.external_asset1
+        url = '/api/v1/clients/%s/external-assets' % self.betasmartz_client.id
+        self.client.force_authenticate(user=self.betasmartz_client2.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # Correct code received
         self.assertEqual(response.data, [])  # No assets available.
 
         # Now change to the authorised user, and we should get stuff.
-        self.client.force_authenticate(user=Fixture1.client1_user())
+        self.client.force_authenticate(user=self.betasmartz_client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # Correct code received
         self.assertEqual(len(response.data), 2)  # Assets available.
 
     # Tests below this validate the client model's internal functionality
     # they do not test api endpoints
-    def test_net_worth(self):
-        """
-        verify that the client's net worth property returns the expected
-        amount for the client's assets
-        """
-        # # expected net_worth here - ?
-        # expected_net_worth = 0.0
-        # total external assets valuation
-        assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
-        # accounts_sum = 
-        # self.assertTrue(client.net_worth == expected_net_worth)
-        pass
+    # def test_net_worth(self):
+    #     """
+    #     verify that the client's net worth property returns the expected
+    #     amount for the client's assets
+    #     """
+    #     # # expected net_worth here - ?
+    #     # expected_net_worth = 0.0
+    #     # total external assets valuation
+    #     assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
+    #     # accounts_sum = 
+    #     # self.assertTrue(client.net_worth == expected_net_worth)
+    #     pass

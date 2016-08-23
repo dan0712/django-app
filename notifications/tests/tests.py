@@ -140,7 +140,7 @@ class NotificationTestPages(TestCase):
     def login(self, username, password):
         self.logout()
         response = self.client.post(reverse('login'), {'username': username, 'password': password})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         return response
 
     def test_all_messages_page(self):
