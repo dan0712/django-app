@@ -13,7 +13,7 @@ from advisors.clients.forms import EmailInvitationForm
 from client.models import Client, ClientAccount
 from main.constants import INVITATION_CLIENT, INVITATION_TYPE_DICT, \
     ACCOUNT_TYPES
-from main.forms import EmailInviteForm
+from main.forms import EmailInvitationForm
 from main.views import AdvisorView, EmailInvitation
 from support.models import SupportRequest
 
@@ -159,7 +159,7 @@ class AdvisorCreateNewAccountForExistingClient(AdvisorView, CreateView):
 
 
 class AdvisorClientInvites(CreateView, AdvisorView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'advisor/clients/invites/list.html'
 
     def get_success_url(self):

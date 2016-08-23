@@ -15,7 +15,7 @@ from operator import itemgetter
 from client.models import Client
 from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
     INVITATION_TYPE_DICT)
-from main.forms import BetaSmartzGenericUserSignupForm, EmailInviteForm
+from main.forms import BetaSmartzGenericUserSignupForm, EmailInvitationForm
 from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
     Position, Supervisor, Transaction, User)
 from main.views.base import LegalView
@@ -723,7 +723,7 @@ class FirmSupportForms(TemplateView, LegalView):
 
 
 class FirmSupervisorInvites(CreateView, LegalView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'firm/supervisor_invite.html'
 
     def get_success_url(self):
@@ -748,7 +748,7 @@ class FirmSupervisorInvites(CreateView, LegalView):
 
 
 class FirmAdvisorInvites(CreateView, LegalView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'firm/advisor_invite.html'
 
     def get_success_url(self):
