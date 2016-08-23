@@ -214,7 +214,6 @@ class ClientTests(APITestCase):
         verify that the client's net worth property returns the expected
         amount for the client's assets
         """
-        # expected_net_worth = 0.0
         # total external assets valuation
         assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
         # a clientaccount with a cash balance and some goals
