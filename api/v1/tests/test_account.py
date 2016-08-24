@@ -5,7 +5,7 @@ from client.models import AccountTypeRiskProfileGroup, ClientAccount
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import ActivityLogEvent
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class AccountTests(APITestCase):

@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from main.models import ExternalAsset
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class ClientTests(APITestCase):

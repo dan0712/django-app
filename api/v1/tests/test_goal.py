@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 
 from main.event import Event
 from main.models import ActivityLogEvent, MarketOrderRequest, EventMemo, ActivityLog
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class GoalTests(APITestCase):

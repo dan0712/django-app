@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from main.models import Goal
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class CreateGoalTest(TestCase):

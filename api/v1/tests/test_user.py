@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 from django.core.urlresolvers import reverse
 from .factories import UserFactory, GroupFactory
 from common.constants import GROUP_SUPPORT_STAFF

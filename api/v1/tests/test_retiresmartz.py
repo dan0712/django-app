@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 from ujson import loads
 
 from main.models import RetirementPlan
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class RetiresmartzTests(APITestCase):
