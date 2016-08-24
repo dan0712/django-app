@@ -23,8 +23,12 @@
           <thead>
             <tr>
               <th>Email</th>
+              <th>First name</th>
+              <th>Last name</th>
+              <th>Reason</th>
               <th>Status</th>
-              <th>Sent date</th>
+              <th>Last sent</th>
+              <th>Send count</th>
               <th class="text-xs-right">Actions</th>
             </tr>
           </thead>
@@ -32,8 +36,12 @@
             {% for invite in invites %}
             <tr>
               <td><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></td>
+              <td>{{ invite.first_name }}</td>
+              <td>{{ invite.last_name }}</td>
+              <td>{{ invite.get_reason_display|default:"&mdash;" }}</td>
               <td>{{ invite.get_status_display }}</td>
-              <td title="{{ invite.last_sent_date|default:"" }}">{{ invite.last_sent_date|date:'d/m/y'|default:"Never sent" }}</td>
+              <td title="{{ invite.last_sent_at|default:"" }}">{{ invite.last_sent_at|date:'d/m/y'|default:"Never sent" }}</td>
+              <td>{{ invite.send_count }}</td>
               <td class="text-xs-right">
                 {% if invite.can_resend %}
                   <form method="post" action="{% url "advisors:clients:invites-resend" invite.id %}">
@@ -47,7 +55,7 @@
             </tr>
             {% empty %}
               <tr>
-                <td colspan="4" class="text-center">
+                <td colspan="8" class="text-center">
                   No entries
                 </td>
               </tr>

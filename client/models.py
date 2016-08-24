@@ -513,15 +513,21 @@ class EmailNotificationPrefs(models.Model):
 
 
 class EmailInvite(models.Model):
-    CREATED = 0
-    SENT = 1
-    ACCEPTED = 2
-    CLOSED = 4
+    STATUS_CREATED = 0
+    STATUS_SENT = 1
+    STATUS_ACCEPTED = 2
+    STATUS_CLOSED = 4
     STATUSES = (
-        (CREATED, 'Created'),
-        (SENT, 'Sent'),
-        (ACCEPTED, 'Accepted'),
-        (CLOSED, 'Closed')
+        (STATUS_CREATED, 'Created'),
+        (STATUS_SENT, 'Sent'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_CLOSED, 'Closed')
+    )
+    REASON_RETIREMENT = 1
+    REASON_PERSONAL_INVESTING = 2
+    REASONS = (
+        (REASON_RETIREMENT, 'Retirement'),
+        (REASON_PERSONAL_INVESTING, 'Personal Investing'),
     )
 
     advisor = models.ForeignKey('main.Advisor', related_name='invites')
@@ -534,11 +540,13 @@ class EmailInvite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
-    last_sent_date = models.DateTimeField(blank=True, null=True)
+    last_sent_at = models.DateTimeField(blank=True, null=True)
     send_count = models.PositiveIntegerField(default=0)
 
+    reason = models.PositiveIntegerField(choices=REASONS,
+                                         blank=True, null=True)
     status = models.PositiveIntegerField(choices=STATUSES,
-                                         default=CREATED)
+                                         default=STATUS_CREATED)
 
     def __unicode__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
@@ -546,7 +554,7 @@ class EmailInvite(models.Model):
 
     @property
     def can_resend(self):
-        return self.status in [self.CREATED, self.SENT]
+        return self.status in [self.STATUS_CREATED, self.STATUS_SENT]
 
     def send(self):
         if not self.can_resend:
@@ -563,8 +571,8 @@ class EmailInvite(models.Model):
         html_message = render_to_string('advisor/clients/invites/email.html',
                                         context)
         send_mail(subject, '', None, [self.email], html_message=html_message)
-        self.last_sent_date = now()
-        self.status = self.SENT
+        self.last_sent_at = now()
+        self.status = self.STATUS_SENT
         self.send_count += 1
 
-        self.save(update_fields=['last_sent_date', 'send_count', 'status'])
+        self.save(update_fields=['last_sent_at', 'send_count', 'status'])
