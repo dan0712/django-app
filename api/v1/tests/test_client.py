@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from main.models import ExternalAsset, Goal
+from main.models import ExternalAsset
 from .factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
                        RegionFactory, AddressFactory, RiskProfileGroupFactory, \
                        AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory, \
