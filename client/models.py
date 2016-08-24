@@ -9,7 +9,7 @@ from django.db.models import PROTECT
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
-
+from django.utils.functional import cached_property
 from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
@@ -104,7 +104,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                 personal_accounts_worth += goal.total_balance
         return assets_worth + personal_accounts_worth
 
-    @property
+    @cached_property
     def net_worth(self):
         # is it ok to use a property here to cache a client's net worth?
         return self._net_worth()
