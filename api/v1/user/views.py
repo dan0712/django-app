@@ -59,7 +59,7 @@ class MeView(BaseApiView):
         return Response(data)
 
     @transaction.atomic
-    def post(self, request):
+    def put(self, request):
         """
         ---
         # Swagger
@@ -68,7 +68,8 @@ class MeView(BaseApiView):
         response_serializer: serializers.UserSerializer
         """
         user = SupportRequest.target_user(request)
-        serializer = serializers.UserUpdateSerializer(user, data=request.data,
+        serializer = serializers.UserUpdateSerializer(user,
+                                                      data=request.data,
                                                       partial=True,
                                                       context={
                                                           'request': request,
@@ -80,10 +81,6 @@ class MeView(BaseApiView):
 
         serializer = self.serializer_class(user)
         return Response(serializer.data)
-
-    @transaction.atomic
-    def put(self, request):
-        return self.post(request)
 
 
 class LoginView(BaseApiView):

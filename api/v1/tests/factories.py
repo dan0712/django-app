@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, Goal, GoalType
+import datetime
+
 import factory
-from user.models import SecurityQuestion, SecurityAnswer
-from client.models import Client, ClientAccount, RiskProfileGroup, \
-                          RiskProfileQuestion, RiskProfileAnswer, \
-                          AccountTypeRiskProfileGroup
+
 import decimal
 import random
 from datetime import datetime, timedelta, date
-from address.models import Region, Address
 from django.contrib.auth.models import Group
+
+from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, Goal, GoalType
+from client.models import Client, ClientAccount, RiskProfileGroup, \
+    RiskProfileQuestion, RiskProfileAnswer, \
+    AccountTypeRiskProfileGroup
+from user.models import SecurityQuestion, SecurityAnswer
+from address.models import Address, Region
 
 from random import randrange
 
@@ -43,6 +47,64 @@ class UserFactory(factory.django.DjangoModelFactory):
     password = factory.PostGenerationMethodCall('set_password', 'test')
 
     is_active = True
+
+
+class PortfolioSetFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PortfolioSet
+
+    name = factory.Sequence(lambda n: 'PortfolioSet %d' % n)
+    risk_free_rate = factory.Sequence(lambda n: n * .01)
+
+
+class FirmFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Firm
+
+    name = factory.Sequence(lambda n: 'Firm %d' % n)
+    token = factory.Sequence(lambda n: 'Token %d' % n)
+    default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
+    slug = factory.Sequence(lambda n: 'Slug %d' % n)
+
+
+class RegionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Region
+
+    name = factory.Sequence(lambda n: 'Region %d' % n)
+    country = 'AU'
+
+
+class AddressFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Address
+
+    region = factory.SubFactory(RegionFactory)
+
+
+class AdvisorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Advisor
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+    betasmartz_agreement = True
+    default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
+    residential_address = factory.SubFactory(AddressFactory)
+
+
+class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RiskProfileGroup
+
+    name = factory.Sequence(lambda n: 'RiskProfileGroup %d' % n)
+
+
+class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AccountTypeRiskProfileGroup
+
+    risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
 
 
 class StaffUserFactory(UserFactory):
