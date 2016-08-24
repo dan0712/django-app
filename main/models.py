@@ -555,19 +555,15 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def total_balance(self):
-        b = 0
-        for ag in self.households:
-            b += ag.total_balance
+        """
+        This means total assets under management (AUM)
+        :return:
+        """
+        from client.models import ClientAccount
 
-        return b
+        accounts = ClientAccount.objects.filter(primary_owner__advisor=self)
 
-    @property
-    def total_aum(self):
-        accounts = []
-        for ag in self.primary_account_groups.all():
-            accounts.extend(ag.accounts.all())
-        return sum(acc.cash_balance + acc.total_balance
-                   for acc in set(accounts))
+        return sum(acc.total_balance for acc in accounts)
 
     @property
     def primary_clients_size(self):
@@ -608,7 +604,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def average_client_balance(self):
-        balances = [client.total_aum_balance for client in self.clients]
+        balances = [client.total_balance for client in self.clients]
         return sum(balances) / len(balances)
 
     def get_inviter_name(self):

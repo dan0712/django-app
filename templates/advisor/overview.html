@@ -13,7 +13,7 @@
       </div>
       <div class="col-sm-3 text-sm-right">
         <div class="form-group">
-          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Group</a>
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Add Group</a>
         </div>
       </div>
     </div>
@@ -24,7 +24,7 @@
           <div class="p-a">
             <span class="statcard-desc">Total AUM</span>
             <h2>
-              {{ profile.total_aum|currency }}
+              {{ profile.total_balance|currency }}
             </h2>
           </div>
         </div>

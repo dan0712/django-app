@@ -133,15 +133,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def total_balance(self):
-        balance = 0
-        for account in self.accounts.all():
-            balance += account.total_balance
-        return balance
-
-    @property
-    def total_aum_balance(self):
-        return sum(account.total_balance + account.cash_balance
-                   for account in self.accounts.all())
+        return sum(account.total_balance for account in self.accounts.all())
 
     @property
     def stocks_percentage(self):
@@ -296,10 +288,8 @@ class ClientAccount(models.Model):
 
     @property
     def total_balance(self):
-        b = 0
-        for goal in self.goals.all():
-            b += goal.total_balance
-        return b
+        balance = sum(goal.total_balance for goal in self.goals.all())
+        return balance + self.cash_balance
 
     @property
     def stock_balance(self):
