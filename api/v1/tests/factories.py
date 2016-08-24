@@ -7,9 +7,22 @@ from client.models import Client, ClientAccount, RiskProfileGroup, \
                           AccountTypeRiskProfileGroup
 import decimal
 import random
-from datetime import datetime, date
+from datetime import datetime, timedelta, date
 from address.models import Region, Address
 from django.contrib.auth.models import Group
+
+from random import randrange
+
+
+def random_date(start, end):
+    """
+    This function will return a random datetime between two datetime
+    objects.
+    """
+    delta = end - start
+    int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
+    random_second = randrange(int_delta)
+    return start + timedelta(seconds=random_second)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -187,7 +200,7 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "ExternalAsset %d" % n)
     owner = factory.SubFactory(ClientFactory)
     valuation = factory.LazyAttribute(lambda n: decimal.Decimal(random.randrange(1000000)) / 100)
-    valuation_date = factory.LazyAttribute(lambda n: datetime.now().date())
+    valuation_date = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - timedelta(days=30), datetime.now().date()))
     growth = decimal.Decimal('0.01')
     acquisition_date = factory.LazyFunction(datetime.now)
 
