@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('client', '0002_emailnotificationprefs'),
+        ('client', '0003_emailinvite'),
     ]
 
     operations = [
