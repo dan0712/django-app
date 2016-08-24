@@ -1,6 +1,6 @@
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum, unique
 from itertools import repeat
 
@@ -248,6 +248,17 @@ class ExternalAsset(models.Model):
 
     # Override the manager with one that has permission capabilities.
     objects = ExternalAssetQuerySet.as_manager()
+
+    def get_growth_valuation(self, to_date=None):
+        # apply daily growth for everyday from the valuation_date to now
+        # FROM TransferPlan:
+        #   days = (dt - self.begin_date).days
+        #   return self.amount * pow(1 + self.growth, days)
+        if to_date is None:
+            to_date = datetime.now().date()
+        delta = to_date - self.valuation_date
+        accumulated_value = self.valuation
+        return self.valuation * pow(1 + self.growth, delta.days)
 
     class Meta:
         unique_together = ('name', 'owner')

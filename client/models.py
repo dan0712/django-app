@@ -1,6 +1,6 @@
 import uuid
 from itertools import chain
-
+from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -93,8 +93,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         # Sum ExternalAssets for the client
         assets = self.external_assets.all()
         assets_worth = 0.0
+        today = datetime.now().date()
         for a in assets:
-            assets_worth += float(a.valuation)
+            assets_worth += float(a.get_growth_valuation(to_date=today))
         # Sum personal type Betasmartz Accounts - the total balance for the account is
         # ClientAccount.cash_balance + Goal.total_balance for all goals for the account.
         personal_accounts_worth = 0.0
