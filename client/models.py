@@ -95,6 +95,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         assets_worth = 0.0
         today = datetime.now().date()
         for a in assets:
+            # daily growth not annual
             assets_worth += float(a.get_growth_valuation(to_date=today))
         # Sum personal type Betasmartz Accounts - the total balance for the account is
         # ClientAccount.cash_balance + Goal.total_balance for all goals for the account.

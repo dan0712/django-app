@@ -250,10 +250,7 @@ class ExternalAsset(models.Model):
     objects = ExternalAssetQuerySet.as_manager()
 
     def get_growth_valuation(self, to_date=None):
-        # apply daily growth for everyday from the valuation_date to now
-        # FROM TransferPlan:
-        #   days = (dt - self.begin_date).days
-        #   return self.amount * pow(1 + self.growth, days)
+        # daily growth not annual
         if to_date is None:
             to_date = datetime.now().date()
         delta = to_date - self.valuation_date
