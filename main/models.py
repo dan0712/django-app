@@ -1629,12 +1629,37 @@ class Goal(models.Model):
     @property
     def total_return(self):
         """
-        :return: The Time-Weighted Return for this goal
+        :return: Modified Dietz Rate of Return for this goal
         """
-        # TODO: Do it properly
-        fund_bal = self.total_balance - self.cash_balance
-        exec_total = self.net_executions
-        return (fund_bal + exec_total) / -exec_total if exec_total else 0
+        end_value = self.total_balance
+        begin_value = 0
+        casf_flows = []
+        start_date = None
+        transactions = (Transaction.objects
+                        .filter(
+            Q(from_goal=self) | Q(to_goal=self),
+            Q(reason=Transaction.REASON_WITHDRAWAL) |
+            Q(reason=Transaction.REASON_DEPOSIT),
+            status=Transaction.STATUS_EXECUTED)
+                        .order_by('created'))
+        if not transactions:
+            return 0
+        for tr in transactions:
+            try:
+                days = (tr.created.date() - start_date).days
+            except TypeError:
+                days = 0
+                start_date = tr.created.date()
+            casf_flows.append((
+                days,
+                -tr.amount if tr.from_goal is not None else tr.amount
+            ))
+        cash_flow_balance = sum(i[1] for i in casf_flows)
+        total_days = (now().date() - start_date).days
+        prorated_sum = sum(cfi * (total_days - d) / total_days
+                           for d, cfi in casf_flows)
+        return (end_value - begin_value -
+                cash_flow_balance) / (begin_value + prorated_sum)
 
     @property
     def stocks_percentage(self):
