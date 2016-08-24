@@ -206,28 +206,3 @@ class ClientTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # Correct code received
         self.assertEqual(len(response.data), 2)  # Assets available.
-
-    # Tests below this validate the client model's internal functionality
-    # they do not test api endpoints
-    def test_net_worth(self):
-        """
-        verify that the client's net worth property returns the expected
-        amount for the client's assets
-        """
-        # total external assets valuation
-        assets_sum = self.external_asset1.valuation + self.external_asset2.valuation
-        # a clientaccount with a cash balance and some goals
-        accounts_sum = 0.0
-        accounts_sum += self.betasmartz_client_account.cash_balance
-        for goal in self.betasmartz_client_account.goals:
-            accounts_sum += goal.cash_balance
-        expected_net_worth = float(assets_sum) + accounts_sum
-        self.assertTrue(self.betasmartz_client.net_worth == expected_net_worth)
-
-        # expecting client.net_worth using @property to have cached this initial result
-        # lets make sure the underlying client._net_worth() function is tracking the right info
-        # ok, let's add to the cash balance and check again
-        self.betasmartz_client_account.cash_balance += 2000.0
-        self.betasmartz_client_account.save()
-        expected_net_worth += 2000.0
-        self.assertTrue(self.betasmartz_client._net_worth() == expected_net_worth)

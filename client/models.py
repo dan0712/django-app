@@ -106,7 +106,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     @cached_property
     def net_worth(self):
-        # is it ok to use a property here to cache a client's net worth?
         return self._net_worth()
 
     @property
