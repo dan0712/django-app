@@ -81,6 +81,10 @@ class MeView(BaseApiView):
         serializer = self.serializer_class(user)
         return Response(serializer.data)
 
+    @transaction.atomic
+    def put(self, request):
+        return self.post(request)
+
 
 class LoginView(BaseApiView):
     """
