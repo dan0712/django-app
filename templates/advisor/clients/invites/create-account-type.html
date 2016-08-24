@@ -15,7 +15,7 @@
       <div class="col-sm-8">
         <p>Select an account type to create on behalf of your new client.</p>
 
-        <form action="{% url 'advisor:clients-invites-create-profile' %}">
+        <form action="{% url 'advisor:clients:invites-create-profile' %}">
           <input type="hidden" value="{{ invite_type_new_client }}" name="invite_type">
 
           <div class="form-group">

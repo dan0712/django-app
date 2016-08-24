@@ -14,7 +14,7 @@
       </div>
       <div class="col-sm-3 text-sm-right">
         <div class="form-group">
-          <a class="btn btn-primary-outline" href="{% url 'advisor:clients-invites-create' %}">Invite client</a>
+          <a class="btn btn-primary-outline" href="{% url 'advisor:clients:invites-new' %}">Invite client</a>
         </div>
       </div>
     </div>
@@ -57,10 +57,10 @@
           </thead>
           <tbody>
             {% for client in clients %}
-              <tr onclick="window.location='{% url 'advisor:clients-detail' client.0 %}'">
+              <tr onclick="window.location='{% url 'advisor:clients:detail' client.0 %}'">
                 <td>{{ client.0 }}</td>
                 <td>
-                  <div><a href="{% url 'advisor:clients-detail' client.0 %}">{{ client.1 }}</a></div>
+                  <div><a href="{% url 'advisor:clients:detail' client.0 %}">{{ client.1 }}</a></div>
                 </td>
                 <td>{{ client.2|currency }}</td>
                 <td><a href="mailto:{{ client.3 }}">{{ client.3 }}</a></td>

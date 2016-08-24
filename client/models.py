@@ -1,3 +1,4 @@
+import logging
 import uuid
 from itertools import chain
 
@@ -14,6 +15,8 @@ from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
+
+logger = logging.getLogger(__name__)
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
@@ -37,8 +40,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     )
 
     advisor = models.ForeignKey('main.Advisor',
-        related_name='all_clients',
-        on_delete=PROTECT)  # Must reassign clients before removing advisor
+                                related_name='all_clients',
+                                # Must reassign clients before removing advisor
+                                on_delete=PROTECT)
     secondary_advisors = models.ManyToManyField(
         'main.Advisor',
         related_name='secondary_clients',
@@ -65,7 +69,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     public_position_insider = models.BooleanField(
         verbose_name=_("Do you or a family member hold "
-                     "a public office position?"),
+                       "a public office position?"),
         default=False,
         choices=constants.YES_NO)
 
@@ -75,8 +79,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         default=False,
         choices=constants.YES_NO)
 
-    employment_status = models.IntegerField(choices=constants.EMPLOYMENT_STATUSES,
-                                            null=True, blank=True)
+    employment_status = models.IntegerField(
+        choices=constants.EMPLOYMENT_STATUSES,
+        null=True, blank=True)
     net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
@@ -93,7 +98,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def accounts_all(self):
         # TODO: Make this work
-        #return self.primary_accounts.get_queryset() | self.signatories.select_related('account')
+        # return self.primary_accounts.get_queryset() |
+        # self.signatories.select_related('account')
         return self.primary_accounts
 
     @property
@@ -105,7 +111,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         total_balance = self.total_balance
 
         for worth_range in self.WORTH_RANGES:
-            if total_balance >= worth_range[1] and total_balance < worth_range[2]:
+            if worth_range[1] <= total_balance < worth_range[2]:
                 return worth_range[0]
 
     def get_worth_display(self):
@@ -147,10 +153,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def total_returns(self):
         return 0
 
-    def save(self,
-             force_insert=False,
-             force_update=False,
-             using=None,
+    def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         create_personal_account = False
         if self.pk is None:
@@ -160,9 +163,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                  update_fields)
 
         if create_personal_account:
-            risk_profile_group = AccountTypeRiskProfileGroup.objects.all().filter(account_type=constants.ACCOUNT_TYPE_PERSONAL).first()
+            risk_profile_group = AccountTypeRiskProfileGroup.objects.filter(
+                account_type=constants.ACCOUNT_TYPE_PERSONAL).first()
             if risk_profile_group is None:
-                raise ValidationError("No risk profile group associated with account type: ACCOUNT_TYPE_PERSONAL")
+                raise ValidationError(
+                    "No risk profile group associated with account type: "
+                    "ACCOUNT_TYPE_PERSONAL")
             new_ac = ClientAccount(
                 primary_owner=self,
                 account_type=constants.ACCOUNT_TYPE_PERSONAL,
@@ -175,7 +181,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
 class ClientAccount(models.Model):
     """
-    A ClientAccount is not just for Personal accounts. It is our base account, from which other data can be attached.
+    A ClientAccount is not just for Personal accounts. It is our base account,
+    from which other data can be attached.
     It is the primary financial entity in the Betasmartz system.
     """
     account_group = models.ForeignKey('main.AccountGroup',
@@ -184,21 +191,29 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
+    primary_owner = models.ForeignKey('Client',
+                                      related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
     tax_loss_harvesting_consent = models.BooleanField(default=False)
-    tax_loss_harvesting_status = models.CharField(max_length=255, choices=(("USER_OFF", "USER_OFF"),
-                                                                           ("USER_ON", "USER_ON")), default="USER_OFF")
+    tax_loss_harvesting_status = models.CharField(max_length=255, choices=(
+        ("USER_OFF", "USER_OFF"),
+        ("USER_ON", "USER_ON")), default="USER_OFF")
     asset_fee_plan = models.ForeignKey('main.AssetFeePlan', null=True)
     default_portfolio_set = models.ForeignKey('main.PortfolioSet')
-    cash_balance = models.FloatField(default=0, help_text='The amount of cash in this account available to be used.')
-    supervised = models.BooleanField(default=True, help_text='Is this account supervised by an advisor?')
+    cash_balance = models.FloatField(default=0,
+                                     help_text='The amount of cash in this '
+                                               'account available to be used.')
+    supervised = models.BooleanField(default=True,
+                                     help_text='Is this account supervised '
+                                               'by an advisor?')
     signatories = models.ManyToManyField('Client',
                                          related_name='signatory_accounts',
-                                         help_text='Other clients authorised to operate the account.')
-    risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='accounts')
+                                         help_text='Other clients authorised '
+                                                   'to operate the account.')
+    risk_profile_group = models.ForeignKey('RiskProfileGroup',
+                                           related_name='accounts')
     # The account must not be used until the risk_profile_responses are set.
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
@@ -271,7 +286,8 @@ class ClientAccount(models.Model):
         if self.custom_fee != 0:
             return self.custom_fee + Platform.objects.first().fee
         else:
-            return self.primary_owner.advisor.firm.fee + Platform.objects.first().fee
+            return self.primary_owner.advisor.firm.fee + \
+                   Platform.objects.first().fee
 
     @property
     def fee_fraction(self):
@@ -327,25 +343,29 @@ class ClientAccount(models.Model):
     def stocks_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.stock_balance / self.total_balance * 100)))
+        return "{0}".format(
+            int(round(self.stock_balance / self.total_balance * 100)))
 
     @property
     def bonds_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
+        return "{0}".format(
+            int(round(self.bond_balance / self.total_balance * 100)))
 
     @property
     def core_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.core_balance / self.total_balance * 100)))
+        return "{0}".format(
+            int(round(self.core_balance / self.total_balance * 100)))
 
     @property
     def satellite_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.satellite_balance / self.total_balance * 100)))
+        return "{0}".format(
+            int(round(self.satellite_balance / self.total_balance * 100)))
 
     @property
     def owners(self):
@@ -372,7 +392,7 @@ class ClientAccount(models.Model):
         total_balance = self.total_balance
 
         for worth_range in Client.WORTH_RANGES:
-            if total_balance >= worth_range[1] and total_balance < worth_range[2]:
+            if worth_range[1] <= total_balance < worth_range[2]:
                 return worth_range[0]
 
     def get_worth_display(self):
@@ -394,7 +414,8 @@ class ClientAccount(models.Model):
 
     @property
     def confirmation_url(self):
-        return settings.SITE_URL + "/client/confirm/account/{0}".format(self.pk)
+        return settings.SITE_URL + "/client/confirm/account/{0}".format(
+            self.pk)
 
     def send_confirmation_email(self):
 
@@ -410,34 +431,41 @@ class ClientAccount(models.Model):
                   '',
                   None,
                   [self.primary_owner.user.email],
-                  html_message=render_to_string('email/confirm_new_client_account.html', context))
+                  html_message=render_to_string(
+                      'email/confirm_new_client_account.html', context))
 
     def __str__(self):
         return "{0}:{1}:{2}:({3})".format(
             self.primary_owner.full_name,
             self.primary_owner.advisor.first_name,
-            self.primary_owner.advisor.firm.name, self.account_type_name)
+            self.primary_owner.advisor.firm.name,
+            self.account_type_name)
 
 
 class RiskProfileGroup(models.Model):
     """
-    A way to group a set of predefined risk profile questions to be asked together.
+    A way to group a set of predefined risk profile questions to
+    be asked together.
     """
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
 
     # Also has properties:
-    #   'accounts' which is all the accounts this group is used on. From the ClientAccount model
-    #   'questions' which is all the risk profile questions that form this group. From the RiskProfileQuestion model
-    #   'account-types' which is all the account types where this group is the default group for the account type.
+    #   'accounts' which is all the accounts this group is used on.
+    # From the ClientAccount model 'questions' which is all the risk profile
+    # questions that form this group. From the RiskProfileQuestion model
+    #   'account-types' which is all the account types where this group is
+    # the default group for the account type.
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
 
 
 class AccountTypeRiskProfileGroup(models.Model):
-    account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES, unique=True)
-    risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='account_types')
+    account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES,
+                                       unique=True)
+    risk_profile_group = models.ForeignKey('RiskProfileGroup',
+                                           related_name='account_types')
 
 
 class RiskProfileQuestion(models.Model):
@@ -448,7 +476,8 @@ class RiskProfileQuestion(models.Model):
     order = models.IntegerField()
     text = models.TextField()
 
-    # Also has property 'answers' which is all the predefined answers for this question.
+    # Also has property 'answers' which is all the predefined answers for
+    # this question.
 
     class Meta:
         ordering = ['order']
@@ -464,7 +493,8 @@ class RiskProfileAnswer(models.Model):
     text = models.TextField()
     score = models.FloatField()
 
-    # Also has property 'responses' which is all the responses given that use this answer.
+    # Also has property 'responses' which is all the responses given
+    # that use this answer.
 
     class Meta:
         ordering = ['order']
@@ -480,3 +510,69 @@ class EmailNotificationPrefs(models.Model):
     hit_10mln = models.BooleanField(
         verbose_name=_('when my account balance hits $10,000,000'),
         default=False)
+
+
+class EmailInvite(models.Model):
+    STATUS_CREATED = 0
+    STATUS_SENT = 1
+    STATUS_ACCEPTED = 2
+    STATUS_CLOSED = 4
+    STATUSES = (
+        (STATUS_CREATED, 'Created'),
+        (STATUS_SENT, 'Sent'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_CLOSED, 'Closed')
+    )
+    REASON_RETIREMENT = 1
+    REASON_PERSONAL_INVESTING = 2
+    REASONS = (
+        (REASON_RETIREMENT, 'Retirement'),
+        (REASON_PERSONAL_INVESTING, 'Personal Investing'),
+    )
+
+    advisor = models.ForeignKey('main.Advisor', related_name='invites')
+
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    last_sent_at = models.DateTimeField(blank=True, null=True)
+    send_count = models.PositiveIntegerField(default=0)
+
+    reason = models.PositiveIntegerField(choices=REASONS,
+                                         blank=True, null=True)
+    status = models.PositiveIntegerField(choices=STATUSES,
+                                         default=STATUS_CREATED)
+
+    def __unicode__(self):
+        return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
+                                      self.last_name, self.email)
+
+    @property
+    def can_resend(self):
+        return self.status in [self.STATUS_CREATED, self.STATUS_SENT]
+
+    def send(self):
+        if not self.can_resend:
+            raise ValidationError('Can be resend only in status '
+                                  'CREATED or SENT')
+
+        subject = "BetaSmartz client sign up form url"
+
+        context = {
+            'invite_url': self.advisor.get_invite_url('client', self.email),
+            'advisor': self.advisor,
+        }
+
+        html_message = render_to_string('advisor/clients/invites/email.html',
+                                        context)
+        send_mail(subject, '', None, [self.email], html_message=html_message)
+        self.last_sent_at = now()
+        self.status = self.STATUS_SENT
+        self.send_count += 1
+
+        self.save(update_fields=['last_sent_at', 'send_count', 'status'])

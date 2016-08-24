@@ -1,0 +1,47 @@
+{% extends "layouts_new/base.html" %}
+
+{% load i18n bootstrap3 filters %}
+
+
+{% block main_content %}
+  <div class="container">
+
+    <h3>Enter your client's details</h3>
+
+    <p class="m-t-md">Enter your client's name and email to invite them to open their account.</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="col-sm-8 col-md-6">
+
+          <div class="row">
+            <div class="col-sm-6">
+              {% bootstrap_field form.first_name %}
+            </div>
+
+            <div class="col-sm-6">
+              {% bootstrap_field form.middle_name %}
+            </div>
+          </div>
+
+          {% bootstrap_field form.last_name %}
+          {% bootstrap_field form.email %}
+          {% bootstrap_field form.reason %}
+        </div>
+      </div>
+
+      <button class="btn btn-default" type="reset">Cancel</button>
+      <button class="btn btn-primary" type="submit">Invite</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block foot_js %}
+  <script type="application/javascript">
+  $("form button[type=reset]").click(function () {
+      window.location.href = "{% url "advisor:clients:invites" %}";
+  });
+  </script>
+{% endblock %}
