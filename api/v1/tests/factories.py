@@ -2,6 +2,14 @@
 from main.models import User
 import factory
 from user.models import SecurityQuestion, SecurityAnswer
+from django.contrib.auth.models import Group
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Group
+
+    name = factory.Sequence(lambda n: 'Group %d' % n)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -15,6 +23,14 @@ class UserFactory(factory.django.DjangoModelFactory):
     password = factory.PostGenerationMethodCall('set_password', 'test')
 
     is_active = True
+
+
+class StaffUserFactory(UserFactory):
+    is_staff = True
+
+
+class SuperUserFactory(UserFactory):
+    is_superuser = True
 
 
 class SecurityQuestionFactory(factory.django.DjangoModelFactory):

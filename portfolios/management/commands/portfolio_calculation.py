@@ -522,7 +522,7 @@ def risk_score_to_lambda(risk_score):
     scale = MarkowitzScale.objects.order_by('-date').first()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
-    if scale.date < (now().today() - timedelta(days=7)):
+    if scale.date < (now().today() - timedelta(days=7)).date():
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
     return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
 
@@ -532,9 +532,9 @@ def lambda_to_risk_score(lam):
     scale = MarkowitzScale.objects.order_by('-date').first()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The Markowitz lambda into a risk score.")
-    if scale.date < (now().today() - timedelta(days=7)):
+    if scale.date < (now().today() - timedelta(days=7)).date():
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return (math.log((lam - scale.c)/scale.a, scale.b) + 50) / 100
+    return (math.log((lam - scale.c) / scale.a, scale.b) + 50) / 100
 
 
 def get_market_weights(instruments):
