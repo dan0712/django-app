@@ -6,9 +6,14 @@ from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import ActivityLogEvent
 from main.tests.fixtures import Fixture1
+from .factories import GroupFactory
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class AccountTests(APITestCase):
+    def setUp(self):
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+
     def test_create_account(self):
         url = '/api/v1/accounts'
         data = {

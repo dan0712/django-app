@@ -1,7 +1,7 @@
 import logging
 import uuid
 from itertools import chain
-
+from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -10,7 +10,7 @@ from django.db.models import PROTECT
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
-
+from django.utils.functional import cached_property
 from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
@@ -79,10 +79,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         default=False,
         choices=constants.YES_NO)
 
-    employment_status = models.IntegerField(
-        choices=constants.EMPLOYMENT_STATUSES,
-        null=True, blank=True)
-    net_worth = models.FloatField(verbose_name="Net worth ($)", default=0)
+    employment_status = models.IntegerField(choices=constants.EMPLOYMENT_STATUSES,
+                                            null=True, blank=True)
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
     employer = models.CharField(max_length=255, null=True, blank=True)
@@ -94,6 +92,27 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     def __str__(self):
         return self.user.get_full_name()
+
+    def _net_worth(self):
+        # Sum ExternalAssets for the client
+        assets = self.external_assets.all()
+        assets_worth = 0.0
+        today = datetime.now().date()
+        for a in assets:
+            # daily growth not annual
+            assets_worth += float(a.get_growth_valuation(to_date=today))
+        # Sum personal type Betasmartz Accounts - the total balance for the account is
+        # ClientAccount.cash_balance + Goal.total_balance for all goals for the account.
+        personal_accounts_worth = 0.0
+        for ca in self.primary_accounts.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL):
+            personal_accounts_worth += ca.cash_balance
+            for goal in ca.all_goals.exclude(state=Goal.State.ARCHIVED.value):
+                personal_accounts_worth += goal.total_balance
+        return assets_worth + personal_accounts_worth
+
+    @cached_property
+    def net_worth(self):
+        return self._net_worth()
 
     @property
     def accounts_all(self):

@@ -6,9 +6,17 @@ from ujson import loads
 
 from main.models import RetirementPlan
 from main.tests.fixtures import Fixture1
+from .factories import GroupFactory
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class RetiresmartzTests(APITestCase):
+    def setUp(self):
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+
+    def tearDown(self):
+        self.client.logout()
+
     def test_get_plan(self):
         """
         Test clients are able to access their own retirement plan by id.

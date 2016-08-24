@@ -34,7 +34,7 @@ class ExternalAssetViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewS
         qs = super(ExternalAssetViewSet, self).get_queryset()
 
         # Only return assets which the user has access to.
-        user = SupportRequest.target_user(self.request.user)
+        user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
 

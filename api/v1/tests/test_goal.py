@@ -7,9 +7,17 @@ from rest_framework.test import APITestCase
 from main.event import Event
 from main.models import ActivityLogEvent, MarketOrderRequest, EventMemo, ActivityLog
 from main.tests.fixtures import Fixture1
+from .factories import GroupFactory
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class GoalTests(APITestCase):
+    def setUp(self):
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+
+    def tearDown(self):
+        self.client.logout()
+
     def test_get_list(self):
         goal = Fixture1.goal1()
         goal.approve_selected()
