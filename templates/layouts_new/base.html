@@ -22,10 +22,16 @@
 
     <!--link href="{{ STATIC_URL }}bower_components/tether/dist/css/tether.min.css" rel="stylesheet" -->
     <!--<link href="{{ STATIC_URL }}bower_components/roboto-fontface/css/roboto-fontface.css" rel="stylesheet">-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.6/dt-1.10.12/datatables.min.css"/>
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,400italic" rel="stylesheet">
     <link href="{% static 'vendor/theme/dist/toolkit-light.css' %}" rel="stylesheet">
     <link href="{% static 'css_new/app.css' %}" rel="stylesheet">
+
     <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.6/dt-1.10.12/datatables.min.js"></script>
+
+    {% block head_js %}{% endblock %}
+    {% block css %}{% endblock %}
   </head>
 
   <body class="{% block body_class %}{% endblock %}">
@@ -49,4 +55,5 @@
 
     <script src="{% static 'js_new/app.js' %}"></script>
   {% endblock %}
+  {% block foot_js %}{% endblock %}
 </html>

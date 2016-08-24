@@ -2,6 +2,14 @@
 from main.models import User
 import factory
 from user.models import SecurityQuestion, SecurityAnswer
+from django.contrib.auth.models import Group
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Group
+
+    name = factory.Sequence(lambda n: 'Group %d' % n)
 
 
 class UserFactory(factory.django.DjangoModelFactory):

@@ -1,20 +1,19 @@
 {% extends "layouts_new/base.html" %}
-{% load i18n %}
-{% load filters %}
+{% load i18n filters static %}
 
+{% block foot_js %}
+<script type="application/javascript" src="{% static "js/advisor/overview.js" %}"></script>
+{% endblock %}
 
 {% block main_content %}
   <div class="container">
-    {% include "advisor/logo.html" %}
-
     <div class="row">
       <div class="col-sm-9">
           <h3>Overview</h3>
       </div>
       <div class="col-sm-3 text-sm-right">
         <div class="form-group">
-          <!-- TODO: refactor as django_filter form field -->
-          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Add grouping</a>
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-create' %}">Add Group</a>
         </div>
       </div>
     </div>
@@ -26,7 +25,6 @@
             <span class="statcard-desc">Total AUM</span>
             <h2>
               {{ profile.total_balance|currency }}
-              <!-- <small class="delta-indicator delta-positive">5%</small> -->
             </h2>
           </div>
         </div>
@@ -34,10 +32,9 @@
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
-            <span class="statcard-desc">Total groupings</span>
+            <span class="statcard-desc">Total clients</span>
             <h2>
-              {{ profile.total_account_groups }}
-              <!-- <small class="delta-indicator delta-negative">2%</small> -->
+              {{ profile.clients.count }}
             </h2>
           </div>
         </div>
@@ -45,10 +42,9 @@
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
-            <span class="statcard-desc">Average balance</span>
+            <span class="statcard-desc">Average client balance</span>
             <h2>
-              {{ profile.average_balance|currency }}
-              <!-- <small class="delta-indicator delta-positive">3%</small> -->
+              {{ profile.average_client_balance|currency }}
             </h2>
           </div>
         </div>
@@ -57,22 +53,14 @@
 
     <div class="row">
       <form>
-        <div class="col-sm-4">
+        <div class="col-sm-4 col-sm-offset-8">
           <div class="form-group">
-            <select name="filter" class="form-control" onchange="this.form.submit();">
-                <!-- option value="0">-- Type --</option -->
-                <option value="0" {% if  filter == "0" %}selected="selected"{% endif %}>All</option>
-                <option value="1" {% if  filter == "1" %}selected="selected"{% endif %}>Primary</option>
-                <option value="2" {% if  filter == "2" %}selected="selected"{% endif %}>Secondary</option>
-            </select>
-          </div>
-        </div>
-        <div class="col-sm-4 col-sm-offset-4">
-          <div class="form-group">
-            <!-- TODO: refactor as django_filter form field -->
             <div class="input-group">
-              <span class="input-group-addon" id="search"><span class="icon icon-magnifying-glass"></span></span>
-              <input type="search" placeholder="Search households..." value="{{ search }}" name="search" class="form-control" onchange="this.form.submit();" aria-describedby="search">
+              <span class="input-group-addon"><span class="icon icon-magnifying-glass"></span></span>
+              <input type="search" placeholder="Filter groups" id="search"
+                     class="form-control" aria-describedby="search">
+                <span class="glyphicon glyphicon-remove-sign form-control-feedback form-control-clear"
+                    id="btn-clear-search" style="cursor: pointer; pointer-events: all">
             </div>
           </div>
         </div>
@@ -82,60 +70,30 @@
     <!-- Awful legacy code everywhere -->
     <div class="panel panel-default">
       <div class="table-responsive">
-        <table class="table">
+        <table class="table" id="accounts">
           <thead>
             <tr>
               <th>#</th>
-              <th></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "name" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=name&amp;sort_dir={{ sort_inverse }}">Name <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "goal_status" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=goal_status&amp;sort_dir={{ sort_inverse }}">Status <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total balance <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "return_percentage" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=return_percentage&amp;sort_dir={{ sort_inverse }}">Total return <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "allocation" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Stock/Bond <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th><a class="link-colorless link-decorless {% if sort_col == "xxx" %}active {{ sort_dir }}{% endif %}" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Core/Satellite <span class="icon icon-sort {% if sort_dir == 'asc' %}icon-triangle-down{% else %}icon-triangle-up{% endif %}"></span></a></th>
-              <th>Risk</th>
-              <th>Net worth</th>
+              <th>Name</th>
+              <th>Total balance</th>
+              <th>Total return</th>
             </tr>
           </thead>
           <tbody>
-            {% for group in groups %}
-              <tr onclick="window.location='{% url 'advisor:composites-detail' group.0 %}'">
+            {% for account in accounts %}
+              <tr>
                 <td>
-                  {% for account in group.1.accounts %}
                     <div>{{ account.pk }}</div>
-                  {% endfor %}
-                </td>
-                <td>
-                  <span class="icon {% if group.1.accounts.count == 1 %}icon-user{% else %}icon-users{% endif %}"></span>
                 </td>
                 <td>
                   <div>
-                    <a href="{% url 'advisor:composites-detail' group.0 %}">
-                      {{ group.2 }}
-                    </a>
+                    {{ account.name }}
                   </div>
-                  <div>{% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.get_account_type_display }}{% endif %}</div>
-                  <div>{{ group.4 }}</div>
                 </td>
+                <td>{{ account.total_balance|currency }}</td>
                 <td>
-                  {% if group.5 %}
-                    <span class="text-success">On track</span>
-                  {% else %}
-                    <span class="text-danger">Off track</span>
-                  {% endif %}
-                </td>
-                <td>{{ group.6|currency }}</td>
-                <td>
-                  <div>{{ group.7|percentage }}</div>
-                  <div class="text-muted"><small><span>since</span> {{ group.8|date:'M j, Y' }}</small></div>
-                </td>
-                <td>{{ group.10|percentage }} / {{ group.11|percentage }}</td>
-                <td>{{ group.12|percentage }} / {{ group.13|percentage }}</td>
-                <td>
-                  <div>{% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.goals.first.risk_level }}{% endif %}</div>
-                </td>
-                <td>
-                  {% if group.1.accounts|length > 1 %}Multiple{% else %}{{ group.3.get_worth_display }}{% endif %}
+                  <div>{{ account.total_returns|percentage }}</div>
+                  <div class="text-muted"><small><span>since</span> {{ account.since|date:'M j, Y' }}</small></div>
                 </td>
               </tr>
              {% empty %}

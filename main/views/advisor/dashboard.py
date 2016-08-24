@@ -11,7 +11,8 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
-from django.views.generic import (CreateView, DetailView, TemplateView, UpdateView)
+from django.views.generic import CreateView, DetailView, ListView, \
+    TemplateView, UpdateView
 from operator import itemgetter
 
 from address.models import Address, Region
@@ -321,83 +322,19 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
         )
 
 
-class AdvisorCompositeOverview(TemplateView, AdvisorView):
-    model = AccountGroup
+class AdvisorCompositeOverview(ListView, AdvisorView):
+    model = ClientAccount
     template_name = 'advisor/overview.html'
-    col_dict = {
-        "name": 2,
-        "goal_status": 5,
-        'current_balance': 6,
-        'return_percentage': 7,
-        'allocation': 9
-    }
+    context_object_name = 'accounts'
 
-    def __init__(self, *args, **kwargs):
-        super(AdvisorCompositeOverview, self).__init__(*args, **kwargs)
-        self.filter = "0"
-        self.search = ""
-        self.sort_col = "name"
-        self.sort_dir = "desc"
-
-    def get(self, request, *args, **kwargs):
-
-        self.filter = request.GET.get("filter", self.filter)
-        self.search = request.GET.get("search", self.search)
-        self.sort_col = request.GET.get("sort_col", self.sort_col)
-        self.sort_dir = request.GET.get("sort_dir", self.sort_dir)
-        response = super(AdvisorCompositeOverview, self).get(request, *args,
-                                                            **kwargs)
-        return response
-
-    @property
-    def groups(self):
-        pre_groups = self.model.objects
-
-        if self.filter == "1":
-            pre_groups = pre_groups.filter(advisor=self.advisor)
-        elif self.filter == "2":
-            pre_groups = pre_groups.filter(
-                secondary_advisors__in=[self.advisor])
-        else:
-            pre_groups = pre_groups.filter(Q(advisor=self.advisor) | Q(
-                secondary_advisors__in=[self.advisor]))
-
-        if self.search:
-            sq = Q(name__icontains=self.search)
-            pre_groups = pre_groups.filter(sq)
-
-        groups = []
-        for group in set(pre_groups.distinct().all()):
-            relationship = "Primary" if group.advisor == self.advisor else "Secondary"
-            first_account = group.accounts.first()
-            if first_account is None:
-                continue
-
-            groups.append(
-                [group.pk, group, group.name, first_account,
-                 relationship, group.on_track, group.total_balance,
-                 group.total_returns, group.since, group.allocation,
-                 group.stocks_percentage, group.bonds_percentage,
-                 group.core_percentage, group.satellite_percentage])
-
-        reverse = self.sort_dir != "asc"
-
-        groups = sorted(groups,
-                        key=itemgetter(self.col_dict[self.sort_col]),
-                        reverse=reverse)
-        return groups
-
-    def get_context_data(self, **kwargs):
-        ctx = super(AdvisorCompositeOverview, self).get_context_data(**kwargs)
-        ctx.update({
-            "filter": self.filter,
-            "search": self.search,
-            "sort_col": self.sort_col,
-            "sort_dir": self.sort_dir,
-            "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
-            "groups": self.groups
-        })
-        return ctx
+    def get_queryset(self):
+        q = super(AdvisorCompositeOverview, self).get_queryset()
+        return q.filter(
+            Q(account_group__advisor=self.advisor) |
+            Q(account_group__secondary_advisors__in=[self.advisor]),
+            confirmed=True,
+            primary_owner__user__prepopulated=False,
+        )
 
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):

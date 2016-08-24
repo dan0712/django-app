@@ -50,13 +50,15 @@ def login(request, template_name='registration/login.html',
             return TemplateResponse(request, template_name, context)
 
         # custom redirect
-        redirect_to = (reverse_lazy('client:app', args=(user.client.id,))
-                       if user.is_client
-                       else reverse_lazy('advisor:overview')
-                       if user.is_advisor
-                       else reverse_lazy('firm:overview')
-                       if user.is_authorised_representative
-                       else None)
+        redirect_to = request.GET.get('next',
+                                      reverse_lazy('client:app',
+                                                   args=(user.client.id,))
+                                      if user.is_client
+                                      else reverse_lazy('advisor:overview')
+                                      if user.is_advisor
+                                      else reverse_lazy('firm:overview')
+                                      if user.is_authorised_representative
+                                      else None)
 
         if redirect_to:
             response = HttpResponseRedirect(redirect_to)

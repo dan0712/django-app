@@ -13,7 +13,8 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="#">
-          <img alt="BetaSmartz Institutional" src="{% static 'images/white_logo.png' %}">
+          <img alt="{{ firm.name|default:"BetaSmartz Institutional" }}"
+               src="{% static firm.logo.url|default:'images/white_logo.png' %}">
         </a>
       </div>
 

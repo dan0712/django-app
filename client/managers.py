@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 from django.db import models
 from django.db.models import Q
 
+from main.models import GoalMetric
+
 
 class ClientQuerySet(models.query.QuerySet):
     def filter_by_user(self, user):
@@ -39,7 +41,6 @@ class ClientQuerySet(models.query.QuerySet):
         if risk_level is None:
             return self
 
-        from .models import GoalMetric
         risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
         qs = self.filter(
@@ -98,7 +99,6 @@ class ClientAccountQuerySet(models.query.QuerySet):
         if risk_level is None:
             return self
 
-        from .models import GoalMetric
         risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
         qs = self.filter(
