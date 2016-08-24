@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0045_auto_20160823_2230'),
+        ('main', '0045_auto_20160821_0150'),
         ('client', '0002_emailnotificationprefs'),
     ]
 
