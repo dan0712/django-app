@@ -150,7 +150,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_support_staff(self):
         if not hasattr(self, '_is_support_staff'):
-            group = Group.objects.get(name=GROUP_SUPPORT_STAFF)
+            group, created = Group.objects.get_or_create(name=GROUP_SUPPORT_STAFF)
             self._is_support_staff = group in self.groups.all()
         return self._is_support_staff
 
