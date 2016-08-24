@@ -5,20 +5,6 @@
 
 {% block main_content %}
   <div class="container">
-    {% include "advisor/logo.html" %}
-
-    <div class="row">
-      <div class="col-sm-9">
-        <div>
-          {% include "advisor/partials/menu-clients.html" %}
-        </div>
-      </div>
-      <div class="col-sm-3 text-sm-right">
-        <div class="form-group">
-          <button class="btn btn-primary">Invite client</button>
-        </div>
-      </div>
-    </div>
 
     <h3>Enter your client's details</h3>
 
@@ -46,7 +32,16 @@
         </div>
       </div>
 
+      <button class="btn btn-default" type="reset">Cancel</button>
       <button class="btn btn-primary" type="submit">Invite</button>
     </form>
   </div>
+{% endblock %}
+
+{% block foot_js %}
+  <script type="application/javascript">
+  $("form button[type=reset]").click(function () {
+      window.location.href = "{% url "advisor:clients:invites" %}";
+  });
+  </script>
 {% endblock %}
