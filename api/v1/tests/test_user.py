@@ -50,8 +50,11 @@ class UserTests(APITestCase):
         self.assertTrue(response.data['first_name'] == self.user.first_name)
         self.assertTrue(response.data['id'] == self.user.id)
 
-    def test_update_user_settings(self):
+    def test_update_client_user_settings(self):
         # the user must be a client, advisor or possibly supportstaff here, otherwise 403
+        client = ClientFactory(user=self.user)
+        client.user.groups_add(User.GROUP_CLIENT)
+
         url = reverse('api:v1:user-me')
         new_name = 'Bruce Wayne'
         data = {
@@ -69,9 +72,12 @@ class UserTests(APITestCase):
 
         # 200 for put request
         self.client.force_authenticate(self.user)
+
+        # We gave a get control response so we can compare the two.
+        control_response = self.client.get(url)
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='200 for authenticated put request to update user settings')
-
+        self.assertEqual(len(control_response.data), len(response.data))
         self.assertTrue(response.data['first_name'] == new_name)
         self.assertTrue(response.data['id'] == self.user.id)

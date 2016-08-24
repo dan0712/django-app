@@ -68,6 +68,9 @@ class MeView(BaseApiView):
         response_serializer: serializers.UserSerializer
         """
         user = SupportRequest.target_user(request)
+        if user.is_support_staff:
+            sr = SupportRequest.get_current(self.request, as_obj=True)
+            user = sr.user
         serializer = serializers.UserUpdateSerializer(user,
                                                       data=request.data,
                                                       partial=True,
@@ -79,8 +82,18 @@ class MeView(BaseApiView):
 
         user = serializer.save()
 
-        serializer = self.serializer_class(user)
-        return Response(serializer.data)
+        data = self.serializer_class(user).data
+        if user.is_advisor:
+            role = 'advisor'
+            data.update(UserAdvisorSerializer(user.advisor).data)
+        elif user.is_client:
+            role = 'client'
+            data.update(UserClientSerializer(user.client).data)
+        else:
+            raise PermissionDenied("User is not in the client or "
+                                   "advisor groups.")
+        data.update({'role': role})
+        return Response(data)
 
 
 class LoginView(BaseApiView):
