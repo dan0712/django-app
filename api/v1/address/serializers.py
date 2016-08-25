@@ -1,15 +1,11 @@
 import logging
 
-from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from client.models import Client, EmailNotificationPrefs
-from main.models import Advisor, User
 from support.models import SupportRequest
 from address.models import Region, Address
 
@@ -31,3 +27,7 @@ class AddressSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = Address
+
+# we should use some api on the backend for addresses
+# not really sure if we want to serve write or update
+# endpoints for region and address

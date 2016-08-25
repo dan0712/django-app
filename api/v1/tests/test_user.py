@@ -65,6 +65,7 @@ class UserTests(APITestCase):
                          msg='200 for authenticated get request to get user settings')
         self.assertTrue(response.data['id'] == self.user2.client.id)
         self.assertTrue(response.data['income'] == self.client2.income)
+        self.assertTrue(response.data['residential_address'] == self.client2.residential_address.pk)
 
     def test_update_client_user_settings(self):
         # the user must be a client, advisor or possibly supportstaff here, otherwise 403
