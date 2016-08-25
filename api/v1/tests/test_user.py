@@ -65,7 +65,7 @@ class UserTests(APITestCase):
                          msg='200 for authenticated get request to get user settings')
         self.assertTrue(response.data['id'] == self.user2.client.id)
         self.assertTrue(response.data['income'] == self.client2.income)
-        self.assertTrue(response.data['residential_address'] == self.client2.residential_address.pk)
+        self.assertTrue(response.data['residential_address']['id'] == self.client2.residential_address.pk)
 
     def test_update_client_user_settings(self):
         # the user must be a client, advisor or possibly supportstaff here, otherwise 403
@@ -130,7 +130,7 @@ class UserTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='200 for authenticated put request to get user settings to check address')
-        self.assertTrue(response.data['residential_address'] == self.client3.residential_address.pk)
+        self.assertTrue(response.data['residential_address']['id'] == self.client3.residential_address.pk)
 
         # lets create a new address
         new_address = AddressFactory.create()
@@ -140,4 +140,5 @@ class UserTests(APITestCase):
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='200 for authenticated put request to updat user address')
-        self.assertTrue(response.data['residential_address'] == new_address.pk)
+        self.assertTrue(response.data['residential_address']['id'] == new_address.pk)
+        self.assertTrue(response.data['residential_address']['address'] == new_address.address)

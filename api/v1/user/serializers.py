@@ -12,6 +12,7 @@ from client.models import Client, EmailNotificationPrefs
 from main.models import Advisor, User
 from support.models import SupportRequest
 from user.models import SecurityAnswer, SecurityQuestion
+from api.v1.address.serializers import AddressSerializer
 
 logger = logging.getLogger('api.v1.user.serializers')
 
@@ -79,6 +80,7 @@ class UserClientSerializer(serializers.ModelSerializer):
     Read (GET) requests only
     """
     advisor = serializers.SerializerMethodField()
+    residential_address = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
@@ -94,6 +96,10 @@ class UserClientSerializer(serializers.ModelSerializer):
         client = obj
         if client.advisor:
             return UserClientAdvisorSerializer(client.advisor).data
+
+    def get_residential_address(self, obj):
+        client = obj
+        return AddressSerializer(client.residential_address).data
 
 
 class UserClientUpdateSerializer(serializers.ModelSerializer):
