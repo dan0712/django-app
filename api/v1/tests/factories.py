@@ -235,7 +235,7 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
     # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     confirmed = True
-    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
+    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 
 
 class GoalTypeFactory(factory.django.DjangoModelFactory):
