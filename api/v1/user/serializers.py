@@ -62,6 +62,9 @@ class AuthSerializer(serializers.Serializer):
 
 
 class UserAdvisorSerializer(serializers.ModelSerializer):
+    """
+    For Read (GET) requests only
+    """
     class Meta:
         model = Advisor
         exclude = (
@@ -108,6 +111,9 @@ class UserClientUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserClientAdvisorUserSerializer(serializers.ModelSerializer):
+    """
+    For Read (GET) requests only
+    """
     class Meta:
         model = User
         exclude = (
