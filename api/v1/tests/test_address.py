@@ -1,10 +1,8 @@
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 
-from main.constants import ACCOUNT_TYPES
 from django.core.urlresolvers import reverse
-from .factories import UserFactory, GroupFactory, ClientFactory, RiskProfileGroupFactory, \
-    AccountTypeRiskProfileGroupFactory, RegionFactory, AddressFactory
+from .factories import UserFactory, GroupFactory, ClientFactory, RegionFactory, AddressFactory
 from common.constants import GROUP_SUPPORT_STAFF
 
 
