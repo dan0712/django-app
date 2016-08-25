@@ -23,17 +23,35 @@ def mod_dietz_rate(goals: Iterable) -> float:
     if not transactions:
         return 0
     for tr in transactions:
+        amount = -tr.amount if tr.from_goal is not None else tr.amount
         try:
-            days = (tr.created.date() - start_date).days
-        except TypeError:
-            days = 0
+            cash_flows.append((
+                (tr.created.date() - start_date).days,
+                amount
+            ))
+        except TypeError:  # start_date is None
+            # use date of the first transaction as opening date
             start_date = tr.created.date()
-        cash_flows.append((
-            days,
-            -tr.amount if tr.from_goal is not None else tr.amount
-        ))
+            begin_value = amount
+
     cash_flow_balance = sum(i[1] for i in cash_flows)
-    total_days = (now().date() - start_date).days
+    # find all goals with zero balance
+    zero_balanced = [g for g in goals if not g.total_balance]
+    if zero_balanced:
+        # get their last transactions
+        last_transaction_dates = []
+        transaction_list = list(reversed(list(transactions)))
+        for g in zero_balanced:
+            for tr in transaction_list:
+                if tr.from_goal == g or tr.to_goal == g:
+                    last_transaction_dates.append(tr.created.date())
+                    break
+        closing_date = min(last_transaction_dates)
+        # TODO what if some goal got zero balance and some time after
+        # TODO another goal had a transaction
+    else:
+        closing_date = now().date()
+    total_days = (closing_date - start_date).days
     prorated_sum = sum(cfi * (total_days - d) / total_days
                        for d, cfi in cash_flows)
     return (end_value - begin_value -
