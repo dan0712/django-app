@@ -25,6 +25,7 @@ from pinax.eventlog import models as el_models
 from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
+from main.finance import mod_dietz_rate
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
@@ -664,7 +665,8 @@ class AccountGroup(models.Model):
 
     @property
     def total_returns(self):
-        return 0
+        goals = Goal.objects.filter(account__in=self.accounts)
+        return mod_dietz_rate(goals)
 
     @property
     def allocation(self):
@@ -1631,35 +1633,7 @@ class Goal(models.Model):
         """
         :return: Modified Dietz Rate of Return for this goal
         """
-        end_value = self.total_balance
-        begin_value = 0
-        cash_flows = []
-        start_date = None
-        transactions = (
-            Transaction.objects.filter(
-                Q(from_goal=self) | Q(to_goal=self),
-                Q(reason=Transaction.REASON_WITHDRAWAL) |
-                Q(reason=Transaction.REASON_DEPOSIT),
-                status=Transaction.STATUS_EXECUTED
-            ).order_by('created'))
-        if not transactions:
-            return 0
-        for tr in transactions:
-            try:
-                days = (tr.created.date() - start_date).days
-            except TypeError:
-                days = 0
-                start_date = tr.created.date()
-            cash_flows.append((
-                days,
-                -tr.amount if tr.from_goal is not None else tr.amount
-            ))
-        cash_flow_balance = sum(i[1] for i in cash_flows)
-        total_days = (now().date() - start_date).days
-        prorated_sum = sum(cfi * (total_days - d) / total_days
-                           for d, cfi in cash_flows)
-        return (end_value - begin_value -
-                cash_flow_balance) / (begin_value + prorated_sum)
+        return mod_dietz_rate([self])
 
     @property
     def stocks_percentage(self):
