@@ -107,6 +107,7 @@ class UserClientUpdateSerializer(serializers.ModelSerializer):
             'employer', 'us_citizen', 'public_position_insider',
             'ten_percent_insider', 'associated_to_broker_dealer',
             'tax_file_number', 'provide_tfn', 'civil_status',
+            'residential_address', 
         )
 
 

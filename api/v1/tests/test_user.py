@@ -6,7 +6,7 @@ from main.tests.fixtures import Fixture1
 from main.constants import ACCOUNT_TYPES
 from django.core.urlresolvers import reverse
 from .factories import UserFactory, GroupFactory, ClientFactory, RiskProfileGroupFactory, \
-    AccountTypeRiskProfileGroupFactory
+    AccountTypeRiskProfileGroupFactory, AddressFactory
 from common.constants import GROUP_SUPPORT_STAFF
 
 
@@ -21,6 +21,9 @@ class UserTests(APITestCase):
 
         self.user2 = UserFactory.create()
         self.client2 = ClientFactory(user=self.user2, income=5555.01)
+
+        self.client3 = ClientFactory()
+        self.client3.user.groups_add(User.GROUP_CLIENT)
 
     def tearDown(self):
         self.client.logout()
@@ -110,7 +113,7 @@ class UserTests(APITestCase):
         }
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='200 for authenticated put request to update user income')
+                         msg='200 for authenticated put request to update user income, occupation, employer, and civil status')
         self.assertTrue(response.data['id'] == self.user.client.id)
         self.assertTrue(response.data['income'] == new_income)
         self.assertTrue(response.data['occupation'] == new_occupation)
@@ -118,3 +121,22 @@ class UserTests(APITestCase):
         self.assertTrue(response.data['civil_status'] == new_civil_status)
         control_response = self.client.get(url)
         self.assertTrue(control_response.data['occupation'] == new_occupation)
+
+    def test_update_client_address(self):
+        url = reverse('api:v1:user-me')
+        # residential_address should be self.client3.residential_address.pk
+        self.client.force_authenticate(self.client3.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for authenticated put request to get user settings to check address')
+        self.assertTrue(response.data['residential_address'] == self.client3.residential_address.pk)
+
+        # lets create a new address
+        new_address = AddressFactory.create()
+        data = {
+            'residential_address': new_address.pk
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for authenticated put request to updat user address')
+        self.assertTrue(response.data['residential_address'] == new_address.pk)
