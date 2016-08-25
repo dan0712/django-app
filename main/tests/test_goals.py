@@ -38,6 +38,6 @@ class GoalTotalReturnTest(TestCase):
     def test_total_return(self):
         goal = Fixture1.goal1()
         self.load_fixture('main/tests/fixtures/transactions.json')
-        with mock.patch('main.models.now', mocked_now):
+        with mock.patch('main.finance.now', mocked_now):
             total_return = goal.total_return
         self.assertEqual(total_return, -0.7741935483870968)

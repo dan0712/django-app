@@ -25,6 +25,7 @@ from pinax.eventlog import models as el_models
 from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
+from main.finance import mod_dietz_rate
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
@@ -642,29 +643,32 @@ class AccountGroup(models.Model):
     We use the term 'Households' on the Advisor page for this as well.
     """
 
-    advisor = models.ForeignKey(Advisor,
-                                related_name="primary_account_groups",
-                                on_delete=PROTECT  # Must reassign account groups before removing advisor
-                               )
+    advisor = models.ForeignKey(
+        Advisor, related_name="primary_account_groups",
+        # Must reassign account groups before removing advisor
+        on_delete=PROTECT
+    )
     secondary_advisors = models.ManyToManyField(
         Advisor,
-        related_name='secondary_account_groups')
+        related_name='secondary_account_groups'
+    )
     name = models.CharField(max_length=100)
 
     @property
     def accounts(self):
-        return self.accounts_all.filter(confirmed=True, primary_owner__user__prepopulated=False)
+        return self.accounts_all.filter(
+            confirmed=True,
+            primary_owner__user__prepopulated=False
+        )
 
     @property
     def total_balance(self):
-        b = 0
-        for a in self.accounts.all():
-            b += a.total_balance
-        return b
+        return sum(a.total_balance for a in self.accounts.all())
 
     @property
     def total_returns(self):
-        return 0
+        goals = Goal.objects.filter(account__in=self.accounts)
+        return mod_dietz_rate(goals)
 
     @property
     def allocation(self):
@@ -672,55 +676,47 @@ class AccountGroup(models.Model):
 
     @property
     def stock_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.stock_balance
-        return b
+        return sum(a.stock_balance for a in self.accounts.all())
 
     @property
     def core_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.core_balance
-        return b
+        return sum(a.core_balance for a in self.accounts.all())
 
     @property
     def satellite_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.satellite_balance
-        return b
+        return sum(a.satellite_balance for a in self.accounts.all())
 
     @property
     def bond_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.bond_balance
-        return b
+        return sum(a.bond_balance for a in self.accounts.all())
 
     @property
     def stocks_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.stock_balance / self.total_balance * 100)))
+        percentage = self.stock_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def bonds_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
+        percentage = self.bond_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def core_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.core_balance / self.total_balance * 100)))
+        percentage = self.core_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def satellite_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.satellite_balance / self.total_balance * 100)))
+        percentage = self.satellite_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def on_track(self):
@@ -1631,35 +1627,7 @@ class Goal(models.Model):
         """
         :return: Modified Dietz Rate of Return for this goal
         """
-        end_value = self.total_balance
-        begin_value = 0
-        cash_flows = []
-        start_date = None
-        transactions = (
-            Transaction.objects.filter(
-                Q(from_goal=self) | Q(to_goal=self),
-                Q(reason=Transaction.REASON_WITHDRAWAL) |
-                Q(reason=Transaction.REASON_DEPOSIT),
-                status=Transaction.STATUS_EXECUTED
-            ).order_by('created'))
-        if not transactions:
-            return 0
-        for tr in transactions:
-            try:
-                days = (tr.created.date() - start_date).days
-            except TypeError:
-                days = 0
-                start_date = tr.created.date()
-            cash_flows.append((
-                days,
-                -tr.amount if tr.from_goal is not None else tr.amount
-            ))
-        cash_flow_balance = sum(i[1] for i in cash_flows)
-        total_days = (now().date() - start_date).days
-        prorated_sum = sum(cfi * (total_days - d) / total_days
-                           for d, cfi in cash_flows)
-        return (end_value - begin_value -
-                cash_flow_balance) / (begin_value + prorated_sum)
+        return mod_dietz_rate([self])
 
     @property
     def stocks_percentage(self):
