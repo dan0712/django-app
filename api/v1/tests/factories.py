@@ -219,6 +219,9 @@ class ClientFactory(factory.django.DjangoModelFactory):
     advisor = factory.SubFactory(AdvisorFactory)
     user = factory.SubFactory(UserFactory)
     residential_address = factory.SubFactory(AddressFactory)
+    occupation = factory.Sequence(lambda n: 'Occupation %d' % n)
+    employer = factory.Sequence(lambda n: 'Employer %d' % n)
+    income = factory.LazyAttribute(lambda n: float(random.randrange(1000000)))
 
 
 class ClientAccountFactory(factory.django.DjangoModelFactory):
