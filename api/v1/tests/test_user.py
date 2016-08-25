@@ -19,6 +19,9 @@ class UserTests(APITestCase):
         for atid, _ in ACCOUNT_TYPES:
             AccountTypeRiskProfileGroupFactory.create(account_type=atid)
 
+        self.user2 = UserFactory.create()
+        self.client2 = ClientFactory(user=self.user2, income=5555.01)
+
     def tearDown(self):
         self.client.logout()
 
@@ -48,7 +51,17 @@ class UserTests(APITestCase):
                          msg='200 for authenticated get request to get user settings')
 
         self.assertTrue(response.data['first_name'] == self.user.first_name)
-        self.assertTrue(response.data['id'] == self.user.id)
+        self.assertTrue(response.data['id'] == self.user.client.id)
+        self.assertTrue(response.data['income'] == self.user.client.income)
+
+        # lets make a new client with a different income and check results on it
+        self.user2.groups_add(User.GROUP_CLIENT)
+        self.client.force_authenticate(self.user2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for authenticated get request to get user settings')
+        self.assertTrue(response.data['id'] == self.user2.client.id)
+        self.assertTrue(response.data['income'] == self.client2.income)
 
     def test_update_client_user_settings(self):
         # the user must be a client, advisor or possibly supportstaff here, otherwise 403
@@ -80,4 +93,17 @@ class UserTests(APITestCase):
                          msg='200 for authenticated put request to update user settings')
         self.assertEqual(len(control_response.data), len(response.data))
         self.assertTrue(response.data['first_name'] == new_name)
-        self.assertTrue(response.data['id'] == self.user.id)
+        self.assertTrue(response.data['id'] == self.user.client.id)
+
+        # lets test income update
+        old_income = self.user.client.income
+        new_income = old_income + 5000.0
+        data = {
+            'income': new_income,
+            'oldpassword': 'test',
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for authenticated put request to update user income')
+        self.assertTrue(response.data['id'] == self.user.client.id)
+        self.assertTrue(response.data['income'] == new_income)

@@ -72,6 +72,9 @@ class UserAdvisorSerializer(serializers.ModelSerializer):
 
 
 class UserClientSerializer(serializers.ModelSerializer):
+    """
+    Read (GET) requests only
+    """
     advisor = serializers.SerializerMethodField()
 
     class Meta:
@@ -88,6 +91,20 @@ class UserClientSerializer(serializers.ModelSerializer):
         client = obj
         if client.advisor:
             return UserClientAdvisorSerializer(client.advisor).data
+
+
+class UserClientUpdateSerializer(serializers.ModelSerializer):
+    """
+    Write (POST/PUT) update requests only
+    """
+    class Meta:
+        model = Client
+        fields = (
+            'employment_status', 'income', 'occupation',
+            'employer', 'us_citizen', 'public_position_insider',
+            'ten_percent_insider', 'associated_to_broker_dealer',
+            'tax_file_number', 'provide_tfn',
+        )
 
 
 class UserClientAdvisorUserSerializer(serializers.ModelSerializer):

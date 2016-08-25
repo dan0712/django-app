@@ -88,7 +88,15 @@ class MeView(BaseApiView):
             data.update(UserAdvisorSerializer(user.advisor).data)
         elif user.is_client:
             role = 'client'
-            data.update(UserClientSerializer(user.client).data)
+            update_serializer = serializers.UserClientUpdateSerializer(user.client,
+                                                                       data=request.data,
+                                                                       partial=True,
+                                                                       context={
+                                                                           'request': request,
+                                                                       })
+            update_serializer.is_valid(raise_exception=True)
+            update_data = update_serializer.save()
+            data.update(UserClientSerializer(update_data).data)
         else:
             raise PermissionDenied("User is not in the client or "
                                    "advisor groups.")
