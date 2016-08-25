@@ -643,25 +643,27 @@ class AccountGroup(models.Model):
     We use the term 'Households' on the Advisor page for this as well.
     """
 
-    advisor = models.ForeignKey(Advisor,
-                                related_name="primary_account_groups",
-                                on_delete=PROTECT  # Must reassign account groups before removing advisor
-                               )
+    advisor = models.ForeignKey(
+        Advisor, related_name="primary_account_groups",
+        # Must reassign account groups before removing advisor
+        on_delete=PROTECT
+    )
     secondary_advisors = models.ManyToManyField(
         Advisor,
-        related_name='secondary_account_groups')
+        related_name='secondary_account_groups'
+    )
     name = models.CharField(max_length=100)
 
     @property
     def accounts(self):
-        return self.accounts_all.filter(confirmed=True, primary_owner__user__prepopulated=False)
+        return self.accounts_all.filter(
+            confirmed=True,
+            primary_owner__user__prepopulated=False
+        )
 
     @property
     def total_balance(self):
-        b = 0
-        for a in self.accounts.all():
-            b += a.total_balance
-        return b
+        return sum(a.total_balance for a in self.accounts.all())
 
     @property
     def total_returns(self):
@@ -674,55 +676,47 @@ class AccountGroup(models.Model):
 
     @property
     def stock_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.stock_balance
-        return b
+        return sum(a.stock_balance for a in self.accounts.all())
 
     @property
     def core_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.core_balance
-        return b
+        return sum(a.core_balance for a in self.accounts.all())
 
     @property
     def satellite_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.satellite_balance
-        return b
+        return sum(a.satellite_balance for a in self.accounts.all())
 
     @property
     def bond_balance(self):
-        b = 0
-        for account in self.accounts.all():
-            b += account.bond_balance
-        return b
+        return sum(a.bond_balance for a in self.accounts.all())
 
     @property
     def stocks_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.stock_balance / self.total_balance * 100)))
+        percentage = self.stock_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def bonds_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.bond_balance / self.total_balance * 100)))
+        percentage = self.bond_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def core_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.core_balance / self.total_balance * 100)))
+        percentage = self.core_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def satellite_percentage(self):
         if self.total_balance == 0:
             return 0
-        return "{0}".format(int(round(self.satellite_balance / self.total_balance * 100)))
+        percentage = self.satellite_balance / self.total_balance * 100
+        return "{0}".format(int(round(percentage)))
 
     @property
     def on_track(self):
