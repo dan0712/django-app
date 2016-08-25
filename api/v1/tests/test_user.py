@@ -98,8 +98,10 @@ class UserTests(APITestCase):
         # lets test income update
         old_income = self.user.client.income
         new_income = old_income + 5000.0
+        new_occupation = 'Super Hero'
         data = {
             'income': new_income,
+            'occupation': new_occupation,
             'oldpassword': 'test',
         }
         response = self.client.put(url, data)
@@ -107,3 +109,6 @@ class UserTests(APITestCase):
                          msg='200 for authenticated put request to update user income')
         self.assertTrue(response.data['id'] == self.user.client.id)
         self.assertTrue(response.data['income'] == new_income)
+        self.assertTrue(response.data['occupation'] == new_occupation)
+        control_response = self.client.get(url)
+        self.assertTrue(control_response.data['occupation'] == new_occupation)
