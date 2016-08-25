@@ -150,13 +150,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         return self.user.get_full_name()
 
     @property
-    def age(self):
-        born = self.date_of_birth
-        today = now().today()
-        return today.year - born.year - ((today.month, today.day) <
-                                         (born.month, born.day))
-
-    @property
     def total_balance(self):
         return sum(account.total_balance for account in self.accounts.all())
 

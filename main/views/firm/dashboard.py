@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date
 
 from dateutil.relativedelta import relativedelta
 from django import forms
@@ -296,6 +296,8 @@ class FirmAnalyticsMixin(object):
         Les:
         Net worth is sum of Goal.total_balance per client
         where they are the primary account holder, age is age of primary account holder.
+        Net worth also sums the value of the client's external assets.  Valuate for assets
+        is determine by the external assets' growth from valuation date.
 
         Cash flow is a monthly net Transactions in and out of the goals
         for each primary account holder. Ignore incoming dividend type transactions,
@@ -307,20 +309,23 @@ class FirmAnalyticsMixin(object):
         transactions: monthly net transactions for the last month
         """
         qs_goals = self.get_queryset_goals()
-
+        clients = self.get_queryset_clients()
         data = []
 
         for age in self.AGE_RANGE:
-            value_worth = qs_goals \
-                .filter_by_client_age(age, age + self.AGE_STEP) \
-                .values('account__primary_owner__id') \
-                .annotate(positions_sum=Coalesce(Sum(
-                    F('positions__share') * F('positions__ticker__unit_price')
-                ), 0)) \
-                .aggregate(
-                    positions=Coalesce(Avg('positions_sum'), 0),
-                    cash=Coalesce(Avg('cash_balance'), 0),
-                )
+            # client.net_worth will return a clients estimated net_worth here
+            # client.net_worth takes into account external assets
+            # we are graphing average clients' net_worth by age
+            value_worth = 0.0
+            current_date = datetime.now().today()
+            range_dates = map(lambda x: current_date - relativedelta(years=x),
+                              [age + self.AGE_STEP, age])  # yes, max goes first
+
+            clients_by_age = clients.filter(date_of_birth__range=range_dates)
+            for client in clients_by_age:
+                value_worth += client.net_worth
+            if clients_by_age.count() > 0:
+                value_worth = value_worth / clients_by_age.count()
 
             value_cashflow = qs_goals \
                 .filter_by_client_age(age, age + self.AGE_STEP) \
@@ -336,15 +341,15 @@ class FirmAnalyticsMixin(object):
                     transactions_from_sum=Coalesce(Sum('transactions_from__amount'), 0),
                 ) \
                 .aggregate(
-                    transactions_to=Coalesce(Avg('transactions_to_sum'), 0), # should it Sum instead?
-                    transactions_from=Coalesce(Avg('transactions_from_sum'), 0), # should it Sum instead?
+                    transactions_to=Coalesce(Avg('transactions_to_sum'), 0),  # should it Sum instead?
+                    transactions_from=Coalesce(Avg('transactions_from_sum'), 0),  # should it Sum instead?
                 )
 
             data.append({
-                'value_worth': value_worth['positions'] + value_worth['cash'],
+                'value_worth': value_worth,
                 'value_cashflow': value_cashflow['transactions_to'] + value_cashflow['transactions_from'],
                 'age': age + self.AGE_STEP / 2,
-            });
+            })
 
         return data
 
