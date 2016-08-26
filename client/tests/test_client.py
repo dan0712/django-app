@@ -39,7 +39,6 @@ class ClientTests(TestCase):
         verify that the client's net worth property returns the expected
         amount for the client's assets
         """
-        # total external assets valuation)
         assets_sum = self.external_asset1.get_growth_valuation() + self.external_asset2.get_growth_valuation()
         # a clientaccount with a cash balance and some goals
         accounts_sum = 0.0
@@ -48,6 +47,7 @@ class ClientTests(TestCase):
             accounts_sum += goal.cash_balance
         expected_net_worth = float(assets_sum) + accounts_sum
         self.assertEqual(self.betasmartz_client.net_worth, expected_net_worth)
+        self.assertTrue(round(self.betasmartz_client.net_worth, 10) == round(expected_net_worth, 10))
 
         # expecting client.net_worth using @property to have cached this initial result
         # lets make sure the underlying client._net_worth() function is tracking the right info
@@ -56,3 +56,4 @@ class ClientTests(TestCase):
         self.betasmartz_client_account.save()
         expected_net_worth += 2000.0
         self.assertEqual(self.betasmartz_client._net_worth(), expected_net_worth)
+        self.assertTrue(round(self.betasmartz_client._net_worth(), 10) == round(expected_net_worth, 10))

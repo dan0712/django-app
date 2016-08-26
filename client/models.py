@@ -16,7 +16,7 @@ from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('client.models')
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
