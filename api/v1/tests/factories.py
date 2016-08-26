@@ -267,7 +267,7 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     valuation = factory.LazyAttribute(lambda n: decimal.Decimal(random.randrange(1000000)) / 100)
     valuation_date = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - timedelta(days=30), datetime.now().date()))
     growth = decimal.Decimal('0.01')
-    acquisition_date = factory.LazyFunction(datetime.now)
+    acquisition_date = factory.LazyFunction(datetime.now().date)
 
     type = factory.LazyAttribute(lambda n: random.randrange(7))
     # class Type(ChoiceEnum):

@@ -25,10 +25,11 @@ from ..user.serializers import ChangePasswordSerializer, \
     ResetPasswordSerializer, SecurityAnswerCheckSerializer, \
     SecurityQuestionSerializer, SecurityQuestionAnswerUpdateSerializer
 
-logger = logging.getLogger('api.v1.user.views')
 from .serializers import EmailNotificationsSerializer
 from ..permissions import IsClient
 from ..views import ApiViewMixin, BaseApiView
+
+logger = logging.getLogger('api.v1.user.views')
 
 
 class MeView(BaseApiView):
@@ -84,18 +85,11 @@ class MeView(BaseApiView):
         data = self.serializer_class(user).data
         if user.is_advisor:
             role = 'advisor'
-            data.update(AdvisorSerializer(user.advisor).data)
+            data['advisor'] = AdvisorSerializer(user.advisor).data
         elif user.is_client:
             role = 'client'
-            update_serializer = serializers.UserClientUpdateSerializer(user.client,
-                                                                       data=request.data,
-                                                                       partial=True,
-                                                                       context={
-                                                                           'request': request,
-                                                                       })
-            update_serializer.is_valid(raise_exception=True)
-            update_data = update_serializer.save()
-            data.update(UserClientSerializer(update_data).data)
+            # If the user wants to update client details, they do it through the specific client endpoint.
+            data['client'] = UserClientSerializer(user.client).data
         else:
             raise PermissionDenied("User is not in the client or "
                                    "advisor groups.")

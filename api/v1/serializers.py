@@ -3,8 +3,6 @@ from collections import OrderedDict
 from rest_framework import serializers
 from rest_framework.fields import SkipField
 
-from address.models import Address, Region
-from main.abstract import PersonalData
 from main.models import EventMemo
 
 
@@ -91,22 +89,3 @@ class EventMemoMixin(serializers.Serializer):
                 if memo is None
                 else EventMemo.objects.create(event=event, comment=memo,
                                               staff=memo_s))
-
-
-class RegionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Region
-
-
-class AddressSerializer(serializers.ModelSerializer):
-    region = RegionSerializer()
-
-    class Meta:
-        model = Address
-
-
-class PersonalDataSerializer(serializers.ModelSerializer):
-    residential_address = AddressSerializer()
-
-    class Meta:
-        model = PersonalData

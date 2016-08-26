@@ -6,11 +6,11 @@ from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
-from api.v1.serializers import ReadOnlyModelSerializer, AddressSerializer, PersonalDataSerializer
+from api.v1.address.serializers import AddressSerializer
+from api.v1.serializers import ReadOnlyModelSerializer
 from client.models import Client, EmailNotificationPrefs
 from main.models import User
 from user.models import SecurityAnswer, SecurityQuestion
-from api.v1.address.serializers import AddressSerializer
 
 logger = logging.getLogger('api.v1.user.serializers')
 
@@ -26,7 +26,9 @@ class UserFieldSerializer(ReadOnlyModelSerializer):
         )
 
 
-class UserClientSerializer(PersonalDataSerializer):
+class UserClientSerializer(ReadOnlyModelSerializer):
+    residential_address = AddressSerializer()
+
     class Meta:
         model = Client
         exclude = (
@@ -75,36 +77,6 @@ class UserSerializer(ReadOnlyModelSerializer):
     """
     For Read (GET) requests only
     """
-    """
-    Read (GET) requests only
-    """
-    residential_address = serializers.SerializerMethodField()
-    def get_residential_address(self, obj):
-        client = obj
-        return AddressSerializer(client.residential_address).data
-
-
-class UserClientUpdateSerializer(serializers.ModelSerializer):
-    """
-    Write (POST/PUT) update requests only
-    """
-    class Meta:
-        model = Client
-        fields = (
-            'employment_status', 'income', 'occupation',
-            'employer', 'us_citizen', 'public_position_insider',
-            'ten_percent_insider', 'associated_to_broker_dealer',
-            'tax_file_number', 'provide_tfn', 'civil_status',
-            'residential_address',
-        )
-
-    """
-    For Read (GET) requests only
-    """
-    """
-    For read (GET) requests only
-    """
-
     class Meta:
         model = User
         exclude = (

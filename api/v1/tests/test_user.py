@@ -54,8 +54,9 @@ class UserTests(APITestCase):
                          msg='200 for authenticated get request to get user settings')
 
         self.assertTrue(response.data['first_name'] == self.user.first_name)
-        self.assertTrue(response.data['id'] == self.user.client.id)
-        self.assertTrue(response.data['income'] == self.user.client.income)
+        self.assertTrue(response.data['id'] == self.user.id)
+        self.assertTrue(response.data['client']['id'] == self.user.client.id)
+        self.assertTrue(response.data['client']['income'] == self.user.client.income)
 
         # lets make a new client with a different income and check results on it
         self.user2.groups_add(User.GROUP_CLIENT)
@@ -63,11 +64,12 @@ class UserTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='200 for authenticated get request to get user settings')
-        self.assertTrue(response.data['id'] == self.user2.client.id)
-        self.assertTrue(response.data['income'] == self.client2.income)
-        self.assertTrue(response.data['residential_address']['id'] == self.client2.residential_address.pk)
+        self.assertTrue(response.data['id'] == self.user2.id)
+        self.assertTrue(response.data['client']['id'] == self.client2.id)
+        self.assertTrue(response.data['client']['income'] == self.client2.income)
+        self.assertTrue(response.data['client']['residential_address']['id'] == self.client2.residential_address.pk)
 
-    def test_update_client_user_settings(self):
+    def test_update_user_settings(self):
         # the user must be a client, advisor or possibly supportstaff here, otherwise 403
         client = ClientFactory(user=self.user)
         client.user.groups_add(User.GROUP_CLIENT)
@@ -87,58 +89,16 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN,
                          msg='403 for unauthenticated request to update user settings')
 
-        # 200 for put request
         self.client.force_authenticate(self.user)
 
+        response = self.client.put(url, data)
         # We gave a get control response so we can compare the two.
         control_response = self.client.get(url)
-        response = self.client.put(url, data)
+        # 200 for put request
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='200 for authenticated put request to update user settings')
-        self.assertEqual(len(control_response.data), len(response.data))
-        self.assertTrue(response.data['first_name'] == new_name)
-        self.assertTrue(response.data['id'] == self.user.client.id)
+        # MAke sure put and get return same data
+        self.assertEqual(control_response.data, response.data)
+        self.assertEqual(response.data['first_name'], new_name)
+        self.assertEqual(response.data['id'], self.user.id)
 
-        # lets test income update
-        old_income = self.user.client.income
-        new_income = old_income + 5000.0
-        new_occupation = 'Super Hero'
-        new_employer = 'League of Extraordinary Gentlemen'
-        new_civil_status = 1  # 0 single, 1 married
-        data = {
-            'income': new_income,
-            'occupation': new_occupation,
-            'employer': new_employer,
-            'civil_status': new_civil_status,
-            'oldpassword': 'test',
-        }
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='200 for authenticated put request to update user income, occupation, employer, and civil status')
-        self.assertTrue(response.data['id'] == self.user.client.id)
-        self.assertTrue(response.data['income'] == new_income)
-        self.assertTrue(response.data['occupation'] == new_occupation)
-        self.assertTrue(response.data['employer'] == new_employer)
-        self.assertTrue(response.data['civil_status'] == new_civil_status)
-        control_response = self.client.get(url)
-        self.assertTrue(control_response.data['occupation'] == new_occupation)
-
-    def test_update_client_address(self):
-        url = reverse('api:v1:user-me')
-        # residential_address should be self.client3.residential_address.pk
-        self.client.force_authenticate(self.client3.user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='200 for authenticated put request to get user settings to check address')
-        self.assertTrue(response.data['residential_address']['id'] == self.client3.residential_address.pk)
-
-        # lets create a new address
-        new_address = AddressFactory.create()
-        data = {
-            'residential_address': new_address.pk
-        }
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='200 for authenticated put request to updat user address')
-        self.assertTrue(response.data['residential_address']['id'] == new_address.pk)
-        self.assertTrue(response.data['residential_address']['address'] == new_address.address)

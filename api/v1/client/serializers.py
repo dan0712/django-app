@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from api.v1.address.serializers import AddressSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import ExternalAsset, ExternalAssetTransfer, Advisor, User
 from client.models import Client
@@ -39,13 +40,25 @@ class ClientAdvisorSerializer(serializers.ModelSerializer):
 
 class ClientSerializer(ReadOnlyModelSerializer):
     user = UserFieldSerializer()
-    advisor = serializers.SerializerMethodField()
+    advisor = ClientAdvisorSerializer()
+    residential_address = AddressSerializer()
 
     class Meta:
         model = Client
 
-    def get_advisor(self, client):
-        return ClientAdvisorSerializer(client.advisor).data
+
+class ClientUpdateSerializer(serializers.ModelSerializer):
+    """
+    Write (POST/PUT) update requests only
+    """
+    class Meta:
+        model = Client
+        fields = (
+            'employment_status', 'income', 'occupation',
+            'employer', 'us_citizen', 'public_position_insider',
+            'ten_percent_insider', 'associated_to_broker_dealer',
+            'tax_file_number', 'provide_tfn', 'civil_status'
+        )
 
 
 class EATransferPlanSerializer(serializers.ModelSerializer):
