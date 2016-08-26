@@ -54,5 +54,7 @@ def mod_dietz_rate(goals: Iterable) -> float:
     total_days = (closing_date - start_date).days
     prorated_sum = sum(cfi * (total_days - d) / total_days
                        for d, cfi in cash_flows)
-    return (end_value - begin_value -
-            cash_flow_balance) / (begin_value + prorated_sum)
+    result = (end_value - begin_value -
+              cash_flow_balance) / (begin_value + prorated_sum)
+    annualised_return = pow(1 + result, 365.25/total_days) - 1
+    return annualised_return

@@ -76,7 +76,7 @@ class GoalTotalReturnTest(TestCase):
         self.load_fixture('main/tests/fixtures/transactions.json')
         with mock.patch('main.finance.now', self.mocked_date(0)):
             total_return = goal.total_return
-        self.assertEqual(total_return, -0.46153846153846156)
+        self.assertEqual(total_return, -1.0)
 
     def test_one(self):
         """
@@ -87,7 +87,7 @@ class GoalTotalReturnTest(TestCase):
         """
         self.goal_opening(1000)
         total_return = self.total_return(548, 1100)  # 1.5y
-        self.assertEqual(total_return, 0.1)
+        self.assertEqual(total_return, 0.06558679242281773)
 
     def test_two(self):
         """
@@ -99,7 +99,7 @@ class GoalTotalReturnTest(TestCase):
         self.goal_opening(1000)
         self.goal_transaction(200, 8 * 30)  # 8m
         total_return = self.total_return(548, 1100)  # 1.5y
-        self.assertEqual(total_return, -0.08989501312335958)
+        self.assertEqual(total_return, -0.06085233384111588)
 
     def test_three(self):
         """
@@ -111,7 +111,7 @@ class GoalTotalReturnTest(TestCase):
         self.goal_opening(1000)
         self.goal_transaction(200, 8 * 30, True)  # 8m
         total_return = self.total_return(548, 1100)  # 1.5y
-        self.assertEqual(total_return, 0.3379934210526316)
+        self.assertEqual(total_return, 0.21418097150518434)
 
     def test_four(self):
         """
@@ -122,7 +122,7 @@ class GoalTotalReturnTest(TestCase):
         """
         self.goal_opening(1000)
         total_return = self.total_return(548, 900)  # 1.5y
-        self.assertEqual(total_return, -0.1)
+        self.assertEqual(total_return, -0.0678153128925949)
 
     def test_five(self):
         """
@@ -132,5 +132,5 @@ class GoalTotalReturnTest(TestCase):
         time period of 8 months
         """
         self.goal_opening(1000)
-        total_return = self.total_return(8 * 30, 8)  # 8m
-        self.assertEqual(total_return, -0.992)
+        total_return = self.total_return(8 * 30, 900)  # 8m
+        self.assertEqual(total_return, -0.14815060547446401)
