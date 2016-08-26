@@ -104,7 +104,8 @@ WSGI_APPLICATION = 'main.wsgi.application'
 TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     "pages.context_processors.media",
     'django.core.context_processors.request',
-    'main.context_processors.site_contact'
+    'main.context_processors.site_contact',
+    'user.autologout.session_expire_context_processor',
 )
 
 # Internationalization

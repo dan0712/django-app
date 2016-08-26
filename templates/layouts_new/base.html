@@ -27,14 +27,21 @@
     <link href="{% static 'vendor/theme/dist/toolkit-light.css' %}" rel="stylesheet">
     <link href="{% static 'css_new/app.css' %}" rel="stylesheet">
 
+    <script type="application/javascript">
+      window.betasmartz = {};
+    </script>
+
     <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.6/dt-1.10.12/datatables.min.js"></script>
+    <script type="text/javascript" src="{% static "js/autologout.js" %}"></script>
 
     {% block head_js %}{% endblock %}
     {% block css %}{% endblock %}
   </head>
 
   <body class="{% block body_class %}{% endblock %}">
+    {% include "partials_new/dialogs.html" %}
+
     {% include "partials_new/header.html" %}
 
     <div class="m-t">
