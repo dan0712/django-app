@@ -6,7 +6,7 @@ from .factories import UserFactory, GroupFactory, ClientFactory, RegionFactory, 
 from common.constants import GROUP_SUPPORT_STAFF
 
 
-class UserTests(APITestCase):
+class AddressTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.region = RegionFactory.create()
@@ -51,4 +51,4 @@ class UserTests(APITestCase):
         self.assertTrue(response.data['id'] == self.address.pk)
         self.assertTrue(response.data['address'] == self.address.address)
         self.assertTrue(response.data['post_code'] == self.address.post_code)
-        self.assertTrue(response.data['region'] == self.address.region.pk)
+        self.assertTrue(response.data['region']['id'] == self.address.region.pk)

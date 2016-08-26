@@ -15,7 +15,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.v1.advisor.serializers import AdvisorSerializer
-from api.v1.user.serializers import UserClientSerializer
+from api.v1.client.serializers import ClientFieldSerializer
 from client.models import Client
 from support.models import SupportRequest
 from user.autologout import SessionExpire
@@ -52,7 +52,7 @@ class MeView(BaseApiView):
             data['advisor'] = AdvisorSerializer(user.advisor).data
         elif user.is_client:
             role = 'client'
-            data['client'] = UserClientSerializer(user.client).data
+            data['client'] = ClientFieldSerializer(user.client).data
         else:
             raise PermissionDenied("User is not in the client or advisor groups.")
         data.update({'role': role})
@@ -89,7 +89,7 @@ class MeView(BaseApiView):
         elif user.is_client:
             role = 'client'
             # If the user wants to update client details, they do it through the specific client endpoint.
-            data['client'] = UserClientSerializer(user.client).data
+            data['client'] = ClientFieldSerializer(user.client).data
         else:
             raise PermissionDenied("User is not in the client or "
                                    "advisor groups.")

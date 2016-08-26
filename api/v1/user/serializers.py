@@ -6,9 +6,8 @@ from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
-from api.v1.address.serializers import AddressSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
-from client.models import Client, EmailNotificationPrefs
+from client.models import EmailNotificationPrefs
 from main.models import User
 from user.models import SecurityAnswer, SecurityQuestion
 
@@ -23,19 +22,6 @@ class UserFieldSerializer(ReadOnlyModelSerializer):
             'password', 'last_login',
             'user_permissions', 'groups',
             'prepopulated', 'is_active'
-        )
-
-
-class UserClientSerializer(ReadOnlyModelSerializer):
-    residential_address = AddressSerializer()
-
-    class Meta:
-        model = Client
-        exclude = (
-            'user',
-            'client_agreement',
-            'confirmation_key',
-            'create_date',
         )
 
 

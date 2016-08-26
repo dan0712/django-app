@@ -18,6 +18,7 @@ class AddressSerializer(ReadOnlyModelSerializer):
     """
     For Read (GET) requests only
     """
+    region = RegionSerializer()
 
     class Meta:
         model = Address
