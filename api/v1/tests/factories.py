@@ -321,3 +321,5 @@ class TickerFactory(factory.django.DjangoModelFactory):
     asset_class = factory.SubFactory(AssetClassFactory)
     benchmark_content_type = factory.SubFactory(ContentTypeFactory)
     region = factory.SubFactory(MainRegionFactory)
+    data_api_param = factory.Sequence(lambda n: str(n))
+
