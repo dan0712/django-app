@@ -273,53 +273,6 @@ class PortfolioSet(models.Model):
     asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
     risk_free_rate = models.FloatField()
 
-    # Also has 'views' from View model.
-    
-    # The super_asset_class field was removed from the AssetClass model
-    # So, these region functions won't work anymore
-    @property
-    def stocks_and_bonds(self):
-        has_bonds = False
-        has_stocks = False
-
-        for asset_class in self.asset_classes.all():
-            if "EQUITY_" in asset_class.super_asset_class:
-                has_stocks = True
-            if "FIXED_INCOME_" in asset_class.super_asset_class:
-                has_bonds = True
-
-        if has_bonds and has_stocks:
-            return "both"
-        elif has_stocks:
-            return "stocks"
-        else:
-            return "bonds"
-
-    @property
-    def regions(self):
-        def get_regions(x):
-            return x.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
-        return [get_regions(asset_class.super_asset_class) for asset_class in self.asset_classes.all()]
-
-    @property
-    def regions_currencies(self):
-        rc = {}
-
-        def get_regions_currencies(asset):
-            region = asset.super_asset_class.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
-            if region not in rc:
-                rc[region] = "AUD"
-            ticker = asset.tickers.filter(ordering=0).first()
-            if ticker:
-                if ticker.currency != "AUD":
-                    rc[region] = ticker.currency
-            else:
-                logger.warn("Asset class: {} has no tickers.".format(asset.name))
-
-        for asset_class in self.asset_classes.all():
-            get_regions_currencies(asset_class)
-        return rc
-
     def __str__(self):
         return self.name
 
