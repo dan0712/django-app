@@ -14,6 +14,8 @@ from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from api.v1.advisor.serializers import AdvisorSerializer
+from api.v1.client.serializers import ClientFieldSerializer
 from client.models import Client
 from support.models import SupportRequest
 from user.autologout import SessionExpire
@@ -21,14 +23,13 @@ from user.models import SecurityAnswer, SecurityQuestion
 from . import serializers
 from ..user.serializers import ChangePasswordSerializer, \
     ResetPasswordSerializer, SecurityAnswerCheckSerializer, \
-    SecurityAnswerSerializer, SecurityQuestionSerializer, \
-    SecurityQuestionAnswerUpdateSerializer
+    SecurityQuestionSerializer, SecurityQuestionAnswerUpdateSerializer
 
-logger = logging.getLogger('api.v1.user.views')
-from .serializers import EmailNotificationsSerializer, \
-    UserAdvisorSerializer, UserClientSerializer
+from .serializers import EmailNotificationsSerializer
 from ..permissions import IsClient
 from ..views import ApiViewMixin, BaseApiView
+
+logger = logging.getLogger('api.v1.user.views')
 
 
 class MeView(BaseApiView):
@@ -48,13 +49,12 @@ class MeView(BaseApiView):
         data = self.serializer_class(user).data
         if user.is_advisor:
             role = 'advisor'
-            data.update(UserAdvisorSerializer(user.advisor).data)
+            data['advisor'] = AdvisorSerializer(user.advisor).data
         elif user.is_client:
             role = 'client'
-            data.update(UserClientSerializer(user.client).data)
+            data['client'] = ClientFieldSerializer(user.client).data
         else:
-            raise PermissionDenied("User is not in the client or "
-                                   "advisor groups.")
+            raise PermissionDenied("User is not in the client or advisor groups.")
         data.update({'role': role})
         return Response(data)
 
@@ -85,10 +85,11 @@ class MeView(BaseApiView):
         data = self.serializer_class(user).data
         if user.is_advisor:
             role = 'advisor'
-            data.update(UserAdvisorSerializer(user.advisor).data)
+            data['advisor'] = AdvisorSerializer(user.advisor).data
         elif user.is_client:
             role = 'client'
-            data.update(UserClientSerializer(user.client).data)
+            # If the user wants to update client details, they do it through the specific client endpoint.
+            data['client'] = ClientFieldSerializer(user.client).data
         else:
             raise PermissionDenied("User is not in the client or "
                                    "advisor groups.")

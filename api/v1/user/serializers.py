@@ -1,22 +1,20 @@
 import logging
 
 from django.contrib.auth import authenticate, get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from client.models import Client, EmailNotificationPrefs
-from main.models import Advisor, User
-from support.models import SupportRequest
+from client.models import EmailNotificationPrefs
+from main.models import User
 from user.models import SecurityAnswer, SecurityQuestion
 
 logger = logging.getLogger('api.v1.user.serializers')
 
 
-class FieldUserSerializer(ReadOnlyModelSerializer):
+class UserFieldSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = User
         exclude = (
@@ -61,67 +59,9 @@ class AuthSerializer(serializers.Serializer):
         return attrs
 
 
-class UserAdvisorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Advisor
-        exclude = (
-            'user',
-            'confirmation_key',
-            'letter_of_authority', 'betasmartz_agreement',
-        )
-
-
-class UserClientSerializer(serializers.ModelSerializer):
-    advisor = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Client
-        exclude = (
-            'user',
-            'client_agreement',
-            'confirmation_key',
-            # filter out more fields if needed
-            'create_date',
-        )
-
-    def get_advisor(self, obj):
-        client = obj
-        if client.advisor:
-            return UserClientAdvisorSerializer(client.advisor).data
-
-
-class UserClientAdvisorUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        exclude = (
-            'prepopulated',
-            'is_staff', 'is_superuser',
-            'password', 'last_login',
-            'user_permissions', 'groups',
-            'username', 'email',
-            'date_joined',
-            'is_active',
-        )
-
-
-class UserClientAdvisorSerializer(serializers.ModelSerializer):
-    user = UserClientAdvisorUserSerializer()
-
-    class Meta:
-        model = Advisor
-        fields = (
-            'id',
-            'gender',
-            'work_phone_num',
-            'user',
-            'firm',
-            'email'
-        )
-
-
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ReadOnlyModelSerializer):
     """
-    For read (GET) requests only
+    For Read (GET) requests only
     """
     class Meta:
         model = User
@@ -130,6 +70,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff', 'is_active', 'is_superuser',
             'password',
             'user_permissions',
+            'groups', 'username'
         )
 
 
@@ -161,45 +102,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Invalid current password')
 
         return data
-
-
-class AdvisorUpdateSerializer(serializers.ModelSerializer):
-    """
-    For write (POST/PUT/...) requests only
-    """
-    class Meta:
-        model = Advisor
-        fields = (
-        #'firm',
-        )
-
-
-class ClientUpdateSerializer(serializers.ModelSerializer):
-    """
-    For write (POST/PUT/...) requests only
-    """
-    class Meta:
-        model = Client
-        fields = (
-        'advisor',
-        )
-
-    def __init__(self, *args, **kwargs):
-        super(ClientUpdateSerializer, self).__init__(*args, **kwargs)
-
-        # request based validation
-        request = self.context.get('request')
-        if not request:
-            return # for swagger's dummy calls only
-
-        user = SupportRequest.target_user(request)
-
-        # experimental / for advisors only
-        if user.is_advisor:
-            advisor = user.advisor
-
-            self.fields['advisor'].queryset = \
-                self.fields['advisor'].queryset.filter(pk=advisor.pk)
 
 
 class ResetSerializer(serializers.Serializer):
