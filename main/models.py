@@ -898,7 +898,8 @@ class Ticker(FinancialInstrument):
 
     @property
     def is_stock(self):
-        return self.asset_class.investment_type == constants.STOCKS
+        # InvestmentType stocks id = 2
+        return self.asset_class.investment_type_id == 2
 
     @property
     def is_core(self):
