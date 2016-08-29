@@ -8,7 +8,7 @@ from pinax.eventlog.models import Log
 import address.models as ad
 from client.models import Client, ClientAccount, RiskProfileAnswer,\
     RiskProfileGroup, RiskProfileQuestion
-from main.constants import ACCOUNT_TYPE_PERSONAL, STOCKS, SUPER_ASSET_CLASSES
+from main.constants import ACCOUNT_TYPE_PERSONAL, SUPER_ASSET_CLASSES
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
@@ -394,8 +394,7 @@ class Fixture1:
         params = {
             'display_order': 0,
             'display_name': 'Test Asset Class 1',
-            'investment_type': STOCKS,
-            'super_asset_class': SUPER_ASSET_CLASSES[0][0]
+            'investment_type_id': 2,  # STOCKS pk 2, BONDS pk 1, MIXED pk 3
         }
         # Asset class name needs to be upper case.
         return AssetClass.objects.get_or_create(name='ASSETCLASS1', defaults=params)[0]
