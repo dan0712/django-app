@@ -171,6 +171,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
+class InvestmentType(models.Model):
+    name = models.CharField(max_length=255,
+                            validators=[RegexValidator(
+                                regex=r'^[0-9A-Z_]+$',
+                                message="Invalid character only accept (0-9a-zA-Z_) ")],)
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class AssetClass(models.Model):
     name = models.CharField(
         max_length=255,
@@ -187,14 +198,7 @@ class AssetClass(models.Model):
     tickers_explanation = models.TextField(blank=True, default='', null=False)
     display_name = models.CharField(max_length=255, blank=False, null=False,
                                     db_index=True)
-    # TODO: should be converted to Integer
-    investment_type = models.CharField(max_length=255,
-                                       choices=constants.INVESTMENT_TYPES,
-                                       blank=False, null=False, db_index=True)
-    # TODO: should be converted to Integer
-    super_asset_class = models.CharField(max_length=255,
-                                         choices=constants.SUPER_ASSET_CLASSES,
-                                         db_index=True)
+    investment_type = models.ForeignKey(InvestmentType, related_name='asset_classes')
 
     def save(self,
              force_insert=False,
