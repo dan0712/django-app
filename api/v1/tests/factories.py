@@ -8,12 +8,15 @@ import random
 from datetime import datetime, timedelta, date
 from django.contrib.auth.models import Group
 
-from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, Goal, GoalType
+from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
+                        Goal, GoalType, InvestmentType, AssetClass, Ticker
+from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
     AccountTypeRiskProfileGroup
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
+from django.contrib.contenttypes.models import ContentType
 
 from random import randrange
 
@@ -279,3 +282,42 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     #     TRANSACTION_ACCOUNT = (5, 'Transaction Account')
     #     RETIREMENT_ACCOUNT = (6, 'Retirement Account')
     #     OTHER = (7, 'Other')
+
+
+class InvestmentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestmentType
+
+    name = factory.Sequence(lambda n: 'InvestmentType %d' % n)
+
+
+class AssetClassFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetClass
+
+    name = factory.Sequence(lambda n: 'AssetClass %d' % n)
+    display_order = factory.Sequence(lambda n: int(n))
+    investment_type = factory.SubFactory(InvestmentTypeFactory)
+
+
+class ContentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ContentType
+
+
+class MainRegionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MainRegion
+
+    name = factory.Sequence(lambda n: 'Region %d' % n)
+
+
+class TickerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Ticker
+
+    symbol = factory.Sequence(lambda n: str(n))
+    ordering = factory.Sequence(lambda n: int(n))
+    asset_class = factory.SubFactory(AssetClassFactory)
+    benchmark_content_type = factory.SubFactory(ContentTypeFactory)
+    region = factory.SubFactory(MainRegionFactory)

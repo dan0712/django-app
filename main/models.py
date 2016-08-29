@@ -274,7 +274,9 @@ class PortfolioSet(models.Model):
     risk_free_rate = models.FloatField()
 
     # Also has 'views' from View model.
-
+    
+    # The super_asset_class field was removed from the AssetClass model
+    # So, these region functions won't work anymore
     @property
     def stocks_and_bonds(self):
         has_bonds = False
