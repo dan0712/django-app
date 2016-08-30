@@ -1,6 +1,7 @@
 import logging
 from django.conf import settings
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset
 from django.contrib.sites.shortcuts import get_current_site
@@ -255,6 +256,8 @@ class ChangePasswordView(ApiViewMixin, views.APIView):
             logger.info('Changing password for user %s' % request.user.email)
             request.user.set_password(serializer.validated_data['new_password'])
             request.user.save()
+            # Django invalidates session on password change, so update session hash
+            update_session_auth_hash(request, request.user)
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized change password attempt from user %s' % request.user.email)
         return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
