@@ -231,7 +231,7 @@ class PasswordResetView(ApiViewMixin, views.APIView):
             return Response('ok', status=status.HTTP_200_OK)
 
         logger.error('Unauthorized login attempt using email %s' % serializer.data['email'])
-        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class ChangePasswordView(ApiViewMixin, views.APIView):
@@ -260,7 +260,7 @@ class ChangePasswordView(ApiViewMixin, views.APIView):
             update_session_auth_hash(request, request.user)
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized change password attempt from user %s' % request.user.email)
-        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SecurityQuestionListView(ApiViewMixin, ListAPIView):
@@ -300,14 +300,15 @@ class SecurityQuestionAnswerView(ApiViewMixin, views.APIView):
 
         # check if question already exists for user
         if SecurityAnswer.objects.filter(user=user, question=request.data.get('question')).exists():
-            return Response('question already exists', status=status.HTTP_409_CONFLICT)
+            return Response({'error': 'question already exists'}, status=status.HTTP_409_CONFLICT)
+
         serializer = serializers.SecurityAnswerSerializer(data=request.data, context={'user': request.user})
         if serializer.is_valid():
             logger.info('Valid request to set new security question and answer for user %s' % request.user.email)
             serializer.save()
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized attempt to set new security question and answer for user %s' % request.user.email)
-        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SecurityQuestionAnswerUpdateView(ApiViewMixin, views.APIView):
@@ -323,11 +324,11 @@ class SecurityQuestionAnswerUpdateView(ApiViewMixin, views.APIView):
             sa = SecurityAnswer.objects.get(pk=pk)
         except:
             logger.error('Request to update security answer with pk %s not found' % pk)
-            return Response('Not found', status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if request.user.pk != sa.user.pk:
             logger.error('Unauthorized attempt by user %s to update security answer for user %s' % (request.user, sa.user))
-            return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = serializers.SecurityQuestionAnswerUpdateSerializer(data=request.data, context={'pk': pk})
         if serializer.is_valid():
@@ -337,7 +338,7 @@ class SecurityQuestionAnswerUpdateView(ApiViewMixin, views.APIView):
             sa.save()
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized attempt to update security answer for user %s and pk %s' % (request.user.email, pk))
-        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SecurityAnswerCheckView(ApiViewMixin, views.APIView):
@@ -352,17 +353,17 @@ class SecurityAnswerCheckView(ApiViewMixin, views.APIView):
             sa = SecurityAnswer.objects.get(pk=pk)
         except:
             logger.error('Request to check security answer with pk %s not found' % pk)
-            return Response('Not found', status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if request.user.pk != sa.user.pk:
             if not request.user.is_staff:
                 # superusers are ok to update other user's security question answers
                 logger.error('Unauthorized attempt by user %s to check security answer for user %s' % (request.user, sa.user))
-                return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = serializers.SecurityAnswerCheckSerializer(data=request.data, context={'user': request.user, 'pk': pk})
         if serializer.is_valid():
             logger.info('Valid request to set check security answer for user %s and question %s' % (request.user.email, request.data.get('question')))
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized attempt to check answer for user %s and question %s' % (request.user.email, request.data.get('question')))
-        return Response('unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
