@@ -54,6 +54,10 @@ Install docker for whatever operating system you're running on.  https://docs.do
 
 Run this part for the initial setup and if project requirements are updated.
 
+Copy dev settings connecting to the dev_database.sqlite3 db for the local_settings.py.
+````shell
+cp docker_dev_settings_sqlite.py local_settings.py
+````
 
 Start the necessary containers to run the development server.  The -d option detaches from your current shell so its in the background, but if you want to track stdout actively in a shell, then you can just run without the -d option.
 ````shell
