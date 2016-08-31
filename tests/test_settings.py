@@ -4,12 +4,6 @@ INSTALLED_APPS += ('django_jenkins', )
 
 SECRET_KEY = 'fake-key'
 TEST_RUNNER = "tests.fast_test_runner.FastTestRunner"
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': "betasmartz_dev"
-    }
-}
 PAGE_DEFAULT_TEMPLATE = "support/base.html"
 PAGE_LANGUAGES = (('en-us', 'US English'),)
 STATIC_URL = '/static/'

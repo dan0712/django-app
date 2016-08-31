@@ -104,7 +104,8 @@ WSGI_APPLICATION = 'main.wsgi.application'
 TEMPLATE_CONTEXT_PROCESSORS = TCP + (
     "pages.context_processors.media",
     'django.core.context_processors.request',
-    'main.context_processors.site_contact'
+    'main.context_processors.site_contact',
+    'user.autologout.session_expire_context_processor',
 )
 
 # Internationalization
@@ -141,6 +142,7 @@ SHOW_HIJACKUSER_IN_ADMIN = False
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+DEFAULT_FROM_EMAIL = "no-reply@betasmartz.com"
 SUPPORT_EMAIL = "support@betasmartz.com"
 SUPPORT_PHONE = "1888888888"
 IS_DEMO = False

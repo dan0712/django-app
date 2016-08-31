@@ -16,7 +16,8 @@ from main.models import (AssetClass, Goal, Performer, Position,
     RecurringTransaction, SymbolReturnHistory)
 from main.views.base import ClientView
 from portfolios.exceptions import OptimizationException
-from portfolios.management.commands.portfolio_calculation import calculate_portfolios as calculate_portfolios_for_goal
+from portfolios.management.commands.portfolio_calculation_pure import calculate_portfolios as calculate_portfolios_for_goal
+
 
 
 logger = logging.getLogger("client.api")

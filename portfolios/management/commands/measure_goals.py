@@ -19,8 +19,11 @@ from scipy.optimize import minimize_scalar
 
 from main.models import Goal, Position, GoalMetric
 from portfolios.BL_model.bl_model import markowitz_cost
-from portfolios.management.commands.portfolio_calculation import get_instruments, \
+from portfolios.management.commands.portfolio_calculation_pure import \
     lambda_to_risk_score, optimize_settings, Unsatisfiable, run_bl
+
+from portfolios.management.commands.portfolio_calculation import get_instruments
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 
 logger = logging.getLogger("measure_goals")
 # logger.setLevel(logging.DEBUG)
@@ -78,7 +81,8 @@ def get_risk_score(goal, weights, idata):
         raise Exception("Couldn't find appropriate lambda")
 
     logger.debug("Calculated lambda: {} for goal: {}".format(res.x, goal))
-    return lambda_to_risk_score(res.x)
+    return lambda_to_risk_score(lam=res.x,
+                                data_provider=DataProviderDjango())
 
 
 def measure(goal, idata):

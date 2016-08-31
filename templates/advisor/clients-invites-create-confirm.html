@@ -35,7 +35,7 @@
           </tbody>
         </table>
 
-        <form action="{% url 'advisor:clients-invites' %}" method="post">
+        <form action="{% url 'advisor:clients:invites' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="inviter_type" value="{{ inviter_type }}">
           <input type="hidden" name="inviter_id" value="{{ inviter_id }}">
@@ -43,7 +43,7 @@
           <input type="hidden" name="email" value="{{ email }}">
 
           <button class="btn btn-primary" type="submit">Send email to client for review</button>
-           <a class="btn btn-danger-outline" href="{% url 'advisor:clients' %}">Cancel</a>
+           <a class="btn btn-danger-outline" href="{% url 'advisor:clients:list' %}">Cancel</a>
         </form>
       </div>
     </div>

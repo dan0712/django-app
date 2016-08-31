@@ -20,7 +20,7 @@ from main.models import Firm, User, AuthorisedRepresentative, \
 from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, solve_shares_re_balance
 from ..base import AdminView
 from ..base import LegalView
-from ...forms import EmailInviteForm
+from ...forms import EmailInvitationForm
 from ...models import EmailInvitation, Section, Position
 from main.constants import SUCCESS_MESSAGE, INVITATION_ADVISOR, \
     AUTHORIZED_REPRESENTATIVE, INVITATION_SUPERVISOR, INVITATION_TYPE_DICT, \
@@ -125,7 +125,7 @@ class AuthorisedRepresentativeSignUp(CreateView):
 
 
 class InviteLegalView(CreateView, AdminView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'admin/betasmartz/legal_invite.html'
 
     def get_success_url(self):
@@ -150,7 +150,7 @@ class InviteLegalView(CreateView, AdminView):
 
 
 class AdminInviteAdvisorView(CreateView, AdminView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'admin/betasmartz/legal_invite.html'
 
     def get_success_url(self):
@@ -175,7 +175,7 @@ class AdminInviteAdvisorView(CreateView, AdminView):
 
 
 class AdminInviteSupervisorView(CreateView, AdminView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'admin/betasmartz/legal_invite.html'
 
     def get_success_url(self):

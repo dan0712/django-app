@@ -11,13 +11,13 @@ PERSONAL_DATA_WIDGETS = {
 }
 
 
-class EmailInviteForm(forms.ModelForm):
+class EmailInvitationForm(forms.ModelForm):
     class Meta:
         model = EmailInvitation
         fields = ('email', 'invitation_type', 'inviter_type', 'inviter_id')
 
     def clean(self):
-        cleaned_data = super(EmailInviteForm, self).clean()
+        cleaned_data = super(EmailInvitationForm, self).clean()
         self._validate_unique = False
         return cleaned_data
 
@@ -29,7 +29,7 @@ class EmailInviteForm(forms.ModelForm):
                 inviter_id=self.cleaned_data.get('inviter_id'),
                 invitation_type=self.cleaned_data.get('invitation_type'))
         except ObjectDoesNotExist:
-            invitation = super(EmailInviteForm, self).save(*args, **kw)
+            invitation = super(EmailInvitationForm, self).save(*args, **kw)
 
         invitation.send()
         return invitation

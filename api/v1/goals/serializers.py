@@ -13,9 +13,19 @@ from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
     GoalSetting, GoalType, Portfolio, PortfolioItem, Position, \
     RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
-from portfolios.management.commands.portfolio_calculation import Unsatisfiable, \
-    calculate_portfolio, current_stats_from_weights, get_instruments
+
+from portfolios.management.commands.portfolio_calculation_pure import (
+    calculate_portfolio, Unsatisfiable, current_stats_from_weights)
+
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import \
+    DataProviderDjango
+
+from portfolios.management.commands.providers.execution_providers.execution_provider_django import \
+    ExecutionProviderDjango
+
+from portfolios.management.commands.portfolio_calculation import get_instruments
 from support.models import SupportRequest
+
 
 logger = logging.getLogger('goal_serializer')
 
@@ -265,8 +275,11 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                 port_items_data = port_data.pop('items')
                 # Get the current portfolio statistics of the given weights.
                 try:
-                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
-                                                                     item['weight']) for item in port_items_data])
+                    data_provider = DataProviderDjango()
+                    er, stdev, idatas = current_stats_from_weights(weights=[(item['asset'].id,
+                                                                             item['weight']) for item in port_items_data],
+                                                                   data_provider=data_provider
+                                                                   )
                 except Unsatisfiable as e:
                     raise ValidationError(e.msg)
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
@@ -349,8 +362,10 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
             if port_data is not None:
                 port_items_data = port_data.pop('items')
                 try:
-                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
-                                                                     item['weight']) for item in port_items_data])
+                    data_provider = DataProviderDjango()
+                    er, stdev, idatas = current_stats_from_weights(weights=[(item['asset'].id,
+                                                                     item['weight']) for item in port_items_data],
+                                                                   data_provider=data_provider)
                 except Unsatisfiable as e:
                     raise ValidationError(e.msg)
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
@@ -600,7 +615,10 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
 
             # Calculate the optimised portfolio
             try:
-                weights, er, stdev = calculate_portfolio(settings, idata)
+                weights, er, stdev = calculate_portfolio(settings=settings,
+                                                         idata=idata,
+                                                         data_provider=DataProviderDjango(),
+                                                         execution_provider=ExecutionProviderDjango())
                 portfolio = Portfolio.objects.create(
                     setting=settings,
                     stdev=stdev,

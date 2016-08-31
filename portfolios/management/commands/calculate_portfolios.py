@@ -3,9 +3,7 @@ import logging
 from typing import List, Dict
 import numpy as np
 from pandas import DataFrame
-
 from django.core.management.base import BaseCommand
-
 from main.models import Goal, AssetClass, PortfolioSet
 from portfolios.api.yahoo import YahooApi, DbApi
 from portfolios.bl_model import handle_data, calculate_co_vars
@@ -435,7 +433,8 @@ def calculate_portfolios_for_goal(goal, api=None) -> str:
         api = DbApi()
 
     if goal.optimization_mode == 1:
-        return calculate_portfolios_for_goal_auto_weights(goal, api)
+        return(calculate_portfolios_for_goal_auto_weights(goal, api))
+
     portfolio_set = goal.portfolio_set
     # get all the regions
     all_assets = portfolio_set.asset_classes.all()

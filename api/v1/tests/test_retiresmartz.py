@@ -1,14 +1,22 @@
+from ujson import loads
+
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from ujson import loads
-
+from common.constants import GROUP_SUPPORT_STAFF
 from main.models import RetirementPlan
 from main.tests.fixture import Fixture1
+from .factories import GroupFactory
 
 
 class RetiresmartzTests(APITestCase):
+    def setUp(self):
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+
+    def tearDown(self):
+        self.client.logout()
+
     def test_get_plan(self):
         """
         Test clients are able to access their own retirement plan by id.

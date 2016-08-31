@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.utils.timezone import utc
 from phonenumber_field.modelfields import PhoneNumberField
 from recurrence import deserialize
-
+from django.utils.functional import cached_property
 from common.structures import ChoiceEnum
 from main.utils import d2dt, dt2d
 
@@ -52,6 +52,14 @@ class PersonalData(models.Model):
     @property
     def email(self):
         return self.user.email
+
+    @cached_property
+    def age(self):
+        if self.date_of_birth:
+            today = datetime.datetime.today()
+            age = today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
+            return age
+        return
 
 
 class NeedApprobation(models.Model):

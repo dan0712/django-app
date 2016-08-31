@@ -1,5 +1,5 @@
 from django_cron import CronJobBase, Schedule
-from portfolios.management.commands.portfolio_calculation import get_all_optimal_portfolios
+from portfolios.management.commands.portfolio_calculation_pure import get_all_optimal_portfolios
 
 
 class CalculatePortfoliosCron(CronJobBase):

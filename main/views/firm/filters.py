@@ -1,5 +1,5 @@
 from dateutil.relativedelta import relativedelta
-
+import logging
 from django import forms
 from django.contrib.auth.models import Group
 from django.db.models import Q
@@ -12,6 +12,8 @@ from main.models import Advisor, Goal, GoalMetric
 from client.models import Client
 
 ATTRS_ONCHANGE= {'onchange': 'this.form.submit();'}
+
+logger = logging.getLogger('main.views.firm.filters')
 
 
 class SearchFilter(filters.CharFilter):
@@ -59,15 +61,23 @@ class UserGroupFilter(filters.ChoiceFilter):
 
     def __init__(self, groups=None, *args, **kwargs):
         # @group: list of groups (by name)
+        # this query in initialization is causing an error trying to
+        # call the sqlite3 database when loading main tests
         self.GROUPS = kwargs.get('groups', self._GROUPS_DEFAULT)
+        try:
+            groups = list(
+                Group.objects
+                .filter(name__in=self.GROUPS)
+                .values_list('id', 'name')
+            )
+        except:
+            logger.error('Did not find expected groups for UserGroupFilter')
         choices = [
                 (None, '- Users -'),
                 (None, 'All'),
-            ] + list(
-            Group.objects
-            .filter(name__in=self.GROUPS)
-            .values_list('id', 'name')
-        )
+            ]
+        if groups:
+            choices += groups
 
         kwargs['choices'] = choices
         super(UserGroupFilter, self).__init__(*args, **kwargs)

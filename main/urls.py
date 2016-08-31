@@ -1,13 +1,12 @@
 from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
 
+from api.v1.user.views import PasswordResetView
 from main import settings
 from .views import *
-from api.v1.user.views import PasswordResetView
 
 
 def ok_response_json(*args, **kwargs):
@@ -30,8 +29,8 @@ urlpatterns_firm = patterns(
     url(r'^support/forms$', FirmSupportForms.as_view(), name='support-forms'),
     url(r'^support/pricing$', FirmSupportPricingView.as_view(), name='support-pricing'),
 
-    url(r'^advisor_invites', FirmAdvisorInvites.as_view()), # TODO: revamp
-    url(r'^supervisor_invites', FirmSupervisorInvites.as_view()), # TODO: revamp
+    # url(r'^advisor_invites', FirmAdvisorInvites.as_view()), # TODO: revamp
+    # url(r'^supervisor_invites', FirmSupervisorInvites.as_view()), # TODO: revamp
 
     url(r'^edit$', FirmDataView.as_view(), name='edit'), # TODO: revamp
 
@@ -45,49 +44,6 @@ urlpatterns_firm = patterns(
     url(r'^supervisors/create$', FirmSupervisorsCreate.as_view(), name='supervisors-create'),
     url(r'^supervisors/(?P<pk>\d+)/edit', FirmSupervisorsEdit.as_view(), name='supervisors-edit'),
     url(r'^supervisors/(?P<pk>\d+)/delete', FirmSupervisorDelete.as_view(), name='supervisors-delete'),
-)
-
-# TODO: modularize later
-urlpatterns_advisor = patterns(
-    '',
-    url(r'^clients$', AdvisorClients.as_view(), name='clients'),
-    url(r'^clients/(?P<pk>\d+)$', AdvisorClientDetails.as_view(), name='clients-detail'),
-    url(r'^clients/(?P<pk>\d+)/account-invites$', AdvisorCreateNewAccountForExistingClient.as_view(), name='clients-account-invites'),
-    url(r'^clients/(?P<pk>\d+)/account-invites/create$', AdvisorCreateNewAccountForExistingClientSelectAccountType.as_view(), name='clients-account-invites-create'),
-    url(r'^clients/invites$', AdvisorClientInvites.as_view(), name='clients-invites'),
-    url(r'^clients/invites/create$', AdvisorClientInviteNewView.as_view(), name='clients-invites-create'),
-    url(r'^clients/invites/create/profile$', CreateNewClientPrepopulatedView.as_view(), name='clients-invites-create-profile'),
-    url(r'^clients/invites/(?P<pk>\d+)/create/personal-details$', BuildPersonalDetails.as_view(), name='clients-invites-create-personal-details'),
-    url(r'^clients/invites/(?P<pk>\d+)/create/financial-details$', BuildFinancialDetails.as_view(), name='clients-invites-create-financial-details'),
-    url(r'^clients/invites/(?P<pk>\d+)/create/confirm$', BuildConfirm.as_view(), name='clients-invites-create-confirm'),
-
-    url(r'^composites/create$', AdvisorCompositeNew.as_view(), name='composites-create'),
-    url(r'^composites/(?P<pk>\d+)$', AdvisorAccountGroupDetails.as_view(), name='composites-detail'),
-    url(r'^composites/(?P<pk>\d+)/edit$', AdvisorCompositeEdit.as_view(), name='composites-edit'),
-    url(r'^composites/(?P<account_id>\d+)/account-groups/(?P<account_group_id>\d+)$',
-        AdvisorRemoveAccountFromGroupView.as_view(), name='composites-detail-account-groups-delete'),
-    url(r'^composites/(?P<pk>\d+)/clients$',
-        AdvisorAccountGroupClients.as_view(), name='composites-detail-clients'),
-    url(r'^composites/(?P<pk>\d+)/secondary-advisors$',
-        AdvisorAccountGroupSecondaryDetailView.as_view(), name='composites-detail-secondary-advisors'),
-    url(r'^composites/(?P<pk>\d+)/secondary-advisors/create$',
-        AdvisorAccountGroupSecondaryCreateView.as_view(), name='composites-detail-secondary-advisors-create'),
-    url(r'^composites/(?P<pk>\d+)/secondary-advisors/(?P<sa_pk>\d+)$',
-        AdvisorAccountGroupSecondaryDeleteView.as_view(), name='composites-detail-secondary-advisors-delete'),
-    url(r'^composites/client-accounts/(?P<pk>\d+)/fee$',
-        AdvisorClientAccountChangeFee.as_view(), name='composites-client-accounts-fee'),
-
-    url(r'^agreements', AdvisorAgreements.as_view(), name='agreements'),
-    url(r'^support$', AdvisorSupport.as_view(), name='support'),
-    url(r'^support/forms$', AdvisorForms.as_view(), name='support-forms'),
-    url(r'^support/forms/change/firm$', AdvisorChangeDealerGroupView.as_view(), name='support-forms-change-firm'),
-    url(r'^support/forms/change/firm/update/(?P<pk>\d+)$', AdvisorChangeDealerGroupUpdateView.as_view()),
-    url(r'^support/forms/transfer/single$', AdvisorSingleInvestorTransferView.as_view(), name='support-forms-transfer-single'),
-    url(r'^support/forms/transfer/single/update/(?P<pk>\d+)$', AdvisorSingleInvestorTransferUpdateView.as_view()),
-    url(r'^support/forms/transfer/bulk$', AdvisorBulkInvestorTransferView.as_view(), name='support-forms-transfer-bulk'),
-    url(r'^support/forms/transfer/bulk/update/(?P<pk>\d+)$', AdvisorBulkInvestorTransferUpdateView.as_view()),
-    url(r'^support/getting-started$', AdvisorSupportGettingStarted.as_view(), name='support-getting-started'),
-    url(r'^overview', AdvisorCompositeOverview.as_view(), name='overview'),
 )
 
 urlpatterns_client = patterns(
@@ -110,7 +66,7 @@ urlpatterns = patterns(
     # Client views
     url(r'^client/', include(urlpatterns_client, namespace='client')),
     # Advisor views
-    url(r'^advisor/', include(urlpatterns_advisor, namespace='advisor')),
+    url(r'^advisor/', include('advisors.urls', namespace='advisor', app_name='advisors')),
 
     url(r'^session',
         csrf_exempt(Session.as_view()),

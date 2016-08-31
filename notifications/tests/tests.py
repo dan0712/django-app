@@ -12,7 +12,7 @@ except ImportError:
     from django.test.utils import override_settings
 
 from django.conf import settings
-from django.contrib.auth.models import User, Group
+# from django.contrib.auth.models import User, Group
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.utils.timezone import utc, localtime, now
@@ -22,15 +22,20 @@ import json
 from notifications import notify
 from notifications.models import Notification
 from notifications.utils import id2slug
+from api.v1.tests.factories import UserFactory, StaffUserFactory, GroupFactory
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class NotificationTest(TestCase):
+    def setUp(self):
+        self.from_user = UserFactory.create()
+        self.to_user = UserFactory.create()
 
     @override_settings(USE_TZ=True)
     @override_settings(TIME_ZONE='Asia/Shanghai')
     def test_use_timezone(self):
-        from_user = User.objects.create(username="from", password="pwd", email="example@example.com")
-        to_user = User.objects.create(username="to", password="pwd", email="example@example.com")
+        from_user = self.from_user
+        to_user = self.to_user
         notify.send(from_user, recipient=to_user, verb='commented', action_object=from_user)
         notification = Notification.objects.get(recipient=to_user)
         delta = now().replace(tzinfo=utc) - localtime(notification.timestamp, pytz.timezone(settings.TIME_ZONE))
@@ -42,8 +47,8 @@ class NotificationTest(TestCase):
     @override_settings(USE_TZ=False)
     @override_settings(TIME_ZONE='Asia/Shanghai')
     def test_disable_timezone(self):
-        from_user = User.objects.create(username="from2", password="pwd", email="example@example.com")
-        to_user = User.objects.create(username="to2", password="pwd", email="example@example.com")
+        from_user = self.from_user
+        to_user = self.to_user
         notify.send(from_user, recipient=to_user, verb='commented', action_object=from_user)
         notification = Notification.objects.get(recipient=to_user)
         delta = now() - notification.timestamp
@@ -54,9 +59,9 @@ class NotificationManagersTest(TestCase):
 
     def setUp(self):
         self.message_count = 10
-        self.from_user = User.objects.create(username="from2", password="pwd", email="example@example.com")
-        self.to_user = User.objects.create(username="to2", password="pwd", email="example@example.com")
-        self.to_group = Group.objects.create(name="to2_g")
+        self.from_user = UserFactory.create()
+        self.to_user = UserFactory.create()
+        self.to_group = GroupFactory.create(name="to2_g")
         self.to_group.user_set.add(self.to_user)
         for i in range(self.message_count):
             notify.send(self.from_user, recipient=self.to_user, verb='commented', action_object=self.from_user)
@@ -124,10 +129,8 @@ class NotificationTestPages(TestCase):
 
     def setUp(self):
         self.message_count = 10
-        self.from_user = User.objects.create_user(username="from", password="pwd", email="example@example.com")
-        self.to_user = User.objects.create_user(username="to", password="pwd", email="example@example.com")
-        self.to_user.is_staff = True
-        self.to_user.save()
+        self.from_user = UserFactory.create()
+        self.to_user = StaffUserFactory.create()
         for i in range(self.message_count):
             notify.send(self.from_user, recipient=self.to_user, verb='commented', action_object=self.from_user)
 
@@ -141,14 +144,14 @@ class NotificationTestPages(TestCase):
         return response
 
     def test_all_messages_page(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         response = self.client.get(reverse('notifications:all'))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['notifications']), len(self.to_user.notifications.all()))
 
     def test_unread_messages_pages(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         response = self.client.get(reverse('notifications:unread'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['notifications']), len(self.to_user.notifications.unread()))
@@ -171,7 +174,7 @@ class NotificationTestPages(TestCase):
         self.assertEqual(len(response.context['notifications']), 0)
 
     def test_next_pages(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         response = self.client.get(reverse('notifications:mark_all_as_read'), data={
             "next": reverse('notifications:unread'),
         })
@@ -190,7 +193,7 @@ class NotificationTestPages(TestCase):
         self.assertRedirects(response, reverse('notifications:unread'))
 
     def test_delete_messages_pages(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         slug = id2slug(self.to_user.notifications.first().id)
         response = self.client.get(reverse('notifications:delete', args=[slug]))
@@ -208,7 +211,7 @@ class NotificationTestPages(TestCase):
 
     @override_settings(NOTIFICATIONS_SOFT_DELETE=True)
     def test_soft_delete_messages_manager(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         slug = id2slug(self.to_user.notifications.first().id)
         response = self.client.get(reverse('notifications:delete', args=[slug]))
@@ -225,7 +228,7 @@ class NotificationTestPages(TestCase):
         self.assertEqual(len(response.context['notifications']), self.message_count-1)
 
     def test_unread_count_api(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         response = self.client.get(reverse('notifications:live_unread_notification_count'))
         data = json.loads(response.content.decode('utf-8'))
@@ -245,7 +248,7 @@ class NotificationTestPages(TestCase):
         self.assertEqual(data['unread_count'], 1)
 
     def test_unread_list_api(self):
-        self.login('to', 'pwd')
+        self.login('to', 'test')
 
         response = self.client.get(reverse('notifications:live_unread_notification_list'))
         data = json.loads(response.content.decode('utf-8'))
@@ -286,7 +289,7 @@ class NotificationTestPages(TestCase):
     def test_live_update_tags(self):
         from django.shortcuts import render
 
-        self.login('to', 'pwd')
+        self.login('to', 'test')
         self.factory = RequestFactory()
 
         request = self.factory.get('/notification/live_updater')

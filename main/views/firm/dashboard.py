@@ -1,5 +1,5 @@
-from datetime import date
-
+from datetime import datetime, date
+import logging
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib import messages
@@ -8,21 +8,23 @@ from django.db.models import Avg, F, Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils.safestring import mark_safe
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-    TemplateView, UpdateView)
+                                  TemplateView, UpdateView)
 from functools import reduce
 from operator import itemgetter
 
 from client.models import Client
 from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
-    INVITATION_TYPE_DICT)
-from main.forms import BetaSmartzGenericUserSignupForm, EmailInviteForm
+                            INVITATION_TYPE_DICT)
+from main.forms import BetaSmartzGenericUserSignupForm, EmailInvitationForm
 from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
-    Position, Supervisor, Transaction, User)
+                         Position, Supervisor, Transaction, User)
 from main.views.base import LegalView
 from notifications.models import Notification
 from support.models import SupportRequest
 from .filters import FirmActivityFilterSet, FirmAnalyticsAdvisorsFilterSet, \
     FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet
+
+logger = logging.getLogger('main.views.firm.dashboard')
 
 
 class FirmSupervisorDelete(DeleteView, LegalView):
@@ -199,7 +201,7 @@ class FirmAnalyticsMixin(object):
     @self.filter: django_filter object (with filter params)
     """
     AGE_STEP = 5
-    AGE_RANGE = range(20, 60, AGE_STEP)
+    AGE_RANGE = range(20, 70, AGE_STEP)
     SECONDS_PER_YEAR = 365.25 * 24 * 3600
 
     def get_queryset_clients(self):
@@ -296,6 +298,8 @@ class FirmAnalyticsMixin(object):
         Les:
         Net worth is sum of Goal.total_balance per client
         where they are the primary account holder, age is age of primary account holder.
+        Net worth also sums the value of the client's external assets.  Value for assets
+        is determine by the external assets' growth from valuation date.
 
         Cash flow is a monthly net Transactions in and out of the goals
         for each primary account holder. Ignore incoming dividend type transactions,
@@ -307,44 +311,51 @@ class FirmAnalyticsMixin(object):
         transactions: monthly net transactions for the last month
         """
         qs_goals = self.get_queryset_goals()
-
+        clients = self.get_queryset_clients()
         data = []
-
+        current_date = datetime.now().today()
         for age in self.AGE_RANGE:
-            value_worth = qs_goals \
-                .filter_by_client_age(age, age + self.AGE_STEP) \
-                .values('account__primary_owner__id') \
-                .annotate(positions_sum=Coalesce(Sum(
-                    F('positions__share') * F('positions__ticker__unit_price')
-                ), 0)) \
-                .aggregate(
-                    positions=Coalesce(Avg('positions_sum'), 0),
-                    cash=Coalesce(Avg('cash_balance'), 0),
-                )
+            # client.net_worth will return a clients estimated net_worth here
+            # client.net_worth takes into account external assets
+            # we are graphing average clients' net_worth by age
+            value_worth = 0.0
+            range_dates = map(lambda x: current_date - relativedelta(years=x),
+                              [age + self.AGE_STEP, age])  # yes, max goes first
 
-            value_cashflow = qs_goals \
-                .filter_by_client_age(age, age + self.AGE_STEP) \
-                .exclude(transactions_to__reason=Transaction.REASON_DIVIDEND) \
-                .exclude(transactions_from__reason=Transaction.REASON_FEE) \
-                .exclude(transactions_to__status=Transaction.STATUS_PENDING) \
-                .exclude(transactions_from__status=Transaction.STATUS_PENDING) \
-                .filter(transactions_to__executed__gt=date.today() - relativedelta(months=1)) \
-                .filter(transactions_from__executed__gt=date.today() - relativedelta(months=1)) \
-                .values('account__primary_owner__id') \
-                .annotate(
-                    transactions_to_sum=Coalesce(Sum('transactions_to__amount'), 0),
-                    transactions_from_sum=Coalesce(Sum('transactions_from__amount'), 0),
-                ) \
-                .aggregate(
-                    transactions_to=Coalesce(Avg('transactions_to_sum'), 0), # should it Sum instead?
-                    transactions_from=Coalesce(Avg('transactions_from_sum'), 0), # should it Sum instead?
-                )
+            clients_by_age = clients.filter(date_of_birth__range=range_dates)
+            for client in clients_by_age:
+                value_worth += client.net_worth
+            if clients_by_age.count() > 0:
+                value_worth = value_worth / clients_by_age.count()
+
+            # for every goal for clients in this age range, we're going to add the transaction
+            # amount to the total_cashflow, then divide the total by the number of unique clients
+            # to get the average cashflow for clients of this age
+            total_cashflow = 0.0
+            average_client_cashflow = 0.0
+            cashflow_goals = qs_goals.filter_by_client_age(age, age + self.AGE_STEP)
+            number_of_clients = len(set([goal.account.primary_owner for goal in cashflow_goals]))
+            for goal in cashflow_goals:
+                txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                             status=Transaction.STATUS_EXECUTED,
+                                             reason__in=Transaction.CASH_FLOW_REASONS) \
+                                            .filter(executed__gt=date.today() - relativedelta(years=1)) \
+                                            .filter(executed__gt=date.today() - relativedelta(years=1))
+                # subtract from_goal amounts and add to_goal amounts
+                for tx in txs:
+                    if tx.from_goal:
+                        total_cashflow -= tx.amount
+                    elif tx.to_goal:
+                        total_cashflow += tx.amount
+
+            if number_of_clients > 0:
+                average_client_cashflow = total_cashflow / number_of_clients
 
             data.append({
-                'value_worth': value_worth['positions'] + value_worth['cash'],
-                'value_cashflow': value_cashflow['transactions_to'] + value_cashflow['transactions_from'],
+                'value_worth': value_worth,
+                'value_cashflow': average_client_cashflow,
                 'age': age + self.AGE_STEP / 2,
-            });
+            })
 
         return data
 
@@ -723,7 +734,7 @@ class FirmSupportForms(TemplateView, LegalView):
 
 
 class FirmSupervisorInvites(CreateView, LegalView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'firm/supervisor_invite.html'
 
     def get_success_url(self):
@@ -748,7 +759,7 @@ class FirmSupervisorInvites(CreateView, LegalView):
 
 
 class FirmAdvisorInvites(CreateView, LegalView):
-    form_class = EmailInviteForm
+    form_class = EmailInvitationForm
     template_name = 'firm/advisor_invite.html'
 
     def get_success_url(self):
