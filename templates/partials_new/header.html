@@ -13,8 +13,14 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="#">
-          <img alt="{{ firm.name|default:"BetaSmartz Institutional" }}"
-               src="{% static firm.logo.url|default:'images/white_logo.png' %}">
+          <!-- url check to work around staticfiles bug on file check -->
+          {% if firm.logo %}
+            <img alt="{{ firm.name|default:"BetaSmartz Institutional" }}"
+                 src="{% static firm.logo.url %}">
+          {% else %}
+            <img alt="BetaSmartz Institutional"
+                 src="{% static 'images/white_logo.png' %}">
+          {% endif %}
         </a>
       </div>
 
