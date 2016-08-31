@@ -2,13 +2,15 @@ from main.tests.fixtures import Fixture1
 from django.test import TestCase
 from execution.end_of_day import *
 import unittest
-from execution.broker.broker_abstract import BrokerAbstract
+from unittest.mock import Mock
+from execution.broker.ibroker import IBroker
 
 
 class BaseTest(TestCase):
 
     def setUp(self):
-        self.con = BrokerAbstract()
+        self.con = Mock(IBroker)
+        self.con.return_value = True
         short_sleep()
 
     def test_ib_connect(self):

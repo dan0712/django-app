@@ -1,4 +1,4 @@
-from execution.broker.broker_abstract import BrokerAbstract
+from execution.broker.ibroker import IBroker
 from ib.ext.ComboLeg import ComboLeg
 from ib.ext.Contract import Contract
 from ib.ext.ExecutionFilter import ExecutionFilter
@@ -51,7 +51,7 @@ def get_options():
     return opts
 
 
-class InteractiveBrokers(BrokerAbstract):
+class InteractiveBrokers(IBroker):
     def __init__(self):
         options = get_options()
         basicConfig()

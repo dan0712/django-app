@@ -1,19 +1,19 @@
 from abc import ABC, abstractmethod
 
 
-class BrokerAbstract(ABC):
+class IBroker(ABC):
     def __init__(self):
         pass
 
-    def _register(self, method, *subscription):
+    @abstractmethod
+    def connect(self):
         pass
 
-    def connect(self):
-        return True
-
+    @abstractmethod
     def disconnect(self):
         pass
 
+    @abstractmethod
     def request_account_summary(self):
         pass
 
