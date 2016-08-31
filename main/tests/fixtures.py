@@ -283,6 +283,7 @@ class Fixture1:
             'default_portfolio_set': Fixture1.portfolioset1(),
             'risk_profile_group': Fixture1.risk_profile_group1(),
             'confirmed': True,
+            'account_id': 'DU299694'
         }
         return ClientAccount.objects.get_or_create(id=1, defaults=params)[0]
 

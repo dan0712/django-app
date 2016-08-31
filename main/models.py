@@ -1,6 +1,6 @@
+from datetime import datetime
 import logging
 import uuid
-from datetime import datetime, date
 from enum import Enum, unique
 
 import scipy.stats as st
@@ -10,7 +10,7 @@ from django.contrib.auth.models import AbstractBaseUser, Group, \
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
-    MinValueValidator, RegexValidator, ValidationError)
+                                    MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
@@ -175,7 +175,8 @@ class InvestmentType(models.Model):
     name = models.CharField(max_length=255,
                             validators=[RegexValidator(
                                 regex=r'^[0-9A-Z_]+$',
-                                message="Invalid character only accept (0-9a-zA-Z_) ")],)
+                                message="Invalid character only accept (0-9a-zA-Z_) ")],
+                            unique=True)
     description = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
@@ -273,6 +274,8 @@ class PortfolioSet(models.Model):
     asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
     risk_free_rate = models.FloatField()
 
+    def get_views_all(self):
+        return self.views.all()
     def __str__(self):
         return self.name
 
@@ -1102,8 +1105,11 @@ class Portfolio(models.Model):
     # Also has 'items' field from PortfolioItem
 
     def __str__(self):
-        result = u'Portfolio #%s' % (self.id)
+        result = u'Portfolio #%s' % self.id
         return result
+
+    def get_items_all(self):
+        return self.items.all()
 
 
 class PortfolioItem(models.Model):
@@ -1126,6 +1132,12 @@ class GoalSetting(models.Model):
     def __str__(self):
         result = u'Goal Settings #%s (%s)' % (self.id, self.portfolio)
         return result
+
+    def get_metrics_all(self):
+        return self.metric_group.metrics.all()
+
+    def get_portfolio_items_all(self):
+        return self.portfolio.items.all()
 
     @property
     def goal(self):
@@ -1240,6 +1252,9 @@ class Goal(models.Model):
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
+
+    def get_positions_all(self):
+        return Position.objects.filter(goal=self).all()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

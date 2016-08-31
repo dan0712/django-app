@@ -21,8 +21,10 @@ from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import Goal, GoalType, Transaction, HistoricalBalance, Ticker, DailyPrice
 from main.risk_profiler import recommend_ttl_risks
-from portfolios.management.commands.portfolio_calculation import calculate_portfolio, Unsatisfiable, \
-    calculate_portfolios, current_stats_from_weights
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
+from portfolios.management.commands.providers.execution_providers.execution_provider_django import ExecutionProviderDjango
+from portfolios.management.commands.portfolio_calculation_pure import calculate_portfolio, calculate_portfolios, \
+    Unsatisfiable, current_stats_from_weights
 from support.models import SupportRequest
 from . import serializers
 from ..permissions import IsAdvisorOrClient
@@ -294,7 +296,8 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         if total_weight > 1.0001:
             raise ValidationError("Sum of item weights must be less than or equal to 1")
         try:
-            er, stdev, _ = current_stats_from_weights(port_items)
+            data_provider = DataProviderDjango()
+            er, stdev, _ = current_stats_from_weights(weights=port_items, data_provider=data_provider)
         except Unsatisfiable as e:
             raise ValidationError(e.msg)
         return Response({'er': er, 'stdev': stdev})
@@ -322,7 +325,9 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         settings = serializer.create_stateless(serializer.validated_data, goal)
 
         try:
-            data = self.build_portfolio_data(calculate_portfolio(settings))
+            data = self.build_portfolio_data(calculate_portfolio(settings=settings,
+                                                                 data_provider=DataProviderDjango(),
+                                                                 execution_provider=ExecutionProviderDjango()))
             return Response(data)
         except Unsatisfiable as e:
             rdata = {'reason': "No portfolio could be found: {}".format(e)}
@@ -355,7 +360,12 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
 
         # Calculate the portfolio
         try:
-            data = [self.build_portfolio_data(item[1], item[0]) for item in calculate_portfolios(settings)]
+            data_provider = DataProviderDjango()
+            execution_provider = ExecutionProviderDjango()
+            data = [self.build_portfolio_data(item[1], item[0])
+                    for item in calculate_portfolios(setting=settings,
+                                                     data_provider=data_provider,
+                                                     execution_provider=execution_provider)]
             return Response(data)
         except Unsatisfiable as e:
             rdata = {'reason': "No portfolio could be found: {}".format(e)}
