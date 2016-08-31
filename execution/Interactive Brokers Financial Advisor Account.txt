@@ -1,5 +1,7 @@
 IB does not have native python API. We can use https://github.com/blampe/IbPy
 
+IB API guide: http://interactivebrokers.github.io/tws-api/
+
 In IB, we can use Financial Advisor account. 
 
 We should use Account Profile Allocation Method - Shares - where we specify number of shares to be executed for each subaccount. 

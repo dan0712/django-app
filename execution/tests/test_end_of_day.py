@@ -2,17 +2,15 @@ from main.tests.fixtures import Fixture1
 from django.test import TestCase
 from execution.end_of_day import *
 import unittest
+from unittest.mock import Mock
+from execution.broker.ibroker import IBroker
 
 
-@unittest.skip("Skipping tests as they connect to IB.")
 class BaseTest(TestCase):
 
     def setUp(self):
-        options = get_options()
-        basicConfig()
-        self.con = ibConnection(options.host, options.port, options.clientid)
-        self.con.register(update_account_value, 'AccountSummary')
-        self.con.register(reply_managed_accounts, 'ManagedAccounts')
+        self.con = Mock(IBroker)
+        self.con.return_value = True
         short_sleep()
 
     def test_ib_connect(self):
