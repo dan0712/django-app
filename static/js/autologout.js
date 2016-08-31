@@ -57,7 +57,7 @@ betasmartz.AutoLogoutModal = function (urls) {
             setTimeout(function () {
                 setTime();
                 $elem.modal('show');
-            }, (time.secondsLeft - showWhenSecondsLeft) * 1000);
+            }, (time.secondsLeft - showWhenSecondsLeft + 1) * 1000);
         }
     };
     this.updateExpirationTime = function (dateString) {

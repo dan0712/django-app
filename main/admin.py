@@ -15,7 +15,7 @@ from main.models import AccountGroup, ActivityLog, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     Position, ProxyAssetClass, ProxyTicker, \
-    Transaction, User, View
+    Transaction, User, View, InvestmentType
 
 admin.site.register(AccountGroup)
 
@@ -57,8 +57,12 @@ class FirmDataInline(admin.StackedInline):
     model = FirmData
 
 
+class InvestmentTypeAdmin(admin.ModelAdmin):
+    model = InvestmentType
+
+
 class AssetClassAdmin(GenericAdminModelAdmin, SortableModelAdmin, ImportExportModelAdmin):
-    list_display = ('name', 'display_name', 'display_order', 'investment_type', 'super_asset_class')
+    list_display = ('name', 'display_name', 'display_order', 'investment_type')
     inlines = (TickerInline,)
     resource_class = AssetResource
     sortable = 'display_order'
@@ -317,6 +321,7 @@ admin.site.register(PortfolioSet, PortfolioSetAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
+admin.site.register(InvestmentType, InvestmentTypeAdmin)
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,

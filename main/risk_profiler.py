@@ -161,7 +161,7 @@ def get_risk_ability(age, status, income, worth, ttl, weights):
                                                        (HIGH_LEVEL_WORTH/LOW_LEVEL_WORTH) ** (1/8)))
         max_total += weights['worth']
 
-    if weights and 'age' in weights:
+    if weights and 'ttl' in weights:
         ttl_score = weights['ttl']*(10 if ttl > 15 else 8 if ttl > 10 else ttl/1.5)
         max_total += weights['ttl']
 

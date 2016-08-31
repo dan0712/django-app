@@ -1,5 +1,5 @@
 import decimal
-from datetime import datetime
+from datetime import datetime, time
 from decimal import Decimal
 
 import operator
@@ -201,6 +201,6 @@ def get(request, obj):
 
     # Join the two lists to one sorted on date
     items.extend([{'type': tp,
-                   'time': int((datetime.combine(bal['date'], now().time()) - EPOCH_TM).total_seconds()),
+                   'time': int((datetime.combine(bal['date'], time()) - EPOCH_TM).total_seconds()),
                    'balance': Decimal.from_float(bal['sum']).quantize(DEC_2PL)} for bal in qs])
     return Response(sorted(items, key=operator.itemgetter("time")))

@@ -8,10 +8,15 @@ import logging
 
 import numpy as np
 
-from main.models import Position, ExecutionRequest, Ticker, MarketOrderRequest, Execution
 from portfolios.BL_model.bl_model import markowitz_optimizer_3
-from portfolios.management.commands.portfolio_calculation import optimize_settings, make_orderable, MIN_PORTFOLIO_PCT, \
-    calc_opt_inputs
+from portfolios.management.commands.portfolio_calculation_pure import optimize_settings, make_orderable, MIN_PORTFOLIO_PCT, \
+    calc_opt_inputs, create_portfolio_weights
+
+from portfolios.management.commands.providers.execution_providers.execution_provider_backtester \
+    import ExecutionProviderBacktester, ExecutionProviderAbstract
+
+from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
+    import State, Reason
 
 
 logger = logging.getLogger('rebalance')
@@ -25,7 +30,8 @@ def optimise_up(opt_inputs, min_weights):
     :return: weights - The new dict of weights, or None if impossible.
     """
     xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
-    pweights = np.array([min_weights[tid] for tid in settings_instruments['id'].values])
+
+    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights)
     new_cons = constraints + [xs >= pweights]
     weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, new_cons)
     return dict(zip(settings_instruments['id'].values, weights)) if weights.any() else None
@@ -37,7 +43,7 @@ def get_setting_weights(settings):
     :param settings: The settings to use
     :return: dict from symbol to weight in that setting's portfoloio.
     """
-    return {item.asset.id: item.weight for item in settings.portfolio.items.all()}
+    return {item.asset.id: item.weight for item in settings.get_portfolio_items_all()}
 
 
 def get_position_weights(goal):
@@ -48,7 +54,7 @@ def get_position_weights(goal):
     """
     res = []
     total = 0.0
-    for position in Position.objects.filter(goal=goal).all():
+    for position in goal.get_positions_all():
         res.append((position.ticker.id, position.value))
         total += position.value
     return {tid: val/total for tid, val in res}
@@ -62,7 +68,7 @@ def get_held_weights(goal):
     :return: dict from symbol to current weight in that goal.
     """
     avail = goal.available_balance
-    return {pos.ticker.id: pos.value/avail for pos in Position.objects.filter(goal=goal).all()}
+    return {pos.ticker.id: pos.value/avail for pos in goal.get_positions_all()}
 
 
 def metrics_changed(goal):
@@ -90,16 +96,18 @@ def build_positions(goal, weights, instruments):
     idloc = instruments.columns.get_loc('id')
     ploc = instruments.columns.get_loc('price')
     avail = goal.available_balance
-    for ix, weight in enumerate(weights):
+    for ix, weight in weights.items():
         if weight > MIN_PORTFOLIO_PCT:
-            res[instruments.iloc[ix, idloc]] = avail * weight / instruments.iloc[ix, ploc]
+            res[ix] = int(avail * weight / instruments.ix[ix, ploc])
+
+    # orderable quantitites will probably always be in single units of shares (ETFs).
     # TODO: Make sure we have landed very near to orderable quantities.
     # TODO: Make sure we are not out of drift now we have made the weights orderable.
 
     return res
 
 
-def create_request(goal, positions, reason):
+def create_request(goal, new_positions, reason, execution_provider, data_provider):
     """
     Create a MarketOrderRequest for the position changes that will take the goal's existing positions to the new
     positions specified.
@@ -109,31 +117,45 @@ def create_request(goal, positions, reason):
     :return: A MarketOrderRequest and the list of associated ExecutionRequests
     """
 
-    order = MarketOrderRequest(account=goal.account)
+    order = execution_provider.create_market_order(account=goal.account)
     requests = []
-    positions = copy.copy(positions)
+    new_positions = copy.copy(new_positions)
 
     # Change any existing positions
-    for position in Position.objects.filter(goal=goal).all():
-        new_pos = positions.pop(position.ticker.id, 0)
-        requests.append(ExecutionRequest(reason=reason,
-                                         goal=goal,
-                                         asset=position.ticker,
-                                         volume=new_pos - position.share,
-                                         order=order))
+    for position in goal.get_positions_all():
+        new_pos = new_positions.pop(position.ticker.id, 0)
+        if new_pos - position.share == 0:
+            continue
+        request = execution_provider.create_execution_request(reason=reason,
+                                                              goal=goal,
+                                                              asset=position.ticker,
+                                                              volume=new_pos - position.share,
+                                                              order=order,
+                                                              limit_price=None)
+        requests.append(request)
 
     # Any remaining new positions.
-    for tid, pos in positions.items():
-        requests.append(ExecutionRequest(reason=reason,
-                                         goal=goal,
-                                         asset=Ticker.objects.get(id=tid),
-                                         volume=pos,
-                                         order=order))
+    for tid, pos in new_positions.items():
+        if pos == 0:
+            continue
+        ticker = data_provider.get_ticker(id=tid)
+        request = execution_provider.create_execution_request(reason=reason,
+                                                              goal=goal,
+                                                              asset=ticker,
+                                                              volume=pos,
+                                                              order=order,
+                                                              limit_price=None)
+        requests.append(request)
 
     return order, requests
 
 
 def get_mix_drift(weights, constraints):
+    '''
+    :param weights:
+    :param constraints:
+    :return:
+    '''
     # Get the risk score given the portfolio mix constraints.
 
 
@@ -144,7 +166,7 @@ def process_risk(weights, min_weights):
     :param min_weights:
     :return: (changed,
     """
-    pass
+    return weights
 
 
 def perturbate_risk(min_weights, removals):
@@ -197,6 +219,7 @@ def perturbate_mix(perf_groups, min_weights):
     :return: An optimised set of weights. Always returns weights.
     """
 
+
 def get_perf_groups(goal):
     """
     - collect all assets into performance groups below:
@@ -217,12 +240,22 @@ def get_perf_groups(goal):
     # is greater than or equal to the current position.
     # As I am working back, add each lot to the appropriate result list
 
-    positions = Position.objects.filter()
-    executions = Execution.objects.filter()
+    #positions = Position.objects.filter()
+    #executions = Execution.objects.filter()
     pass
 
 
-def perturbate(goal, idata):
+def get_largest_min_weight_per_asset(held_weights,tax_weights):
+    min_weights = dict()
+    for w in held_weights.items():
+        if w[0] in tax_weights:
+            min_weights[w[0]] = max(float(tax_weights[w[0]]), float(w[1]))
+        else:
+            min_weights[w[0]] = float(w[1])
+    return min_weights
+
+
+def perturbate(goal, idata, data_provider, execution_provider):
     """
     Jiggle the goal's holdings to fit within the current metrics
     :param goal: The goal who's current holding we want to perturbate to fit the current metrics on the active_settings.
@@ -230,26 +263,28 @@ def perturbate(goal, idata):
             - weights: The new weights to use for the goal's holdings that fit within the current constraints (drift_score < 0.25).
             - reason: The reason for the perturbation. (Deposit, Withdrawal or Drift)
     """
-
     # Optimise the portfolio adding appropriate constraints so there can be no removals from assets.
     # This will use any available cash to rebalance if possible.
     held_weights = get_held_weights(goal)
-    opt_inputs = calc_opt_inputs(goal.active_settings, idata)
-    weights = optimise_up(opt_inputs, held_weights)
+    tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(goal, data_provider.get_current_date())
+    min_weights = get_largest_min_weight_per_asset(held_weights=held_weights, tax_weights=tax_min_weights)
+    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider=data_provider)
+    weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:
         # We have a withdrawal or mix drift, perturbate.
         perf_groups = get_perf_groups(goal)
-        if sum(held_weights.values() > 1.0001):
+        if sum(held_weights.values()) > 1.0001:
             # We have a withdrawal scenario
-            reason = ExecutionRequest.REASON_WITHDRAWAL
+
+            reason = execution_provider.get_execution_request(Reason.WITHDRAWAL.value)
             min_weights = perturbate_withdrawal(perf_groups)
             # Then reoptimise using the current minimum weights
             weights = optimise_up(min_weights)
             if weights is None:
                 min_weights, weights = perturbate_mix(perf_groups, min_weights)
         else:
-            reason = ExecutionRequest.REASON_DRIFT
+            reason = execution_provider.get_execution_request(Reason.DRIFT.value)
             min_weights, weights = perturbate_mix(perf_groups, held_weights)
 
         # By here we should have a satisfiable portfolio, so check and fix any risk_drift
@@ -258,34 +293,56 @@ def perturbate(goal, idata):
     else:
         # We got a satisfiable optimisation (mix metrics satisfied), now check and fix any risk drift.
         new_weights = process_risk(weights, held_weights)
+
         if new_weights == weights:
-            reason = ExecutionRequest.REASON_DEPOSIT
+            reason = execution_provider.get_execution_request(Reason.DEPOSIT.value)
         else:
-            reason = ExecutionRequest.REASON_DRIFT
+            reason = execution_provider.get_execution_request(Reason.DRIFT.value)
             weights = new_weights
 
     return weights, reason
 
 
-def rebalance(goal, idata):
+def rebalance(goal, idata, data_provider, execution_provider):
     """
     Rebalance Strategy:
     :param goal: The goal to rebalance
     :param idata: The current instrument data
     :return:
     """
-
     # If our important metrics were changed, all attempts to perturbate the old holdings is avoided, and we simply
     # apply the new desired weights.
     optimal_weights = get_setting_weights(goal.approved_settings)
     if metrics_changed(goal):
         weights = optimal_weights
-        reason = ExecutionRequest.REASON_METRIC_CHANGE
+        reason = execution_provider.get_execution_request(ExecutionProviderAbstract.Reason.METRIC_CHANGE.value)
     else:
         # The important metrics weren't changed, so try and perturbate.
-        weights, reason = perturbate(goal, idata)
+        weights, reason = perturbate(goal, idata, data_provider=data_provider, execution_provider=execution_provider)
 
         # TODO: check the difference in execution cost (including tax impact somehow) between optimal and weights,
         # TODO: use whichever better.
-    new_positions = build_positions(goal, weights, settings_instruments)
-    return create_request(goal, new_positions, reason)
+
+        # The algo should rebalance whenever the Expected Return on the rebalance is greater than the expected excecution cost
+
+        #The expected return on the rebalancing should be: The cost of not being optimal (the utility cost function of
+        #drift of the portfolio)
+        #Normally it should be consistent with the optimizing function
+        #Minimize(quad_form(x, sigma) - lam * mu * x)
+        #So the proposed function will be :
+        # markowitz_cost(diff of weights, other params)
+        #SHould I take into account the building of the tax algo?, if so, how are the trades being stored? and where?
+
+        #trades are stored in execution_provider.executions, which is a list, as ExecutionMock() or Execution() classes.
+
+        #A goal is a portfolio? If the rebalance is being made by goal it could be inneficient from a cost perspective
+
+    new_positions = build_positions(goal, weights, idata[2])
+    #idata[2] is a matrix containing latest instrument price
+    order = create_request(goal, new_positions, reason,
+                           execution_provider=execution_provider,
+                           data_provider=data_provider)
+    transaction_cost = np.sum([abs(request.volume) for request in order[1]]) * 0.005
+    # So, the rebalance could not be in place if the excecution algo might not determine how much it will cost to rebalance.
+
+    return order

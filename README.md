@@ -3,7 +3,19 @@
 
 
 ## Installation
+Ubuntu non-docker install instructions
+
+```sh
+sudo apt install python3.5 pip
+sudo pip3 install virtualenv
+cd <repository folder>
+virtualenv venv
+source venv/bin/activate
+pip3 install -r requirements/dev.txt
+```
+
 Non-Docker installation instructions (MacOS):
+
 ```sh
 brew install python3 # install python3.5
 export PATH=${PATH}:/usr/local/Cellar/python3/3.5.1/bin # check the path
@@ -22,20 +34,15 @@ numpy==1.10.4
 
 #PACKAGE INSTALL
 pip install -r devop/backend_base/requirements/dev.txt # - install packages
+```
 
-#COPY SETTINGS: Use dev instructions OR docker instructions
-cp dev_settings.py local_settings.py #create local settings from dev sample
-#OR
-cp local_settings_docker.py local_settings.py # create local settings
-
-python manage.py migrate # migrate db
-python manage.py loaddata main/fixtures/groups.json # load fixtures
-# obsoleted # python manage.py loaddata main/fixtures/goal_types.json # load fixtures
-python manage.py loaddata main/fixtures/data.json # (optional) load fixtures (data.json.gz)
-python manage.py loaddata main/fixtures/transactions.json
-python manage.py loaddata main/fixtures/goal-settings.json
-
-./manage.py runserver # run server
+Non-docker setup and run instructions
+```
+cp dev_settings.py local_settings.py  # Configure to use local dev database
+python3.5 manage.py migrate  # Make sure the DB schema is up to date
+python3.5 manage.py test  # Run the unit tests
+python3.5 manage.py runserver  # Run the application
+python3.5 manage.py help  # Get help on available commands
 ```
 
 NB.  
@@ -54,6 +61,10 @@ Install docker for whatever operating system you're running on.  https://docs.do
 
 Run this part for the initial setup and if project requirements are updated.
 
+Copy dev settings connecting to the dev_database.sqlite3 db for the local_settings.py.
+````shell
+cp docker_dev_settings_sqlite.py local_settings.py
+````
 
 Start the necessary containers to run the development server.  The -d option detaches from your current shell so its in the background, but if you want to track stdout actively in a shell, then you can just run without the -d option.
 ````shell
@@ -82,16 +93,19 @@ dej ./betasmartz/manage.py loaddata betasmartz/main/fixtures/transactions.json
 
 
 
-## Demo
-http://demo.betasmartz.com/
-http://demo.betasmartz.com/docs  
+## Dev Site
+https://dev.betasmartz.com/
+https://dev.betasmartz.com/docs
 
-credentials (username/pass):  
+**credentials (username/pass):**
 firm: legal@example.org/123
 advisor: advisor@example.org/123  
-client: obama@demo.org/123  
+client: obama@demo.org/123
 
-
+## Unit tests
+```
+python3.5 manage.py test -v3 --settings=tests.test_settings
+```
 
 ## Models
 ![models](devop/models.png)

@@ -68,10 +68,6 @@ ASSET_FEE_LEVEL_TYPES = (
     (0, 'Add'),  # Once the next level is reached, the amount form that band is added to lower bands
     (1, 'Replace')  # Once the next level is reached, the value from that level is used for the entire amount
 )
-BONDS = "BONDS"  # Bonds only Fund
-STOCKS = "STOCKS"  # Stocks only Fund
-MIXED = "MIXED"  # Mixture of stocks and bonds
-INVESTMENT_TYPES = (("BONDS", "BONDS"), ("STOCKS", "STOCKS"), ("MIXED", "MIXED"))
 SUPER_ASSET_CLASSES = (
     # EQUITY
     ("EQUITY_AU", "EQUITY_AU"),

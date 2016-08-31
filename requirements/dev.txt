@@ -1,4 +1,11 @@
 -r base.txt
 
+# testing
+django-test-without-migrations==0.4
+
+# factory boy for test fixtures
+factory-boy==2.7.0
+fake-factory==0.6.0
+
 django-jenkins==0.19.0
 coverage==4.2

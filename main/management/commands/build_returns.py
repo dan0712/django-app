@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 import pandas as pd
+from django.db.models.query import QuerySet
 from django.core.management.base import BaseCommand
 
 # The largest acceptable daily return. Anything above this will be filtered out and replaced with an average.
@@ -39,8 +40,13 @@ def get_prices(instrument, begin_date, end_date):
     :return:
     '''
     # Get the weekday prices for the instrument
-    pqs = instrument.daily_prices.filter(date__range=(begin_date - timedelta(days=1), end_date))
-    frame = pqs.to_timeseries(fieldnames=['price'], index='date').reindex(pd.bdate_range(begin_date, end_date))
+    frame = instrument.daily_prices.filter(date__range=(begin_date - timedelta(days=1), end_date))
+
+    #to_timeseries only works with django-pandas from QuerySet. We might be sending DataFrame already with different data_provider
+    if isinstance(frame, QuerySet):
+        frame = frame.to_timeseries(fieldnames=['price'], index='date')
+
+    frame = frame.reindex(pd.bdate_range(begin_date, end_date))
 
     # Remove negative prices and fill missing values
     # We replace negs with None so they are interpolated.

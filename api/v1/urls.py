@@ -9,7 +9,7 @@ from .account import views as account_views
 from .analysis import views as analysis_views
 from .retiresmartz import views as retiresmartz_views
 from .firm import views as firm_views
-
+from .address import views as address_views
 
 router = ExtendedSimpleRouter(trailing_slash=False)
 settings_router = router.register(r'settings',
@@ -41,6 +41,9 @@ urlpatterns = patterns(
     url(r'^me/?$', user_views.MeView.as_view(), name='user-me'),
     url(r'^me/profile/notifications/?$', user_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
     # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
+
+    url(r'^region/(?P<pk>\d+)/?$', address_views.RegionView.as_view(), name='region-detail'),
+    url(r'^address/(?P<pk>\d+)/?$', address_views.AddressView.as_view(), name='address-detail'),
 
     url(r'^firm/(?P<pk>\d+)/?$', firm_views.FirmSingleView.as_view(), name='firm-single'),
 

@@ -1,10 +1,11 @@
 from datetime import date
-from django.test import TestCase
 from unittest.mock import Mock
+
+from django.test import TestCase
 from statsmodels.stats.correlation_tools import cov_nearest
 
-from main.models import Region, AssetClass, View
-from portfolios.management.commands.portfolio_calculation import *
+from main.models import Region, AssetClass, View, Ticker, DailyPrice, MarketCap
+from portfolios.management.commands.portfolio_calculation_pure import *
 
 
 class PortfolioCalculationTests(TestCase):
@@ -48,27 +49,27 @@ class PortfolioCalculationTests(TestCase):
                                                 pd.Series([3.4, 3.3, 3.2, 3.1], name='USB1'),
                                                 pd.Series([1.1, 1.1, 1.1, 1.2], name='AUMS')]
         '''
-        MonthlyPrices.objects.create(symbol='ASS', price='1.1', date=date(2015, 1, 31))
-        MonthlyPrices.objects.create(symbol='ASS', price='1.2', date=date(2015, 2, 28))
-        MonthlyPrices.objects.create(symbol='ASS', price='1.3', date=date(2015, 3, 31))
-        MonthlyPrices.objects.create(symbol='ASS', price='1.4', date=date(2015, 4, 30))
-        MonthlyPrices.objects.create(symbol='USB', price='2.1', date=date(2015, 1, 31))
-        MonthlyPrices.objects.create(symbol='USB', price='2.2', date=date(2015, 2, 28))
-        MonthlyPrices.objects.create(symbol='USB', price='2.3', date=date(2015, 3, 31))
-        MonthlyPrices.objects.create(symbol='USB', price='2.4', date=date(2015, 4, 30))
-        MonthlyPrices.objects.create(symbol='USB1', price='3.4', date=date(2015, 1, 31))
-        MonthlyPrices.objects.create(symbol='USB1', price='3.3', date=date(2015, 2, 28))
-        MonthlyPrices.objects.create(symbol='USB1', price='3.2', date=date(2015, 3, 31))
-        MonthlyPrices.objects.create(symbol='USB1', price='3.1', date=date(2015, 4, 30))
-        MonthlyPrices.objects.create(symbol='AUMS', price='1.1', date=date(2015, 1, 31))
-        MonthlyPrices.objects.create(symbol='AUMS', price='1.1', date=date(2015, 2, 28))
-        MonthlyPrices.objects.create(symbol='AUMS', price='1.1', date=date(2015, 3, 31))
-        MonthlyPrices.objects.create(symbol='AUMS', price='1.2', date=date(2015, 4, 30))
+        DailyPrice.objects.create(symbol='ASS', price='1.1', date=date(2015, 1, 31))
+        DailyPrice.objects.create(symbol='ASS', price='1.2', date=date(2015, 2, 28))
+        DailyPrice.objects.create(symbol='ASS', price='1.3', date=date(2015, 3, 31))
+        DailyPrice.objects.create(symbol='ASS', price='1.4', date=date(2015, 4, 30))
+        DailyPrice.objects.create(symbol='USB', price='2.1', date=date(2015, 1, 31))
+        DailyPrice.objects.create(symbol='USB', price='2.2', date=date(2015, 2, 28))
+        DailyPrice.objects.create(symbol='USB', price='2.3', date=date(2015, 3, 31))
+        DailyPrice.objects.create(symbol='USB', price='2.4', date=date(2015, 4, 30))
+        DailyPrice.objects.create(symbol='USB1', price='3.4', date=date(2015, 1, 31))
+        DailyPrice.objects.create(symbol='USB1', price='3.3', date=date(2015, 2, 28))
+        DailyPrice.objects.create(symbol='USB1', price='3.2', date=date(2015, 3, 31))
+        DailyPrice.objects.create(symbol='USB1', price='3.1', date=date(2015, 4, 30))
+        DailyPrice.objects.create(symbol='AUMS', price='1.1', date=date(2015, 1, 31))
+        DailyPrice.objects.create(symbol='AUMS', price='1.1', date=date(2015, 2, 28))
+        DailyPrice.objects.create(symbol='AUMS', price='1.1', date=date(2015, 3, 31))
+        DailyPrice.objects.create(symbol='AUMS', price='1.2', date=date(2015, 4, 30))
         MarketCap.objects.create(value=self._mkt_caps[0], ticker=Ticker.objects.get(symbol='ASS'))
         MarketCap.objects.create(value=self._mkt_caps[1], ticker=Ticker.objects.get(symbol='USB'))
         MarketCap.objects.create(value=self._mkt_caps[2], ticker=Ticker.objects.get(symbol='USB1'))
         MarketCap.objects.create(value=self._mkt_caps[3], ticker=Ticker.objects.get(symbol='AUMS'))
-        self._covars, self._samples, self._instruments, self._masks = build_instruments()
+        self._covars, self._samples, self._instruments, self._masks = build_instruments(DataProviderDjango())
         self._expected_returns = [1.6243024031751947, 0.7059826278890338, -0.308913087739887, 0.43080261749853954]
         #print(self._covars)
         #print(self._instruments)
@@ -106,7 +107,7 @@ class PortfolioCalculationTests(TestCase):
         self.assertEqual(xs.size, (2, 1))
 
         # Create the allocation constraints and check there are only the constraints needed.
-        constraints += get_allocation_constraints(goal1, cvx_masks, xs)
+        constraints += get_metric_constraints(goal1, cvx_masks, xs)
         self.assertEqual(len(constraints), 4)
 
     def test_get_constraints_explicit_ethical(self):

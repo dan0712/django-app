@@ -46,8 +46,7 @@ class ClientTests(TestCase):
         for goal in self.betasmartz_client_account.goals:
             accounts_sum += goal.cash_balance
         expected_net_worth = float(assets_sum) + accounts_sum
-        # print(self.betasmartz_client._net_worth(), expected_net_worth)
-        self.assertTrue(round(self.betasmartz_client.net_worth, 10) == round(expected_net_worth, 10))
+        self.assertEqual(round(self.betasmartz_client.net_worth, 10), round(expected_net_worth, 10))
 
         # expecting client.net_worth using @property to have cached this initial result
         # lets make sure the underlying client._net_worth() function is tracking the right info
@@ -55,5 +54,4 @@ class ClientTests(TestCase):
         self.betasmartz_client_account.cash_balance += 2000.0
         self.betasmartz_client_account.save()
         expected_net_worth += 2000.0
-        # print(self.betasmartz_client._net_worth(), expected_net_worth)
-        self.assertTrue(round(self.betasmartz_client._net_worth(), 10) == round(expected_net_worth, 10))
+        self.assertEqual(round(self.betasmartz_client._net_worth(), 10), round(expected_net_worth, 10))

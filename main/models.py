@@ -1,6 +1,6 @@
+from datetime import datetime
 import logging
 import uuid
-from datetime import datetime, date
 from enum import Enum, unique
 
 import scipy.stats as st
@@ -10,7 +10,7 @@ from django.contrib.auth.models import AbstractBaseUser, Group, \
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
-    MinValueValidator, RegexValidator, ValidationError)
+                                    MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
@@ -171,6 +171,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
+class InvestmentType(models.Model):
+    name = models.CharField(max_length=255,
+                            validators=[RegexValidator(
+                                regex=r'^[0-9A-Z_]+$',
+                                message="Invalid character only accept (0-9a-zA-Z_) ")],
+                            unique=True)
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class AssetClass(models.Model):
     name = models.CharField(
         max_length=255,
@@ -187,14 +199,7 @@ class AssetClass(models.Model):
     tickers_explanation = models.TextField(blank=True, default='', null=False)
     display_name = models.CharField(max_length=255, blank=False, null=False,
                                     db_index=True)
-    # TODO: should be converted to Integer
-    investment_type = models.CharField(max_length=255,
-                                       choices=constants.INVESTMENT_TYPES,
-                                       blank=False, null=False, db_index=True)
-    # TODO: should be converted to Integer
-    super_asset_class = models.CharField(max_length=255,
-                                         choices=constants.SUPER_ASSET_CLASSES,
-                                         db_index=True)
+    investment_type = models.ForeignKey(InvestmentType, related_name='asset_classes')
 
     def save(self,
              force_insert=False,
@@ -269,51 +274,8 @@ class PortfolioSet(models.Model):
     asset_classes = models.ManyToManyField(AssetClass, related_name='portfolio_sets')
     risk_free_rate = models.FloatField()
 
-    # Also has 'views' from View model.
-
-    @property
-    def stocks_and_bonds(self):
-        has_bonds = False
-        has_stocks = False
-
-        for asset_class in self.asset_classes.all():
-            if "EQUITY_" in asset_class.super_asset_class:
-                has_stocks = True
-            if "FIXED_INCOME_" in asset_class.super_asset_class:
-                has_bonds = True
-
-        if has_bonds and has_stocks:
-            return "both"
-        elif has_stocks:
-            return "stocks"
-        else:
-            return "bonds"
-
-    @property
-    def regions(self):
-        def get_regions(x):
-            return x.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
-        return [get_regions(asset_class.super_asset_class) for asset_class in self.asset_classes.all()]
-
-    @property
-    def regions_currencies(self):
-        rc = {}
-
-        def get_regions_currencies(asset):
-            region = asset.super_asset_class.replace("EQUITY_", "").replace("FIXED_INCOME_", "")
-            if region not in rc:
-                rc[region] = "AUD"
-            ticker = asset.tickers.filter(ordering=0).first()
-            if ticker:
-                if ticker.currency != "AUD":
-                    rc[region] = ticker.currency
-            else:
-                logger.warn("Asset class: {} has no tickers.".format(asset.name))
-
-        for asset_class in self.asset_classes.all():
-            get_regions_currencies(asset_class)
-        return rc
-
+    def get_views_all(self):
+        return self.views.all()
     def __str__(self):
         return self.name
 
@@ -894,7 +856,8 @@ class Ticker(FinancialInstrument):
 
     @property
     def is_stock(self):
-        return self.asset_class.investment_type == constants.STOCKS
+        # InvestmentType stocks id = 2
+        return self.asset_class.investment_type_id == 2
 
     @property
     def is_core(self):
@@ -1142,8 +1105,11 @@ class Portfolio(models.Model):
     # Also has 'items' field from PortfolioItem
 
     def __str__(self):
-        result = u'Portfolio #%s' % (self.id)
+        result = u'Portfolio #%s' % self.id
         return result
+
+    def get_items_all(self):
+        return self.items.all()
 
 
 class PortfolioItem(models.Model):
@@ -1166,6 +1132,12 @@ class GoalSetting(models.Model):
     def __str__(self):
         result = u'Goal Settings #%s (%s)' % (self.id, self.portfolio)
         return result
+
+    def get_metrics_all(self):
+        return self.metric_group.metrics.all()
+
+    def get_portfolio_items_all(self):
+        return self.portfolio.items.all()
 
     @property
     def goal(self):
@@ -1280,6 +1252,9 @@ class Goal(models.Model):
 
     def __str__(self):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
+
+    def get_positions_all(self):
+        return Position.objects.filter(goal=self).all()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

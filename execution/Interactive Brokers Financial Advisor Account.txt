@@ -1,0 +1,32 @@
+IB does not have native python API. We can use https://github.com/blampe/IbPy
+
+In IB, we can use Financial Advisor account. 
+
+We should use Account Profile Allocation Method - Shares - where we specify number of shares to be executed for each subaccount. 
+
+http://interactivebrokers.github.io/tws-api/financial_advisor.html#allocation_methods_profiles&gsc.tab=0
+
+we input it as a single order.
+Example at the bottom: http://interactivebrokers.github.io/tws-api/financial_advisor_methods_and_orders.html#financial_advisor_orders&gsc.tab=0
+
+We probably should generate similar XML and generate profile for each single order to be executed (as each stock will have different quantitites distributed):
+
+        public static string FaOneProfile = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            + "<ListOfAllocationProfiles>"
+            + "<AllocationProfile>"
+                + "<name>Percent_60_40</name>"
+                + "<type>1</type>"
+                + "<ListOfAllocations varName=\"listOfAllocations\">"
+                    + "<Allocation>"
+                        //Replace with your own accountIds
+                        + "<acct>DU119915</acct>"
+                        + "<amount>60.0</amount>"
+                    + "</Allocation>"
+                    + "<Allocation>"
+                        //Replace with your own accountIds
+                        + "<acct>DU119916</acct>"
+                        + "<amount>40.0</amount>"
+                    + "</Allocation>"
+                + "</ListOfAllocations>"
+            + "</AllocationProfile>"
+        + "</ListOfAllocationProfiles>";
