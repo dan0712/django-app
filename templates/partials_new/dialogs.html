@@ -24,5 +24,13 @@
       logoutUrl: "{% url "logout" %}"
     });
     autoLogoutModal.init();
+    $(document).ajaxSuccess(function(event, xhr, settings) {
+      try {
+        response = JSON.parse(xhr.responseText);
+        autoLogoutModal.updateExpirationTime(response.meta.session_expires_on);
+      } catch (e) {
+        console.error("Cannot parse response\n" + xhr.responseText);
+      }
+    });
   }());
 </script>

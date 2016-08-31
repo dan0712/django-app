@@ -1,58 +1,82 @@
 betasmartz.AutoLogoutModal = function (urls) {
     var $elem = $("#sessionExpiresModal"),
-        expiresAt = $elem.data("sessionExpiresAt"),
         showWhenSecondsLeft = 60,
-        secondsLeft,
         self = this,
-        updateTimer = null,
+
+        time = {
+            _expiresAt: null,
+
+            get expiresAt() {
+                if (this._expiresAt == null) {
+                    this.expiresAt = $elem.data("sessionExpiresAt");
+                }
+                return this._expiresAt;
+            },
+            set expiresAt(dateString) {
+                if (dateString) {
+                    this._expiresAt = new Date(dateString);
+                }
+            },
+
+            get secondsLeft() {
+                if (this.expiresAt) {
+                    return Math.floor((this.expiresAt - new Date()) / 1000)
+                }
+            }
+        },
+
+        timer = {
+            _ref: undefined,
+
+            on: function () {
+                if (this._ref == undefined) {
+                    this._ref = setInterval(setTime, 1000);
+                } else {
+                    console.error('Attempted to enable working timer!');
+                }
+            },
+
+            off: function () {
+                if (this._ref) {
+                    this._ref = clearTimeout(this._ref);
+                } else {
+                    console.error('Attempted to shutdown disabled timer!');
+                }
+            }
+        },
 
         keepAliveUrl = urls.keepAliveUrl,
         logoutUrl = urls.logoutUrl;
 
-    this.init = function () {
-        if (secondsLeft) {
-            setTimeout(function () {
-                $elem.modal('show');
-            }, (secondsLeft - showWhenSecondsLeft) * 1000);
-        }
-    };
-    this.setTime = function () {
-        secondsLeft = Math.floor((new Date(expiresAt) - (new Date())) / 1000);
-        $elem.find(".time-left").html(secondsLeft);
-    };
-    this.countdownOn = function () {
-        if (updateTimer == null) {
-            updateTimer = setInterval(self.setTime, 1000);
-        } else {
-            console.error('Attempted to enable working timer!');
-        }
-    };
-    this.countdownOff = function () {
-        if (updateTimer) {
-            clearTimeout(updateTimer);
-        } else {
-            console.error('Attempted to shutdown disabled timer!');
-        }
-    };
-
-    $elem.find(".stay-logged-in").click(function () {
-        $.get(keepAliveUrl, function (r) {
-            expiresAt = new Date(r.meta.session_expires_on);
-            $elem.data("sessionExpiresAt", r.meta.session_expires_on);
-        });
-    });
-    $elem.find(".do-logout").click(function () {
-        window.location = logoutUrl;
-    });
-
-    if (expiresAt) {
-        this.setTime();
-
-        $elem.on('hidden.bs.modal', function () {
-            self.countdownOff();
-        });
-        $elem.on('show.bs.modal', function () {
-            self.countdownOn();
-        })
+    function setTime() {
+        $elem.find(".time-left").html(time.secondsLeft);
     }
+
+    this.init = function () {
+        if (time.secondsLeft) {
+            setTimeout(function () {
+                setTime();
+                $elem.modal('show');
+            }, (time.secondsLeft - showWhenSecondsLeft) * 1000);
+        }
+    };
+    this.updateExpirationTime = function (dateString) {
+        time.expiresAt = dateString;
+        self.init();
+    };
+
+    $elem
+        .find(".stay-logged-in").click(function () {
+            $.get(keepAliveUrl, function (r) {
+                expiresAt = new Date(r.meta.session_expires_on);
+                $elem.data("sessionExpiresAt", r.meta.session_expires_on);
+            });
+        }).end()
+
+        .find(".do-logout").click(function () {
+            window.location = logoutUrl;
+        }).end()
+
+        .on('hidden.bs.modal', timer.off)
+        .on('show.bs.modal', timer.on);
 };
