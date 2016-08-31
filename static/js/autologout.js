@@ -26,21 +26,26 @@ betasmartz.AutoLogoutModal = function (urls) {
         },
 
         timer = {
-            _ref: undefined,
+            _updateTimer: undefined,
+            _logoutTimer: undefined,
 
             on: function () {
-                if (this._ref == undefined) {
-                    this._ref = setInterval(setTime, 1000);
+                if (this._updateTimer == undefined) {
+                    this._updateTimer = setInterval(setTime, 1000);
+                    this._logoutTimer = setTimeout(logout, time.secondsLeft * 1000);
                 } else {
                     console.error('Attempted to enable working timer!');
                 }
             },
 
             off: function () {
-                if (this._ref) {
-                    this._ref = clearTimeout(this._ref);
+                if (this._updateTimer) {
+                    this._updateTimer = clearTimeout(this._updateTimer);
                 } else {
                     console.error('Attempted to shutdown disabled timer!');
+                }
+                if (this._logoutTimer) {
+                    clearTimeout(this._logoutTimer);
                 }
             }
         },
@@ -50,6 +55,10 @@ betasmartz.AutoLogoutModal = function (urls) {
 
     function setTime() {
         $elem.find(".time-left").html(time.secondsLeft);
+    }
+
+    function logout() {
+        window.location = logoutUrl;
     }
 
     this.init = function () {
@@ -73,9 +82,7 @@ betasmartz.AutoLogoutModal = function (urls) {
             });
         }).end()
 
-        .find(".do-logout").click(function () {
-            window.location = logoutUrl;
-        }).end()
+        .find(".do-logout").click(logout).end()
 
         .on('hidden.bs.modal', timer.off)
         .on('show.bs.modal', timer.on);
