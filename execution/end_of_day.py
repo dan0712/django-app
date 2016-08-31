@@ -79,6 +79,8 @@ def main(options):
     con.request_account_summary()
     long_sleep()
     ib_account_cash.update(con.ib_account_cash)
+    con.request_market_depth('GOOG')
+    long_sleep()
     reconcile_cash_client_accounts()
 
 

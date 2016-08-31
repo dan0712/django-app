@@ -17,8 +17,6 @@ class IBroker(ABC):
     def request_account_summary(self):
         pass
 
-
-
-
-
-
+    @abstractmethod
+    def request_market_depth(self, ticker):
+        pass

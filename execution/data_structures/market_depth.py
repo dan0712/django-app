@@ -1,0 +1,40 @@
+
+
+class SingleLevelMarketDepth(object):
+    def __init__(self, bid=-1, ask=-1, bid_volume=-1, ask_volume=-1):
+        self.bid = bid
+        self.ask = ask
+        self.bid_volume = bid_volume
+        self.ask_volume = ask_volume
+
+    def __str__(self):
+        return "bidVolume: %s, bid: %s, ask: %s, askVolume: %s" % (self.bid_volume,
+                                                                   self.bid,
+                                                                   self.ask,
+                                                                   self.ask_volume)
+
+    __repr__ = __str__
+
+
+class MarketDepth(object):
+    def __init__(self, max_level=10):
+        self.levels = [SingleLevelMarketDepth() for i in range(0, max_level)]
+
+    @property
+    def depth(self):
+        return len(self.levels)
+
+    def get_level(self, level=0):
+        if len(self.levels) > level:
+            return self.levels[level]
+        else:
+            return SingleLevelMarketDepth()
+
+    def add_level(self, level, single_level_depth):
+        self.levels[level] = single_level_depth
+
+    def __repr__(self):
+        output = ""
+        for i in range(0, len(self.levels)):
+            output += "level %s: %s\n" % (i, self.levels[i])
+        return output

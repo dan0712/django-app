@@ -4,13 +4,13 @@ from execution.end_of_day import *
 import unittest
 from unittest.mock import Mock
 from execution.broker.ibroker import IBroker
-
+from execution.data_structures.market_depth import MarketDepth
 
 class BaseTest(TestCase):
 
     def setUp(self):
         self.con = Mock(IBroker)
-        self.con.return_value = True
+        self.con.connect.return_value = True
         short_sleep()
 
     def test_ib_connect(self):
@@ -44,6 +44,14 @@ class BaseTest(TestCase):
         account.cash_balance = 100
         ib_account_cash[account.account_id] = 900
         self.assertRaises(Exception, reconcile_cash_client_account(account))
+
+    def test_market_depth(self):
+        self.con.request_market_depth('GOOG')
+        market_data = MarketDepth()
+        self.assertAlmostEquals(market_data.levels[0].bid, -1)
+        self.assertEqual(market_data.depth, 10)
+
+
 
 
 
