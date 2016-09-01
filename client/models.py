@@ -167,7 +167,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     @property
     def total_earnings(self):
-        return -1
+        return sum(a.total_earnings for a in self.accounts)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -357,7 +357,7 @@ class ClientAccount(models.Model):
 
     @property
     def total_earnings(self):
-        return -1
+        return sum(g.total_earnings for g in self.goals)
 
     @property
     def stocks_percentage(self):
