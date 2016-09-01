@@ -4,7 +4,7 @@ from execution.end_of_day import *
 import unittest
 from unittest.mock import Mock
 from execution.broker.ibroker import IBroker
-from execution.data_structures.market_depth import MarketDepth
+from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
 import numpy as np
 
 class BaseTest(TestCase):
@@ -12,11 +12,20 @@ class BaseTest(TestCase):
     def setUp(self):
         self.con = Mock(IBroker)
         self.con.connect.return_value = True
-        short_sleep()
+        self.con.requesting_market_depth.return_value = False
+
+        self.con.market_data = dict()
+        self.con.market_data['GOOG'] = MarketDepth()
+
+        single_level = SingleLevelMarketDepth()
+        single_level.bid = 1
+        single_level.ask = 2
+        single_level.bid_volume = 1
+        single_level.ask_volume = 1
+        self.con.market_data['GOOG'].add_level(0, single_level)
 
     def test_ib_connect(self):
         connected = self.con.connect()
-        short_sleep()
         self.assertTrue(connected)
 
     def test_change_account_cash(self):
@@ -48,14 +57,14 @@ class BaseTest(TestCase):
 
     def test_market_depth(self):
         self.con.request_market_depth('GOOG')
-        self.con.requesting_market_depth.return_value = False
 
         while self.con.requesting_market_depth():
             short_sleep()
 
-        market_data = MarketDepth()
-        self.assertTrue(np.isnan(market_data.levels[0].bid))
-        self.assertEqual(market_data.depth, 10)
+        self.assertAlmostEquals(self.con.market_data['GOOG'].levels[0].get_mid(), 1.5)
+        self.assertEqual(self.con.market_data['GOOG'].depth, 10)
+
+
 
 
 

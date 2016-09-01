@@ -20,6 +20,10 @@ class SingleLevelMarketDepth(object):
         else:
             return False
 
+    def get_mid(self):
+        if self.is_complete:
+            return (self.bid + self.ask)/2.0
+
     __repr__ = __str__
 
 
