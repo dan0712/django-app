@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-import datetime
-
 import factory
 
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from django.contrib.auth.models import Group
 
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \

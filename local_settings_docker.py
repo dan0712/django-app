@@ -10,6 +10,8 @@ if environment in ["production", "demo"]:
 else:
     SITE_URL = "http://{}.betasmartz.com".format(environment)
     DEBUG = True
+    TEMPLATE_DEBUG = True
+
 
 DATABASES = {
     'default': {

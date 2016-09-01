@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load filters %}
-{% load static %}
+{% load static from staticfiles %}
+
 <nav class="navbar navbar-inverse navbar-static-top m-b-0">
   <div class="container">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -13,8 +14,14 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="#">
-          <img alt="{{ firm.name|default:"BetaSmartz Institutional" }}"
-               src="{% static firm.logo.url|default:'images/white_logo.png' %}">
+          <!-- url check to work around staticfiles bug on file check -->
+          {% if firm.logo %}
+            <img alt="{{ firm.name|default:"BetaSmartz Institutional" }}"
+                 src="{{ firm.logo.url }}">
+          {% else %}
+            <img alt="BetaSmartz Institutional"
+                 src="{% static 'images/white_logo.png' %}">
+          {% endif %}
         </a>
       </div>
 
