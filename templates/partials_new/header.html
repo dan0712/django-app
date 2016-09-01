@@ -17,7 +17,7 @@
           <!-- url check to work around staticfiles bug on file check -->
           {% if firm.logo %}
             <img alt="{{ firm.name|default:"BetaSmartz Institutional" }}"
-                 src="{% static firm.logo.url %}">
+                 src="{{ firm.logo.url }}">
           {% else %}
             <img alt="BetaSmartz Institutional"
                  src="{% static 'images/white_logo.png' %}">
