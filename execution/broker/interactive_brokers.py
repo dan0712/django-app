@@ -101,6 +101,12 @@ class InteractiveBrokers(IBroker):
         short_sleep()
         self.connection.cancelMktData(ticker_id)
 
+    def requesting_market_depth(self):
+        if len(self._requested_tickers) > 0:
+            return True
+        else:
+            return False
+
     def _update_account_value(self, msg):
         """Handles of server replies"""
         if msg is not None and msg.tag == 'TotalCashValue':
@@ -134,6 +140,9 @@ class InteractiveBrokers(IBroker):
         elif msg.field == 3:
             print('%s: askVolume: %s' % (ticker, msg.size))
             self.market_data[ticker].levels[0].ask_volume = msg.size
+
+        if self.market_data[ticker].levels[0].is_complete:
+            self._requested_tickers.pop(msg.tickerId, None)
 
     def _reply_handler(self, msg):
         """Handles of server replies"""

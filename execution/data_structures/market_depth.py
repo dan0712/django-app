@@ -1,7 +1,7 @@
-
+import numpy as np
 
 class SingleLevelMarketDepth(object):
-    def __init__(self, bid=-1, ask=-1, bid_volume=-1, ask_volume=-1):
+    def __init__(self, bid=float('nan'), ask=float('nan'), bid_volume=float('nan'), ask_volume=float('nan')):
         self.bid = bid
         self.ask = ask
         self.bid_volume = bid_volume
@@ -12,6 +12,13 @@ class SingleLevelMarketDepth(object):
                                                                    self.bid,
                                                                    self.ask,
                                                                    self.ask_volume)
+
+    @property
+    def is_complete(self):
+        if not np.isnan(self.bid) and not np.isnan(self.ask) and not np.isnan(self.bid_volume) and not np.isnan(self.ask_volume):
+            return True
+        else:
+            return False
 
     __repr__ = __str__
 
@@ -36,5 +43,5 @@ class MarketDepth(object):
     def __repr__(self):
         output = ""
         for i in range(0, len(self.levels)):
-            output += "level %s: %s\n" % (i, self.levels[i])
+            output += "\nlevel %s: %s" % (i, self.levels[i])
         return output

@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import Mock
 from execution.broker.ibroker import IBroker
 from execution.data_structures.market_depth import MarketDepth
+import numpy as np
 
 class BaseTest(TestCase):
 
@@ -47,8 +48,13 @@ class BaseTest(TestCase):
 
     def test_market_depth(self):
         self.con.request_market_depth('GOOG')
+        self.con.requesting_market_depth.return_value = False
+
+        while self.con.requesting_market_depth():
+            short_sleep()
+
         market_data = MarketDepth()
-        self.assertAlmostEquals(market_data.levels[0].bid, -1)
+        self.assertTrue(np.isnan(market_data.levels[0].bid))
         self.assertEqual(market_data.depth, 10)
 
 

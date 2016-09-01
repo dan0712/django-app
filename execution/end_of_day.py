@@ -79,13 +79,16 @@ def main(options):
     con.request_account_summary()
     long_sleep()
     ib_account_cash.update(con.ib_account_cash)
+
     con.request_market_depth('GOOG')
-    long_sleep()
+    while con.requesting_market_depth():
+        short_sleep()
+
     reconcile_cash_client_accounts()
 
 
 if __name__ == '__main__':
-    try:
+    #try:
         main(get_options())
-    except:
+    #except:
         print("exception")
