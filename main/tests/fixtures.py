@@ -7,7 +7,7 @@ from pinax.eventlog.models import Log
 
 import address.models as ad
 from client.models import Client, ClientAccount, RiskProfileAnswer,\
-    RiskProfileGroup, RiskProfileQuestion
+    RiskProfileGroup, RiskProfileQuestion, IBAccount
 from main.constants import ACCOUNT_TYPE_PERSONAL, SUPER_ASSET_CLASSES
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
@@ -276,6 +276,13 @@ class Fixture1:
         Fixture1.personal_account1().risk_profile_responses.add(Fixture1.risk_profile_answer2a())
 
     @classmethod
+    def ib_account(cls) -> IBAccount:
+        params = {
+            'ib_account': 'DU299694',
+        }
+        return IBAccount.objects.get_or_create(defaults=params)[0]
+
+    @classmethod
     def personal_account1(cls) -> ClientAccount:
         params = {
             'account_type': ACCOUNT_TYPE_PERSONAL,
@@ -283,7 +290,7 @@ class Fixture1:
             'default_portfolio_set': Fixture1.portfolioset1(),
             'risk_profile_group': Fixture1.risk_profile_group1(),
             'confirmed': True,
-            'account_id': 'DU299694'
+            'ib_account': Fixture1.ib_account()
         }
         return ClientAccount.objects.get_or_create(id=1, defaults=params)[0]
 

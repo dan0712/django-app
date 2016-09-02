@@ -42,7 +42,7 @@ def reconcile_cash_client_account(account):
         for goal in goals:
             goals_cash += goal.cash_balance
 
-        ib_cash = ib_account_cash[account.account_id]
+        ib_cash = ib_account_cash[account.ib_account.ib_account]
 
         difference = ib_cash - (account_cash + goals_cash)
         if difference > 0:
