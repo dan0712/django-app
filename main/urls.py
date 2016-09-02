@@ -49,7 +49,7 @@ urlpatterns_firm = patterns(
 urlpatterns_client = patterns('',
     # The React code should pick up this route.
     # If it doesn't, there is a configuration problem.
-    url(r'^(?P<pk>\d+)$', login_required(ClientAppMissing.as_view()), name='page1'),
+    url(r'^(?P<pk>\d+)$', login_required(ClientAppMissing.as_view()), name='page'),
     url(r'^(?P<pk>\d+)/app$', login_required(ClientAppMissing.as_view()), name='app'),
 )
 
