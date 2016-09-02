@@ -3,6 +3,19 @@
 {% load static from staticfiles %}
 
 
+{% block foot_js %}
+<script type="application/javascript" src="{% static "js/widgets.js" %}"></script>
+<script type="application/javascript">
+  $(function () {
+    betasmartz.widgets.searchTable("#clientList", "#search", {
+      noSort: [5],
+      noSearch: [5],
+    });
+  });
+</script>
+{% endblock %}
+
+
 {% block main_content %}
   <div class="container">
     <div class="row">
@@ -32,10 +45,10 @@
         </div>
         <div class="col-sm-4 col-sm-offset-4">
           <div class="form-group">
-            <!-- TODO: refactor as django_filter form field -->
             <div class="input-group">
-              <span class="input-group-addon" id="search"><span class="icon icon-magnifying-glass"></span></span>
-              <input type="search" name="search" placeholder="Search clients..." value="{{ search }}" class="form-control" onchange="this.form.submit();" aria-describedby="search">
+              <span class="input-group-addon"><span class="icon icon-magnifying-glass"></span></span>
+              <input type="search" placeholder="Search clients..." id="search"
+                     class="form-control" aria-describedby="search">
             </div>
           </div>
         </div>
@@ -44,7 +57,7 @@
 
     <div class="panel panel-default">
       <div class="table-responsive">
-        <table class="table">
+        <table class="table" id="clientList">
           <thead>
             <tr>
               <th>#</th>
