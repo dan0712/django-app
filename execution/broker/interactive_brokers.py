@@ -46,7 +46,7 @@ class Object(object):
 
 def get_options():
     opts = Object()
-    opts.port = 7497
+    opts.port = 7496
     opts.host = 'localhost'
     opts.clientid = 0
     opts.verbose = 0
@@ -117,8 +117,7 @@ class InteractiveBrokers(IBroker):
     def _reply_managed_accounts(self, msg):
         print("%s, %s " % (msg.typeName, msg))
         accounts = msg.accountsList.split(',')
-        for account in accounts:
-            self.ib_account_list.append(account)
+        self.ib_account_list = [a for a in accounts if a]
 
     def _reply_realtime_snapshot(self, msg):
         if msg.field not in range(0, 4):
