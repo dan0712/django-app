@@ -46,10 +46,11 @@ urlpatterns_firm = patterns(
     url(r'^supervisors/(?P<pk>\d+)/delete', FirmSupervisorDelete.as_view(), name='supervisors-delete'),
 )
 
-urlpatterns_client = patterns(
+urlpatterns_client = patterns('',
     # The React code should pick up this route.
     # If it doesn't, there is a configuration problem.
-    '', url(r'^(?P<pk>\d+)/app', login_required(ClientAppMissing.as_view()), name='app'),
+    url(r'^(?P<pk>\d+)$', login_required(ClientAppMissing.as_view()), name='page1'),
+    url(r'^(?P<pk>\d+)/app$', login_required(ClientAppMissing.as_view()), name='app'),
 )
 
 urlpatterns = patterns(
