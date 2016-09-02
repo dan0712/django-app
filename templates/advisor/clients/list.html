@@ -1,7 +1,6 @@
 {% extends "layouts_new/base.html" %}
-{% load i18n %}
-{% load filters %}
-{% load static %}
+{% load i18n filters %}
+{% load static from staticfiles %}
 
 
 {% block main_content %}
@@ -81,40 +80,5 @@
         </table>
       </div>
     </div>
-
-    {% comment %}
-    <table>
-        <thead>
-        <tr>
-            <th><a class="{% if sort_col == "full_name" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=full_name&amp;sort_dir={{ sort_inverse }}">Name</a></th>
-            <th><a class="{% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total Balance</a></th>
-            <th><a class="{% if sort_col == "email_address" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=email_address&amp;sort_dir={{ sort_inverse }}">Email Address</a></th>
-            <th>Adviser Relationship</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for client in clients %}
-             <tr>
-                 <td><a href="/advisor/client/{{ client.0 }}">{{ client.1 }}</a></td>
-                 <td>${{ client.2  |bs_big_number}}</td>
-                 <td><a href="mailto:{{ client.3 }}">{{ client.3 }}</a></td>
-                 <td>{{ client.4 }}</td>
-            </tr>
-        {% endfor %}
-
-        </tbody>
-
-      <div class="pager">
-      </div>
-    </ul>
-    {% endcomment %}
-
   </div>
 {% endblock %}
-
-<!-- TODO: remove it later -->
-{% block main_js %}{% static 'js/client.js' %}{% endblock %}
-
-
-
-
