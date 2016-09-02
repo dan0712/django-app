@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from main.models import RecurringTransaction
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class BaseTest(TestCase):

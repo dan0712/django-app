@@ -4,11 +4,12 @@ from pinax.eventlog.models import Log
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from main.event import Event
-from main.models import ActivityLogEvent, MarketOrderRequest, EventMemo, ActivityLog
-from main.tests.fixtures import Fixture1
-from .factories import GroupFactory
 from common.constants import GROUP_SUPPORT_STAFF
+from main.event import Event
+from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
+    MarketOrderRequest
+from main.tests.fixture import Fixture1
+from .factories import GroupFactory
 
 
 class GoalTests(APITestCase):

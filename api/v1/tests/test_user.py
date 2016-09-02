@@ -1,13 +1,13 @@
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
-
-from main.models import User
-from main.tests.fixtures import Fixture1
-from main.constants import ACCOUNT_TYPES
 from django.core.urlresolvers import reverse
-from .factories import UserFactory, GroupFactory, ClientFactory, RiskProfileGroupFactory, \
-    AccountTypeRiskProfileGroupFactory, AddressFactory
+from rest_framework import status
+from rest_framework.test import APITestCase
+
 from common.constants import GROUP_SUPPORT_STAFF
+from main.constants import ACCOUNT_TYPES
+from main.models import User
+from main.tests.fixture import Fixture1
+from .factories import AccountTypeRiskProfileGroupFactory, ClientFactory, \
+    GroupFactory, UserFactory
 
 
 class UserTests(APITestCase):

@@ -1,15 +1,14 @@
+from ujson import loads
 from unittest import skip
 
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from ujson import loads
-
-from main.models import RetirementPlan
-from main.tests.fixtures import Fixture1
-from .factories import GroupFactory
 from common.constants import GROUP_SUPPORT_STAFF
+from main.models import RetirementPlan
+from main.tests.fixture import Fixture1
+from .factories import GroupFactory
 
 
 class RetiresmartzTests(APITestCase):

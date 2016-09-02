@@ -1,17 +1,19 @@
-from main.tests.fixtures import Fixture1
 from datetime import datetime, timedelta
-import pandas as pd
 
+import pandas as pd
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from random import randint, random
 from statsmodels.stats.correlation_tools import cov_nearest
-from main.models import Region, AssetClass, Ticker, DailyPrice, MarketCap, MarketIndex, GoalMetric, MarkowitzScale, \
-    Portfolio, PortfolioItem, InvestmentType
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
-from portfolios.management.commands.providers.execution_providers.execution_provider_django import ExecutionProviderDjango
+
+from main.models import AssetClass, DailyPrice, GoalMetric, InvestmentType, \
+    MarketCap, MarketIndex, MarkowitzScale, Portfolio, PortfolioItem, Region, \
+    Ticker
+from main.tests.fixture import Fixture1
 from portfolios.management.commands.portfolio_calculation_pure import build_instruments, calculate_portfolio, \
     calculate_portfolios
-from django.contrib.contenttypes.models import ContentType
-from random import random, randint
+from portfolios.management.commands.providers.execution_providers.execution_provider_django import ExecutionProviderDjango
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 
 
 class BaseTest(TestCase):

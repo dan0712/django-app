@@ -1,4 +1,4 @@
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 from django.test import TestCase
 from execution.end_of_day import *
 import unittest

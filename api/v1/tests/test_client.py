@@ -1,13 +1,12 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from main.models import ExternalAsset, User
-from .factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
-                       RegionFactory, AddressFactory, RiskProfileGroupFactory, \
-                       AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory, \
-                       GoalFactory
-from main.constants import ACCOUNT_TYPE_PERSONAL
 from common.constants import GROUP_SUPPORT_STAFF
+from main.constants import ACCOUNT_TYPE_PERSONAL
+from main.models import ExternalAsset, User
+from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
+    ClientAccountFactory, ClientFactory, ExternalAssetFactory, GoalFactory, \
+    GroupFactory, RegionFactory, RiskProfileGroupFactory, UserFactory
 
 
 class ClientTests(APITestCase):
