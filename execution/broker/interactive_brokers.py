@@ -4,6 +4,7 @@ from ib.ext.Contract import Contract
 from ib.ext.ExecutionFilter import ExecutionFilter
 from ib.ext.Order import Order
 from ib.ext.ScannerSubscription import ScannerSubscription
+from ib.ext.TickType import TickType
 from ib.lib.logger import logger as basicConfig
 from ib.opt import ibConnection, message
 from time import sleep, strftime, time
@@ -128,16 +129,16 @@ class InteractiveBrokers(IBroker):
             self.market_data[ticker] = MarketDepth()
 
         # https://www.interactivebrokers.com/en/software/api/apiguide/tables/tick_types.htm
-        if msg.field == 1:
+        if msg.field == TickType.BID:
             print('%s: bid: %s' % (ticker, msg.price))
             self.market_data[ticker].levels[0].bid = msg.price
-        elif msg.field == 2:
+        elif msg.field == TickType.ASK:
             print('%s: ask: %s' % (ticker, msg.price))
             self.market_data[ticker].levels[0].ask = msg.price
-        elif msg.field == 0:
+        elif msg.field == TickType.BID_SIZE:
             print('%s: bidVolume: %s' % (ticker, msg.size))
             self.market_data[ticker].levels[0].bid_volume = msg.size
-        elif msg.field == 3:
+        elif msg.field == TickType.ASK_SIZE:
             print('%s: askVolume: %s' % (ticker, msg.size))
             self.market_data[ticker].levels[0].ask_volume = msg.size
 

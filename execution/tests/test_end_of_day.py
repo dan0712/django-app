@@ -20,8 +20,8 @@ class BaseTest(TestCase):
         single_level = SingleLevelMarketDepth()
         single_level.bid = 1
         single_level.ask = 2
-        single_level.bid_volume = 1
-        single_level.ask_volume = 1
+        single_level.bid_volume = 50
+        single_level.ask_volume = 100
         self.con.market_data['GOOG'].add_level(0, single_level)
 
     def test_ib_connect(self):
@@ -64,6 +64,8 @@ class BaseTest(TestCase):
         self.assertAlmostEquals(self.con.market_data['GOOG'].levels[0].get_mid(), 1.5)
         self.assertEqual(self.con.market_data['GOOG'].depth, 10)
 
+        self.assertAlmostEquals(self.con.market_data['GOOG'].levels[0].bid_volume, 50)
+        self.assertAlmostEquals(self.con.market_data['GOOG'].levels[0].ask_volume, 100)
 
 
 
