@@ -47,6 +47,12 @@ class SessionExpireMiddleware:
         SessionExpire(request).check()
 
 
+def session_expire_context_processor(request):
+    return {
+        'session_expires_at': SessionExpire(request).expire_time(),
+    }
+
+
 @receiver(user_logged_in)
 def set_session_expiration_time(sender, request, **kwargs):
     SessionExpire(request).keep_alive()

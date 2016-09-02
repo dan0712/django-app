@@ -1,18 +1,50 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from api.v1.address.serializers import AddressSerializer
+from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import ExternalAsset, ExternalAssetTransfer
 from client.models import Client
 
-from ..user.serializers import FieldUserSerializer
+from ..user.serializers import UserFieldSerializer
 
 
 class ClientSerializer(ReadOnlyModelSerializer):
-    user = FieldUserSerializer()
+    user = UserFieldSerializer()
+    advisor = AdvisorFieldSerializer()
+    residential_address = AddressSerializer()
 
     class Meta:
         model = Client
+
+
+class ClientFieldSerializer(ReadOnlyModelSerializer):
+    residential_address = AddressSerializer()
+    advisor = AdvisorFieldSerializer()
+
+    class Meta:
+        model = Client
+        exclude = (
+            'user',
+            'client_agreement',
+            'confirmation_key',
+            'create_date',
+        )
+
+
+class ClientUpdateSerializer(serializers.ModelSerializer):
+    """
+    Write (POST/PUT) update requests only
+    """
+    class Meta:
+        model = Client
+        fields = (
+            'employment_status', 'income', 'occupation',
+            'employer', 'us_citizen', 'public_position_insider',
+            'ten_percent_insider', 'associated_to_broker_dealer',
+            'tax_file_number', 'provide_tfn', 'civil_status'
+        )
 
 
 class EATransferPlanSerializer(serializers.ModelSerializer):

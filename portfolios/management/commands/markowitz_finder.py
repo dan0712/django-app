@@ -1,23 +1,24 @@
 import logging
-import numpy as np
 
+import numpy as np
 from cvxpy import mul_elemwise
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 from scipy.optimize.minpack import curve_fit
 
-from main.models import MarkowitzScale
-from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3
-from portfolios.management.commands.portfolio_calculation import get_instruments, get_market_weights, \
-    get_core_constraints, MIN_PORTFOLIO_PCT, run_bl, FUND_MASK_NAME
+from portfolios.BL_model.bl_model import markowitz_optimizer_3
+from portfolios.management.commands.portfolio_calculation import get_instruments
+from portfolios.management.commands.portfolio_calculation_pure import get_core_constraints, MIN_PORTFOLIO_PCT, run_bl, FUND_MASK_NAME
+
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 
 logger = logging.getLogger("markowitz_finder")
 logger.setLevel(logging.DEBUG)
 
 
-def get_extremes():
+def get_extremes(data_provider):
     # Get the funds from the instruments table
-    covars, samples, instruments, masks = get_instruments()
+    covars, samples, instruments, masks = data_provider.get_instruments()
     funds = instruments[masks[FUND_MASK_NAME]]
 
     # Generate the BL ERs and Sigma
@@ -85,7 +86,7 @@ def get_extremes():
     vals, _ = curve_fit(func, x, y)
     logger.info("Found function fit using params: {}".format(vals))
 
-    MarkowitzScale.objects.create(date=now().today(),
+    data_provider.create_markowitz_scale(date=now().today(),
                                   min=min_lambda,
                                   max=max_lambda,
                                   a=vals[0],
@@ -97,4 +98,4 @@ class Command(BaseCommand):
     help = 'Calculate all the optimal portfolios for all the goals in the system.'
 
     def handle(self, *args, **options):
-        get_extremes()
+        get_extremes(data_provider=DataProviderDjango())

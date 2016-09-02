@@ -1,0 +1,43 @@
+Executions Proposal
+
+Once we get orders for the current day, those orders will need to be limit orders (we cannot execute at market and risk there is not enough funds on our account).
+
+This could happen if we optimized our weights e.g. 5 minutes before the execution, and during those 5 minutes prices appreciated e.g. 1%. Thus, we need to generate limit orders, so that if orders execute, we are sure we will have enough funds on our account.
+
+This situation is simple - we just have cash on our account, or we have cash + some shares and we want to only buy new/increase positions in held shares from cash we have on our account.
+
+More complicated case is, that we have generated buys and sells. Theoretically in optimal case we would sell shares, and from proceeds of sold shares we buy shares. However, usually situation is more complicated. We do not know for how much we will sell shares (we could use limit orders for sells as well, however we then risk that some of them are not going to be sold, which is even worse for covering our buys).
+
+
+Thus, simplest solution is to sells only first (with limits e.g. 0.5% under last known market price) and after that, do quick recalculation before buys (limit orders as well) are performed.
+
+We could leave all transactions valid for 10 minutes (with limit prices - thus use time constrained order) and if they are not filled in 10 minutes, they are automatically cancelled - for both rounds.
+
+We are not always connected to the broker - we only connect for the purpose of execution and disconnect after we are done.
+
+The steps involved:
+    We download cash account balances for the clients (maybe they made withdrawals/deposits) -> we need to adjust our model account balances
+    Log into IB account
+	We download actual market prices (we download the order book for ETFs we are interested in) -> use those prices in optimization 
+	Generete sell and buy orders from MarketOrderRequest
+	execute sells
+	recalculate how much we can buy
+	execute buys
+	Log off IB account
+	Get information from buys/sells into Transaction model
+
+
+Existing models:
+
+We should take from Django all MarketOrderRequests with state APPROVED, and associated ExecutionRequests. We set their state to SENT.
+We aggregate them among clients to produce IB orders - thus we produce single order for each share to be bought/sold, with corresponding quantities to each account as XML file attached to the order.
+
+We execute - get execution information (I am not sure what kind, since Financial Advisor Account cannot be simulated with IB Demo account.)
+
+From that - we will hopefully get information for each client - and be able write this information to django Transaction class (and related classes, as execution distribution, execution)
+
+
+Tasks:
+	checking the account balances - 
+	order book for last price - to be added to optimization
+	process -only sells first - second step buys only (quickly recalculated from sells)

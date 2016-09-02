@@ -1,5 +1,4 @@
 from rest_framework import viewsets
-from rest_framework.decorators import detail_route
 
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -43,7 +42,17 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
     queryset = Client.objects.all()
     serializer_class = serializers.ClientSerializer
+    # Set the response serializer because we want to use the 'get' serializer for responses from the 'create' methods.
+    # See api/v1/views.py
+    serializer_response_class = serializers.ClientSerializer
     pagination_class = None
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'POST']:
+            return serializers.ClientUpdateSerializer
+        else:
+            # Default for get and other requests is the read only serializer
+            return serializers.ClientSerializer
 
     def get_queryset(self):
         qs = super(ClientViewSet, self).get_queryset()

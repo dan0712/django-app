@@ -1,4 +1,8 @@
 -r base.txt
 
+# factory boy for test fixtures
+factory-boy==2.7.0
+fake-factory==0.6.0
+
 django-jenkins==0.19.0
 coverage==4.2

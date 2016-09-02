@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-import datetime
-
 import factory
 
 import decimal
 import random
-from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
+from datetime import datetime, timedelta
 from django.contrib.auth.models import Group
 
-from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, Goal, GoalType
+from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
+                        Goal, GoalType, InvestmentType, AssetClass, Ticker, \
+                        Transaction
+from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
     AccountTypeRiskProfileGroup
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
+from django.contrib.contenttypes.models import ContentType
 
 from random import randrange
 
@@ -67,44 +70,11 @@ class FirmFactory(factory.django.DjangoModelFactory):
     slug = factory.Sequence(lambda n: 'Slug %d' % n)
 
 
-class RegionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Region
-
-    name = factory.Sequence(lambda n: 'Region %d' % n)
-    country = 'AU'
-
-
-class AddressFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Address
-
-    region = factory.SubFactory(RegionFactory)
-
-
-class AdvisorFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Advisor
-
-    user = factory.SubFactory(UserFactory)
-    firm = factory.SubFactory(FirmFactory)
-    betasmartz_agreement = True
-    default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
-    residential_address = factory.SubFactory(AddressFactory)
-
-
 class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RiskProfileGroup
 
     name = factory.Sequence(lambda n: 'RiskProfileGroup %d' % n)
-
-
-class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AccountTypeRiskProfileGroup
-
-    risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
 
 
 class StaffUserFactory(UserFactory):
@@ -151,22 +121,6 @@ class AddressFactory(factory.django.DjangoModelFactory):
     region = factory.SubFactory(RegionFactory)
 
 
-class PortfolioSetFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = PortfolioSet
-
-    name = factory.Sequence(lambda n: "PortfolioSet %d" % n)
-    risk_free_rate = factory.LazyAttribute(lambda n: float(random.randrange(10000)) / 100)
-
-
-class FirmFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Firm
-
-    name = factory.Sequence(lambda n: "Firm %d" % n)
-    default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
-
-
 class AdvisorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Advisor
@@ -176,13 +130,6 @@ class AdvisorFactory(factory.django.DjangoModelFactory):
     betasmartz_agreement = True
     residential_address = factory.SubFactory(AddressFactory)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
-
-
-class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = RiskProfileGroup
-
-    name = factory.Sequence(lambda n: "RiskProfileGroup %d" % n)
 
 
 class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
@@ -219,6 +166,12 @@ class ClientFactory(factory.django.DjangoModelFactory):
     advisor = factory.SubFactory(AdvisorFactory)
     user = factory.SubFactory(UserFactory)
     residential_address = factory.SubFactory(AddressFactory)
+    occupation = factory.Sequence(lambda n: 'Occupation %d' % n)
+    employer = factory.Sequence(lambda n: 'Employer %d' % n)
+    income = factory.LazyAttribute(lambda n: float(random.randrange(1000000)))
+    # lets use a random date from last 18-70 years for dob
+    date_of_birth = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - relativedelta(years=70),
+                                                                datetime.now().date() - relativedelta(years=18)))
 
 
 class ClientAccountFactory(factory.django.DjangoModelFactory):
@@ -232,7 +185,7 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
     # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     confirmed = True
-    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
+    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 
 
 class GoalTypeFactory(factory.django.DjangoModelFactory):
@@ -264,7 +217,7 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     valuation = factory.LazyAttribute(lambda n: decimal.Decimal(random.randrange(1000000)) / 100)
     valuation_date = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - timedelta(days=30), datetime.now().date()))
     growth = decimal.Decimal('0.01')
-    acquisition_date = factory.LazyFunction(datetime.now)
+    acquisition_date = factory.LazyFunction(datetime.now().date)
 
     type = factory.LazyAttribute(lambda n: random.randrange(7))
     # class Type(ChoiceEnum):
@@ -276,3 +229,53 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     #     TRANSACTION_ACCOUNT = (5, 'Transaction Account')
     #     RETIREMENT_ACCOUNT = (6, 'Retirement Account')
     #     OTHER = (7, 'Other')
+
+
+class InvestmentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestmentType
+
+    name = factory.Sequence(lambda n: 'InvestmentType %d' % n)
+
+
+class AssetClassFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetClass
+
+    name = factory.Sequence(lambda n: 'AssetClass %d' % n)
+    display_order = factory.Sequence(lambda n: int(n))
+    investment_type = factory.SubFactory(InvestmentTypeFactory)
+
+
+class ContentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ContentType
+
+
+class MainRegionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MainRegion
+
+    name = factory.Sequence(lambda n: 'Region %d' % n)
+
+
+class TickerFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Ticker
+
+    symbol = factory.Sequence(lambda n: str(n))
+    ordering = factory.Sequence(lambda n: int(n))
+    asset_class = factory.SubFactory(AssetClassFactory)
+    benchmark_content_type = factory.SubFactory(ContentTypeFactory)
+    region = factory.SubFactory(MainRegionFactory)
+    data_api_param = factory.Sequence(lambda n: str(n))
+
+
+class TransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Transaction
+
+    reason = factory.Sequence(lambda n: int(n))
+    amount = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
+    from_goal = factory.SubFactory(GoalFactory)
+    to_goal = factory.SubFactory(GoalFactory)

@@ -16,7 +16,7 @@ from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('client.models')
 
 
 class Client(NeedApprobation, NeedConfirmation, PersonalData):
@@ -150,13 +150,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         return self.user.get_full_name()
 
     @property
-    def age(self):
-        born = self.date_of_birth
-        today = now().today()
-        return today.year - born.year - ((today.month, today.day) <
-                                         (born.month, born.day))
-
-    @property
     def total_balance(self):
         return sum(account.total_balance for account in self.accounts.all())
 
@@ -171,6 +164,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def total_returns(self):
         return 0
+
+    @property
+    def total_earnings(self):
+        return sum(a.total_earnings for a in self.accounts)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -210,8 +207,8 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    primary_owner = models.ForeignKey('Client',
-                                      related_name="primary_accounts")
+    account_id = models.CharField(max_length=10, editable=True) #IB account ID, e.g. DU299694
+    primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
@@ -357,6 +354,10 @@ class ClientAccount(models.Model):
     @property
     def total_returns(self):
         return 0
+
+    @property
+    def total_earnings(self):
+        return sum(g.total_earnings for g in self.goals)
 
     @property
     def stocks_percentage(self):

@@ -3,7 +3,7 @@
     // worth (aka "net worth and cashflow") chart
     var datasets = [
       {
-        label: 'Net worth',
+        label: 'Average net worth',
         data: [{% for item in worth %}{x: {{ item.age }}, y: {{ item.value_worth }}},{% endfor %}],
       },
       {

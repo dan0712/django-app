@@ -1,0 +1,36 @@
+<div id="sessionExpiresModal" class="modal fade" role="dialog" data-session-expires-at="{{ session_expires_at|date:"r" }}">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body">
+        <p>You will be automatically logged out in <span class="time-left"></span> seconds.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary active stay-logged-in" data-dismiss="modal">
+          Stay logged in
+        </button>
+        <button type="button" class="btn btn-default btn-danger do-logout" data-dismiss="modal">
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="application/javascript">
+  $(function () {
+    autoLogoutModal = new betasmartz.AutoLogoutModal({
+      keepAliveUrl: "{% url "api:v1:keep-alive" %}",
+      logoutUrl: "{% url "logout" %}"
+    });
+    autoLogoutModal.init();
+    $(document).ajaxSuccess(function(event, xhr, settings) {
+      try {
+        response = JSON.parse(xhr.responseText);
+        autoLogoutModal.updateExpirationTime(response.meta.session_expires_on);
+      } catch (e) {
+        console.error("Cannot parse response\n" + xhr.responseText);
+      }
+    });
+  });
+</script>
