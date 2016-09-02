@@ -189,14 +189,16 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupDetails, self).get_queryset() \
-            .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
+        qs = super(AdvisorAccountGroupDetails, self).get_queryset()
+        return (qs
+                .filter(Q(advisor=self.advisor) |
+                        Q(secondary_advisors__in=[self.advisor]))
+                .distinct())
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupDetails, self).get_context_data(
-            **kwargs)
-        ctx["object"] = self.object
-        return ctx
+        c = super(AdvisorAccountGroupDetails, self).get_context_data(**kwargs)
+        c["object"] = self.object
+        return c
 
 
 class AdvisorAccountGroupClients(DetailView, AdvisorView):

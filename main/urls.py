@@ -1,6 +1,5 @@
 from django.conf.urls import include, patterns, url
 from django.contrib import admin
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
 
@@ -46,13 +45,6 @@ urlpatterns_firm = patterns(
     url(r'^supervisors/(?P<pk>\d+)/delete', FirmSupervisorDelete.as_view(), name='supervisors-delete'),
 )
 
-urlpatterns_client = patterns('',
-    # The React code should pick up this route.
-    # If it doesn't, there is a configuration problem.
-    url(r'^(?P<pk>\d+)$', login_required(ClientAppMissing.as_view()), name='page1'),
-    url(r'^(?P<pk>\d+)/app$', login_required(ClientAppMissing.as_view()), name='app'),
-)
-
 urlpatterns = patterns(
     '',
     url(r'^api/', include('api.urls', namespace='api')),
@@ -65,7 +57,7 @@ urlpatterns = patterns(
     # Firm views
     url(r'^firm/', include(urlpatterns_firm, namespace='firm')),
     # Client views
-    url(r'^client/', include(urlpatterns_client, namespace='client')),
+    url(r'^client/', include('client.urls', namespace='client', app_name='client')),
     # Advisor views
     url(r'^advisor/', include('advisors.urls', namespace='advisor', app_name='advisors')),
 
