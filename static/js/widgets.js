@@ -12,11 +12,22 @@ betasmartz.widgets = {
             return columns;
         }
 
+        function initDropdown(dp) {
+            if (dp) {
+                var $dp = $(dp[0]);
+                $dp.change(function () {
+                    dataTable.column(dp[1]).search(this.value).draw();
+                });
+            }
+
+        }
+
         options = options || {};
         options = {
-            noSort: options.noSort || [],  // [2]
-            noSearch: options.noSearch || [],  // [2,3]
-            defOrder: options.defOrder || undefined, // [[1, "asc"]]
+            noSort: options.noSort || [],  // [2] (columns)
+            noSearch: options.noSearch || [],  // [2,3] (columns)
+            defOrder: options.defOrder || undefined, // [[1, "asc"]] (column, direction)
+            dropdown: options.dropdown  // ["#select", 2] (element, column)
         };
         var $table = $(table),
             $searchField = $(searchField),
@@ -30,6 +41,8 @@ betasmartz.widgets = {
             params.order = options.defOrder;
         }
         dataTable = $table.DataTable(params);
+
+        initDropdown(options.dropdown);
 
         if (!$clearSearch.length) {
             $clearSearch = $('<span class="glyphicon glyphicon-remove-sign ' +

@@ -10,6 +10,7 @@
     betasmartz.widgets.searchTable("#clientList", "#search", {
       noSort: [5],
       noSearch: [5],
+      dropdown: ["#accountTypeFilter", 4]
     });
   });
 </script>
@@ -35,11 +36,10 @@
       <form>
         <div class="col-sm-4">
           <div class="form-group">
-            <select name="filter" class="form-control" onchange="this.form.submit();">
-                <option value="0">-- Type --</option>
-                <option value="0" {% if  filter == "0" %}selected="selected"{% endif %}>All</option>
-                <option value="1" {% if  filter == "1" %}selected="selected"{% endif %}>Primary</option>
-                <option value="2" {% if  filter == "2" %}selected="selected"{% endif %}>Secondary</option>
+            <select id="accountTypeFilter" class="form-control">
+                <option value="">All</option>
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
             </select>
           </div>
         </div>
