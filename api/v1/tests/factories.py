@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group
 
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
-                        Transaction
+                        Transaction, Position
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -279,3 +279,12 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     amount = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
     from_goal = factory.SubFactory(GoalFactory)
     to_goal = factory.SubFactory(GoalFactory)
+
+
+class PositionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Position
+
+    goal = factory.SubFactory(GoalFactory)
+    ticker = factory.SubFactory(TickerFactory)
+    share = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
