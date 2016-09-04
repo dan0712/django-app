@@ -17,14 +17,16 @@
     {% with items=positions.region|dictsortreversed:'value' %}
       var labels = [{% for item in items %}'{{ item.name }}',{% endfor %}];
       var values = [{% for item in items %}'{{ item.value|floatformat:0 }}',{% endfor %}];
+      var backgroundColors = [{% for item in items %}randomColor({luminosity: 'light', format: 'rgb'}),{% endfor %}];
     {% endwith %}
-    var doughnutChartB = new Chart(doughnutChartBElem, App.doughnutChartConfig(labels, values));
+    var doughnutChartB = new Chart(doughnutChartBElem, App.doughnutChartConfig(labels, values, backgroundColors));
 
     // positions_by_investment_type
     {% with items=positions.investment_type|dictsortreversed:'value' %}
       var labels = [{% for item in items %}'{{ item.name }}',{% endfor %}];
       var values = [{% for item in items %}'{{ item.value|floatformat:0 }}',{% endfor %}];
+      var backgroundColors = [{% for item in items %}randomColor({luminosity: 'dark', format: 'rgb'}),{% endfor %}];
     {% endwith %}
-    var doughnutChartC = new Chart(doughnutChartCElem, App.doughnutChartConfig(labels, values));
+    var doughnutChartC = new Chart(doughnutChartCElem, App.doughnutChartConfig(labels, values, backgroundColors));
   });
 </script>

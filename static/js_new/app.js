@@ -48,7 +48,7 @@ var App = {
                 },
                 ticks: {
                   min: 20,
-                  max: 60,
+                  max: 70,
                   fontFamily: fontFamily,
                   fontSize: fontSize,
                 },
@@ -102,7 +102,11 @@ var App = {
           tooltips: {
             callbacks: {
               title: function(values) {
-                return Number(values[0].xLabel.toFixed(0)) + ' years';
+                if (Number(values[0].xLabel.toFixed(0)) >= 70) {
+                  return '70+ years';
+                } else {
+                  return Number(values[0].xLabel.toFixed(0)) + ' years';
+                }
               },
               label: function(values) {
                 return '$' + Number(values.yLabel.toFixed(0)).toLocaleString();
@@ -122,7 +126,7 @@ var App = {
               },
               ticks: {
                 min: 20,
-                max: 60,
+                max: 70,
                 fontFamily: fontFamily,
                 fontSize: fontSize,
               },
@@ -329,10 +333,15 @@ var App = {
 
     datasets = datasets || [];
     datasets = datasets.map(function(item) {
+      
+      background = randomColor({
+        luminosity: 'bright',
+        format: 'rgb'
+      });
       return $.extend({}, item, {
-        //borderColor: "rgba(200,150,200,1)",
+        borderColor: background,
         //pointBorderColor: "rgba(200,150,200,1)",
-        //pointBackgroundColor: "rgba(200,150,200,0.2)",
+        pointBackgroundColor: background,
         //pointHoverBackgroundColor: "rgba(200,150,200,1)",
         //pointHoverBorderColor: "rgba(200,150,200,1)",
         pointBorderWidth: 9,

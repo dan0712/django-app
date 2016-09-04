@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group
 
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
-                        Transaction, Position
+                        Transaction, Position, GoalSetting, GoalMetricGroup
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -188,6 +188,21 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 
 
+class GoalMetricGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = GoalMetricGroup
+
+
+class GoalSettingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = GoalSetting
+
+    target = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    completion = factory.LazyAttribute(lambda n: random_date(datetime.today() - relativedelta(years=30), datetime.today()))
+    hedge_fx = False
+    metric_group = factory.SubFactory(GoalMetricGroupFactory)
+
+
 class GoalTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = GoalType
@@ -207,6 +222,8 @@ class GoalFactory(factory.django.DjangoModelFactory):
     type = factory.SubFactory(GoalTypeFactory)
     portfolio_set = factory.SubFactory(PortfolioSetFactory)
 
+    selected_settings = factory.SubFactory(GoalSettingFactory)
+
 
 class ExternalAssetFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -215,7 +232,7 @@ class ExternalAssetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "ExternalAsset %d" % n)
     owner = factory.SubFactory(ClientFactory)
     valuation = factory.LazyAttribute(lambda n: decimal.Decimal(random.randrange(1000000)) / 100)
-    valuation_date = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - timedelta(days=30), datetime.now().date()))
+    valuation_date = factory.LazyAttribute(lambda n: random_date(datetime.today() - relativedelta(days=30), datetime.today()).date())
     growth = decimal.Decimal('0.01')
     acquisition_date = factory.LazyFunction(datetime.now().date)
 
