@@ -1,10 +1,8 @@
 from main.tests.fixtures import Fixture1
 from django.test import TestCase
 from execution.end_of_day import *
-import unittest
 from unittest.mock import Mock
 from execution.broker.ibroker import IBroker
-from client.models import IBAccount
 
 
 class BaseTest(TestCase):
