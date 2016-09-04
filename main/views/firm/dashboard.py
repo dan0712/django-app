@@ -456,12 +456,13 @@ class FirmAnalyticsOverviewView(FirmAnalyticsMixin, TemplateView, LegalView):
         user = SupportRequest.target_user(self.request)
         self.firm  = user.authorised_representative.firm
         self.filter = FirmAnalyticsOverviewFilterSet(self.request.GET)
+        positions = self.get_context_positions()
         return {
             'filter': self.filter,
             'risks': self.get_context_risks(),
             'worth': self.get_context_worth(),
             'events': self.get_context_events(),
-            'positions': self.get_context_positions(),
+            'positions': positions,
         }
 
     def get_context_risks(self):

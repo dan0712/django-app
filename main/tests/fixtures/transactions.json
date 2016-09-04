@@ -1,0 +1,67 @@
+[
+  {
+    "fields": {
+      "created": "2016-06-09T13:46:50.678Z",
+      "executed": "2016-06-09T14:00:00Z",
+      "reason": 1,
+      "from_goal": null,
+      "amount": 1000.0,
+      "status": "EXECUTED",
+      "to_goal": 1
+    },
+    "pk": 1,
+    "model": "main.transaction"
+  },
+  {
+    "fields": {
+      "created": "2016-06-10T13:46:50.678Z",
+      "executed": "2016-06-10T14:00:00Z",
+      "reason": 1,
+      "from_goal": null,
+      "amount": 300.0,
+      "status": "EXECUTED",
+      "to_goal": 1
+    },
+    "pk": 2,
+    "model": "main.transaction"
+  },
+  {
+    "fields": {
+      "created": "2016-06-11T13:46:50.678Z",
+      "executed": "2016-06-11T14:00:00Z",
+      "reason": 2,
+      "from_goal": 1,
+      "amount": 230.0,
+      "status": "EXECUTED",
+      "to_goal": null
+    },
+    "pk": 3,
+    "model": "main.transaction"
+  },
+  {
+    "fields": {
+      "created": "2016-06-12T13:46:50.678Z",
+      "executed": "2016-06-12T14:00:00Z",
+      "reason": 1,
+      "from_goal": null,
+      "amount": 500.0,
+      "status": "EXECUTED",
+      "to_goal": 1
+    },
+    "pk": 4,
+    "model": "main.transaction"
+  },
+  {
+    "fields": {
+      "created": "2016-06-13T13:46:50.678Z",
+      "executed": "2016-06-13T14:00:00Z",
+      "reason": 2,
+      "from_goal": 1,
+      "amount": 1000.0,
+      "status": "EXECUTED",
+      "to_goal": null
+    },
+    "pk": 5,
+    "model": "main.transaction"
+  }
+]

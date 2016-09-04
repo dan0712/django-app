@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from main.risk_profiler import get_risk_willingness, recommend_risk
-from main.tests.fixtures import Fixture1
+from main.tests.fixture import Fixture1
 
 
 class RiskProfilerTests(TestCase):
