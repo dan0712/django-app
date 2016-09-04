@@ -24,3 +24,20 @@ class IBroker(ABC):
     @abstractmethod
     def requesting_market_depth(self):
         pass
+
+    @abstractmethod
+    def make_order(self, ticker, quantity, limit_price):
+        pass
+
+    @abstractmethod
+    def place_order(self, uid):
+        pass
+
+    @abstractmethod
+    def place_orders(self):
+        pass
+
+    @abstractmethod
+    def request_current_time(self):
+        pass
+

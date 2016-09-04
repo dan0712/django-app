@@ -2,7 +2,9 @@ from execution.broker.ibroker import IBroker
 from ib.ext.ComboLeg import ComboLeg
 from ib.ext.Contract import Contract
 from ib.ext.ExecutionFilter import ExecutionFilter
-from ib.ext.Order import Order
+from ib.ext.Order import Order as IBOrder
+
+
 from ib.ext.ScannerSubscription import ScannerSubscription
 from ib.ext.TickType import TickType
 from ib.lib.logger import logger as basicConfig
@@ -12,7 +14,9 @@ from functools import partial
 from random import randint
 import sys
 from execution.data_structures.market_depth import MarketDepth
-
+from execution.order.order import Order
+from datetime import datetime, timedelta
+import pytz
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -22,7 +26,7 @@ order_ids = [0]
 
 
 def gen_tick_id():
-    i = randint(100, 10000)
+    i = range(100, 10000)
     while True:
         yield i
         i += 1
@@ -71,22 +75,76 @@ class InteractiveBrokers(IBroker):
         self.connection = ibConnection(options.host, options.port, options.clientid)
         self.connection.register(self._update_account_value, 'AccountSummary')
         self.connection.register(self._reply_managed_accounts, 'ManagedAccounts')
+        self.connection.register(self._reply_current_time, 'CurrentTime')
         self.connection.register(self._reply_realtime_snapshot,
                                  message.tickPrice,
                                  message.tickSize)
+
+        #TODO - do not use registerAll, but find keyword for orders only
+        self.connection.registerAll(self._reply_place_trade)
+
         self.ib_account_cash = dict()
         self.ib_account_list = list()
         self.market_data = dict()
+
+        self.orders = dict()
+        self.filled_orders = dict()
+        self.order_events = set()
+
         self._requested_tickers = dict()
+        self.current_time = datetime.now
+        self.request_current_time()
 
     def _register(self, method, *subscription):
         self.connection.register(method, subscription)
+
+    def request_current_time(self):
+        self.connection.reqCurrentTime()
+
+    def _reply_current_time(self, msg):
+        self.current_time = datetime.fromtimestamp(msg.time, pytz.timezone('US/Eastern'))
 
     def connect(self):
         self.connection.connect()
 
     def disconnect(self):
         self.connection.eDisconnect()
+
+    def place_orders(self):
+        for ib_id, order in self.orders.items():
+            self.place_order(ib_id)
+
+    def place_order(self, ib_id):
+        if ib_id not in self.orders or not self.orders[ib_id].new:
+            return
+        order = self.orders[ib_id]
+
+        self.order.new = False
+        self.connection.place_order(order.ib_id, order.contract, order.order)
+        short_sleep()
+
+    def make_order(self, ticker, quantity, limit_price):
+        if quantity == 0 or limit_price <= 0:
+            return
+
+        ib_order = IBOrder()
+        ib_order.m_symb
+        ib_order.m_lmtPrice = limit_price
+        ib_order.m_orderType = 'LMT'
+        ib_order.m_totalQuantity = quantity
+
+        #TODO make sure this is correct format
+        ib_order.m_goodTillDate = self.current_time + timedelta(minutes=5)
+
+        if quantity > 0:
+            ib_order.m_action = 'BUY'
+        else:
+            ib_order.m_action = 'SELL'
+
+        contract = make_contract(ticker)
+        order = Order(order=ib_order, contract=contract, ib_id=gen_tick_id())
+        self.orders[order.ib_id] = order
+        return order.ib_id
 
     def request_account_summary(self):
         reqId = gen_tick_id()
@@ -113,6 +171,27 @@ class InteractiveBrokers(IBroker):
         if msg is not None and msg.tag == 'TotalCashValue':
             print("Account %s, cash: %s %s" % (msg.account, msg.value, msg.currency))
             self.ib_account_cash[msg.account] = msg.value
+
+    def __create_fill_dict_entry(self, msg):
+        self.filled_orders[msg.orderId] = msg
+
+    def __create_fill(self, msg):
+        self.filled_orders[msg.orderId] = msg
+
+    def _reply_place_order(self, msg):
+
+        #TODO ignore duplicate messages
+        #https://www.interactivebrokers.com/en/software/api/apiguide/java/orderstatus.htm
+
+        # TODO test this
+        if msg.typeName == "openOrder" and \
+                        msg.orderId not in self.filled_orders:
+            self.__create_fill_dict_entry(msg)
+
+        # Handle Fills
+        if msg.typeName == "orderStatus" and msg.status == "Filled":
+            self.create_fill(msg)
+        print("Server Response: %s, %s\n" % (msg.typeName, msg))
 
     def _reply_managed_accounts(self, msg):
         print("%s, %s " % (msg.typeName, msg))
