@@ -200,7 +200,7 @@ class IBAccount(models.Model):
     Specification of Interactive Brokers Account
     '''
     ib_account = models.CharField(max_length=32)
-    bs_account = models.ForeignKey('ClientAccount', related_name='ib_account')
+    bs_account = models.OneToOneField('ClientAccount', related_name='ib_account')
 
 
 class ClientAccount(models.Model):
