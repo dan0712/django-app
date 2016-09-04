@@ -42,7 +42,8 @@ def reconcile_cash_client_account(account):
         for goal in goals:
             goals_cash += goal.cash_balance
 
-        ib_cash = ib_account_cash[account.account_id]
+        ib_account = account.ib_account
+        ib_cash = ib_account_cash[ib_account.ib_account]
 
         difference = ib_cash - (account_cash + goals_cash)
         if difference > 0:
@@ -53,8 +54,8 @@ def reconcile_cash_client_account(account):
             if abs(difference) < account_cash:
                 account_cash -= abs(difference)
             else:
-                logger.exception("interactive brokers cash < sum of goals cashes for " + account.account_id)
-                raise Exception
+                logger.exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
+                raise Exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
                 # we have a problem - we should not be able to withdraw more than account_cash
         account.cash_balance = account_cash
         account.save()
