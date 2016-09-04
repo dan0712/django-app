@@ -421,7 +421,7 @@ class FirmAnalyticsMixin(object):
 
         positions_by_investment_type = qs_positions \
             .annotate(
-                name=F('ticker__asset_class__investment_type'),
+                name=F('ticker__asset_class__investment_type__name'),
             ) \
             .values('name') \
             .annotate_value()
@@ -431,7 +431,6 @@ class FirmAnalyticsMixin(object):
             'region': positions_by_region,
             'investment_type': positions_by_investment_type,
         }
-
         return data
 
 
