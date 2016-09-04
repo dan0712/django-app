@@ -196,7 +196,7 @@ class IBAccount(models.Model):
     Specification of Interactive Brokers Account
     '''
     ib_account = models.CharField(max_length=32)
-    # also has bs_account foreign key to ClientAccount
+    bs_account = models.ForeignKey('ClientAccount', related_name='ib_account')
 
 
 class ClientAccount(models.Model):
@@ -235,8 +235,7 @@ class ClientAccount(models.Model):
                                            related_name='accounts')
     # The account must not be used until the risk_profile_responses are set.
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
-
-    ib_account = models.ForeignKey('IBAccount', related_name='bs_account')
+    # also has ib_account foreign key to IBAccount
 
     objects = ClientAccountQuerySet.as_manager()
 

@@ -279,6 +279,7 @@ class Fixture1:
     def ib_account(cls) -> IBAccount:
         params = {
             'ib_account': 'DU299694',
+            'bs_account': Fixture1.personal_account1()
         }
         return IBAccount.objects.get_or_create(defaults=params)[0]
 
@@ -290,7 +291,6 @@ class Fixture1:
             'default_portfolio_set': Fixture1.portfolioset1(),
             'risk_profile_group': Fixture1.risk_profile_group1(),
             'confirmed': True,
-            'ib_account': Fixture1.ib_account()
         }
         return ClientAccount.objects.get_or_create(id=1, defaults=params)[0]
 
