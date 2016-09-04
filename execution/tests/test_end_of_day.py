@@ -61,10 +61,9 @@ class BaseTest(TestCase):
         account.cash_balance = 100
         ib_account_cash[ib_account.ib_account] = 900
 
-        try:
+        with self.assertRaises(Exception) as cm:
             reconcile_cash_client_account(account)
-        except Exception as e:
-            self.assertTrue(ib_account.ib_account in e.args[0])
+        self.assertTrue(ib_account.ib_account in cm.exception.args[0])
 
     def test_market_depth(self):
         self.con.request_market_depth('GOOG')
