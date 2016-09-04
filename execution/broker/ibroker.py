@@ -1,8 +1,12 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 
 class IBroker(ABC):
     def __init__(self):
+        pass
+
+    @abstractmethod
+    def current_time(self):
         pass
 
     @abstractmethod

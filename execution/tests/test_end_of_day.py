@@ -4,13 +4,14 @@ from execution.end_of_day import *
 from unittest.mock import Mock
 from execution.broker.ibroker import IBroker
 from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
-
+from datetime import datetime
 
 class BaseTest(TestCase):
 
     def setUp(self):
         self.con = Mock(IBroker)
         self.con.connect.return_value = True
+
         self.con.requesting_market_depth.return_value = False
 
         self.con.market_data = dict()
@@ -22,6 +23,11 @@ class BaseTest(TestCase):
         single_level.bid_volume = 50
         single_level.ask_volume = 100
         self.con.market_data['GOOG'].add_level(0, single_level)
+
+    def test_ib_time(self):
+        self.con.current_time.return_value = datetime.now()
+        time = self.con.current_time()
+        self.assertTrue(type(time) is datetime)
 
     def test_ib_connect(self):
         connected = self.con.connect()

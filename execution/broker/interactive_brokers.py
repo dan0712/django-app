@@ -92,17 +92,21 @@ class InteractiveBrokers(IBroker):
         self.order_events = set()
 
         self._requested_tickers = dict()
-        self.current_time = datetime.now
+
+        self._current_time = datetime.now()
         self.request_current_time()
 
     def _register(self, method, *subscription):
         self.connection.register(method, subscription)
 
+    def current_time(self):
+        return self._current_time
+
     def request_current_time(self):
         self.connection.reqCurrentTime()
 
     def _reply_current_time(self, msg):
-        self.current_time = datetime.fromtimestamp(msg.time, pytz.timezone('US/Eastern'))
+        self._current_time = datetime.fromtimestamp(msg.time, pytz.timezone('US/Eastern'))
 
     def connect(self):
         self.connection.connect()
