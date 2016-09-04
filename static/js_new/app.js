@@ -120,7 +120,7 @@ var App = {
               position: 'bottom',
               scaleLabel: {
                 display: true,
-                labelString: 'Age',
+                labelString: 'Average Age at Completion',
                 fontFamily: fontFamily,
                 fontSize: fontSize,
               },
@@ -136,7 +136,7 @@ var App = {
               position: 'left',
               scaleLabel: {
                 display: true,
-                labelString: 'Event cost',
+                labelString: 'Average Target Amount',
                 fontFamily: fontFamily,
                 fontSize: fontSize,
               },
