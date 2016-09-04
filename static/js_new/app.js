@@ -332,9 +332,11 @@ var App = {
     */
 
     datasets = datasets || [];
+    var x = 1
     datasets = datasets.map(function(item) {
-      
+      x++;
       background = randomColor({
+        seed: x * 849,
         luminosity: 'bright',
         format: 'rgb'
       });
