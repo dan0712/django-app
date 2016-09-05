@@ -1,11 +1,12 @@
 from django.db import transaction
-from rest_framework import serializers
+from django.utils.translation import ugettext_lazy as _
+from rest_framework import serializers, exceptions
 
 from api.v1.address.serializers import AddressSerializer
 from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import ExternalAsset, ExternalAssetTransfer
-from client.models import Client
+from main.models import ExternalAsset, ExternalAssetTransfer, User
+from client.models import Client, EmailInvite
 
 from ..user.serializers import UserFieldSerializer
 
@@ -121,3 +122,46 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser.is_valid(raise_exception=True)
             ser.save(asset=instance)
         return instance
+
+class ClientUserRegistrationSerializer(serializers.Serializer):
+    """
+    For POST request to register from an email token
+    """
+    invite_key = serializers.CharField()
+    email = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
+    def validate(self, attrs):
+        if User.objects.filter(email=attrs.get('email')).exists():
+            msg = _('Email is already in use')
+            raise exceptions.ValidationError(msg)
+
+        invite_params = {
+            'invite_key': attrs.get('invite_key'),
+            'email': attrs.get('email'),
+        }
+
+        invite_lookup = EmailInvite.objects.filter(**invite_params)
+
+        if not invite_lookup.exists():
+            msg = _('Invalid invitation key')
+            raise exceptions.ValidationError(msg)
+
+        self.invite = invite_lookup.get()
+
+        if self.invite.status == EmailInvite.STATUS_CREATED:
+            msg = _('Unable to accept this invitation, it hasnt been sent yet')
+            raise exceptions.ValidationError(msg)
+
+        if self.invite.status == EmailInvite.STATUS_ACCEPTED:
+            msg = _('Unable to accept this invitation, it has already been accepted')
+            raise exceptions.ValidationError(msg)
+
+        if self.invite.status == EmailInvite.STATUS_EXPIRED:
+            msg = _('Unable to accept this invitation, it has expired')
+            raise exceptions.ValidationError(msg)
+
+        if self.invite.status == EmailInvite.STATUS_COMPLETE:
+            msg = _('Unable to accept this invitation, it has already been completed')
+            raise exceptions.ValidationError(msg)
+
+        return attrs

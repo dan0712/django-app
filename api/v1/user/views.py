@@ -367,3 +367,5 @@ class SecurityAnswerCheckView(ApiViewMixin, views.APIView):
             return Response('ok', status=status.HTTP_200_OK)
         logger.error('Unauthorized attempt to check answer for user %s and question %s' % (request.user.email, request.data.get('question')))
         return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
