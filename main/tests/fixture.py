@@ -424,6 +424,16 @@ class Fixture1:
         return MarketIndex.objects.get_or_create(id=1, defaults=params)[0]
 
     @classmethod
+    def market_index1_daily_prices(cls):
+        prices = [100, 110, 105, 103, 107]
+        start_date = datetime.date(2016, 4, 1)
+        d = start_date
+        fund = cls.market_index1()
+        for p in prices:
+            fund.daily_prices.create(date=d, price=p)
+            d += datetime.timedelta(1)
+
+    @classmethod
     def market_index2(cls):
         params = {
             'display_name': 'Test Market Index 2',
@@ -448,7 +458,7 @@ class Fixture1:
             'data_api': 'portfolios.api.bloomberg',
             'data_api_param': 'FUND1',
         }
-        return Ticker.objects.get_or_create(symbol='TESTSYMBOL1', defaults=params)[0]
+        return Ticker.objects.get_or_create(symbol='TSTSYMBOL1', defaults=params)[0]
 
     @classmethod
     def fund2(cls):
@@ -463,7 +473,7 @@ class Fixture1:
             'data_api': 'portfolios.api.bloomberg',
             'data_api_param': 'FUND2',
         }
-        return Ticker.objects.get_or_create(symbol='TESTSYMBOL2', defaults=params)[0]
+        return Ticker.objects.get_or_create(symbol='TSTSYMBOL2', defaults=params)[0]
 
     @classmethod
     def external_debt_1(cls):

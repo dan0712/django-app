@@ -17,3 +17,6 @@ class BaseApiTest(APITestCase):
         if status_code is not None:
             self.assertEqual(r.status_code, status_code, r.content)
         return r
+
+    def request_urls(self):
+        raise NotImplementedError()

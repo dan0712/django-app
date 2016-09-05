@@ -50,7 +50,7 @@ urlpatterns = patterns(
     url(r'^login/?$', user_views.LoginView.as_view(), name='user-login'),
     url(r'^returns$', analysis_views.ReturnsView.as_view()),
 
-    url(r'^benchmarks/?', include('api.v1.benchmarks.urls', namespace='benchmarks')),
+    url(r'^benchmarks/', include('api.v1.benchmarks.urls', namespace='benchmarks')),
     # reserved # url(r'^register/?$', user_views.RegisterView.as_view(), name='user-register'),
 
     # reserved # url(r'^register/reset/?$', user_views.ResetView.as_view(), name='user-reset'),
