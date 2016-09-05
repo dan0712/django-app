@@ -3,7 +3,12 @@
 {% load static from staticfiles %}
 
 {% block foot_js %}
-<script type="application/javascript" src="{% static "js/advisor/overview.js" %}"></script>
+<script type="application/javascript" src="{% static "js/widgets.js" %}"></script>
+<script type="application/javascript">
+  $(function () {
+    betasmartz.widgets.searchTable("#accounts", "#search");
+  });
+</script>
 {% endblock %}
 
 {% block main_content %}
@@ -60,8 +65,6 @@
               <span class="input-group-addon"><span class="icon icon-magnifying-glass"></span></span>
               <input type="search" placeholder="Filter groups" id="search"
                      class="form-control" aria-describedby="search">
-                <span class="glyphicon glyphicon-remove-sign form-control-feedback form-control-clear"
-                    id="btn-clear-search" style="cursor: pointer; pointer-events: all">
             </div>
           </div>
         </div>

@@ -1,7 +1,20 @@
 {% extends "layouts_new/base.html" %}
-{% load i18n %}
-{% load filters %}
-{% load static %}
+{% load i18n filters %}
+{% load static from staticfiles %}
+
+
+{% block foot_js %}
+<script type="application/javascript" src="{% static "js/widgets.js" %}"></script>
+<script type="application/javascript">
+  $(function () {
+    betasmartz.widgets.searchTable("#clientList", "#search", {
+      noSort: [5],
+      noSearch: [5],
+      dropdown: ["#accountTypeFilter", 4]
+    });
+  });
+</script>
+{% endblock %}
 
 
 {% block main_content %}
@@ -23,20 +36,19 @@
       <form>
         <div class="col-sm-4">
           <div class="form-group">
-            <select name="filter" class="form-control" onchange="this.form.submit();">
-                <option value="0">-- Type --</option>
-                <option value="0" {% if  filter == "0" %}selected="selected"{% endif %}>All</option>
-                <option value="1" {% if  filter == "1" %}selected="selected"{% endif %}>Primary</option>
-                <option value="2" {% if  filter == "2" %}selected="selected"{% endif %}>Secondary</option>
+            <select id="accountTypeFilter" class="form-control">
+                <option value="">All</option>
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
             </select>
           </div>
         </div>
         <div class="col-sm-4 col-sm-offset-4">
           <div class="form-group">
-            <!-- TODO: refactor as django_filter form field -->
             <div class="input-group">
-              <span class="input-group-addon" id="search"><span class="icon icon-magnifying-glass"></span></span>
-              <input type="search" name="search" placeholder="Search clients..." value="{{ search }}" class="form-control" onchange="this.form.submit();" aria-describedby="search">
+              <span class="input-group-addon"><span class="icon icon-magnifying-glass"></span></span>
+              <input type="search" placeholder="Filter clients" id="search"
+                     class="form-control" aria-describedby="search">
             </div>
           </div>
         </div>
@@ -45,7 +57,7 @@
 
     <div class="panel panel-default">
       <div class="table-responsive">
-        <table class="table">
+        <table class="table" id="clientList">
           <thead>
             <tr>
               <th>#</th>
@@ -53,6 +65,7 @@
               <th>Total balance</th>
               <th>Email</th>
               <th>Adviser relationship</th>
+              <th>&nbsp;</th>
             </tr>
           </thead>
           <tbody>
@@ -65,6 +78,9 @@
                 <td>{{ client.2|currency }}</td>
                 <td><a href="mailto:{{ client.3 }}">{{ client.3 }}</a></td>
                 <td>{{ client.4 }}</td>
+                <td>
+                  <a href="{% url "client:page" client.0 %}" class="btn btn-primary-outline btn-xs" target="_blank">Login</a>
+                </td>
               </tr>
              {% empty %}
               <tr>
@@ -77,40 +93,5 @@
         </table>
       </div>
     </div>
-
-    {% comment %}
-    <table>
-        <thead>
-        <tr>
-            <th><a class="{% if sort_col == "full_name" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=full_name&amp;sort_dir={{ sort_inverse }}">Name</a></th>
-            <th><a class="{% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total Balance</a></th>
-            <th><a class="{% if sort_col == "email_address" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=email_address&amp;sort_dir={{ sort_inverse }}">Email Address</a></th>
-            <th>Adviser Relationship</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for client in clients %}
-             <tr>
-                 <td><a href="/advisor/client/{{ client.0 }}">{{ client.1 }}</a></td>
-                 <td>${{ client.2  |bs_big_number}}</td>
-                 <td><a href="mailto:{{ client.3 }}">{{ client.3 }}</a></td>
-                 <td>{{ client.4 }}</td>
-            </tr>
-        {% endfor %}
-
-        </tbody>
-
-      <div class="pager">
-      </div>
-    </ul>
-    {% endcomment %}
-
   </div>
 {% endblock %}
-
-<!-- TODO: remove it later -->
-{% block main_js %}{% static 'js/client.js' %}{% endblock %}
-
-
-
-
