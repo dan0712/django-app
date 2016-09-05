@@ -3,7 +3,12 @@
 {% load static from staticfiles %}
 
 {% block foot_js %}
-<script type="application/javascript" src="{% static "js/advisor/overview.js" %}"></script>
+<script type="application/javascript" src="{% static "js/widgets.js" %}"></script>
+<script type="application/javascript">
+  $(function () {
+    betasmartz.widgets.searchTable("#accounts", "#search");
+  });
+</script>
 {% endblock %}
 
 {% block main_content %}
@@ -60,8 +65,6 @@
               <span class="input-group-addon"><span class="icon icon-magnifying-glass"></span></span>
               <input type="search" placeholder="Filter groups" id="search"
                      class="form-control" aria-describedby="search">
-                <span class="glyphicon glyphicon-remove-sign form-control-feedback form-control-clear"
-                    id="btn-clear-search" style="cursor: pointer; pointer-events: all">
             </div>
           </div>
         </div>
@@ -81,20 +84,20 @@
             </tr>
           </thead>
           <tbody>
-            {% for account in accounts %}
+            {% for group in groups %}
               <tr>
                 <td>
-                    <div>{{ account.pk }}</div>
+                    <div>{{ group.pk }}</div>
                 </td>
                 <td>
                   <div>
-                    {{ account.name }}
+                    <a href="{% url 'advisor:composites-detail' group.id %}">{{ group.name }}</a>
                   </div>
                 </td>
-                <td>{{ account.total_balance|currency }}</td>
+                <td>{{ group.total_balance|currency }}</td>
                 <td>
-                  <div>{{ account.total_returns|percentage }}</div>
-                  <div class="text-muted"><small><span>since</span> {{ account.created_at|date:'M j, Y' }}</small></div>
+                  <div>{{ group.total_returns|percentage }}</div>
+                  <div class="text-muted"><small><span>since</span> {{ group.since|date:'M j, Y' }}</small></div>
                 </td>
               </tr>
              {% empty %}
@@ -108,56 +111,5 @@
         </table>
       </div>
     </div>
-
-    {% comment %}
-    <ul id="dashboard">
-      <li class="composites-table-header">
-        <div><a class="{% if sort_col == "name" %}active {{ sort_dir }}{% endif %}"              data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=name&amp;sort_dir={{ sort_inverse }}">Name</a></div>
-        <div><a class="{% if sort_col == "goal_status" %}active {{ sort_dir }}{% endif %}"       data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=goal_status&amp;sort_dir={{ sort_inverse }}">Status</a></div>
-        <div><a class="{% if sort_col == "current_balance" %}active {{ sort_dir }}{% endif %}"   data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=current_balance&amp;sort_dir={{ sort_inverse }}">Total balance</a></div>
-        <div><a class="{% if sort_col == "return_percentage" %}active {{ sort_dir }}{% endif %}" data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=return_percentage&amp;sort_dir={{ sort_inverse }}">Total return</a></div>
-        <div><a class="{% if sort_col == "allocation" %}active {{ sort_dir }}{% endif %}"        data-pjax="true" href="?filter={{ filter }}&amp;search={{ search }}&amp;sort_col=allocation&amp;sort_dir={{ sort_inverse }}">Stocks / Bonds</a></div>
-      </li>
-      {% for group in groups %}
-        <li class="composites-table-row" data-composite-id="group.0">
-          <a data-track-location="Summary" data-track-name="Info" href="/composites/{{ group.0 }}">
-            <div>
-                <div class="composite-icon">
-                    {% with group.1 as household %}
-                        {% include "advisor/partials/icon-household.html" %}
-                    {% endwith %}
-                </div>
-                <h4>{{ group.2 }}</h4>
-                <h5>{{ group.3 }}</h5>
-                <h6>{{ group.4 }}</h6>
-            </div>
-            <div>
-                <h4>
-                    {% if group.5 %}
-                        <span class="on-track">On track</span>
-                    {% else %}
-                         <span class="off-track">Off track</span>
-                    {% endif %}
-                    </h4>
-            </div>
-            <div>
-                <h4>${{ group.6|currency}}</h4>
-            </div>
-            <div>
-                <h4>{{ group.7 }}%</h4>
-                <h5><span>Since</span>{{ group.8|date:'d/m/y'}}</h5>
-            </div>
-            <div>
-                <h4>{{ group.10 }}% / {{ group.11 }}%</h4>
-            </div>
-          </a>
-        </li>
-      {% endfor %}
-
-      <div class="pager">
-      </div>
-    </ul>
-    {% endcomment %}
-
   </div>
 {% endblock %}

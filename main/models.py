@@ -1126,8 +1126,12 @@ class GoalSetting(models.Model):
     # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
 
     def __str__(self):
-        result = u'Goal Settings #%s (%s)' % (self.id, self.portfolio)
-        return result
+        # portfolio field may be null if not assigned yet, throws error in admin
+        # this try/except is a work around
+        try:
+            return u'Goal Settings #%s (%s)' % (self.id, self.portfolio)
+        except Portfolio.DoesNotExist:
+            return u'Goal Settings #%s' % (self.id)
 
     def get_metrics_all(self):
         return self.metric_group.metrics.all()

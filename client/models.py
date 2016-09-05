@@ -195,6 +195,14 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             new_ac.remove_from_group()
 
 
+class IBAccount(models.Model):
+    '''
+    Specification of Interactive Brokers Account
+    '''
+    ib_account = models.CharField(max_length=32)
+    bs_account = models.OneToOneField('ClientAccount', related_name='ib_account')
+
+
 class ClientAccount(models.Model):
     """
     A ClientAccount is not just for Personal accounts. It is our base account,
@@ -207,7 +215,6 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    account_id = models.CharField(max_length=10, editable=True) #IB account ID, e.g. DU299694
     primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
@@ -232,6 +239,7 @@ class ClientAccount(models.Model):
                                            related_name='accounts')
     # The account must not be used until the risk_profile_responses are set.
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
+    # also has ib_account foreign key to IBAccount
 
     objects = ClientAccountQuerySet.as_manager()
 

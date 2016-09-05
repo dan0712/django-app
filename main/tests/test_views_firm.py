@@ -3,12 +3,12 @@ from django.test import TestCase
 from django.views.generic import TemplateView
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
-from main.models import Transaction, Goal
+from main.models import Transaction, Goal, GoalType
 from django.db.models import Q
 from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
     TransactionFactory, AccountTypeRiskProfileGroupFactory, \
-    ExternalAssetFactory
+    ExternalAssetFactory, PositionFactory, TickerFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -116,7 +116,7 @@ class FirmAnalyticsMixinTests(TestCase):
                                                      reason__in=Transaction.CASH_FLOW_REASONS) \
                                                     .filter(executed__gt=date.today() - relativedelta(years=1)) \
                                                     .filter(executed__gt=date.today() - relativedelta(years=1))
-                    
+
                     # subtract from_goal amounts and add to_goal amounts
                     for tx in txs:
                         if tx.from_goal:
@@ -138,7 +138,70 @@ class FirmAnalyticsMixinTests(TestCase):
         for d in context:
             test_worths.append(d['value_worth'])
             test_cashflows.append(d['value_cashflow'])
-        # print(expected_worths, test_worths)
         self.assertEqual(expected_worths, test_worths)
-        # print(expected_cashflows, test_cashflows)
         self.assertEqual(expected_cashflows, test_cashflows)
+
+    def test_get_context_positions(self):
+        kwargs = {}
+        # empty queries tests, should be empty unless Positions are
+        # added to setUp
+        positions = self.view.get_context_positions(**kwargs)
+        self.assertSequenceEqual(positions.get('asset_class'), [])
+        self.assertSequenceEqual(positions.get('region'), [])
+        self.assertSequenceEqual(positions.get('investment_type'), [])
+
+        # now we're going to add some data and rerun sequence tests
+        # have to specify content_type here because ticker uses the django
+        # built in contenttype it causes problems here otherwise,
+        # TODO: maybe some more elegant factoryboy solution here?
+        ticker1 = TickerFactory.create()
+        ticker2 = TickerFactory.create(benchmark_content_type=ticker1.benchmark_content_type)
+        ticker3 = TickerFactory.create(benchmark_content_type=ticker1.benchmark_content_type)
+        position1 = PositionFactory.create(ticker=ticker1)
+        position2 = PositionFactory.create(ticker=ticker2)
+        position3 = PositionFactory.create(ticker=ticker3)
+
+        positions = self.view.get_context_positions(**kwargs)
+
+        # should be three results, one for each position we just added
+        self.assertEqual(len(positions.get('asset_class')), 3)
+        self.assertEqual(len(positions.get('region')), 3)
+        self.assertEqual(len(positions.get('investment_type')), 3)
+
+        # compare sum of values to double check values being passed
+        expected_sum = position1.value + position2.value + position3.value
+        asset_actual_sum = sum([x.get('value') for x in positions.get('asset_class')])
+        region_actual_sum = sum([x.get('value') for x in positions.get('region')])
+        investment_actual_sum = sum([x.get('value') for x in positions.get('investment_type')])
+        self.assertEqual(expected_sum, asset_actual_sum)
+        self.assertEqual(expected_sum, region_actual_sum)
+        self.assertEqual(expected_sum, investment_actual_sum)
+
+    def test_get_context_events(self):
+        kwargs = {}
+        context = self.view.get_context_events(**kwargs)
+
+        # these should be 4 goals here from setup
+        original_context_len = len(context)
+        # check number of goals passed matches
+        self.assertEqual(original_context_len, 4)
+
+        # check categories
+        expected_categories = [gt.name for gt in GoalType.objects.all()]
+        actual_categories = [x.get('category') for x in context]
+        for category in expected_categories:
+            self.assertTrue(category in actual_categories)
+
+        # now lets add some more data and verify it is added
+        goal1 = GoalFactory.create()
+        goal2 = GoalFactory.create()
+        goal3 = GoalFactory.create()
+
+        context = self.view.get_context_events(**kwargs)
+        # check number of goals passed matches
+        self.assertEqual(original_context_len + 3, len(context))
+        # check categories
+        expected_categories = [gt.name for gt in GoalType.objects.all()]
+        actual_categories = [x.get('category') for x in context]
+        for category in expected_categories:
+            self.assertTrue(category in actual_categories)

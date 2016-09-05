@@ -48,7 +48,7 @@ var App = {
                 },
                 ticks: {
                   min: 20,
-                  max: 60,
+                  max: 70,
                   fontFamily: fontFamily,
                   fontSize: fontSize,
                 },
@@ -102,7 +102,11 @@ var App = {
           tooltips: {
             callbacks: {
               title: function(values) {
-                return Number(values[0].xLabel.toFixed(0)) + ' years';
+                if (Number(values[0].xLabel.toFixed(0)) >= 70) {
+                  return '70+ years';
+                } else {
+                  return Number(values[0].xLabel.toFixed(0)) + ' years';
+                }
               },
               label: function(values) {
                 return '$' + Number(values.yLabel.toFixed(0)).toLocaleString();
@@ -116,13 +120,13 @@ var App = {
               position: 'bottom',
               scaleLabel: {
                 display: true,
-                labelString: 'Age',
+                labelString: 'Average Age at Completion',
                 fontFamily: fontFamily,
                 fontSize: fontSize,
               },
               ticks: {
                 min: 20,
-                max: 60,
+                max: 70,
                 fontFamily: fontFamily,
                 fontSize: fontSize,
               },
@@ -132,7 +136,7 @@ var App = {
               position: 'left',
               scaleLabel: {
                 display: true,
-                labelString: 'Event cost',
+                labelString: 'Average Target Amount',
                 fontFamily: fontFamily,
                 fontSize: fontSize,
               },
@@ -328,11 +332,18 @@ var App = {
     */
 
     datasets = datasets || [];
+    var x = 1
     datasets = datasets.map(function(item) {
+      x++;
+      background = randomColor({
+        seed: x * 849,
+        luminosity: 'bright',
+        format: 'rgb'
+      });
       return $.extend({}, item, {
-        //borderColor: "rgba(200,150,200,1)",
+        borderColor: background,
         //pointBorderColor: "rgba(200,150,200,1)",
-        //pointBackgroundColor: "rgba(200,150,200,0.2)",
+        pointBackgroundColor: background,
         //pointHoverBackgroundColor: "rgba(200,150,200,1)",
         //pointHoverBorderColor: "rgba(200,150,200,1)",
         pointBorderWidth: 9,
