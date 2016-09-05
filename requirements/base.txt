@@ -34,7 +34,6 @@ django-nested-admin==3.0.2
 git+git://github.com/ITCase-django/django-tinymce-4#egg=django_tinymce_4
 django-page-cms==1.8.1
 django-phonenumber-field==1.1.0
-django-recurrence==1.2.0
 django-suit==0.2.15
 django-taggit==0.17.5
 git+git://github.com/arthanson/django-genericadmin  # For user friendly generic foreign keys in admin interface
@@ -49,7 +48,7 @@ pinax-eventlog==1.1.1
 psycopg2==2.6.1
 ptyprocess==0.5
 pysftp==0.2.8
-python-dateutil==2.4.2
+python-dateutil==2.5.3 # For rrule parsing
 pytz==2015.7
 scs==1.1.7
 six==1.10.0

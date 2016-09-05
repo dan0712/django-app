@@ -1073,10 +1073,6 @@ class RecurringTransaction(TransferPlan):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def next_transaction(self) -> datetime:
-        return self.get_next_date(now().date())
-
     @staticmethod
     def get_events(recurring_transactions, start, end):
         """

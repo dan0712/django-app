@@ -44,7 +44,7 @@ class RiskProfileAnswerSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RiskProfileAnswer
         exclude = (
-            'question', 'order', 'score'
+            'question', 'order', 'b_score', 'a_score', 's_score'
         )
 
 

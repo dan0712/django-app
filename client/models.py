@@ -503,6 +503,8 @@ class RiskProfileQuestion(models.Model):
     group = models.ForeignKey('RiskProfileGroup', related_name='questions')
     order = models.IntegerField()
     text = models.TextField()
+    explanation = models.TextField()
+    image = models.ImageField(_('question_image'), blank=True, null=True)
 
     # Also has property 'answers' which is all the predefined answers for
     # this question.
@@ -519,7 +521,13 @@ class RiskProfileAnswer(models.Model):
     question = models.ForeignKey('RiskProfileQuestion', related_name='answers')
     order = models.IntegerField()
     text = models.TextField()
-    score = models.FloatField()
+    image = models.ImageField(_('answer_image'), blank=True, null=True)
+    b_score = models.FloatField(help_text="Indication of Behaviour towards risk. "
+                                          "Higher means higher risk is idealogically acceptable.")
+    a_score = models.FloatField(help_text="Indication of Ability to take risk. "
+                                          "Higher means losses due to risk has less critical impact on the investor")
+    s_score = models.FloatField(help_text="Indication of Investor sophistication. "
+                                          "Higher means investor understands risk and investment matters.")
 
     # Also has property 'responses' which is all the responses given
     # that use this answer.
