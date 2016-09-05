@@ -34,7 +34,7 @@ class IBroker(ABC):
         pass
 
     @abstractmethod
-    def place_order(self, uid):
+    def place_order(self, ib_id):
         pass
 
     @abstractmethod

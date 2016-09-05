@@ -4,45 +4,19 @@ from ib.ext.Contract import Contract
 from ib.ext.ExecutionFilter import ExecutionFilter
 from ib.ext.Order import Order as IBOrder
 
-
 from ib.ext.ScannerSubscription import ScannerSubscription
 from ib.ext.TickType import TickType
 from ib.lib.logger import logger as basicConfig
 from ib.opt import ibConnection, message
 from time import sleep, strftime, time
 from functools import partial
-from random import randint
-import sys
 from execution.data_structures.market_depth import MarketDepth
 from execution.order.order import Order
 from datetime import datetime, timedelta
-import pytz
 
+very_short_sleep = partial(sleep, 0.01)
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
-
-
-order_ids = [0]
-
-
-def gen_tick_id():
-    i = range(100, 10000)
-    while True:
-        yield i
-        i += 1
-if sys.version_info[0] < 3:
-    gen_tick_id = gen_tick_id().next
-else:
-    gen_tick_id = gen_tick_id().__next__
-
-
-def next_order_id():
-    return order_ids[-1]
-
-
-def save_order_id(msg):
-    order_ids.append(msg.orderId)
-
 
 class Object(object):
     pass
@@ -73,6 +47,8 @@ class InteractiveBrokers(IBroker):
         options = get_options()
         basicConfig()
         self.connection = ibConnection(options.host, options.port, options.clientid)
+
+        self.connection.register(self._reply_next_valid_order_id, 'NextValidId')
         self.connection.register(self._update_account_value, 'AccountSummary')
         self.connection.register(self._reply_managed_accounts, 'ManagedAccounts')
         self.connection.register(self._reply_current_time, 'CurrentTime')
@@ -80,8 +56,8 @@ class InteractiveBrokers(IBroker):
                                  message.tickPrice,
                                  message.tickSize)
 
-        #TODO - do not use registerAll, but find keyword for orders only
-        self.connection.registerAll(self._reply_place_trade)
+        self.connection.register(self._reply_place_order, 'OpenOrder', 'OrderStatus')
+        self.connection.register(self._error_handler, 'Error')
 
         self.ib_account_cash = dict()
         self.ib_account_list = list()
@@ -94,10 +70,30 @@ class InteractiveBrokers(IBroker):
         self._requested_tickers = dict()
 
         self._current_time = datetime.now()
-        self.request_current_time()
+
+        self._time_received_next_valid_order_id = None
+        self._next_valid_order_id = None
 
     def _register(self, method, *subscription):
         self.connection.register(method, subscription)
+
+    def _get_next_valid_order_id(self):
+        """
+        You must assign a unique order ID to each order you place. IB's servers
+        keep track of the next available order ID you can use; this function
+        requests that value from IB's servers, waits until IB sends a response,
+        then returns the ID.
+        """
+        last_time = self._time_received_next_valid_order_id
+        self.connection.reqIds(1)
+        # Wait until IB sends the next valid ID
+        while last_time == self._time_received_next_valid_order_id:
+            very_short_sleep()
+        return self._next_valid_order_id
+
+    def _reply_next_valid_order_id(self, msg):
+        self._next_valid_order_id = msg.orderId
+        self._time_received_next_valid_order_id = datetime.now()
 
     def current_time(self):
         return self._current_time
@@ -106,7 +102,7 @@ class InteractiveBrokers(IBroker):
         self.connection.reqCurrentTime()
 
     def _reply_current_time(self, msg):
-        self._current_time = datetime.fromtimestamp(msg.time, pytz.timezone('US/Eastern'))
+        self._current_time = datetime.fromtimestamp(msg.time)
 
     def connect(self):
         self.connection.connect()
@@ -123,8 +119,8 @@ class InteractiveBrokers(IBroker):
             return
         order = self.orders[ib_id]
 
-        self.order.new = False
-        self.connection.place_order(order.ib_id, order.contract, order.order)
+        order.new = False
+        self.connection.placeOrder(order.ib_id, order.contract, order.order)
         short_sleep()
 
     def make_order(self, ticker, quantity, limit_price):
@@ -132,13 +128,13 @@ class InteractiveBrokers(IBroker):
             return
 
         ib_order = IBOrder()
-        ib_order.m_symb
         ib_order.m_lmtPrice = limit_price
         ib_order.m_orderType = 'LMT'
         ib_order.m_totalQuantity = quantity
 
-        #TODO make sure this is correct format
-        ib_order.m_goodTillDate = self.current_time + timedelta(minutes=5)
+        ib_order.m_tif = 'GTD'
+        valid_till = self.current_time() + timedelta(minutes=5)
+        ib_order.m_goodTillDate = valid_till.strftime('%Y%m%d %H:%M:%S')
 
         if quantity > 0:
             ib_order.m_action = 'BUY'
@@ -146,18 +142,19 @@ class InteractiveBrokers(IBroker):
             ib_order.m_action = 'SELL'
 
         contract = make_contract(ticker)
-        order = Order(order=ib_order, contract=contract, ib_id=gen_tick_id())
+        ib_id = self._get_next_valid_order_id()
+        order = Order(order=ib_order, contract=contract, ib_id=ib_id)
         self.orders[order.ib_id] = order
         return order.ib_id
 
     def request_account_summary(self):
-        reqId = gen_tick_id()
+        reqId = self._get_next_valid_order_id()
         self.connection.reqAccountSummary(reqId, 'All', 'AccountType,TotalCashValue')
         short_sleep()
         self.connection.cancelAccountSummary(reqId)
 
     def request_market_depth(self, ticker):
-        ticker_id = gen_tick_id()
+        ticker_id = self._get_next_valid_order_id()
         contract = make_contract(ticker)
         self._requested_tickers[ticker_id] = contract.m_symbol
         self.connection.reqMktData(ticker_id, contract, '', True)
@@ -181,6 +178,9 @@ class InteractiveBrokers(IBroker):
 
     def __create_fill(self, msg):
         self.filled_orders[msg.orderId] = msg
+
+    def _error_handler(self, msg):
+        print("Server Error: %s" % msg)
 
     def _reply_place_order(self, msg):
 

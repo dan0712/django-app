@@ -3,7 +3,7 @@ from django.db import transaction
 from functools import partial
 from logging import DEBUG, INFO, WARN, ERROR
 from time import sleep, strftime, time
-from client.models import ClientAccount
+#from client.models import ClientAccount
 from execution.broker.interactive_brokers import InteractiveBrokers
 
 short_sleep = partial(sleep, 1)
@@ -77,15 +77,24 @@ def main(options):
     con = InteractiveBrokers()
     con.connect()
     short_sleep()
-    con.request_account_summary()
+
+    con.make_order(ticker='MSFT',limit_price=10, quantity=10)
+    con.place_orders()
     long_sleep()
+
+    con.request_account_summary()
+    con.request_current_time()
+    con.current_time()
+    short_sleep()
     ib_account_cash.update(con.ib_account_cash)
+
 
     con.request_market_depth('GOOG')
     while con.requesting_market_depth():
         short_sleep()
+    long_sleep()
 
-    reconcile_cash_client_accounts()
+    #reconcile_cash_client_accounts()
 
 
 if __name__ == '__main__':
