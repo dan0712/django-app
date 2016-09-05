@@ -77,13 +77,15 @@ def main(options):
     con = InteractiveBrokers()
     con.connect()
     short_sleep()
+    long_sleep()
 
-    con.make_order(ticker='MSFT',limit_price=10, quantity=10)
+    con.make_order(ticker='MSFT', limit_price=10, quantity=10)
     con.place_orders()
+    long_sleep()
     long_sleep()
 
     con.request_account_summary()
-    con.request_current_time()
+
     con.current_time()
     short_sleep()
     ib_account_cash.update(con.ib_account_cash)

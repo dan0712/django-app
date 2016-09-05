@@ -11,8 +11,9 @@ from ib.opt import ibConnection, message
 from time import sleep, strftime, time
 from functools import partial
 from execution.data_structures.market_depth import MarketDepth
-from execution.order.order import Order
+from execution.order.order import Order, OrderStatus
 from datetime import datetime, timedelta
+
 
 very_short_sleep = partial(sleep, 0.01)
 short_sleep = partial(sleep, 1)
@@ -56,23 +57,27 @@ class InteractiveBrokers(IBroker):
                                  message.tickPrice,
                                  message.tickSize)
 
-        self.connection.register(self._reply_place_order, 'OpenOrder', 'OrderStatus')
+        self.connection.register(self._reply_place_order, 'OrderStatus')
         self.connection.register(self._error_handler, 'Error')
+        self.connection.registerAll(self.replyAll)
 
         self.ib_account_cash = dict()
         self.ib_account_list = list()
         self.market_data = dict()
 
         self.orders = dict()
-        self.filled_orders = dict()
-        self.order_events = set()
 
         self._requested_tickers = dict()
 
-        self._current_time = datetime.now()
+        self._current_time = None
 
         self._time_received_next_valid_order_id = None
         self._next_valid_order_id = None
+
+        self._order_events = set()
+
+    def replyAll(self, msg):
+        print(msg)
 
     def _register(self, method, *subscription):
         self.connection.register(method, subscription)
@@ -96,6 +101,10 @@ class InteractiveBrokers(IBroker):
         self._time_received_next_valid_order_id = datetime.now()
 
     def current_time(self):
+        if self._current_time is None:
+            self.request_current_time()
+        while self._current_time is None:
+            very_short_sleep()
         return self._current_time
 
     def request_current_time(self):
@@ -115,11 +124,11 @@ class InteractiveBrokers(IBroker):
             self.place_order(ib_id)
 
     def place_order(self, ib_id):
-        if ib_id not in self.orders or not self.orders[ib_id].new:
+        if ib_id not in self.orders or not self.orders[ib_id].status == OrderStatus.New:
             return
         order = self.orders[ib_id]
 
-        order.new = False
+        order.status = OrderStatus.Submitted
         self.connection.placeOrder(order.ib_id, order.contract, order.order)
         short_sleep()
 
@@ -133,7 +142,7 @@ class InteractiveBrokers(IBroker):
         ib_order.m_totalQuantity = quantity
 
         ib_order.m_tif = 'GTD'
-        valid_till = self.current_time() + timedelta(minutes=5)
+        valid_till = self.current_time() + timedelta(seconds=10)
         ib_order.m_goodTillDate = valid_till.strftime('%Y%m%d %H:%M:%S')
 
         if quantity > 0:
@@ -173,28 +182,43 @@ class InteractiveBrokers(IBroker):
             print("Account %s, cash: %s %s" % (msg.account, msg.value, msg.currency))
             self.ib_account_cash[msg.account] = msg.value
 
-    def __create_fill_dict_entry(self, msg):
-        self.filled_orders[msg.orderId] = msg
-
-    def __create_fill(self, msg):
-        self.filled_orders[msg.orderId] = msg
+    def _create_fill(self, msg):
+        order = self.orders[msg.orderId]
+        order.fill_price = msg.lastFillPrice
+        order.remaining = msg.remaining
+        order.filled -= order.filled
+        #TODO convert order status
 
     def _error_handler(self, msg):
         print("Server Error: %s" % msg)
 
+    def _construct_string(self, msg):
+        fill_price = ',FillPrice:' + str(msg.lastFillPrice)
+        remaining = ',Remaining:' + str(msg.remaining)
+        quantity = ',Quantity:' + str(msg.filled)
+        id = 'OrderId:' + str(msg.orderId)
+        status = ',Status:' + msg.status
+
+        order = id + status + quantity + fill_price + remaining
+        return order
+
     def _reply_place_order(self, msg):
+        interesting_statuses = ['orderStatus']
+        if msg.typeName not in interesting_statuses:
+            return
 
-        #TODO ignore duplicate messages
-        #https://www.interactivebrokers.com/en/software/api/apiguide/java/orderstatus.htm
+        order_event = self._construct_string(msg)
 
-        # TODO test this
-        if msg.typeName == "openOrder" and \
-                        msg.orderId not in self.filled_orders:
-            self.__create_fill_dict_entry(msg)
+        # TODO check if duplicate message filter works
+        # https://www.interactivebrokers.com/en/software/api/apiguide/java/orderstatus.htm
+        if order_event in self._order_events:
+            return #duplicate event
+
+        self._order_events.add(order_event)
 
         # Handle Fills
-        if msg.typeName == "orderStatus" and msg.status == "Filled":
-            self.create_fill(msg)
+        if msg.typeName == "orderStatus":
+            self._create_fill(msg)
         print("Server Response: %s, %s\n" % (msg.typeName, msg))
 
     def _reply_managed_accounts(self, msg):
