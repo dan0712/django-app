@@ -28,8 +28,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     WORTH_CHOICES = (
         (WORTH_AFFLUENT, 'Mass affluent'),
         (WORTH_HIGH, 'High net worth'),
-        (WORTH_VERY_HIGH, 'Ultra high net worth'),
-        (WORTH_ULTRA_HIGH, 'Very high net worth'),
+        (WORTH_VERY_HIGH, 'Very high net worth'),
+        (WORTH_ULTRA_HIGH, 'Ultra high net worth'),
     )
 
     WORTH_RANGES = (
