@@ -99,9 +99,6 @@ var App = {
           },
         },
         events: {
-          legend: {
-            fullWidth: false,
-          },
           tooltips: {
             callbacks: {
               title: function(values) {
