@@ -1,8 +1,5 @@
 {% extends "layouts_new/base.html" %}
-{% load i18n %}
-{% load humanize %}
-{% load filters %}
-
+{% load i18n humanize filters %}
 
 {% block main_content %}
   <div class="container">
@@ -24,50 +21,67 @@
       {% if object.advisor == profile %}
       <div class="col-sm-3 text-sm-right">
         <div class="form-group">
-          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-edit' object.pk %}">Edit household</a>
+          <a class="btn btn-primary-outline" href="{% url 'advisor:composites-edit' object.pk %}">Edit group</a>
         </div>
       </div>
       {%  endif %}
     </div>
 
     <div class="row">
-      <div class="col-sm-4 m-b">
+      <div class="col-sm-6 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
             <span class="statcard-desc">Total balance</span>
             <h2>
               {{ object.total_balance|currency }}
-              <!-- <small class="delta-indicator delta-positive">5%</small> -->
             </h2>
           </div>
         </div>
       </div>
-      <div class="col-sm-4 m-b">
+      <div class="col-sm-6 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
             <span class="statcard-desc">Total returns</span>
             <h2>
               {{ object.total_returns|percentage }}
-              <!-- <small class="delta-indicator delta-negative">2%</small> -->
-            </h2>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-4 m-b">
-        <div class="statcard statcard-success">
-          <div class="p-a">
-            <span class="statcard-desc">Total allocation</span>
-            <h2>
-              {{ object.stocks_percentage|percentage:0 }}&nbsp;<small>stocks</small>
-              {{ object.bonds_percentage|percentage:0 }}&nbsp;<small>bonds</small>
-              <!-- <small class="delta-indicator delta-positive">3%</small> -->
             </h2>
           </div>
         </div>
       </div>
     </div>
 
-    {% for account in object.accounts.all %}
+    <div class="panel panel-default">
+      <div class="table-responsive">
+        <table class="table" id="accounts">
+          <thead>
+          <tr>
+            <th>Client</th>
+            <th>Account</th>
+            <th>Balance</th>
+            <th>Return</th>
+            <th>&nbsp;</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for account in object.accounts.all %}
+            <tr>
+              <td><a href="{% url "advisors:clients:detail" account.primary_owner.id %}">{{ account.primary_owner }}</a></td>
+              <td>{{ account.name }}</td>
+              <td>{{ account.total_balance|currency }}</td>
+              <td>{{ account.total_returns|currency }}</td>
+              <td>
+                <a href="{% url "client:account" account.primary_owner.id account.id %}"
+                   class="btn btn-primary-outline btn-xs"
+                   target="_blank">Login</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+      {% comment %}
       <div class="row">
         <div class="col-sm-9">
           <h4 class="m-b-0">{{ account.account_type_name|default:'Undefined account type' }}</h4>
@@ -174,7 +188,7 @@
           </table>
         </div>
       </div>
-    {% endfor %}
+    {% endcomment %}
 
   </div>
 

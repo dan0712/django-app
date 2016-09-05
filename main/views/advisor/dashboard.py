@@ -13,7 +13,6 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.views.generic import CreateView, DetailView, ListView, \
     TemplateView, UpdateView
-from operator import itemgetter
 
 from address.models import Address, Region
 from client.models import Client, ClientAccount
@@ -21,10 +20,6 @@ from main.constants import (INVITATION_CLIENT)
 from main.models import (AccountGroup, Advisor,
                          Platform, User)
 from main.views.base import AdvisorView, ClientView
-
-
-class AdvisorOverview(TemplateView, AdvisorView):
-    template_name = "advisor/overview.html"
 
 
 class AdvisorClientInviteNewView(TemplateView, AdvisorView):
@@ -194,14 +189,16 @@ class AdvisorAccountGroupDetails(DetailView, AdvisorView):
     model = AccountGroup
 
     def get_queryset(self):
-        return super(AdvisorAccountGroupDetails, self).get_queryset() \
-            .filter(Q(advisor=self.advisor) | Q(secondary_advisors__in=[self.advisor])).distinct()
+        qs = super(AdvisorAccountGroupDetails, self).get_queryset()
+        return (qs
+                .filter(Q(advisor=self.advisor) |
+                        Q(secondary_advisors__in=[self.advisor]))
+                .distinct())
 
     def get_context_data(self, **kwargs):
-        ctx = super(AdvisorAccountGroupDetails, self).get_context_data(
-            **kwargs)
-        ctx["object"] = self.object
-        return ctx
+        c = super(AdvisorAccountGroupDetails, self).get_context_data(**kwargs)
+        c["object"] = self.object
+        return c
 
 
 class AdvisorAccountGroupClients(DetailView, AdvisorView):
@@ -323,19 +320,18 @@ class AdvisorAccountGroupSecondaryDeleteView(AdvisorView):
 
 
 class AdvisorCompositeOverview(ListView, AdvisorView):
-    model = ClientAccount
+    model = AccountGroup
     template_name = 'advisor/overview.html'
-    context_object_name = 'accounts'
+    context_object_name = 'groups'
 
     def get_queryset(self):
         q = super(AdvisorCompositeOverview, self).get_queryset()
-        return q.filter(
-            Q(account_group__advisor=self.advisor) |
-            Q(account_group__secondary_advisors__in=[self.advisor]),
-            confirmed=True,
-            primary_owner__user__prepopulated=False,
-        )
-
+        return q.filter(Q(advisor=self.advisor) |
+                        Q(secondary_advisors__in=[self.advisor]),
+                        accounts_all__isnull=False,
+                        accounts_all__confirmed=True,
+                        accounts_all__primary_owner__user__prepopulated=False,
+                        ).distinct()
 
 class AdvisorClientAccountChangeFee(UpdateView, AdvisorView):
     model = ClientAccount
