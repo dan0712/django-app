@@ -526,7 +526,7 @@ class RiskProfileAnswer(models.Model):
                                           "Higher means higher risk is idealogically acceptable.")
     a_score = models.FloatField(help_text="Indication of Ability to take risk. "
                                           "Higher means losses due to risk has less critical impact on the investor")
-    s_score = models.FloatField(help_text="Indication of investor sophistication. "
+    s_score = models.FloatField(help_text="Indication of Investor sophistication. "
                                           "Higher means investor understands risk and investment matters.")
 
     # Also has property 'responses' which is all the responses given

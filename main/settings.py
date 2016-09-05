@@ -38,7 +38,6 @@ INSTALLED_APPS = (
     'suit',
     'compat',
     'pages',
-    'recurrence',
 
     'notifications', # move to django-notifications-hq>=1.0 after fixing 
     'pinax.eventlog',  # For our activity tracking

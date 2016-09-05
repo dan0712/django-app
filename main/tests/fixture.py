@@ -238,28 +238,36 @@ class Fixture1:
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
                                                        order=0,
                                                        text='A lot',
-                                                       score=9)[0]
+                                                       b_score=9,
+                                                       a_score=9,
+                                                       s_score=9)[0]
 
     @classmethod
     def risk_profile_answer1b(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
                                                        order=1,
                                                        text='A little',
-                                                       score=2)[0]
+                                                       b_score=2,
+                                                       a_score=2,
+                                                       s_score=2)[0]
 
     @classmethod
     def risk_profile_answer2a(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question2(),
                                                        order=0,
                                                        text='Very',
-                                                       score=9)[0]
+                                                       b_score=9,
+                                                       a_score=9,
+                                                       s_score=9)[0]
 
     @classmethod
     def risk_profile_answer2b(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question2(),
                                                        order=1,
                                                        text="I'm basically a peanut",
-                                                       score=1)[0]
+                                                       b_score=1,
+                                                       a_score=1,
+                                                       s_score=1)[0]
 
     @classmethod
     def populate_risk_profile_questions(cls):
