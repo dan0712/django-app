@@ -247,6 +247,11 @@ class ClientAccount(models.Model):
     class Meta:
         unique_together = ('primary_owner', 'account_name')
 
+
+    def __init__(self, *args, **kwargs):
+        super(ClientAccount, self).__init__(*args, **kwargs)
+        self.__was_confirmed = self.confirmed
+
     @property
     def goals(self):
         return self.all_goals.exclude(state=Goal.State.ARCHIVED.value)
@@ -255,9 +260,27 @@ class ClientAccount(models.Model):
              update_fields=None):
         if self.pk is None:
             self.token = str(uuid.uuid4())
-
-        return super(ClientAccount, self).save(force_insert, force_update,
+        if self.confirmed != self.__was_confirmed:
+            self.on_confirmed_modified()
+        ret_value = super(ClientAccount, self).save(force_insert, force_update,
                                                using, update_fields)
+        self.__was_confirmed = self.confirmed
+        return ret_value
+
+    def on_confirmed_modified(self):
+        from client.models import EmailInvite
+        try:
+            invitation = self.primary_owner.user.invitation
+        except EmailInvite.DoesNotExist: invitation = None
+        print(invitation, invitation.status, invitation.reason)
+
+        if invitation \
+                and invitation.status != EmailInvite.STATUS_COMPLETE \
+                and invitation.reason == EmailInvite.REASON_PERSONAL_INVESTING:
+            invitation.onboarding_data = None
+            invitation.status = EmailInvite.STATUS_COMPLETE
+            invitation.save()
+
 
     def remove_from_group(self):
         old_group = self.account_group

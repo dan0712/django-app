@@ -5,19 +5,29 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from common.constants import GROUP_SUPPORT_STAFF
-from main.constants import ACCOUNT_TYPES
+from main.constants import ACCOUNT_TYPES, ACCOUNT_TYPE_PERSONAL
 from main.models import User
 from main.tests.fixture import Fixture1
 from .factories import AdvisorFactory, SecurityQuestionFactory, \
     EmailInviteFactory, GroupFactory
+
+from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
+    ClientAccountFactory, ClientFactory, ExternalAssetFactory, GoalFactory, \
+    GroupFactory, RegionFactory, RiskProfileGroupFactory, UserFactory
+
 from client.models import EmailInvite
 from django.test.client import MULTIPART_CONTENT
 import json
 
-
 class InviteTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+        # client with some personal assets, cash balance and goals
+        self.region = RegionFactory.create()
+        self.betasmartz_client_address = AddressFactory(region=self.region)
+        self.risk_group = RiskProfileGroupFactory.create(name='Personal Risk Profile Group')
+        self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=0,
+                                                                               risk_profile_group=self.risk_group)
         self.advisor = AdvisorFactory.create()
         self.question_one = SecurityQuestionFactory.create()
         self.question_two = SecurityQuestionFactory.create()
@@ -173,3 +183,50 @@ class InviteTests(APITestCase):
                          msg='Onboarding must accept files')
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
+
+    def test_complete_invitation(self):
+
+        # Bring an invite key, get logged in as a new user
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT,
+                                           reason=EmailInvite.REASON_PERSONAL_INVESTING)
+
+        url = reverse('api:v1:client-user-register')
+        data = {
+            'first_name': invite.first_name,
+            'last_name': invite.last_name,
+            'invite_key': invite.invite_key,
+            'email': invite.email,
+            'password': 'test',
+            'question_one_id': self.question_one.id,
+            'question_one_answer': 'answer one',
+            'question_two_id': self.question_two.id,
+            'question_two_answer': 'answer two',
+        }
+
+        # Accept an invitation and create a user
+        response = self.client.post(url, data)
+        invite = EmailInvite.objects.get(pk=invite.pk)
+        user = invite.user
+        invite_detail_url = reverse('api:v1:invite-detail', kwargs={'invite_key': invite.invite_key} )
+
+        self.assertEqual(EmailInvite.STATUS_ACCEPTED, invite.status)
+
+        # New user must be logged in too
+        self.assertIn('sessionid', response.cookies)
+
+        # PUT: /api/v1/invites/:key
+        # Submit with onboarding_data
+        onboarding = {'onboarding_data': json.dumps({'foo': 'bar'})}
+        response = self.client.put(invite_detail_url, data=onboarding)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='Onboarding must accept json')
+
+
+        betasmartz_client = ClientFactory.create(user=user)
+        betasmartz_client_account = ClientAccountFactory(primary_owner=betasmartz_client, account_type=ACCOUNT_TYPE_PERSONAL, confirmed=False)
+        betasmartz_client_account.confirmed = True
+        betasmartz_client_account.save()
+
+        invite = EmailInvite.objects.get(pk=invite.pk)
+        self.assertEqual(invite.onboarding_data, None)
+        self.assertEqual(invite.status, EmailInvite.STATUS_COMPLETE)

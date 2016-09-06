@@ -14,9 +14,11 @@ from django.core.validators import (MaxValueValidator, MinLengthValidator,
 from django.db import models, transaction
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
+from django.db.models.signals import post_save
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
+from django.dispatch import receiver
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -748,6 +750,20 @@ class RetirementPlan(models.Model):
             raise ValidationError('Account is not verified.')
 
         super(RetirementPlan, self).save(*args, **kwargs)
+
+@receiver(post_save, sender=RetirementPlan)
+def resolve_retirement_invitations(sender, instance, created, **kwargs):
+    """Create a matching profile whenever a user object is created."""
+    from client.models import EmailInvite
+    try:
+        invitation = instance.client.user.invitation
+    except EmailInvite.DoesNotExist: invitation = None
+    if created and invitation \
+            and invitation.status != EmailInvite.STATUS_COMPLETE \
+            and invitation.reason == EmailInvite.REASON_RETIREMENT:
+        invitation.onboarding_data = None
+        invitation.status = EmailInvite.STATUS_COMPLETE
+        invitation.save()
 
 
 class ExternalAssetTransfer(TransferPlan):
