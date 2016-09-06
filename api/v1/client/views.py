@@ -69,6 +69,15 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
+    def post(self, request):
+        if EmailInvite.STATUS_ACTIVE == getattr(
+            self.request.user.invitation, 'status', None):
+            return super(ClientViewSet, self).post(request)
+        return Response({'error': 'requires account with accepted invitation'},
+                        status=HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
 class InvitesView(ApiViewMixin, views.APIView):
     permission_classes = []
     serializer_class = serializers.PrivateInvitationSerializer
