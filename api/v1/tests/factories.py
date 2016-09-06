@@ -133,14 +133,6 @@ class AddressFactory(factory.django.DjangoModelFactory):
     region = factory.SubFactory(RegionFactory)
 
 
-class PortfolioSetFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = PortfolioSet
-
-    name = factory.Sequence(lambda n: "PortfolioSet %d" % n)
-    risk_free_rate = factory.LazyAttribute(lambda n: float(random.randrange(10000)) / 100)
-
-
 class AdvisorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Advisor
