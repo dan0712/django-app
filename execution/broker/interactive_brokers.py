@@ -14,7 +14,6 @@ from execution.data_structures.market_depth import MarketDepth
 from execution.order.order import Order, OrderStatus
 from datetime import datetime, timedelta
 
-
 very_short_sleep = partial(sleep, 0.01)
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -48,7 +47,7 @@ class InteractiveBrokers(IBroker):
         options = get_options()
         basicConfig()
         self.connection = ibConnection(options.host, options.port, options.clientid)
-
+        self.clientid = options.clientid
         self.connection.register(self._reply_next_valid_order_id, 'NextValidId')
         self.connection.register(self._update_account_value, 'AccountSummary')
         self.connection.register(self._reply_managed_accounts, 'ManagedAccounts')
@@ -64,17 +63,15 @@ class InteractiveBrokers(IBroker):
         self.ib_account_cash = dict()
         self.ib_account_list = list()
         self.market_data = dict()
+        self._requested_tickers = dict()
 
         self.orders = dict()
-
-        self._requested_tickers = dict()
+        self._order_events = set()
 
         self._current_time = None
 
         self._time_received_next_valid_order_id = None
         self._next_valid_order_id = None
-
-        self._order_events = set()
 
     def replyAll(self, msg):
         print(msg)
@@ -132,6 +129,12 @@ class InteractiveBrokers(IBroker):
         self.connection.placeOrder(order.ib_id, order.contract, order.order)
         short_sleep()
 
+    def replace_profile(self, fa_profile):
+        self.connection.replaceFA(self.connection.PROFILES, fa_profile)
+
+    def request_profile(self):
+        self.connection.requestFA(self.connection.PROFILES)
+
     def make_order(self, ticker, quantity, limit_price):
         if quantity == 0 or limit_price <= 0:
             return
@@ -139,16 +142,23 @@ class InteractiveBrokers(IBroker):
         ib_order = IBOrder()
         ib_order.m_lmtPrice = limit_price
         ib_order.m_orderType = 'LMT'
-        ib_order.m_totalQuantity = quantity
+        ib_order.m_totalQuantity = abs(quantity)
+        ib_order.m_allOrNone = False
+        ib_order.m_transmit = True
+        ib_order.m_clientId = self.clientid
 
         ib_order.m_tif = 'GTD'
         valid_till = self.current_time() + timedelta(seconds=10)
-        ib_order.m_goodTillDate = valid_till.strftime('%Y%m%d %H:%M:%S')
+        ib_order.m_goodTillDate = valid_till.strftime('%Y%m%d %H:%M:%S') + ' EST'
+        #TODO for some reason does not expire - hopefully because exchange is closed
+        #e.g. 20031126 15:59:00 EST
 
         if quantity > 0:
             ib_order.m_action = 'BUY'
         else:
             ib_order.m_action = 'SELL'
+
+        ib_order.m_faProfile = ticker
 
         contract = make_contract(ticker)
         ib_id = self._get_next_valid_order_id()
