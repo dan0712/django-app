@@ -5,7 +5,8 @@ from filebrowser.sites import site
 
 from api.v1.user.views import PasswordResetView
 from main import settings
-from .views import *
+from main.views import *
+from main.views.client.app_missing import ClientAppMissing
 
 
 def ok_response_json(*args, **kwargs):

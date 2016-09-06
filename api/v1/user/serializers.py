@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from client.models import EmailNotificationPrefs
 from main.models import User
 from user.models import SecurityAnswer, SecurityQuestion
 
@@ -133,12 +132,6 @@ class ResetEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError('Email address not found')
 
         return value
-
-
-class EmailNotificationsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmailNotificationPrefs
-        exclude = 'id', 'client',
 
 
 class ResetPasswordSerializer(serializers.Serializer):

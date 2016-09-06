@@ -39,7 +39,8 @@ account_goals_router = account_router.register(r'goals',
 urlpatterns = patterns(
     '',
     url(r'^me/?$', user_views.MeView.as_view(), name='user-me'),
-    url(r'^me/profile/notifications/?$', user_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
+    url(r'^me/profile/?$', client_views.ProfileView.as_view(), name='user-me-profile'),
+    url(r'^me/profile/notifications/?$', client_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
     # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
 
     url(r'^region/(?P<pk>\d+)/?$', address_views.RegionView.as_view(), name='region-detail'),

@@ -1,13 +1,14 @@
 from rest_framework import viewsets
-
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
+from api.v1.client.serializers import EmailNotificationsSerializer, \
+    PersonalInfoSerializer
+from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
-
-from main.models import ExternalAsset
 from client.models import Client
+from main.models import ExternalAsset
 from support.models import SupportRequest
-
 from . import serializers
 
 
@@ -60,3 +61,19 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         # Only return Clients the user has access to.
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
+
+
+class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
+    permission_classes = IsClient,
+    serializer_class = EmailNotificationsSerializer
+
+    def get_object(self):
+        return Client.objects.get(user=self.request.user).notification_prefs
+
+
+class ProfileView(ApiViewMixin, RetrieveUpdateAPIView):
+    permission_classes = IsClient,
+    serializer_class = PersonalInfoSerializer
+
+    def get_object(self):
+        return Client.objects.get(user=self.request.user)

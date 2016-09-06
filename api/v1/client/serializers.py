@@ -5,7 +5,8 @@ from api.v1.address.serializers import AddressSerializer
 from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import ExternalAsset, ExternalAssetTransfer
-from client.models import Client
+from client.models import Client, EmailNotificationPrefs
+from notifications.signals import notify
 
 from ..user.serializers import UserFieldSerializer
 
@@ -120,4 +121,40 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser = EAWritableTransferPlanSerializer(data=txp)
             ser.is_valid(raise_exception=True)
             ser.save(asset=instance)
+        return instance
+
+
+class EmailNotificationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailNotificationPrefs
+        exclude = 'id', 'client',
+
+
+class PersonalInfoSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    middle_name = serializers.CharField(source='user.middle_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    address = serializers.CharField(source='residential_address.address', required=False)
+    phone = serializers.CharField(source='phone_num', required=False)
+
+    class Meta:
+        model = Client
+        fields = ('first_name', 'middle_name', 'last_name', 'address',
+                  'phone', 'employment_status', 'occupation', 'employer',
+                  'income', 'net_worth')
+
+    def save(self, **kwargs):
+        new_address = self.validated_data.pop('residential_address', None)
+        client = self.instance # client.Client
+        if new_address:
+            current_address = client.residential_address
+            current_address.address = new_address['address']
+            current_address.save(update_fields=['address'])
+        instance = super(PersonalInfoSerializer, self).save(**kwargs)
+
+        notify.send(client.advisor.user, recipient=client.user,
+                    verb='update-personal-info')
+
+        # TODO generate a new SOA
+
         return instance
