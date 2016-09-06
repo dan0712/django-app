@@ -1,14 +1,16 @@
 from django.db.models.query_utils import Q
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework.response import Response
 
 from api.v1.permissions import IsAdvisorOrClient
 from api.v1.utils import activity
 from api.v1.views import ApiViewMixin
 
 from client.models import ClientAccount
+from main import constants
 from support.models import SupportRequest
 
 from . import serializers
@@ -86,3 +88,19 @@ class AccountViewSet(ApiViewMixin,
     def activity(self, request, pk=None, **kwargs):
         account = self.get_object()
         return activity.get(request, account)
+
+    def create(self, request):
+        """
+        only allow one personal account per client
+        """
+
+        klass = self.get_serializer_class()
+        serializer = klass(data=request.data)
+
+        if serializer.is_valid():
+            owner = serializer.validated_data['primary_owner']
+            other_personals = owner.accounts_all.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL)
+            if serializer.validated_data['account_type'] == constants.ACCOUNT_TYPE_PERSONAL \
+                    and other_personals.count() >= 1:
+                return Response({'error': 'Limit 1 personal account'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super(AccountViewSet, self).create(request)
