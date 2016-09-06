@@ -38,15 +38,29 @@ class InviteTests(APITestCase):
             'question_two_answer': 'answer two',
         }
 
-        # 404 no such token=123
+        # 400 no such token=123
         response = self.client.post(url, dict(data, invite_key='123'))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND,
-                         msg='404 for registrations from nonexistant email invite')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 for registrations from nonexistant email invite')
 
-        # 404 token must match user
+        # 400 on bad securityquestions
+        response = self.client.post(url, dict(data, question_one_id=9999))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question id')
+        response = self.client.post(url, dict(data, question_two_id=9999))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question id')
+        response = self.client.post(url, dict(data, question_one_answer=''))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question answer')
+        response = self.client.post(url, dict(data, question_two_answer=''))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question answer')
+
+        # 400 token must match user
         response = self.client.post(url, dict(data, email='invalid@example.org'))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND,
-                         msg='404 for registrations from mismatched email invite')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 for registrations from mismatched email invite')
 
         # With a valid token, get a valid user
         response = self.client.post(url, data)
@@ -63,6 +77,5 @@ class InviteTests(APITestCase):
         self.assertEqual(EmailInvite.STATUS_ACCEPTED, lookup_invite.status)
 
         # New user must be logged in too
-        print(response.cookies)
         self.assertIn('sessionid', response.cookies)
 

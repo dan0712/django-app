@@ -81,20 +81,9 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
 
     def post(self, request):
         serializer = serializers.ClientUserRegistrationSerializer(data=request.data)
-        if not serializer.is_valid():
+        if not serializer.is_valid(raise_exception=True):
             logger.error('Error accepting invitation: %s'%serializer.errors['non_field_errors'][0])
             return Response({'error': 'invitation not found for this email'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not SecurityQuestion.objects.filter(
-                pk=request.data.get('question_one_id')).exists():
-            msg = _('Invalid security question')
-            raise exceptions.ValidationError(msg)
-
-        if not SecurityQuestion.objects.filter(
-                pk=request.data.get('question_two_id')).exists():
-            msg = _('Invalid security question')
-            raise exceptions.ValidationError(msg)
-
         invite = serializer.invite
 
         user_params = {
@@ -105,6 +94,14 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
             'password': serializer['password'],
         }
         user = User.objects.create_user(**user_params)
+
+        SecurityAnswer.objects.create(user=user,
+                                      question=serializer.question_one,
+                                      answer=serializer['question_one_answer'])
+
+        SecurityAnswer.objects.create(user=user,
+                                      question=serializer.question_two,
+                                      answer=serializer['question_two_answer'])
 
         invite.status = EmailInvite.STATUS_ACCEPTED
         invite.user = user

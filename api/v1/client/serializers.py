@@ -7,6 +7,7 @@ from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import ExternalAsset, ExternalAssetTransfer, User
 from client.models import Client, EmailInvite
+from user.models import SecurityQuestion, SecurityAnswer
 
 from ..user.serializers import UserFieldSerializer
 
@@ -130,6 +131,11 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
     invite_key = serializers.CharField()
     email = serializers.CharField()
     password = serializers.CharField(style={'input_type': 'password'})
+    question_one_id = serializers.IntegerField()
+    question_one_answer = serializers.CharField()
+    question_two_id = serializers.IntegerField()
+    question_two_answer = serializers.CharField()
+
     def validate(self, attrs):
         if User.objects.filter(email=attrs.get('email')).exists():
             msg = _('Email is already in use')
@@ -139,6 +145,25 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
             'invite_key': attrs.get('invite_key'),
             'email': attrs.get('email'),
         }
+
+        if not attrs.get('question_one_id') or not SecurityQuestion.objects.filter(
+            pk=attrs['question_one_id']).exists():
+            msg = _('Invalid security question #1 ID')
+            raise exceptions.ValidationError(msg)
+        self.question_one = SecurityQuestion.objects.get(pk=attrs['question_one_id'])
+
+        if not attrs.get('question_two_id') or not SecurityQuestion.objects.filter(
+            pk=attrs['question_two_id']).exists():
+            msg = _('Invalid security question #2 ID')
+            raise exceptions.ValidationError(msg)
+        self.question_two = SecurityQuestion.objects.get(pk=attrs['question_two_id'])
+
+        if not attrs.get('question_one_answer'):
+            msg = _('Invalid security question #1 answer')
+            raise exceptions.ValidationError(msg)
+        if not attrs.get('question_two_answer'):
+            msg = _('Invalid security question #2 answer')
+            raise exceptions.ValidationError(msg)
 
         invite_lookup = EmailInvite.objects.filter(**invite_params)
 
