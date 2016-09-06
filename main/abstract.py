@@ -1,15 +1,17 @@
 import datetime
 import uuid
 
+from dateutil.rrule import rrulestr
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
-from phonenumber_field.modelfields import PhoneNumberField
-from dateutil.rrule import rrulestr
 from django.utils.functional import cached_property
+from phonenumber_field.modelfields import PhoneNumberField
+
 from common.structures import ChoiceEnum
+from main.fields import FeatureList
 from main.utils import d2dt
 
 
@@ -21,6 +23,17 @@ class PersonalData(models.Model):
         SINGLE = 0
         MARRIED = 1  # May be married, or any other financially recognised relationship.
 
+    ASSOCIATED_TO_BROKER_DEALER = 1
+    TEN_PERCENT_INSIDER = 2
+    PUBLIC_POSITION_INSIDER = 4
+    US_CITIZEN = 8
+
+    FEATURES = {
+        'AU': [],
+        'US': [ASSOCIATED_TO_BROKER_DEALER, TEN_PERCENT_INSIDER,
+               PUBLIC_POSITION_INSIDER, US_CITIZEN],
+    }
+
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
     gender = models.CharField(max_length=20,
                               default="Male",
@@ -30,8 +43,15 @@ class PersonalData(models.Model):
     medicare_number = models.CharField(max_length=50, default="")
     civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
 
+    _features = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
+
+    def __init__(self, *args, **kwargs):
+        super(PersonalData, self).__init__(*args, **kwargs)
+        self.features = FeatureList(self, '_features',
+                                    self.FEATURES[self.country])
 
     @property
     def first_name(self):
@@ -59,6 +79,12 @@ class PersonalData(models.Model):
             age = today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
             return age
         return
+
+    @property
+    def country(self):
+        if getattr(self, '_country', None) is None:
+            self._country = self.residential_address.region.country
+        return self._country
 
 
 class NeedApprobation(models.Model):

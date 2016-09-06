@@ -75,3 +75,45 @@ class MedicareNumberValidator(object):
             return False, 'Invalid Medicare number.'
 
         return True, ""
+
+
+class FeatureList:
+    @property
+    def _v(self):
+        return getattr(*self.field)
+
+    @_v.setter
+    def _v(self, value):
+        setattr(*self.field, value)
+
+    def _check(self, f):
+        if f not in self.feature_list:
+            raise ValueError("Unknown %s feature." % f)
+
+    def __init__(self, obj, field, feature_list):
+        self.field = obj, field
+        self.feature_list = feature_list
+
+    def __add__(self, feature):
+        self._check(feature)
+        self._v |= feature
+        return self
+
+    def __sub__(self, feature):
+        self._check(feature)
+        self._v &= ~feature
+        return self
+
+    def __contains__(self, item):
+        return self.has(item)
+
+    def has(self, feature):
+        return bool(self._v & feature)
+
+    def __eq__(self, other):
+        return self._v == other
+
+    def __repr__(self):
+        return self._v
+
+
