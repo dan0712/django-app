@@ -124,6 +124,27 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser.save(asset=instance)
         return instance
 
+class InvitationSerializer(ReadOnlyModelSerializer):
+    class Meta:
+        model = EmailInvite
+        fields = (
+            'invite_key',
+            'status',
+        )
+
+class PrivateInvitationSerializer(serializers.ModelSerializer):
+    # Includes onboarding data
+    class Meta:
+        model = EmailInvite
+        read_only_fields = ('invite_key', 'status')
+        fields = (
+            'invite_key',
+            'status',
+            'onboarding_data',
+            'onboarding_file_1'
+        )
+
+
 class ClientUserRegistrationSerializer(serializers.Serializer):
     """
     For POST request to register from an email token

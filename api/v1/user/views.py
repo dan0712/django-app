@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from api.v1.advisor.serializers import AdvisorSerializer
 from api.v1.client.serializers import ClientFieldSerializer
-from client.models import Client
+from client.models import Client, EmailInvite
 from support.models import SupportRequest
 from user.autologout import SessionExpire
 from user.models import SecurityAnswer, SecurityQuestion
@@ -27,6 +27,7 @@ from ..user.serializers import ChangePasswordSerializer, \
     SecurityQuestionSerializer, SecurityQuestionAnswerUpdateSerializer
 
 from .serializers import EmailNotificationsSerializer
+from ..client.serializers import InvitationSerializer
 from ..permissions import IsClient
 from ..views import ApiViewMixin, BaseApiView
 
@@ -48,14 +49,18 @@ class MeView(BaseApiView):
             sr = SupportRequest.get_current(self.request, as_obj=True)
             user = sr.user
         data = self.serializer_class(user).data
+
         if user.is_advisor:
             role = 'advisor'
             data['advisor'] = AdvisorSerializer(user.advisor).data
         elif user.is_client:
             role = 'client'
             data['client'] = ClientFieldSerializer(user.client).data
+        elif user.invitation and user.invitation.status == EmailInvite.STATUS_ACCEPTED:
+            role = 'client'
+            data['invitation'] = InvitationSerializer(instance=user.invitation).data
         else:
-            raise PermissionDenied("User is not in the client or advisor groups.")
+            raise PermissionDenied("User is not in the client or advisor groups, or is not a new user accepting an invitation.")
         data.update({'role': role})
         return Response(data)
 

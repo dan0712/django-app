@@ -567,7 +567,8 @@ class EmailInvite(models.Model):
     middle_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
-    user = models.OneToOneField('main.User', null=True, blank=True)
+    user = models.OneToOneField('main.User', related_name='invitation',
+                                null=True, blank=True)
 
     invite_key = models.CharField(max_length=64,
                                   default=lambda: EmailInvite.generate_token())
