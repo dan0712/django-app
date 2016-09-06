@@ -13,6 +13,7 @@ from functools import partial
 from execution.data_structures.market_depth import MarketDepth
 from execution.order.order import Order, OrderStatus
 from datetime import datetime, timedelta
+from execution.account_groups.account_allocations import Execution, AccountAllocations
 
 very_short_sleep = partial(sleep, 0.01)
 short_sleep = partial(sleep, 1)
@@ -42,6 +43,13 @@ def make_contract(symbol):
     return contract
 
 
+def get_next_request_id():
+    i = 1
+    while True:
+        yield i
+        i += 1
+get_next_request_id = get_next_request_id().__next__
+
 class InteractiveBrokers(IBroker):
     def __init__(self):
         options = get_options()
@@ -58,7 +66,8 @@ class InteractiveBrokers(IBroker):
 
         self.connection.register(self._reply_place_order, 'OrderStatus')
         self.connection.register(self._error_handler, 'Error')
-        self.connection.registerAll(self.replyAll)
+        self.connection.register(self._reply_execution_details, 'ExecDetails')
+        self.connection.registerAll(self._reply_all)
 
         self.ib_account_cash = dict()
         self.ib_account_list = list()
@@ -72,9 +81,13 @@ class InteractiveBrokers(IBroker):
 
         self._time_received_next_valid_order_id = None
         self._next_valid_order_id = None
+        self.messages = list()
+        self.execution_allocation_msgs = list()
+        self.execution_allocations = AccountAllocations()
 
-    def replyAll(self, msg):
+    def _reply_all(self, msg):
         print(msg)
+        self.messages.append(msg)
 
     def _register(self, method, *subscription):
         self.connection.register(method, subscription)
@@ -150,8 +163,6 @@ class InteractiveBrokers(IBroker):
         ib_order.m_tif = 'GTD'
         valid_till = self.current_time() + timedelta(seconds=10)
         ib_order.m_goodTillDate = valid_till.strftime('%Y%m%d %H:%M:%S') + ' EST'
-        #TODO for some reason does not expire - hopefully because exchange is closed
-        #e.g. 20031126 15:59:00 EST
 
         if quantity > 0:
             ib_order.m_action = 'BUY'
@@ -167,18 +178,18 @@ class InteractiveBrokers(IBroker):
         return order.ib_id
 
     def request_account_summary(self):
-        reqId = self._get_next_valid_order_id()
-        self.connection.reqAccountSummary(reqId, 'All', 'AccountType,TotalCashValue')
+        req_id = get_next_request_id()
+        self.connection.reqAccountSummary(req_id, 'All', 'AccountType,TotalCashValue')
         short_sleep()
-        self.connection.cancelAccountSummary(reqId)
+        self.connection.cancelAccountSummary(req_id)
 
     def request_market_depth(self, ticker):
-        ticker_id = self._get_next_valid_order_id()
+        req_id = get_next_request_id()
         contract = make_contract(ticker)
-        self._requested_tickers[ticker_id] = contract.m_symbol
-        self.connection.reqMktData(ticker_id, contract, '', True)
+        self._requested_tickers[req_id] = contract.m_symbol
+        self.connection.reqMktData(req_id, contract, '', True)
         short_sleep()
-        self.connection.cancelMktData(ticker_id)
+        self.connection.cancelMktData(req_id)
 
     def requesting_market_depth(self):
         if len(self._requested_tickers) > 0:
@@ -192,12 +203,30 @@ class InteractiveBrokers(IBroker):
             print("Account %s, cash: %s %s" % (msg.account, msg.value, msg.currency))
             self.ib_account_cash[msg.account] = msg.value
 
+    def _convert_status(self, ib_status):
+        options = {
+            'Cancelled': OrderStatus.Cancelled,
+            'PendingCancel': OrderStatus.Cancelled,
+            'PreSubmitted': OrderStatus.Submitted,
+            'Filled': OrderStatus.Filled
+        }
+        if ib_status in options:
+            status = options[ib_status]
+        else:
+            status = OrderStatus.Unknown
+        return status
+
     def _create_fill(self, msg):
+        if not msg.orderId in self.orders:
+            print('dajaka debilina')
+
         order = self.orders[msg.orderId]
         order.fill_price = msg.lastFillPrice
         order.remaining = msg.remaining
-        order.filled -= order.filled
-        #TODO convert order status
+        order.filled = msg.filled
+
+        # TODO convert order status
+        order.status = self._convert_status(msg.status)
 
     def _error_handler(self, msg):
         print("Server Error: %s" % msg)
@@ -261,9 +290,25 @@ class InteractiveBrokers(IBroker):
         if self.market_data[ticker].levels[0].is_complete:
             self._requested_tickers.pop(msg.tickerId, None)
 
-    def _reply_handler(self, msg):
-        """Handles of server replies"""
-        print("Server Response: %s, %s" % (msg.typeName, msg))
+    def _reply_execution_details(self, msg):
+        if self.is_advisor_account(msg.execution.m_acctNumber):
+            return
+
+        #TODO figure out sells
+        shares = msg.execution.m_shares if msg.execution.m_side == 'BOT' else -abs(msg.execution.m_shares)
+        execution_msg = msg.execution.m_acctNumber + ',Price:' + str(msg.execution.m_avgPrice) + \
+                        ',NoShares:' + str(shares) + ',Time:' + msg.execution.m_time + ',OrderId:' + \
+                        str(msg.execution.m_orderId)
+
+        if execution_msg not in self.execution_allocation_msgs:
+            self.execution_allocation_msgs.append(execution_msg)
+
+        execution = Execution(msg.execution.m_avgPrice, msg.execution.m_acctNumber,
+                              shares, msg.execution.m_time, msg.execution.m_orderId)
+
+        self.execution_allocations.add_execution_allocation(execution)
+
+
 
 
 

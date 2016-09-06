@@ -3,8 +3,12 @@ from django.db import transaction
 from functools import partial
 from logging import DEBUG, INFO, WARN, ERROR
 from time import sleep, strftime, time
-#from client.models import ClientAccount
 from execution.broker.interactive_brokers import InteractiveBrokers
+from execution.account_groups.create_account_groups import FAAccountProfile
+
+#from client.models import ClientAccount
+#from django.core.management.base import BaseCommand
+
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -76,24 +80,39 @@ def main(options):
     logging.root.setLevel(verbose_levels.get(options.verbose, ERROR))
     con = InteractiveBrokers()
     con.connect()
-    short_sleep()
-    long_sleep()
-
-    con.make_order(ticker='MSFT', limit_price=10, quantity=10)
-    con.place_orders()
-    long_sleep()
-    long_sleep()
-
     con.request_account_summary()
+    long_sleep()
 
-    con.current_time()
+    account_dict = dict()
+    account_dict['DU493341'] = 40
+    account_dict['DU493342'] = 60
+    profile = FAAccountProfile()
+    profile.append_share_allocation('AAPL', account_dict)
+
+    account_dict['DU493341'] = 60
+    account_dict['DU493342'] = 40
+    profile.append_share_allocation('MSFT', account_dict)
+    con.replace_profile(profile.get_profile())
+
+    #con.request_profile()
     short_sleep()
-    ib_account_cash.update(con.ib_account_cash)
 
+    order_id = con.make_order(ticker='MSFT', limit_price=57.57, quantity=100)
+    con.place_order(order_id)
+
+    order_id = con.make_order(ticker='AAPL', limit_price=107.59, quantity=-100)
+    con.place_order(order_id)
+
+    long_sleep()
+    con.current_time()
 
     con.request_market_depth('GOOG')
     while con.requesting_market_depth():
         short_sleep()
+
+    short_sleep()
+
+    long_sleep()
     long_sleep()
 
     #reconcile_cash_client_accounts()
@@ -104,3 +123,11 @@ if __name__ == '__main__':
         main(get_options())
     #except:
         print("exception")
+
+'''
+class Command(BaseCommand):
+    help = 'execute orders'
+
+    def handle(self, *args, **options):
+        logger.setLevel(logging.DEBUG)
+'''

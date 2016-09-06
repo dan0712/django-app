@@ -45,3 +45,10 @@ class IBroker(ABC):
     def request_current_time(self):
         pass
 
+    @staticmethod
+    def is_advisor_account(account):
+        if 'DF' in account:
+            return True
+        else:
+            return False
+

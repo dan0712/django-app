@@ -8,7 +8,8 @@ class OrderStatus(ChoiceEnum):
     Submitted = 2,
     PartiallyFilled = 3,
     Filled = 4,
-    Expired = 5
+    Cancelled = 5,
+    Unknown = 6
 
 
 class Order(object):
