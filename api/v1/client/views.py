@@ -1,10 +1,13 @@
 from django.contrib.auth import authenticate, login as auth_login
 from rest_framework import viewsets, views
 from rest_framework import exceptions, parsers, status
-
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
 
+from api.v1.client.serializers import EmailNotificationsSerializer, \
+    PersonalInfoSerializer
+from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
 
 from main.models import ExternalAsset, User
@@ -184,3 +187,18 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
 
         return Response(user_serializer.data)
 
+
+class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
+    permission_classes = IsClient,
+    serializer_class = EmailNotificationsSerializer
+
+    def get_object(self):
+        return Client.objects.get(user=self.request.user).notification_prefs
+
+
+class ProfileView(ApiViewMixin, RetrieveUpdateAPIView):
+    permission_classes = IsClient,
+    serializer_class = PersonalInfoSerializer
+
+    def get_object(self):
+        return Client.objects.get(user=self.request.user)

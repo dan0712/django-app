@@ -1,23 +1,23 @@
 import logging
+
 from django.conf import settings
-from django.contrib.auth import login as auth_login
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import login as auth_login, update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset
 from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from rest_framework import exceptions, parsers, status
-from rest_framework import views
+from rest_framework import exceptions, parsers, status, views
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.v1.advisor.serializers import AdvisorSerializer
 from api.v1.client.serializers import ClientFieldSerializer
 from client.models import Client, EmailInvite
+
 from support.models import SupportRequest
 from user.autologout import SessionExpire
 from user.models import SecurityAnswer, SecurityQuestion
@@ -181,14 +181,6 @@ class KeepAliveView(BaseApiView):
     def get(self, request):
         SessionExpire(request).keep_alive()
         return Response('ok', status=status.HTTP_200_OK)
-
-
-class EmailNotificationsView(ApiViewMixin, RetrieveUpdateAPIView):
-    permission_classes = IsClient,
-    serializer_class = EmailNotificationsSerializer
-
-    def get_object(self):
-        return Client.objects.get(user=self.request.user).notification_prefs
 
 
 class PasswordResetView(ApiViewMixin, views.APIView):

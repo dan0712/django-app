@@ -9,7 +9,8 @@ from django.contrib.auth.models import Group
 
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
-                        Transaction, Position, GoalSetting, GoalMetricGroup
+                        Transaction, Position, GoalSetting, GoalMetricGroup, \
+                        FiscalYear
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -58,6 +59,17 @@ class PortfolioSetFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'PortfolioSet %d' % n)
     risk_free_rate = factory.Sequence(lambda n: n * .01)
+
+
+class FiscalYearFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = FiscalYear
+
+    name = factory.Sequence(lambda n: 'FiscalYear %d' % n)
+    year = factory.Sequence(lambda n: int(1990 + n))
+    begin_date = factory.Sequence(lambda n: datetime(year=int(1990 + n), month=1, day=1))
+    end_date = factory.Sequence(lambda n: datetime(year=int(1990 + n), month=12, day=20))
+    month_ends = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 
 class FirmFactory(factory.django.DjangoModelFactory):

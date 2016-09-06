@@ -216,7 +216,8 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
+    primary_owner = models.ForeignKey('Client',
+                                      related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)
@@ -526,6 +527,8 @@ class RiskProfileQuestion(models.Model):
     group = models.ForeignKey('RiskProfileGroup', related_name='questions')
     order = models.IntegerField()
     text = models.TextField()
+    explanation = models.TextField()
+    image = models.ImageField(_('question_image'), blank=True, null=True)
 
     # Also has property 'answers' which is all the predefined answers for
     # this question.
@@ -542,7 +545,13 @@ class RiskProfileAnswer(models.Model):
     question = models.ForeignKey('RiskProfileQuestion', related_name='answers')
     order = models.IntegerField()
     text = models.TextField()
-    score = models.FloatField()
+    image = models.ImageField(_('answer_image'), blank=True, null=True)
+    b_score = models.FloatField(help_text="Indication of Behaviour towards risk. "
+                                          "Higher means higher risk is idealogically acceptable.")
+    a_score = models.FloatField(help_text="Indication of Ability to take risk. "
+                                          "Higher means losses due to risk has less critical impact on the investor")
+    s_score = models.FloatField(help_text="Indication of Investor sophistication. "
+                                          "Higher means investor understands risk and investment matters.")
 
     # Also has property 'responses' which is all the responses given
     # that use this answer.

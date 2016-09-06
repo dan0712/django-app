@@ -2,7 +2,6 @@
 {% load i18n %}
 {% load filters %}
 
-
 {% block main_content %}
   <div class="container">
     <div class="row">
@@ -19,6 +18,28 @@
       </form>
     </div>
 
+    {% if not fiscal_years_added %}
+      <div id='fiscal_years_modal' class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">Fiscal Years are not set for the firm.  Please set the fiscal years in the administration area for the firm.</h4>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
+
+      <script type='text/javascript'>
+        $(document).ready(function(){
+          $('#fiscal_years_modal').modal('show');
+        });
+      </script>
+    {% endif %}
+
     <div class="row">
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
@@ -34,9 +55,9 @@
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-danger">
           <div class="p-a">
-            <span class="statcard-desc">Total fees</span>
+            <span class="statcard-desc">Fees YTD</span>
             <h2>
-              {{ firm.total_fees|currency }}
+              {{ firm.fees_ytd|currency }}
               <!-- <small class="delta-indicator delta-negative">2%</small> -->
             </h2>
           </div>
@@ -45,9 +66,9 @@
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
-            <span class="statcard-desc">Average balance</span>
+            <span class="statcard-desc">Average Client Balance</span>
             <h2>
-              {{ firm.average_balance|currency }}
+              {{ firm.average_client_balance|currency }}
               <!-- <small class="delta-indicator delta-positive">3%</small> -->
             </h2>
           </div>
@@ -62,10 +83,9 @@
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Balance</th>
-              <th>Return</th>
-              <th>Fee</th>
-              <th>Last action</th>
+              <th>AUM</th>
+              <th>Avg Return</th>
+              <th>Fees YTD</th>
             </tr>
           </thead>
           <tbody>
@@ -74,9 +94,8 @@
                 <td>{{ advisor.0 }}</td>
                 <td><a href="{% url 'firm:overview-advisor' advisor.0 %}">{{ advisor.2 }}</a></td>
                 <td>{{ advisor.3|currency }}</td>
-                <td><div>{{ advisor.4 }}%</div> <small class="text-muted"><span>since </span>{{ advisor.7 }}</small></td>
+                <td><div>{{ advisor.4|floatformat:2 }}%</div> <small class="text-muted"><span>since </span>{{ advisor.7 }}</small></td>
                 <td><div>{{ advisor.5|currency }}</div> <small class="text-muted"><span>since </span>{{ advisor.7 }}</small></td>
-                <td>{{ advisor.6 }}</td>
               </tr>
              {% empty %}
               <tr>

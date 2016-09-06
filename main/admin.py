@@ -15,7 +15,7 @@ from main.models import AccountGroup, ActivityLog, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     Position, ProxyAssetClass, ProxyTicker, \
-    Transaction, User, View, InvestmentType
+    Transaction, User, View, InvestmentType, FiscalYear
 
 admin.site.register(AccountGroup)
 
@@ -301,6 +301,10 @@ class ActivityLogAdmin(admin.ModelAdmin):
     inlines = (ActivityLogEventAdminInline,)
 
 
+class FiscalYearAdmin(admin.ModelAdmin):
+    model = FiscalYear
+
+
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
@@ -322,6 +326,7 @@ admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
 admin.site.register(InvestmentType, InvestmentTypeAdmin)
+admin.site.register(FiscalYear, FiscalYearAdmin)
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,

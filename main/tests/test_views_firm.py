@@ -114,7 +114,6 @@ class FirmAnalyticsMixinTests(TestCase):
                     txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
                                                      status=Transaction.STATUS_EXECUTED,
                                                      reason__in=Transaction.CASH_FLOW_REASONS) \
-                                                    .filter(executed__gt=date.today() - relativedelta(years=1)) \
                                                     .filter(executed__gt=date.today() - relativedelta(years=1))
 
                     # subtract from_goal amounts and add to_goal amounts

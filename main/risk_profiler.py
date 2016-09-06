@@ -117,14 +117,14 @@ def get_risk_willingness(account):
     # Get the min and max score possible for the group
     extents = (
         RiskProfileAnswer.objects.filter(question__group=account.risk_profile_group)  # All answers for the group
-        .values('question').annotate(min_score=Min('score'), max_score=Max('score'))  # Group by question
+        .values('question').annotate(min_score=Min('b_score'), max_score=Max('b_score'))  # Group by question
         .aggregate(min=Sum('min_score'), max=Sum('max_score'))  # Get min and max total score
     )
 
     # Scale the actual score to wherever it fits between the min and max [0-1].
     # If there is no range, the questions are bad, so just return 0.5
     rng = (extents['max'] - extents['min'])
-    return NEUTRAL_RISK if rng == 0 else (aqs.aggregate(total=Sum('score'))['total'] - extents['min']) / rng
+    return NEUTRAL_RISK if rng == 0 else (aqs.aggregate(total=Sum('b_score'))['total'] - extents['min']) / rng
 
 
 def get_risk_ability(age, status, income, worth, ttl, weights):
