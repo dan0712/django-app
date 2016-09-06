@@ -3,6 +3,7 @@ import logging
 import uuid
 from enum import Enum, unique
 
+from dateutil.relativedelta import relativedelta
 import scipy.stats as st
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, Group, \
@@ -172,6 +173,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
+class FiscalYear(models.Model):
+    name = models.CharField(max_length=127)
+    year = models.IntegerField()
+    begin_date = models.DateField(help_text="Inclusive begin date for this fiscal year")
+    end_date = models.DateField(help_text="Inclusive end date for this fiscal year")
+    month_ends = models.CommaSeparatedIntegerField(max_length=35,
+                                                   validators=[MinLengthValidator(23)],
+                                                   help_text="Comma separated month end days each month of the year. First element is January.")
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=127)
+    fiscal_years = models.ManyToManyField(FiscalYear)
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, self.name)
+
+
 class InvestmentType(models.Model):
     name = models.CharField(max_length=255,
                             validators=[RegexValidator(
@@ -277,6 +296,7 @@ class PortfolioSet(models.Model):
 
     def get_views_all(self):
         return self.views.all()
+
     def __str__(self):
         return self.name
 
@@ -305,6 +325,8 @@ class Firm(models.Model):
     can_use_ethical_portfolio = models.BooleanField(default=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
 
+    fiscal_years = models.ManyToManyField(FiscalYear)
+
     def save(self,
              force_insert=False,
              force_update=False,
@@ -328,6 +350,16 @@ class Firm(models.Model):
         super(Firm, self).save(force_insert, force_update, using,
                                update_fields)
 
+    def get_current_fiscal_year(self):
+        """
+        Returns the FiscalYear object for the current year
+        """
+        current_date = datetime.today().date()
+        for year in self.fiscal_years.all():
+            if year.begin_date < current_date < year.end_date:
+                return year
+        return None
+
     @property
     def white_logo(self):
 
@@ -347,6 +379,31 @@ class Firm(models.Model):
             return settings.STATIC_URL + 'images/colored_logo.png'
 
         return settings.MEDIA_URL + self.knocked_out_logo.name
+
+    @property
+    def fees_ytd(self):
+        """
+        Sum fees from Transaction model:
+            Transaction - REASON_FEE
+        YTD - from the start of the current fiscal year until now.
+        """
+        # filter transactions by the firm's current fiscal year
+        total_fees_ytd = 0
+        for advisor in self.advisors.all():
+            total_fees_ytd += advisor.fees_ytd
+        return total_fees_ytd
+
+    @property
+    def total_fees(self):
+        """
+        Sum fees from Transaction model:
+            Transaction - REASON_FEE
+        Within the firm's set fiscal years.
+        """
+        total = 0
+        for advisor in self.advisors.all():
+            total += advisor.total_fees
+        return total
 
     @property
     def total_revenue(self):
@@ -369,18 +426,27 @@ class Firm(models.Model):
         return 0
 
     @property
-    def total_fees(self):
-        total = 0
-        for advisor in self.advisors.all():
-            total += advisor.total_fees
-        return total
-
-    @property
     def total_balance(self):
         total = 0
         for advisor in self.advisors.all():
             total += advisor.total_balance
         return total
+
+    def get_clients(self):
+        clients = []
+        for advisor in self.advisors.all():
+            clients.extend(advisor.clients.all())
+        return clients
+
+    @property
+    def total_clients(self):
+        return len(self.get_clients())
+
+    @property
+    def average_client_balance(self):
+        if self.total_clients > 0:
+            return self.total_balance / self.total_clients
+        return 0
 
     @property
     def total_account_groups(self):
@@ -546,22 +612,49 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
                 .distinct().count())
 
     @property
+    def fees_ytd(self):
+        """
+        """
+        # get client accounts
+        # check transactions for client accounts from current fiscal year
+        # firm has fiscal years set, find current
+        from client.models import ClientAccount
+
+        fiscal_year = self.firm.get_current_fiscal_year()
+        total_fees = 0.0
+        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
+            for goal in ca.goals:
+                txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                                 status=Transaction.STATUS_EXECUTED,
+                                                 reason=Transaction.REASON_FEE,
+                                                 executed__gte=fiscal_year.begin_date,
+                                                 executed__lte=datetime.today())
+                for tx in txs:
+                    total_fees += tx.amount
+        return total_fees
+
+    @property
     def total_fees(self):
-        return 0
-
-    @property
-    def total_revenue(self):
-        return 0
-
-    @property
-    def total_invested(self):
-        return 0
+        """
+        """
+        from client.models import ClientAccount
+        total_fees = 0.0
+        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
+            for year in self.firm.fiscal_years.all():
+                for goal in ca.goals:
+                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                                     status=Transaction.STATUS_EXECUTED,
+                                                     reason=Transaction.REASON_FEE,
+                                                     executed__gte=year.begin_date,
+                                                     executed__lte=year.end_date)
+                    for tx in txs:
+                        total_fees += tx.amount
+        return total_fees
 
     @property
     def total_return(self):
-        if self.total_invested > 0:
-            return self.total_revenue / self.total_invested
-        return 0
+        goals = Goal.objects.filter(account__in=self.client_accounts)
+        return mod_dietz_rate(goals)
 
     @property
     def total_account_groups(self):
@@ -1003,24 +1096,6 @@ class Dividend(models.Model):
                                help_text="Amount of the dividend in system currency")
     franking = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
                                  help_text="Franking percent. 0.01 = 1% of the dividend was franked.")
-
-
-class FiscalYear(models.Model):
-    name = models.CharField(max_length=127)
-    year = models.IntegerField()
-    begin_date = models.DateField(help_text="Inclusive begin date for this fiscal year")
-    end_date = models.DateField(help_text="Inclusive end date for this fiscal year")
-    month_ends = models.CommaSeparatedIntegerField(max_length=35,
-                                                   validators=[MinLengthValidator(23)],
-                                                   help_text="Comma separated month end days each month of the year. First element is January.")
-
-
-class Company(models.Model):
-    name = models.CharField(max_length=127)
-    fiscal_years = models.ManyToManyField(FiscalYear)
-
-    def __str__(self):
-        return "[{}] {}".format(self.id, self.name)
 
 
 class AssetFee(models.Model):

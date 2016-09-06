@@ -339,7 +339,6 @@ class FirmAnalyticsMixin(object):
                 txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
                                              status=Transaction.STATUS_EXECUTED,
                                              reason__in=Transaction.CASH_FLOW_REASONS) \
-                                            .filter(executed__gt=date.today() - relativedelta(years=1)) \
                                             .filter(executed__gt=date.today() - relativedelta(years=1))
                 # subtract from_goal amounts and add to_goal amounts
                 for tx in txs:
@@ -659,7 +658,6 @@ class FirmOverview(TemplateView, LegalView):
         'total_balance': 3,
         'total_return': 4,
         'total_fees': 5,
-        'last_action': 6
     }
 
     def __init__(self, *args, **kwargs):
@@ -689,7 +687,7 @@ class FirmOverview(TemplateView, LegalView):
         for advisor in set(pre_advisors.distinct().all()):
             advisors.append(
                 [advisor.pk, advisor, advisor.user.full_name, advisor.total_balance,
-                 advisor.total_return, advisor.total_fees, advisor.last_action, advisor.user.date_joined])
+                 advisor.total_return, advisor.total_fees, advisor.user.date_joined])
 
         reverse = self.sort_dir != "asc"
 

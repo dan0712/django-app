@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
+
 from main.models import User
 from user.models import SecurityAnswer, SecurityQuestion
 

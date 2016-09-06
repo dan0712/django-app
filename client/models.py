@@ -215,7 +215,8 @@ class ClientAccount(models.Model):
     custom_fee = models.PositiveIntegerField(default=0)
     account_type = models.IntegerField(choices=constants.ACCOUNT_TYPES)
     account_name = models.CharField(max_length=255, default='PERSONAL')
-    primary_owner = models.ForeignKey('Client', related_name="primary_accounts")
+    primary_owner = models.ForeignKey('Client',
+                                      related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
     confirmed = models.BooleanField(default=False)

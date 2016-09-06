@@ -101,4 +101,3 @@ class UserTests(APITestCase):
         self.assertEqual(control_response.data, response.data)
         self.assertEqual(response.data['first_name'], new_name)
         self.assertEqual(response.data['id'], self.user.id)
-
