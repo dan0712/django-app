@@ -125,7 +125,6 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser.save(asset=instance)
         return instance
 
-<<<<<<< HEAD
 class InvitationSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = EmailInvite
@@ -136,6 +135,7 @@ class InvitationSerializer(ReadOnlyModelSerializer):
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
     # Includes onboarding data
+    # Allows POST for registered users
     class Meta:
         model = EmailInvite
         read_only_fields = ('invite_key', 'status')
@@ -213,7 +213,6 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
 
         return attrs
-=======
 
 class EmailNotificationsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -249,4 +248,3 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
         # TODO generate a new SOA
 
         return instance
->>>>>>> dev

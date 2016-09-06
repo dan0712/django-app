@@ -26,7 +26,6 @@ from ..user.serializers import ChangePasswordSerializer, \
     ResetPasswordSerializer, SecurityAnswerCheckSerializer, \
     SecurityQuestionSerializer, SecurityQuestionAnswerUpdateSerializer
 
-from .serializers import EmailNotificationsSerializer
 from ..client.serializers import InvitationSerializer
 from ..permissions import IsClient
 from ..views import ApiViewMixin, BaseApiView
