@@ -622,15 +622,16 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
         fiscal_year = self.firm.get_current_fiscal_year()
         total_fees = 0.0
-        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
-            for goal in ca.goals:
-                txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                                 status=Transaction.STATUS_EXECUTED,
-                                                 reason=Transaction.REASON_FEE,
-                                                 executed__gte=fiscal_year.begin_date,
-                                                 executed__lte=datetime.today())
-                for tx in txs:
-                    total_fees += tx.amount
+        if fiscal_year:
+            for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
+                for goal in ca.goals:
+                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                                     status=Transaction.STATUS_EXECUTED,
+                                                     reason=Transaction.REASON_FEE,
+                                                     executed__gte=fiscal_year.begin_date,
+                                                     executed__lte=datetime.today())
+                    for tx in txs:
+                        total_fees += tx.amount
         return total_fees
 
     @property

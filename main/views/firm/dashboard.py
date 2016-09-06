@@ -698,13 +698,18 @@ class FirmOverview(TemplateView, LegalView):
 
     def get_context_data(self, **kwargs):
         ctx = super(FirmOverview, self).get_context_data(**kwargs)
+        if self.firm.fiscal_years.count() > 0:
+            fiscal_years_added = True
+        else:
+            fiscal_years_added = False
         ctx.update({
             "filter": self.filter,
             "search": self.search,
             "sort_col": self.sort_col,
             "sort_dir": self.sort_dir,
             "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
-            "advisors": self.advisors
+            "advisors": self.advisors,
+            "fiscal_years_added": fiscal_years_added,
         })
         return ctx
 

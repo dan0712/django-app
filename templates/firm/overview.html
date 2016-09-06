@@ -18,6 +18,28 @@
       </form>
     </div>
 
+    {% if not fiscal_years_added %}
+      <div id='fiscal_years_modal' class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">Fiscal Years are not set for the firm.  Please set the fiscal years in the administration area for the firm.</h4>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
+
+      <script type='text/javascript'>
+        $(document).ready(function(){
+          $('#fiscal_years_modal').modal('show');
+        });
+      </script>
+    {% endif %}
+
     <div class="row">
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
