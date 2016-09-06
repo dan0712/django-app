@@ -272,7 +272,6 @@ class ClientAccount(models.Model):
         try:
             invitation = self.primary_owner.user.invitation
         except EmailInvite.DoesNotExist: invitation = None
-        print(invitation, invitation.status, invitation.reason)
 
         if invitation \
                 and invitation.status != EmailInvite.STATUS_COMPLETE \
