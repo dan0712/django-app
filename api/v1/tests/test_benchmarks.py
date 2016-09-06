@@ -52,10 +52,10 @@ class SingleBenchmarkTest(BaseApiTest):
         # I avoided paginating a processed data as it may be huge
         self.assertEqual(content['count'], 5)
         self.assertEqual(content['results'], [
-            [16893, 10.0],
-            [16894, -5.0],
-            [16895, -2.0],
-            [16896, 4.0],
+            [16893, 0.1],
+            [16894, -0.045454545454545005],
+            [16895, -0.019047619047619],
+            [16896, 0.03883495145631],
         ])
 
     def test_subset_dates(self):
@@ -67,8 +67,8 @@ class SingleBenchmarkTest(BaseApiTest):
         content = ujson.loads(r.content)
         self.assertEqual(content['count'], 3)
         self.assertEqual(content['results'], [
-            [16894, -5.0],
-            [16895, -2.0],
+            [16894, -0.045454545454545005],
+            [16895, -0.019047619047619],
         ])
 
     def test_bottom_bound_dates(self):
@@ -79,9 +79,9 @@ class SingleBenchmarkTest(BaseApiTest):
         content = ujson.loads(r.content)
         self.assertEqual(content['count'], 4)
         self.assertEqual(content['results'], [
-            [16894, -5.0],
-            [16895, -2.0],
-            [16896, 4.0],
+            [16894, -0.045454545454545005],
+            [16895, -0.019047619047619],
+            [16896, 0.03883495145631],
         ])
 
     def test_top_bound_dates(self):
@@ -92,8 +92,8 @@ class SingleBenchmarkTest(BaseApiTest):
         content = ujson.loads(r.content)
         self.assertEqual(content['count'], 4)
         self.assertEqual(content['results'], [
-            [16893, 10.0],
-            [16894, -5.0],
-            [16895, -2.0],
+            [16893, 0.1],
+            [16894, -0.045454545454545005],
+            [16895, -0.019047619047619],
         ])
 

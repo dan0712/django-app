@@ -48,13 +48,16 @@ class ReturnsView(generics.ListAPIView):
     def get_data(self, daily_prices: list):
         prices = []
         last_price = None
+        last_date = None
         for row in daily_prices:
             try:
-                prices.append(((row.date - EPOCH_DT).days,
-                               row.price - last_price))
+                price = (((row.price - last_price) / last_price) /
+                         (row.date - last_date).days)
+                prices.append(((row.date - EPOCH_DT).days, price))
             except TypeError:
                 pass
             last_price = row.price
+            last_date = row.date
         return prices
 
     def list(self, request, *args, **kwargs):
