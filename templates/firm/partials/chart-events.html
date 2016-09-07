@@ -3,10 +3,17 @@
     // events (aka "change point analysis") chart
     var datasets = [
       {% for item in events %}
-        {
-          label: '{{ item.category }}',
-          data: [{x: {{ item.age }}, y: {{ item.value }}}],
-        },
+        {% if item.age >= 70 %}
+          {
+            label: '{{ item.category }}',
+            data: [{x: 70, y: {{ item.value }}}],
+          },
+        {% else %}
+          {
+            label: '{{ item.category }}',
+            data: [{x: {{ item.age }}, y: {{ item.value }}}],
+          },
+        {% endif %}
       {% endfor %}
     ];
 

@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.views.generic import TemplateView
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
-from main.models import Transaction, Goal
+from main.models import Transaction, Goal, GoalType
 from django.db.models import Q
 from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
@@ -12,7 +12,6 @@ from api.v1.tests.factories import ClientAccountFactory, \
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-from django.db.models import F
 
 
 class FirmAnalyticsMixinTests(TestCase):
@@ -115,9 +114,8 @@ class FirmAnalyticsMixinTests(TestCase):
                     txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
                                                      status=Transaction.STATUS_EXECUTED,
                                                      reason__in=Transaction.CASH_FLOW_REASONS) \
-                                                    .filter(executed__gt=date.today() - relativedelta(years=1)) \
                                                     .filter(executed__gt=date.today() - relativedelta(years=1))
-                    
+
                     # subtract from_goal amounts and add to_goal amounts
                     for tx in txs:
                         if tx.from_goal:
@@ -177,3 +175,32 @@ class FirmAnalyticsMixinTests(TestCase):
         self.assertEqual(expected_sum, asset_actual_sum)
         self.assertEqual(expected_sum, region_actual_sum)
         self.assertEqual(expected_sum, investment_actual_sum)
+
+    def test_get_context_events(self):
+        kwargs = {}
+        context = self.view.get_context_events(**kwargs)
+
+        # these should be 4 goals here from setup
+        original_context_len = len(context)
+        # check number of goals passed matches
+        self.assertEqual(original_context_len, 4)
+
+        # check categories
+        expected_categories = [gt.name for gt in GoalType.objects.all()]
+        actual_categories = [x.get('category') for x in context]
+        for category in expected_categories:
+            self.assertTrue(category in actual_categories)
+
+        # now lets add some more data and verify it is added
+        goal1 = GoalFactory.create()
+        goal2 = GoalFactory.create()
+        goal3 = GoalFactory.create()
+
+        context = self.view.get_context_events(**kwargs)
+        # check number of goals passed matches
+        self.assertEqual(original_context_len + 3, len(context))
+        # check categories
+        expected_categories = [gt.name for gt in GoalType.objects.all()]
+        actual_categories = [x.get('category') for x in context]
+        for category in expected_categories:
+            self.assertTrue(category in actual_categories)

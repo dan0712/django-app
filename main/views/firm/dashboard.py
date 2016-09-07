@@ -339,7 +339,6 @@ class FirmAnalyticsMixin(object):
                 txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
                                              status=Transaction.STATUS_EXECUTED,
                                              reason__in=Transaction.CASH_FLOW_REASONS) \
-                                            .filter(executed__gt=date.today() - relativedelta(years=1)) \
                                             .filter(executed__gt=date.today() - relativedelta(years=1))
                 # subtract from_goal amounts and add to_goal amounts
                 for tx in txs:
@@ -361,56 +360,42 @@ class FirmAnalyticsMixin(object):
 
     def get_context_events(self):
         """
-        Les:
-        x axis is average age at goal creation and is based on goal.created.
-        y axis is sum of Transaction model items where 
-        Transaction.status==TRANSACTION_STATUS_EXECUTED
-        and  Transaction.to_goal is the goal and Transaction.created 
-        is within one week after the Goal.created
+        x axis - max(age at Goal.selected_settings.completion, current age)
+        y axis - max(Goal.total_balance, Goal.selected_settings.target)
         """
         qs_goals = self.get_queryset_goals()
-        qs_clients = self.get_queryset_clients()
 
         data = []
         goal_types = GoalType.objects.all()
-
+        today = datetime.today()
         for goal_type in goal_types:
-            value = qs_goals \
-                .filter(type=goal_type) \
-                .aggregate(
-                    value=Avg('selected_settings__target')
-                )['value']
+            total_max_age = 0
+            total_max_value = 0
+            for goal in qs_goals.filter(type=goal_type):
+                # client age at goal creation
+                client = goal.account.primary_owner
+                client_age = relativedelta(today, client.date_of_birth).years
+                # expected age of completion based on completion date field
+                if goal.selected_settings:
+                    completion_age = relativedelta(goal.selected_settings.completion, client.date_of_birth).years
+                else:
+                    completion_age = 0
+                max_age = max(completion_age, client_age)
 
-            # NB be aware. Postgres specific code (to aggregate by date field)
-            # (eliminate default ordering - see the model)
-            # date_goal = qs_goals \
-            #     .filter(type=goal_type) \
-            #     .extra(select={
-            #         'date': 'avg(extract(epoch FROM {0}.created))' # 'age': 'to_timestamp(avg(extract(epoch FROM {0}.date_of_birth)))'
-            #             .format(Goal._meta.db_table) # .format(Client._meta.db_table)
-            #     }) \
-            #     .order_by() \
-            #     .values('date')[0]['date'] or 0
-            date_goal = 0
+                if goal.selected_settings:
+                    target_balance = goal.selected_settings.target
+                else:
+                    target_balance = 0
+                max_value = max(goal.total_balance, target_balance)
+                total_max_age = max(total_max_age, max_age)
+                total_max_value = max(total_max_value, max_value)
 
-            # NB be aware. Postgres specific code (to aggregate by date field)
-            # date_client = qs_clients \
-            #     .filter(primary_accounts__all_goals__type=goal_type) \
-            #     .extra(select={
-            #         'date': 'avg(extract(epoch FROM {0}.date_of_birth))' # 'age': 'to_timestamp(avg(extract(epoch FROM {0}.date_of_birth)))'
-            #             .format(Client._meta.db_table)
-            #     }) \
-            #     .values('date')[0]['date'] or 0
-            date_client = 0
-
-            if value and date_client and date_goal:
-                # drop categories with no balance (clients)
+            if total_max_value > 0 and total_max_age > 0:
                 data.append({
-                    'category': goal_type.name, # maybe we should pass id also
-                    'value': value,
-                    'age': abs(date_goal - date_client) / self.SECONDS_PER_YEAR,
-                });
-
+                    'category': goal_type.name,  # maybe we should pass id also
+                    'value': total_max_value,
+                    'age': total_max_age,
+                })
         return data
 
     def get_context_positions(self):
@@ -435,7 +420,7 @@ class FirmAnalyticsMixin(object):
 
         positions_by_investment_type = qs_positions \
             .annotate(
-                name=F('ticker__asset_class__investment_type'),
+                name=F('ticker__asset_class__investment_type__name'),
             ) \
             .values('name') \
             .annotate_value()
@@ -445,7 +430,6 @@ class FirmAnalyticsMixin(object):
             'region': positions_by_region,
             'investment_type': positions_by_investment_type,
         }
-
         return data
 
 
@@ -674,7 +658,6 @@ class FirmOverview(TemplateView, LegalView):
         'total_balance': 3,
         'total_return': 4,
         'total_fees': 5,
-        'last_action': 6
     }
 
     def __init__(self, *args, **kwargs):
@@ -704,7 +687,7 @@ class FirmOverview(TemplateView, LegalView):
         for advisor in set(pre_advisors.distinct().all()):
             advisors.append(
                 [advisor.pk, advisor, advisor.user.full_name, advisor.total_balance,
-                 advisor.total_return, advisor.total_fees, advisor.last_action, advisor.user.date_joined])
+                 advisor.total_return, advisor.total_fees, advisor.user.date_joined])
 
         reverse = self.sort_dir != "asc"
 
@@ -715,13 +698,18 @@ class FirmOverview(TemplateView, LegalView):
 
     def get_context_data(self, **kwargs):
         ctx = super(FirmOverview, self).get_context_data(**kwargs)
+        if self.firm.fiscal_years.count() > 0:
+            fiscal_years_added = True
+        else:
+            fiscal_years_added = False
         ctx.update({
             "filter": self.filter,
             "search": self.search,
             "sort_col": self.sort_col,
             "sort_dir": self.sort_dir,
             "sort_inverse": 'asc' if self.sort_dir == 'desc' else 'desc',
-            "advisors": self.advisors
+            "advisors": self.advisors,
+            "fiscal_years_added": fiscal_years_added,
         })
         return ctx
 

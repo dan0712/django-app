@@ -238,28 +238,36 @@ class Fixture1:
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
                                                        order=0,
                                                        text='A lot',
-                                                       score=9)[0]
+                                                       b_score=9,
+                                                       a_score=9,
+                                                       s_score=9)[0]
 
     @classmethod
     def risk_profile_answer1b(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
                                                        order=1,
                                                        text='A little',
-                                                       score=2)[0]
+                                                       b_score=2,
+                                                       a_score=2,
+                                                       s_score=2)[0]
 
     @classmethod
     def risk_profile_answer2a(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question2(),
                                                        order=0,
                                                        text='Very',
-                                                       score=9)[0]
+                                                       b_score=9,
+                                                       a_score=9,
+                                                       s_score=9)[0]
 
     @classmethod
     def risk_profile_answer2b(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question2(),
                                                        order=1,
                                                        text="I'm basically a peanut",
-                                                       score=1)[0]
+                                                       b_score=1,
+                                                       a_score=1,
+                                                       s_score=1)[0]
 
     @classmethod
     def populate_risk_profile_questions(cls):
@@ -424,6 +432,16 @@ class Fixture1:
         return MarketIndex.objects.get_or_create(id=1, defaults=params)[0]
 
     @classmethod
+    def market_index1_daily_prices(cls):
+        prices = [100, 110, 105, 103, 107]
+        start_date = datetime.date(2016, 4, 1)
+        d = start_date
+        fund = cls.market_index1()
+        for p in prices:
+            fund.daily_prices.create(date=d, price=p)
+            d += datetime.timedelta(1)
+
+    @classmethod
     def market_index2(cls):
         params = {
             'display_name': 'Test Market Index 2',
@@ -448,7 +466,7 @@ class Fixture1:
             'data_api': 'portfolios.api.bloomberg',
             'data_api_param': 'FUND1',
         }
-        return Ticker.objects.get_or_create(symbol='TESTSYMBOL1', defaults=params)[0]
+        return Ticker.objects.get_or_create(symbol='TSTSYMBOL1', defaults=params)[0]
 
     @classmethod
     def fund2(cls):
@@ -463,7 +481,7 @@ class Fixture1:
             'data_api': 'portfolios.api.bloomberg',
             'data_api_param': 'FUND2',
         }
-        return Ticker.objects.get_or_create(symbol='TESTSYMBOL2', defaults=params)[0]
+        return Ticker.objects.get_or_create(symbol='TSTSYMBOL2', defaults=params)[0]
 
     @classmethod
     def external_debt_1(cls):

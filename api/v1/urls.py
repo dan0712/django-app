@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
 from .user import views as user_views
@@ -39,7 +39,8 @@ account_goals_router = account_router.register(r'goals',
 urlpatterns = patterns(
     '',
     url(r'^me/?$', user_views.MeView.as_view(), name='user-me'),
-    url(r'^me/profile/notifications/?$', user_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
+    url(r'^me/profile/?$', client_views.ProfileView.as_view(), name='user-me-profile'),
+    url(r'^me/profile/notifications/?$', client_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
     # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
 
     url(r'^region/(?P<pk>\d+)/?$', address_views.RegionView.as_view(), name='region-detail'),
@@ -49,6 +50,8 @@ urlpatterns = patterns(
 
     url(r'^login/?$', user_views.LoginView.as_view(), name='user-login'),
     url(r'^returns$', analysis_views.ReturnsView.as_view()),
+
+    url(r'^benchmarks/', include('api.v1.benchmarks.urls', namespace='benchmarks')),
     # reserved # url(r'^register/?$', user_views.RegisterView.as_view(), name='user-register'),
 
     # reserved # url(r'^register/reset/?$', user_views.ResetView.as_view(), name='user-reset'),
