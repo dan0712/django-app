@@ -1,3 +1,4 @@
+#TODO write tests for these classes
 class Execution(object):
     def __init__(self, price, ib_account, shares, time, order_id):
         self.price = price

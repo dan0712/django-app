@@ -203,6 +203,7 @@ class InteractiveBrokers(IBroker):
             print("Account %s, cash: %s %s" % (msg.account, msg.value, msg.currency))
             self.ib_account_cash[msg.account] = msg.value
 
+    # TODO maybe we need more statuses
     def _convert_status(self, ib_status):
         options = {
             'Cancelled': OrderStatus.Cancelled,
@@ -224,8 +225,6 @@ class InteractiveBrokers(IBroker):
         order.fill_price = msg.lastFillPrice
         order.remaining = msg.remaining
         order.filled = msg.filled
-
-        # TODO convert order status
         order.status = self._convert_status(msg.status)
 
     def _error_handler(self, msg):
@@ -294,7 +293,6 @@ class InteractiveBrokers(IBroker):
         if self.is_advisor_account(msg.execution.m_acctNumber):
             return
 
-        #TODO figure out sells
         shares = msg.execution.m_shares if msg.execution.m_side == 'BOT' else -abs(msg.execution.m_shares)
         execution_msg = msg.execution.m_acctNumber + ',Price:' + str(msg.execution.m_avgPrice) + \
                         ',NoShares:' + str(shares) + ',Time:' + msg.execution.m_time + ',OrderId:' + \
