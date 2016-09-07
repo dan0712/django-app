@@ -573,7 +573,7 @@ class EmailNotificationPrefs(models.Model):
 
 
 
-def generate_token(cls):
+def generate_token():
     secret = str(uuid.uuid4()) + str(uuid.uuid4())
     return secret.replace('-', '')[:64]
 
