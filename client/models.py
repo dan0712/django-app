@@ -11,6 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from django.utils.functional import cached_property
+from jsonfield.fields import JSONField
 from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
@@ -247,6 +248,11 @@ class ClientAccount(models.Model):
     class Meta:
         unique_together = ('primary_owner', 'account_name')
 
+
+    def __init__(self, *args, **kwargs):
+        super(ClientAccount, self).__init__(*args, **kwargs)
+        self.__was_confirmed = self.confirmed
+
     @property
     def goals(self):
         return self.all_goals.exclude(state=Goal.State.ARCHIVED.value)
@@ -255,9 +261,26 @@ class ClientAccount(models.Model):
              update_fields=None):
         if self.pk is None:
             self.token = str(uuid.uuid4())
-
-        return super(ClientAccount, self).save(force_insert, force_update,
+        if self.confirmed != self.__was_confirmed:
+            self.on_confirmed_modified()
+        ret_value = super(ClientAccount, self).save(force_insert, force_update,
                                                using, update_fields)
+        self.__was_confirmed = self.confirmed
+        return ret_value
+
+    def on_confirmed_modified(self):
+        from client.models import EmailInvite
+        try:
+            invitation = self.primary_owner.user.invitation
+        except EmailInvite.DoesNotExist: invitation = None
+
+        if invitation \
+                and invitation.status != EmailInvite.STATUS_COMPLETE \
+                and invitation.reason == EmailInvite.REASON_PERSONAL_INVESTING:
+            invitation.onboarding_data = None
+            invitation.status = EmailInvite.STATUS_COMPLETE
+            invitation.save()
+
 
     def remove_from_group(self):
         old_group = self.account_group
@@ -553,12 +576,14 @@ class EmailInvite(models.Model):
     STATUS_CREATED = 0
     STATUS_SENT = 1
     STATUS_ACCEPTED = 2
-    STATUS_CLOSED = 4
+    STATUS_EXPIRED = 3
+    STATUS_COMPLETE = 4
     STATUSES = (
         (STATUS_CREATED, 'Created'),
         (STATUS_SENT, 'Sent'),
         (STATUS_ACCEPTED, 'Accepted'),
-        (STATUS_CLOSED, 'Closed')
+        (STATUS_EXPIRED, 'Expired'),
+        (STATUS_COMPLETE, 'Complete')
     )
     REASON_RETIREMENT = 1
     REASON_PERSONAL_INVESTING = 2
@@ -573,6 +598,11 @@ class EmailInvite(models.Model):
     middle_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
+    user = models.OneToOneField('main.User', related_name='invitation',
+                                null=True, blank=True)
+
+    invite_key = models.CharField(max_length=64,
+                                  default=lambda: EmailInvite.generate_token())
 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -584,6 +614,10 @@ class EmailInvite(models.Model):
                                          blank=True, null=True)
     status = models.PositiveIntegerField(choices=STATUSES,
                                          default=STATUS_CREATED)
+
+    onboarding_data = JSONField(null=True, blank=True)
+    onboarding_file_1 = models.FileField(null=True, blank=True)
+
 
     def __unicode__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
@@ -613,3 +647,8 @@ class EmailInvite(models.Model):
         self.send_count += 1
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
+
+    @classmethod
+    def generate_token(cls):
+        secret = str(uuid.uuid4()) + str(uuid.uuid4())
+        return secret.replace('-', '')[:64]

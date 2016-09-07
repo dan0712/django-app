@@ -43,6 +43,9 @@ urlpatterns = patterns(
     url(r'^me/profile/notifications/?$', client_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
     # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
 
+    url(r'^register/?$', client_views.ClientUserRegisterView.as_view(), name='client-user-register'),
+    url(r'^invites/(?P<invite_key>\w+)/?$', client_views.InvitesView.as_view(), name='invite-detail'),
+
     url(r'^region/(?P<pk>\d+)/?$', address_views.RegionView.as_view(), name='region-detail'),
     url(r'^address/(?P<pk>\d+)/?$', address_views.AddressView.as_view(), name='address-detail'),
 
