@@ -181,6 +181,8 @@ class ClientFactory(factory.django.DjangoModelFactory):
     occupation = factory.Sequence(lambda n: 'Occupation %d' % n)
     employer = factory.Sequence(lambda n: 'Employer %d' % n)
     income = factory.LazyAttribute(lambda n: float(random.randrange(1000000)))
+    risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
+    # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     # lets use a random date from last 18-70 years for dob
     date_of_birth = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - relativedelta(years=70),
                                                                 datetime.now().date() - relativedelta(years=18)))
@@ -203,8 +205,6 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     account_type = 0  # 0 for personal account type
     account_name = factory.Sequence(lambda n: 'ClientAccount %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
-    risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
-    # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     confirmed = True
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 

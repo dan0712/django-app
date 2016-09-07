@@ -7,8 +7,9 @@ from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import ExternalAsset, ExternalAssetTransfer, User
 from user.models import SecurityQuestion, SecurityAnswer
-from client.models import Client, EmailNotificationPrefs, EmailInvite
+from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup
 from notifications.signals import notify
+from main import constants
 
 from ..user.serializers import UserFieldSerializer
 
@@ -40,13 +41,27 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
     """
     Write (POST/PUT) update requests only
     """
+    qs = RiskProfileAnswer.objects.all()
+    risk_profile_responses = serializers.PrimaryKeyRelatedField(many=True,
+                                                                queryset=qs,
+                                                                required=False)
+    def create(self, validated_data):
+        # Default to Personal account type for risk profile group on a brand
+        # new client (since they have no accounts yet, we have to assume)
+        rpg = RiskProfileGroup.objects.get(account_types__account_type=constants.ACCOUNT_TYPE_PERSONAL)
+        validated_data.update({
+            'risk_profile_group': rpg
+        })
+        return (super(ClientUpdateSerializer, self)
+                .create(validated_data))
     class Meta:
         model = Client
         fields = (
             'employment_status', 'income', 'occupation',
             'employer', 'us_citizen', 'public_position_insider',
             'ten_percent_insider', 'associated_to_broker_dealer',
-            'tax_file_number', 'provide_tfn', 'civil_status'
+            'tax_file_number', 'provide_tfn', 'civil_status',
+            'risk_profile_responses'
         )
 
 
