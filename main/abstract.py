@@ -11,7 +11,7 @@ from django.utils.functional import cached_property
 from phonenumber_field.modelfields import PhoneNumberField
 
 from common.structures import ChoiceEnum
-from main.fields import FeatureList
+from main.fields import FeatureList, PropertyList
 from main.utils import d2dt
 
 
@@ -34,16 +34,29 @@ class PersonalData(models.Model):
                PUBLIC_POSITION_INSIDER, US_CITIZEN],
     }
 
+    TAX_FILE_NUMBER = 'tax_file_number'
+    PROVIDE_TFN = 'provide_tfn'
+    MEDICARE_NUMBER = 'medicare_number'
+    SSN = 'ssn'
+    POLITICALLY_EXPOSED = 'politically_exposed'
+    TAX_TRANSCRIPT = 'tax_transcript'
+    PROPERTIES = {
+        'AU': [TAX_FILE_NUMBER, PROVIDE_TFN, MEDICARE_NUMBER],
+        'US': [SSN, POLITICALLY_EXPOSED, TAX_TRANSCRIPT],
+    }
+
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
     gender = models.CharField(max_length=20,
                               default="Male",
                               choices=(("Male", "Male"), ("Female", "Female")))
     residential_address = models.ForeignKey('address.Address', related_name='+')
-    phone_num = PhoneNumberField(null=True, max_length=16)  # A person may not have a phone.
+    # A person may not have a phone.
+    phone_num = PhoneNumberField(null=True, max_length=16)
     medicare_number = models.CharField(max_length=50, default="")
     civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
 
     _features = models.PositiveIntegerField(default=0)
+    _properties = models.TextField(default='{}')
 
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
@@ -52,6 +65,8 @@ class PersonalData(models.Model):
         super(PersonalData, self).__init__(*args, **kwargs)
         self.features = FeatureList(self, '_features',
                                     self.FEATURES[self.country])
+        self.properties = PropertyList(self, '_properties',
+                                       self.PROPERTIES[self.country])
 
     @property
     def first_name(self):

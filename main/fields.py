@@ -1,4 +1,5 @@
 import re
+import ujson
 from django import forms
 from django.conf import settings
 from django.core.validators import RegexValidator
@@ -77,7 +78,17 @@ class MedicareNumberValidator(object):
         return True, ""
 
 
-class FeatureList:
+class BaseList:
+    def _check(self, f):
+        if f not in self._list:
+            raise ValueError("Unknown %s value." % f)
+
+    def __init__(self, obj, field, value_list):
+        self.field = obj, field
+        self._list = value_list
+
+
+class FeatureList(BaseList):
     @property
     def _v(self):
         return getattr(*self.field)
@@ -85,14 +96,6 @@ class FeatureList:
     @_v.setter
     def _v(self, value):
         setattr(*self.field, value)
-
-    def _check(self, f):
-        if f not in self.feature_list:
-            raise ValueError("Unknown %s feature." % f)
-
-    def __init__(self, obj, field, feature_list):
-        self.field = obj, field
-        self.feature_list = feature_list
 
     def __add__(self, feature):
         self._check(feature)
@@ -117,3 +120,24 @@ class FeatureList:
         return self._v
 
 
+class PropertyList(BaseList):
+    @property
+    def _v(self):
+        return ujson.loads(getattr(*self.field) or '{}')
+
+    @_v.setter
+    def _v(self, value):
+        setattr(*self.field, ujson.dumps(value or '{}'))
+
+    def __getitem__(self, item):
+        self._check(item)
+        return self._v.get(item, '')
+
+    def __setitem__(self, key, value):
+        self._check(key)
+        v = self._v
+        v[key] = value
+        self._v = v
+
+    def __eq__(self, other):
+        return self._v == other
