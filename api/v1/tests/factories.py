@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
-                        FiscalYear
+                        FiscalYear, AuthorisedRepresentative
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -142,6 +142,15 @@ class AdvisorFactory(factory.django.DjangoModelFactory):
     betasmartz_agreement = True
     residential_address = factory.SubFactory(AddressFactory)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
+
+class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AuthorisedRepresentative
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+    residential_address = factory.SubFactory(AddressFactory)
+    betasmartz_agreement = True
 
 
 class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
