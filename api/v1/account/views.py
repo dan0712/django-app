@@ -99,7 +99,7 @@ class AccountViewSet(ApiViewMixin,
 
         if serializer.is_valid():
             owner = serializer.validated_data['primary_owner']
-            other_personals = owner.accounts_all.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL)
+            other_personals = owner.primary_accounts.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL)
             if serializer.validated_data['account_type'] == constants.ACCOUNT_TYPE_PERSONAL \
                     and other_personals.count() >= 1:
                 return Response({'error': 'Limit 1 personal account'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
