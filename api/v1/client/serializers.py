@@ -151,42 +151,17 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
     """
     For POST request to register from an email token
     """
-    invite_key = serializers.CharField()
-    email = serializers.CharField()
+    invite_key = serializers.CharField(required=True)
     password = serializers.CharField(style={'input_type': 'password'})
-    question_one_id = serializers.IntegerField()
-    question_one_answer = serializers.CharField()
-    question_two_id = serializers.IntegerField()
-    question_two_answer = serializers.CharField()
+    question_one = serializers.CharField(required=True)
+    question_one_answer = serializers.CharField(required=True)
+    question_two = serializers.CharField(required=True)
+    question_two_answer = serializers.CharField(required=True)
 
     def validate(self, attrs):
-        if User.objects.filter(email=attrs.get('email')).exists():
-            msg = _('Email is already in use')
-            raise exceptions.ValidationError(msg)
-
         invite_params = {
             'invite_key': attrs.get('invite_key'),
-            'email': attrs.get('email'),
         }
-
-        if not attrs.get('question_one_id') or not SecurityQuestion.objects.filter(
-            pk=attrs['question_one_id']).exists():
-            msg = _('Invalid security question #1 ID')
-            raise exceptions.ValidationError(msg)
-        self.question_one = SecurityQuestion.objects.get(pk=attrs['question_one_id'])
-
-        if not attrs.get('question_two_id') or not SecurityQuestion.objects.filter(
-            pk=attrs['question_two_id']).exists():
-            msg = _('Invalid security question #2 ID')
-            raise exceptions.ValidationError(msg)
-        self.question_two = SecurityQuestion.objects.get(pk=attrs['question_two_id'])
-
-        if not attrs.get('question_one_answer'):
-            msg = _('Invalid security question #1 answer')
-            raise exceptions.ValidationError(msg)
-        if not attrs.get('question_two_answer'):
-            msg = _('Invalid security question #2 answer')
-            raise exceptions.ValidationError(msg)
 
         invite_lookup = EmailInvite.objects.filter(**invite_params)
 
@@ -195,6 +170,10 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
 
         self.invite = invite_lookup.get()
+
+        if User.objects.filter(email=self.invite.email).exists():
+            msg = _('Email is already in use')
+            raise exceptions.ValidationError(msg)
 
         if self.invite.status == EmailInvite.STATUS_CREATED:
             msg = _('Unable to accept this invitation, it hasnt been sent yet')
@@ -205,6 +184,10 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
 
         if self.invite.status == EmailInvite.STATUS_EXPIRED:
+            self.invite.advisor.user.email_user('A client tried to use an expired invitation'
+                    "Your client %s %s (%s) just tried to register using an invite "
+                    "you sent them, but it has expired!"%
+                    (self.invite.first_name, self.invite.last_name, self.invite.email))
             msg = _('Unable to accept this invitation, it has expired')
             raise exceptions.ValidationError(msg)
 

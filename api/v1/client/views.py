@@ -73,8 +73,12 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         return qs.filter_by_user(user)
 
     def post(self, request):
-        if EmailInvite.STATUS_ACTIVE == getattr(
+        if EmailInvite.STATUS_ACCEPTED == getattr(
             self.request.user.invitation, 'status', None):
+            # Email the user "Welcome Aboard"
+            self.request.user.email_user('Welcome to BetaSmartz!',
+                    "Congratulations! You've setup your first account, "
+                    "you're ready to start using BetaSmartz!")
             return super(ClientViewSet, self).post(request)
         return Response({'error': 'requires account with accepted invitation'},
                         status=HTTP_405_METHOD_NOT_ALLOWED)
@@ -153,11 +157,11 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
         user = User.objects.create_user(**user_params)
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer.question_one,
+                                      question=serializer['question_one'],
                                       answer=serializer['question_one_answer'])
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer.question_two,
+                                      question=serializer['question_two'],
                                       answer=serializer['question_two_answer'])
 
         invite.status = EmailInvite.STATUS_ACCEPTED

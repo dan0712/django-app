@@ -44,11 +44,10 @@ class InviteTests(APITestCase):
             'first_name': invite.first_name,
             'last_name': invite.last_name,
             'invite_key': invite.invite_key,
-            'email': invite.email,
             'password': 'test',
-            'question_one_id': self.question_one.id,
+            'question_one': 'what is the first answer?',
             'question_one_answer': 'answer one',
-            'question_two_id': self.question_two.id,
+            'question_two': 'what is the second answer?',
             'question_two_answer': 'answer two',
         }
 
@@ -58,23 +57,18 @@ class InviteTests(APITestCase):
                          msg='400 for registrations from nonexistant email invite')
 
         # 400 on bad securityquestions
-        response = self.client.post(url, dict(data, question_one_id=9999))
+        response = self.client.post(url, dict(data, question_one=''))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
-                         msg='400 on bad question id')
-        response = self.client.post(url, dict(data, question_two_id=9999))
+                         msg='400 on bad question')
+        response = self.client.post(url, dict(data, question_two=''))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
-                         msg='400 on bad question id')
+                         msg='400 on bad question')
         response = self.client.post(url, dict(data, question_one_answer=''))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg='400 on bad question answer')
         response = self.client.post(url, dict(data, question_two_answer=''))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg='400 on bad question answer')
-
-        # 400 token must match user
-        response = self.client.post(url, dict(data, email='invalid@example.org'))
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
-                         msg='400 for registrations from mismatched email invite')
 
         # With a valid token, get a valid user
         response = self.client.post(url, data)
@@ -131,11 +125,10 @@ class InviteTests(APITestCase):
             'first_name': invite.first_name,
             'last_name': invite.last_name,
             'invite_key': invite.invite_key,
-            'email': invite.email,
             'password': 'test',
-            'question_one_id': self.question_one.id,
+            'question_one': 'what is the first answer?',
             'question_one_answer': 'answer one',
-            'question_two_id': self.question_two.id,
+            'question_two': 'what is the second answer?',
             'question_two_answer': 'answer two',
         }
 
@@ -195,11 +188,10 @@ class InviteTests(APITestCase):
             'first_name': invite.first_name,
             'last_name': invite.last_name,
             'invite_key': invite.invite_key,
-            'email': invite.email,
             'password': 'test',
-            'question_one_id': self.question_one.id,
+            'question_one': 'what is the first answer?',
             'question_one_answer': 'answer one',
-            'question_two_id': self.question_two.id,
+            'question_two': 'what is the second answer?',
             'question_two_answer': 'answer two',
         }
 
