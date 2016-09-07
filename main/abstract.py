@@ -117,11 +117,9 @@ class PersonalData(models.Model):
             return age
         return
 
-    @property
+    @cached_property
     def country(self):
-        if getattr(self, '_country', None) is None:
-            self._country = self.residential_address.region.country
-        return self._country
+        return self.residential_address.region.country
 
 
 class NeedApprobation(models.Model):
