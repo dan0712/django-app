@@ -572,6 +572,11 @@ class EmailNotificationPrefs(models.Model):
         default=False)
 
 
+
+def generate_token(cls):
+    secret = str(uuid.uuid4()) + str(uuid.uuid4())
+    return secret.replace('-', '')[:64]
+
 class EmailInvite(models.Model):
     STATUS_CREATED = 0
     STATUS_SENT = 1
@@ -602,7 +607,7 @@ class EmailInvite(models.Model):
                                 null=True, blank=True)
 
     invite_key = models.CharField(max_length=64,
-                                  default=lambda: EmailInvite.generate_token())
+                                  default=generate_token)
 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -647,8 +652,3 @@ class EmailInvite(models.Model):
         self.send_count += 1
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
-
-    @classmethod
-    def generate_token(cls):
-        secret = str(uuid.uuid4()) + str(uuid.uuid4())
-        return secret.replace('-', '')[:64]
