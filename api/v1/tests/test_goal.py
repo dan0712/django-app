@@ -302,3 +302,12 @@ class GoalTests(APITestCase):
             }
         ]
         self.assertEqual(response.data, data)
+
+    def test_recommended_risk_scores(self):
+        url = '/api/v1/goals/{}/recommended-risk-scores?years=9'.format(Fixture1.goal1().id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
