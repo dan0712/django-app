@@ -210,7 +210,7 @@ class GoalSettingFactory(factory.django.DjangoModelFactory):
         model = GoalSetting
 
     target = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
-    completion = factory.LazyAttribute(lambda n: random_date(datetime.today() - relativedelta(years=30), datetime.today()))
+    completion = factory.LazyAttribute(lambda n: random_date(datetime.today() - relativedelta(years=30), datetime.today()).date())
     hedge_fx = False
     metric_group = factory.SubFactory(GoalMetricGroupFactory)
 

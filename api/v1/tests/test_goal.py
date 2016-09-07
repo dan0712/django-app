@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 from pinax.eventlog.models import Log
@@ -10,9 +11,9 @@ from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
     MarketOrderRequest
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
-    GoalSettingFactory
+    GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
+    AssetClassFactory, PortfolioSetFactory
 from api.v1.goals.serializers import GoalSettingSerializer
-import ujson
 
 
 class GoalTests(APITestCase):
@@ -323,13 +324,35 @@ class GoalTests(APITestCase):
         expects the setting parameter to be a json dump
         of the goal settings to use for the portfolio calculation
         """
+        # tickers for testing portfolio calculations in goals endpoint
+        # otherwise, No valid instruments found
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+        # ticker checks django contenttype model for some reason so
+        # we have to manage this in fixtures a little, have to be unique per model
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+
+        # need to add some returns otherwise errors with
+        # not enough data
+        # so need to add some pricing data for the tickers
+        # # Allow 5 days slippage just to be sure we have a trading day last.
+        # fund_returns, benchmark_returns, bch_map = get_fund_returns(funds=tickers,
+        #                                                             start_date=data_provider.get_start_date(),
+        #                                                             end_date=data_provider.get_current_date(),
+        #                                                             end_tol=5,
+        #                                                             min_days=min_days)
+
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         goal_settings = GoalSettingFactory.create()
+
         goal = GoalFactory.create(account=account, active_settings=goal_settings)
-        # GoalSettingSerializer(goal_settings)
-        settings_str = '%7B%22completion%22%3A%222026-01-07%22%2C%22hedge_fx%22%3Afalse%2C%22metric_group%22%3A%7B%22metrics%22%3A%5B%7B%22id%22%3A1107%2C%22type%22%3A1%2C%22comparison%22%3A1%2C%22rebalance_type%22%3A0%2C%22rebalance_thr%22%3A0.05%2C%22configured_val%22%3A0.5%2C%22measured_val%22%3Anull%2C%22feature%22%3Anull%7D%5D%7D%2C%22rebalance%22%3Atrue%2C%22recurring_transactions%22%3A%5B%7B%22amount%22%3A5%2C%22schedule%22%3A%22RRULE%3AFREQ%3DMONTHLY%3BBYMONTHDAY%3D6%22%2C%22begin_date%22%3A%222016-09-07%22%2C%22growth%22%3A0%7D%5D%2C%22target%22%3A80000%7D'
-        print(ujson.load(settings_str))
-        url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, settings_str)
+        serializer = GoalSettingSerializer(goal_settings)
+        print(serializer.data)
+        url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 

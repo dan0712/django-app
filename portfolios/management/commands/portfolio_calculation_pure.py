@@ -38,7 +38,7 @@ MINIMUM_PRICE_SAMPLES = 250
 
 WEEKDAYS_PER_YEAR = 260
 
-logger = logging.getLogger('betasmartz.portfolio_calculation')
+logger = logging.getLogger('portfolios.management.commands.portfolio_calculation_pure')
 logger.setLevel(logging.INFO)
 
 # Raise exceptions if we're doing something dumb with pandas slices
