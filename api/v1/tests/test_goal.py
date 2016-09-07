@@ -12,7 +12,7 @@ from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
-    AssetClassFactory, PortfolioSetFactory
+    AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory
 from api.v1.goals.serializers import GoalSettingSerializer
 
 
@@ -330,21 +330,30 @@ class GoalTests(APITestCase):
         self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
         # ticker checks django contenttype model for some reason so
         # we have to manage this in fixtures a little, have to be unique per model
-        self.content_type = ContentTypeFactory.create()
+        self.index = MarketIndexFactory.create()
+        # self.content_type = ContentTypeFactory.create()
         self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
         self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.index)
 
         # need to add some returns otherwise errors with
         # not enough data
         # so need to add some pricing data for the tickers
-        # # Allow 5 days slippage just to be sure we have a trading day last.
+        # MINIMUM_PRICE_SAMPLES is 250 so.... need factory and can do it easy enough
+        # Allow 5 days slippage just to be sure we have a trading day last.
         # fund_returns, benchmark_returns, bch_map = get_fund_returns(funds=tickers,
         #                                                             start_date=data_provider.get_start_date(),
         #                                                             end_date=data_provider.get_current_date(),
         #                                                             end_tol=5,
         #                                                             min_days=min_days)
+
+        # create 150 for stocks ticker
+        for i in range(150):
+            DailyPriceFactory.create(instrument=self.stocks_ticker)
+        # create 100 for bonds ticker
+        for i in range(100):
+            DailyPriceFactory.create(instrument=self.bonds_ticker)
 
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         goal_settings = GoalSettingFactory.create()

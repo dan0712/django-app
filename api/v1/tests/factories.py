@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
-                        FiscalYear
+                        FiscalYear, DailyPrice, MarketCap, MarketIndex
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -288,6 +288,37 @@ class MainRegionFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Region %d' % n)
 
 
+class MarketIndexFactory(factory.django.DjangoModelFactory):
+    """
+    Generic relation with MarketCap
+    Generic relation with DailyPrice
+    Generic relation with Ticker
+    """
+    class Meta:
+        model = MarketIndex
+
+    region = factory.SubFactory(MainRegionFactory)
+
+
+class MarketCapFactory(factory.django.DjangoModelFactory):
+    """
+    unique_together = ("instrument_content_type", "instrument_object_id", "date")
+
+    instrument_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    instrument_object_id = models.PositiveIntegerField()
+    instrument = GenericForeignKey('instrument_content_type', 'instrument_object_id')
+    date = models.DateField()
+    value = models.FloatField()
+    """
+    class Meta:
+        model = MarketCap
+
+    # instrument_content_type = factory.SubFactory(ContentTypeFactory)
+    instrument = factory.SubFactory(MarketIndexFactory)
+    date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n+5)).date())
+    value = factory.LazyAttribute(lambda n: float(random.randrange(1000) / 100))
+
+
 class TickerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Ticker
@@ -295,7 +326,7 @@ class TickerFactory(factory.django.DjangoModelFactory):
     symbol = factory.Sequence(lambda n: str(n))
     ordering = factory.Sequence(lambda n: int(n))
     asset_class = factory.SubFactory(AssetClassFactory)
-    benchmark_content_type = factory.SubFactory(ContentTypeFactory)
+    benchmark = factory.SubFactory(MarketIndexFactory)
     region = factory.SubFactory(MainRegionFactory)
     data_api_param = factory.Sequence(lambda n: str(n))
 
@@ -317,3 +348,17 @@ class PositionFactory(factory.django.DjangoModelFactory):
     goal = factory.SubFactory(GoalFactory)
     ticker = factory.SubFactory(TickerFactory)
     share = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
+class DailyPriceFactory(factory.django.DjangoModelFactory):
+    """
+    DailyPriceFactory uses TickerFacory for the instrument by default.
+    """
+    class Meta:
+        model = DailyPrice
+
+    # instrument_content_type = factory.SubFactory(ContentTypeFactory)
+    instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
+    instrument = factory.SubFactory(TickerFactory)
+    date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n+5)).date())
+    price = factory.LazyAttribute(lambda n: float(random.randrange(1000) / 100))
