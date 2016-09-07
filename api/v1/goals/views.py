@@ -29,9 +29,11 @@ from support.models import SupportRequest
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
-
+import logging
 # Make unsafe float operations with decimal fail
 decimal.getcontext().traps[decimal.FloatOperation] = True
+
+logger = logging.getLogger('api.v1.goals.views')
 
 
 def check_state(current, required):
@@ -347,10 +349,12 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
 
         setting_str = request.query_params.get('setting', None)
         if not setting_str:
+            logger.error('setting parameter missing from calculate_all_portfolios query')
             raise ValidationError("Query parameter 'setting' must be specified and a valid JSON string")
         try:
             setting = ujson.loads(setting_str)
         except ValueError:
+            logger.error('setting parameter for calculate_all_portfolios query not valid json')
             raise ValidationError("Query parameter 'setting' must be a valid json string")
 
         # Create the settings from the dict

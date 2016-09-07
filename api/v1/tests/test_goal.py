@@ -9,7 +9,10 @@ from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
     MarketOrderRequest
 from main.tests.fixture import Fixture1
-from .factories import GroupFactory
+from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
+    GoalSettingFactory
+from api.v1.goals.serializers import GoalSettingSerializer
+import ujson
 
 
 class GoalTests(APITestCase):
@@ -304,7 +307,29 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data, data)
 
     def test_recommended_risk_scores(self):
+        """
+        expects the years parameter for the span of risk scores
+        """
         url = '/api/v1/goals/{}/recommended-risk-scores?years=9'.format(Fixture1.goal1().id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_calculate_all_portfolios(self):
+        """
+        expects the setting parameter to be a json dump
+        of the goal settings to use for the portfolio calculation
+        """
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        goal_settings = GoalSettingFactory.create()
+        goal = GoalFactory.create(account=account, active_settings=goal_settings)
+        # GoalSettingSerializer(goal_settings)
+        settings_str = '%7B%22completion%22%3A%222026-01-07%22%2C%22hedge_fx%22%3Afalse%2C%22metric_group%22%3A%7B%22metrics%22%3A%5B%7B%22id%22%3A1107%2C%22type%22%3A1%2C%22comparison%22%3A1%2C%22rebalance_type%22%3A0%2C%22rebalance_thr%22%3A0.05%2C%22configured_val%22%3A0.5%2C%22measured_val%22%3Anull%2C%22feature%22%3Anull%7D%5D%7D%2C%22rebalance%22%3Atrue%2C%22recurring_transactions%22%3A%5B%7B%22amount%22%3A5%2C%22schedule%22%3A%22RRULE%3AFREQ%3DMONTHLY%3BBYMONTHDAY%3D6%22%2C%22begin_date%22%3A%222016-09-07%22%2C%22growth%22%3A0%7D%5D%2C%22target%22%3A80000%7D'
+        print(ujson.load(settings_str))
+        url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, settings_str)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
