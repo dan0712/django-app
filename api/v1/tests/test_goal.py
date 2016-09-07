@@ -351,7 +351,6 @@ class GoalTests(APITestCase):
 
         goal = GoalFactory.create(account=account, active_settings=goal_settings)
         serializer = GoalSettingSerializer(goal_settings)
-        print(serializer.data)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
