@@ -1,6 +1,7 @@
 import logging
 from django.db import models
 from jsonfield.fields import JSONField
+from weasyprint import HTML
 
 logger = logging.getLogger('client.models')
 
@@ -21,6 +22,19 @@ class PDFStatement(models.Model):
     @property
     def firm(self):
         return self.advisor.firm
+
+    def render_template(self, template_name):
+        from django.template.loader import render_to_string
+        return render_to_string(template_name, {
+            'object': self,
+        })
+
+    def render_pdf(self, template_name):
+        html = self.render_template(template_name)
+        # Have to source the images locally for WeasyPrint
+        html = html.replace('/static/', 'file:///betasmartz/static/')
+        pdf_builder = HTML(string=html)
+        return pdf_builder.write_pdf()
 
     class Meta:
         abstract = True
