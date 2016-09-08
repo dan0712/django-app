@@ -59,6 +59,8 @@ urlpatterns = patterns(
     url(r'^firm/', include(urlpatterns_firm, namespace='firm')),
     # Client views
     url(r'^client/', include('client.urls', namespace='client', app_name='client')),
+    # Client statements
+    url(r'^statements/', include('statements.urls', namespace='statements', app_name='statements')),
     # Advisor views
     url(r'^advisor/', include('advisors.urls', namespace='advisor', app_name='advisors')),
 
