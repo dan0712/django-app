@@ -11,8 +11,7 @@ def def_rpg(apps, schema_editor):
 
     # First create the default risk profile groups for natural and corporate entities.
     def_nat = RiskProfileGroup.objects.create(name='default_natural',
-                                              description='The default risk profile questions for accounts '
-                                                          'for natural entities (PERSONAL and JOINT accounts)')
+                                              description='The default risk profile questions for clients')
 
     for client in Client.objects.using(db_alias).all():
         personal_accounts = client.primary_accounts.filter(account_type=constants.ACCOUNT_TYPE_PERSONAL)
