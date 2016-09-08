@@ -6,6 +6,10 @@ from execution.broker.ibroker import IBroker
 from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
 from datetime import datetime
 from execution.end_of_day import get_execution_requests, transform_execution_requests
+from execution.account_groups.account_allocations import AccountAllocations, Execution
+from execution.account_groups.create_account_groups import FAAccountProfile
+from django.utils import timezone
+
 
 class BaseTest(TestCase):
 
@@ -72,10 +76,8 @@ class BaseTest(TestCase):
         }
         ExecutionRequest.objects.get_or_create(id=4, defaults=params)
 
-
-
     def test_ib_time(self):
-        self.con.current_time.return_value = datetime.now()
+        self.con.current_time.return_value = timezone.now()
         time = self.con.current_time()
         self.assertTrue(type(time) is datetime)
 
@@ -142,4 +144,36 @@ class BaseTest(TestCase):
         self.assertTrue(allocations['SPY']['DU299695'] == 10)
         self.assertTrue(allocations['TLT']['DU299694'] == 5)
         self.assertTrue(allocations['TLT']['DU299695'] == 10)
+
+    def test_allocations(self):
+        execution = Execution(10, 'DU299694', 5, timezone.now(), 1)
+
+        allocation = AccountAllocations()
+
+        allocation.add_execution_allocation(execution)
+
+        self.assertTrue(allocation.allocations[1]['DU299694'].price == 10)
+        self.assertTrue(allocation.allocations[1]['DU299694'].shares == 5)
+
+        execution = Execution(20, 'DU299694', 5, timezone.now(), 1)
+        allocation.add_execution_allocation(execution)
+
+        self.assertTrue(allocation.allocations[1]['DU299694'].price == 15)
+        self.assertTrue(allocation.allocations[1]['DU299694'].shares == 10)
+
+    def test_create_account_groups(self):
+        account_profile = FAAccountProfile()
+
+        account_dict = {
+            'DU299694': 5,
+            'DU299695': 10,
+        }
+
+        account_profile.append_share_allocation('MSFT', account_dict)
+        profile = account_profile.get_profile()
+
+        profile_should_be = '<?xml version="1.0" encoding="UTF-8"?><ListOfAllocationProfiles><AllocationProfile><name>MSFT</name><type>3</type><ListOfAllocations varName="listOfAllocations"><Allocation><acct>DU299694</acct><amount>5.0</amount></Allocation><Allocation><acct>DU299695</acct><amount>10.0</amount></Allocation></ListOfAllocations></AllocationProfile></ListOfAllocationProfiles>'
+        self.assertTrue(profile == profile_should_be)
+
+
 

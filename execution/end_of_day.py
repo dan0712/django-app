@@ -164,6 +164,7 @@ def main(options):
 
 if __name__ == '__main__':
     #try:
+
         main(get_options())
     #except:
         print("exception")
