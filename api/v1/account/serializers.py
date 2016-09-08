@@ -32,11 +32,8 @@ class ClientAccountCreateSerializer(NoUpdateModelSerializer):
 
     def create(self, validated_data):
         ps = validated_data['primary_owner'].advisor.default_portfolio_set
-        ac_type = validated_data['account_type']
-        rpg = RiskProfileGroup.objects.get(account_types__account_type=ac_type)
         validated_data.update({
             'default_portfolio_set': ps,
-            'risk_profile_group': rpg,
         })
         return (super(ClientAccountCreateSerializer, self)
                 .create(validated_data))
@@ -46,15 +43,10 @@ class ClientAccountUpdateSerializer(NoCreateModelSerializer):
     """
     Updatable ClientAccount Serializer
     """
-    qs = RiskProfileAnswer.objects.all()
-    risk_profile_responses = serializers.PrimaryKeyRelatedField(many=True,
-                                                                queryset=qs,
-                                                                required=False)
 
     class Meta:
         model = ClientAccount
         fields = (
             'account_name',
             'tax_loss_harvesting_status',
-            'risk_profile_responses',
         )

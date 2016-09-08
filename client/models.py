@@ -89,6 +89,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)
+    risk_profile_group = models.ForeignKey('RiskProfileGroup',
+                                           related_name='clients', null=True)
+    risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
     objects = ClientQuerySet.as_manager()
 
@@ -181,17 +184,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                  update_fields)
 
         if create_personal_account:
-            risk_profile_group = AccountTypeRiskProfileGroup.objects.filter(
-                account_type=constants.ACCOUNT_TYPE_PERSONAL).first()
-            if risk_profile_group is None:
-                raise ValidationError(
-                    "No risk profile group associated with account type: "
-                    "ACCOUNT_TYPE_PERSONAL")
             new_ac = ClientAccount(
                 primary_owner=self,
                 account_type=constants.ACCOUNT_TYPE_PERSONAL,
                 default_portfolio_set=self.advisor.default_portfolio_set,
-                risk_profile_group=risk_profile_group.risk_profile_group
             )
             new_ac.save()
             new_ac.remove_from_group()
@@ -238,10 +234,6 @@ class ClientAccount(models.Model):
                                          related_name='signatory_accounts',
                                          help_text='Other clients authorised '
                                                    'to operate the account.')
-    risk_profile_group = models.ForeignKey('RiskProfileGroup',
-                                           related_name='accounts')
-    # The account must not be used until the risk_profile_responses are set.
-    risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
     # also has ib_account foreign key to IBAccount
 
     objects = ClientAccountQuerySet.as_manager()

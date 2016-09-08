@@ -25,7 +25,7 @@ class RiskProfilerTests(TestCase):
     def test_willingness_fully_answered_bad_questions(self):
         # Fully populate the answers, but no range in the available question responses, we should get 0.5
         account = Fixture1.personal_account1()
-        account.risk_profile_responses.add(Fixture1.risk_profile_answer1a())
+        account.primary_owner.risk_profile_responses.add(Fixture1.risk_profile_answer1a())
         self.assertEqual(get_risk_willingness(account), 0.5)
 
     def test_willingness_fully_answered(self):
