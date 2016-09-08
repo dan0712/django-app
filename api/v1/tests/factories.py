@@ -357,8 +357,7 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DailyPrice
 
-    # instrument_content_type = factory.SubFactory(ContentTypeFactory)
     instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
     instrument = factory.SubFactory(TickerFactory)
     date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n+5)).date())
-    price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))

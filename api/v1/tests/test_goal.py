@@ -1,6 +1,7 @@
 import json
 from decimal import Decimal
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from pinax.eventlog.models import Log
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -15,6 +16,7 @@ from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory
 from api.v1.goals.serializers import GoalSettingSerializer
 from django.contrib.contenttypes.models import ContentType
+from main.management.commands.populate_test_prices import populate_prices
 
 
 class GoalTests(APITestCase):
@@ -329,11 +331,10 @@ class GoalTests(APITestCase):
         # otherwise, No valid instruments found
         self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
         self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
-        # ticker checks django contenttype model for some reason so
-        # we have to manage this in fixtures a little, have to be unique per model
+        # # ticker checks django contenttype model for some reason so
+        # # we have to manage this in fixtures a little, have to be unique per model
         self.index = MarketIndexFactory.create()
         self.content_type = ContentType.objects.get_for_model(MarketIndex)
-        # self.content_type = ContentTypeFactory.create()
         self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
         self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
         self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
@@ -345,24 +346,8 @@ class GoalTests(APITestCase):
                                                   benchmark_content_type=self.content_type,
                                                   benchmark_object_id=self.content_type.id)
 
-        # need to add some returns otherwise errors with
-        # not enough data
-        # so need to add some pricing data for the tickers
-        # MINIMUM_PRICE_SAMPLES is 250 so.... need factory and can do it easy enough
-        # Allow 5 days slippage just to be sure we have a trading day last.
-        # fund_returns, benchmark_returns, bch_map = get_fund_returns(funds=tickers,
-        #                                                             start_date=data_provider.get_start_date(),
-        #                                                             end_date=data_provider.get_current_date(),
-        #                                                             end_tol=5,
-        #                                                             min_days=min_days)
-
-        # create 150 for stocks ticker
-        for i in range(150):
-            DailyPriceFactory.create(instrument=self.stocks_ticker)
-        # create 100 for bonds ticker
-        for i in range(100):
-            DailyPriceFactory.create(instrument=self.bonds_ticker)
-
+        # populate some price data
+        populate_prices(400)
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         goal_settings = GoalSettingFactory.create()
 
