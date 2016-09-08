@@ -219,10 +219,11 @@ class FirmAnalyticsMixin(object):
 
             if hasattr(self, 'filter'):
                 data = self.filter.data
-
-                risk = data.get('risk')
+                risk = None
+                if 'risk' in data.keys():
+                    risk = data.getlist('risk')
                 if risk:
-                    qs = qs.filter_by_risk_level(int(risk))
+                    qs = qs.filter_by_risk_level(risk)
 
             self._queryset_clients = qs
 
@@ -244,11 +245,12 @@ class FirmAnalyticsMixin(object):
 
             if hasattr(self, 'filter'):
                 data = self.filter.data
-
-                risk = data.get('risk')
+                risk = None
+                if 'risk' in data.keys():
+                    risk = data.getlist('risk')
+                # logger.error(risk)
                 if risk:
-                    qs = qs.filter_by_risk_level(int(risk))
-
+                    qs = qs.filter_by_risk_level(risk)
             self._queryset_goals = qs
 
         return self._queryset_goals
@@ -284,10 +286,11 @@ class FirmAnalyticsMixin(object):
 
             if hasattr(self, 'filter'):
                 data = self.filter.data
-
-                risk = data.get('risk')
+                risk = None
+                if 'risk' in data.keys():
+                    risk = data.getlist('risk')
                 if risk:
-                    qs = qs.filter_by_risk_level(int(risk))
+                    qs = qs.filter_by_risk_level(risk)
 
             self._queryset_positions = qs
 

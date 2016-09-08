@@ -9,7 +9,6 @@ from api.v1.client.serializers import EmailNotificationsSerializer, \
     PersonalInfoSerializer
 from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
-
 from main.models import ExternalAsset, User
 from user.models import SecurityQuestion, SecurityAnswer
 from client.models import Client, EmailInvite
@@ -21,6 +20,7 @@ from . import serializers
 import logging
 
 logger = logging.getLogger('api.v1.client.views')
+
 
 class ExternalAssetViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     model = ExternalAsset

@@ -184,7 +184,6 @@ class FiscalYear(models.Model):
                                                    validators=[MinLengthValidator(23)],
                                                    help_text="Comma separated month end days each month of the year. First element is January.")
 
-
     def __str__(self):
         return "[%s] %s %s" % (self.id, self.name, self.year)
 
@@ -1615,6 +1614,18 @@ class Goal(models.Model):
             .first()
 
         if goal_metric:
+            return str(goal_metric.get_risk_level())
+        return '0'
+
+    @property
+    def risk_level_display(self):
+        # Experimental
+        goal_metric = GoalMetric.objects \
+            .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE) \
+            .filter(group__settings__goal_approved=self) \
+            .first()
+
+        if goal_metric:
             risk_level = goal_metric.get_risk_level_display()
             return risk_level
 
@@ -1922,6 +1933,10 @@ class GoalMetric(models.Model):
 
             if self.configured_val < risk_max / 100:
                 return risk_min
+
+    @property
+    def risk_level(self):
+        return self.get_risk_level()
 
     def get_risk_level_display(self):
         risk_level = self.get_risk_level()
