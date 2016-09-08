@@ -8,12 +8,13 @@ from rest_framework.test import APITestCase
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
-    MarketOrderRequest
+    MarketOrderRequest, MarketIndex
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory
 from api.v1.goals.serializers import GoalSettingSerializer
+from django.contrib.contenttypes.models import ContentType
 
 
 class GoalTests(APITestCase):
@@ -331,11 +332,18 @@ class GoalTests(APITestCase):
         # ticker checks django contenttype model for some reason so
         # we have to manage this in fixtures a little, have to be unique per model
         self.index = MarketIndexFactory.create()
+        self.content_type = ContentType.objects.get_for_model(MarketIndex)
         # self.content_type = ContentTypeFactory.create()
         self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
         self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.index)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
+                                                 benchmark=self.index,
+                                                 benchmark_content_type=self.content_type,
+                                                 benchmark_object_id=self.content_type.id)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                                  benchmark=self.index,
+                                                  benchmark_content_type=self.content_type,
+                                                  benchmark_object_id=self.content_type.id)
 
         # need to add some returns otherwise errors with
         # not enough data
