@@ -16,6 +16,7 @@ from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
+from main.finance import mod_dietz_rate
 
 logger = logging.getLogger('client.models')
 
@@ -384,8 +385,8 @@ class ClientAccount(models.Model):
         return b
 
     @property
-    def total_returns(self):
-        return 0
+    def average_return(self):
+        return mod_dietz_rate(self.goals)
 
     @property
     def total_earnings(self):

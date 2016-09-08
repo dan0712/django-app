@@ -655,7 +655,25 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return total_fees
 
     @property
-    def total_return(self):
+    def total_fees(self):
+        """
+        """
+        from client.models import ClientAccount
+        total_fees = 0.0
+        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
+            for year in self.firm.fiscal_years.all():
+                for goal in ca.goals:
+                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                                     status=Transaction.STATUS_EXECUTED,
+                                                     reason=Transaction.REASON_FEE,
+                                                     executed__gte=year.begin_date,
+                                                     executed__lte=year.end_date)
+                    for tx in txs:
+                        total_fees += tx.amount
+        return total_fees
+
+    @property
+    def average_return(self):
         goals = Goal.objects.filter(account__in=self.client_accounts)
         return mod_dietz_rate(goals)
 
@@ -732,8 +750,8 @@ class AccountGroup(models.Model):
         return sum(a.total_balance for a in self.accounts.all())
 
     @property
-    def total_returns(self):
-        goals = Goal.objects.filter(account__in=self.accounts)
+    def average_return(self):
+        goals = Goal.objects.filter(account__in=self.accounts.all())
         return mod_dietz_rate(goals)
 
     @property

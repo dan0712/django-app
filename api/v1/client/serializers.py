@@ -125,6 +125,7 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser.save(asset=instance)
         return instance
 
+
 class InvitationSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = EmailInvite
@@ -196,6 +197,7 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
 
         return attrs
+
 
 class EmailNotificationsSerializer(serializers.ModelSerializer):
     class Meta:

@@ -687,7 +687,7 @@ class FirmOverview(TemplateView, LegalView):
         for advisor in set(pre_advisors.distinct().all()):
             advisors.append(
                 [advisor.pk, advisor, advisor.user.full_name, advisor.total_balance,
-                 advisor.total_return, advisor.total_fees, advisor.user.date_joined])
+                 advisor.average_return, advisor.total_fees, advisor.user.date_joined])
 
         reverse = self.sort_dir != "asc"
 
