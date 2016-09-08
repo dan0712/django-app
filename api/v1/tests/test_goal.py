@@ -13,7 +13,8 @@ from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
-    AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory
+    AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
+    GoalMetricFactory, GoalMetricGroupFactory
 from api.v1.goals.serializers import GoalSettingSerializer
 from django.contrib.contenttypes.models import ContentType
 from main.management.commands.populate_test_prices import populate_prices
@@ -349,8 +350,9 @@ class GoalTests(APITestCase):
         # populate some price data
         populate_prices(400)
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
-
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
         goal = GoalFactory.create(account=account, active_settings=goal_settings)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))

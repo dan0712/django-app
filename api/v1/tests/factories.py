@@ -10,7 +10,8 @@ from django.contrib.auth.models import Group
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
-                        FiscalYear, DailyPrice, MarketCap, MarketIndex
+                        FiscalYear, DailyPrice, MarketCap, MarketIndex, \
+                        GoalMetric, AssetFeatureValue, AssetFeature
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -359,5 +360,33 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
 
     instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
     instrument = factory.SubFactory(TickerFactory)
-    date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n+5)).date())
+    date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
+
+
+class AssetFeatureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeature
+
+    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
+
+
+class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeatureValue
+
+    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
+    feature = factory.SubFactory(AssetFeatureFactory)
+
+
+class GoalMetricFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = GoalMetric
+    group = factory.SubFactory(GoalMetricGroupFactory)
+    feature = factory.SubFactory(AssetFeatureValueFactory)
+    type = 0
+    comparison = 0
+    rebalance_type = 0
+    rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    measured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
