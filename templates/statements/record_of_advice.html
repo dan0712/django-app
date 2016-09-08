@@ -54,25 +54,25 @@ height:900px;
     <div class="page-content">
     <img class="bgimg" src="{% static 'statements/SOA001.png' %}" />
 <p style="position:absolute;top:0;right:40px;white-space:nowrap" class="ft09">
-<img src="{{object.firm.colored_logo}}" style="max-width: 200px; max-height: 150px" />
+<img src="{{firm.colored_logo}}" style="max-width: 200px; max-height: 150px" />
 
 
 </p>
 <p style="position:absolute;top:75px;left:0px;white-space:nowrap" class="ft00">
 
-{{object.create_date|date:"b d Y"|upper}}
+{{statement.create_date|date:"b d Y"|upper}}
 </p>
 
 <p style="position:absolute;top:188px;left:0px;white-space:nowrap" class="ft09">
 
-{{object.owner.full_name|upper}}<br/>
+{{owner.full_name|upper}}<br/>
 
-{{object.owner.residential_address.address|upper}}<br/>
-{{object.owner.residential_address.post_code|upper}}
-{{object.owner.residential_address.region.name|upper}}
-{{object.owner.residential_address.global.name|upper}}<br/></p>
+{{owner.residential_address.address|upper}}<br/>
+{{owner.residential_address.post_code|upper}}
+{{owner.residential_address.region.name|upper}}
+{{owner.residential_address.global.name|upper}}<br/></p>
 <p style="position:absolute;top:302px;left:0px;white-space:nowrap" class="ft00">
-Dear {{object.owner.full_name}},</p>
+Dear {{owner.full_name}},</p>
 <p style="position:absolute;top:345px;left:0px;white-space:nowrap" class="ft01">
 <b>Make sure you're headed toward your ideal retirement&#160;</b></p>
 <p style="position:absolute;top:367px;left:0px;white-space:nowrap" class="ft01">
@@ -92,7 +92,7 @@ In preparing this document&#160;we have taken into account&#160;the information&
 you provided, together with your individual financial objectives and&#160;<br/>
 goals. &#160;In particular you told us that:</p>
 <p style="position:absolute;top:610px;left:24px;white-space:nowrap" class="ft00">
-•&#160;{{object.account.primary_owner.first_name}}, you want&#160;to retire soon and start&#160;using your</p>
+•&#160;{{account.primary_owner.first_name}}, you want&#160;to retire soon and start&#160;using your</p>
 <p style="position:absolute;top:630px;left:41px;white-space:nowrap" class="ft00">
 superannuation&#160;as income.</p>
 <p style="position:absolute;top:650px;left:24px;white-space:nowrap" class="ft00">
@@ -105,15 +105,15 @@ retirement.</p>
 Full details of how we meet&#160;these objectives and goals can be found&#160;<br/>
 within the Recommendations section of this Statement&#160;of Advice (SOA).</p>
 <p style="position:absolute;top:62px;left:526px;white-space:nowrap" class="ft02">
-{{object.advisor.name}}
+{{advisor.name}}
 <br />
-{{object.firm}}
+{{firm}}
 <br />
-{{object.firm.firm_details.office_address.address}}
+{{firm.firm_details.office_address.address}}
 <br />
-{{object.firm.firm_details.office_address.post_code}}
-{{object.firm.firm_details.office_address.region.name}}
-{{object.firm.firm_details.office_address.global.name}}
+{{firm.firm_details.office_address.post_code}}
+{{firm.firm_details.office_address.region.name}}
+{{firm.firm_details.office_address.global.name}}
 <br />
 </p>
 <p style="position:absolute;top:186px;left:529px;white-space:nowrap" class="ft04">

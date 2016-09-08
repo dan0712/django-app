@@ -11,22 +11,16 @@ class PDFStatement(models.Model):
     def date(self):
         return self.create_date.strftime('%Y-%m-%d_%H:%I:%S')
 
-    @property
-    def owner(self):
-        return self.account.primary_owner
-
-    @property
-    def advisor(self):
-        return self.owner.advisor
-
-    @property
-    def firm(self):
-        return self.advisor.firm
-
     def render_template(self, template_name):
         from django.template.loader import render_to_string
         return render_to_string(template_name, {
             'object': self,
+            'statement': self,
+            'account': self.account,
+            'client': self.account.primary_owner,
+            'owner': self.account.primary_owner,
+            'advisor': self.account.primary_owner.advisor,
+            'firm': self.account.primary_owner.advisor.firm,
         })
 
     def render_pdf(self, template_name):
