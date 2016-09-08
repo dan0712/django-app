@@ -185,6 +185,10 @@ class FiscalYear(models.Model):
                                                    help_text="Comma separated month end days each month of the year. First element is January.")
 
 
+    def __str__(self):
+        return "[%s] %s %s" % (self.id, self.name, self.year)
+
+
 class Company(models.Model):
     name = models.CharField(max_length=127)
     fiscal_years = models.ManyToManyField(FiscalYear)
