@@ -462,20 +462,8 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             hedge_fx = validated_data.pop('hedge_fx')
             metric_group = mtric_group
 
-            # def get_metrics_all(self):
-            #     return self.metric_group.metrics.all()
-
-            # def get_portfolio_items_all(self):
-            #     return self.portfolio.items.all()
-
-            # @property
-            # def goal(self):
-            #     if hasattr(self, 'goal_selected'):
-            #         return self.goal_selected
-            #     if hasattr(self, 'goal_approved'):
-            #         return self.goal_approved
-            #     # Must be an active goal
-            #     return self.goal_active
+            def get_metrics_all(self):
+                return self.metric_group.metrics.all()
 
             def __str__(self):
                 return 'API Temp GoalSettings'
