@@ -188,8 +188,6 @@ class InteractiveBrokers(IBroker):
         contract = make_contract(ticker)
         self._requested_tickers[req_id] = contract.m_symbol
         self.connection.reqMktData(req_id, contract, '', True)
-        short_sleep()
-        self.connection.cancelMktData(req_id)
 
     def requesting_market_depth(self):
         if len(self._requested_tickers) > 0:

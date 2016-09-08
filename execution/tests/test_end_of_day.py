@@ -5,6 +5,7 @@ from unittest.mock import Mock
 from execution.broker.ibroker import IBroker
 from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
 from datetime import datetime
+from execution.end_of_day import get_execution_requests, transform_execution_requests
 
 class BaseTest(TestCase):
 
@@ -24,6 +25,55 @@ class BaseTest(TestCase):
         single_level.ask_volume = 100
         self.con.market_data['GOOG'].add_level(0, single_level)
 
+        Fixture1.personal_account1()
+        Fixture1.personal_account2()
+
+        request1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.PENDING.value,
+                                                     account=Fixture1.personal_account1())
+
+        request2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.APPROVED.value,
+                                                     account=Fixture1.personal_account2())
+        Fixture1.ib_account1()
+        Fixture1.ib_account2()
+
+        params = {
+            'reason': ExecutionRequest.Reason.DRIFT.value,
+            'goal': Fixture1.goal1(),
+            'asset': Fixture1.fund3(),
+            'volume': 5,
+            'order': request1
+        }
+        ExecutionRequest.objects.get_or_create(id=1, defaults=params)
+
+        params = {
+            'reason': ExecutionRequest.Reason.DRIFT.value,
+            'goal': Fixture1.goal1(),
+            'asset': Fixture1.fund4(),
+            'volume': 5,
+            'order': request1
+        }
+        ExecutionRequest.objects.get_or_create(id=2, defaults=params)
+
+        #Client2
+        params = {
+            'reason': ExecutionRequest.Reason.DRIFT.value,
+            'goal': Fixture1.goal2(),
+            'asset': Fixture1.fund3(),
+            'volume': 10,
+            'order': request2
+        }
+        ExecutionRequest.objects.get_or_create(id=3, defaults=params)
+        params = {
+            'reason': ExecutionRequest.Reason.DRIFT.value,
+            'goal': Fixture1.goal2(),
+            'asset': Fixture1.fund4(),
+            'volume': 10,
+            'order': request2
+        }
+        ExecutionRequest.objects.get_or_create(id=4, defaults=params)
+
+
+
     def test_ib_time(self):
         self.con.current_time.return_value = datetime.now()
         time = self.con.current_time()
@@ -39,10 +89,8 @@ class BaseTest(TestCase):
         account = Fixture1.personal_account1()
         account.all_goals.return_value = [goal1]
 
-
         #no difference
         account.cash_balance = 1000
-        Fixture1.ib_account()
         ib_account = account.ib_account
 
         ib_account_cash[ib_account.ib_account] = 1000
@@ -83,12 +131,15 @@ class BaseTest(TestCase):
         self.assertAlmostEquals(self.con.market_data['GOOG'].levels[0].bid_volume, 50)
         self.assertAlmostEquals(self.con.market_data['GOOG'].levels[0].ask_volume, 100)
 
+    def test_get_execution_requests(self):
+        execution_requests = get_execution_requests()
+        self.assertTrue(len(execution_requests) == 4)
 
-
-
-
-
-
-
-
+    def test_transform_execution_requests(self):
+        execution_requests = get_execution_requests()
+        allocations = transform_execution_requests(execution_requests)
+        self.assertTrue(allocations['SPY']['DU299694'] == 5)
+        self.assertTrue(allocations['SPY']['DU299695'] == 10)
+        self.assertTrue(allocations['TLT']['DU299694'] == 5)
+        self.assertTrue(allocations['TLT']['DU299695'] == 10)
 

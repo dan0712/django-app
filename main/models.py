@@ -2019,7 +2019,7 @@ class ExecutionRequest(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        if not self.account.confirmed:
+        if not self.order.account.confirmed:
             raise ValidationError('Account is not verified.')
         return super(ExecutionRequest, self).save(force_insert, force_update,
                                                   using, update_fields)

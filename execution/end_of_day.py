@@ -6,8 +6,10 @@ from time import sleep, strftime, time
 from execution.broker.interactive_brokers import InteractiveBrokers
 from execution.account_groups.create_account_groups import FAAccountProfile
 
-#from client.models import ClientAccount
-#from django.core.management.base import BaseCommand
+from client.models import ClientAccount
+from main.models import MarketOrderRequest, ExecutionRequest
+from django.db.models import Q
+from django.core.management.base import BaseCommand
 
 
 short_sleep = partial(sleep, 1)
@@ -76,11 +78,53 @@ def reconcile_cash_client_accounts():
                 print("exception")
 
 
+def get_execution_requests():
+    client_accounts = ClientAccount.objects.all()
+    ers = list()
+    for account in client_accounts:
+        mor_all = MarketOrderRequest.objects.all().filter(account=account)
+
+        mor = list()
+        for m in mor_all:
+            if m.state == MarketOrderRequest.State.APPROVED.value or m.state == MarketOrderRequest.State.PENDING.value:
+                mor.append(m)
+
+        for m in mor:
+            e = ExecutionRequest.objects.filter(order=m)
+            ers.extend(e)
+    return ers
+
+
+def transform_execution_requests(execution_requests):
+    shares = set()
+    for e in execution_requests:
+        shares.add(e.asset.symbol)
+
+    allocations = dict()
+    for s in shares:
+        allocations[s] = dict()
+        for e in execution_requests:
+            if e.asset.symbol == s:
+                mor = MarketOrderRequest.objects.get(execution_requests=e)
+                ib_account = mor.account.ib_account.ib_account
+
+                if ib_account not in allocations[s]:
+                    allocations[s][ib_account] = e.volume
+    return allocations
+
+
 def main(options):
     logging.root.setLevel(verbose_levels.get(options.verbose, ERROR))
     con = InteractiveBrokers()
     con.connect()
     con.request_account_summary()
+
+    con.request_market_depth('GOOG')
+    while con.requesting_market_depth():
+        short_sleep()
+
+    long_sleep()
+    long_sleep()
     long_sleep()
 
     account_dict = dict()
