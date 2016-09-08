@@ -22,33 +22,6 @@
 	.ft09{font-size:12px;line-height:20px;font-family:Times;color:#000000;}
 	.ft010{font-size:12px;line-height:20px;font-family:Times;color:#006cb0;}
 -->
-.dom-body .page-div {
-    background: white;
-    padding: 100px 0 0 100px;;
-}
-.dom-body.borders .page-div {
-    border: red 1px solid;
-}
-.dom-body.borders .bgimg {
-    border: blue 1px dashed;
-}
-
-.page-content {
-    position: relative;
-}
-
-.page-div {
-position:relative;
-width:725px;
-height:900px;
-}
-.page-div .bgimg {
-    width:700px;
-    height:900px;
-    position:absolute;
-    top: -20px;
-    left: 0;
-}
 </style>
 <div id="page1-div" class="page-div">
     <div class="page-content">
@@ -154,4 +127,46 @@ if(window.location.hash == '#borders')
     document.body.className = "dom-body borders"
 })();
 </script>
+<style type="text/css">
+/*
+   ********************************
+   This CSS + JS is essential to centering
+   pages and aligning the frames of an HTML
+   view to the actual bounds of the PDFs generated
+   Additionally, there is a secret option --
+   Add "#borders" to the end of your url
+   ( e.g. /statements/123#borders )
+   to view the print margins
+*/
+.dom-body .page-div {
+    background: white;
+    padding: 100px 0 0 100px;;
+}
+.dom-body.borders .page-div {
+    border: red 1px solid;
+}
+.dom-body.borders .bgimg {
+    border: blue 1px dashed;
+}
+
+.page-content {
+    position: relative;
+}
+
+.page-div {
+position:relative;
+width:725px;
+height:900px;
+}
+.page-div .bgimg {
+    width:700px;
+    height:900px;
+    position:absolute;
+    top: -20px;
+    left: 0;
+}
+/*
+***********************************
+*/
+</style>
 </html>
