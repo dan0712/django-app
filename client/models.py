@@ -90,7 +90,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     last_action = models.DateTimeField(null=True)
     risk_profile_group = models.ForeignKey('RiskProfileGroup',
                                            related_name='clients', null=True)
-    # The account must not be used until the risk_profile_responses are set.
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
     objects = ClientQuerySet.as_manager()
