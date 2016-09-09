@@ -11,10 +11,12 @@ from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from django.utils.functional import cached_property
+from jsonfield.fields import JSONField
 from main import constants
 from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
+from main.finance import mod_dietz_rate
 
 logger = logging.getLogger('client.models')
 
@@ -87,6 +89,9 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)
+    risk_profile_group = models.ForeignKey('RiskProfileGroup',
+                                           related_name='clients', null=True)
+    risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
     objects = ClientQuerySet.as_manager()
 
@@ -179,17 +184,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                                  update_fields)
 
         if create_personal_account:
-            risk_profile_group = AccountTypeRiskProfileGroup.objects.filter(
-                account_type=constants.ACCOUNT_TYPE_PERSONAL).first()
-            if risk_profile_group is None:
-                raise ValidationError(
-                    "No risk profile group associated with account type: "
-                    "ACCOUNT_TYPE_PERSONAL")
             new_ac = ClientAccount(
                 primary_owner=self,
                 account_type=constants.ACCOUNT_TYPE_PERSONAL,
                 default_portfolio_set=self.advisor.default_portfolio_set,
-                risk_profile_group=risk_profile_group.risk_profile_group
             )
             new_ac.save()
             new_ac.remove_from_group()
@@ -236,16 +234,17 @@ class ClientAccount(models.Model):
                                          related_name='signatory_accounts',
                                          help_text='Other clients authorised '
                                                    'to operate the account.')
-    risk_profile_group = models.ForeignKey('RiskProfileGroup',
-                                           related_name='accounts')
-    # The account must not be used until the risk_profile_responses are set.
-    risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
     # also has ib_account foreign key to IBAccount
 
     objects = ClientAccountQuerySet.as_manager()
 
     class Meta:
         unique_together = ('primary_owner', 'account_name')
+
+
+    def __init__(self, *args, **kwargs):
+        super(ClientAccount, self).__init__(*args, **kwargs)
+        self.__was_confirmed = self.confirmed
 
     @property
     def goals(self):
@@ -255,9 +254,26 @@ class ClientAccount(models.Model):
              update_fields=None):
         if self.pk is None:
             self.token = str(uuid.uuid4())
-
-        return super(ClientAccount, self).save(force_insert, force_update,
+        if self.confirmed != self.__was_confirmed:
+            self.on_confirmed_modified()
+        ret_value = super(ClientAccount, self).save(force_insert, force_update,
                                                using, update_fields)
+        self.__was_confirmed = self.confirmed
+        return ret_value
+
+    def on_confirmed_modified(self):
+        from client.models import EmailInvite
+        try:
+            invitation = self.primary_owner.user.invitation
+        except EmailInvite.DoesNotExist: invitation = None
+
+        if invitation \
+                and invitation.status != EmailInvite.STATUS_COMPLETE \
+                and invitation.reason == EmailInvite.REASON_PERSONAL_INVESTING:
+            invitation.onboarding_data = None
+            invitation.status = EmailInvite.STATUS_COMPLETE
+            invitation.save()
+
 
     def remove_from_group(self):
         old_group = self.account_group
@@ -361,8 +377,8 @@ class ClientAccount(models.Model):
         return b
 
     @property
-    def total_returns(self):
-        return 0
+    def average_return(self):
+        return mod_dietz_rate(self.goals)
 
     @property
     def total_earnings(self):
@@ -549,16 +565,23 @@ class EmailNotificationPrefs(models.Model):
         default=False)
 
 
+
+def generate_token():
+    secret = str(uuid.uuid4()) + str(uuid.uuid4())
+    return secret.replace('-', '')[:64]
+
 class EmailInvite(models.Model):
     STATUS_CREATED = 0
     STATUS_SENT = 1
     STATUS_ACCEPTED = 2
-    STATUS_CLOSED = 4
+    STATUS_EXPIRED = 3
+    STATUS_COMPLETE = 4
     STATUSES = (
         (STATUS_CREATED, 'Created'),
         (STATUS_SENT, 'Sent'),
         (STATUS_ACCEPTED, 'Accepted'),
-        (STATUS_CLOSED, 'Closed')
+        (STATUS_EXPIRED, 'Expired'),
+        (STATUS_COMPLETE, 'Complete')
     )
     REASON_RETIREMENT = 1
     REASON_PERSONAL_INVESTING = 2
@@ -573,6 +596,11 @@ class EmailInvite(models.Model):
     middle_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
+    user = models.OneToOneField('main.User', related_name='invitation',
+                                null=True, blank=True)
+
+    invite_key = models.CharField(max_length=64,
+                                  default=generate_token)
 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -584,6 +612,10 @@ class EmailInvite(models.Model):
                                          blank=True, null=True)
     status = models.PositiveIntegerField(choices=STATUSES,
                                          default=STATUS_CREATED)
+
+    onboarding_data = JSONField(null=True, blank=True)
+    onboarding_file_1 = models.FileField(null=True, blank=True)
+
 
     def __unicode__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],

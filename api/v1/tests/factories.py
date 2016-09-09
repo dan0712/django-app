@@ -14,7 +14,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
-    AccountTypeRiskProfileGroup
+    AccountTypeRiskProfileGroup, EmailInvite
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
@@ -181,9 +181,20 @@ class ClientFactory(factory.django.DjangoModelFactory):
     occupation = factory.Sequence(lambda n: 'Occupation %d' % n)
     employer = factory.Sequence(lambda n: 'Employer %d' % n)
     income = factory.LazyAttribute(lambda n: float(random.randrange(1000000)))
+    risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
+    # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     # lets use a random date from last 18-70 years for dob
     date_of_birth = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - relativedelta(years=70),
                                                                 datetime.now().date() - relativedelta(years=18)))
+
+
+class EmailInviteFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = EmailInvite
+    advisor = factory.SubFactory(AdvisorFactory)
+    first_name = factory.Sequence(lambda n: 'Invite%d' % n)
+    last_name = factory.Sequence(lambda n: 'Friendly%d' % n)
+    email = factory.Sequence(lambda n: 'invite%s@example.com' % n)
 
 
 class ClientAccountFactory(factory.django.DjangoModelFactory):
@@ -194,8 +205,6 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     account_type = 0  # 0 for personal account type
     account_name = factory.Sequence(lambda n: 'ClientAccount %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
-    risk_profile_group = factory.SubFactory(RiskProfileGroupFactory)
-    # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     confirmed = True
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 

@@ -15,9 +15,11 @@ from django.core.validators import (MaxValueValidator, MinLengthValidator,
 from django.db import models, transaction
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
+from django.db.models.signals import post_save
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
+from django.dispatch import receiver
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -181,6 +183,9 @@ class FiscalYear(models.Model):
     month_ends = models.CommaSeparatedIntegerField(max_length=35,
                                                    validators=[MinLengthValidator(23)],
                                                    help_text="Comma separated month end days each month of the year. First element is January.")
+
+    def __str__(self):
+        return "[%s] %s %s" % (self.id, self.name, self.year)
 
 
 class Company(models.Model):
@@ -653,7 +658,25 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return total_fees
 
     @property
-    def total_return(self):
+    def total_fees(self):
+        """
+        """
+        from client.models import ClientAccount
+        total_fees = 0.0
+        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
+            for year in self.firm.fiscal_years.all():
+                for goal in ca.goals:
+                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                                     status=Transaction.STATUS_EXECUTED,
+                                                     reason=Transaction.REASON_FEE,
+                                                     executed__gte=year.begin_date,
+                                                     executed__lte=year.end_date)
+                    for tx in txs:
+                        total_fees += tx.amount
+        return total_fees
+
+    @property
+    def average_return(self):
         goals = Goal.objects.filter(account__in=self.client_accounts)
         return mod_dietz_rate(goals)
 
@@ -730,8 +753,8 @@ class AccountGroup(models.Model):
         return sum(a.total_balance for a in self.accounts.all())
 
     @property
-    def total_returns(self):
-        goals = Goal.objects.filter(account__in=self.accounts)
+    def average_return(self):
+        goals = Goal.objects.filter(account__in=self.accounts.all())
         return mod_dietz_rate(goals)
 
     @property
@@ -842,6 +865,20 @@ class RetirementPlan(models.Model):
             raise ValidationError('Account is not verified.')
 
         super(RetirementPlan, self).save(*args, **kwargs)
+
+@receiver(post_save, sender=RetirementPlan)
+def resolve_retirement_invitations(sender, instance, created, **kwargs):
+    """Create a matching profile whenever a user object is created."""
+    from client.models import EmailInvite
+    try:
+        invitation = instance.client.user.invitation
+    except EmailInvite.DoesNotExist: invitation = None
+    if created and invitation \
+            and invitation.status != EmailInvite.STATUS_COMPLETE \
+            and invitation.reason == EmailInvite.REASON_RETIREMENT:
+        invitation.onboarding_data = None
+        invitation.status = EmailInvite.STATUS_COMPLETE
+        invitation.save()
 
 
 class ExternalAssetTransfer(TransferPlan):
@@ -1577,6 +1614,18 @@ class Goal(models.Model):
             .first()
 
         if goal_metric:
+            return str(goal_metric.get_risk_level())
+        return '0'
+
+    @property
+    def risk_level_display(self):
+        # Experimental
+        goal_metric = GoalMetric.objects \
+            .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE) \
+            .filter(group__settings__goal_approved=self) \
+            .first()
+
+        if goal_metric:
             risk_level = goal_metric.get_risk_level_display()
             return risk_level
 
@@ -1884,6 +1933,10 @@ class GoalMetric(models.Model):
 
             if self.configured_val < risk_max / 100:
                 return risk_min
+
+    @property
+    def risk_level(self):
+        return self.get_risk_level()
 
     def get_risk_level_display(self):
         risk_level = self.get_risk_level()

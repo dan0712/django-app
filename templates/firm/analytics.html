@@ -4,6 +4,10 @@
 {% load filters %}
 {% load static from staticfiles %}
 
+{% block css %}
+  <link href="{% static 'css_new/loading_spinner.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block main_content %}
   <div class="container">
     <div class="row m-t">
@@ -33,35 +37,70 @@
     <div class="row">
       <div class="col-sm-3">
         {% for item in risks %}
-        <div onclick="onChangeRisk(event, {{ item.level }})" class="statcard statcard-analytics {% if item.level|stringformat:'i' == filter.form.risk.value %}statcard-primary{% else %}statcard-default{% endif %} {% if not forloop.first %}m-t{% endif %}">
+        <div onclick="onChangeRisk(event, {{ item.level }})" class="statcard statcard-analytics {% if item.level|stringformat:'i' in filter.form.risk.value %}statcard-primary{% else %}statcard-default{% endif %} {% if not forloop.first %}m-t{% endif %}">
           <div class="p-a">
             <span class="statcard-desc">{{ item.name }} <span class="icon icon-help-with-circle text-muted" data-toggle="tooltip" data-placement="right" title="Fill me with your feelings"></span></span>
             <h4>
               {{ item.value|currency }}
               <small>{{ item.value_percent|percentage100 }}</small>
             </h4>
-            <div><a href="{% url 'firm:analytics-overview-metric' %}?risk={{ item.level }}" class="btn btn-xs btn-pill btn-primary-outline" data-toggle="modal" data-target="#analyticsMetricModal">Explore</a></div>
           </div>
         </div>
         {% endfor %}
         <script>
           var onChangeRisk = function(event, value) {
+            // loading spinner
+            $('.loading').show();
+
+            // multiple select
+            // onclick, toggle event and value from select
+            // id_risk_1: value = 0
+            // id_risk_2: value = 20
+            // id_risk_3: value = 40
+            // id_risk_4: value = 60
+            // id_risk_5: value = 80
+
             // pass if clicking on child elements
             if (event.target.tagName == 'A') { return; }
 
-            // change "risk" form control manually
-            elemRisk = document.getElementById('id_risk');
-            event = document.createEvent('Event');
-            event.initEvent('change', true, false);
 
-            // set or clear (if click on "active" item) risk filter
-            elemRisk.value = value !== {{ filter.form.risk.value|default:'null' }} ? value : null;
-            elemRisk.dispatchEvent(event);
+            function toggle_checked(id) {
+              if ($(id).is(':checked')) {
+                $(id).prop('checked', false);
+              } else {
+                $(id).prop('checked', true);
+              }
+            }
+
+            if (value == 0) {
+              toggle_checked("#id_risk_1");
+            } else if (value == 20) {
+              toggle_checked("#id_risk_2");
+            } else if (value == 40) {
+              toggle_checked("#id_risk_3");
+            } else if (value == 60) {
+              toggle_checked("#id_risk_4");
+            } else if (value == 80) {
+              toggle_checked("#id_risk_5");
+            }
+
+            $('#id_risk').closest('form').submit();
+
+            // change "risk" form control manually
+            // elemRisk = document.getElementById('id_risk');
+            // event = document.createEvent('Event');
+            // event.initEvent('change', true, false);
+
+            // // set or clear (if click on "active" item) risk filter
+            // elemRisk.value = value !== {{ filter.form.risk.value|safe }} ? value : null;
+            // elemRisk.dispatchEvent(event);
           }
         </script>
       </div>
 
-      <div class="col-sm-9">
+      <div class="col-sm-9 loading" style="display: none;">Loading&#8230;</div>
+
+      <div class="col-sm-9" id='charts'>
         <div>
           <div>
             <canvas id="lineChartA" width="300" height="100"></canvas>

@@ -16,10 +16,11 @@ class AccountTests(APITestCase):
 
     def test_create_account(self):
         url = '/api/v1/accounts'
+        client = Fixture1.client1()
         data = {
             'account_type': ACCOUNT_TYPE_PERSONAL,
             'account_name': 'Test Account',
-            'primary_owner': Fixture1.client1().id,
+            'primary_owner': client.id,
         }
         old_count = ClientAccount.objects.count()
         # The account creator gets the risk profile group from the default for the account, so we need to set that up.
@@ -28,9 +29,20 @@ class AccountTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1_user())
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(ClientAccount.objects.count(), old_count + 1)
+        self.assertEqual(ClientAccount.objects.count(), 1)
         self.assertTrue('id' in response.data)
         self.assertEqual(response.data['account_name'], 'Test Account')
+
+        # Don't let them create a second personal account
+        data = {
+            'account_type': ACCOUNT_TYPE_PERSONAL,
+            'account_name': 'Test Account 2',
+            'primary_owner': client.id,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code,
+                         status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(ClientAccount.objects.count(), 1)
 
     def test_update_account(self):
         url = '/api/v1/accounts/' + str(Fixture1.personal_account1().id)
