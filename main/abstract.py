@@ -30,10 +30,9 @@ class PersonalData(models.Model):
     residential_address = models.ForeignKey('address.Address', related_name='+')
     # A person may not have a phone.
     phone_num = PhoneNumberField(null=True, max_length=16)
-    medicare_number = models.CharField(max_length=50, default="")
     civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
 
-    regional_data = JSONField(default=lambda: {})
+    regional_data = JSONField(default=dict)
 
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
@@ -95,13 +94,6 @@ class PersonalData(models.Model):
     @property
     def name(self):
         return self.user.first_name + " " + self.user.last_name
-
-    @property
-    def states_codes(self):
-        states = []
-        for item in self._meta.get_field('state').choices:
-            states.append({"db_value": item[0], "name": item[1]})
-        return states
 
     @property
     def email(self):
