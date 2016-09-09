@@ -101,6 +101,7 @@ class Fixture1:
             'user': Fixture1.client1_user(),
             'date_of_birth': datetime.date(1970, 1, 1),
             'residential_address': Fixture1.address2(),
+            'risk_profile_group': Fixture1.risk_profile_group1(),
         }
         return Client.objects.get_or_create(id=1, defaults=params)[0]
 
@@ -111,6 +112,7 @@ class Fixture1:
             'user': Fixture1.client2_user(),
             'date_of_birth': datetime.date(1980, 1, 1),
             'residential_address': Fixture1.address2(),
+            'risk_profile_group': Fixture1.risk_profile_group2(),
         }
         return Client.objects.get_or_create(id=2, defaults=params)[0]
 
@@ -222,6 +224,10 @@ class Fixture1:
         return RiskProfileGroup.objects.get_or_create(name='risk_profile_group1')[0]
 
     @classmethod
+    def risk_profile_group2(cls):
+        return RiskProfileGroup.objects.get_or_create(name='risk_profile_group2')[0]
+
+    @classmethod
     def risk_profile_question1(cls):
         return RiskProfileQuestion.objects.get_or_create(group=Fixture1.risk_profile_group1(),
                                                          order=0,
@@ -280,8 +286,8 @@ class Fixture1:
 
     @classmethod
     def populate_risk_profile_responses(cls):
-        Fixture1.personal_account1().risk_profile_responses.add(Fixture1.risk_profile_answer1a())
-        Fixture1.personal_account1().risk_profile_responses.add(Fixture1.risk_profile_answer2a())
+        Fixture1.personal_account1().primary_owner.risk_profile_responses.add(Fixture1.risk_profile_answer1a())
+        Fixture1.personal_account1().primary_owner.risk_profile_responses.add(Fixture1.risk_profile_answer2a())
 
     @classmethod
     def ib_account(cls) -> IBAccount:
@@ -297,7 +303,6 @@ class Fixture1:
             'account_type': ACCOUNT_TYPE_PERSONAL,
             'primary_owner': Fixture1.client1(),
             'default_portfolio_set': Fixture1.portfolioset1(),
-            'risk_profile_group': Fixture1.risk_profile_group1(),
             'confirmed': True,
         }
         return ClientAccount.objects.get_or_create(id=1, defaults=params)[0]

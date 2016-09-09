@@ -108,7 +108,7 @@ class WorthFilter(filters.ChoiceFilter):
         return qs
 
 
-class RiskFilter(filters.ChoiceFilter):
+class RiskFilter(filters.MultipleChoiceFilter):
     def __init__(self, *args, **kwargs):
         choices = [
                 (None, 'Any'),
@@ -143,7 +143,7 @@ class FirmActivityFilterSet(filters.FilterSet):
 
 
 class FirmAnalyticsOverviewFilterSet(filters.FilterSet):
-    risk = RiskFilter(widget=forms.Select(attrs=ATTRS_ONCHANGE))
+    risk = RiskFilter(widget=forms.CheckboxSelectMultiple(attrs=ATTRS_ONCHANGE))
     worth = WorthFilter(widget=forms.Select(attrs=ATTRS_ONCHANGE))
     #group = UserGroupFilter(widget=forms.Select(attrs=ATTRS_ONCHANGE))
 

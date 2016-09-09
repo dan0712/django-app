@@ -3,6 +3,9 @@ from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
 from django.utils.timezone import now
+import logging
+
+logger = logging.getLogger('main.managers')
 
 
 class RetirementPlanQuerySet(QuerySet):
@@ -101,21 +104,27 @@ class GoalQuerySet(QuerySet):
         qs = self.filter(account__primary_owner__date_of_birth__range=range_dates)
         return qs
 
-    def filter_by_risk_level(self, risk_level=None):
+    def filter_by_risk_level(self, risk_levels=None):
         """
         Experimental
         """
-        if risk_level is None:
+        if risk_levels is None:
             return self
 
         from .models import GoalMetric
-        risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
-        qs = self.filter(
-            selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            selected_settings__metric_group__metrics__configured_val__gte=risk_min,
-            selected_settings__metric_group__metrics__configured_val__lt=risk_max
-        )
+        if isinstance(risk_levels, int):
+            risk_levels = [risk_levels, ]
+        else:
+            risk_levels = [int(r) for r in risk_levels]
+
+        q = Q()
+        for level in risk_levels:
+            risk_min, risk_max = GoalMetric.risk_level_range(level)
+            q |= Q(selected_settings__metric_group__metrics__configured_val__gte=risk_min,
+                   selected_settings__metric_group__metrics__configured_val__lt=risk_max)
+        qs = self.filter(q, selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+
         return qs
 
 
@@ -133,38 +142,27 @@ class PositionQuerySet(QuerySet):
         qs = self.filter(goal__account__primary_owner=client.pk)
         return qs
 
-    # OBSOLETED
-    #def filter_by_risk_level(self, risk_level=None):
-    #    """
-    #    Experimental
-    #    """
-    #    if not risk_level:
-    #        return self
-    #
-    #    from .models import GoalType
-    #    risk_min, risk_max = GoalType.risk_level_range(risk_level)
-    #
-    #    qs = self.filter(
-    #        goal__type__risk_sensitivity__gte=risk_min,
-    #        goal__type__risk_sensitivity__lt=risk_max
-    #    )
-    #    return qs
-
-    def filter_by_risk_level(self, risk_level=None):
+    def filter_by_risk_level(self, risk_levels=None):
         """
         Experimental
         """
-        if risk_level is None:
+        if risk_levels is None:
             return self
 
         from .models import GoalMetric
-        risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
 
-        qs = self.filter(
-            goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
-            goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max
-        )
+        if isinstance(risk_levels, int):
+            risk_levels = [risk_levels, ]
+        else:
+            risk_levels = [int(r) for r in risk_levels]
+
+        q = Q()
+        for level in risk_levels:
+            risk_min, risk_max = GoalMetric.risk_level_range(level)
+            q |= Q(goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
+                   goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
+        qs = self.filter(q, goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+
         return qs
 
     def annotate_value(self):

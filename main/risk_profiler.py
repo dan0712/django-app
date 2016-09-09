@@ -97,26 +97,26 @@ def get_risk_willingness(account):
     Get the score [0-1] for an entity's willingness to take risk, based on a previous elicitation of its preferences.
     :return:
     """
-    if not hasattr(account.risk_profile_group, 'questions'):
+    if not hasattr(account.primary_owner.risk_profile_group, 'questions'):
         # No risk questions assigned, so we can't say anything about their willingness to take risk.
         return NEUTRAL_RISK
-    qids = set(account.risk_profile_group.questions.all().values_list('id', flat=True))
+    qids = set(account.primary_owner.risk_profile_group.questions.all().values_list('id', flat=True))
     if len(qids) == 0:
         # No risk questions assigned, so we can't say anything about their willingness to take risk.
         return NEUTRAL_RISK
 
-    if not account.risk_profile_responses:
+    if not account.primary_owner.risk_profile_responses:
         # No risk responses give, so we can't say anything about their willingness to take risk.
         return NEUTRAL_RISK
 
-    aqs = account.risk_profile_responses.all()
+    aqs = account.primary_owner.risk_profile_responses.all()
     if not qids == set(aqs.values_list('question_id', flat=True)):
         # Risk responses are not complete, so we can't say anything about their willingness to take risk.
         return NEUTRAL_RISK
 
     # Get the min and max score possible for the group
     extents = (
-        RiskProfileAnswer.objects.filter(question__group=account.risk_profile_group)  # All answers for the group
+        RiskProfileAnswer.objects.filter(question__group=account.primary_owner.risk_profile_group)  # All answers for the group
         .values('question').annotate(min_score=Min('b_score'), max_score=Max('b_score'))  # Group by question
         .aggregate(min=Sum('min_score'), max=Sum('max_score'))  # Get min and max total score
     )

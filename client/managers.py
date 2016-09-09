@@ -34,20 +34,25 @@ class ClientQuerySet(models.query.QuerySet):
             Q(secondary_advisors__pk=advisor.pk)
         )
 
-    def filter_by_risk_level(self, risk_level=None):
+    def filter_by_risk_level(self, risk_levels=None):
         """
         High Experimental
         """
-        if risk_level is None:
+        if risk_levels is None:
             return self
 
-        risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
+        if isinstance(risk_levels, int):
+            risk_levels = [risk_levels, ]
+        else:
+            risk_levels = [int(r) for r in risk_levels]
 
-        qs = self.filter(
-            primary_accounts__all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
-            primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max
-        )
+        q = Q()
+        for level in risk_levels:
+            risk_min, risk_max = GoalMetric.risk_level_range(level)
+            q |= Q(primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
+                   primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max)
+        qs = self.filter(q, primary_accounts__all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+
         return qs
 
 
@@ -92,18 +97,23 @@ class ClientAccountQuerySet(models.query.QuerySet):
             Q(signatories__pk=client.pk)
         )
 
-    def filter_by_risk_level(self, risk_level=None):
+    def filter_by_risk_level(self, risk_levels=None):
         """
         High Experimental
         """
-        if risk_level is None:
+        if risk_levels is None:
             return self
 
-        risk_min, risk_max = GoalMetric.risk_level_range(risk_level)
+        if isinstance(risk_levels, int):
+            risk_levels = [risk_levels, ]
+        else:
+            risk_levels = [int(r) for r in risk_levels]
 
-        qs = self.filter(
-            all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE,
-            all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
-            all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max
-        )
+        q = Q()
+        for level in risk_levels:
+            risk_min, risk_max = GoalMetric.risk_level_range(level)
+            q |= Q(all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
+                   all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max)
+        qs = self.filter(q, all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+
         return qs
