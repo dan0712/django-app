@@ -39,7 +39,7 @@ MINIMUM_PRICE_SAMPLES = 250
 WEEKDAYS_PER_YEAR = 260
 
 logger = logging.getLogger('portfolios.management.commands.portfolio_calculation_pure')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
@@ -393,11 +393,14 @@ def get_settings_masks(settings, masks):
     # Only use funds.
     settings_mask &= masks[FUND_MASK_NAME]
 
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Fund positions: {}".format(settings_mask.nonzero()[0].tolist()))
+
     # Only use the instruments from the specified portfolio set.
     settings_mask &= masks[PORTFOLIO_SET_MASK_PREFIX + str(settings.goal.portfolio_set.id)]
 
     if logger.isEnabledFor(logging.DEBUG):
-        logger.debug("Usable indices in our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
+        logger.debug("Usable positions according to our portfolio: {}".format(settings_mask.nonzero()[0].tolist()))
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
     cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}

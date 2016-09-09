@@ -11,7 +11,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
-                        GoalMetric, AssetFeatureValue, AssetFeature
+                        GoalMetric, AssetFeatureValue, AssetFeature, MarkowitzScale
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -211,7 +211,7 @@ class GoalSettingFactory(factory.django.DjangoModelFactory):
         model = GoalSetting
 
     target = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
-    completion = factory.LazyAttribute(lambda n: random_date(datetime.today() - relativedelta(years=30), datetime.today()).date())
+    completion = factory.LazyAttribute(lambda n: random_date(datetime.today().date(), (datetime.today() + relativedelta(years=30)).date()))
     hedge_fx = False
     metric_group = factory.SubFactory(GoalMetricGroupFactory)
 
@@ -299,6 +299,19 @@ class MarketIndexFactory(factory.django.DjangoModelFactory):
         model = MarketIndex
 
     region = factory.SubFactory(MainRegionFactory)
+    data_api_param = factory.Sequence(lambda n: str(n))
+
+
+class MarkowitzScaleFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MarkowitzScale
+
+    date = datetime.today()
+    min = 0.002
+    max = 10.269
+    a = 1.38034074450515
+    b = 1.04131482565774
+    c = -0.180340744505146
 
 
 class MarketCapFactory(factory.django.DjangoModelFactory):
@@ -380,13 +393,14 @@ class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
 
 
 class GoalMetricFactory(factory.django.DjangoModelFactory):
+    """
+    By default create a random risk score metric.
+    """
     class Meta:
         model = GoalMetric
     group = factory.SubFactory(GoalMetricGroupFactory)
-    feature = factory.SubFactory(AssetFeatureValueFactory)
-    type = 0
-    comparison = 0
-    rebalance_type = 0
+    type = GoalMetric.METRIC_TYPE_RISK_SCORE
+    comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
+    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
     rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
-    measured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
