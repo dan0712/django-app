@@ -23,12 +23,6 @@ __all__ = ["AdvisorSignUpView", "AdvisorChangeDealerGroupView", "AdvisorChangeDe
 
 
 class AdvisorProfile(forms.ModelForm):
-    medicare_number = forms.CharField(
-        max_length=20,
-        label=mark_safe('Medicare # <span class="security-icon"></span>'),
-        help_text="Bank-Level Security"
-    )
-
     user = forms.CharField(required=False)
 
     class Meta:
@@ -59,10 +53,6 @@ class AdvisorUserForm(BetaSmartzGenericUserSignupForm):
         self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
                                            'confirm_password', 'date_of_birth', 'gender', 'phone_num'),
                                 "header": "Information to establish your account"},
-                               {"fields": ('medicare_number',),
-                                "header": "Identity verification",
-                                "detail": "We use your Medicare number to verify your identity and protect "
-                                          "against fraud."},
                                {"fields": ('letter_of_authority',),
                                 "header": "Authorization",
                                 "detail": "BetaSmartz requires a Letter of Authority (PDF) from the new Dealer Group"
