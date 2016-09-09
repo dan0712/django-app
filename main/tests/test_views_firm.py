@@ -172,9 +172,9 @@ class FirmAnalyticsMixinTests(TestCase):
         asset_actual_sum = sum([x.get('value') for x in positions.get('asset_class')])
         region_actual_sum = sum([x.get('value') for x in positions.get('region')])
         investment_actual_sum = sum([x.get('value') for x in positions.get('investment_type')])
-        self.assertEqual(expected_sum, asset_actual_sum)
-        self.assertEqual(expected_sum, region_actual_sum)
-        self.assertEqual(expected_sum, investment_actual_sum)
+        self.assertAlmostEqual(expected_sum, asset_actual_sum)
+        self.assertAlmostEqual(expected_sum, region_actual_sum)
+        self.assertAlmostEqual(expected_sum, investment_actual_sum)
 
     def test_get_context_events(self):
         kwargs = {}

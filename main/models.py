@@ -2140,7 +2140,8 @@ class DailyPrice(models.Model):
 
 class MarketCap(models.Model):
     """
-    If a Financial Instrument is tradable, it will have a market capitalisation. This may not change often.
+    If a Financial Instrument is tradable, it will have a
+    market capitalisation. This may not change often.
     """
     objects = DataFrameManager()
 

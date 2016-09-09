@@ -31,6 +31,10 @@ class DataProviderDjango(DataProviderAbstract):
         return ac_ps
 
     def get_tickers(self):
+        """
+        Returns a list of all the funds in the system.
+        :return:
+        """
         return Ticker.objects.all()
 
     def get_ticker(self, id):

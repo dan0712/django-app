@@ -462,8 +462,11 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             hedge_fx = validated_data.pop('hedge_fx')
             metric_group = mtric_group
 
+            def get_metrics_all(self):
+                return self.metric_group.metrics.all()
+
             def __str__(self):
-                return 'API Temp'
+                return 'API Temp GoalSettings'
 
         return DummySettings()
 
