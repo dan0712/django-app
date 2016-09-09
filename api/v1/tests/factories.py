@@ -15,6 +15,7 @@ from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
     AccountTypeRiskProfileGroup, EmailInvite
+from statements.models import StatementOfAdvice, RecordOfAdvice
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
@@ -80,7 +81,6 @@ class FirmFactory(factory.django.DjangoModelFactory):
     token = factory.Sequence(lambda n: 'Token %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
     slug = factory.Sequence(lambda n: 'Slug %d' % n)
-
 
 class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -207,6 +207,18 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     # risk_profile_responses = factory.SubFactory(RiskProfileAnswerFactory)
     confirmed = True
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
+
+class StatementOfAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = StatementOfAdvice
+
+    account = factory.SubFactory(ClientAccountFactory)
+
+class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RecordOfAdvice
+
+    account = factory.SubFactory(ClientAccountFactory)
 
 
 class GoalMetricGroupFactory(factory.django.DjangoModelFactory):

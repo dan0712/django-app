@@ -25,8 +25,8 @@ class PDFView(DetailView, ClientView):
 
 
 class StatementView(PDFView):
-    template_name = "statements/statement_of_advice.html"
+    template_name = StatementOfAdvice.default_template
     model = StatementOfAdvice
 class RecordView(PDFView):
-    template_name = "statements/record_of_advice.html"
+    template_name = RecordOfAdvice.default_template
     model = RecordOfAdvice
