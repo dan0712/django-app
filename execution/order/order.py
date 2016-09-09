@@ -11,14 +11,14 @@ class OrderStatus(ChoiceEnum):
 
 
 class Order(object):
-    def __init__(self, order, contract, ib_id):
+    def __init__(self, order, contract, ib_id, symbol, remaining):
         self.order = order
         self.contract = contract
         self.ib_id = ib_id
 
-        self.symbol = contract.m_symbol
+        self.symbol = symbol
         self.status = OrderStatus.New
-        self.remaining = self.order.m_totalQuantity
+        self.remaining = remaining
         self.fill_price = None
         self.filled = 0
 

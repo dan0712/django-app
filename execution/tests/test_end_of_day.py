@@ -187,7 +187,11 @@ class BaseTest(TestCase):
         ib_order = types.SimpleNamespace()
         ib_order.m_totalQuantity = 1
 
-        order = Order(contract=ib_contract, order=ib_order, ib_id=1)
+        order = Order(contract=ib_contract,
+                      order=ib_order,
+                      ib_id=1,
+                      symbol=ib_contract.m_symbol,
+                      remaining=ib_order.m_totalQuantity)
         self.assertTrue(order.symbol == 'SPY')
         self.assertTrue(order.status == OrderStatus.New)
         self.assertTrue(order.remaining == 1)
@@ -202,7 +206,11 @@ class BaseTest(TestCase):
         ib_order = types.SimpleNamespace()
         ib_order.m_totalQuantity = 1
 
-        order = Order(contract=ib_contract, order=ib_order, ib_id=1)
+        order = Order(contract=ib_contract,
+                      order=ib_order,
+                      ib_id=1,
+                      symbol=ib_contract.m_symbol,
+                      remaining=ib_order.m_totalQuantity)
         order.filled = 1
         order.status = OrderStatus.Filled
         fills[1] = order

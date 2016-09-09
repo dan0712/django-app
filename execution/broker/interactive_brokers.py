@@ -173,7 +173,11 @@ class InteractiveBrokers(IBroker):
 
         contract = make_contract(ticker)
         ib_id = self._get_next_valid_order_id()
-        order = Order(order=ib_order, contract=contract, ib_id=ib_id)
+        order = Order(order=ib_order,
+                      contract=contract,
+                      ib_id=ib_id,
+                      symbol=contract.m_symbol,
+                      remaining=ib_order.m_totalQuantity)
         self.orders[order.ib_id] = order
         return order.ib_id
 
