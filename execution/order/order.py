@@ -16,7 +16,9 @@ class Order(object):
         self.contract = contract
         self.ib_id = ib_id
 
+        self.symbol = contract.m_symbol
         self.status = OrderStatus.New
         self.remaining = self.order.m_totalQuantity
         self.fill_price = None
         self.filled = 0
+

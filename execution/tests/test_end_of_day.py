@@ -1,3 +1,6 @@
+from execution.account_groups.account_allocations import AccountAllocations
+from execution.account_groups.account_allocations import Execution as ExecutionClass
+
 from main.tests.fixture import Fixture1
 from django.test import TestCase
 from execution.end_of_day import *
@@ -6,9 +9,11 @@ from execution.broker.ibroker import IBroker
 from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
 from datetime import datetime
 from execution.end_of_day import get_execution_requests, transform_execution_requests
-from execution.account_groups.account_allocations import AccountAllocations, Execution
+
 from execution.account_groups.create_account_groups import FAAccountProfile
+from execution.order.order import Order, OrderStatus
 from django.utils import timezone
+import types
 
 
 class BaseTest(TestCase):
@@ -35,7 +40,7 @@ class BaseTest(TestCase):
         request1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.PENDING.value,
                                                      account=Fixture1.personal_account1())
 
-        request2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.APPROVED.value,
+        request2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.PENDING.value,
                                                      account=Fixture1.personal_account2())
         Fixture1.ib_account1()
         Fixture1.ib_account2()
@@ -146,7 +151,7 @@ class BaseTest(TestCase):
         self.assertTrue(allocations['TLT']['DU299695'] == 10)
 
     def test_allocations(self):
-        execution = Execution(10, 'DU299694', 5, timezone.now(), 1)
+        execution = ExecutionClass(10, 'DU299694', 5, timezone.now(), 1)
 
         allocation = AccountAllocations()
 
@@ -155,7 +160,7 @@ class BaseTest(TestCase):
         self.assertTrue(allocation.allocations[1]['DU299694'].price == 10)
         self.assertTrue(allocation.allocations[1]['DU299694'].shares == 5)
 
-        execution = Execution(20, 'DU299694', 5, timezone.now(), 1)
+        execution = ExecutionClass(20, 'DU299694', 5, timezone.now(), 1)
         allocation.add_execution_allocation(execution)
 
         self.assertTrue(allocation.allocations[1]['DU299694'].price == 15)
@@ -174,6 +179,47 @@ class BaseTest(TestCase):
 
         profile_should_be = '<?xml version="1.0" encoding="UTF-8"?><ListOfAllocationProfiles><AllocationProfile><name>MSFT</name><type>3</type><ListOfAllocations varName="listOfAllocations"><Allocation><acct>DU299694</acct><amount>5.0</amount></Allocation><Allocation><acct>DU299695</acct><amount>10.0</amount></Allocation></ListOfAllocations></AllocationProfile></ListOfAllocationProfiles>'
         self.assertTrue(profile == profile_should_be)
+
+    def test_order(self):
+        ib_contract = types.SimpleNamespace()
+        ib_contract.m_symbol = 'SPY'
+
+        ib_order = types.SimpleNamespace()
+        ib_order.m_totalQuantity = 1
+
+        order = Order(contract=ib_contract, order=ib_order, ib_id=1)
+        self.assertTrue(order.symbol == 'SPY')
+        self.assertTrue(order.status == OrderStatus.New)
+        self.assertTrue(order.remaining == 1)
+        self.assertTrue(order.fill_price is None)
+        self.assertTrue(order.filled == 0)
+
+    def test_create_django_executions(self):
+        fills = dict()
+        ib_contract = types.SimpleNamespace()
+        ib_contract.m_symbol = 'SPY'
+
+        ib_order = types.SimpleNamespace()
+        ib_order.m_totalQuantity = 1
+
+        order = Order(contract=ib_contract, order=ib_order, ib_id=1)
+        order.filled = 1
+        order.status = OrderStatus.Filled
+        fills[1] = order
+
+        execution = ExecutionClass(10, 'DU299694', 1, timezone.now(), 1)
+        allocation = AccountAllocations()
+        allocation.add_execution_allocation(execution)
+
+        create_django_executions(fills, allocation.allocations)
+
+        executionDjango = Execution.objects.get(asset=Ticker.objects.get(symbol='SPY'))
+
+        self.assertTrue(executionDjango.price == 10)
+        self.assertTrue(executionDjango.volume == 1)
+        self.assertTrue(executionDjango.amount == 10)
+        self.assertTrue(executionDjango.executed == execution.time[-1])
+
 
 
 
