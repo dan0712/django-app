@@ -349,12 +349,12 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
 
         setting_str = request.query_params.get('setting', None)
         if not setting_str:
-            logger.error('setting parameter missing from calculate_all_portfolios query')
+            logger.debug('setting parameter missing from calculate_all_portfolios query')
             raise ValidationError("Query parameter 'setting' must be specified and a valid JSON string")
         try:
             setting = ujson.loads(setting_str)
         except ValueError:
-            logger.error('setting parameter for calculate_all_portfolios query not valid json')
+            logger.debug('setting parameter for calculate_all_portfolios query not valid json')
             raise ValidationError("Query parameter 'setting' must be a valid json string")
 
         # Create the settings from the dict

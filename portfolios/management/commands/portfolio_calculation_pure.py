@@ -10,9 +10,6 @@ import pandas as pd
 from cvxpy import sum_entries, Variable
 
 from sklearn.covariance.shrunk_covariance_ import OAS
-from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
-
-from sklearn.covariance.shrunk_covariance_ import OAS
 
 from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
 
@@ -39,7 +36,7 @@ MINIMUM_PRICE_SAMPLES = 250
 WEEKDAYS_PER_YEAR = 260
 
 logger = logging.getLogger('portfolios.management.commands.portfolio_calculation_pure')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARN)
 
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
