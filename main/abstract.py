@@ -1,14 +1,16 @@
 import datetime
 import uuid
 
+from dateutil.rrule import rrulestr
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
+from django.utils.functional import cached_property, curry
+from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
-from dateutil.rrule import rrulestr
-from django.utils.functional import cached_property
+
 from common.structures import ChoiceEnum
 from main.utils import d2dt
 
@@ -26,12 +28,64 @@ class PersonalData(models.Model):
                               default="Male",
                               choices=(("Male", "Male"), ("Female", "Female")))
     residential_address = models.ForeignKey('address.Address', related_name='+')
-    phone_num = PhoneNumberField(null=True, max_length=16)  # A person may not have a phone.
-    medicare_number = models.CharField(max_length=50, default="")
+    # A person may not have a phone.
+    phone_num = PhoneNumberField(null=True, max_length=16)
     civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
+
+    regional_data = JSONField(default=dict)
 
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
+
+    def __init__(self, *args, **kwargs):
+        super(PersonalData, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        AU = 'AU'
+        US = 'US'
+
+        def f(countries, typ, required=False):
+            return countries, (typ, required)
+
+        field_types = {
+            'associated_to_broker_dealer': f([US], bool),
+            'ten_percent_insider': f([US], bool),
+            'public_position_insider': f([US], bool),
+            'us_citizen': f([US], bool),
+            'tax_file_number': f([AU], str),
+            'provide_tfn': f([AU], bool),
+            'medicare_number': f([AU], str),
+            'ssn': f([US], str, True),
+            'politically_exposed': f([US], bool, True),
+            'tax_transcript': f([US], str),
+        }
+
+        VE = curry(lambda m: ValueError({'regional_data': m}))
+        country = self.country
+        country_fields = dict((n, ft[1]) for n, ft in field_types.items()
+                              if country in ft[0])
+
+        try:
+            unknown_fields = set(self.regional_data.keys()) - \
+                             set(country_fields.keys())
+        except (TypeError, AttributeError):
+            raise VE("Must be 'dict' type.")
+
+        if unknown_fields:
+            raise VE("Got %d unknown fields (%s)." %
+                     (len(unknown_fields), ','.join(unknown_fields)))
+
+        for field_name, field_type in country_fields.items():
+            typ, required = field_type
+            try:
+                field_value = self.regional_data[field_name]
+                if not isinstance(field_value, typ):
+                    raise VE("Field %s has %s type, got %s." %
+                             (field_name, typ.__name__,
+                              type(field_value).__name__))
+            except KeyError:
+                if required:
+                    raise VE("Field '%s' required." % field_name)
 
     @property
     def first_name(self):
@@ -42,23 +96,22 @@ class PersonalData(models.Model):
         return self.user.first_name + " " + self.user.last_name
 
     @property
-    def states_codes(self):
-        states = []
-        for item in self._meta.get_field('state').choices:
-            states.append({"db_value": item[0], "name": item[1]})
-        return states
-
-    @property
     def email(self):
         return self.user.email
 
     @cached_property
     def age(self):
-        if self.date_of_birth:
+        dob = self.date_of_birth
+        if dob:
             today = datetime.datetime.today()
-            age = today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
+            age = today.year - dob.year - \
+                  ((today.month, today.day) < (dob.month, dob.day))
             return age
         return
+
+    @cached_property
+    def country(self):
+        return self.residential_address.region.country
 
 
 class NeedApprobation(models.Model):

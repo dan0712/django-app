@@ -49,8 +49,7 @@ TFN_CHOICES = (
     (TFN_NON_RESIDENT, "I am a non-resident of Australia"),
     (TFN_CLAIM, "I want to claim an exemption"),
     (TFN_DONT_WANT, "I do not want to quote a Tax File Number or exemption"),)
-PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender',
-                        'phone_num', 'medicare_number')
+PERSONAL_DATA_FIELDS = ('date_of_birth', 'gender', 'phone_num')
 ASSET_FEE_EVENTS = ((0, 'Day End'),
                     (1, 'Complete Day'),
                     (2, 'Month End'),

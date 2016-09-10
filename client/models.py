@@ -53,33 +53,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     client_agreement = models.FileField()
 
     user = models.OneToOneField('main.User', related_name='client')
-    tax_file_number = models.CharField(max_length=9, null=True, blank=True)
-    provide_tfn = models.IntegerField(verbose_name='Provide TFN?',
-                                      choices=constants.TFN_CHOICES,
-                                      default=constants.TFN_YES)
-
-    associated_to_broker_dealer = models.BooleanField(
-        verbose_name="Are employed by or associated with "
-                     "a broker dealer?",
-        default=False,
-        choices=constants.YES_NO)
-    ten_percent_insider = models.BooleanField(
-        verbose_name="Are you a 10% shareholder, director, or"
-                     " policy maker of a publicly traded company?",
-        default=False,
-        choices=constants.YES_NO)
-
-    public_position_insider = models.BooleanField(
-        verbose_name=_("Do you or a family member hold "
-                       "a public office position?"),
-        default=False,
-        choices=constants.YES_NO)
-
-    us_citizen = models.BooleanField(
-        verbose_name="Are you a US citizen/person"
-                     " for the purpose of US Federal Income Tax?",
-        default=False,
-        choices=constants.YES_NO)
 
     employment_status = models.IntegerField(choices=constants.EMPLOYMENT_STATUSES,
                                             null=True, blank=True)

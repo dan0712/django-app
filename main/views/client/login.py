@@ -27,34 +27,21 @@ class Section:
 
 class ClientForm(forms.ModelForm):
     user = forms.CharField(required=False)
-    medicare_number = forms.CharField(
-        label=mark_safe('Medicare # <span class="security-icon"></span>'),
-        help_text="Bank-Level Security"
-    )
     date_of_birth = forms.DateField(input_formats=["%d-%m-%Y"])
 
     class Meta:
         model = Client
-        fields = PERSONAL_DATA_FIELDS + ('advisor', 'tax_file_number', "provide_tfn", "associated_to_broker_dealer",
-                                         "ten_percent_insider", 'public_position_insider', 'us_citizen',
-                                         "employment_status", "income", "occupation", "employer",
-                                         "betasmartz_agreement", "advisor_agreement")
+        fields = PERSONAL_DATA_FIELDS + ('advisor', "employment_status",
+                                         "income", "occupation", "employer",
+                                         "betasmartz_agreement",
+                                         "advisor_agreement")
 
-        widgets = {"ten_percent_insider": forms.RadioSelect(),
-                   "associated_to_broker_dealer": forms.RadioSelect(),
-                   'public_position_insider': forms.RadioSelect(),
-                   'us_citizen': forms.RadioSelect(),
-                   "provide_tfn": forms.RadioSelect(),
-                   }
-
-        widgets.update(PERSONAL_DATA_WIDGETS)
+        widgets = PERSONAL_DATA_WIDGETS
 
 
 class ClientSignUpForm(BetaSmartzGenericUserSignupForm):
     profile = None
     user_profile_type = "client"
-    tax_file_number = forms.CharField(required=False)
-    medicare_number = forms.CharField()
     date_of_birth = forms.DateField(input_formats=["%d-%m-%Y"])
 
     class Meta:
@@ -75,28 +62,12 @@ class ClientSignUpForm(BetaSmartzGenericUserSignupForm):
         self.field_sections = [{"fields": ('first_name', 'middle_name', 'last_name', 'email', 'password',
                                            'confirm_password', 'date_of_birth', 'gender', 'phone_num'),
                                 "header": "Information to establish your account"},
-                               {"fields": ('medicare_number',),
-                                "header": "Identity verification",
-                                "detail": "We use your Medicare number to verify your identity and protect "
-                                          "against fraud."},
-                               {"fields": ('provide_tfn', 'tax_file_number',),
-                                "header": "Tax File Number (TFN)",
-                                "detail": "You are not required to provide your TFN, however if you don't we will"
-                                          " have to deduct tax at the highest marginal tax rate (BetaSmartz "
-                                          "recommends you provide your TFN, claim exemption or advise us of"
-                                          " your non-resident status."},
                                {"fields": ("employment_status", "occupation", "employer", "income"),
                                 "header": "Employment and financial background",
                                 "detail": "We are required to ask for your employment and financial background, "
                                           "and your answers allow us to give you better advice. "
                                           "The more accurate information we have, the better advice we can give you.",
-                                "css_class": "financial_questions"},
-                               {"fields": ("associated_to_broker_dealer", "ten_percent_insider",
-                                           'public_position_insider', 'us_citizen'),
-                                "header": "Regulatory questions",
-                                "detail": "We are required by law to ask about the following rare situations."
-                                          " Most users will answer No:",
-                                "css_class": "r_questions"}]
+                                "css_class": "financial_questions"}]
 
     def clean(self):
         cleaned_data = super(ClientSignUpForm, self).clean()
@@ -104,27 +75,6 @@ class ClientSignUpForm(BetaSmartzGenericUserSignupForm):
             self._errors['advisor_agreement'] = mark_safe('<ul class="errorlist">'
                                                           '<li>You must accept the client\'s agreement'
                                                           ' to continue.</li></ul>')
-
-        medicare_number = cleaned_data.get("medicare_number", "").replace(" ", "").replace("/", "")
-        tax_file_number = cleaned_data.get("tax_file_number", "")
-        provide_tfn = cleaned_data.get("provide_tfn", 0)
-
-        if provide_tfn == 0:
-            if not tax_file_number:
-                self._errors['tax_file_number'] = mark_safe('<ul class="errorlist">'
-                                                            '<li>Tax file number is required.</li></ul>')
-            else:
-                valid, msg = TaxFileNumberValidator()(tax_file_number)
-                if not valid:
-                    self._errors['tax_file_number'] = mark_safe('<ul class="errorlist">'
-                                                                '<li>{0}</li></ul>'.format(msg))
-        else:
-            cleaned_data["tax_file_number"] = ""
-
-        valid, msg = MedicareNumberValidator()(medicare_number)
-        if not valid:
-            self._errors['medicare_number'] = mark_safe('<ul class="errorlist">'
-                                                        '<li>{0}</li></ul>'.format(msg))
 
         return cleaned_data
 

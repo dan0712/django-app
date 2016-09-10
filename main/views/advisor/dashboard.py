@@ -584,9 +584,7 @@ class BuildPersonalDetails(AdvisorView, UpdateView):
 
 
 FINANCIAL_DETAILS = ('employment_status', 'occupation', 'employer', 'income',
-                     'associated_to_broker_dealer',
-                     'ten_percent_insider', 'public_position_insider',
-                     'us_citizen')
+                     'regional_data')
 
 
 class BuildFinancialDetailsForm(forms.ModelForm):
