@@ -355,12 +355,14 @@ class TickerFactory(factory.django.DjangoModelFactory):
 
 
 class TransactionFactory(factory.django.DjangoModelFactory):
+    """
+    Create an example deposit transaction for a new goal.
+    """
     class Meta:
         model = Transaction
 
-    reason = factory.Sequence(lambda n: int(n))
+    reason = Transaction.REASON_DEPOSIT
     amount = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
-    from_goal = factory.SubFactory(GoalFactory)
     to_goal = factory.SubFactory(GoalFactory)
 
 

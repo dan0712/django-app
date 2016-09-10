@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
     import ExecutionProviderAbstract, Reason
 from portfolios.management.commands.providers.dummy_models.dummy_models \
@@ -5,7 +7,8 @@ from portfolios.management.commands.providers.dummy_models.dummy_models \
 
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import timedelta
+
 
 class ExecutionProviderBacktester(ExecutionProviderAbstract):
     def __init__(self):
@@ -56,9 +59,10 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
     def get_asset_weights_held_less_than1y(self, goal, today):
         assets_held_less = dict()
 
-        executions = self._construct_matrix('volume',self.executions)
+        ept = ExecutionProviderBacktester._build_executions_per_ticker('volume', self.executions)
+        executions = self._construct_matrix(ept)
         executions = executions.sort_index(ascending=False)
-        executions[executions < 0] = 0 #we take into account only buys/not sells
+        executions[executions < 0] = 0  # we take into account only buys/not sells
         executions = executions.cumsum()
 
         positions = goal.get_positions_all()
@@ -84,8 +88,10 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
         cash = cash.sort_index()
         cash.columns = ['cash']
 
-        executions = self._construct_matrix('volume', self.executions)
-        prices = self._construct_matrix('price', self.executions)
+        ept = ExecutionProviderBacktester._build_executions_per_ticker('volume', self.executions)
+        executions = self._construct_matrix(ept)
+        ppt = ExecutionProviderBacktester._build_executions_per_ticker('price', self.executions)
+        prices = self._construct_matrix(ppt)
         allocations = executions.cumsum()
 
         shares_value = pd.DataFrame(np.sum(allocations * prices, 1), columns=['shares_value'])
@@ -93,11 +99,19 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
         returns = np.sum(portfolio_value, 1).pct_change(1)
         return returns
 
+    @staticmethod
+    def _build_executions_per_ticker(attribute, executions):
+        executions_per_ticker = defaultdict(dict)
+        for execution in executions:
+            executions_per_ticker[execution.asset.id][execution.executed] = getattr(execution, attribute)
+        return executions_per_ticker
+
     def attribute_sell(self, execution_request, goal):
         if execution_request.volume > 0:
             return
 
-        executions = self._construct_matrix('volume', self.executions)
+        ept = ExecutionProviderBacktester._build_executions_per_ticker('volume', self.executions)
+        executions = self._construct_matrix(ept)
         executions = executions[execution_request.asset.id]
         executions = executions.sort_index(ascending=False)
         executions[executions < 0] = 0 #we take into account only buys/not sells

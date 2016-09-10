@@ -698,7 +698,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Calculating portfolio for settings: {}".format(settings))
 
-    odata = optimize_settings(settings, idata, data_provider=data_provider, execution_provider=execution_provider)
+    odata = optimize_settings(settings, idata, execution_provider=execution_provider, data_provider=data_provider)
     weights, cost, xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = odata
 
     # Find the optimal orderable weights.

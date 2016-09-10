@@ -3,7 +3,6 @@ import logging
 import uuid
 from enum import Enum, unique
 
-from dateutil.relativedelta import relativedelta
 import scipy.stats as st
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, Group, \
