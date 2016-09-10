@@ -22,8 +22,6 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
         pass
 
     def get_asset_weights_held_less_than1y(self, goal, today):
-        assets_held_less = dict()
-
         qs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
                                         reason=Transaction.REASON_EXECUTION).order_by('executed')
 
@@ -41,14 +39,14 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
 
         positions = goal.get_positions_all()
 
+        weights = dict()
+        bal = goal.available_balance
         for position in positions:
             # search this year's buys only
             executions_single_asset = pd.DataFrame(executions[position.ticker.id])
             executions_this_year = executions_single_asset[today-timedelta(365):]
-            assets_held_less[position.ticker.id] = min(int(executions_this_year.iloc[-1]), position.share)
+            if not executions_this_year.empty:
+                vol = min(int(executions_this_year.iloc[-1]), position.share)
+                weights[position.ticker.id] = (vol * position.ticker.unit_price) / bal
 
-        weights = dict()
-        for pos in positions:
-            value = (assets_held_less[pos.ticker.id] * pos.ticker.unit_price) / goal.available_balance
-            weights[pos.ticker.id] = value
         return weights
