@@ -38,12 +38,4 @@ class Migration(migrations.Migration):
             field=jsonfield.fields.JSONField(default=dict),
         ),
         migrations.RunPython(curry(transfer_data, 'AuthorisedRepresentative')),
-        migrations.RemoveField(
-            model_name='advisor',
-            name='medicare_number',
-        ),
-        migrations.RemoveField(
-            model_name='authorisedrepresentative',
-            name='medicare_number',
-        ),
     ]
