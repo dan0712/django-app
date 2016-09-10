@@ -29,7 +29,7 @@ def transfer_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('client', '0006_auto_20160906_0039'),
+        ('client', '0009_auto_20160908_0342'),
     ]
 
     operations = [

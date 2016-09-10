@@ -22,7 +22,7 @@ def transfer_data(model_name, apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0049_auto_20160831_1657'),
+        ('main', '0050_firm_fiscal_years'),
     ]
 
     operations = [
