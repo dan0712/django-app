@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.db.models import Q
-
+from django.db.models.loading import get_model
 from main.models import GoalMetric
 
 
@@ -34,6 +34,16 @@ class ClientQuerySet(models.query.QuerySet):
             Q(secondary_advisors__pk=advisor.pk)
         )
 
+    def filter_by_advisors(self, advisors):
+        """
+        Accepts list advisors and filters by them.
+        """
+        q = Q()
+        for advisor in advisors:
+            q |= Q(advisor=advisor) | \
+                Q(secondary_advisors__pk=advisor.pk)
+        return self.filter(q)
+
     def filter_by_risk_level(self, risk_levels=None):
         """
         High Experimental
@@ -52,6 +62,27 @@ class ClientQuerySet(models.query.QuerySet):
             q |= Q(primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__gte=risk_min,
                    primary_accounts__all_goals__approved_settings__metric_group__metrics__configured_val__lt=risk_max)
         qs = self.filter(q, primary_accounts__all_goals__approved_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+
+        return qs
+
+    def filter_by_worth(self, worth=None):
+        Client = get_model('client', 'Client')
+        if worth is None:
+            return self
+        qs = self
+        cmap = {}
+        if worth == Client.WORTH_AFFLUENT:
+            cmap['affluent'] = [c.id for c in self if c.get_worth() == Client.WORTH_AFFLUENT]
+            qs = self.filter(id__in=cmap['affluent'])
+        elif worth == Client.WORTH_HIGH:
+            cmap['high'] = [c.id for c in self if c.get_worth() == Client.WORTH_HIGH]
+            qs = self.filter(id__in=cmap['high'])
+        elif worth == Client.WORTH_VERY_HIGH:
+            cmap['very-high'] = [c.id for c in self if c.get_worth() == Client.WORTH_VERY_HIGH]
+            qs = self.filter(id__in=cmap['very-high'])
+        elif worth == Client.WORTH_ULTRA_HIGH:
+            cmap['ultra-high'] = [c.id for c in self if c.get_worth() == Client.WORTH_ULTRA_HIGH]
+            qs = self.filter(id__in=cmap['ultra-high'])
 
         return qs
 

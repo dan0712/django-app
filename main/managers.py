@@ -3,6 +3,7 @@ from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
 from django.utils.timezone import now
+from django.db.models.loading import get_model
 import logging
 
 logger = logging.getLogger('main.managers')
@@ -71,14 +72,30 @@ class GoalQuerySet(QuerySet):
 
         This method filters out any Goals where the given advisor is not one of the authorised advisors.
         """
-        return self.filter(
-            Q(account__primary_owner__advisor=advisor) |
-            Q(account__primary_owner__secondary_advisors__pk=advisor.pk) |
-            Q(account__signatories__advisor=advisor) |
-            Q(account__signatories__secondary_advisors__pk=advisor.pk) |
-            Q(account__account_group__advisor=advisor) |
-            Q(account__account_group__secondary_advisors__pk=advisor.pk)
-        )
+        q = Q()
+        q |= Q(account__primary_owner__advisor=advisor) | \
+            Q(account__primary_owner__secondary_advisors__pk=advisor.pk) | \
+            Q(account__signatories__advisor=advisor) | \
+            Q(account__signatories__secondary_advisors__pk=advisor.pk)
+
+        # ClientAccounts are not guaranteed to have account groups
+        # filtering breaks here if no account group so we're ignoring these
+        # for the moment
+        # Q(account__account_group__advisor=advisor) |
+        # Q(account__account_group__secondary_advisors__pk=advisor.pk)
+        return self.filter(q)
+
+    def filter_by_advisors(self, advisors):
+        """
+        Accepts list of multiple advisors and filters by them, together.
+        """
+        q = Q()
+        for advisor in advisors:
+            q |= Q(account__primary_owner__advisor=advisor) | \
+                Q(account__primary_owner__secondary_advisors__pk=advisor.pk) | \
+                Q(account__signatories__advisor=advisor) | \
+                Q(account__signatories__secondary_advisors__pk=advisor.pk)
+        return self.filter(q)
 
     def filter_by_client(self, client):
         """
@@ -92,6 +109,16 @@ class GoalQuerySet(QuerySet):
             Q(account__primary_owner=client) |
             Q(account__signatories__pk=client.pk)
         )
+
+    def filter_by_clients(self, clients):
+        """
+        Accepts list of multiple advisors and filter by them, together.
+        """
+        q = Q()
+        for client in clients:
+            q |= Q(account__primary_owner=client) | \
+                Q(account__signatories__pk=client.pk)
+        return self.filter(q)
 
     def filter_by_client_age(self, age_min=0, age_max=1000):
         """
@@ -127,6 +154,31 @@ class GoalQuerySet(QuerySet):
 
         return qs
 
+    def filter_by_worth(self, worth=None):
+        Client = get_model('client', 'Client')
+        qs = self
+        if worth is None:
+            return self
+
+        clients = [goal.account.primary_owner for goal in qs]
+        cmap = {}
+        if worth == Client.WORTH_AFFLUENT:
+            cmap['affluent'] = [c.id for c in clients if c.get_worth() == Client.WORTH_AFFLUENT]
+            # logger.error(cmap['affluent'])
+            qs = self.filter(account__primary_owner__in=cmap['affluent'])
+        elif worth == Client.WORTH_HIGH:
+            cmap['high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_HIGH]
+            # logger.error(cmap['high'])
+            qs = self.filter(account__primary_owner__in=cmap['high'])
+        elif worth == Client.WORTH_VERY_HIGH:
+            cmap['very-high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_VERY_HIGH]
+            qs = self.filter(account__primary_owner__in=cmap['very-high'])
+        elif worth == Client.WORTH_ULTRA_HIGH:
+            cmap['ultra-high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_ULTRA_HIGH]
+            qs = self.filter(account__primary_owner__in=cmap['ultra-high'])
+
+        return qs
+
 
 class PositionQuerySet(QuerySet):
     def filter_by_firm(self, firm):
@@ -135,12 +187,43 @@ class PositionQuerySet(QuerySet):
 
     def filter_by_advisor(self, advisor):
         # TODO: should we add here "secondary_advisors"?
-        qs = self.filter(goal__account__account_group__advisor=advisor.pk)
-        return qs
+        # for advisor in advisors:
+        q = Q()
+        q |= Q(goal__account__primary_owner__advisor=advisor) | \
+            Q(goal__account__primary_owner__secondary_advisors__pk=advisor.pk) | \
+            Q(goal__account__signatories__advisor=advisor) | \
+            Q(goal__account__signatories__secondary_advisors__pk=advisor.pk)
+        # ClientAccounts are not guaranteed to have account groups
+        # filtering breaks here if no account group so we're ignoring these
+        # for the moment
+        # Q(account__account_group__advisor=advisor) |
+        # Q(account__account_group__secondary_advisors__pk=advisor.pk)
+        return self.filter(q)
+
+    def filter_by_advisors(self, advisors):
+        """
+        Accepts list of adviosors and filters by them.
+        """
+        q = Q()
+        for advisor in advisors:
+            q |= Q(goal__account__primary_owner__advisor=advisor) | \
+                Q(goal__account__primary_owner__secondary_advisors__pk=advisor.pk) | \
+                Q(goal__account__signatories__advisor=advisor) | \
+                Q(goal__account__signatories__secondary_advisors__pk=advisor.pk)
+        return self.filter(q)
 
     def filter_by_client(self, client):
         qs = self.filter(goal__account__primary_owner=client.pk)
         return qs
+
+    def filter_by_clients(self, clients):
+        """
+        Accepts list of clients and filters by them.
+        """
+        q = Q()
+        for client in clients:
+            q |= Q(goal__account__primary_owner=client.pk)
+        return self.filter(q)
 
     def filter_by_risk_level(self, risk_levels=None):
         """
@@ -163,6 +246,28 @@ class PositionQuerySet(QuerySet):
                    goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
         qs = self.filter(q, goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
 
+        return qs
+
+    def filter_by_worth(self, worth=None):
+        Client = get_model('client', 'Client')
+        qs = self
+        if worth is None:
+            return self
+
+        clients = [position.goal.account.primary_owner for position in qs]
+        cmap = {}
+        if worth == Client.WORTH_AFFLUENT:
+            cmap['affluent'] = [c.id for c in clients if c.get_worth() == Client.WORTH_AFFLUENT]
+            qs = self.filter(goal__account__primary_owner__in=cmap['affluent'])
+        elif worth == Client.WORTH_HIGH:
+            cmap['high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_HIGH]
+            qs = self.filter(goal__account__primary_owner__in=cmap['high'])
+        elif worth == Client.WORTH_VERY_HIGH:
+            cmap['very-high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_VERY_HIGH]
+            qs = self.filter(goal__account__primary_owner__in=cmap['very-high'])
+        elif worth == Client.WORTH_ULTRA_HIGH:
+            cmap['ultra-high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_ULTRA_HIGH]
+            qs = self.filter(goal__account__primary_owner__in=cmap['ultra-high'])
         return qs
 
     def annotate_value(self):
