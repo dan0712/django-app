@@ -1,6 +1,8 @@
 #!/bin/bash
 # For Production server we're going to run daily backups
 # with this script with a cronjob
+source /home/bsmartz/.env
+
 cd backups
 echo 'Backing up the wordpress database'
 docker exec -t wordpress_db mysqldump -u ${WORDPRESS_DB_USER} -p${WORDPRESS_DB_PASSWORD} ${WORDPRESS_DB_NAME} > latest_mysql_dump.sql
