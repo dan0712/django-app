@@ -8,9 +8,12 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
+from django.core.cache import cache
+from django.utils.timezone import now
 from sklearn.covariance.shrunk_covariance_ import OAS
 
-from portfolios.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
+from main import redis
+from .bl_model import bl_model, markowitz_cost, markowitz_optimizer_3
 
 TYPE_MASK_PREFIX = 'TYPE_'
 ETHICAL_MASK_NAME = 'ETHICAL'
@@ -34,7 +37,7 @@ MINIMUM_PRICE_SAMPLES = 250
 
 WEEKDAYS_PER_YEAR = 260
 
-logger = logging.getLogger('portfolios.management.commands.portfolio_calculation_pure')
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARN)
 
 # Raise exceptions if we're doing something dumb with pandas slices
@@ -716,20 +719,19 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     return get_portfolio_stats(settings_instruments, settings_symbol_ixs, instruments, lcovars, weights)
 
 
-#@do_cprofile
 def calculate_portfolios(setting, data_provider, execution_provider):
     """
     Calculate a list of 101 portfolios ranging over risk score.
     :param setting: The settig we want to generate portfolios for.
-    :param api: Where to get the data
+    :param data_provider: Where to get the data
+    :param execution_provider:
     :raises Unsatisfiable: If no single satisfiable portfolio could be found.
     :return: A list of 101 (risk_score, portfolio) tuples
             - risk_score [0-1] in steps of 0.01
             - portfolio is the same as the return value of calculate_portfolio.
                 portfolio will be None if no satisfiable portfolio could be found for this risk_score
     """
-    if logger.isEnabledFor(logging.DEBUG):
-        logger.debug("Calculate Portfolios Requested")
+    logger.debug("Calculate Portfolios Requested")
     try:
         idata = data_provider.get_instruments()
         if logger.isEnabledFor(logging.DEBUG):
@@ -1051,3 +1053,18 @@ def get_unconstrained(portfolio_set):
 
     return json_portfolios
 '''
+
+
+def get_instruments(data_provider=None):
+    """
+    :param data_provider: data provider to query data when results are not cached
+    :return:
+    """
+    key = redis.KEY_INSTRUMENTS(now().today().isoformat())
+    data = cache.get(key)
+
+    if data is None:
+        data = build_instruments(data_provider=data_provider)
+        cache.set(key, data, timeout=60 * 60 * 24)
+
+    return data

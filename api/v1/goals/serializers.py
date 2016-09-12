@@ -14,8 +14,7 @@ from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
     RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
 from portfolios.calculation import Unsatisfiable, \
-    calculate_portfolio, current_stats_from_weights
-from portfolios.management.commands.portfolio_calculation import get_instruments
+    calculate_portfolio, current_stats_from_weights, get_instruments
 from portfolios.providers.data.django import \
     DataProviderDjango
 from portfolios.providers.execution.django import \

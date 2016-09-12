@@ -18,9 +18,8 @@ from scipy.optimize import minimize_scalar
 
 from main.models import Goal, GoalMetric, Position
 from portfolios.bl_model import markowitz_cost
-from portfolios.calculation import Unsatisfiable, \
+from portfolios.calculation import Unsatisfiable, get_instruments, \
     lambda_to_risk_score, optimize_settings, run_bl
-from portfolios.management.commands.portfolio_calculation import get_instruments
 from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger("measure_goals")
