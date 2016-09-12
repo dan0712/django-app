@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
-from portfolios.management.commands.portfolio_calculation_pure import *
 from datetime import timedelta
+
+from abc import ABC, abstractmethod
+
 
 class DataProviderAbstract(ABC):
     def __init__(self):

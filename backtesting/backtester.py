@@ -1,17 +1,15 @@
-from portfolios.management.commands.portfolio_calculation_pure import build_instruments, get_settings_masks, \
-    get_metric_constraints, get_core_constraints, calculate_portfolio, calculate_portfolios
-
-import datetime
-import pandas.io.data as web
 import pandas as pd
-from portfolios.management.commands.providers.dummy_models.dummy_models \
-    import GoalFactory, InstrumentsFactory, PositionMock
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_backtester \
-    import DataProviderBacktester
-from portfolios.management.commands.providers.execution_providers.execution_provider_backtester \
-    import ExecutionProviderBacktester
+import pandas.io.data as web
 
 from main.management.commands.rebalance import rebalance
+from portfolios.management.commands.providers.dummy_models.dummy_models \
+    import GoalFactory, PositionMock
+from portfolios.management.commands.providers.execution_providers.execution_provider_backtester \
+    import ExecutionProviderBacktester
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_backtester \
+    import DataProviderBacktester
+from portfolios.calculation import build_instruments, \
+    calculate_portfolio, calculate_portfolios
 
 
 class GetETFTickers(object):

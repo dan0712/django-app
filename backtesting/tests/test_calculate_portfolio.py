@@ -10,7 +10,7 @@ from main.models import AssetClass, DailyPrice, GoalMetric, InvestmentType, \
     MarketCap, MarketIndex, MarkowitzScale, Portfolio, PortfolioItem, Region, \
     Ticker
 from main.tests.fixture import Fixture1
-from portfolios.management.commands.portfolio_calculation_pure import build_instruments, calculate_portfolio, \
+from portfolios.calculation import build_instruments, calculate_portfolio, \
     calculate_portfolios
 from portfolios.management.commands.providers.execution_providers.execution_provider_django import ExecutionProviderDjango
 from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango

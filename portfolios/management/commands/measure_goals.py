@@ -8,20 +8,18 @@
       normalised risk score.
 """
 import logging
-
 import math
-import numpy as np
 from collections import defaultdict
 
+import numpy as np
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from scipy.optimize import minimize_scalar
 
-from main.models import Goal, Position, GoalMetric
+from main.models import Goal, GoalMetric, Position
 from portfolios.BL_model.bl_model import markowitz_cost
-from portfolios.management.commands.portfolio_calculation_pure import \
-    lambda_to_risk_score, optimize_settings, Unsatisfiable, run_bl
-
+from portfolios.calculation import Unsatisfiable, \
+    lambda_to_risk_score, optimize_settings, run_bl
 from portfolios.management.commands.portfolio_calculation import get_instruments
 from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 

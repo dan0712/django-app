@@ -1,12 +1,14 @@
-from django.core.cache import cache
-from main import redis
-from django.utils.timezone import now
-from portfolios.management.commands.portfolio_calculation_pure import \
-    build_instruments, Unsatisfiable, calculate_portfolios
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
-from django.core.management.base import BaseCommand
-from main.models import Goal
 import logging
+
+from django.core.cache import cache
+from django.core.management.base import BaseCommand
+from django.utils.timezone import now
+
+from main import redis
+from main.models import Goal
+from portfolios.calculation import Unsatisfiable, \
+    build_instruments, calculate_portfolios
+from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
 #logger.setLevel(logging.INFO)

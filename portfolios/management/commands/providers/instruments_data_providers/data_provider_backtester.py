@@ -1,11 +1,10 @@
-import pandas as pd
-from datetime import timedelta
 from main.management.commands.build_returns import get_prices
-from portfolios.management.commands.portfolio_calculation_pure import *
-from portfolios.management.commands.providers.dummy_models.dummy_models \
-    import TickerMock, AssetClassMock, PortfolioSetMock, AssetFeatureValueMock, InstrumentsFactory, MarkowitzScaleMock
+from portfolios.management.commands.providers.dummy_models.dummy_models import \
+    AssetClassMock, AssetFeatureValueMock, InstrumentsFactory, \
+    MarkowitzScaleMock, PortfolioSetMock
 from portfolios.management.commands.providers.instruments_data_providers.data_provider_abstract \
     import DataProviderAbstract
+from portfolios.calculation import *
 
 
 class DataProviderBacktester(DataProviderAbstract):

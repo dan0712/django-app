@@ -7,9 +7,8 @@ from django.utils.timezone import now
 from scipy.optimize.minpack import curve_fit
 
 from portfolios.BL_model.bl_model import markowitz_optimizer_3
-from portfolios.management.commands.portfolio_calculation import get_instruments
-from portfolios.management.commands.portfolio_calculation_pure import get_core_constraints, MIN_PORTFOLIO_PCT, run_bl, FUND_MASK_NAME
-
+from portfolios.calculation import FUND_MASK_NAME, \
+    MIN_PORTFOLIO_PCT, get_core_constraints, run_bl
 from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 
 logger = logging.getLogger("markowitz_finder")

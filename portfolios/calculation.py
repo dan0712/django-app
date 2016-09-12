@@ -7,11 +7,11 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from cvxpy import sum_entries, Variable
-
+from cvxpy import Variable, sum_entries
 from sklearn.covariance.shrunk_covariance_ import OAS
 
-from portfolios.BL_model.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
+from portfolios.BL_model.bl_model import bl_model, markowitz_cost, \
+    markowitz_optimizer_3
 
 TYPE_MASK_PREFIX = 'TYPE_'
 ETHICAL_MASK_NAME = 'ETHICAL'
