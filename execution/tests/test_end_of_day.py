@@ -204,28 +204,29 @@ class BaseTest(TestCase):
         ib_contract.m_symbol = 'SPY'
 
         ib_order = types.SimpleNamespace()
-        ib_order.m_totalQuantity = 1
+        ib_order.m_totalQuantity = 5
 
         order = Order(contract=ib_contract,
                       order=ib_order,
                       ib_id=1,
                       symbol=ib_contract.m_symbol,
                       remaining=ib_order.m_totalQuantity)
-        order.filled = 1
+
+        order.filled = 5
         order.status = OrderStatus.Filled
         fills[1] = order
 
-        execution = ExecutionClass(10, 'DU299694', 1, timezone.now(), 1)
+        execution = ExecutionClass(10, 'DU299694', 5, timezone.now(), 1)
         allocation = AccountAllocations()
         allocation.add_execution_allocation(execution)
 
         create_django_executions(fills, allocation.allocations)
 
-        executionDjango = Execution.objects.get(asset=Ticker.objects.get(symbol='SPY'))
+        executionDjango = Execution.objects.get(asset=Ticker.objects.get(symbol='SPY'), volume=5)
 
         self.assertTrue(executionDjango.price == 10)
-        self.assertTrue(executionDjango.volume == 1)
-        self.assertTrue(executionDjango.amount == 10)
+        self.assertTrue(executionDjango.volume == 5)
+        self.assertTrue(executionDjango.amount == 50)
         self.assertTrue(executionDjango.executed == execution.time[-1])
 
 
