@@ -176,8 +176,9 @@ class BaseTest(TestCase):
         account_profile.append_share_allocation('MSFT', account_dict)
         profile = account_profile.get_profile()
 
-        profile_should_be = r'<?xml version="1.0" encoding="UTF-8"?><ListOfAllocationProfiles><AllocationProfile><name>MSFT</name><type>3</type><ListOfAllocations varName="listOfAllocations"><Allocation><acct>DU299695</acct><amount>10.0</amount></Allocation><Allocation><acct>DU299694</acct><amount>5.0</amount></Allocation></ListOfAllocations></AllocationProfile></ListOfAllocationProfiles>'
-        self.assertTrue(profile == profile_should_be)
+        profile_should_be1 = r'<?xml version="1.0" encoding="UTF-8"?><ListOfAllocationProfiles><AllocationProfile><name>MSFT</name><type>3</type><ListOfAllocations varName="listOfAllocations"><Allocation><acct>DU299695</acct><amount>10.0</amount></Allocation><Allocation><acct>DU299694</acct><amount>5.0</amount></Allocation></ListOfAllocations></AllocationProfile></ListOfAllocationProfiles>'
+        profile_should_be2 = r'<?xml version="1.0" encoding="UTF-8"?><ListOfAllocationProfiles><AllocationProfile><name>MSFT</name><type>3</type><ListOfAllocations varName="listOfAllocations"><Allocation><acct>DU299694</acct><amount>5.0</amount></Allocation><Allocation><acct>DU299695</acct><amount>10.0</amount></Allocation></ListOfAllocations></AllocationProfile></ListOfAllocationProfiles>'
+        self.assertTrue(profile == profile_should_be1 or profile == profile_should_be2)
 
     def test_order(self):
         ib_contract = types.SimpleNamespace()
