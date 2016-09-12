@@ -147,6 +147,34 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def total_earnings(self):
         return sum(a.total_earnings for a in self.accounts)
 
+    @property
+    def current_risk_profile_responses(self):
+        """
+         Get the answers for the current risk profile questions and ensure they
+         are recent and valid, otherwise returns None
+         :return: A valid RiskProfileAnswer queryset, or None if questions changed
+        """
+        if not hasattr(self.risk_profile_group, 'questions'):
+            # No risk questions assigned, so we can't say anything about their willingness to take risk.
+            return None
+        qids = set(self.risk_profile_group.questions.all().values_list('id', flat=True))
+        if len(qids) == 0:
+            # No risk questions assigned, so we can't say anything about their willingness to take risk.
+            return None
+
+        if not self.risk_profile_responses:
+            # No risk responses give, so we can't say anything about their willingness to take risk.
+            return None
+
+        aqs = self.risk_profile_responses.all()
+        if not qids == set(aqs.values_list('question_id', flat=True)):
+            # Risk responses are not complete, so we can't say anything about their willingness to take risk.
+            return None
+
+        return (
+            self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
+        )
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         create_personal_account = False

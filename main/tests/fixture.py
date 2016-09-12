@@ -240,6 +240,12 @@ class Fixture1:
                                                          text='How sophisticated are you?')[0]
 
     @classmethod
+    def risk_profile_question3(cls):
+        return RiskProfileQuestion.objects.get_or_create(group=Fixture1.risk_profile_group1(),
+                                                         order=2,
+                                                         text='Have you used other wealth management software?')[0]
+
+    @classmethod
     def risk_profile_answer1a(cls):
         return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
                                                        order=0,
@@ -256,6 +262,24 @@ class Fixture1:
                                                        b_score=2,
                                                        a_score=2,
                                                        s_score=2)[0]
+
+    @classmethod
+    def risk_profile_answer1c(cls):
+        return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
+                                                       order=2,
+                                                       text="I'm smart but scared",
+                                                       b_score=1,
+                                                       a_score=9,
+                                                       s_score=9)[0]
+
+    @classmethod
+    def risk_profile_answer1d(cls):
+        return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question1(),
+                                                       order=3,
+                                                       text="I'm clueless and wild",
+                                                       b_score=9,
+                                                       a_score=1,
+                                                       s_score=1)[0]
 
     @classmethod
     def risk_profile_answer2a(cls):
@@ -276,6 +300,41 @@ class Fixture1:
                                                        s_score=1)[0]
 
     @classmethod
+    def risk_profile_answer2c(cls):
+        return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question2(),
+                                                       order=2,
+                                                       text="I'm smart but scared",
+                                                       b_score=1,
+                                                       a_score=9,
+                                                       s_score=9)[0]
+
+    @classmethod
+    def risk_profile_answer2d(cls):
+        return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question2(),
+                                                       order=3,
+                                                       text="I'm clueless and wild",
+                                                       b_score=9,
+                                                       a_score=1,
+                                                       s_score=1)[0]
+
+    @classmethod
+    def risk_profile_answer3a(cls):
+        return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question3(),
+                                                       order=0,
+                                                       text='Yes',
+                                                       b_score=9,
+                                                       a_score=9,
+                                                       s_score=9)[0]
+    @classmethod
+    def risk_profile_answer3b(cls):
+        return RiskProfileAnswer.objects.get_or_create(question=Fixture1.risk_profile_question3(),
+                                                       order=1,
+                                                       text='No',
+                                                       b_score=1,
+                                                       a_score=1,
+                                                       s_score=1)[0]
+
+    @classmethod
     def populate_risk_profile_questions(cls):
         Fixture1.risk_profile_question1()
         Fixture1.risk_profile_answer1a()
@@ -283,6 +342,8 @@ class Fixture1:
         Fixture1.risk_profile_question2()
         Fixture1.risk_profile_answer2a()
         Fixture1.risk_profile_answer2b()
+        # Don't create question3 here, we use that to test validation
+        # that risk is NEUTRAL when the questions have changed
 
     @classmethod
     def populate_risk_profile_responses(cls):
