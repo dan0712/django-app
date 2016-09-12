@@ -1,7 +1,7 @@
+import pandas as pd
 from abc import ABC, abstractmethod
 
 from common.structures import ChoiceEnum
-import pandas as pd
 
 
 class Reason(ChoiceEnum):

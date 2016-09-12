@@ -1,13 +1,12 @@
 from collections import defaultdict
-
-from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
-    import ExecutionProviderAbstract, Reason
-from portfolios.providers.dummy_models import MarketOrderRequestMock, \
-    ExecutionRequestMock, ExecutionMock
-
-import pandas as pd
-import numpy as np
 from datetime import timedelta
+
+import numpy as np
+import pandas as pd
+
+from portfolios.providers.dummy_models import ExecutionMock, \
+    ExecutionRequestMock, MarketOrderRequestMock
+from .abstract import ExecutionProviderAbstract, Reason
 
 
 class ExecutionProviderBacktester(ExecutionProviderAbstract):

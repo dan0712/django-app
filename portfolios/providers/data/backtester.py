@@ -1,10 +1,9 @@
 from main.management.commands.build_returns import get_prices
 from portfolios.calculation import *
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_abstract \
-    import DataProviderAbstract
 from portfolios.providers.dummy_models import AssetClassMock, \
     AssetFeatureValueMock, InstrumentsFactory, MarkowitzScaleMock, \
     PortfolioSetMock
+from .abstract import DataProviderAbstract
 
 
 class DataProviderBacktester(DataProviderAbstract):

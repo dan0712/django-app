@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 
 from main.management.commands.build_returns import get_price_returns
-from portfolios.management.commands.providers.execution_providers.execution_provider_abstract import \
-    State
+from .execution.abstract import State
 
 
 class AssetClassMock(object):

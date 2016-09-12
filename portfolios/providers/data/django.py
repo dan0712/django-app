@@ -4,7 +4,7 @@ from main import redis
 from main.models import AssetFeatureValue, MarketCap, MarkowitzScale, \
     PortfolioSet, Ticker
 from portfolios.calculation import *
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_abstract import DataProviderAbstract
+from .abstract import DataProviderAbstract
 
 
 class DataProviderDjango(DataProviderAbstract):

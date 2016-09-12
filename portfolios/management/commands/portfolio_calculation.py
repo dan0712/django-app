@@ -8,7 +8,7 @@ from main import redis
 from main.models import Goal
 from portfolios.calculation import Unsatisfiable, \
     build_instruments, calculate_portfolios
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
+from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
 #logger.setLevel(logging.INFO)

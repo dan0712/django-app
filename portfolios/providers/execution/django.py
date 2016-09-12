@@ -1,14 +1,12 @@
 import logging
+from collections import defaultdict
+from datetime import timedelta
 
 import pandas as pd
-from datetime import timedelta
-from collections import defaultdict
-
 from django.db.models.query_utils import Q
 
-from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
-    import ExecutionProviderAbstract
 from main.models import MarketOrderRequest, Transaction
+from .abstract import ExecutionProviderAbstract
 
 logger = logging.getLogger('betasmartz.execution_provider_django')
 

@@ -2,10 +2,11 @@ import datetime
 
 from django import test
 
-from api.v1.tests.factories import GoalFactory, TransactionFactory, TickerFactory, PositionFactory
-from main.models import Transaction, ExecutionDistribution, Execution, MarketOrderRequest
-from portfolios.management.commands.providers.execution_providers.execution_provider_django import \
-    ExecutionProviderDjango
+from api.v1.tests.factories import GoalFactory, PositionFactory, TickerFactory, \
+    TransactionFactory
+from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
+    Transaction
+from portfolios.providers.execution.django import ExecutionProviderDjango
 
 
 class DjangoExecutionProviderTest(test.TestCase):
