@@ -179,6 +179,7 @@ class SwiftStorage(Storage):
             content.seek(0)
         else:
             content_type = mimetypes.guess_type(name)[0]
+        self.get_token()  # in case token is old
         swiftclient.put_object(self.storage_url,
                                self.token,
                                self.container_name,
