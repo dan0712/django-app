@@ -124,14 +124,10 @@ def measure(goal, idata):
         goal.save()
 
 
-def measure_all():
-    idata = get_instruments()
-    for goal in Goal.objects.all():
-        measure(goal, idata)
-
-
 class Command(BaseCommand):
     help = 'Measure and record all the metrics for all the goals in the system.'
 
     def handle(self, *args, **options):
-        measure_all()
+        idata = get_instruments()
+        for goal in Goal.objects.all():
+            measure(goal, idata)
