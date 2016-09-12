@@ -64,32 +64,33 @@ class RiskProfilerTests(TestCase):
         Fixture1.populate_risk_profile_questions()  # Also populates all possible answers.
         Fixture1.populate_risk_profile_responses()
 
+        # First lets start with the test_client, who scored 9 for all B,A,S
+
         # A goal of 50% of the value should be considered extremely risky
+        # even though we have all 9s on all our scores
         settings.goal.account.primary_owner.net_worth = 100
         settings.target = 50
         self.assertAlmostEqual(recommend_risk(settings), 0.1, 2)
 
         # A goal of 10% of the value on a all-9s account is 1.0
-        settings.goal.account.primary_owner.net_worth = 100
-        settings.target = 10
-        self.assertAlmostEqual(recommend_risk(settings), 1.0, 2)
-
-        # A goal of 10% of the value on a all-9s account is 1.0
+        # meaning this is the safest possible bet
         settings.goal.account.primary_owner.net_worth = 100
         settings.target = 10
         self.assertAlmostEqual(recommend_risk(settings), 1.0, 2)
 
         # A goal of 33% of the value on a all-9s account is about 0.5
+        # Even if you are risky, sophisticated and rich, 30% is a lot
         settings.goal.account.primary_owner.net_worth = 100
         settings.target = 33
         self.assertAlmostEqual(recommend_risk(settings), 0.5, 1)
 
-        # A goal of 49% of the value on a all-9s account is strongly not suggested
+        # A goal of 49% of the value on a all-9s account is still bad idea
+        # It's not the lowest possible score, but it's next to it
         settings.goal.account.primary_owner.net_worth = 100
         settings.target = 49
         self.assertAlmostEqual(recommend_risk(settings), 0.12, 2)
 
-        # A 10% goal is still risky for a new investor
+        # Even 10% goal is risky for a new and naive investor
         settings.goal.account.primary_owner.net_worth = 100
         settings.target = 10
         client.risk_profile_responses.clear()
