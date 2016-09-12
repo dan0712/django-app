@@ -2001,7 +2001,7 @@ class Position(models.Model):
         return self.share * self.ticker.unit_price
 
     def __str__(self):
-        return self.ticker.symbol
+        return "{}|{}|{}".format(self.goal, self.ticker.symbol, self.share)
 
 
 class MarketOrderRequest(models.Model):
@@ -2040,7 +2040,6 @@ class MarketOrderRequest(models.Model):
             raise ValidationError('Account is not verified.')
         return super(MarketOrderRequest, self).save(force_insert, force_update,
                                                     using, update_fields)
-
 
 
 class ExecutionRequest(models.Model):

@@ -5,12 +5,11 @@ from portfolios.management.commands.portfolio_calculation_pure import \
     build_instruments, Unsatisfiable, calculate_portfolios
 from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
 from django.core.management.base import BaseCommand
-import numpy as np
 from main.models import Goal
 import logging
 
 logger = logging.getLogger('betasmartz.portfolio_calculation')
-logger.setLevel(logging.INFO)
+#logger.setLevel(logging.INFO)
 
 
 def get_instruments(data_provider=None):

@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 from datetime import timedelta
 from collections import defaultdict
@@ -8,6 +10,7 @@ from portfolios.management.commands.providers.execution_providers.execution_prov
     import ExecutionProviderAbstract
 from main.models import MarketOrderRequest, Transaction
 
+logger = logging.getLogger('betasmartz.execution_provider_django')
 
 class ExecutionProviderDjango(ExecutionProviderAbstract):
 
@@ -42,8 +45,11 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
         weights = dict()
         bal = goal.available_balance
         for position in positions:
-            # search this year's buys only
+            if position.ticker.id not in executions:
+                logger.warn("Position: {} has no matching executions.".format(position))
+                continue
             executions_single_asset = pd.DataFrame(executions[position.ticker.id])
+            # search this year's buys only
             executions_this_year = executions_single_asset[today-timedelta(365):]
             if not executions_this_year.empty:
                 vol = min(int(executions_this_year.iloc[-1]), position.share)

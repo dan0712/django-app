@@ -58,3 +58,16 @@ class DjangoExecutionProviderTest(test.TestCase):
         ep = ExecutionProviderDjango()
         vals = ep.get_asset_weights_held_less_than1y(goal, today)
         self.assertEqual(len(vals), 0)
+
+    def test_get_asset_weights_held_less_than1y_postions_no_executions(self):
+        """
+        Test that any positions that have no executions are not flagged as less than one year.
+        :return:
+        """
+        fund = TickerFactory.create(unit_price=2.1)
+        goal = GoalFactory.create()
+        today = datetime.date(2016, 1, 1)
+        PositionFactory.create(goal=goal, ticker=fund, share=10)
+        ep = ExecutionProviderDjango()
+        vals = ep.get_asset_weights_held_less_than1y(goal, today)
+        self.assertEqual(len(vals), 0)
