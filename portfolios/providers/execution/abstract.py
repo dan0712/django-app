@@ -23,15 +23,15 @@ class ExecutionProviderAbstract(ABC):
 
     @abstractmethod
     def get_execution_request(self, reason):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def create_market_order(self, account):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def create_execution_request(self, reason, goal, asset, volume, order, limit_price):
-        pass
+        raise NotImplementedError()
 
     @staticmethod
     def _construct_matrix(executions):

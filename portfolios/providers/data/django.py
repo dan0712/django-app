@@ -8,9 +8,6 @@ from .abstract import DataProviderAbstract
 
 
 class DataProviderDjango(DataProviderAbstract):
-    def __init__(self):
-        pass
-
     def move_date_forward(self):
         # this function is only used in backtesting
         pass
