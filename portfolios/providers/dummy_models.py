@@ -1,11 +1,15 @@
-from main.management.commands.build_returns import get_price_returns
-from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
-    import Reason, State
-import pandas as pd
-import numpy as np
-import functools
-import copy
+from __future__ import unicode_literals
+
 import uuid
+
+import copy
+import functools
+import numpy as np
+import pandas as pd
+
+from main.management.commands.build_returns import get_price_returns
+from portfolios.management.commands.providers.execution_providers.execution_provider_abstract import \
+    State
 
 
 class AssetClassMock(object):

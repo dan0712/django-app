@@ -2,8 +2,8 @@ from collections import defaultdict
 
 from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
     import ExecutionProviderAbstract, Reason
-from portfolios.management.commands.providers.dummy_models.dummy_models \
-    import ExecutionRequestMock, MarketOrderRequestMock, ExecutionMock
+from portfolios.providers.dummy_models import MarketOrderRequestMock, \
+    ExecutionRequestMock, ExecutionMock
 
 import pandas as pd
 import numpy as np

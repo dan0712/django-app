@@ -2,8 +2,7 @@ import pandas as pd
 import pandas.io.data as web
 
 from main.management.commands.rebalance import rebalance
-from portfolios.management.commands.providers.dummy_models.dummy_models \
-    import GoalFactory, PositionMock
+from portfolios.providers.dummy_models import PositionMock, GoalFactory
 from portfolios.management.commands.providers.execution_providers.execution_provider_backtester \
     import ExecutionProviderBacktester
 from portfolios.management.commands.providers.instruments_data_providers.data_provider_backtester \
