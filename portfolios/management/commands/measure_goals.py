@@ -17,7 +17,7 @@ from django.db import transaction
 from scipy.optimize import minimize_scalar
 
 from main.models import Goal, GoalMetric, Position
-from portfolios.BL_model.bl_model import markowitz_cost
+from portfolios.bl_model import markowitz_cost
 from portfolios.calculation import Unsatisfiable, \
     lambda_to_risk_score, optimize_settings, run_bl
 from portfolios.management.commands.portfolio_calculation import get_instruments

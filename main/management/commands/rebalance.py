@@ -8,7 +8,7 @@ import logging
 import copy
 import numpy as np
 
-from portfolios.BL_model.bl_model import markowitz_optimizer_3
+from portfolios.bl_model import markowitz_optimizer_3
 from portfolios.calculation import MIN_PORTFOLIO_PCT, \
     calc_opt_inputs, create_portfolio_weights
 from portfolios.providers.execution.abstract \

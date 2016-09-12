@@ -5,3 +5,5 @@ class OptimizationException(BaseException):
     pass
 
 
+class OptimizationFailed(Exception):
+    pass

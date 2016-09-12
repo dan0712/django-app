@@ -10,8 +10,7 @@ import pandas as pd
 from cvxpy import Variable, sum_entries
 from sklearn.covariance.shrunk_covariance_ import OAS
 
-from portfolios.BL_model.bl_model import bl_model, markowitz_cost, \
-    markowitz_optimizer_3
+from portfolios.bl_model import bl_model, markowitz_optimizer_3, markowitz_cost
 
 TYPE_MASK_PREFIX = 'TYPE_'
 ETHICAL_MASK_NAME = 'ETHICAL'
