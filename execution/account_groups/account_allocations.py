@@ -8,6 +8,9 @@ class Execution(object):
 
 
 class AccountAllocations(object):
+    '''
+    Allocation holder - allocation of filled orders for each account
+    '''
     def __init__(self):
         self.allocations = dict()
 

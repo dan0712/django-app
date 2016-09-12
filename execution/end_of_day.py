@@ -1,18 +1,15 @@
 import logging
-from django.db import transaction
 from functools import partial
 from logging import DEBUG, INFO, WARN, ERROR
-from time import sleep, strftime, time
-from execution.broker.interactive_brokers import InteractiveBrokers
-from execution.account_groups.create_account_groups import FAAccountProfile
+from time import sleep
 
+from django.db import transaction
 from client.models import ClientAccount, IBAccount
-from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, Transaction
-from django.utils import timezone as tz
-from datetime import datetime
-
-from django.core.management.base import BaseCommand
-
+from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
+from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker
+import types
+from collections import defaultdict
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -31,12 +28,8 @@ logger = logging.getLogger('betasmartz.daily_process')
 logger.setLevel(logging.INFO)
 
 
-class Object(object):
-    pass
-
-
 def get_options():
-    opts = Object()
+    opts = types.SimpleNamespace()
     opts.verbose = 0
     return opts
 
@@ -81,70 +74,26 @@ def reconcile_cash_client_accounts():
 
 
 def get_execution_requests():
-    client_accounts = ClientAccount.objects.all()
-    ers = list()
-    for account in client_accounts:
-        mor_all = MarketOrderRequest.objects.all().filter(account=account)
-
-        mor = list()
-        for m in mor_all:
-            if m.state == MarketOrderRequest.State.APPROVED.value or m.state == MarketOrderRequest.State.PENDING.value:
-                mor.append(m)
-
-        for m in mor:
-            e = ExecutionRequest.objects.filter(order=m)
-            ers.extend(e)
+    ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)
     return ers
 
 
 def transform_execution_requests(execution_requests):
-    shares = set()
+    '''
+    transform django ExecutionRequests into allocation object, which we will use to keep track of allocation fills
+    :param execution_requests: list of ExecutionRequest
+    :return:
+    '''
+    allocations = defaultdict(lambda: defaultdict(float))
     for e in execution_requests:
-        shares.add(e.asset.symbol)
-
-    allocations = dict()
-    for s in shares:
-        allocations[s] = dict()
-        for e in execution_requests:
-            if e.asset.symbol == s:
-                mor = MarketOrderRequest.objects.get(execution_requests=e)
-                ib_account = mor.account.ib_account.ib_account
-
-                if ib_account not in allocations[s]:
-                    allocations[s][ib_account] = e.volume
-                else:
-                    # TODO test this part - happens if 1 client has same order from 2 goals
-                    allocations[s][ib_account] += e.volume
-
+        mor = MarketOrderRequest.objects.get(execution_requests=e)
+        ib_account = mor.account.ib_account.ib_account
+        allocations[e.asset.symbol][ib_account] += e.volume
     return allocations
 
 
-def create_django_executions(order_fills, execution_allocations):
-    '''
-    :param order_fills: Order
-    :param execution_allocations: AccountAllocations
-    :return:
-    '''
-    for ib_id in execution_allocations.keys():
-        allocation_per_ib_id = execution_allocations[ib_id]
-
-        for ib_account in allocation_per_ib_id.keys():
-            account = IBAccount.objects.get(ib_account=ib_account)
-            client_account = ClientAccount.objects.get(ib_account=account)
-
-            mor = MarketOrderRequest.objects.get(account=client_account, state=MarketOrderRequest.State.PENDING.value)
-            allocation_per_ib_account = allocation_per_ib_id[ib_account]
-            Execution.objects.create(asset=Ticker.objects.get(symbol=order_fills[ib_id].symbol),
-                                     volume=allocation_per_ib_account.shares,
-                                     order=mor,
-                                     price=allocation_per_ib_account.price,
-                                     amount=allocation_per_ib_account.shares * allocation_per_ib_account.price,
-                                     executed=allocation_per_ib_account.time[-1])
-        #TODO get amount from IB - including transaction costs
-        #TODO distributions - alphabetical order - maybe good enough
-
-
-def main(options):
+def example_usage_with_IB():
+    options = get_options()
     logging.root.setLevel(verbose_levels.get(options.verbose, ERROR))
     con = InteractiveBrokers()
     con.connect()
@@ -190,15 +139,6 @@ def main(options):
     long_sleep()
     long_sleep()
 
-    #reconcile_cash_client_accounts()
-
-
-if __name__ == '__main__':
-    #try:
-
-        main(get_options())
-    #except:
-        print("exception")
 
 '''
 class Command(BaseCommand):

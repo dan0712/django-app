@@ -2,37 +2,42 @@
 
 
 class Profiles(object):
-    start_faProfile = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + \
+    START_FA_PROFILE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + \
                       "<ListOfAllocationProfiles>"
 
-    start_account_faProfile = "<AllocationProfile>" + \
+    START_ACCOUNT_FA_PROFILE = "<AllocationProfile>" + \
                               "<name>%s</name>" + \
                               "<type>3</type>" + \
                               "<ListOfAllocations varName=\"listOfAllocations\">"
 
-    share_allocation = "<Allocation>" + \
+    SHARE_ALLOCATION = "<Allocation>" + \
                        "<acct>%s</acct>" + \
                        "<amount>%.1f</amount>" + \
                        "</Allocation>"
 
-    end_account_faProfile = "</ListOfAllocations>" + \
+    END_ACCOUNT_FA_PROFILE = "</ListOfAllocations>" + \
                             "</AllocationProfile>"
 
-    end_faProfile = "</ListOfAllocationProfiles>"
+    END_FA_PROFILE = "</ListOfAllocationProfiles>"
 
 
 class FAAccountProfile(object):
+    '''
+    Create allocation scheme for specific share.
+    E.g. wa want to buy 100 shares of MSFT, but want to allocate 50 to 1 IB account and 1 to another.
+    Thus, we send such allocation scheme to IB, before submitting order.
+    '''
     def __init__(self):
-        self.profile = Profiles.start_faProfile
+        self.profile = Profiles.START_FA_PROFILE
 
     def append_share_allocation(self, ticker, account_dict):
-        self.profile += Profiles.start_account_faProfile % ticker
+        self.profile += Profiles.START_ACCOUNT_FA_PROFILE % ticker
         for account, alloc in account_dict.items():
-            self.profile += Profiles.share_allocation % (account, alloc)
-        self.profile += Profiles.end_account_faProfile
+            self.profile += Profiles.SHARE_ALLOCATION % (account, alloc)
+        self.profile += Profiles.END_ACCOUNT_FA_PROFILE
 
     def get_profile(self):
-        return self.profile + Profiles.end_faProfile
+        return self.profile + Profiles.END_FA_PROFILE
 
 
 if __name__ == '__main__':
