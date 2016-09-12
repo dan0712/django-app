@@ -1,8 +1,5 @@
 Django==1.8.14
 
-# upgrade setuptools
-setuptools==20.7.0
-
 # rocket science
 numpy==1.9.2
 pandas==0.16.2
