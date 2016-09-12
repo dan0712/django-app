@@ -1,5 +1,3 @@
-from django.db.models.aggregates import Avg
-
 from main.constants import ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF
 
 # The risk score if we don't have enough info to say anything.
@@ -12,10 +10,10 @@ def scale(val, src, dst):
     return ((val - src[0]) / (src[1]-src[0])) * (dst[1]-dst[0]) + dst[0]
 
 class GoalSettingRiskProfile(object):
-    def __init__(self, setting, account_risk_profile_class=None):
+    def __init__(self, setting):
         self.setting = setting
         self.account = setting.goal.account
-        self.account_risk_profile = (account_risk_profile_class or AccountRiskProfile)(self.account)
+        self.client = self.account.primary_owner
 
     def get_portfolio_worth(self):
         """
@@ -47,19 +45,19 @@ class GoalSettingRiskProfile(object):
         if relative_cost <= 0.1: return 1.0
         return scale(relative_cost, (0.5, 0.1), (0.1, 1.0))
 
-    def account_bas_scores(self):
-        return self.account_risk_profile.get_bas_scores()
+    def client_bas_scores(self):
+        return self.client.get_risk_profile_bas_scores()
 
     def goal_bas_scores(self):
         """
-        Get BAS scores for a goal, taking into account portfolio's ability
+        Get BAS scores for a goal, taking into client portfolio's ability
         """
-        scores = self.account_bas_scores()
+        scores = self.client_bas_scores()
         if not scores: return None
         else: B, A, S = scores
         worth_score = self.get_worth_score()
         if worth_score:
-            # Multiply the portfolio ratio versus their account's ability
+            # Multiply the portfolio ratio versus their client's ability
             # I decided to multiply here because it heuristically makes sense;
             # "A goal's risk is a *factor* of your ability and worth_score"
             # rather than
@@ -101,27 +99,6 @@ class GoalSettingRiskProfile(object):
         else: B, A, S = scores
         return min(A, S)
 
-
-class AccountRiskProfile(object):
-    def __init__(self, account):
-        self.account = account
-
-    def get_bas_scores(self):
-        """
-        Get the scores for an entity's willingness to take risk, based on a previous elicitation of its preferences.
-        :return: Tuple of floats [0-1] (b_score, a_score, s_score)
-        """
-        answers = self.account.primary_owner.current_risk_profile_responses
-        if not answers: return None
-
-        scores = (answers.values('question', 'b_score', 'a_score', 's_score')
-            .aggregate(b_score=Avg('b_score'),a_score=Avg('a_score'),
-                       s_score=Avg('s_score'),))
-        return (
-            scores['b_score'] / 9.0,
-            scores['a_score'] / 9.0,
-            scores['s_score'] / 9.0
-        )
 
 def recommend_risk(setting):
     return GoalSettingRiskProfile(setting).recommend_risk()

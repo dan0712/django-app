@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import PROTECT
+from django.db.models.aggregates import Avg
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
@@ -173,6 +174,22 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
         return (
             self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
+        )
+
+    def get_risk_profile_bas_scores(self):
+        """
+        Get the scores for an entity's willingness to take risk, based on a previous elicitation of its preferences.
+        :return: Tuple of floats [0-1] (b_score, a_score, s_score)
+        """
+        answers = self.current_risk_profile_responses
+        if not answers: return None
+
+        scores = (answers.values('question', 'b_score', 'a_score', 's_score')
+            .aggregate(b_score=Avg('b_score'),a_score=Avg('a_score'), s_score=Avg('s_score'),))
+        return (
+            scores['b_score'] / 9.0,
+            scores['a_score'] / 9.0,
+            scores['s_score'] / 9.0
         )
 
     def save(self, force_insert=False, force_update=False, using=None,
