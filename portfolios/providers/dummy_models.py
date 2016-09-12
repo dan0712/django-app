@@ -1,11 +1,14 @@
-from main.management.commands.build_returns import get_price_returns
-from portfolios.management.commands.providers.execution_providers.execution_provider_abstract \
-    import Reason, State
-import pandas as pd
-import numpy as np
-import functools
-import copy
+from __future__ import unicode_literals
+
 import uuid
+
+import copy
+import functools
+import numpy as np
+import pandas as pd
+
+from main.management.commands.build_returns import get_price_returns
+from .execution.abstract import State
 
 
 class AssetClassMock(object):
@@ -185,11 +188,11 @@ class GoalMetricMock(object):
 
 
 class PortfolioMock(object):
-    def __init__(self, id, stdev, er, items=[]):
+    def __init__(self, id, stdev, er, items=None):
         self.id = id
         self.stdev = stdev
         self.er = er
-        self.items = items
+        self.items = items or []
 
     def __str__(self):
         return u'Portfolio #%s' % self.id
@@ -224,7 +227,8 @@ class MarketOrderRequestMock(object):
 
 
 class ExecutionRequestMock(object):
-    def __init__(self, reason=None, goal=None, asset=None, volume=None, order=None, limit_price=None):
+    def __init__(self, reason=None, goal=None, asset=None, volume=None,
+                 order=None, limit_price=None):
         self.reason = reason
         self.id = uuid.uuid4()
         self.goal = goal

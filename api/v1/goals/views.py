@@ -1,17 +1,18 @@
 import decimal
-import operator
+import logging
 import ujson
 from collections import defaultdict
 
+import operator
 import pandas as pd
 from django.contrib.contenttypes.models import ContentType
-
 from django.db import transaction
 from django.db.models.query_utils import Q
 from django.utils import timezone
-from rest_framework import viewsets, status
-from rest_framework.decorators import list_route, detail_route
-from rest_framework.exceptions import PermissionDenied, ValidationError, MethodNotAllowed
+from rest_framework import status, viewsets
+from rest_framework.decorators import detail_route, list_route
+from rest_framework.exceptions import MethodNotAllowed, PermissionDenied, \
+    ValidationError
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -19,17 +20,18 @@ from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from api.v1.utils import activity
 from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
-from main.models import Goal, GoalType, Transaction, HistoricalBalance, Ticker, DailyPrice
+from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
+    Transaction
 from main.risk_profiler import recommend_ttl_risks
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
-from portfolios.management.commands.providers.execution_providers.execution_provider_django import ExecutionProviderDjango
-from portfolios.management.commands.portfolio_calculation_pure import calculate_portfolio, calculate_portfolios, \
-    Unsatisfiable, current_stats_from_weights
+from portfolios.calculation import Unsatisfiable, \
+    calculate_portfolio, calculate_portfolios, current_stats_from_weights
+from portfolios.providers.execution.django import ExecutionProviderDjango
+from portfolios.providers.data.django import DataProviderDjango
 from support.models import SupportRequest
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
-import logging
+
 # Make unsafe float operations with decimal fail
 decimal.getcontext().traps[decimal.FloatOperation] = True
 

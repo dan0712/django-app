@@ -13,17 +13,12 @@ from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
     GoalSetting, GoalType, Portfolio, PortfolioItem, Position, \
     RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
-
-from portfolios.management.commands.portfolio_calculation_pure import (
-    calculate_portfolio, Unsatisfiable, current_stats_from_weights)
-
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import \
+from portfolios.calculation import Unsatisfiable, \
+    calculate_portfolio, current_stats_from_weights, get_instruments
+from portfolios.providers.data.django import \
     DataProviderDjango
-
-from portfolios.management.commands.providers.execution_providers.execution_provider_django import \
+from portfolios.providers.execution.django import \
     ExecutionProviderDjango
-
-from portfolios.management.commands.portfolio_calculation import get_instruments
 from support.models import SupportRequest
 
 

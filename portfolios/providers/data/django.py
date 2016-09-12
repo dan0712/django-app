@@ -1,14 +1,13 @@
-from main.models import (MarkowitzScale, PortfolioSet, Ticker, AssetFeatureValue, MarketCap)
-from portfolios.management.commands.portfolio_calculation_pure import *
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_abstract import DataProviderAbstract
 from django.core.cache import cache
+
 from main import redis
-from datetime import datetime
+from main.models import AssetFeatureValue, MarketCap, MarkowitzScale, \
+    PortfolioSet, Ticker
+from portfolios.calculation import *
+from .abstract import DataProviderAbstract
+
 
 class DataProviderDjango(DataProviderAbstract):
-    def __init__(self):
-        pass
-
     def move_date_forward(self):
         # this function is only used in backtesting
         pass

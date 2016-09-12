@@ -8,22 +8,19 @@
       normalised risk score.
 """
 import logging
-
 import math
-import numpy as np
 from collections import defaultdict
 
+import numpy as np
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from scipy.optimize import minimize_scalar
 
-from main.models import Goal, Position, GoalMetric
-from portfolios.BL_model.bl_model import markowitz_cost
-from portfolios.management.commands.portfolio_calculation_pure import \
-    lambda_to_risk_score, optimize_settings, Unsatisfiable, run_bl
-
-from portfolios.management.commands.portfolio_calculation import get_instruments
-from portfolios.management.commands.providers.instruments_data_providers.data_provider_django import DataProviderDjango
+from main.models import Goal, GoalMetric, Position
+from portfolios.bl_model import markowitz_cost
+from portfolios.calculation import Unsatisfiable, get_instruments, \
+    lambda_to_risk_score, optimize_settings, run_bl
+from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger("measure_goals")
 # logger.setLevel(logging.DEBUG)
@@ -126,14 +123,10 @@ def measure(goal, idata):
         goal.save()
 
 
-def measure_all():
-    idata = get_instruments()
-    for goal in Goal.objects.all():
-        measure(goal, idata)
-
-
 class Command(BaseCommand):
     help = 'Measure and record all the metrics for all the goals in the system.'
 
     def handle(self, *args, **options):
-        measure_all()
+        idata = get_instruments()
+        for goal in Goal.objects.all():
+            measure(goal, idata)
