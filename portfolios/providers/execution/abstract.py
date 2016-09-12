@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
-from common.structures import ChoiceEnum
 import pandas as pd
+from abc import ABC, abstractmethod
+
+from common.structures import ChoiceEnum
+
 
 class Reason(ChoiceEnum):
     DRIFT = 0  # The Request was made to neutralise drift on the goal
@@ -21,26 +23,24 @@ class ExecutionProviderAbstract(ABC):
 
     @abstractmethod
     def get_execution_request(self, reason):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def create_market_order(self, account):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def create_execution_request(self, reason, goal, asset, volume, order, limit_price):
-        pass
+        raise NotImplementedError()
 
     @staticmethod
-    def _construct_matrix(attribute, executions):
-        executions_per_ticker = dict()
-        for execution in executions:
-            if execution.asset.id not in executions_per_ticker:
-                executions_per_ticker[execution.asset.id] = dict()
-            executions_per_ticker[execution.asset.id][execution.executed] = getattr(execution, attribute)
-
+    def _construct_matrix(executions):
+        """
+        :param executions: a 2D matrix [asset id][execution_time] of some value
+        :return:
+        """
         transactions = pd.DataFrame()
-        for key, value in executions_per_ticker.items():
+        for key, value in executions.items():
             ticker = pd.DataFrame.from_dict(value, orient='index')
             ticker.index = pd.to_datetime(ticker.index)
             ticker = ticker.sort_index()

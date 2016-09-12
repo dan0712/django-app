@@ -11,6 +11,7 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   TemplateView, UpdateView)
 from functools import reduce
 from operator import itemgetter
+from django.utils import timezone
 
 from client.models import Client
 from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
@@ -22,7 +23,8 @@ from main.views.base import LegalView
 from notifications.models import Notification
 from support.models import SupportRequest
 from .filters import FirmActivityFilterSet, FirmAnalyticsAdvisorsFilterSet, \
-    FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet
+    FirmAnalyticsClientsFilterSet, FirmAnalyticsOverviewFilterSet, \
+    FirmAnalyticsGoalsAdvisorsFilterSet, FirmAnalyticsGoalsClientsFilterSet
 
 logger = logging.getLogger('main.views.firm.dashboard')
 
@@ -211,11 +213,19 @@ class FirmAnalyticsMixin(object):
             if hasattr(self, 'firm'):
                 qs = qs.filter_by_firm(self.firm)
 
-            if hasattr(self, 'advisor'):
-                qs = qs.filter_by_advisor(self.advisor)
+            if hasattr(self, 'advisor_filter'):
+                advisors = self.advisor_filter.qs
+                if self.advisor_filter.data.get('advisor'):
+                    if advisors.count() > 0:
+                        qs = qs.filter_by_advisors(advisors)
+                    else:
+                        qs = Client.objects.none()
 
-            if hasattr(self, 'client'):
-                qs = qs.filter(id=self.client.pk)
+            if hasattr(self, 'client_filter'):
+                clients = self.client_filter.qs
+                if self.client_filter.data.get('client'):
+                    clients_pk = [c.pk for c in clients]
+                    qs = qs.filter(pk__in=clients_pk)
 
             if hasattr(self, 'filter'):
                 data = self.filter.data
@@ -224,6 +234,10 @@ class FirmAnalyticsMixin(object):
                     risk = data.getlist('risk')
                 if risk:
                     qs = qs.filter_by_risk_level(risk)
+
+                worth = data.get('worth')
+                if worth:
+                    qs = qs.filter_by_worth(worth)
 
             self._queryset_clients = qs
 
@@ -231,40 +245,50 @@ class FirmAnalyticsMixin(object):
 
     def get_queryset_goals(self):
         if not hasattr(self, '_queryset_goals'):
-            qs = Goal.objects.all() \
-            #.filter(selected_settings__target__gt=0) # ignore "unset" goals
+            qs = Goal.objects.all()
+            # .filter(selected_settings__target__gt=0) # ignore "unset" goals
 
             if hasattr(self, 'firm'):
                 qs = qs.filter_by_firm(self.firm)
 
-            if hasattr(self, 'advisor'):
-                qs = qs.filter_by_advisor(self.advisor)
+            if hasattr(self, 'advisor_filter'):
+                # check for advisor/s since some advisors might share names etc.
+                advisors = self.advisor_filter.qs
+                if self.advisor_filter.data.get('advisor'):
+                    qs = qs.filter_by_advisors(advisors)
 
-            if hasattr(self, 'client'):
-                qs = qs.filter_by_client(self.client)
+            if hasattr(self, 'client_filter'):
+                clients = self.client_filter.qs
+                if self.client_filter.data.get('client'):
+                    qs = qs.filter_by_clients(clients)
 
             if hasattr(self, 'filter'):
                 data = self.filter.data
                 risk = None
                 if 'risk' in data.keys():
                     risk = data.getlist('risk')
-                # logger.error(risk)
+
                 if risk:
                     qs = qs.filter_by_risk_level(risk)
+
+                worth = data.get('worth')
+                if worth:
+                    qs = qs.filter_by_worth(worth)
+
             self._queryset_goals = qs
 
         return self._queryset_goals
 
     def get_queryset_goals_filterless(self):
         if not hasattr(self, '_queryset_goals_filterless'):
-            qs = Goal.objects.all() \
-            #.filter(selected_settings__target__gt=0) # ignore "unset" goals
+            qs = Goal.objects.all()
+            # .filter(selected_settings__target__gt=0) # ignore "unset" goals
 
             if hasattr(self, 'firm'):
                 qs = qs.filter_by_firm(self.firm)
 
             if hasattr(self, 'filter'):
-                data = self.filter.data
+                # data = self.filter.data
                 pass
 
             self._queryset_goals_filterless = qs
@@ -278,11 +302,18 @@ class FirmAnalyticsMixin(object):
             if hasattr(self, 'firm'):
                 qs = qs.filter_by_firm(self.firm)
 
-            if hasattr(self, 'advisor'):
-                qs = qs.filter_by_advisor(self.advisor)
+            if hasattr(self, 'advisor_filter'):
+                advisors = self.advisor_filter.qs
+                if self.advisor_filter.data.get('advisor'):
+                    if advisors.count() > 0:
+                        qs = qs.filter_by_advisors(advisors)
+                    else:
+                        qs = Position.objects.none()
 
-            if hasattr(self, 'client'):
-                qs = qs.filter_by_client(self.client)
+            if hasattr(self, 'client_filter'):
+                clients = self.client_filter.qs
+                if self.client_filter.data.get('client'):
+                    qs = qs.filter_by_clients(clients)
 
             if hasattr(self, 'filter'):
                 data = self.filter.data
@@ -291,6 +322,10 @@ class FirmAnalyticsMixin(object):
                     risk = data.getlist('risk')
                 if risk:
                     qs = qs.filter_by_risk_level(risk)
+
+                worth = data.get('worth')
+                if worth:
+                    qs = qs.filter_by_worth(worth)
 
             self._queryset_positions = qs
 
@@ -317,47 +352,50 @@ class FirmAnalyticsMixin(object):
         clients = self.get_queryset_clients()
         data = []
         current_date = datetime.now().today()
-        for age in self.AGE_RANGE:
-            # client.net_worth will return a clients estimated net_worth here
-            # client.net_worth takes into account external assets
-            # we are graphing average clients' net_worth by age
-            value_worth = 0.0
-            range_dates = map(lambda x: current_date - relativedelta(years=x),
-                              [age + self.AGE_STEP, age])  # yes, max goes first
+        if qs_goals and clients:
+            for age in self.AGE_RANGE:
+                # client.net_worth will return a clients estimated net_worth here
+                # client.net_worth takes into account external assets
+                # we are graphing average clients' net_worth by age
+                value_worth = 0.0
+                range_dates = map(lambda x: current_date - relativedelta(years=x),
+                                  [age + self.AGE_STEP, age])  # yes, max goes first
 
-            clients_by_age = clients.filter(date_of_birth__range=range_dates)
-            for client in clients_by_age:
-                value_worth += client.net_worth
-            if clients_by_age.count() > 0:
-                value_worth = value_worth / clients_by_age.count()
+                clients_by_age = clients.filter(date_of_birth__range=range_dates)
+                for client in clients_by_age:
+                    value_worth += client.net_worth
+                if clients_by_age.count() > 0:
+                    value_worth = value_worth / clients_by_age.count()
 
-            # for every goal for clients in this age range, we're going to add the transaction
-            # amount to the total_cashflow, then divide the total by the number of unique clients
-            # to get the average cashflow for clients of this age
-            total_cashflow = 0.0
-            average_client_cashflow = 0.0
-            cashflow_goals = qs_goals.filter_by_client_age(age, age + self.AGE_STEP)
-            number_of_clients = len(set([goal.account.primary_owner for goal in cashflow_goals]))
-            for goal in cashflow_goals:
-                txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                             status=Transaction.STATUS_EXECUTED,
-                                             reason__in=Transaction.CASH_FLOW_REASONS) \
-                                            .filter(executed__gt=date.today() - relativedelta(years=1))
-                # subtract from_goal amounts and add to_goal amounts
-                for tx in txs:
-                    if tx.from_goal:
-                        total_cashflow -= tx.amount
-                    elif tx.to_goal:
-                        total_cashflow += tx.amount
+                # for every goal for clients in this age range,
+                # we're going to add the transaction
+                # amount to the total_cashflow, then divide
+                # the total by the number of unique clients
+                # to get the average cashflow for clients of this age
+                total_cashflow = 0.0
+                average_client_cashflow = 0.0
+                cashflow_goals = qs_goals.filter_by_client_age(age, age + self.AGE_STEP)
+                number_of_clients = len(set([goal.account.primary_owner for goal in cashflow_goals]))
+                for goal in cashflow_goals:
+                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
+                                                 status=Transaction.STATUS_EXECUTED,
+                                                 reason__in=Transaction.CASH_FLOW_REASONS) \
+                                                .filter(executed__gt=timezone.now()- relativedelta(years=1))
+                    # subtract from_goal amounts and add to_goal amounts
+                    for tx in txs:
+                        if tx.from_goal:
+                            total_cashflow -= tx.amount
+                        elif tx.to_goal:
+                            total_cashflow += tx.amount
 
-            if number_of_clients > 0:
-                average_client_cashflow = total_cashflow / number_of_clients
+                if number_of_clients > 0:
+                    average_client_cashflow = total_cashflow / number_of_clients
 
-            data.append({
-                'value_worth': value_worth,
-                'value_cashflow': average_client_cashflow,
-                'age': age + self.AGE_STEP / 2,
-            })
+                data.append({
+                    'value_worth': value_worth,
+                    'value_cashflow': average_client_cashflow,
+                    'age': age + self.AGE_STEP / 2,
+                })
 
         return data
 
@@ -443,12 +481,25 @@ class FirmAnalyticsOverviewView(FirmAnalyticsMixin, TemplateView, LegalView):
         user = SupportRequest.target_user(self.request)
         self.firm  = user.authorised_representative.firm
         self.filter = FirmAnalyticsOverviewFilterSet(self.request.GET)
+        self.advisor_filter = FirmAnalyticsGoalsAdvisorsFilterSet(self.request.GET)
+        self.client_filter = FirmAnalyticsGoalsClientsFilterSet(self.request.GET)
         positions = self.get_context_positions()
+        risks = self.get_context_risks()
+        worth = self.get_context_worth()
+        events = self.get_context_events()
+        empty_worth = len(worth) == 0
+        empty_segments = len(positions) == 0 or empty_worth
+        empty_events = len(events) == 0 or empty_worth
         return {
+            'empty_worth': empty_worth,
+            'empty_segments': empty_segments,
+            'empty_events': empty_events,
             'filter': self.filter,
-            'risks': self.get_context_risks(),
-            'worth': self.get_context_worth(),
-            'events': self.get_context_events(),
+            'advisor_filter': self.advisor_filter,
+            'client_filter': self.client_filter,
+            'risks': risks,
+            'worth': worth,
+            'events': events,
             'positions': positions,
         }
 

@@ -58,10 +58,7 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
         model = Client
         fields = (
             'employment_status', 'income', 'occupation',
-            'employer', 'us_citizen', 'public_position_insider',
-            'ten_percent_insider', 'associated_to_broker_dealer',
-            'tax_file_number', 'provide_tfn', 'civil_status',
-            'risk_profile_responses'
+            'employer', 'civil_status', 'risk_profile_responses'
         )
 
 

@@ -12,13 +12,12 @@ from django.views.generic import TemplateView
 
 from client.models import ClientAccount
 from main.constants import PERFORMER_GROUP_STRATEGY
-from main.models import (AssetClass, Goal, Performer, Position,
-    RecurringTransaction, SymbolReturnHistory)
+from main.models import AssetClass, AssetFeature, Goal, Performer, \
+    PortfolioSet, Position, RecurringTransaction, SymbolReturnHistory, \
+    Transaction
 from main.views.base import ClientView
+from portfolios.calculation import calculate_portfolios
 from portfolios.exceptions import OptimizationException
-from portfolios.management.commands.portfolio_calculation_pure import calculate_portfolios as calculate_portfolios_for_goal
-
-
 
 logger = logging.getLogger("client.api")
 
@@ -83,7 +82,7 @@ class PortfolioPortfolios(ClientView, TemplateView):
                 if goal.is_custom_size:
                     if goal.portfolios in [None, "{}", "[]", ""]:
                         try:
-                            portfolios = calculate_portfolios_for_goal(goal)
+                            portfolios = calculate_portfolios(goal)
                             goal.portfolios = ujson.dumps(portfolios, double_precision=2)
                             goal.save()
                         except OptimizationException:

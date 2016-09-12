@@ -29,6 +29,9 @@ class SearchFilter(filters.CharFilter):
         for lookup_field in self.lookup_fields:
             params = {lookup_field + '__icontains': value}
             q = Q(**params) | q
+            params = {lookup_field + '__icontains': value.capitalize()}
+            q |= Q(**params)
+            # check for capitalized versions too
 
         return queryset.filter(q)
 
@@ -170,3 +173,23 @@ class FirmAnalyticsClientsFilterSet(filters.FilterSet):
     class Meta:
         model = Client
         fields = ['search']
+
+
+class FirmAnalyticsGoalsAdvisorsFilterSet(filters.FilterSet):
+    advisor = SearchFilter(widget=forms.TextInput(
+        attrs=dict({'placeholder': 'Advisor'}, **ATTRS_ONCHANGE)),
+        lookup_fields=['user__first_name', 'user__last_name', 'user__email'])
+
+    class Meta:
+        model = Advisor
+        fields = ['advisor']
+
+
+class FirmAnalyticsGoalsClientsFilterSet(filters.FilterSet):
+    client = SearchFilter(widget=forms.TextInput(
+        attrs=dict({'placeholder': 'Client'}, **ATTRS_ONCHANGE)),
+        lookup_fields=['user__first_name', 'user__last_name', 'user__email'])
+
+    class Meta:
+        model = Client
+        fields = ['client']

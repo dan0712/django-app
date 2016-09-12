@@ -11,7 +11,7 @@
 {% block main_content %}
   <div class="container">
     <div class="row m-t">
-      <div class="col-sm-6">
+      <div class="col-sm-offset-3 col-sm-6">
         {% include "firm/partials/menu-analytics.html" %}
       </div>
 
@@ -23,19 +23,22 @@
         </div>
         {% endcomment %}
         -->
-        <div class="col-sm-offset-3 col-sm-3">
+        <div class="col-sm-3">
           {% bootstrap_field filter.form.worth show_label=False show_help=False %}
         </div>
 
         <!-- Semi-hidden fields -->
         <span class="hidden">
           {% bootstrap_field filter.form.risk show_label=False show_help=False %}
+
+          {% bootstrap_field advisor_filter.form.advisor show_label=False show_help=False %}
+          {% bootstrap_field client_filter.form.client show_label=False show_help=False %}
         </span>
       </form>
     </div>
 
     <div class="row">
-      <div class="col-sm-3">
+      <div class="col-sm-3" style='position:relative; top:-52px;'>
         {% for item in risks %}
         <div onclick="onChangeRisk(event, {{ item.level }})" class="statcard statcard-analytics {% if item.level|stringformat:'i' in filter.form.risk.value %}statcard-primary{% else %}statcard-default{% endif %} {% if not forloop.first %}m-t{% endif %}">
           <div class="p-a">
@@ -47,65 +50,21 @@
           </div>
         </div>
         {% endfor %}
-        <script>
-          var onChangeRisk = function(event, value) {
-            // loading spinner
-            $('.loading').show();
-
-            // multiple select
-            // onclick, toggle event and value from select
-            // id_risk_1: value = 0
-            // id_risk_2: value = 20
-            // id_risk_3: value = 40
-            // id_risk_4: value = 60
-            // id_risk_5: value = 80
-
-            // pass if clicking on child elements
-            if (event.target.tagName == 'A') { return; }
-
-
-            function toggle_checked(id) {
-              if ($(id).is(':checked')) {
-                $(id).prop('checked', false);
-              } else {
-                $(id).prop('checked', true);
-              }
-            }
-
-            if (value == 0) {
-              toggle_checked("#id_risk_1");
-            } else if (value == 20) {
-              toggle_checked("#id_risk_2");
-            } else if (value == 40) {
-              toggle_checked("#id_risk_3");
-            } else if (value == 60) {
-              toggle_checked("#id_risk_4");
-            } else if (value == 80) {
-              toggle_checked("#id_risk_5");
-            }
-
-            $('#id_risk').closest('form').submit();
-
-            // change "risk" form control manually
-            // elemRisk = document.getElementById('id_risk');
-            // event = document.createEvent('Event');
-            // event.initEvent('change', true, false);
-
-            // // set or clear (if click on "active" item) risk filter
-            // elemRisk.value = value !== {{ filter.form.risk.value|safe }} ? value : null;
-            // elemRisk.dispatchEvent(event);
-          }
-        </script>
       </div>
 
       <div class="col-sm-9 loading" style="display: none;">Loading&#8230;</div>
 
       <div class="col-sm-9" id='charts'>
         <div>
+          {% if not empty_worth %}
           <div>
-            <canvas id="lineChartA" width="300" height="100"></canvas>
+              <canvas id="lineChartA" width="300" height="100"></canvas>
           </div>
+          {% else %}
+            No net worth results.
+          {% endif %}
 
+          {% if not empty_segments %}
           <div class="m-t-md">
             <h5>Segments</h5>
             <table class="table table-borderless">
@@ -133,11 +92,19 @@
               </tbody>
             </table>
           </div>
+          {% else %}
+            No segments results.
+          {% endif %}
 
+
+          {% if not empty_events %}
           <div class="m-t-md">
             <h5>Goal Analysis</h5>
             <canvas id="lineChartB" width="300" height="100"></canvas>
           </div>
+          {% else %}
+            No goal analysis results.
+          {% endif %}
         </div>
       </div>
     </div>
@@ -152,5 +119,66 @@
 {% include "firm/partials/chart-worth.html" %}
 {% include "firm/partials/chart-events.html" %}
 {% include "firm/partials/chart-trinity.html" %}
+
+<script>
+  // Risk Filter Trigger
+  var onChangeRisk = function(event, value) {
+    // loading spinner
+    $('.loading').show();
+
+    // multiple select
+    // onclick, toggle event and value from select
+    // id_risk_1: value = 0
+    // id_risk_2: value = 20
+    // id_risk_3: value = 40
+    // id_risk_4: value = 60
+    // id_risk_5: value = 80
+
+    // pass if clicking on child elements
+    if (event.target.tagName == 'A') { return; }
+
+
+    function toggle_checked(id) {
+      if ($(id).is(':checked')) {
+        $(id).prop('checked', false);
+      } else {
+        $(id).prop('checked', true);
+      }
+    }
+
+    if (value == 0) {
+      toggle_checked("#id_risk_1");
+    } else if (value == 20) {
+      toggle_checked("#id_risk_2");
+    } else if (value == 40) {
+      toggle_checked("#id_risk_3");
+    } else if (value == 60) {
+      toggle_checked("#id_risk_4");
+    } else if (value == 80) {
+      toggle_checked("#id_risk_5");
+    }
+
+    $('#id_risk').closest('form').submit();
+  }
+</script>
+
+<script type='text/javascript'>
+  // Loading Spinner Triggers
+  $(document).on('change', '#id_worth', function() {
+    $('.loading').show();
+  });
+
+  $('#id_advisor').closest('form').submit(function(e) {
+    e.preventDefault();
+    $('.loading').show();
+    this.submit();
+  });
+
+  $('#id_client').closest('form').submit(function(e) {
+    e.preventDefault();
+    $('.loading').show();
+    this.submit();
+  });
+</script>
 {% endblock %}
 

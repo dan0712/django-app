@@ -1,16 +1,35 @@
 {% load filters %}
+{% load bootstrap3 %}
 
+<div class="pull-right">
+    <div class="col-sm-3 col-sm-offset-1">
+        <h4 style='padding-top: 11px;'>Filter by:</h4></li>
+    </div>
+    <form class="col-sm-4">
+        <div class="">
+            {% bootstrap_field advisor_filter.form.advisor show_label=False show_help=False %}
+        </div>
 
-<ul class="nav nav-pills">
-  <li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics' }}">
-    <a href="{% url 'firm:analytics' %}">Overview</a>
-  </li>
-  <li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics-advisors' }}">
-    <a href="{% url 'firm:analytics-advisors' %}">Advisers</a>
-  </li>
-  <li class="{{ request.resolver_match.view_name|menu_active:'firm:analytics-clients' }}">
-    <a href="{% url 'firm:analytics-clients' %}">Clients</a>
-  </li>
-</ul>
+        <div class="hidden">
+            <!-- Semi-hidden fields -->
+            {% bootstrap_field client_filter.form.client show_label=False show_help=False %}
+            {% bootstrap_field filter.form.worth show_label=False show_help=False %}
+            {% bootstrap_field filter.form.risk show_label=False show_help=False %}
+        </div>
+
+    </form>
+    <form class='col-sm-4'>
+        <div class="">
+            {% bootstrap_field client_filter.form.client show_label=False show_help=False %}
+        </div>
+
+        <div class="hidden">
+            <!-- Semi-hidden fields -->
+            {% bootstrap_field advisor_filter.form.advisor show_label=False show_help=False %}
+            {% bootstrap_field filter.form.worth show_label=False show_help=False %}
+            {% bootstrap_field filter.form.risk show_label=False show_help=False %}
+        </div>
+    </form>
+</div>
 
 <div class="visible-xs m-b"></div>
