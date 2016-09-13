@@ -39,7 +39,7 @@ class GoalSettingRiskProfile(object):
         worth = self.get_portfolio_worth()
         if not worth: return None
 
-        cost = self.setting.target
+        cost = self.setting.goal.total_balance
         relative_cost = cost / worth
         if relative_cost >= 0.5: return 0.1
         if relative_cost <= 0.1: return 1.0
@@ -62,7 +62,7 @@ class GoalSettingRiskProfile(object):
             # "A goal's risk is a *factor* of your ability and worth_score"
             # rather than
             # "A goal's risk is the *lesser* of your ability and worth_score"
-            A = worth_score * A
+            A = (worth_score + A) / 2.0
         return B, A, S
 
     def recommend_risk(self):

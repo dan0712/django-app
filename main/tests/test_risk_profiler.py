@@ -66,37 +66,36 @@ class RiskProfilerTests(TestCase):
 
         # First lets start with the test_client, who scored 9 for all B,A,S
 
-        # A goal of 50% of the value should be considered extremely risky
-        # even though we have all 9s on all our scores
+        # A goal of 80% of the value on a all-9s account is a bad idea
+        # It's the lowest possible score
         settings.goal.account.primary_owner.net_worth = 100
-        settings.target = 50
-        self.assertAlmostEqual(recommend_risk(settings), 0.1, 2)
+        settings.goal.cash_balance = 80
+        self.assertAlmostEqual(recommend_risk(settings), 0.55, 2)
+
+        # A goal of 50% of the value is just as bad
+        settings.goal.account.primary_owner.net_worth = 100
+        settings.goal.cash_balance = 50
+        self.assertAlmostEqual(recommend_risk(settings), 0.55, 2)
 
         # A goal of 10% of the value on a all-9s account is 1.0
         # meaning this is the safest possible bet
         settings.goal.account.primary_owner.net_worth = 100
-        settings.target = 10
+        settings.goal.cash_balance = 10
         self.assertAlmostEqual(recommend_risk(settings), 1.0, 2)
 
         # A goal of 33% of the value on a all-9s account is about 0.5
         # Even if you are risky, sophisticated and rich, 30% is a lot
         settings.goal.account.primary_owner.net_worth = 100
-        settings.target = 33
-        self.assertAlmostEqual(recommend_risk(settings), 0.5, 1)
+        settings.goal.cash_balance = 33
+        self.assertAlmostEqual(recommend_risk(settings), 0.75, 1)
 
-        # A goal of 49% of the value on a all-9s account is still bad idea
-        # It's not the lowest possible score, but it's next to it
+        # For a new investor, the best possible suggestion is 10% or less
         settings.goal.account.primary_owner.net_worth = 100
-        settings.target = 49
-        self.assertAlmostEqual(recommend_risk(settings), 0.12, 2)
-
-        # Even 10% goal isn't recommended for a new and naive investor
-        settings.goal.account.primary_owner.net_worth = 100
-        settings.target = 10
+        settings.goal.cash_balance = 10
         client.risk_profile_responses.clear()
         client.risk_profile_responses.add(Fixture1.risk_profile_answer1b())
         client.risk_profile_responses.add(Fixture1.risk_profile_answer2b())
-        self.assertAlmostEqual(recommend_risk(settings), 0, 1)
+        self.assertAlmostEqual(recommend_risk(settings), 0.2, 1)
 
     def test_max_risk(self):
         goal = Fixture1.goal1()
@@ -122,5 +121,5 @@ class RiskProfilerTests(TestCase):
         client.risk_profile_responses.clear()
         client.risk_profile_responses.add(Fixture1.risk_profile_answer1d())
         client.risk_profile_responses.add(Fixture1.risk_profile_answer2d())
-        self.assertAlmostEqual(recommend_risk(settings), 0, 1)
-        self.assertAlmostEqual(max_risk(settings), 0, 1)
+        self.assertAlmostEqual(recommend_risk(settings), 0.1, 1)
+        self.assertAlmostEqual(max_risk(settings), 0.1, 1)

@@ -200,19 +200,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             )
         )
 
-        ranges = {
-            'b': extents['max_b_sum'] - extents['min_b_sum'],
-            'a': extents['max_a_sum'] - extents['min_a_sum'],
-            's': extents['max_s_sum'] - extents['min_s_sum'],
-        }
-        # If the ranges are zero, then the questions are bad
-        if not (ranges['b'] and ranges['a'] and ranges['s']):
-            return None
-
         return (
-            (scores['b_score'] - extents['min_b_sum']) / ranges['b'],
-            (scores['a_score'] - extents['min_a_sum']) / ranges['a'],
-            (scores['s_score'] - extents['min_s_sum']) / ranges['s'],
+            scores['b_score'] / extents['max_b_sum'],
+            scores['a_score'] / extents['max_a_sum'],
+            scores['s_score'] / extents['max_s_sum'],
         )
 
     def save(self, force_insert=False, force_update=False, using=None,
