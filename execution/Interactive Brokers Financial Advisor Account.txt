@@ -32,3 +32,7 @@ We probably should generate similar XML and generate profile for each single ord
                 + "</ListOfAllocations>"
             + "</AllocationProfile>"
         + "</ListOfAllocationProfiles>";
+
+Demo account:
+Username: betas440
+Password: test4321
