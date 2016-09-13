@@ -51,7 +51,7 @@
       <input name="advisor" type="hidden" value="{{ profile.pk }}" />
       <input name="name" type="hidden" value="{{ object.name }}" />
 
-      <h4 class="m-t">Select accounts to add to the household</h4>
+      <h4 class="m-t">Select accounts to add to the group</h4>
       <div class="panel panel-default">
         <div class="table-responsive">
           <table class="table">
@@ -69,7 +69,7 @@
                   <td>
                     <input name="accounts" type="checkbox" value="{{ item.pk }}">
                   </td>
-                  <td>{{ item.account_type_name }}</td>
+                  <td>{{ item.account_name }}</td>
                   <td>{{ item.total_balance|currency }}</td>
                   <td>{{ item.owners }}</td>
                 </tr>
@@ -94,7 +94,7 @@
       </div>
     </form>
 
-    <h4 class="m-t">Accounts added to household</h4>
+    <h4 class="m-t">Accounts added to group</h4>
     <div class="panel panel-default">
       <div class="table-responsive">
         <table class="table">
@@ -109,7 +109,7 @@
           <tbody>
             {% for item in object.accounts.all %}
               <tr>
-                <td>{{ item.account_type_name }}</td>
+                <td>{{ item.account_name }}</td>
                 <td>{{ item.total_balance|currency }}</td>
                 <td>{{ item.owners }}</td>
                 <td class="text-xs-right">
