@@ -53,7 +53,7 @@ INSTALLED_APPS = (
     'support',
     'advisors',
     'portfolios',
-    #'statements', # BREAKING: weasyprint doesnt agree with OSX
+    'statements',
     'swift',
 )
 
