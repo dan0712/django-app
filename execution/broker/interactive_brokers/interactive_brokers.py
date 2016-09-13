@@ -1,19 +1,17 @@
-from execution.broker.ibroker import IBroker
-from ib.ext.ComboLeg import ComboLeg
-from ib.ext.Contract import Contract
-from ib.ext.ExecutionFilter import ExecutionFilter
-from ib.ext.Order import Order as IBOrder
+from datetime import datetime, timedelta
+from functools import partial
+from time import sleep
 
-from ib.ext.ScannerSubscription import ScannerSubscription
+from ib.ext.Contract import Contract
+from ib.ext.Order import Order as IBOrder
 from ib.ext.TickType import TickType
 from ib.lib.logger import logger as basicConfig
 from ib.opt import ibConnection, message
-from time import sleep, strftime, time
-from functools import partial
-from execution.data_structures.market_depth import MarketDepth
-from execution.order.order import Order, OrderStatus
-from datetime import datetime, timedelta
+
 from execution.account_groups.account_allocations import Execution, AccountAllocations
+from execution.broker.ibroker import IBroker
+from execution.broker.interactive_brokers.order.order import Order, OrderStatus
+from execution.data_structures.market_depth import MarketDepth
 
 very_short_sleep = partial(sleep, 0.01)
 short_sleep = partial(sleep, 1)

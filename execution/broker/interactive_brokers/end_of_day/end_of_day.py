@@ -40,9 +40,6 @@ def create_django_executions(order_fills, execution_allocations):
                                                 amount=to_subtract * allocation_per_ib_account.price)\
 
                 ExecutionDistribution(execution=ex1, transaction=t1, volume=to_subtract)
-                e.delete() #should we really delete ExecutionRequest?
-
-
+                e.delete()
 
         #TODO get amount from IB - including transaction costs
-        #TODO distributions - alphabetical order - maybe good enough

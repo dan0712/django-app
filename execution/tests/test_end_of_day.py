@@ -1,4 +1,3 @@
-import types
 from datetime import datetime
 from unittest.mock import Mock
 
@@ -8,13 +7,14 @@ from django.utils import timezone
 from execution.account_groups.account_allocations import AccountAllocations
 from execution.account_groups.account_allocations import Execution as ExecutionClass
 from execution.broker.ibroker import IBroker
+from execution.broker.interactive_brokers.end_of_day.end_of_day import create_django_executions
+from execution.broker.interactive_brokers.order.order import Order, OrderStatus
 from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
 from execution.end_of_day import *
 from execution.end_of_day import get_execution_requests, transform_execution_requests
-from execution.order.order import Order, OrderStatus
-from main.tests.fixture import Fixture1
-from execution.broker.interactive_brokers.end_of_day.end_of_day import create_django_executions
 from main.models import ExternalInstrument
+from main.tests.fixture import Fixture1
+
 
 class BaseTest(TestCase):
 

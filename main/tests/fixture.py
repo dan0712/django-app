@@ -594,7 +594,7 @@ class Fixture1:
             'instrument_id': 'SPY_APEX',
             'ticker': Fixture1.fund3()
         }
-        return ExternalInstrument.objects.get_or_create(fund_id=1,defaults=params)[0]
+        return ExternalInstrument.objects.get_or_create(id=1,defaults=params)[0]
 
     @classmethod
     def external_instrument2(cls):
@@ -603,7 +603,7 @@ class Fixture1:
             'instrument_id': 'SPY_IB',
             'ticker': Fixture1.fund3()
         }
-        return ExternalInstrument.objects.get_or_create(fund_id=2,defaults=params)[0]
+        return ExternalInstrument.objects.get_or_create(id=2,defaults=params)[0]
 
     @classmethod
     def external_debt_1(cls):

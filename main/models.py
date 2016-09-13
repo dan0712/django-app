@@ -945,10 +945,12 @@ class ExternalInstrument(models.Model):
         APEX = 0
         INTERACTIVE_BROKERS = 1
 
-    fund_id = models.CharField(max_length=10, blank=False,null=False,unique=True)
     institution = models.IntegerField(choices=Institution.choices(), default=Institution.APEX.value)
     instrument_id = models.CharField(max_length=10, blank=False,null=False,unique=True)
-    ticker = models.ForeignKey('Ticker', related_name='external_instrument', on_delete=PROTECT)
+    ticker = models.ForeignKey('Ticker', related_name='external_instruments', on_delete=PROTECT)
+
+    class Meta:
+        unique_together = (('institution', 'instrument_id'), ('institution', 'ticker'))
 
 
 class Ticker(FinancialInstrument):
@@ -980,7 +982,7 @@ class Ticker(FinancialInstrument):
                                    object_id_field='instrument_object_id')
 
     # Also may have 'features' property from the AssetFeatureValue model.
-    # also has external_instrument foreign key - to get instrument_id per institution
+    # also has external_instruments foreign key - to get instrument_id per institution
 
     def __str__(self):
         return self.symbol
