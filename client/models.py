@@ -391,9 +391,7 @@ class ClientAccount(models.Model):
 
     @property
     def account_type_name(self):
-        for at in constants.ACCOUNT_TYPES:
-            if at[0] == self.account_name:
-                return at[1]
+        return constants.ACCOUNT_TYPES[self.account_type][1]
 
     @property
     def on_track(self):

@@ -69,7 +69,7 @@
                   <td>
                     <input name="accounts" type="checkbox" value="{{ item.pk }}">
                   </td>
-                  <td>{{ item.account_name }}</td>
+                  <td>{{ item.name }}</td>
                   <td>{{ item.total_balance|currency }}</td>
                   <td>{{ item.owners }}</td>
                 </tr>
@@ -109,7 +109,7 @@
           <tbody>
             {% for item in object.accounts.all %}
               <tr>
-                <td>{{ item.account_name }}</td>
+                <td>{{ item.name }}</td>
                 <td>{{ item.total_balance|currency }}</td>
                 <td>{{ item.owners }}</td>
                 <td class="text-xs-right">
