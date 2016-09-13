@@ -70,12 +70,12 @@ class RiskProfilerTests(TestCase):
         # It's the lowest possible score
         settings.goal.account.primary_owner.net_worth = 100
         settings.goal.cash_balance = 80
-        self.assertAlmostEqual(recommend_risk(settings), 0.55, 2)
+        self.assertAlmostEqual(recommend_risk(settings), 0.10, 2)
 
         # A goal of 50% of the value is just as bad
         settings.goal.account.primary_owner.net_worth = 100
         settings.goal.cash_balance = 50
-        self.assertAlmostEqual(recommend_risk(settings), 0.55, 2)
+        self.assertAlmostEqual(recommend_risk(settings), 0.10, 2)
 
         # A goal of 10% of the value on a all-9s account is 1.0
         # meaning this is the safest possible bet
@@ -87,7 +87,7 @@ class RiskProfilerTests(TestCase):
         # Even if you are risky, sophisticated and rich, 30% is a lot
         settings.goal.account.primary_owner.net_worth = 100
         settings.goal.cash_balance = 33
-        self.assertAlmostEqual(recommend_risk(settings), 0.75, 1)
+        self.assertAlmostEqual(recommend_risk(settings), 0.5, 1)
 
         # For a new investor, the best possible suggestion is 10% or less
         settings.goal.account.primary_owner.net_worth = 100

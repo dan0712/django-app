@@ -62,7 +62,7 @@ class GoalSettingRiskProfile(object):
             # "A goal's risk is a *factor* of your ability and worth_score"
             # rather than
             # "A goal's risk is the *lesser* of your ability and worth_score"
-            A = (worth_score + A) / 2.0
+            A = min(worth_score, A)
         return B, A, S
 
     def recommend_risk(self):
