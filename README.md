@@ -26,6 +26,7 @@ source env/bin/activate # run virtual env
 #ENVIRONMENT SETUP (as needed by RP on a Mac)
 export CC=gcc
 export PATH={path-to-your-pg_config-binary}:$PATH #obviously, put your own path in there. My export was export PATH=/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH 
+xcode-select --install
 pip install numpy
 ln -s `which g++` ./env/bin/g++-4.2 #Mac-specific error
 
