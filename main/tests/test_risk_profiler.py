@@ -90,13 +90,13 @@ class RiskProfilerTests(TestCase):
         settings.target = 49
         self.assertAlmostEqual(recommend_risk(settings), 0.12, 2)
 
-        # Even 10% goal is risky for a new and naive investor
+        # Even 10% goal isn't recommended for a new and naive investor
         settings.goal.account.primary_owner.net_worth = 100
         settings.target = 10
         client.risk_profile_responses.clear()
         client.risk_profile_responses.add(Fixture1.risk_profile_answer1b())
         client.risk_profile_responses.add(Fixture1.risk_profile_answer2b())
-        self.assertAlmostEqual(recommend_risk(settings), 0.2, 1)
+        self.assertAlmostEqual(recommend_risk(settings), 0, 1)
 
     def test_max_risk(self):
         goal = Fixture1.goal1()
@@ -118,9 +118,9 @@ class RiskProfilerTests(TestCase):
         client.risk_profile_responses.add(Fixture1.risk_profile_answer2c())
         self.assertEqual(max_risk(settings), 1.0)
 
-        # but if they are risky, new and unskilled, max risk is 0.1
+        # but if they are risky, new and unskilled, recommend no risk
         client.risk_profile_responses.clear()
         client.risk_profile_responses.add(Fixture1.risk_profile_answer1d())
         client.risk_profile_responses.add(Fixture1.risk_profile_answer2d())
-        self.assertAlmostEqual(recommend_risk(settings), 0.1, 1)
-        self.assertAlmostEqual(max_risk(settings), 0.1, 1)
+        self.assertAlmostEqual(recommend_risk(settings), 0, 1)
+        self.assertAlmostEqual(max_risk(settings), 0, 1)

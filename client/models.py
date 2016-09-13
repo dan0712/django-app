@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import PROTECT
-from django.db.models.aggregates import Avg
+from django.db.models.aggregates import Min, Max, Sum
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
@@ -184,12 +184,35 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         answers = self.current_risk_profile_responses
         if not answers: return None
 
-        scores = (answers.values('question', 'b_score', 'a_score', 's_score')
-            .aggregate(b_score=Avg('b_score'),a_score=Avg('a_score'), s_score=Avg('s_score'),))
+        scores = (answers.values('b_score', 'a_score', 's_score')
+            .aggregate(b_score=Sum('b_score'),a_score=Sum('a_score'), s_score=Sum('s_score')))
+
+        extents = (
+            RiskProfileAnswer.objects.filter(question__group=self.risk_profile_group)
+            .values('question').annotate(
+                min_b=Min('b_score'), max_b=Max('b_score'),
+                min_a=Min('a_score'), max_a=Max('a_score'),
+                min_s=Min('s_score'), max_s=Max('s_score'),
+            ).aggregate(
+                min_b_sum=Sum('min_b'), max_b_sum=Sum('max_b'),
+                min_a_sum=Sum('min_a'), max_a_sum=Sum('max_a'),
+                min_s_sum=Sum('min_s'), max_s_sum=Sum('max_s'),
+            )
+        )
+
+        ranges = {
+            'b': extents['max_b_sum'] - extents['min_b_sum'],
+            'a': extents['max_a_sum'] - extents['min_a_sum'],
+            's': extents['max_s_sum'] - extents['min_s_sum'],
+        }
+        # If the ranges are zero, then the questions are bad
+        if not (ranges['b'] and ranges['a'] and ranges['s']):
+            return None
+
         return (
-            scores['b_score'] / 9.0,
-            scores['a_score'] / 9.0,
-            scores['s_score'] / 9.0
+            (scores['b_score'] - extents['min_b_sum']) / ranges['b'],
+            (scores['a_score'] - extents['min_a_sum']) / ranges['a'],
+            (scores['s_score'] - extents['min_s_sum']) / ranges['s'],
         )
 
     def save(self, force_insert=False, force_update=False, using=None,
