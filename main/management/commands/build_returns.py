@@ -31,7 +31,7 @@ def first_consec_index(series):
         return series.index[len(series) - i]
 
 
-def get_prices(instrument, begin_date, end_date):
+def get_prices(instrument, begin_date, end_date, histogram=None):
     '''
     Returns cleaned weekday prices for the given instrument and date range.
     :param instrument:
@@ -46,7 +46,10 @@ def get_prices(instrument, begin_date, end_date):
     if isinstance(frame, QuerySet):
         frame = frame.to_timeseries(fieldnames=['price'], index='date')
 
-    frame = frame.reindex(pd.bdate_range(begin_date, end_date))
+    if histogram is None:
+        histogram = pd.bdate_range(begin_date, end_date)
+
+    frame = frame.reindex(histogram)
 
     # Remove negative prices and fill missing values
     # We replace negs with None so they are interpolated.
@@ -57,7 +60,7 @@ def get_prices(instrument, begin_date, end_date):
     return prices.interpolate(method='time', limit=2)
 
 
-def get_price_returns(instrument, begin_date, end_date):
+def get_price_returns(instrument, begin_date, end_date, histogram=None):
     """
     Get the longest consecutive daily returns series from the end date based of the availability of daily prices.
     :param instrument:
@@ -65,7 +68,7 @@ def get_price_returns(instrument, begin_date, end_date):
     :param end_date:
     :return:
     """
-    prices = get_prices(instrument, begin_date, end_date)
+    prices = get_prices(instrument, begin_date, end_date, histogram)
     consec = prices[prices.first_valid_index():prices.last_valid_index()]
     consec = consec[first_consec_index(consec):]
 
