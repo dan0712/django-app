@@ -14,7 +14,7 @@ from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
     PortfolioSet, Region, RetirementPlan, RetirementPlanATC, \
-    RetirementPlanBTC, Ticker, Transaction, User
+    RetirementPlanBTC, Ticker, Transaction, User, ExternalInstrument
 
 
 class Fixture1:
@@ -586,6 +586,24 @@ class Fixture1:
             'data_api_param': 'FUND4',
         }
         return Ticker.objects.get_or_create(symbol='TLT', defaults=params)[0]
+
+    @classmethod
+    def external_instrument1(cls):
+        params = {
+            'institution': ExternalInstrument.Institution.APEX.value,
+            'instrument_id': 'SPY_APEX',
+            'ticker': Fixture1.fund3()
+        }
+        return ExternalInstrument.objects.get_or_create(fund_id=1,defaults=params)[0]
+
+    @classmethod
+    def external_instrument2(cls):
+        params = {
+            'institution': ExternalInstrument.Institution.INTERACTIVE_BROKERS.value,
+            'instrument_id': 'SPY_IB',
+            'ticker': Fixture1.fund3()
+        }
+        return ExternalInstrument.objects.get_or_create(fund_id=2,defaults=params)[0]
 
     @classmethod
     def external_debt_1(cls):

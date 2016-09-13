@@ -85,10 +85,8 @@ def transform_execution_requests(execution_requests):
     :return:
     '''
     allocations = defaultdict(lambda: defaultdict(float))
-    for e in execution_requests:
-        mor = MarketOrderRequest.objects.get(execution_requests=e)
-        ib_account = mor.account.ib_account.ib_account
-        allocations[e.asset.symbol][ib_account] += e.volume
+    for e in execution_requests.select_related('order__account__ib_account__ib_account', 'asset__symbol'):
+        allocations[e.asset.symbol][e.order.account.ib_account.ib_account] += e.volume
     return allocations
 
 

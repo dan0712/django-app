@@ -14,7 +14,7 @@ from execution.end_of_day import get_execution_requests, transform_execution_req
 from execution.order.order import Order, OrderStatus
 from main.tests.fixture import Fixture1
 from execution.broker.interactive_brokers.end_of_day.end_of_day import create_django_executions
-
+from main.models import ExternalInstrument
 
 class BaseTest(TestCase):
 
@@ -228,6 +228,16 @@ class BaseTest(TestCase):
         self.assertTrue(executionDjango.volume == 5)
         self.assertTrue(executionDjango.amount == 50)
         self.assertTrue(executionDjango.executed == execution.time[-1])
+
+    def test_external_instrument(self):
+        Fixture1.external_instrument1()
+        Fixture1.external_instrument2()
+        instrument1 = ExternalInstrument.objects.get(institution=ExternalInstrument.Institution.APEX.value,
+                                                     ticker__symbol='SPY')
+        instrument2 = ExternalInstrument.objects.get(institution=ExternalInstrument.Institution.INTERACTIVE_BROKERS.value,
+                                                     ticker__symbol='SPY')
+        self.assertTrue(instrument1.instrument_id == 'SPY_APEX')
+        self.assertTrue(instrument2.instrument_id == 'SPY_IB')
 
 
 
