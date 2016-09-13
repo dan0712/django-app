@@ -36,6 +36,7 @@ from .management.commands.build_returns import get_price_returns
 from .managers import ExternalAssetQuerySet, \
     GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
 from .slug import unique_slugify
+from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger('main.models')
 
@@ -567,8 +568,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
         invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
 
+        # resending invitation
         if user:
-            invitation_url += "/" + str(user.pk) + "/" + user.client.primary_accounts.first().token
+            try:
+                invitation_url += "/" + str(user.pk) + "/" + user.client.primary_accounts.first().token
+            except ObjectDoesNotExist:
+                # client does not exist for this user
+                pass
         return invitation_url
 
     @staticmethod
