@@ -1,10 +1,15 @@
 import logging
-from django.db import transaction
 from functools import partial
 from logging import DEBUG, INFO, WARN, ERROR
-from time import sleep, strftime, time
-from client.models import ClientAccount
-from execution.broker.interactive_brokers import InteractiveBrokers
+from time import sleep
+
+from django.db import transaction
+from client.models import ClientAccount, IBAccount
+from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
+from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker
+import types
+from collections import defaultdict
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -23,12 +28,8 @@ logger = logging.getLogger('betasmartz.daily_process')
 logger.setLevel(logging.INFO)
 
 
-class Object(object):
-    pass
-
-
 def get_options():
-    opts = Object()
+    opts = types.SimpleNamespace()
     opts.verbose = 0
     return opts
 
@@ -72,24 +73,75 @@ def reconcile_cash_client_accounts():
                 print("exception")
 
 
-def main(options):
+def get_execution_requests():
+    ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)
+    return ers
+
+
+def transform_execution_requests(execution_requests):
+    '''
+    transform django ExecutionRequests into allocation object, which we will use to keep track of allocation fills
+    :param execution_requests: list of ExecutionRequest
+    :return:
+    '''
+    allocations = defaultdict(lambda: defaultdict(float))
+    for e in execution_requests.select_related('order__account__ib_account__ib_account', 'asset__symbol'):
+        allocations[e.asset.symbol][e.order.account.ib_account.ib_account] += e.volume
+    return allocations
+
+
+def example_usage_with_IB():
+    options = get_options()
     logging.root.setLevel(verbose_levels.get(options.verbose, ERROR))
     con = InteractiveBrokers()
     con.connect()
-    short_sleep()
     con.request_account_summary()
-    long_sleep()
-    ib_account_cash.update(con.ib_account_cash)
 
     con.request_market_depth('GOOG')
     while con.requesting_market_depth():
         short_sleep()
 
-    reconcile_cash_client_accounts()
+    long_sleep()
+    long_sleep()
+    long_sleep()
+
+    account_dict = dict()
+    account_dict['DU493341'] = 40
+    account_dict['DU493342'] = 60
+    profile = FAAccountProfile()
+    profile.append_share_allocation('AAPL', account_dict)
+
+    account_dict['DU493341'] = 60
+    account_dict['DU493342'] = 40
+    profile.append_share_allocation('MSFT', account_dict)
+    con.replace_profile(profile.get_profile())
+
+    #con.request_profile()
+    short_sleep()
+
+    order_id = con.make_order(ticker='MSFT', limit_price=57.57, quantity=100)
+    con.place_order(order_id)
+
+    order_id = con.make_order(ticker='AAPL', limit_price=107.59, quantity=-100)
+    con.place_order(order_id)
+
+    long_sleep()
+    con.current_time()
+
+    con.request_market_depth('GOOG')
+    while con.requesting_market_depth():
+        short_sleep()
+
+    short_sleep()
+
+    long_sleep()
+    long_sleep()
 
 
-if __name__ == '__main__':
-    #try:
-        main(get_options())
-    #except:
-        print("exception")
+'''
+class Command(BaseCommand):
+    help = 'execute orders'
+
+    def handle(self, *args, **options):
+        logger.setLevel(logging.DEBUG)
+'''

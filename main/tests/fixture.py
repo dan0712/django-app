@@ -14,7 +14,7 @@ from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
     PortfolioSet, Region, RetirementPlan, RetirementPlanATC, \
-    RetirementPlanBTC, Ticker, Transaction, User
+    RetirementPlanBTC, Ticker, Transaction, User, ExternalInstrument
 
 
 class Fixture1:
@@ -25,6 +25,14 @@ class Fixture1:
             'risk_free_rate': 0.02,
         }
         return PortfolioSet.objects.get_or_create(id=1, defaults=params)[0]
+
+    @classmethod
+    def portfolioset2(cls):
+        params = {
+            'name': 'portfolioset2',
+            'risk_free_rate': 0.02,
+        }
+        return PortfolioSet.objects.get_or_create(id=2, defaults=params)[0]
 
     @classmethod
     def firm1(cls):
@@ -290,12 +298,20 @@ class Fixture1:
         Fixture1.personal_account1().primary_owner.risk_profile_responses.add(Fixture1.risk_profile_answer2a())
 
     @classmethod
-    def ib_account(cls) -> IBAccount:
+    def ib_account1(cls) -> IBAccount:
         params = {
             'ib_account': 'DU299694',
             'bs_account': Fixture1.personal_account1()
         }
-        return IBAccount.objects.get_or_create(defaults=params)[0]
+        return IBAccount.objects.get_or_create(id=1, defaults=params)[0]
+
+    @classmethod
+    def ib_account2(cls) -> IBAccount:
+        params = {
+            'ib_account': 'DU299695',
+            'bs_account': Fixture1.personal_account2()
+        }
+        return IBAccount.objects.get_or_create(id=2, defaults=params)[0]
 
     @classmethod
     def personal_account1(cls) -> ClientAccount:
@@ -308,9 +324,25 @@ class Fixture1:
         return ClientAccount.objects.get_or_create(id=1, defaults=params)[0]
 
     @classmethod
+    def personal_account2(cls) -> ClientAccount:
+        params = {
+            'account_type': ACCOUNT_TYPE_PERSONAL,
+            'primary_owner': Fixture1.client2(),
+            'default_portfolio_set': Fixture1.portfolioset2(),
+            'confirmed': True,
+        }
+        return ClientAccount.objects.get_or_create(id=2, defaults=params)[0]
+
+    @classmethod
     def metric_group1(cls):
         return GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
                                                      name='metricgroup1')[0]
+
+    @classmethod
+    def metric_group2(cls):
+        return GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+                                                     name='metricgroup2')[0]
+
 
     @classmethod
     def settings1(cls):
@@ -321,8 +353,22 @@ class Fixture1:
                                                  rebalance=False)[0]
 
     @classmethod
+    def settings2(cls):
+        return GoalSetting.objects.get_or_create(target=100000,
+                                                 completion=datetime.date(2000, 1, 1),
+                                                 hedge_fx=False,
+                                                 metric_group=Fixture1.metric_group2(),
+                                                 rebalance=False)[0]
+
+    @classmethod
     def goal_type1(cls):
         return GoalType.objects.get_or_create(name='goaltype1',
+                                              default_term=5,
+                                              risk_sensitivity=7.0)[0]
+
+    @classmethod
+    def goal_type2(cls):
+        return GoalType.objects.get_or_create(name='goaltype2',
                                               default_term=5,
                                               risk_sensitivity=7.0)[0]
 
@@ -333,6 +379,14 @@ class Fixture1:
                                           type=Fixture1.goal_type1(),
                                           portfolio_set=Fixture1.portfolioset1(),
                                           selected_settings=Fixture1.settings1())[0]
+
+    @classmethod
+    def goal2(cls):
+        return Goal.objects.get_or_create(account=Fixture1.personal_account2(),
+                                          name='goal2',
+                                          type=Fixture1.goal_type2(),
+                                          portfolio_set=Fixture1.portfolioset2(),
+                                          selected_settings=Fixture1.settings2())[0]
 
     @classmethod
     def settings_event1(cls):
@@ -373,6 +427,21 @@ class Fixture1:
             i.created = timezone.make_aware(datetime.datetime(2000, 1, 1))
             i.save()
 
+        return i
+
+
+    @classmethod
+    def transaction2(cls):
+        i, c = Transaction.objects.get_or_create(reason=Transaction.REASON_ORDER,
+                                                 to_goal=Fixture1.goal1(),
+                                                 amount=3000,
+                                                 status=Transaction.STATUS_PENDING,
+                                                 created=timezone.make_aware(datetime.datetime(2000, 1, 1))
+                                                 )
+
+        if c:
+            i.created = timezone.make_aware(datetime.datetime(2000, 1, 1))
+            i.save()
         return i
 
     @classmethod
@@ -487,6 +556,54 @@ class Fixture1:
             'data_api_param': 'FUND2',
         }
         return Ticker.objects.get_or_create(symbol='TSTSYMBOL2', defaults=params)[0]
+
+    @classmethod
+    def fund3(cls):
+        params = {
+            'display_name': 'Test Fund 2',
+            'url': 'nowhere.com/2',
+            'currency': 'AUD',
+            'region': Fixture1.region1(),
+            'ordering': 1,
+            'asset_class': Fixture1.asset_class1(),
+            'benchmark': Fixture1.market_index2(),
+            'data_api': 'portfolios.api.bloomberg',
+            'data_api_param': 'FUND3',
+        }
+        return Ticker.objects.get_or_create(symbol='SPY', defaults=params)[0]
+
+    @classmethod
+    def fund4(cls):
+        params = {
+            'display_name': 'Test Fund 2',
+            'url': 'nowhere.com/2',
+            'currency': 'AUD',
+            'region': Fixture1.region1(),
+            'ordering': 1,
+            'asset_class': Fixture1.asset_class1(),
+            'benchmark': Fixture1.market_index2(),
+            'data_api': 'portfolios.api.bloomberg',
+            'data_api_param': 'FUND4',
+        }
+        return Ticker.objects.get_or_create(symbol='TLT', defaults=params)[0]
+
+    @classmethod
+    def external_instrument1(cls):
+        params = {
+            'institution': ExternalInstrument.Institution.APEX.value,
+            'instrument_id': 'SPY_APEX',
+            'ticker': Fixture1.fund3()
+        }
+        return ExternalInstrument.objects.get_or_create(id=1,defaults=params)[0]
+
+    @classmethod
+    def external_instrument2(cls):
+        params = {
+            'institution': ExternalInstrument.Institution.INTERACTIVE_BROKERS.value,
+            'instrument_id': 'SPY_IB',
+            'ticker': Fixture1.fund3()
+        }
+        return ExternalInstrument.objects.get_or_create(id=2,defaults=params)[0]
 
     @classmethod
     def external_debt_1(cls):
