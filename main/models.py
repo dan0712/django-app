@@ -946,7 +946,7 @@ class ExternalInstrument(models.Model):
         INTERACTIVE_BROKERS = 1
 
     institution = models.IntegerField(choices=Institution.choices(), default=Institution.APEX.value)
-    instrument_id = models.CharField(max_length=10, blank=False,null=False,unique=True)
+    instrument_id = models.CharField(max_length=10, blank=False,null=False)
     ticker = models.ForeignKey('Ticker', related_name='external_instruments', on_delete=PROTECT)
 
     class Meta:
