@@ -7,6 +7,7 @@ Ubuntu non-docker install instructions
 
 ```sh
 sudo apt install python3.5 pip
+sudo pip3 install --upgrade setuptools==20.7.0
 sudo pip3 install virtualenv
 cd <repository folder>
 virtualenv venv
@@ -25,12 +26,16 @@ source env/bin/activate # run virtual env
 #ENVIRONMENT SETUP (as needed by RP on a Mac)
 export CC=gcc
 export PATH={path-to-your-pg_config-binary}:$PATH #obviously, put your own path in there. My export was export PATH=/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH 
+xcode-select --install
 pip install numpy
 ln -s `which g++` ./env/bin/g++-4.2 #Mac-specific error
 
 #CHANGE FILE: Open ./devop/backend_base/requirements/base.txt
 # and alter the numpy line to read
 numpy==1.10.4
+
+# Need to upgrade setuptools prior to requirements file
+pip install --upgrade setuptools==20.7.0
 
 #PACKAGE INSTALL
 pip install -r devop/backend_base/requirements/dev.txt # - install packages

@@ -39,7 +39,7 @@ INSTALLED_APPS = (
     'compat',
     'pages',
 
-    'notifications', # move to django-notifications-hq>=1.0 after fixing 
+    'notifications', # move to django-notifications-hq>=1.0 after fixing
     'pinax.eventlog',  # For our activity tracking
 
     'rest_framework',
@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'support',
     'advisors',
     'portfolios',
+    #'statements', # BREAKING: weasyprint doesnt agree with OSX
     'swift',
 )
 
