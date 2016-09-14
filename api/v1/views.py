@@ -43,11 +43,12 @@ class MultipleSerializersModelViewMixin(object):
         Let to override default serializer passing it as an extra param.
         """
         serializer_class = kwargs.pop('serializer_class', None)
-        if hasattr(self, 'serializer_class'):
-            serializer_class = self.serializer_class
 
-        if hasattr(self, 'get_serializer_class'):
-            serializer_class = self.get_serializer_class() or serializer_class
+        if not serializer_class and hasattr(self, 'get_serializer_class'):
+            serializer_class = self.get_serializer_class()
+
+        if not serializer_class and hasattr(self, 'serializer_class'):
+            serializer_class = self.serializer_class
 
         if hasattr(self, 'get_serializer_context'):
             kwargs['context'] = self.get_serializer_context()
