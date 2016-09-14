@@ -57,11 +57,6 @@ class GoalSettingRiskProfile(object):
         else: B, A, S = scores
         worth_score = self.get_worth_score()
         if worth_score:
-            # Multiply the portfolio ratio versus their client's ability
-            # I decided to multiply here because it heuristically makes sense;
-            # "A goal's risk is a *factor* of your ability and worth_score"
-            # rather than
-            # "A goal's risk is the *lesser* of your ability and worth_score"
             A = min(worth_score, A)
         return B, A, S
 
