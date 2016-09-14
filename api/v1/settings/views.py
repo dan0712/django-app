@@ -16,7 +16,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
     """
     Experimental
     """
-    # serializer_class = serializers.SettingsSerializer
+    serializer_class = serializers.SettingsSerializer
     permission_classes = (
         IsAdvisorOrClient,
     )

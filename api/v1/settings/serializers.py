@@ -1,10 +1,16 @@
 from rest_framework import serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import AssetClass, Ticker, GoalType, ActivityLog
+from main.models import AssetClass, Ticker, GoalType, ActivityLog, GoalSetting
 from client.models import RiskProfileGroup, RiskProfileQuestion, \
     RiskProfileAnswer
 
+class SettingsSerializer(serializers.ModelSerializer):
+    """
+    Experimental
+    """
+    class Meta:
+        model = GoalSetting
 
 class GoalTypeListSerializer(serializers.ModelSerializer):
     """

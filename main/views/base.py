@@ -92,3 +92,4 @@ class AdminView(View):
         if not request.user.is_staff:
             raise PermissionDenied()
         return super(AdminView, self).dispatch(request, *args, **kwargs)
+
