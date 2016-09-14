@@ -108,7 +108,15 @@ urlpatterns = patterns(
 if settings.DEBUG:
     urlpatterns += patterns(
         '',
+        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    )
+
+
+media_storage = getattr(settings, 'DEFAULT_FILE_STORAGE', None)
+if settings.DEBUG and media_storage != 'swift.storage.SwiftStorage':
+    urlpatterns += patterns(
+        '',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.MEDIA_ROOT,
           'show_indexes': True}),
-        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')), )
+    )
