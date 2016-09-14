@@ -59,6 +59,8 @@ urlpatterns = patterns(
     url(r'^firm/', include(urlpatterns_firm, namespace='firm')),
     # Client views
     url(r'^client/', include('client.urls', namespace='client', app_name='client')),
+    # Client statements
+    url(r'^statements/', include('statements.urls', namespace='statements', app_name='statements')),
     # Advisor views
     url(r'^advisor/', include('advisors.urls', namespace='advisor', app_name='advisors')),
 
@@ -106,7 +108,15 @@ urlpatterns = patterns(
 if settings.DEBUG:
     urlpatterns += patterns(
         '',
+        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    )
+
+
+media_storage = getattr(settings, 'DEFAULT_FILE_STORAGE', None)
+if settings.DEBUG and media_storage != 'swift.storage.SwiftStorage':
+    urlpatterns += patterns(
+        '',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.MEDIA_ROOT,
           'show_indexes': True}),
-        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')), )
+    )

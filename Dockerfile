@@ -8,7 +8,7 @@ RUN apt-get update -y &&\
     rm -rf /var/lib/apt/lists/*
 
 # upgrade pip
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools==20.7.0
 
 # We need to put the numpy here before installing the main requirements.txt, as the cvxpy dependency somehow isn't working properly
 # cache numpy and requirements installation to docker image

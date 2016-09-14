@@ -7,6 +7,7 @@ Ubuntu non-docker install instructions
 
 ```sh
 sudo apt install python3.5 pip
+sudo pip3 install --upgrade setuptools==20.7.0
 sudo pip3 install virtualenv
 cd <repository folder>
 virtualenv venv
@@ -18,6 +19,8 @@ Non-Docker installation instructions (MacOS):
 
 ```sh
 brew install python3 # install python3.5
+brew install cairo pango gdk-pixbuf libxml2 libxslt libffi # needed for PDF generation
+xcode-select --install # needed for PDF generation
 export PATH=${PATH}:/usr/local/Cellar/python3/3.5.1/bin # check the path
 pyvenv-3.5 env # create virtual env
 source env/bin/activate # run virtual env
@@ -31,6 +34,9 @@ ln -s `which g++` ./env/bin/g++-4.2 #Mac-specific error
 #CHANGE FILE: Open ./devop/backend_base/requirements/base.txt
 # and alter the numpy line to read
 numpy==1.10.4
+
+# Need to upgrade setuptools prior to requirements file
+pip install --upgrade setuptools==20.7.0
 
 #PACKAGE INSTALL
 pip install -r devop/backend_base/requirements/dev.txt # - install packages

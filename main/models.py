@@ -36,6 +36,7 @@ from .management.commands.build_returns import get_price_returns
 from .managers import ExternalAssetQuerySet, \
     GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
 from .slug import unique_slugify
+from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger('main.models')
 
@@ -567,8 +568,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
         invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
 
+        # resending invitation
         if user:
-            invitation_url += "/" + str(user.pk) + "/" + user.client.primary_accounts.first().token
+            try:
+                invitation_url += "/" + str(user.pk) + "/" + user.client.primary_accounts.first().token
+            except ObjectDoesNotExist:
+                # client does not exist for this user
+                pass
         return invitation_url
 
     @staticmethod
@@ -940,6 +946,19 @@ class MarketIndex(FinancialInstrument):
         return get_price_returns(self, start_date, end_date)
 
 
+class ExternalInstrument(models.Model):
+    class Institution(ChoiceEnum):
+        APEX = 0
+        INTERACTIVE_BROKERS = 1
+
+    institution = models.IntegerField(choices=Institution.choices(), default=Institution.APEX.value)
+    instrument_id = models.CharField(max_length=10, blank=False,null=False)
+    ticker = models.ForeignKey('Ticker', related_name='external_instruments', on_delete=PROTECT)
+
+    class Meta:
+        unique_together = (('institution', 'instrument_id'), ('institution', 'ticker'))
+
+
 class Ticker(FinancialInstrument):
     symbol = models.CharField(
         max_length=10,
@@ -969,6 +988,7 @@ class Ticker(FinancialInstrument):
                                    object_id_field='instrument_object_id')
 
     # Also may have 'features' property from the AssetFeatureValue model.
+    # also has external_instruments foreign key - to get instrument_id per institution
 
     def __str__(self):
         return self.symbol
@@ -2070,7 +2090,7 @@ class ExecutionRequest(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        if not self.account.confirmed:
+        if not self.order.account.confirmed:
             raise ValidationError('Account is not verified.')
         return super(ExecutionRequest, self).save(force_insert, force_update,
                                                   using, update_fields)

@@ -206,25 +206,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             scores['s_score'] / extents['max_s_sum'],
         )
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        create_personal_account = False
-        if self.pk is None:
-            create_personal_account = True
-
-        super(Client, self).save(force_insert, force_update, using,
-                                 update_fields)
-
-        if create_personal_account:
-            new_ac = ClientAccount(
-                primary_owner=self,
-                account_type=constants.ACCOUNT_TYPE_PERSONAL,
-                default_portfolio_set=self.advisor.default_portfolio_set,
-            )
-            new_ac.save()
-            new_ac.remove_from_group()
-
-
 class IBAccount(models.Model):
     '''
     Specification of Interactive Brokers Account
@@ -450,9 +431,7 @@ class ClientAccount(models.Model):
 
     @property
     def account_type_name(self):
-        for at in constants.ACCOUNT_TYPES:
-            if at[0] == self.account_name:
-                return at[1]
+        return constants.ACCOUNT_TYPES[self.account_type][1]
 
     @property
     def on_track(self):

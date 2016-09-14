@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+<title>SOA</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body bgcolor="#A0A0A0" vlink="blue" link="blue">
+<!-- Page 1 -->
+<a name="1"></a>
+<style type="text/css">
+<!--
+	p {margin: 0; padding: 0;}	.ft00{font-size:12px;font-family:Times;color:#000000;}
+	.ft01{font-size:14px;font-family:Times;color:#000000;}
+	.ft02{font-size:9px;font-family:Times;color:#000000;}
+	.ft03{font-size:9px;font-family:Times;color:#000000;}
+	.ft04{font-size:17px;font-family:Times;color:#006cb0;}
+	.ft05{font-size:12px;font-family:Times;color:#006cb0;}
+	.ft06{font-size:9px;font-family:Times;color:#808285;}
+	.ft07{font-size:9px;font-family:Times;color:#808285;}
+	.ft08{font-size:9px;font-family:Times;color:#1a6fb8;}
+	.ft09{font-size:12px;line-height:20px;font-family:Times;color:#000000;}
+	.ft010{font-size:12px;line-height:20px;font-family:Times;color:#006cb0;}
+-->
+.dom-body .page-div {
+    background: white;
+    padding: 100px 0 0 100px;;
+}
+.dom-body.borders .page-div {
+    border: red 1px solid;
+}
+.dom-body.borders .bgimg {
+    border: blue 1px dashed;
+}
+
+.page-content {
+    position: relative;
+}
+
+.page-div {
+position:relative;
+width:725px;
+height:900px;
+}
+.page-div .bgimg {
+    width:700px;
+    height:900px;
+    position:absolute;
+    top: -20px;
+    left: 0;
+}
+</style>
+<div id="page1-div" class="page-div">
+    <div class="page-content">
+    <img class="bgimg" src="{% static 'statements/SOA001.png' %}" />
+<p style="position:absolute;top:0;right:40px;white-space:nowrap" class="ft09">
+<img src="{{firm.colored_logo}}" style="max-width: 200px; max-height: 150px" />
+
+
+</p>
+<p style="position:absolute;top:75px;left:0px;white-space:nowrap" class="ft00">
+
+{{statement.create_date|date:"b d Y"|upper}}
+</p>
+
+<p style="position:absolute;top:188px;left:0px;white-space:nowrap" class="ft09">
+
+{{owner.full_name|upper}}<br/>
+
+{{owner.residential_address.address|upper}}<br/>
+{{owner.residential_address.post_code|upper}}
+{{owner.residential_address.region.name|upper}}
+{{owner.residential_address.global.name|upper}}<br/></p>
+<p style="position:absolute;top:302px;left:0px;white-space:nowrap" class="ft00">
+Dear {{owner.full_name}},</p>
+<p style="position:absolute;top:345px;left:0px;white-space:nowrap" class="ft01">
+<b>Make sure you're headed toward your ideal retirement&#160;</b></p>
+<p style="position:absolute;top:367px;left:0px;white-space:nowrap" class="ft01">
+<b>outcome.</b></p>
+<p style="position:absolute;top:400px;left:0px;white-space:nowrap" class="ft00">
+Thank you for the opportunity to discuss your superannuation and to&#160;</p>
+<p style="position:absolute;top:420px;left:0px;white-space:nowrap" class="ft00">
+help you develop a plan to get&#160;on track for the future.</p>
+<p style="position:absolute;top:452px;left:0px;white-space:nowrap" class="ft09">
+Following our discussion, we're pleased to provide your&#160;Retirement&#160;Plan<br/>
+Statement&#160;of Advice (SOA), which details our advice. This document&#160;</p>
+<p style="position:absolute;top:492px;left:0px;white-space:nowrap" class="ft09">
+should help you understand how you're placed to meet&#160;your dream&#160;<br/>
+retirement&#160;outcome.</p>
+<p style="position:absolute;top:544px;left:0px;white-space:nowrap" class="ft09">
+In preparing this document&#160;we have taken into account&#160;the information&#160;<br/>
+you provided, together with your individual financial objectives and&#160;<br/>
+goals. &#160;In particular you told us that:</p>
+<p style="position:absolute;top:610px;left:24px;white-space:nowrap" class="ft00">
+•&#160;{{account.primary_owner.first_name}}, you want&#160;to retire soon and start&#160;using your</p>
+<p style="position:absolute;top:630px;left:41px;white-space:nowrap" class="ft00">
+superannuation&#160;as income.</p>
+<p style="position:absolute;top:650px;left:24px;white-space:nowrap" class="ft00">
+•&#160;You want&#160;to know how long your money will last&#160;through</p>
+<p style="position:absolute;top:670px;left:41px;white-space:nowrap" class="ft00">
+retirement.</p>
+<p style="position:absolute;top:691px;left:24px;white-space:nowrap" class="ft00">
+•&#160;You want&#160;to know what&#160;type of lifestyle you’ll have in retirement.</p>
+<p style="position:absolute;top:722px;left:0px;white-space:nowrap" class="ft09">
+Full details of how we meet&#160;these objectives and goals can be found&#160;<br/>
+within the Recommendations section of this Statement&#160;of Advice (SOA).</p>
+<p style="position:absolute;top:62px;left:526px;white-space:nowrap" class="ft02">
+{{advisor.name}}
+<br />
+{{firm}}
+<br />
+{{firm.firm_details.office_address.address}}
+<br />
+{{firm.firm_details.office_address.post_code}}
+{{firm.firm_details.office_address.region.name}}
+{{firm.firm_details.office_address.global.name}}
+<br />
+</p>
+<p style="position:absolute;top:186px;left:529px;white-space:nowrap" class="ft04">
+<b>Dream</b></p>
+<p style="position:absolute;top:213px;left:529px;white-space:nowrap" class="ft010">
+It&#160;all starts with a dream&#160;<br/>
+for life after work. We'll&#160;</p>
+<p style="position:absolute;top:254px;left:529px;white-space:nowrap" class="ft010">
+talk to members first&#160;<br/>
+about&#160;where they want&#160;to&#160;<br/>
+be so we can find the&#160;</p>
+<p style="position:absolute;top:314px;left:529px;white-space:nowrap" class="ft010">
+best&#160;way to get&#160;them&#160;<br/>
+there.</p>
+<p style="position:absolute;top:388px;left:529px;white-space:nowrap" class="ft04">
+<b>Plan</b></p>
+<p style="position:absolute;top:416px;left:529px;white-space:nowrap" class="ft010">
+Dreams without&#160;a plan&#160;<br/>
+are just&#160;wishes. Members&#160;<br/>
+unique retirement&#160;dreams&#160;</p>
+<p style="position:absolute;top:476px;left:529px;white-space:nowrap" class="ft010">
+need a plan that's made&#160;<br/>
+just&#160;for them&#160;-&#160;a personal,&#160;<br/>
+ongoing plan that&#160;<br/>
+changes as their life does.</p>
+<p style="position:absolute;top:591px;left:529px;white-space:nowrap" class="ft04">
+<b>Achieve</b></p>
+<p style="position:absolute;top:618px;left:529px;white-space:nowrap" class="ft010">
+Success doesn't&#160;happen&#160;<br/>
+by chance.<br/>
+</div>>
+</div>
+</body>
+<script>
+(function() {
+document.body.className = "dom-body"
+if(window.location.hash == '#borders')
+    document.body.className = "dom-body borders"
+})();
+</script>
+</html>
