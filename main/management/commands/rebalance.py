@@ -187,7 +187,14 @@ def perturbate_risk(min_weights, removals):
 
 
 def perturbate_withdrawal(perf_groups):
+
     """
+    use specific lots technique - so perf. groups will not help, but we will need to calculate lots for current holding, calculate specific lots for holding
+     and then start selling largest tax gain to largest tax loss (largest losers to largest winners)
+     To use specific lots technique, we need to know tax burden 1Y> and 1Y<, e.g. 28% vs 15%
+
+     specific lots vs. getting close to portfolio mix (in active_settings.portfolio.portfolio_items vs current holdings?)
+-------------------------------------------------------------------------------
     - For each performance group, starting from the top, remove assets until we have a <1 min weight sum scenario.
         - Calculate the drift due to portfolio mix metrics using current minimums
         - while we have overweight drift due to portfolio mix metrics:
@@ -265,6 +272,16 @@ def perturbate(goal, idata, data_provider, execution_provider):
     min_weights = get_largest_min_weight_per_asset(held_weights=held_weights, tax_weights=tax_min_weights)
     opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider=data_provider)
     weights = optimise_up(opt_inputs, min_weights)
+
+    if weights is None:
+        # relax constraints and allow to sell tax winners
+        tax_min_weights = execution_provider.get_asset_weights_without_tax_winners(held_weights=held_weights,
+                                                                                   goal=goal,
+                                                                                   tax_less1y=0.1,
+                                                                                   tax_more1y=0.2)
+                                                       # data_provider.get_current_date() for backtester
+        min_weights = get_largest_min_weight_per_asset(held_weights=held_weights, tax_weights=tax_min_weights)
+        weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:
         # We have a withdrawal or mix drift, perturbate.

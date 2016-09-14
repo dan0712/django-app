@@ -21,6 +21,9 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
         ExecutionRequestMock.reason = Reason(reason)
         return ExecutionRequestMock
 
+    def get_asset_weights_without_tax_winners(self, goal):
+        raise NotImplementedError()
+
     def create_execution_request(self, reason, goal, asset, volume, order, limit_price):
         execution_request = ExecutionRequestMock(reason, goal, asset, volume, order)
         self.execution_requests.append(execution_request)

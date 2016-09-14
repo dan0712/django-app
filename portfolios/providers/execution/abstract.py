@@ -22,6 +22,10 @@ class State(ChoiceEnum):
 class ExecutionProviderAbstract(ABC):
 
     @abstractmethod
+    def get_asset_weights_without_tax_winners(self, goal):
+        raise NotImplementedError()
+
+    @abstractmethod
     def get_execution_request(self, reason):
         raise NotImplementedError()
 
