@@ -762,18 +762,6 @@ def calculate_portfolios(setting, data_provider, execution_provider):
                 if not weights.any():
                     raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(setting))
 
-                # Find the optimal orderable weights.
-                weights, cost = make_orderable(weights,
-                                               cost,
-                                               xs,
-                                               sigma,
-                                               mu,
-                                               lam,
-                                               constraints,
-                                               setting,
-                                               # We use the current balance (including pending deposits).
-                                               setting.goal.current_balance,
-                                               setting_instruments['price'])
                 # Convert to our statistics for our portfolio.
                 portfolios.append((risk_score,
                                    get_portfolio_stats(setting_instruments,
