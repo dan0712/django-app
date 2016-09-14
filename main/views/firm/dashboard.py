@@ -125,7 +125,7 @@ class SupervisorUserFormEdit(forms.ModelForm):
 class FirmSupervisorsCreate(CreateView, LegalView):
     template_name = "firm/supervisors-edit.html"
     form_class = SupervisorUserForm
-    success_url = "/firm/users"
+    success_url = "/firm/supervisors"
 
     def get_success_url(self):
         messages.success(self.request, "New supervisor created successfully")
