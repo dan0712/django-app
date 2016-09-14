@@ -57,7 +57,7 @@
             {% for account in client.accounts.all %}
               <tr>
                 <td>{{ account.account_type_name }}</td>
-                <td>{{ account.account_name }}</td>
+                <td>{{ account.name }}</td>
                 <td>{{ account.total_balance|currency }}</td>
                 <td>{{ account.total_earnings|currency }}</td>
                 <td>{{ account.custom_fee|currency }}</td>
