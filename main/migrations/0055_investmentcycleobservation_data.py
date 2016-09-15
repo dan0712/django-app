@@ -21,7 +21,7 @@ def load_cycle_data(apps, schema_editor):
     with open(cycle_var_path) as f:
         reader = csv.reader(f)
         for row in reader:
-            _, created = InvestmentCycleObservation.get_or_create(
+            _, created = InvestmentCycleObservation.objects.get_or_create(
                 as_of=row[0],
                 recorded=datetime(year=2016, day=15, month=9),
                 cycle=row[1],
