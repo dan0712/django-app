@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
-from main.models import Goal, Transaction
+from main.models import Goal, Transaction, Position
 from main.tests.fixture import Fixture1
 
 
@@ -65,11 +65,17 @@ class GoalTotalReturnTest(TestCase):
                     'to_goal': self.goal,
                 })
             Transaction.objects.create(**data)
+            self.goal.cash_balance = self.goal.requested_incomings - self.goal.requested_outgoings
 
     def total_return(self, days, closing_balance):
         self.goal.cash_balance = closing_balance
         with mock.patch('main.finance.now', self.mocked_date(days)):
             return self.goal.total_return
+
+    def closing_balance(self, days):
+        with mock.patch.object(timezone, 'now', self.mocked_date(days)):
+            return self.goal.total_balance
+
 
     def test_zero_balance(self):
         goal = Fixture1.goal1()
@@ -134,3 +140,36 @@ class GoalTotalReturnTest(TestCase):
         self.goal_opening(1000)
         total_return = self.total_return(8 * 30, 900)  # 8m
         self.assertEqual(total_return, -0.14815060547446401)
+
+    def test_amount_achieved(self):
+        """
+        ensure completion does not affect a goal's ability to
+        continue with the same parameters
+        """
+        self.goal_opening(10000)
+        with mock.patch.object(timezone, 'now', self.mocked_date(0)):
+            self.assertEqual(self.goal.amount_achieved, False)
+
+        self.goal_transaction(90000, 365)
+        with mock.patch.object(timezone, 'now', self.mocked_date(365)):
+            self.assertEqual(self.goal.amount_achieved, True)
+
+        self.goal_transaction(50000, 365*2)
+        with mock.patch.object(timezone, 'now', self.mocked_date(365)):
+            self.assertEqual(self.goal.amount_achieved, True)
+
+    def test_zero_target(self):
+        self.goal_opening(10000)
+        self.load_fixture('main/tests/fixtures/transactions.json')
+        self.goal.selected_settings.target = 0
+        self.goal.selected_settings.completion_date = self.goal.created
+        self.assertEqual(self.goal.amount_achieved, True)
+        self.assertEqual(self.goal.on_track, True)
+
+    def test_goal_completion(self):
+        self.goal_opening(100)
+        self.goal_transaction(200, 365)
+        self.goal.selected_settings.target = 300
+        with mock.patch.object(timezone, 'now', self.mocked_date(365)):
+            self.assertEqual(self.goal.amount_achieved, True)
+            # What can we do here to test portfolio optimisation? -- Lee
