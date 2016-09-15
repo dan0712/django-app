@@ -31,22 +31,22 @@ def first_consec_index(series):
         return series.index[len(series) - i]
 
 
-def get_prices(instrument, begin_date, end_date):
+def get_prices(instrument, dates):
     '''
     Returns cleaned weekday prices for the given instrument and date range.
     :param instrument:
-    :param begin_date:
-    :param end_date:
+    :param dates:
     :return:
     '''
     # Get the weekday prices for the instrument
-    frame = instrument.daily_prices.filter(date__range=(begin_date - timedelta(days=1), end_date))
+    frame = instrument.daily_prices.filter(
+        date__range=(dates[0] - timedelta(days=1), dates[-1]))
 
     #to_timeseries only works with django-pandas from QuerySet. We might be sending DataFrame already with different data_provider
     if isinstance(frame, QuerySet):
         frame = frame.to_timeseries(fieldnames=['price'], index='date')
 
-    frame = frame.reindex(pd.bdate_range(begin_date, end_date))
+    frame = frame.reindex(dates)
 
     # Remove negative prices and fill missing values
     # We replace negs with None so they are interpolated.
@@ -57,15 +57,14 @@ def get_prices(instrument, begin_date, end_date):
     return prices.interpolate(method='time', limit=2)
 
 
-def get_price_returns(instrument, begin_date, end_date):
+def get_price_returns(instrument, dates):
     """
     Get the longest consecutive daily returns series from the end date based of the availability of daily prices.
     :param instrument:
-    :param begin_date:
-    :param end_date:
+    :param dates:
     :return:
     """
-    prices = get_prices(instrument, begin_date, end_date)
+    prices = get_prices(instrument, dates)
     consec = prices[prices.first_valid_index():prices.last_valid_index()]
     consec = consec[first_consec_index(consec):]
 
@@ -88,31 +87,29 @@ def get_price_returns(instrument, begin_date, end_date):
     return rets
 
 
-def build_fund_returns(begin_date, end_date):
+def build_fund_returns(dates):
     """
     Build the returns for the funds in our system between the given dates
-    :param begin_date:
-    :param end_date:
+    :param dates:
     :return:
     """
     pass
     #return pd.DataFrame({index.id: get_returns(index) for  in Index.objects.all()})
 
 
-def build_index_returns(begin_date, end_date):
+def build_index_returns(dates):
     """
     Build the returns for the indices in our system between the given dates
-    :param begin_date:
-    :param end_date:
+    :param dates:
     :return:
     """
     pass
     #return pd.DataFrame({index.id: get_returns(index) for index in Index.objects.all()})
 
 
-def build_returns(begin_date, end_date):
-    build_fund_returns(begin_date, end_date)
-    build_index_returns(begin_date, end_date)
+def build_returns(dates):
+    build_fund_returns(dates)
+    build_index_returns(dates)
 
 
 def parse_date(val):
@@ -127,4 +124,5 @@ class Command(BaseCommand):
         parser.add_argument('end_date', type=parse_date, help='Inclusive end date to load the data for. (YYYYMMDD)')
 
     def handle(self, *args, **options):
-        build_returns(options['begin_date'], options['end_date'])
+        dates = pd.bdate_range(optinos['begin_date'], options['end_date'])
+        build_returns(dates)
