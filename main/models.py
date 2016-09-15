@@ -936,14 +936,14 @@ class MarketIndex(FinancialInstrument):
                                   content_type_field='instrument_content_type',
                                   object_id_field='instrument_object_id')
 
-    def get_returns(self, start_date, end_date):
+    def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
         :param start_date:
         :param end_date:
         :return: A pandas time-series of the returns
         """
-        return get_price_returns(self, start_date, end_date)
+        return get_price_returns(self, dates)
 
 
 class ExternalInstrument(models.Model):
@@ -1027,14 +1027,14 @@ class Ticker(FinancialInstrument):
 
         return v
 
-    def get_returns(self, start_date, end_date):
+    def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
         :param start_date:
         :param end_date:
         :return: A pandas time-series of the returns
         """
-        return get_price_returns(self, start_date, end_date)
+        return get_price_returns(self, dates)
 
     def save(self,
              force_insert=False,
