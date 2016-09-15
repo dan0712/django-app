@@ -232,9 +232,25 @@ class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(ClientAccountFactory)
 
 
+class GoalMetricFactory(factory.django.DjangoModelFactory):
+    """
+    By default create a random risk score metric.
+    """
+    class Meta:
+        model = GoalMetric
+
+    type = factory.Sequence(lambda n: random.randint(0, 1))
+    comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
+    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+    rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
 class GoalMetricGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = GoalMetricGroup
+
+    metrics = factory.RelatedFactory(GoalMetricFactory, 'group')
 
 
 class GoalSettingFactory(factory.django.DjangoModelFactory):
@@ -424,16 +440,3 @@ class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
     feature = factory.SubFactory(AssetFeatureFactory)
 
-
-class GoalMetricFactory(factory.django.DjangoModelFactory):
-    """
-    By default create a random risk score metric.
-    """
-    class Meta:
-        model = GoalMetric
-    group = factory.SubFactory(GoalMetricGroupFactory)
-    type = GoalMetric.METRIC_TYPE_RISK_SCORE
-    comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
-    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
-    rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
-    configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))

@@ -357,7 +357,6 @@ class GoalTests(APITestCase):
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
         # Create a risk score metric for the settings
-        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
         goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
