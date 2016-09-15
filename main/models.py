@@ -1976,9 +1976,9 @@ class GoalMetric(models.Model):
             return 0.0
 
         if self.rebalance_type == self.REBALANCE_TYPE_ABSOLUTE:
-            return self.rebalance_thr / (self.measured_val - self.configured_val)
+            return (self.measured_val - self.configured_val) / self.rebalance_thr
         else:
-            return self.rebalance_thr / ((self.measured_val - self.configured_val) / self.self.configured_val)
+            return ((self.measured_val - self.configured_val) / self.configured_val) / self.rebalance_thr
 
     def __str__(self):
         if self.type == 0:

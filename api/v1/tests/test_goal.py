@@ -19,6 +19,9 @@ from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
 from api.v1.goals.serializers import GoalSettingSerializer
 from django.contrib.contenttypes.models import ContentType
 from main.management.commands.populate_test_prices import populate_prices
+from api.v1.tests.factories import GoalFactory, PositionFactory, TickerFactory, \
+    TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory
+import numpy as np
 
 
 class GoalTests(APITestCase):
@@ -357,6 +360,7 @@ class GoalTests(APITestCase):
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
         # Create a risk score metric for the settings
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
         goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
@@ -366,3 +370,34 @@ class GoalTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_goal_metric(self):
+        t1 = TickerFactory.create(symbol='SPY', unit_price=5)
+        t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
+        equity = AssetFeatureValueFactory.create(name='equity', assets=[t1, t2])
+        goal_settings = GoalSettingFactory.create()
+
+        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=0, rebalance_thr=0.05,
+                                 configured_val=0.5, rebalance_type=0)
+
+        goal = GoalFactory.create(active_settings=goal_settings)
+
+        PositionFactory.create(goal=goal, ticker=t1, share=1)
+        PositionFactory.create(goal=goal, ticker=t2, share=1)
+
+        metric = GoalMetric.objects.get(group__settings__goal_active=goal)
+        metric.measured_val = float(np.sum([pos.value for pos in goal.get_positions_all()])) / goal.available_balance
+
+        self.assertTrue(10.0 / goal.available_balance == metric.measured_val)
+
+        self.assertTrue((metric.measured_val - metric.configured_val) / metric.rebalance_thr == metric.drift_score)
+
+        metric.rebalance_type = 1
+        self.assertTrue(((metric.measured_val - metric.configured_val) / metric.configured_val) / metric.rebalance_thr \
+                        == metric.drift_score)
+
+
+
+
+
+
