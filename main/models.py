@@ -224,6 +224,20 @@ class InvestmentCycleObservation(models.Model):
         return "%s as of %s recorded %s" % (self.cycle, self.as_of, self.recorded)
 
 
+class InvestmentCyclePrediction(models.Model):
+    as_of = models.DateField()
+    pred_dt = models.DateField()
+    eq = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    eq_pk = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    pk_eq = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    eq_pit = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    pit_eq = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    source = JSONField()
+
+    def __str__(self):
+        return "Prediction for %s as of %s" % (self.pred_dt, self.as_of)
+
+
 class AssetClass(models.Model):
     name = models.CharField(
         max_length=255,
