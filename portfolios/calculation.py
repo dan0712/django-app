@@ -92,10 +92,10 @@ def get_fund_returns(funds, start_date, end_date, end_tol=0, min_days=None):
 
     # Map from benchmark to list of funds using it
     b_to_f = defaultdict(list)
-    histogram = pd.bdate_range(start_date, end_date)
+    dates = pd.bdate_range(start_date, end_date)
 
     for fund in funds:
-        ser = fund.get_returns(start_date, end_date, histogram)
+        ser = fund.get_returns(dates)
         last_dt = ser.last_valid_index()
         if last_dt is None:
             emsg = "Excluding fund: {} as it has no returns available."
@@ -113,7 +113,7 @@ def get_fund_returns(funds, start_date, end_date, end_tol=0, min_days=None):
         bid = '{}_{}'.format(fund.benchmark_content_type.id, fund.benchmark_object_id)
         brets = None
         if bid not in benchmark_returns:
-            brets = fund.benchmark.get_returns(start_date, end_date, histogram)
+            brets = fund.benchmark.get_returns(dates)
             blast_dt = brets.last_valid_index()
             if blast_dt is None:
                 emsg = "Excluding fund: {} as its benchmark: {} has no returns available."
