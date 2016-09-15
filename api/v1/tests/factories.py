@@ -232,6 +232,32 @@ class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(ClientAccountFactory)
 
 
+class AssetFeatureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeature
+
+    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
+
+
+class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeatureValue
+
+    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
+    feature = factory.SubFactory(AssetFeatureFactory)
+
+    @factory.post_generation
+    def assets(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.assets.add(item)
+
+
 class GoalMetricFactory(factory.django.DjangoModelFactory):
     """
     By default create a random risk score metric.
@@ -240,8 +266,8 @@ class GoalMetricFactory(factory.django.DjangoModelFactory):
         model = GoalMetric
 
     type = factory.Sequence(lambda n: random.randint(0, 1))
-    comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
-    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+    comparison = factory.Sequence(lambda n: random.randint(0, 2))
+    rebalance_type = factory.Sequence(lambda n: random.randint(0, 1))
     rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
 
@@ -424,19 +450,4 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     instrument = factory.SubFactory(TickerFactory)
     date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
-
-
-class AssetFeatureFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeature
-
-    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
-
-
-class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeatureValue
-
-    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
-    feature = factory.SubFactory(AssetFeatureFactory)
 
