@@ -208,6 +208,22 @@ class InvestmentType(models.Model):
         return self.name
 
 
+class InvestmentCycleObservation(models.Model):
+    class Cycle(ChoiceEnum):
+        EQ = (0, 'eq')
+        EQ_PK = (1, 'eq_pk')
+        PK_EQ = (2, 'pk_eq')
+        EQ_PIT = (3, 'eq_pit')
+        PIT_EQ = (4, 'pit_eq')
+    as_of = models.DateField()
+    recorded = models.DateField()
+    cycle = models.IntegerField(choices=Cycle.choices())
+    source = JSONField()
+
+    def __str__(self):
+        return "%s as of %s recorded %s" % (self.cycle, self.as_of, self.recorded)
+
+
 class AssetClass(models.Model):
     name = models.CharField(
         max_length=255,
