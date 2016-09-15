@@ -218,7 +218,7 @@ class InvestmentCycleObservation(models.Model):
     as_of = models.DateField()
     recorded = models.DateField()
     cycle = models.IntegerField(choices=Cycle.choices())
-    source = models.JSONField()
+    source = JSONField()
 
     def __str__(self):
         return "%s as of %s recorded %s" % (self.cycle, self.as_of, self.recorded)
