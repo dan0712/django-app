@@ -5,13 +5,6 @@ from main.models import AssetClass, Ticker, GoalType, ActivityLog, GoalSetting
 from client.models import RiskProfileGroup, RiskProfileQuestion, \
     RiskProfileAnswer
 
-class SettingsSerializer(serializers.ModelSerializer):
-    """
-    Experimental
-    """
-    class Meta:
-        model = GoalSetting
-
 class GoalTypeListSerializer(serializers.ModelSerializer):
     """
     Experimental
