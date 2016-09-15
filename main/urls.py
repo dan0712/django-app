@@ -7,6 +7,7 @@ from api.v1.user.views import PasswordResetView
 from main import settings
 from main.views import *
 from main.views.client.app_missing import ClientAppMissing
+from .swagger import schema_view as swagger
 
 
 def ok_response_json(*args, **kwargs):
@@ -49,7 +50,7 @@ urlpatterns_firm = patterns(
 urlpatterns = patterns(
     '',
     url(r'^api/', include('api.urls', namespace='api')),
-    url(r'^docs/', include('rest_framework_swagger.urls')),
+    url(r'^api-docs/', swagger, name='swagger'),
     url(r'^admin/filebrowser/', include(site.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^nested_admin/', include('nested_admin.urls')),  # For nested stackable admin

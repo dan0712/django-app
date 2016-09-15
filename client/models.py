@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import PROTECT
+from django.db.models.aggregates import Min, Max, Sum
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
@@ -146,6 +147,64 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     @property
     def total_earnings(self):
         return sum(a.total_earnings for a in self.accounts)
+
+    @property
+    def current_risk_profile_responses(self):
+        """
+         Get the answers for the current risk profile questions and ensure they
+         are recent and valid, otherwise returns None
+         :return: A valid RiskProfileAnswer queryset, or None if questions changed
+        """
+        if not hasattr(self.risk_profile_group, 'questions'):
+            # No risk questions assigned, so we can't say anything about their willingness to take risk.
+            return None
+        qids = set(self.risk_profile_group.questions.all().values_list('id', flat=True))
+        if len(qids) == 0:
+            # No risk questions assigned, so we can't say anything about their willingness to take risk.
+            return None
+
+        if not self.risk_profile_responses:
+            # No risk responses give, so we can't say anything about their willingness to take risk.
+            return None
+
+        aqs = self.risk_profile_responses.all()
+        if not qids == set(aqs.values_list('question_id', flat=True)):
+            # Risk responses are not complete, so we can't say anything about their willingness to take risk.
+            return None
+
+        return (
+            self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
+        )
+
+    def get_risk_profile_bas_scores(self):
+        """
+        Get the scores for an entity's willingness to take risk, based on a previous elicitation of its preferences.
+        :return: Tuple of floats [0-1] (b_score, a_score, s_score)
+        """
+        answers = self.current_risk_profile_responses
+        if not answers: return None
+
+        scores = (answers.values('b_score', 'a_score', 's_score')
+            .aggregate(b_score=Sum('b_score'),a_score=Sum('a_score'), s_score=Sum('s_score')))
+
+        extents = (
+            RiskProfileAnswer.objects.filter(question__group=self.risk_profile_group)
+            .values('question').annotate(
+                min_b=Min('b_score'), max_b=Max('b_score'),
+                min_a=Min('a_score'), max_a=Max('a_score'),
+                min_s=Min('s_score'), max_s=Max('s_score'),
+            ).aggregate(
+                min_b_sum=Sum('min_b'), max_b_sum=Sum('max_b'),
+                min_a_sum=Sum('min_a'), max_a_sum=Sum('max_a'),
+                min_s_sum=Sum('min_s'), max_s_sum=Sum('max_s'),
+            )
+        )
+
+        return (
+            scores['b_score'] / extents['max_b_sum'],
+            scores['a_score'] / extents['max_a_sum'],
+            scores['s_score'] / extents['max_s_sum'],
+        )
 
 class IBAccount(models.Model):
     '''

@@ -7,6 +7,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
+from ..goals.serializers import GoalSettingSerializer
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
@@ -16,7 +17,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
     """
     Experimental
     """
-    # serializer_class = serializers.SettingsSerializer
+    serializer_class = GoalSettingSerializer
     permission_classes = (
         IsAdvisorOrClient,
     )
