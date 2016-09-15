@@ -22,7 +22,7 @@ from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
     Transaction
-from main.risk_profiler import recommend_ttl_risks
+from main.risk_profiler import risk_data
 from portfolios.calculation import Unsatisfiable, \
     calculate_portfolio, calculate_portfolios, current_stats_from_weights
 from portfolios.providers.execution.django import ExecutionProviderDjango
@@ -419,17 +419,10 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @detail_route(methods=['get'], url_path='recommended-risk-scores')
+    @detail_route(methods=['get'], url_path='recommended-risk-score-data')
     def recommended_risk_scores(self, request, pk=None, **kwargs):
         setting = self.get_object().selected_settings
-        years = request.query_params.get('years', None)
-        if not years:
-            raise ValidationError("Query parameter 'years' must be specified and non-zero")
-        try:
-            years = int(years)
-        except ValueError:
-            raise ValidationError("Query parameter 'years' must be an integer")
-        return Response(recommend_ttl_risks(setting, years))
+        return Response(risk_data(setting))
 
     @detail_route(methods=['get'], url_path='cash-flow')
     def cash_flow(self, request, pk=None, **kwargs):

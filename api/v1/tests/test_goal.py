@@ -316,7 +316,7 @@ class GoalTests(APITestCase):
         """
         expects the years parameter for the span of risk scores
         """
-        url = '/api/v1/goals/{}/recommended-risk-scores?years=9'.format(Fixture1.goal1().id)
+        url = '/api/v1/goals/{}/recommended-risk-score-data'.format(Fixture1.goal1().id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
