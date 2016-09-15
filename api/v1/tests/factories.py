@@ -11,7 +11,8 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
-                        GoalMetric, AssetFeatureValue, AssetFeature, MarkowitzScale
+                        GoalMetric, AssetFeatureValue, AssetFeature, \
+                        MarkowitzScale, Supervisor, AuthorisedRepresentative
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -144,6 +145,15 @@ class AdvisorFactory(factory.django.DjangoModelFactory):
     residential_address = factory.SubFactory(AddressFactory)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
 
+class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AuthorisedRepresentative
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+    residential_address = factory.SubFactory(AddressFactory)
+    betasmartz_agreement = True
+
 
 class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -187,6 +197,8 @@ class ClientFactory(factory.django.DjangoModelFactory):
     # lets use a random date from last 18-70 years for dob
     date_of_birth = factory.LazyAttribute(lambda n: random_date(datetime.now().date() - relativedelta(years=70),
                                                                 datetime.now().date() - relativedelta(years=18)))
+    is_confirmed = True
+    is_accepted = True
 
 
 class EmailInviteFactory(factory.django.DjangoModelFactory):
@@ -427,3 +439,25 @@ class GoalMetricFactory(factory.django.DjangoModelFactory):
     rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
     rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
+class SupervisorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Supervisor
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+
+
+class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AuthorisedRepresentative
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+    letter_of_authority = factory.django.FileField(filename='tests/test_letter_of_authority.txt')
+    betasmartz_agreement = True
+    is_accepted = True
+    is_confirmed = True
+
+    residential_address = factory.SubFactory(AddressFactory)

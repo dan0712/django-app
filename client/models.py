@@ -147,25 +147,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     def total_earnings(self):
         return sum(a.total_earnings for a in self.accounts)
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        create_personal_account = False
-        if self.pk is None:
-            create_personal_account = True
-
-        super(Client, self).save(force_insert, force_update, using,
-                                 update_fields)
-
-        if create_personal_account:
-            new_ac = ClientAccount(
-                primary_owner=self,
-                account_type=constants.ACCOUNT_TYPE_PERSONAL,
-                default_portfolio_set=self.advisor.default_portfolio_set,
-            )
-            new_ac.save()
-            new_ac.remove_from_group()
-
-
 class IBAccount(models.Model):
     '''
     Specification of Interactive Brokers Account

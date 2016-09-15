@@ -31,14 +31,12 @@ logger = logging.getLogger('main.views.firm.dashboard')
 
 class FirmSupervisorDelete(DeleteView, LegalView):
     template_name = "firm/supervisors-delete.html"
-    success_url = 'firm/supervisors' # reverse_lazy('firm:supervisors-delete')
+    success_url = '/firm/supervisors' # reverse_lazy('firm:supervisors-delete')
     model = User
 
     def get_success_url(self):
         messages.success(self.request, "supervisor delete successfully")
         return super(FirmSupervisorDelete, self).get_success_url()
-
-    pass
 
 
 class SupervisorProfile(forms.ModelForm):
@@ -125,7 +123,7 @@ class SupervisorUserFormEdit(forms.ModelForm):
 class FirmSupervisorsCreate(CreateView, LegalView):
     template_name = "firm/supervisors-edit.html"
     form_class = SupervisorUserForm
-    success_url = "/firm/users"
+    success_url = "/firm/supervisors"
 
     def get_success_url(self):
         messages.success(self.request, "New supervisor created successfully")
