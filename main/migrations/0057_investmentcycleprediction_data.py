@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 from django.db import migrations
 import csv
 import json
+import os
+from django.conf import settings
 
 
 def load_cycle_data(apps, schema_editor):
@@ -15,7 +17,7 @@ def load_cycle_data(apps, schema_editor):
         as_of_date,pred_date,eq,eq_pk,pk_eq,eq_pit,pit_eq
         31/03/1993,31/03/1994,0.082380986,0.23991326,2.20E-16,0.072761958,0.712514322
     """
-    predict_prob_path = 'main/fixtures/predict_probs12.csv'
+    predict_prob_path = os.path.join(settings.BASE_DIR, 'main/fixtures/predict_probs12.csv')
     InvestmentCyclePrediction = apps.get_model('main', 'InvestmentCyclePrediction')
     with open(predict_prob_path) as f:
         reader = csv.reader(f)
