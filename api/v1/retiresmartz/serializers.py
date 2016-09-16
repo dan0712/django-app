@@ -171,19 +171,9 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
                    "I.e. Your selected partner plan must have you as it's partner"
             raise ValidationError(emsg)
 
-        instance.save()
+        if instance.agreed_on:
+            raise ValidationError("Unable to make changes to a plan that has been agreed on")
 
-        if btc:
-            if instance.btc is not None:
-                instance.btc.delete()
-            ser = BTCWritableSerializer(data=btc)
-            ser.is_valid(raise_exception=True)
-            ser.save(plan=instance)
-        if atc:
-            if instance.atc is not None:
-                instance.atc.delete()
-            ser = ATCWritableSerializer(data=atc)
-            ser.is_valid(raise_exception=True)
-            ser.save(plan=instance)
+        instance.save()
 
         return instance

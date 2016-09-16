@@ -128,22 +128,67 @@ class Fixture1:
     @classmethod
     def client1_retirementplan1(cls):
         return RetirementPlan.objects.get_or_create(id=1, defaults={
-                                                    'name': 'Plan1',
-                                                    'client': Fixture1.client1(),
-                                                    })[0]
+            'name': 'Plan1',
+            'client': Fixture1.client1(),
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 50000,
+            'atc': 30000,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        })[0]
 
     @classmethod
     def client2_retirementplan1(cls):
         return RetirementPlan.objects.get_or_create(id=2, defaults={
-                                                    'name': 'Plan1',
-                                                    'client': Fixture1.client2(),
+            'name': 'Plan1',
+            'client': Fixture1.client2(),
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 50000,
+            'atc': 30000,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
                                                     })[0]
 
     @classmethod
     def client2_retirementplan2(cls):
         return RetirementPlan.objects.get_or_create(id=4, defaults={
-                                                    'name': 'Plan2',
-                                                    'client': Fixture1.client2(),
+            'name': 'Plan2',
+            'client': Fixture1.client2(),
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 50000,
+            'atc': 30000,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
                                                     })[0]
 
     @classmethod

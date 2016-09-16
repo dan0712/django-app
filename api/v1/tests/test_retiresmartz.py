@@ -41,12 +41,7 @@ class RetiresmartzTests(APITestCase):
         plan_data = {
             "name": "Personal Plan",
             "description": "My solo plan",
-            "btc": {
-                'begin_date': now().today(),
-                'amount': 1000,
-                'growth': 0.025,
-                'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
-            },
+            "btc": 1000,
             "external_income": [{
                 'begin_date': now().today(),
                 'amount': 2000,
@@ -56,9 +51,9 @@ class RetiresmartzTests(APITestCase):
         }
         response = self.client.post(url, plan_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['btc']['amount'], 1000)
+        self.assertEqual(response.data['btc'], 1000)
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
-        self.assertEqual(saved_plan.btc.amount, 1000)
+        self.assertEqual(saved_plan.btc, 1000)
         self.assertEqual(saved_plan.external_income.count(), 1)
         self.assertEqual(saved_plan.external_income.first().amount, 2000)
 
@@ -112,18 +107,12 @@ class RetiresmartzTests(APITestCase):
         Test update partner_plan after tax contribution
         """
         plan1 = Fixture1.client1_partneredplan()
-        Fixture1.retirement_plan_atc3()
         plan2 = plan1.partner_plan
         url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client2().id, plan2.id)
         self.client.force_authenticate(user=Fixture1.client1().user)
-        response = self.client.put(url, data={'atc': {
-            'begin_date': plan2.atc.begin_date,
-            'amount': 7654,
-            'growth': plan2.atc.growth,
-            'schedule': plan2.atc.schedule,
-        }})
+        response = self.client.put(url, data={'atc': 45000})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Fixture1.client2_retirementplan1().atc.amount, 7654)
+        self.assertEqual(Fixture1.client2_retirementplan1().atc, 45000)
 
     def test_get_bad_permissions(self):
         """
