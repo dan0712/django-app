@@ -453,8 +453,6 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
 
-<<<<<<< HEAD
-=======
 
 class AssetFeatureFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -505,4 +503,4 @@ class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
     is_confirmed = True
 
     residential_address = factory.SubFactory(AddressFactory)
->>>>>>> dev
+
