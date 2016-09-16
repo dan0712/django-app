@@ -468,6 +468,16 @@ class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
     feature = factory.SubFactory(AssetFeatureFactory)
 
+    @factory.post_generation
+    def assets(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.assets.add(item)
 
 class GoalMetricFactory(factory.django.DjangoModelFactory):
     """
