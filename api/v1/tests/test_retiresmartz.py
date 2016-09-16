@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from common.constants import GROUP_SUPPORT_STAFF
-from main.models import RetirementPlan
+from retiresmartz.models import RetirementPlan
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory
 

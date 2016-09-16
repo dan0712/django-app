@@ -13,8 +13,10 @@ from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
-    PortfolioSet, Region, RetirementPlan, RetirementPlanATC, \
-    RetirementPlanBTC, Ticker, Transaction, User, ExternalInstrument
+    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
+
+from retiresmartz.models import RetirementPlan, RetirementPlanATC, \
+    RetirementPlanBTC
 
 
 class Fixture1:
@@ -195,8 +197,6 @@ class Fixture1:
         return RetirementPlan.objects.get_or_create(id=1, defaults={
                                                     'name': 'Plan1',
                                                     'client': Fixture1.client1(),
-                                                    'retirement_date': datetime.date(2055, 1, 1),
-                                                    'life_expectancy': 80,
                                                     })[0]
 
     @classmethod
@@ -204,8 +204,6 @@ class Fixture1:
         return RetirementPlan.objects.get_or_create(id=2, defaults={
                                                     'name': 'Plan1',
                                                     'client': Fixture1.client2(),
-                                                    'retirement_date': datetime.date(2055, 1, 1),
-                                                    'life_expectancy': 84,
                                                     })[0]
 
     @classmethod
@@ -213,8 +211,6 @@ class Fixture1:
         return RetirementPlan.objects.get_or_create(id=4, defaults={
                                                     'name': 'Plan2',
                                                     'client': Fixture1.client2(),
-                                                    'retirement_date': datetime.date(2055, 1, 1),
-                                                    'life_expectancy': 84,
                                                     })[0]
 
     @classmethod

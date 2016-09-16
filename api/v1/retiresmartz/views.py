@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.views import ApiViewMixin
-from main.models import RetirementPlan
+from retiresmartz.models import RetirementPlan
 from client.models import Client
 from support.models import SupportRequest
 

@@ -4,7 +4,7 @@ from jsonfield.fields import JSONField
 from weasyprint import HTML
 from django.conf import settings
 
-logger = logging.getLogger('client.models')
+logger = logging.getLogger(__name__)
 
 class PDFStatement(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
@@ -47,6 +47,21 @@ class StatementOfAdvice(PDFStatement):
 
     def __str__(self):
         return 'Statement of Advice for %s'%self.account
+
+    @property
+    def default_template(self):
+        return "statements/statement_of_advice.html"
+
+class RetirementStatementOfAdvice(PDFStatement):
+    retirement_plan = models.OneToOneField('retiresmartz.RetirementPlan',
+                        related_name='statement_of_advice')
+
+    def __str__(self):
+        return 'Statement of Advice for %s'%self.retirement_plan
+
+    @property
+    def account(self):
+        return self.retirement_plan.smsf_account
 
     @property
     def default_template(self):
