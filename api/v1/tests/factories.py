@@ -454,31 +454,6 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
 
 
-class AssetFeatureFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeature
-
-    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
-
-
-class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeatureValue
-
-    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
-    feature = factory.SubFactory(AssetFeatureFactory)
-
-    @factory.post_generation
-    def assets(self, create, items, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
-
-        if items:
-            # A list of groups were passed in, use them
-            for item in items:
-                self.assets.add(item)
-
 class GoalMetricFactory(factory.django.DjangoModelFactory):
     """
     By default create a random risk score metric.
