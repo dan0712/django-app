@@ -70,7 +70,6 @@ urlpatterns = patterns(
     url(r'me/suggested-security-questions/?$', user_views.SecurityQuestionListView.as_view(), name='canned-security-questions'),
 
     url(r'^keep-alive/?$', user_views.KeepAliveView.as_view(), name='keep-alive'),
-
 )
 
 urlpatterns += router.urls

@@ -84,7 +84,7 @@ class DataProviderDjango(DataProviderAbstract):
                                       c=c)
 
     def get_instruments(self):
-        key = redis.KEY_INSTRUMENTS(datetime.today().isoformat())
+        key = redis.KEY_INSTRUMENTS(datetime.today().date().isoformat())
         data = cache.get(key)
 
         if data is None:
@@ -94,8 +94,3 @@ class DataProviderDjango(DataProviderAbstract):
 
     def set_cache(self, *args):
         pass
-
-
-
-
-

@@ -8,10 +8,12 @@ from django.db.models import Q
 from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
     TransactionFactory, AccountTypeRiskProfileGroupFactory, \
-    ExternalAssetFactory, PositionFactory, TickerFactory
+    ExternalAssetFactory, PositionFactory, TickerFactory, \
+    SupervisorFactory, AuthorisedRepresentativeFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 
 class FirmAnalyticsMixinTests(TestCase):
@@ -21,6 +23,7 @@ class FirmAnalyticsMixinTests(TestCase):
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
         self.view = self.DummyView()
+        self.today = today = timezone.now().date()
         # Populate the AccountType -> RiskProfileGroup mapping
         for atid, _ in constants.ACCOUNT_TYPES:
             AccountTypeRiskProfileGroupFactory.create(account_type=atid)
@@ -38,7 +41,7 @@ class FirmAnalyticsMixinTests(TestCase):
                                                      amount=self.goal.cash_balance,
                                                      status=Transaction.STATUS_EXECUTED,
                                                      reason=Transaction.REASON_TRANSFER,
-                                                     executed=date.today())
+                                                     executed=self.today)
 
         # second client
         self.betasmartz_client2 = ClientFactory.create(advisor=self.betasmartz_client.advisor)
@@ -53,7 +56,7 @@ class FirmAnalyticsMixinTests(TestCase):
                                                       amount=self.goal3.cash_balance,
                                                       status=Transaction.STATUS_EXECUTED,
                                                       reason=Transaction.REASON_TRANSFER,
-                                                      executed=date.today())
+                                                      executed=self.today)
 
     def tearDown(self):
         pass
@@ -114,7 +117,7 @@ class FirmAnalyticsMixinTests(TestCase):
                     txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
                                                      status=Transaction.STATUS_EXECUTED,
                                                      reason__in=Transaction.CASH_FLOW_REASONS) \
-                                                    .filter(executed__gt=date.today() - relativedelta(years=1))
+                                                    .filter(executed__gt=self.today - relativedelta(years=1))
 
                     # subtract from_goal amounts and add to_goal amounts
                     for tx in txs:

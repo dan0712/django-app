@@ -23,6 +23,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
 
     # Set the response serializer because we want to use the 'get' serializer for responses from the 'create' methods.
     # See api/v1/views.py
+    serializer_class = serializers.RetirementPlanSerializer
     serializer_response_class = serializers.RetirementPlanSerializer
 
     def get_serializer_class(self):

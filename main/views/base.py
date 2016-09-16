@@ -6,6 +6,9 @@ from django.views.generic.base import ContextMixin
 from django.views.generic.edit import View
 
 from support.models import SupportRequest
+import logging
+
+logger = logging.getLogger('main.views.base')
 
 
 class AdvisorView(ContextMixin, View):
@@ -45,6 +48,7 @@ class LegalView(View):
             self.firm = user.authorised_representative.firm
         except AttributeError:
             PermissionDenied()
+
         if request.method == "POST":
             if not user.authorised_representative.is_accepted:
                 raise PermissionDenied()
@@ -92,3 +96,4 @@ class AdminView(View):
         if not request.user.is_staff:
             raise PermissionDenied()
         return super(AdminView, self).dispatch(request, *args, **kwargs)
+
