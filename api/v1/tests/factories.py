@@ -276,7 +276,7 @@ class GoalMetricGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = GoalMetricGroup
 
-    metrics = factory.RelatedFactory(GoalMetricFactory, 'group')
+    #metrics = factory.RelatedFactory(GoalMetricFactory, 'group')
 
 
 class GoalSettingFactory(factory.django.DjangoModelFactory):
