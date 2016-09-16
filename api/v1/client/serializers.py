@@ -18,6 +18,7 @@ class ClientSerializer(ReadOnlyModelSerializer):
     user = UserFieldSerializer()
     advisor = AdvisorFieldSerializer()
     residential_address = AddressSerializer()
+    regional_data = serializers.JSONField()
 
     class Meta:
         model = Client
@@ -26,6 +27,7 @@ class ClientSerializer(ReadOnlyModelSerializer):
 class ClientFieldSerializer(ReadOnlyModelSerializer):
     residential_address = AddressSerializer()
     advisor = AdvisorFieldSerializer()
+    regional_data = serializers.JSONField()
 
     class Meta:
         model = Client
