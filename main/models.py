@@ -37,6 +37,7 @@ from .managers import ExternalAssetQuerySet, \
     GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
+import numpy as np
 
 logger = logging.getLogger('main.models')
 
@@ -1938,7 +1939,7 @@ class GoalMetric(models.Model):
     rebalance_thr = models.FloatField(
         help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
-    measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
+
 
     @classmethod
     def risk_level_range(cls, risk_level):
@@ -1952,6 +1953,15 @@ class GoalMetric(models.Model):
 
             if self.configured_val < risk_max / 100:
                 return risk_min
+
+    @property
+    def measured_val(self):
+        asset_ids = Ticker.objects.all().filter(features__feature_id=self.feature_id)
+        ids = set([asset_id.id for asset_id in asset_ids])
+
+        goal = Goal.objects.get(active_settings__metric_group_id=self.group_id)
+        sum = float(np.sum([pos.value if pos.ticker_id in ids else 0 for pos in goal.get_positions_all()]))
+        return sum/goal.available_balance
 
     @property
     def risk_level(self):

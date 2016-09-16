@@ -386,7 +386,8 @@ class GoalTests(APITestCase):
         PositionFactory.create(goal=goal, ticker=t2, share=1)
 
         metric = GoalMetric.objects.get(group__settings__goal_active=goal)
-        metric.measured_val = float(np.sum([pos.value for pos in goal.get_positions_all()])) / goal.available_balance
+        #metric.measured_val = float(np.sum([pos.value for pos in goal.get_positions_all()])) / goal.available_balance
+        #measured_val = float(np.sum([pos.value for pos in goal.get_positions_all()])) / goal.available_balance
 
         self.assertTrue(10.0 / goal.available_balance == metric.measured_val)
 
