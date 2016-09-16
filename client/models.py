@@ -60,6 +60,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
     employer = models.CharField(max_length=255, null=True, blank=True)
+    smoker = models.NullBooleanField(null=True, blank=True)
+    daily_exercise = models.PositiveIntegerField(null=True, blank=True,
+                                                 help_text="In Minutes")
+    weight = models.PositiveIntegerField(default=0, help_text="In kilograms")
+    height = models.PositiveIntegerField(default=0, help_text="In centimeters")
+
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)

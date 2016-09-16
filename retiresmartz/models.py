@@ -64,6 +64,8 @@ class RetirementPlan(models.Model):
 
     desired_income = models.PositiveIntegerField(default=60000,
         help_text="The desired annual household pre-tax retirement income in system currency")
+    current_income = models.PositiveIntegerField(default=0,
+        help_text="The current annual household pre-tax income at the start of your plan")
 
     volunteer_days = models.PositiveIntegerField(default=0,
         validators=[MinValueValidator(0),MaxValueValidator(7)],
@@ -80,7 +82,7 @@ class RetirementPlan(models.Model):
         validators=[MinLengthValidator(5),MaxLengthValidator(10)],
         help_text="What postal code will you retire in?")
 
-    reverse_mortgate = models.NullBooleanField(null=True, blank=True,
+    reverse_mortgage = models.NullBooleanField(null=True, blank=True,
         help_text="Would you consider a reverse mortgage? (optional)")
 
     retirement_home_style = models.PositiveIntegerField(
@@ -93,9 +95,12 @@ class RetirementPlan(models.Model):
     beta_spouse = models.BooleanField(default=False,
         help_text="Will BetaSmartz manage your spouse's retirement assets as well?")
 
-    expenses = JSONField(null=True, blank=True)
-    savings = JSONField(null=True, blank=True)
-    initial_deposits = JSONField(null=True, blank=True)
+    expenses = JSONField(null=True, blank=True,
+                help_text="List of expenses [{id, desc, cat, who, amt},...]")
+    savings = JSONField(null=True, blank=True,
+                help_text="List of savings [{id, desc, cat, who, amt},...]")
+    initial_deposits = JSONField(null=True, blank=True,
+                help_text="List of deposits [{id, desc, cat, who, amt},...]")
 
     # What is CPI? Make this more informative
     income_growth = models.FloatField(default=0, help_text="Above CPI")
@@ -108,7 +113,7 @@ class RetirementPlan(models.Model):
     # We kept these from old version of RetirementPlan model
     # But might be appropriate to downgrade to IntegerFields here
 
-    employer_match_percent = models.FloatField(default=0, validators=[MinValueValidator(0)],
+    max_match = models.FloatField(null=True, blank=True,
         help_text="The percent the employer matches of before-tax contributions")
 
     desired_risk = models.FloatField(default=0,
@@ -121,7 +126,7 @@ class RetirementPlan(models.Model):
 
     max_risk = models.FloatField(default=0,
         validators=[MinValueValidator(0), MaxValueValidator(1)],
-        help_text = "The maximum allowable risk appetititefor this retirement plan, based on our risk model")
+        help_text = "The maximum allowable risk appetite for this retirement plan, based on our risk model")
 
     calculated_life_expectancy = models.PositiveIntegerField(default=65)
     selected_life_expectancy = models.PositiveIntegerField(default=65)
@@ -171,7 +176,7 @@ class RetirementPlanATC(TransferPlan):
 
 class RetirementSpendingGoal(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='retirement_goals')
-    goal = models.ForeignKey('main.Goal', unique=True, related_name='retirement_plan')
+    goal = models.OneToOneField('main.Goal', related_name='retirement_plan')
 
 class RetirementLifestyle(models.Model):
     cost = models.PositiveIntegerField(help_text="The expected cost in system currency of this lifestyle in today's dollars")
