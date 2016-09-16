@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RetirementStatementOfAdvice',
             fields=[
-                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
                 ('create_date', models.DateTimeField(auto_now_add=True)),
                 ('retirement_plan', models.OneToOneField(related_name='statement_of_advice', to='retiresmartz.RetirementPlan')),
             ],

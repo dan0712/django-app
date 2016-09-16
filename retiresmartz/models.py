@@ -162,6 +162,10 @@ class RetirementSpendingGoal(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='retirement_goals')
     goal = models.OneToOneField('main.Goal', related_name='retirement_plan')
 
+class RetirementPlanAccount(models.Model):
+    plan = models.ForeignKey(RetirementPlan, related_name='retiree')
+    account = models.OneToOneField('client.ClientAccount', related_name='retirement')
+
 class RetirementLifestyle(models.Model):
     cost = models.PositiveIntegerField(help_text="The expected cost in system currency of this lifestyle in today's dollars")
     holidays = models.TextField(help_text="The text for the holidays block")
