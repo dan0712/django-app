@@ -144,7 +144,11 @@ class InvitationSerializer(ReadOnlyModelSerializer):
         fields = (
             'invite_key',
             'status',
+            'first_name',
+            'middle_name',
+            'last_name',
         )
+
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
     # Includes onboarding data
