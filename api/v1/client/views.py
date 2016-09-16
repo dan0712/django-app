@@ -122,7 +122,7 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         if invite.status != EmailInvite.STATUS_ACCEPTED:
             return Response(serializers.InvitationSerializer(invite).data,
-                            status=HTTP_304_NOT_MODIFIED)
+                            status=status.HTTP_304_NOT_MODIFIED)
 
         serializer = self.serializer_class(invite, data=request.data,
                                            partial=True)
@@ -130,7 +130,6 @@ class InvitesView(ApiViewMixin, views.APIView):
             serializer.save()
 
         return Response(serializers.InvitationSerializer(invite).data)
-
 
 
 class ClientUserRegisterView(ApiViewMixin, views.APIView):

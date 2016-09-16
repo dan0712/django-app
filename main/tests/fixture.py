@@ -15,8 +15,7 @@ from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
     PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
 
-from retiresmartz.models import RetirementPlan, RetirementPlanATC, \
-    RetirementPlanBTC
+from retiresmartz.models import RetirementPlan
 
 
 class Fixture1:
@@ -125,72 +124,6 @@ class Fixture1:
             'risk_profile_group': Fixture1.risk_profile_group2(),
         }
         return Client.objects.get_or_create(id=2, defaults=params)[0]
-
-    @classmethod
-    def tx1(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 1000,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanBTC.objects.get_or_create(id=1, defaults=params)[0]
-
-    @classmethod
-    def retirement_plan_atc1(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 0,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanATC.objects.get_or_create(id=2, defaults=params)[0]
-
-    @classmethod
-    def tx3(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 500,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanBTC.objects.get_or_create(id=3, defaults=params)[0]
-
-    @classmethod
-    def retirement_plan_atc2(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 200,
-            'growth': 0.01,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanATC.objects.get_or_create(id=4, defaults=params)[0]
-
-    @classmethod
-    def tx5(cls):
-        params = {
-            'plan': Fixture1.client2_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 500,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanBTC.objects.get_or_create(id=5, defaults=params)[0]
-
-    @classmethod
-    def retirement_plan_atc3(cls):
-        params = {
-            'plan': Fixture1.client2_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 200,
-            'growth': 0.01,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanATC.objects.get_or_create(id=6, defaults=params)[0]
 
     @classmethod
     def client1_retirementplan1(cls):

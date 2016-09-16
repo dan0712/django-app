@@ -207,6 +207,36 @@ class InvestmentType(models.Model):
         return self.name
 
 
+class InvestmentCycleObservation(models.Model):
+    class Cycle(ChoiceEnum):
+        EQ = (0, 'eq')
+        EQ_PK = (1, 'eq_pk')
+        PK_EQ = (2, 'pk_eq')
+        EQ_PIT = (3, 'eq_pit')
+        PIT_EQ = (4, 'pit_eq')
+    as_of = models.DateField()
+    recorded = models.DateField()
+    cycle = models.IntegerField(choices=Cycle.choices())
+    source = JSONField()
+
+    def __str__(self):
+        return "%s as of %s recorded %s" % (self.cycle, self.as_of, self.recorded)
+
+
+class InvestmentCyclePrediction(models.Model):
+    as_of = models.DateField()
+    pred_dt = models.DateField()
+    eq = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    eq_pk = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    pk_eq = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    eq_pit = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    pit_eq = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    source = JSONField()
+
+    def __str__(self):
+        return "Prediction for %s as of %s" % (self.pred_dt, self.as_of)
+
+
 class AssetClass(models.Model):
     name = models.CharField(
         max_length=255,
@@ -869,14 +899,14 @@ class MarketIndex(FinancialInstrument):
                                   content_type_field='instrument_content_type',
                                   object_id_field='instrument_object_id')
 
-    def get_returns(self, start_date, end_date):
+    def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
         :param start_date:
         :param end_date:
         :return: A pandas time-series of the returns
         """
-        return get_price_returns(self, start_date, end_date)
+        return get_price_returns(self, dates)
 
 
 class ExternalInstrument(models.Model):
@@ -960,14 +990,14 @@ class Ticker(FinancialInstrument):
 
         return v
 
-    def get_returns(self, start_date, end_date):
+    def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
         :param start_date:
         :param end_date:
         :return: A pandas time-series of the returns
         """
-        return get_price_returns(self, start_date, end_date)
+        return get_price_returns(self, dates)
 
     def save(self,
              force_insert=False,

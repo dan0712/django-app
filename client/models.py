@@ -582,10 +582,10 @@ class EmailNotificationPrefs(models.Model):
         default=False)
 
 
-
 def generate_token():
     secret = str(uuid.uuid4()) + str(uuid.uuid4())
     return secret.replace('-', '')[:64]
+
 
 class EmailInvite(models.Model):
     STATUS_CREATED = 0
