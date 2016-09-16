@@ -17,11 +17,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
                 ('create_date', models.DateTimeField(auto_now_add=True)),
-                ('retirement_plan', models.OneToOneField(to='retiresmartz.RetirementPlan', related_name='statement_of_advice')),
+                ('retirement_plan', models.OneToOneField(related_name='statement_of_advice', to='retiresmartz.RetirementPlan')),
             ],
             options={
-                'abstract': False,
                 'ordering': ('-create_date',),
+                'abstract': False,
             },
         ),
     ]

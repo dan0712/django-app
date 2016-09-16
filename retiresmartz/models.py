@@ -48,11 +48,6 @@ class RetirementPlan(models.Model):
     client = models.ForeignKey('client.Client')
 
 
-    # Each account can have at most one retirement plan. Hence the relationship goes this way.
-    smsf_account = models.OneToOneField('client.ClientAccount',
-                                        related_name='retirement_plan',
-                                        help_text="The associated SMSF account.",
-                                        null=True)
     partner_plan = models.OneToOneField('RetirementPlan',
                                         related_name='partner_plan_reverse',
                                         null=True,
@@ -62,38 +57,38 @@ class RetirementPlan(models.Model):
                                     help_text="The desired retirement lifestyle")
 
 
-    desired_income = models.PositiveIntegerField(default=60000,
+    desired_income = models.PositiveIntegerField(
         help_text="The desired annual household pre-tax retirement income in system currency")
-    current_income = models.PositiveIntegerField(default=0,
+    income = models.PositiveIntegerField(
         help_text="The current annual household pre-tax income at the start of your plan")
 
-    volunteer_days = models.PositiveIntegerField(default=0,
+    volunteer_days = models.PositiveIntegerField(
         validators=[MinValueValidator(0),MaxValueValidator(7)],
         help_text="The number of volunteer work days selected")
 
-    paid_days = models.PositiveIntegerField(default=0,
+    paid_days = models.PositiveIntegerField(
         validators=[MinValueValidator(0),MaxValueValidator(7)],
         help_text="The number of paid work days selected")
 
-    same_home = models.BooleanField(default=True,
+    same_home = models.BooleanField(
         help_text="Will you be retiring in the same home?")
 
-    retirement_postal_code = models.CharField(max_length=10, null=True, blank=True,
+    retirement_postal_code = models.CharField(max_length=10,
         validators=[MinLengthValidator(5),MaxLengthValidator(10)],
         help_text="What postal code will you retire in?")
 
-    reverse_mortgage = models.NullBooleanField(null=True, blank=True,
+    reverse_mortgage = models.BooleanField(
         help_text="Would you consider a reverse mortgage? (optional)")
 
     retirement_home_style = models.PositiveIntegerField(
-        choices=HomeStyle.choices(), default=1,
+        choices=HomeStyle.choices(), null=True, blank=True,
         help_text="The style of your retirement home")
 
-    retirement_home_price = models.PositiveIntegerField(default=0,
+    retirement_home_price = models.PositiveIntegerField(null=True, blank=True,
         help_text="The price of your future retirement home (in today's dollars)")
 
-    beta_spouse = models.BooleanField(default=False,
-        help_text="Will BetaSmartz manage your spouse's retirement assets as well?")
+    beta_partner = models.BooleanField(default=False,
+        help_text="Will BetaSmartz manage your partner's retirement assets as well?")
 
     expenses = JSONField(null=True, blank=True,
                 help_text="List of expenses [{id, desc, cat, who, amt},...]")
@@ -102,34 +97,32 @@ class RetirementPlan(models.Model):
     initial_deposits = JSONField(null=True, blank=True,
                 help_text="List of deposits [{id, desc, cat, who, amt},...]")
 
-    # What is CPI? Make this more informative
-    income_growth = models.FloatField(default=0, help_text="Above CPI")
-    expected_return_confidence = models.FloatField(default=0.5,
+    income_growth = models.FloatField(default=0, help_text="Above consumer price index (inflation)")
+    expected_return_confidence = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(1)])
 
-    retirement_age = models.PositiveIntegerField(default=65)
+    retirement_age = models.PositiveIntegerField()
 
-    # Also has fields btc, atc from related models.
-    # We kept these from old version of RetirementPlan model
-    # But might be appropriate to downgrade to IntegerFields here
+    btc = models.PositiveIntegerField(help_text="Before-tax annual income")
+    atc = models.PositiveIntegerField(help_text="After-tax annual income")
 
-    max_match = models.FloatField(null=True, blank=True,
+    max_employer_match_percent = models.FloatField(null=True, blank=True,
         help_text="The percent the employer matches of before-tax contributions")
 
-    desired_risk = models.FloatField(default=0,
+    desired_risk = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text = "The selected risk appetite for this retirement plan")
 
-    recommended_risk = models.FloatField(default=0,
+    recommended_risk = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text = "The calculated recommended risk for this retirement plan")
 
-    max_risk = models.FloatField(default=0,
+    max_risk = models.FloatField(
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text = "The maximum allowable risk appetite for this retirement plan, based on our risk model")
 
-    calculated_life_expectancy = models.PositiveIntegerField(default=65)
-    selected_life_expectancy = models.PositiveIntegerField(default=65)
+    calculated_life_expectancy = models.PositiveIntegerField()
+    selected_life_expectancy = models.PositiveIntegerField()
 
     agreed_on = models.DateTimeField(null=True, blank=True)
 
@@ -167,13 +160,6 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
-class RetirementPlanBTC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='btc')
-
-
-class RetirementPlanATC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='atc')
-
 class RetirementSpendingGoal(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='retirement_goals')
     goal = models.OneToOneField('main.Goal', related_name='retirement_plan')
@@ -185,11 +171,11 @@ class RetirementLifestyle(models.Model):
     health = models.TextField(help_text="The text for the health block")
     interests = models.TextField(help_text="The text for the interests block")
     leisure = models.TextField(help_text="The text for the leisure block")
-    default_volunteer_days = models.PositiveIntegerField(default=0,
+    default_volunteer_days = models.PositiveIntegerField(
         validators=[MinValueValidator(0),MaxValueValidator(7)],
         help_text="The default number of volunteer work days selected for this lifestyle")
 
-    default_paid_days = models.PositiveIntegerField(default=0,
+    default_paid_days = models.PositiveIntegerField(
         validators=[MinValueValidator(0),MaxValueValidator(7)],
         help_text="The default number of paid work days selected for this lifestyle")
 

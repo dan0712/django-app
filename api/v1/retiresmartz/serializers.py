@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from retiresmartz.models import RetirementPlan, RetirementPlanBTC, RetirementPlanATC
+from retiresmartz.models import RetirementPlan
 from client.models import Client
 import json
 
@@ -27,18 +27,6 @@ def get_default_life_expectancy(client):
 
 def get_default_retirement_date(client):
     return date(client.date_of_birth.year + 67, client.date_of_birth.month, client.date_of_birth.day)
-
-
-class BTCSerializer(ReadOnlyModelSerializer):
-    class Meta:
-        model = RetirementPlanBTC
-        exclude = ('plan',)
-
-
-class ATCSerializer(ReadOnlyModelSerializer):
-    class Meta:
-        model = RetirementPlanATC
-        exclude = ('plan',)
 
 def who_validator(value):
     if value not in ['self', 'partner', 'joint']:
@@ -81,31 +69,7 @@ class InitialDepositsSerializer(serializers.Serializer):
     amt = serializers.IntegerField()
 
 
-class BTCWritableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RetirementPlanBTC
-        fields = (
-            'begin_date',
-            'amount',
-            'growth',
-            'schedule',
-        )
-
-
-class ATCWritableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RetirementPlanATC
-        fields = (
-            'begin_date',
-            'amount',
-            'growth',
-            'schedule',
-        )
-
 class RetirementPlanSerializer(ReadOnlyModelSerializer):
-    btc = BTCSerializer()
-    atc = ATCSerializer()
-
     class Meta:
         model = RetirementPlan
 
@@ -122,8 +86,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         validators=[make_json_list_validator('initial_deposits', InitialDepositsSerializer)])
     #savings = SavingsWritableSerializer(required=False)
     #initial_deposits = InitialDepositsWritableSerializer(required=False)
-    btc = BTCWritableSerializer(required=False)
-    atc = ATCWritableSerializer(required=False)
 
     class Meta:
         model = RetirementPlan
@@ -131,10 +93,9 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'partner_plan',
-            'smsf_account',
             'lifestyle',
             'desired_income',
-            'current_income',
+            'income',
             'volunteer_days',
             'paid_days',
             'same_home',
@@ -142,7 +103,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'reverse_mortgage',
             'retirement_home_style',
             'retirement_home_price',
-            'beta_spouse',
+            'beta_partner',
             'expenses',
             'savings',
             'initial_deposits',
@@ -153,7 +114,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'btc',
             'atc',
 
-            'max_match',
+            'max_employer_match_percent',
             'desired_risk',
             'recommended_risk',
             'max_risk',
@@ -200,9 +161,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         :param validated_data:
         :return: The updated RetirementPlan
         """
-
-        btc = validated_data.pop('btc', None)
-        atc = validated_data.pop('atc', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
