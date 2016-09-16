@@ -84,6 +84,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
     initial_deposits = serializers.JSONField(required=False,
         help_text = RetirementPlan._meta.get_field('initial_deposits').help_text,
         validators=[make_json_list_validator('initial_deposits', InitialDepositsSerializer)])
+    retirement_postal_code = serializers.CharField(max_length=10, required=False)
     #savings = SavingsWritableSerializer(required=False)
     #initial_deposits = InitialDepositsWritableSerializer(required=False)
 
@@ -123,6 +124,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
 
             'portfolio',
             'partner_data',
+            'agreed_on',
 
         )
 
@@ -137,19 +139,15 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        btc = validated_data.pop('btc', None) or get_default_tx_plan()
-        atc = validated_data.pop('atc', None) or get_default_tx_plan()
         client = validated_data['client']
+        if not validated_data.get('retirement_postal_code', ''):
+            if validated_data['same_home']:
+                postal_code = client.residential_address.post_code
+                validated_data['retirement_postal_code'] = postal_code
+            else:
+                raise ValidationError('retirement_postal_code required if not same_home')
 
         plan = RetirementPlan.objects.create(**validated_data)
-
-        ser = BTCWritableSerializer(data=btc)
-        ser.is_valid(raise_exception=True)
-        ser.save(plan=plan)
-
-        ser = ATCWritableSerializer(data=atc)
-        ser.is_valid(raise_exception=True)
-        ser.save(plan=plan)
 
         return plan
 
@@ -162,6 +160,9 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         :return: The updated RetirementPlan
         """
 
+        if instance.agreed_on:
+            raise ValidationError("Unable to make changes to a plan that has been agreed on")
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
@@ -170,9 +171,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             emsg = "Partner plan relationship must be symmetric. " \
                    "I.e. Your selected partner plan must have you as it's partner"
             raise ValidationError(emsg)
-
-        if instance.agreed_on:
-            raise ValidationError("Unable to make changes to a plan that has been agreed on")
 
         instance.save()
 
