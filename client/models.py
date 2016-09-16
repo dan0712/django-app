@@ -5,6 +5,8 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import (MaxValueValidator, MinLengthValidator,
+                                    MinValueValidator, MaxLengthValidator, ValidationError)
 from django.db import models
 from django.db.models import PROTECT
 from django.db.models.aggregates import Min, Max, Sum
@@ -662,3 +664,8 @@ class EmailInvite(models.Model):
         self.send_count += 1
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
+
+class RiskCategory(models.Model):
+    upper_bound = models.FloatField(validators=[MinValueValidator(0),
+                                                MaxValueValidator(1)])
+    name  = models.CharField(max_length=128)
