@@ -151,17 +151,17 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
             'username': invite.email,
             'first_name': invite.first_name,
             'last_name': invite.last_name,
-            'password': serializer['password'],
+            'password': serializer.data['password']
         }
         user = User.objects.create_user(**user_params)
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer['question_one'],
-                                      answer=serializer['question_one_answer'])
+                                      question=serializer.data['question_one'],
+                                      answer=serializer.data['question_one_answer'])
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer['question_two'],
-                                      answer=serializer['question_two_answer'])
+                                      question=serializer.data['question_two'],
+                                      answer=serializer.data['question_two_answer'])
 
         invite.status = EmailInvite.STATUS_ACCEPTED
         invite.user = user
@@ -169,14 +169,14 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
         invite.save()
 
         login_params = {
-            'email': user.email,
-            'password': serializer['password']
+            'username': user.email,
+            'password': serializer.data['password']
         }
 
         user = authenticate(**login_params)
 
         # check if user is authenticated
-        if not user.is_authenticated():
+        if not user or not user.is_authenticated():
             raise exceptions.NotAuthenticated()
 
         # Log the user in with a session as well.
