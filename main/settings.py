@@ -55,6 +55,7 @@ INSTALLED_APPS = (
     'portfolios',
     'statements',
     'swift',
+    'anymail',
 )
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
@@ -142,7 +143,8 @@ SHOW_HIJACKUSER_IN_ADMIN = False
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-DEFAULT_FROM_EMAIL = "no-reply@betasmartz.com"
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', "no-reply@mailgun.betasmartz.com")
 SUPPORT_EMAIL = "support@betasmartz.com"
 SUPPORT_PHONE = "1888888888"
 IS_DEMO = False
@@ -197,6 +199,14 @@ BLOOMBERG_PASSWORD = '+gT[zfV9Bu]Ms.4'
 CRON_CLASSES = [
     # ...
 ]
+
+
+# Email
+ANYMAIL = {
+    "MAILGUN_API_KEY": os.environ.get('MAILGUN_API_KEY', ''),
+    'WEBHOOK_AUTHORIZATION': os.environ.get('WEBHOOK_AUTHORIZATION', 'random:random'),
+}
+
 
 # DOCUMENTATION
 SWAGGER_SETTINGS = {

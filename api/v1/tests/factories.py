@@ -72,7 +72,7 @@ class FiscalYearFactory(factory.django.DjangoModelFactory):
     year = factory.Sequence(lambda n: int(1990 + n))
     begin_date = factory.Sequence(lambda n: datetime(year=int(1990 + n), month=1, day=1))
     end_date = factory.Sequence(lambda n: datetime(year=int(1990 + n), month=12, day=20))
-    month_ends = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    month_ends = '31,29,31,30,31,30,31,31,30,31,30,31'
 
 
 class FirmFactory(factory.django.DjangoModelFactory):
