@@ -204,6 +204,15 @@ class InvestmentType(models.Model):
                             unique=True)
     description = models.CharField(max_length=255, blank=True)
 
+    @unique
+    class Standard(Enum):
+        BONDS = 1
+        STOCKS = 2
+        MIXED = 3
+
+        def get(self):
+            return InvestmentType.objects.get_or_create(name=self.name)[0]
+
     def __str__(self):
         return self.name
 
@@ -990,6 +999,12 @@ class ExternalInstrument(models.Model):
 
 
 class Ticker(FinancialInstrument):
+    class State(ChoiceEnum):
+        INACTIVE = 1, 'Inactive'  # The fund has been removed from our Approved Product List. Only Sells are allowed.
+        ACTIVE = 2, 'Active'  # We can buy and sell the fund.
+        # The Fund has closed and will never become active again. It is kept for history. Buys and Sells are not allowed
+        CLOSED = 3, 'Closed'
+
     symbol = models.CharField(
         max_length=10,
         blank=False,
@@ -1016,6 +1031,9 @@ class Ticker(FinancialInstrument):
     daily_prices = GenericRelation('DailyPrice',
                                    content_type_field='instrument_content_type',
                                    object_id_field='instrument_object_id')
+    state = models.IntegerField(choices=State.choices(),
+                                default=State.ACTIVE.value,
+                                help_text='The current state of this ticker.')
 
     # Also may have 'features' property from the AssetFeatureValue model.
     # also has external_instruments foreign key - to get instrument_id per institution
@@ -1032,22 +1050,15 @@ class Ticker(FinancialInstrument):
 
     @property
     def is_stock(self):
-        # InvestmentType stocks id = 2
-        return self.asset_class.investment_type_id == 2
+        return self.asset_class.investment_type == InvestmentType.Standard.STOCKS.get()
 
     @property
     def is_core(self):
-        # Experimental
-        # TODO: it will be deadly slow. need to to change all core models asap
-        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
-        return self.features.filter(pk=core_feature_value.pk).exists()
+        return self.etf
 
     @property
     def is_satellite(self):
-        # Experimental
-        # TODO: it will be deadly slow. need to to change all core models asap
-        satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
-        return self.features.filter(pk=satellite_feature_value.pk).exists()
+        return not self.is_core
 
     def value(self, goal):
         v = 0
