@@ -85,8 +85,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         help_text = RetirementPlan._meta.get_field('initial_deposits').help_text,
         validators=[make_json_list_validator('initial_deposits', InitialDepositsSerializer)])
     retirement_postal_code = serializers.CharField(max_length=10, required=False)
-    #savings = SavingsWritableSerializer(required=False)
-    #initial_deposits = InitialDepositsWritableSerializer(required=False)
 
     class Meta:
         model = RetirementPlan
@@ -148,6 +146,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
                 raise ValidationError('retirement_postal_code required if not same_home')
 
         plan = RetirementPlan.objects.create(**validated_data)
+        if plan.agreed_on: plan.generate_soa()
 
         return plan
 

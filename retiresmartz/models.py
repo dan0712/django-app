@@ -135,6 +135,25 @@ class RetirementPlan(models.Model):
     class Meta:
         unique_together = ('name', 'client')
 
+    def get_soa(self):
+        from statements.models import RetirementStatementOfAdvice
+        qs = RetirementStatementOfAdvice.objects.filter(retirement_plan_id=self.pk)
+        if qs.count():
+            self.statement_of_advice = qs[0]
+            return qs[0]
+        elif self.agreed_on:
+            return self.generate_soa()
+        return None
+
+
+    def generate_soa(self):
+        from statements.models import RetirementStatementOfAdvice
+        if not self.agreed_on:
+            raise Exception('Can only generate SOA on an agreed plan')
+        soa=RetirementStatementOfAdvice(retirement_plan_id=self.id)
+        soa.save()
+        return soa
+
     def save(self, *args, **kwargs):
         """
         Override save() so we can do some custom validation of partner plans.
@@ -142,6 +161,8 @@ class RetirementPlan(models.Model):
         reverse_plan = getattr(self, 'partner_plan_reverse', None)
         if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
             raise ValidationError("Partner plan relationship must be symmetric.")
+        if self.agreed_on and not self.get_soa():
+            self.generate_soa()
         super(RetirementPlan, self).save(*args, **kwargs)
 
 @receiver(post_save, sender=RetirementPlan)
