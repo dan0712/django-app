@@ -377,8 +377,8 @@ class GoalTests(APITestCase):
         equity = AssetFeatureValueFactory.create(name='equity', assets=[t1, t2])
         goal_settings = GoalSettingFactory.create()
 
-        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=0, rebalance_thr=0.05,
-                                 configured_val=0.5, rebalance_type=0)
+        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX, rebalance_thr=0.05,
+                                 configured_val=0.5, rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE)
 
         goal = GoalFactory.create(active_settings=goal_settings)
 
@@ -386,14 +386,12 @@ class GoalTests(APITestCase):
         PositionFactory.create(goal=goal, ticker=t2, share=1)
 
         metric = GoalMetric.objects.get(group__settings__goal_active=goal)
-        #metric.measured_val = float(np.sum([pos.value for pos in goal.get_positions_all()])) / goal.available_balance
-        #measured_val = float(np.sum([pos.value for pos in goal.get_positions_all()])) / goal.available_balance
 
         self.assertTrue(10.0 / goal.available_balance == metric.measured_val)
 
         self.assertTrue((metric.measured_val - metric.configured_val) / metric.rebalance_thr == metric.drift_score)
 
-        metric.rebalance_type = 1
+        metric.rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
         self.assertTrue(((metric.measured_val - metric.configured_val) / metric.configured_val) / metric.rebalance_thr \
                         == metric.drift_score)
 
