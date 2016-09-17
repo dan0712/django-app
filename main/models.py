@@ -16,6 +16,7 @@ from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
 from django.template.loader import render_to_string
+from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
 from django.dispatch import receiver
@@ -299,7 +300,7 @@ class ExternalAsset(models.Model):
     owner = models.ForeignKey('client.Client', related_name='external_assets')
     description = models.TextField(blank=True, null=True)
     valuation = models.DecimalField(decimal_places=2,
-                                    max_digits=15, # Up to 9.9... trillion
+                                    max_digits=15,  # Up to 9.9... trillion
                                     help_text='In the system currency. Could be negative if a debt')
     valuation_date = models.DateField(help_text='Date when the asset was valued')
     growth = models.DecimalField(decimal_places=4,

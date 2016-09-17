@@ -12,7 +12,7 @@ from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from common.structures import ChoiceEnum
-from main.utils import d2dt
+from common.utils import d2dt
 
 
 class PersonalData(models.Model):

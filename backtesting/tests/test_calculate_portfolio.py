@@ -138,9 +138,9 @@ class BaseTest(TestCase):
         goal1.cash_balance = 1000
         idata = self._data_provider.get_instruments()
         portfolio, er, var = calculate_portfolio(settings=goal1.selected_settings,
-                                                 idata=idata,
                                                  data_provider=self._data_provider,
-                                                 execution_provider=self._execution_provider)
+                                                 execution_provider=self._execution_provider,
+                                                 idata=idata)
         self.assertEqual(len(portfolio), 4)
 
     def test_calculate_portfolios(self):

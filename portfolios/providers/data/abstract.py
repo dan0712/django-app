@@ -4,19 +4,11 @@ from abc import ABC, abstractmethod
 
 
 class DataProviderAbstract(ABC):
-    @abstractmethod
-    def set_cache(self, *args):
-        raise NotImplementedError()
-
     def get_start_date(self):
         return self.get_current_date() - timedelta(days=365*5)
 
     @abstractmethod
     def get_instruments(self):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def move_date_forward(self):
         raise NotImplementedError()
 
     @abstractmethod
@@ -51,10 +43,6 @@ class DataProviderAbstract(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_masks(self, instruments, fund_mask_name, portfolio_set_mask_prefix):
-        raise NotImplementedError()
-
-    @abstractmethod
     def get_goals(self):
         raise NotImplementedError()
 
@@ -64,4 +52,8 @@ class DataProviderAbstract(ABC):
 
     @abstractmethod
     def set_markowitz_scale(self, date, min, max, a, b ,c):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_fund_price_latest(self, ticker):
         raise NotImplementedError()

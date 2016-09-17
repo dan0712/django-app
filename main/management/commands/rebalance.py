@@ -8,7 +8,7 @@ import logging
 import copy
 import numpy as np
 
-from portfolios.bl_model import markowitz_optimizer_3
+from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.calculation import MIN_PORTFOLIO_PCT, \
     calc_opt_inputs, create_portfolio_weights
 from portfolios.providers.execution.abstract \
@@ -263,7 +263,7 @@ def perturbate(goal, idata, data_provider, execution_provider):
     held_weights = get_held_weights(goal)
     tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(goal, data_provider.get_current_date())
     min_weights = get_largest_min_weight_per_asset(held_weights=held_weights, tax_weights=tax_min_weights)
-    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider=data_provider)
+    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider, execution_provider)
     weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:

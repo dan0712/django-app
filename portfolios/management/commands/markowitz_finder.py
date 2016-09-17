@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 from scipy.optimize.minpack import curve_fit
 
-from portfolios.bl_model import markowitz_optimizer_3
+from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.calculation import FUND_MASK_NAME, \
     MIN_PORTFOLIO_PCT, get_core_constraints, run_bl
 from portfolios.providers.data.django import DataProviderDjango

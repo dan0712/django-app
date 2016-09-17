@@ -101,24 +101,6 @@ class DataProviderBacktester(DataProviderAbstract):
     def get_asset_feature_values_ids(self):
         return [val.id for val in self.asset_feature_values]
 
-    def get_masks(self, instruments, fund_mask_name, portfolio_set_mask_prefix):
-        masks = pd.DataFrame(False, index=instruments.index, columns=self.get_asset_feature_values_ids())
-        masks[fund_mask_name] = instruments['bid'].notnull()
-
-        psid_miloc = {}
-        for psid in self.get_portfolio_sets_ids():
-            mid = portfolio_set_mask_prefix + str(psid)
-            masks[mid] = False
-            psid_miloc[psid] = masks.columns.get_loc(mid)
-
-        # Add the feature masks
-        for ix, row in enumerate(instruments.itertuples()):
-            for fid in row[5]:
-                masks.iloc[ix, masks.columns.get_loc(fid)] = True
-            for psid in row[6]:
-                masks.iloc[ix, psid_miloc[psid]] = True
-        return masks
-
     def get_goals(self):
         return
 
@@ -131,11 +113,6 @@ class DataProviderBacktester(DataProviderAbstract):
         self.markowitz_scale = MarkowitzScaleMock(date, min, max, a, b, c)
 
     def get_instruments(self):
-        if self.cache is not None:
-            data = self.cache
-        else:
-            data = build_instruments(data_provider=self)
-        return data
-
-    def set_cache(self, *args):
-        self.cache = args
+        if self.cache is None:
+            self.cache = build_instruments(data_provider=self)
+        return self.cache
