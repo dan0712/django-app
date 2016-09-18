@@ -2,12 +2,10 @@ from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 
 from common.constants import GROUP_SUPPORT_STAFF
 from main.constants import ACCOUNT_TYPES, ACCOUNT_TYPE_PERSONAL
-from main.models import User
-from main.tests.fixture import Fixture1
 from .factories import AdvisorFactory, SecurityQuestionFactory, \
     EmailInviteFactory, GroupFactory
 
@@ -18,6 +16,7 @@ from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
 from client.models import EmailInvite
 from django.test.client import MULTIPART_CONTENT
 import json
+
 
 class InviteTests(APITestCase):
     def setUp(self):
@@ -153,15 +152,23 @@ class InviteTests(APITestCase):
                          msg='/api/v1/me denies unauthenticated user')
 
         # But this user can still log in again
-        url = '/api/v1/login'
+        # through non-api url, user prob not using api to login
+        # in this scenario
+        # POST ing to the backup login url FAILS here:
+        url = reverse('login')
         data = {
             'username': lookup_invite.user.email,
             'password': PW,
         }
         response = self.client.post(url, data)
+        # response.content here is actually 403 response, correct
+        # errors in form, doesn't say what errors.
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='A user still onboarding can log in')
         self.assertIn('sessionid', response.cookies)
+
+        # this works, so something up with backend login view?
+        # self.assertTrue(self.client.login(username=lookup_invite.user.email, password=PW))
 
         response = self.client.get(me_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
