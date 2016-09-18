@@ -24,6 +24,8 @@ from main.management.commands.populate_test_prices import populate_prices
 class GoalTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
 
     def tearDown(self):
         self.client.logout()

@@ -1077,15 +1077,97 @@ class Ticker(FinancialInstrument):
         """
         return get_price_returns(self, dates)
 
+    def _get_region_feature(self, name):
+        region_feature = AssetFeature.Standard.REGION.get_object()
+        if name == 'AU':
+            return AssetFeatureValue.Standard.REGION_AUSTRALIAN.get_object()
+        elif name == 'EU':
+            return AssetFeatureValue.objects.get_or_create(name='European', feature=region_feature)[0]
+        elif name == 'US':
+            return AssetFeatureValue.objects.get_or_create(name='American (US)', feature=region_feature)[0]
+        elif name == 'CN':
+            return AssetFeatureValue.objects.get_or_create(name='Chinese', feature=region_feature)[0]
+        elif name == 'INT':
+            return AssetFeatureValue.objects.get_or_create(name='International', feature=region_feature)[0]
+        elif name == 'AS':
+            return AssetFeatureValue.objects.get_or_create(name='Asian', feature=region_feature)[0]
+        elif name == 'JAPAN':
+            return AssetFeatureValue.objects.get_or_create(name='Japanese', feature=region_feature)[0]
+        elif name == 'UK':
+            return AssetFeatureValue.objects.get_or_create(name='UK', feature=region_feature)[0]
+        elif name == 'EM':
+            return AssetFeatureValue.objects.get_or_create(name='Emerging Markets', feature=region_feature)[0]
+        else:
+            # tests run random region names, just going to set to an unknown region assetfeaturevalue here
+            return AssetFeatureValue.objects.get_or_create(name='Unknown region', feature=region_feature)[0]
+
+    def get_region_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Region
+        """
+        return self._get_region_feature(self.region.name)
+
+    def get_currency_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Currency
+        """
+        curr_feature = AssetFeature.Standard.CURRENCY.get_object()
+        return AssetFeatureValue.objects.get_or_create(name=self.currency, feature=curr_feature)[0]
+
+    def get_asset_class_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Asset Class
+        """
+        ac_feature = AssetFeature.Standard.ASSET_CLASS.get_object()
+        return AssetFeatureValue.objects.get_or_create(name=self.asset_class.display_name, feature=ac_feature)[0]
+
+    def get_asset_type_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Asset Class Investment Type
+        """
+        stocks = InvestmentType.objects.get(pk=1)
+        bonds = InvestmentType.objects.get(pk=2)
+        if self.asset_class.investment_type == stocks:
+            return AssetFeatureValue.Standard.ASSET_TYPE_STOCK.get_object()
+        else:
+            return AssetFeatureValue.Standard.ASSET_TYPE_BOND.get_object()
+
+    def get_ethical_feature_value(self):
+        return AssetFeatureValue.Standard.SRI_OTHER.get_object()
+
+    def populate_features(self):
+        """
+        Has a Ticker populates its own features
+        """
+        # AssetFeatureValue types
+        satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()        
+
+        logger.info('Populating features for ticker %s' % self)
+        r_feat = self.get_region_feature_value()
+        ac_feat = self.get_asset_class_feature_value()
+        curr_feat = self.get_currency_feature_value()
+        at_feat = self.get_asset_type_feature_value()
+        self.features.clear()
+        self.features.add(r_feat, ac_feat, curr_feat, at_feat)
+        if self.ethical:
+            eth_feature_value = self.get_ethical_feature_value()
+            self.features.add(eth_feature_value)
+        self.features.add(core_feature_value if self.etf else satellite_feature_value)
+
     def save(self,
              force_insert=False,
              force_update=False,
              using=None,
              update_fields=None):
         self.symbol = self.symbol.upper()
-
         super(Ticker, self).save(force_insert, force_update, using,
                                  update_fields)
+
+
+@receiver(post_save, sender=Ticker)
+def populate_ticker_features(sender, instance, created, **kwargs):
+    instance.populate_features()
 
 
 class EmailInvitation(models.Model):
