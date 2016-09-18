@@ -2,12 +2,10 @@ from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
 from rest_framework import status
-from rest_framework.test import APITestCase
-
+from rest_framework.test import APITestCase, APIClient
+from django.test import Client as DjangoClient
 from common.constants import GROUP_SUPPORT_STAFF
 from main.constants import ACCOUNT_TYPES, ACCOUNT_TYPE_PERSONAL
-from main.models import User
-from main.tests.fixture import Fixture1
 from .factories import AdvisorFactory, SecurityQuestionFactory, \
     EmailInviteFactory, GroupFactory
 
@@ -18,6 +16,7 @@ from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
 from client.models import EmailInvite
 from django.test.client import MULTIPART_CONTENT
 import json
+
 
 class InviteTests(APITestCase):
     def setUp(self):
@@ -153,7 +152,11 @@ class InviteTests(APITestCase):
                          msg='/api/v1/me denies unauthenticated user')
 
         # But this user can still log in again
-        url = '/api/v1/login'
+        # through non-api url, user prob not using api to login
+        # in this scenario
+        # POST ing to the backup login url FAILS here:
+        self.client = DjangoClient()  # django
+        url = reverse('login')
         data = {
             'username': lookup_invite.user.email,
             'password': PW,
