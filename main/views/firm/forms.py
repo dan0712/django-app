@@ -21,7 +21,7 @@ from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, 
 from ..base import AdminView
 from ..base import LegalView
 from ...forms import EmailInvitationForm
-from ...models import EmailInvitation, Section, Position
+from ...models import EmailInvitation, Section
 from main.constants import SUCCESS_MESSAGE, INVITATION_ADVISOR, \
     AUTHORIZED_REPRESENTATIVE, INVITATION_SUPERVISOR, INVITATION_TYPE_DICT, \
     PERSONAL_DATA_FIELDS

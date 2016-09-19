@@ -13,9 +13,9 @@ from main.models import AccountGroup, ActivityLog, \
     ActivityLogEvent, Advisor, AuthorisedRepresentative, Dividend, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
-    Position, ProxyAssetClass, ProxyTicker, \
+    ProxyAssetClass, ProxyTicker, \
     Transaction, User, View, InvestmentType, FiscalYear, Ticker, \
-    AssetFeature
+    AssetFeature, PositionLot
 
 admin.site.register(AccountGroup)
 
@@ -351,7 +351,7 @@ admin.site.register(AuthorisedRepresentative, AuthorisedRepresentativeAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.register(PortfolioSet, PortfolioSetAdmin)
-admin.site.register(Position, PositionAdmin)
+#admin.site.register(Position, PositionAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
 admin.site.register(InvestmentType, InvestmentTypeAdmin)

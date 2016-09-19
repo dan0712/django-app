@@ -18,7 +18,7 @@ from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
                             INVITATION_TYPE_DICT)
 from main.forms import BetaSmartzGenericUserSignupForm, EmailInvitationForm
 from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
-                         Position, Supervisor, Transaction, User, PositionLot)
+                         PositionLot, Supervisor, Transaction, User, PositionLot)
 from main.views.base import LegalView
 from notifications.models import Notification
 from support.models import SupportRequest

@@ -1867,18 +1867,17 @@ class Goal(models.Model):
             ticker = Ticker.objects.get(executions__distributions__position_lot=l)
             if ticker.is_stock:
                 v += l.quantity * ticker.unit_price
-
-        #for p in self.positions.all():
-        #    if p.is_stock:
-        #        v += p.value
         return v
 
     @property
     def bond_balance(self):
         v = 0
-        for p in self.positions.all():
-            if not p.is_stock:
-                v += p.value
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
+
+        for l in lots:
+            ticker = Ticker.objects.get(executions__distributions__position_lot=l)
+            if not ticker.is_stock:
+                v += l.quantity * ticker.unit_price
         return v
 
     @property
@@ -2142,6 +2141,7 @@ class GoalMetric(models.Model):
                                                                  self.id)
 
 
+'''
 class Position(models.Model):
     class Meta:
         unique_together = ('goal', 'ticker')
@@ -2170,7 +2170,7 @@ class Position(models.Model):
 
     def __str__(self):
         return "{}|{}|{}".format(self.goal, self.ticker.symbol, self.share)
-
+'''
 
 class MarketOrderRequest(models.Model):
     """
