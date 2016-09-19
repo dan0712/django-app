@@ -65,8 +65,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     smoker = models.NullBooleanField(null=True, blank=True)
     daily_exercise = models.PositiveIntegerField(null=True, blank=True,
                                                  help_text="In Minutes")
-    weight = models.PositiveIntegerField(default=0, help_text="In kilograms")
-    height = models.PositiveIntegerField(default=0, help_text="In centimeters")
+    weight = models.PositiveIntegerField(null=True, blank=True, help_text="In kilograms")
+    height = models.PositiveIntegerField(null=True, blank=True, help_text="In centimeters")
 
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
@@ -668,4 +668,3 @@ class EmailInvite(models.Model):
 class RiskCategory(models.Model):
     upper_bound = models.FloatField(validators=[MinValueValidator(0),
                                                 MaxValueValidator(1)])
-    name  = models.CharField(max_length=128)
