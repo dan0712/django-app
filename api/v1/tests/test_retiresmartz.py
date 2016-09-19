@@ -98,6 +98,53 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['client'], plan1.client.id)
 
+    def test_retirement_incomes(self):
+        """
+        Test listing and creating retirement incomes
+        """
+        client = Fixture1.client1()
+        plan = Fixture1.client1_retirementplan1()
+
+        # Create an income
+        url = '/api/v1/clients/%s/retirement-incomes'%client.id
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        income_data = {'name': 'RetirementIncome1',
+                       'plan': plan.id,
+                       'begin_date': now().date(),
+                       'amount': 200,
+                       'growth': 1.0,
+                       'schedule': 'DAILY'
+                       }
+        response = self.client.post(url, income_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        income = response.data
+        self.assertEqual(income['schedule'], 'DAILY')
+        self.assertEqual(income['amount'], 200)
+        self.assertEqual(income['growth'], 1.0)
+        self.assertEqual(income['plan'], plan.id)
+
+        # Update it
+        url = '/api/v1/clients/%s/retirement-incomes/%s'%(client.id,
+                                                          income['id'])
+        income_data = { 'schedule': 'WEEKLY' }
+        response = self.client.put(url, income_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Make sure it's in the list
+        url = '/api/v1/clients/%s/retirement-incomes'%client.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], income['id'])
+
+        # And unprivileged users can't see it
+        self.client.force_authenticate(user=Fixture1.client2().user)
+        url = '/api/v1/clients/%s/retirement-incomes'%client.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+
     def test_put_partner(self):
         """
         Test update partner_plan after tax contribution
