@@ -1063,8 +1063,13 @@ class Ticker(FinancialInstrument):
     def value(self, goal):
         v = 0
 
-        for p in Position.objects.filter(goal=goal, ticker=self).all():
-            v += p.value
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=goal)
+
+        for l in lots:
+            v += l.quantity * self.unit_price
+
+        #for p in Position.objects.filter(goal=goal, ticker=self).all():
+        #    v += p.value
 
         return v
 
@@ -1505,7 +1510,12 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        return Position.objects.filter(goal=self).all()
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
+        return lots
+        #for l in lots:
+        #    v += l.quantity * self.unit_price
+        #
+        #return Position.objects.filter(goal=self).all()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1829,8 +1839,15 @@ class Goal(models.Model):
     @property
     def total_balance(self):
         b = self.cash_balance
-        for p in Position.objects.filter(goal=self).all():
-            b += p.value
+
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
+
+        for l in lots:
+            ticker = Ticker.objects.get(executions__distributions__position_lot=l)
+            b += l.quantity * ticker.unit_price
+
+        #for p in Position.objects.filter(goal=self).all():
+        #    b += p.value
         return b
 
     @property
@@ -1843,9 +1860,17 @@ class Goal(models.Model):
     @property
     def stock_balance(self):
         v = 0
-        for p in self.positions.all():
-            if p.is_stock:
-                v += p.value
+
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
+
+        for l in lots:
+            ticker = Ticker.objects.get(executions__distributions__position_lot=l)
+            if ticker.is_stock:
+                v += l.quantity * ticker.unit_price
+
+        #for p in self.positions.all():
+        #    if p.is_stock:
+        #        v += p.value
         return v
 
     @property
@@ -2243,6 +2268,19 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
+
+
+class PositionLot(models.Model):
+    #create on every buy
+    execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
+    #quantity get decreased on every sell, until it it zero, then delete the model
+
+
+class Sale(models.Model):
+    #create on every sale
+    execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='sold_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
 
 
 class SymbolReturnHistory(models.Model):

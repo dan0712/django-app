@@ -12,7 +12,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
-                        MarkowitzScale, Supervisor, AuthorisedRepresentative
+                        MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -390,6 +390,7 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     to_goal = factory.SubFactory(GoalFactory)
 
 
+'''
 class PositionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Position
@@ -397,6 +398,16 @@ class PositionFactory(factory.django.DjangoModelFactory):
     goal = factory.SubFactory(GoalFactory)
     ticker = factory.SubFactory(TickerFactory)
     share = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+'''
+
+class PositionLotFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PositionLot
+
+
+class ExecutionDistributionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExecutionDistribution
 
 
 class DailyPriceFactory(factory.django.DjangoModelFactory):

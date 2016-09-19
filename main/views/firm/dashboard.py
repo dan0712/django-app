@@ -18,7 +18,7 @@ from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
                             INVITATION_TYPE_DICT)
 from main.forms import BetaSmartzGenericUserSignupForm, EmailInvitationForm
 from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
-                         Position, Supervisor, Transaction, User)
+                         Position, Supervisor, Transaction, User, PositionLot)
 from main.views.base import LegalView
 from notifications.models import Notification
 from support.models import SupportRequest
@@ -295,7 +295,8 @@ class FirmAnalyticsMixin(object):
 
     def get_queryset_positions(self):
         if not hasattr(self, '_queryset_positions'):
-            qs = Position.objects.all()
+            #qs = Position.objects.all()
+            qs = PositionLot.objects.all()
 
             if hasattr(self, 'firm'):
                 qs = qs.filter_by_firm(self.firm)
@@ -306,7 +307,8 @@ class FirmAnalyticsMixin(object):
                     if advisors.count() > 0:
                         qs = qs.filter_by_advisors(advisors)
                     else:
-                        qs = Position.objects.none()
+                        qs = PositionLot.objects.none()
+                        #qs = Position.objects.none()
 
             if hasattr(self, 'client_filter'):
                 clients = self.client_filter.qs
@@ -439,12 +441,20 @@ class FirmAnalyticsMixin(object):
 
     def get_context_positions(self):
         qs_positions = self.get_queryset_positions()
-
+        '''
         positions_by_asset_class = qs_positions \
             .annotate(
                 asset_class=F('ticker__asset_class'),
                 name=F('ticker__asset_class__display_name'),
                 color=F('ticker__asset_class__primary_color'),
+            ) \
+            .values('asset_class', 'name', 'color') \
+            .annotate_value()'''
+        positions_by_asset_class = qs_positions \
+            .annotate(
+                asset_class=F('execution_distribution__execution_asset__asset_class'),
+                name=F('execution_distribution__execution_asset__asset_class__display_name'),
+                color=F('execution_distribution__execution_asset__asset_class__primary_color'),
             ) \
             .values('asset_class', 'name', 'color') \
             .annotate_value()
