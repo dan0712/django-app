@@ -22,13 +22,13 @@ class BaseTest(TestCase):
         Region.objects.create(name="UK")
         Region.objects.create(name="US")
         AssetClass.objects.create(name="US_BONDS",
-                                  investment_type=InvestmentType.objects.get_or_create(name='Bonds')[0],
+                                  investment_type=InvestmentType.Standard.BONDS.get(),
                                   display_order=1)
         AssetClass.objects.create(name="AU_STOCKS",
-                                  investment_type=InvestmentType.objects.get_or_create(name='Stocks')[0],
+                                  investment_type=InvestmentType.Standard.STOCKS.get(),
                                   display_order=2)
         AssetClass.objects.create(name="AU_STOCK_MUTUALS",
-                                  investment_type=InvestmentType.objects.get_or_create(name='Stocks')[0],
+                                  investment_type=InvestmentType.Standard.STOCKS.get(),
                                   display_order=3)
 
         index = MarketIndex.objects.create(id=1,

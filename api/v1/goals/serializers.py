@@ -554,7 +554,7 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
         """
         account = validated_data['account']
 
-        idata = get_instruments()
+        idata = get_instruments(DataProviderDjango())
 
         with transaction.atomic():
             metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)

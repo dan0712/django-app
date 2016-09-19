@@ -9,7 +9,8 @@ from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
     TransactionFactory, AccountTypeRiskProfileGroupFactory, \
     ExternalAssetFactory, PositionFactory, TickerFactory, \
-    SupervisorFactory, AuthorisedRepresentativeFactory
+    SupervisorFactory, AuthorisedRepresentativeFactory, \
+    InvestmentTypeFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -22,6 +23,9 @@ class FirmAnalyticsMixinTests(TestCase):
 
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+
         self.view = self.DummyView()
         self.today = today = timezone.now().date()
         # Populate the AccountType -> RiskProfileGroup mapping

@@ -14,6 +14,9 @@ from user.models import SecurityQuestion, SecurityAnswer
 from client.models import Client, EmailInvite
 from support.models import SupportRequest
 from api.v1.user.serializers import UserSerializer, AuthSerializer
+from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
+    RetirementPlanEincWritableSerializer
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc
 
 from . import serializers
 
@@ -47,6 +50,31 @@ class ExternalAssetViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewS
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
+class RetirementIncomeViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+    model = RetirementPlanEinc
+    # We define the queryset because our get_queryset calls super so the Nested queryset works.
+    queryset = RetirementPlanEinc.objects.all()
+    serializer_class = RetirementPlanEincSerializer
+    pagination_class = None
+
+    # Set the response serializer because we want to use the 'get' serializer for responses from the 'create' methods.
+    # See api/v1/views.py
+    serializer_response_class = RetirementPlanEincSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'POST']:
+            return RetirementPlanEincWritableSerializer
+        else:
+            # Default for get and other requests is the read only serializer
+            return RetirementPlanEincSerializer
+
+    def get_queryset(self):
+        qs = super(RetirementIncomeViewSet, self).get_queryset()
+
+        # Only return assets which the user has access to.
+        user = SupportRequest.target_user(self.request)
+        allow_plans = RetirementPlan.objects.filter_by_user(user)
+        return qs.filter(plan__in=allow_plans)
 
 class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     model = Client
@@ -151,17 +179,17 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
             'username': invite.email,
             'first_name': invite.first_name,
             'last_name': invite.last_name,
-            'password': serializer.data['password']
+            'password': serializer.validated_data['password'],
         }
         user = User.objects.create_user(**user_params)
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer.data['question_one'],
-                                      answer=serializer.data['question_one_answer'])
+                                      question=serializer.validated_data['question_one'],
+                                      answer=serializer.validated_data['question_one_answer'])
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer.data['question_two'],
-                                      answer=serializer.data['question_two_answer'])
+                                      question=serializer.validated_data['question_two'],
+                                      answer=serializer.validated_data['question_two_answer'])
 
         invite.status = EmailInvite.STATUS_ACCEPTED
         invite.user = user
@@ -170,7 +198,7 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
 
         login_params = {
             'username': user.email,
-            'password': serializer.data['password']
+            'password': serializer.validated_data['password']
         }
 
         user = authenticate(**login_params)

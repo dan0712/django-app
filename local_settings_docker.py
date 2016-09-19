@@ -37,6 +37,12 @@ CACHES = {
 
 STATIC_ROOT = "/collected_static"
 
+# Mailgun on deployments
+# Mailgun Email settings if MAILGUN_API_KEY is in environ
+if os.environ.get('MAILGUN_API_KEY'):
+    EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
+
+
 # Cloud Swift Storage Settings
 SOFTLAYER_REGION = 'tor01'  # Toronto
 PUBLIC_SOFTLAYER_URL = 'https://%s.objectstorage.softlayer.net/auth/v1.0/' % SOFTLAYER_REGION  # public

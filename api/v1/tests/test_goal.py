@@ -11,7 +11,7 @@ from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
-    MarketOrderRequest, MarketIndex, GoalMetric
+    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
@@ -25,6 +25,8 @@ from main.management.commands.populate_test_prices import populate_prices
 class GoalTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
 
     def tearDown(self):
         self.client.logout()
@@ -332,15 +334,10 @@ class GoalTests(APITestCase):
         """
         # tickers for testing portfolio calculations in goals endpoint
         # otherwise, No valid instruments found
-        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
-        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
-        # # ticker checks django contenttype model for some reason so
-        # # we have to manage this in fixtures a little, have to be unique per model
         self.bonds_index = MarketIndexFactory.create()
         self.stocks_index = MarketIndexFactory.create()
-        #self.content_type = ContentType.objects.get_for_model(MarketIndex)
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
         # Add the asset classes to the portfolio set
         self.portfolio_set = PortfolioSetFactory.create()
         self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)

@@ -3,13 +3,18 @@ import datetime
 from django import test
 
 from api.v1.tests.factories import GoalFactory, PositionFactory, TickerFactory, \
-    TransactionFactory
+    TransactionFactory, InvestmentTypeFactory
 from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
     Transaction
 from portfolios.providers.execution.django import ExecutionProviderDjango
 
 
 class DjangoExecutionProviderTest(test.TestCase):
+    def setUp(self):
+        # for tickers
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+
     def test_get_asset_weights_held_less_than1y_with_new_postions(self):
         fund = TickerFactory.create(unit_price=2.1)
         goal = GoalFactory.create()
