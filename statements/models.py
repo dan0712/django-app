@@ -37,11 +37,11 @@ class PDFStatement(models.Model):
         return pdf_builder.write_pdf()
 
     def save(self, *args, **kwargs):
+        super(PDFStatement, self).save(*args, **kwargs)
         if not self.pdf:
             bio = BytesIO(self.render_pdf())
             self.pdf.save('%s.pdf'%self.account,
                           ContentFile(bio.getvalue()))
-        super(PDFStatement, self).save(*args, **kwargs)
 
     @property
     def default_template(self):
