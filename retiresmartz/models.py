@@ -60,7 +60,7 @@ class RetirementPlan(models.Model):
     desired_income = models.PositiveIntegerField(
         help_text="The desired annual household pre-tax retirement income in system currency")
     income = models.PositiveIntegerField(
-        help_text="The current annual household pre-tax income at the start of your plan")
+        help_text="The current annual personal pre-tax income at the start of your plan")
 
     volunteer_days = models.PositiveIntegerField(
         validators=[MinValueValidator(0),MaxValueValidator(7)],
@@ -135,6 +135,31 @@ class RetirementPlan(models.Model):
     class Meta:
         unique_together = ('name', 'client')
 
+    def __init__(self, *args, **kwargs):
+        # Keep a copy of agreed_on so we can see if it's changed
+        super(RetirementPlan, self).__init__(*args, **kwargs)
+        self.__was_agreed = self.agreed_on
+
+    @property
+    def was_agreed(self):
+        return self.__was_agreed
+
+    def save(self, *args, **kwargs):
+        """
+        Override save() so we can do some custom validation of partner plans.
+        """
+        if self.was_agreed:
+            raise ValidationError("Cannot save a RetirementPlan that has been agreed upon")
+
+        reverse_plan = getattr(self, 'partner_plan_reverse', None)
+        if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
+            raise ValidationError("Partner plan relationship must be symmetric.")
+
+        super(RetirementPlan, self).save(*args, **kwargs)
+
+        if self.agreed_on and not self.was_agreed and not self.get_soa():
+            self.generate_soa()
+
     def get_soa(self):
         from statements.models import RetirementStatementOfAdvice
         qs = RetirementStatementOfAdvice.objects.filter(retirement_plan_id=self.pk)
@@ -145,7 +170,6 @@ class RetirementPlan(models.Model):
             return self.generate_soa()
         return None
 
-
     def generate_soa(self):
         from statements.models import RetirementStatementOfAdvice
         if not self.agreed_on:
@@ -153,17 +177,6 @@ class RetirementPlan(models.Model):
         soa=RetirementStatementOfAdvice(retirement_plan_id=self.id)
         soa.save()
         return soa
-
-    def save(self, *args, **kwargs):
-        """
-        Override save() so we can do some custom validation of partner plans.
-        """
-        reverse_plan = getattr(self, 'partner_plan_reverse', None)
-        if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
-            raise ValidationError("Partner plan relationship must be symmetric.")
-        if self.agreed_on and not self.get_soa():
-            self.generate_soa()
-        super(RetirementPlan, self).save(*args, **kwargs)
 
 @receiver(post_save, sender=RetirementPlan)
 def resolve_retirement_invitations(sender, instance, created, **kwargs):
