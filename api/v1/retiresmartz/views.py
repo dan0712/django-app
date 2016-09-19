@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -5,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.views import ApiViewMixin
-from main.models import RetirementPlan
+from retiresmartz.models import RetirementPlan
 from client.models import Client
 from support.models import SupportRequest
 
@@ -54,6 +55,14 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         user = SupportRequest.target_user(self.request)
         client = Client.objects.filter_by_user(user).get(id=int(self.get_parents_query_dict()['client']))
         return serializer.save(client=client)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.agreed_on:
+            return Response(
+            {'error': 'Unable to update a RetirementPlan that has been agreed on'},
+            status=status.HTTP_400_BAD_REQUEST)
+        return super(RetiresmartzViewSet, self).update(request, *args, **kwargs)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
     def suggested_retirement_income(self):

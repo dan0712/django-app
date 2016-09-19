@@ -33,8 +33,7 @@ from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
 from .management.commands.build_returns import get_price_returns
-from .managers import ExternalAssetQuerySet, \
-    GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -870,75 +869,9 @@ class AccountGroup(models.Model):
         return self.name
 
 
-class RetirementPlan(models.Model):
-    name = models.CharField(max_length=128)
-    description = models.TextField(null=True, blank=True)
-    client = models.ForeignKey('client.Client')
-    # Assigning a partner_plan gives anyone with permissions to modify the partner_plan authority to modify this plan.
-    partner_plan = models.OneToOneField('RetirementPlan',
-                                        related_name='partner_plan_reverse',
-                                        null=True,
-                                        on_delete=models.SET_NULL)
-    begin_date = models.DateField(auto_now_add=True, help_text="Date the retirement plan is supposed to begin.")
-    retirement_date = models.DateField()
-    life_expectancy = models.IntegerField(help_text="Until what age do we want to plan retirement spending?")
-    spendable_income = models.IntegerField(default=0, help_text="The current annual spendable income. This must be identical across partner plans as they have a common spendable income.")
-    desired_income = models.IntegerField(default=0, help_text="The desired annual spendable income in retirement")
-    # Each account can have at most one retirement plan. Hence the relationship goes this way.
-    smsf_account = models.OneToOneField('client.ClientAccount',
-                                        related_name='retirement_plan',
-                                        help_text="The associated SMSF account.",
-                                        null=True)
-    # Also has fields btc, atc and external_income from related models.
-
-    # Install the custom manager that knows how to filter.
-    objects = RetirementPlanQuerySet.as_manager()
-
-    class Meta:
-        unique_together = ('name', 'client')
-
-    def save(self, *args, **kwargs):
-        """
-        Override save() so we can do some custom validation of partner plans.
-        """
-        reverse_plan = getattr(self, 'partner_plan_reverse', None)
-        if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
-            raise ValidationError("Partner plan relationship must be symmetric.")
-
-        if self.smsf_account and not self.smsf_account.confirmed:
-            raise ValidationError('Account is not verified.')
-
-        super(RetirementPlan, self).save(*args, **kwargs)
-
-@receiver(post_save, sender=RetirementPlan)
-def resolve_retirement_invitations(sender, instance, created, **kwargs):
-    """Create a matching profile whenever a user object is created."""
-    from client.models import EmailInvite
-    try:
-        invitation = instance.client.user.invitation
-    except EmailInvite.DoesNotExist: invitation = None
-    if created and invitation \
-            and invitation.status != EmailInvite.STATUS_COMPLETE \
-            and invitation.reason == EmailInvite.REASON_RETIREMENT:
-        invitation.onboarding_data = None
-        invitation.status = EmailInvite.STATUS_COMPLETE
-        invitation.save()
-
 
 class ExternalAssetTransfer(TransferPlan):
     asset = models.OneToOneField(ExternalAsset, related_name='transfer_plan', on_delete=CASCADE)
-
-
-class RetirementPlanBTC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='btc')
-
-
-class RetirementPlanATC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='atc')
-
-
-class RetirementPlanEinc(TransferPlan):
-    plan = models.ForeignKey(RetirementPlan, related_name='external_income')
 
 
 class MarkowitzScale(models.Model):
