@@ -192,6 +192,10 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
+class RetirementPlanEinc(TransferPlan):
+    name = models.CharField(max_length=128)
+    plan = models.ForeignKey(RetirementPlan, related_name='external_income')
+
 class RetirementSpendingGoal(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='retirement_goals')
     goal = models.OneToOneField('main.Goal', related_name='retirement_plan')

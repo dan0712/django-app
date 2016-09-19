@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from retiresmartz.models import RetirementPlan
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc
 from client.models import Client
 import json
 
@@ -174,3 +174,27 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class RetirementPlanEincSerializer(ReadOnlyModelSerializer):
+    class Meta:
+        model = RetirementPlanEinc
+
+
+class RetirementPlanEincWritableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RetirementPlanEinc
+        fields = (
+            'name',
+            'plan',
+            'begin_date',
+            'amount',
+            'growth',
+            'schedule'
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RetirementPlanEincWritableSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            for field in self.fields.values():
+                field.required = False

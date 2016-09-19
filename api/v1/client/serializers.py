@@ -139,7 +139,6 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser.save(asset=instance)
         return instance
 
-
 class InvitationSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = EmailInvite
