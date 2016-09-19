@@ -127,6 +127,6 @@ class Command(BaseCommand):
     help = 'Measure and record all the metrics for all the goals in the system.'
 
     def handle(self, *args, **options):
-        idata = DataProviderDjango().get_instruments()
+        idata = get_instruments(DataProviderDjango())
         for goal in Goal.objects.all():
             measure(goal, idata)

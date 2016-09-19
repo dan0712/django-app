@@ -36,7 +36,7 @@ def first_consec_index(series):
         return series.index[len(series) - i]
 
 
-def filter_returns(returns, end_tol=0, min_days=None):
+def filter_returns(returns, end_tol=0, min_days=None, latest_start=None):
     """
     Results will be a consecutive time block of returns, all ending on the same day.
     The date they end on must be within 'end_tol' of the specified ending day.
@@ -66,6 +66,10 @@ def filter_returns(returns, end_tol=0, min_days=None):
             emsg = "Excluding returns column: {} as it doesn't have {} consecutive days of returns, only ({})."
             logger.warn(emsg.format(name, min_days, ret.count()))
             to_drop.append(name)
+        if latest_start is not None and ret.first_valid_index().date() > latest_start:
+            emsg = "Excluding returns column: {} as it's first valid date: {} is after latest_start: {}."
+            logger.warn(emsg.format(name, ret.first_valid_index().date(), latest_start))
+            to_drop.append(name)
 
     return returns.drop(to_drop, axis=1)
 
@@ -89,6 +93,7 @@ def get_benchmark_returns(funds, benchmark_returns):
             logger.warn(emsg.format(fund))
             continue
         returns[fund.id] = benchmark_returns[bid]
+    return returns
 
 
 def get_return_history(funds, start_date, end_date):

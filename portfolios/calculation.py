@@ -8,11 +8,13 @@ import pandas as pd
 from cvxpy import Variable, sum_entries
 
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
-from portfolios.prediction.investment_clock import get_fund_predictions  # Swap this to use a different prediction algo.
+# Swap this to use a different prediction algo.
+from portfolios.prediction.investment_clock import InvestmentClock as Predictor
+from portfolios.providers.data.django import DataProviderDjango
 
-_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
-_INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
-_INSTRUMENT_TABLE_FEATURES_LABEL = 'features'  # The label in the instruments table for the features column.
+INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
+INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
+INSTRUMENT_TABLE_FEATURES_LABEL = 'features'  # The label in the instruments table for the features column.
 
 _PORTFOLIO_SET_MASK_PREFIX = 'PORTFOLIO-SET_'
 
@@ -32,6 +34,8 @@ logger.setLevel(logging.WARN)
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
 
+predictor = Predictor(DataProviderDjango())
+
 
 def create_portfolio_weights(instruments, min_weights, abs_min):
     pweights = []
@@ -45,7 +49,7 @@ def build_instruments(data_provider):
     """
     Builds the information for all the instruments known about in the system.
     :param data_provider: The source of data.
-    :return:(covars, samples, instruments, masks)
+    :return:(covars, instruments, masks)
         - covars is the expected nxn covariance matrix between fund returns over the next 1 year.
         - instruments is a Pandas dataframe indexed by symbol instruments table
             - exp_ret: Annualised expected return of the fund over the next 1 year.
@@ -59,9 +63,10 @@ def build_instruments(data_provider):
     """
     ac_ps = data_provider.get_asset_class_to_portfolio_set()
 
-    ers, covars = get_fund_predictions(data_provider)
+    ers, covars = predictor.get_fund_predictions()
 
     tickers = data_provider.get_tickers()
+    # Much faster building the dataframes once, not appending on iteration.
     irows = []
     for ticker in tickers:
         if ticker.id not in ers:
@@ -84,23 +89,31 @@ def build_instruments(data_provider):
     # For some reason once I added the exclude arg below, the index arg was ignored, so I have to do it manually after.
     instruments = pd.DataFrame.from_records(irows,
                                             columns=['symbol',
-                                                     _INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL,
+                                                     INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL,
                                                      'ac',
                                                      'price',
-                                                     _INSTRUMENT_TABLE_FEATURES_LABEL,
-                                                     _INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL,
+                                                     INSTRUMENT_TABLE_FEATURES_LABEL,
+                                                     INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL,
                                                      'id'
                                                      ],
                                             ).set_index('symbol')
 
     masks = get_masks(instruments, data_provider)
 
-    instruments.drop([_INSTRUMENT_TABLE_FEATURES_LABEL, _INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL], axis=1, inplace=True)
+    instruments.drop([INSTRUMENT_TABLE_FEATURES_LABEL, INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL], axis=1, inplace=True)
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Instruments as dict: {}".format(instruments.to_dict('list')))
 
     return covars, instruments, masks
+
+
+def get_instruments(data_provider):
+    data = data_provider.get_instrument_cache()
+    if data is None:
+        data = build_instruments(data_provider)
+        data_provider.set_instrument_cache(data)
+    return data
 
 
 def get_masks(instruments, data_provider):
@@ -121,8 +134,8 @@ def get_masks(instruments, data_provider):
         psid_miloc[psid] = masks.columns.get_loc(mid)
 
     # Add the feature masks
-    fix = instruments.columns.get_loc(_INSTRUMENT_TABLE_FEATURES_LABEL)
-    psix = instruments.columns.get_loc(_INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL)
+    fix = instruments.columns.get_loc(INSTRUMENT_TABLE_FEATURES_LABEL) + 1  # Plus 1 for the index entry in the tuple
+    psix = instruments.columns.get_loc(INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL) + 1
     for ix, row in enumerate(instruments.itertuples()):
         for fid in row[fix]:
             masks.iloc[ix, masks.columns.get_loc(fid)] = True
@@ -263,7 +276,7 @@ def risk_score_to_lambda(risk_score, data_provider):
     scale = data_provider.get_markowitz_scale()
     if scale is None:
         raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
-    scale_date = pd.Timestamp(scale.date).to_datetime()
+    scale_date = scale.date
     if scale_date < (data_provider.get_current_date() - timedelta(days=7)):
         logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
     return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
@@ -305,8 +318,8 @@ def optimize_settings(settings, idata, data_provider, execution_provider):
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
 
-    mu = settings_instruments[_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]
-    weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu, constraints)
 
     if not weights.any():
         raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(settings))
@@ -324,7 +337,7 @@ def calc_opt_inputs(settings, idata, data_provider, execution_provider, metric_o
     :return:
     '''
     # Get the global instrument data
-    covars, samples, instruments, masks = idata
+    covars, instruments, masks = idata
 
     # Convert the settings into a constraint based on a mask for the instruments appropriate for the settings given
     settings_symbol_ixs, cvx_masks = get_settings_masks(settings=settings, masks=masks)
@@ -340,13 +353,12 @@ def calc_opt_inputs(settings, idata, data_provider, execution_provider, metric_o
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
 
-    # Add the constraint that all must be over MIN_PORTFOLIO_PCT (which also means positive and no shorting)
-    # and that they must be over the current lots held less than 1 year.
+    # Add the constraint that they must be over the current lots held less than 1 year.
     tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(settings.goal,
                                                                             data_provider.get_current_date())
     pweights = create_portfolio_weights(settings_instruments['id'].values,
                                         min_weights=tax_min_weights,
-                                        abs_min=MIN_PORTFOLIO_PCT)
+                                        abs_min=0)
     constraints += [xs >= pweights]
 
     if logger.isEnabledFor(logging.DEBUG):
@@ -367,7 +379,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
              - stdev: stdev of portfolio
     """
     if idata is None:
-        idata = data_provider.get_instruments()
+        idata = get_instruments(data_provider)
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Calculating portfolio for settings: {}".format(settings))
@@ -375,18 +387,20 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
 
-    # Find the optimal orderable weights.
+    # Find the orderable weights. We don't align as it's too cpu intensive ATM.
+    # We do however need to do the 3% cutoff so we don't end up with tiny weights.
     weights, cost = make_orderable(weights,
                                    cost,
                                    xs,
                                    lcovars,
-                                   settings_instruments[_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL],
+                                   settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL],
                                    lam,
                                    constraints,
                                    settings,
                                    # We use the current balance (including pending deposits).
                                    settings.goal.current_balance,
-                                   settings_instruments['price'])
+                                   settings_instruments['price'],
+                                   align=False)
 
     return get_portfolio_stats(settings_instruments, lcovars, weights)
 
@@ -405,17 +419,18 @@ def calculate_portfolios(setting, data_provider, execution_provider):
     """
     logger.debug("Calculate Portfolios Requested")
     try:
-        idata = data_provider.get_instruments()
+        idata = get_instruments(data_provider)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Got instruments")
         # We don't need to recalculate the inputs for every risk score, as the risk score is just passed back.
         # We can do that directly
         opt_inputs = calc_opt_inputs(setting, idata, data_provider, execution_provider)
         xs, lam, constraints, setting_instruments, setting_symbol_ixs, lcovars = opt_inputs
-
-        mu = setting_instruments[_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]
+        sigma = lcovars.values
+        mu = setting_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("Optimising for 100 portfolios using mu: {}\ncovars: {}\nsigma: {}".format(mu, lcovars, lcovars))
+            logger.debug("Optimising for 100 portfolios using mu: {}\ncovars: {}".format(mu, lcovars))
+
         # TODO: Use a parallel approach here.
         portfolios = []
         found = False
@@ -425,15 +440,29 @@ def calculate_portfolios(setting, data_provider, execution_provider):
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("Doing risk_score: {}, giving lambda: {}".format(risk_score, lam))
             try:
-                weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
+                weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, constraints)
                 if not weights.any():
                     raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(setting))
 
+                # Find the orderable weights. We don't align as it's too cpu intensive ATM.
+                # We do however need to do the 3% cutoff so we don't end up with tiny weights.
+                weights, cost = make_orderable(weights,
+                                               cost,
+                                               xs,
+                                               sigma,
+                                               mu,
+                                               lam,
+                                               constraints,
+                                               setting,
+                                               # We use the current balance (including pending deposits).
+                                               setting.goal.current_balance,
+                                               setting_instruments['price'],
+                                               align=False)
+
                 # Convert to our statistics for our portfolio.
-                portfolios.append((risk_score,
-                                   get_portfolio_stats(setting_instruments,
-                                                       lcovars,
-                                                       weights)))
+                portfolios.append((risk_score, get_portfolio_stats(setting_instruments,
+                                                                   lcovars,
+                                                                   weights)))
                 found = True
 
             except Exception as e:
@@ -461,7 +490,7 @@ def current_stats_from_weights(weights, data_provider):
     :param weights: A list of (ticker_id, weight) tuples. Weights must add to <= 1.
     :return: (portfolio_er, portfolio_stdev, {ticker_id: ticker_variance})
     """
-    covars, samples, instruments, masks = data_provider.get_instruments()
+    covars, instruments, masks = get_instruments(data_provider)
 
     ix = instruments.set_index('id').index
     ilocs = []
@@ -478,7 +507,7 @@ def current_stats_from_weights(weights, data_provider):
     # Generate portfolio stdev and expected return
     nweights = np.array(wts)
     lcovars = covars.iloc[ilocs, ilocs]
-    lers = instruments[_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].iloc[ilocs]
+    lers = instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].iloc[ilocs]
     er = nweights.dot(lers)
     variance = nweights.dot(lcovars).dot(nweights.T)
     if logger.isEnabledFor(logging.DEBUG):
@@ -506,13 +535,13 @@ def get_portfolio_stats(instruments, covars, weights):
     ret_weights = ret_weights[ret_weights > 0.005]
 
     # Generate portfolio variance and expected return
-    er = weights.dot(instruments[_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL])
+    er = weights.dot(instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL])
     variance = weights.dot(covars).dot(weights.T)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Generated asset weights: {}".format(weights))
         logger.debug("Generated portfolio expected return of {} using asset returns: {}".format(
             er,
-            instruments[_INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]))
+            instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]))
         logger.debug("Generated portfolio variance of {} using asset covars: {}".format(variance, covars))
 
     # Convert variance to stdev

@@ -4,7 +4,7 @@ import factory
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.contrib.auth.models import Group
 
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
@@ -12,7 +12,8 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Transaction, Position, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
-                        MarkowitzScale, Supervisor, AuthorisedRepresentative
+                        MarkowitzScale, Supervisor, AuthorisedRepresentative, InvestmentCycleObservation, \
+    InvestmentCyclePrediction
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -34,6 +35,22 @@ def random_date(start, end):
     int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
     random_second = randrange(int_delta)
     return start + timedelta(seconds=random_second)
+
+
+class InvestmentCycleObservationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestmentCycleObservation
+
+    recorded = factory.Sequence(lambda n: date(year=int(1990 + n), month=1, day=1))
+    source = ''
+
+
+class InvestmentCyclePredictionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestmentCyclePrediction
+
+    pred_dt = factory.Sequence(lambda n: date(year=int(1990 + n), month=1, day=1))
+    source = ''
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -406,7 +423,7 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DailyPrice
 
-    instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
+    #instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
     instrument = factory.SubFactory(TickerFactory)
     date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))

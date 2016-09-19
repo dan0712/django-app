@@ -10,7 +10,7 @@ import numpy as np
 
 from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.calculation import MIN_PORTFOLIO_PCT, \
-    calc_opt_inputs, create_portfolio_weights
+    calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 from portfolios.providers.execution.abstract \
     import Reason, ExecutionProviderAbstract
 
@@ -24,11 +24,12 @@ def optimise_up(opt_inputs, min_weights):
     :param min_weights: A dict from asset_id to new minimum weight.
     :return: weights - The new dict of weights, or None if impossible.
     """
-    xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
+    xs, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
 
-    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights, abs_min=0)
     new_cons = constraints + [xs >= pweights]
-    weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, new_cons)
+    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu, new_cons)
     return dict(zip(settings_instruments['id'].values, weights)) if weights.any() else None
 
 

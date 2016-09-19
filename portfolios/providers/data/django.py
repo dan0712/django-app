@@ -1,13 +1,19 @@
+from collections import defaultdict
+
+from django.core.cache import cache
+from django.utils import timezone
+
+from main import redis
 from main.models import AssetFeatureValue, MarketCap, MarkowitzScale, \
-    PortfolioSet, Ticker
-from portfolios.calculation import *
+    PortfolioSet, Ticker, InvestmentCycleObservation, InvestmentCyclePrediction
+
 from .abstract import DataProviderAbstract
 
 
 class DataProviderDjango(DataProviderAbstract):
 
     def get_current_date(self):
-        return datetime.today()
+        return timezone.now().date()
 
     def get_fund_price_latest(self, ticker):
         return ticker.daily_prices.order_by('-date')[0].price
@@ -32,6 +38,12 @@ class DataProviderDjango(DataProviderAbstract):
 
     def get_ticker(self, tid):
         return Ticker.objects.get(id=tid)
+
+    def get_investment_cycles(self):
+        return InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
+
+    def get_investment_cycle_predictions(self):
+        return InvestmentCyclePrediction.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
 
     def get_market_weight(self, content_type_id, content_object_id):
         mp = MarketCap.objects.filter(instrument_content_type__id=content_type_id,
@@ -58,11 +70,10 @@ class DataProviderDjango(DataProviderAbstract):
                                       b=b,
                                       c=c)
 
-    def get_instruments(self):
-        key = redis.KEY_INSTRUMENTS(datetime.today().date().isoformat())
-        data = cache.get(key)
+    def get_instrument_cache(self):
+        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
+        return cache.get(key)
 
-        if data is None:
-            data = build_instruments(data_provider=self)
-            cache.set(key, data, timeout=60 * 60 * 24)
-        return data
+    def set_instrument_cache(self, data):
+        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
+        cache.set(key, data, timeout=60 * 60 * 24)

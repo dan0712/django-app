@@ -13,7 +13,7 @@ from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
     GoalSetting, GoalType, Portfolio, PortfolioItem, Position, \
     RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
-from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights
+from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
 from portfolios.providers.data.django import DataProviderDjango
 from portfolios.providers.execution.django import ExecutionProviderDjango
 from support.models import SupportRequest
@@ -548,7 +548,7 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
 
         data_provider = DataProviderDjango()
         execution_provider = ExecutionProviderDjango()
-        idata = data_provider.get_instruments()
+        idata = get_instruments(data_provider)
 
         with transaction.atomic():
             metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)

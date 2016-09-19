@@ -1,8 +1,10 @@
-from main.management.commands.build_returns import get_prices
+from collections import defaultdict
+
 from portfolios.calculation import *
 from portfolios.providers.dummy_models import AssetClassMock, \
     AssetFeatureValueMock, InstrumentsFactory, MarkowitzScaleMock, \
     PortfolioSetMock
+from portfolios.returns import get_prices
 from .abstract import DataProviderAbstract
 
 
@@ -78,16 +80,16 @@ class DataProviderBacktester(DataProviderAbstract):
             self.time_constrained_tickers.append(ticker)
         return self.time_constrained_tickers
 
-    def get_ticker(self, id):
+    def get_ticker(self, tid):
         ticker = None
         for t in self.time_constrained_tickers:
-            if t.id == id:
+            if t.id == tid:
                 ticker = t
                 break
         return ticker
 
     def get_market_weight(self, content_type_id, content_object_id):
-        #provide market cap for a given benchmark at a given date (latest available) - use get_current_date
+        # provide market cap for a given benchmark at a given date (latest available) - use get_current_date
         mp = self.benchmark_marketweight_matrix.ix[:self.get_current_date(), content_type_id]
         if mp.shape[0] > 0:
             mp = mp.irow(-1)
@@ -109,10 +111,11 @@ class DataProviderBacktester(DataProviderAbstract):
             self.set_markowitz_scale(date=self.get_current_date(), min=-1, max=1, a=1, b=2, c=3)
         return self.markowitz_scale
 
-    def set_markowitz_scale(self, date, min, max, a, b, c):
-        self.markowitz_scale = MarkowitzScaleMock(date, min, max, a, b, c)
+    def set_markowitz_scale(self, date, mn, mx, a, b, c):
+        self.markowitz_scale = MarkowitzScaleMock(date, mn, mx, a, b, c)
 
-    def get_instruments(self):
-        if self.cache is None:
-            self.cache = build_instruments(data_provider=self)
+    def get_instrument_cache(self):
         return self.cache
+
+    def set_instrument_cache(self, data):
+        self.cache = data

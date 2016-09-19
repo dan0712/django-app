@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.utils.timezone import now
 
+from api.v1.tests.factories import InvestmentCycleObservationFactory, InvestmentCyclePredictionFactory
 from main.models import MarketIndex, DailyPrice, MarketCap, Ticker
 
 logger = logging.getLogger("populate_test_prices")
@@ -25,9 +26,14 @@ def delete_data():
     MarketCap.objects.all().delete()
 
 
-def populate_prices(days):
+def populate_prices(days, asof=now().date()):
+    """
+    Populate days worth of test prices as of the given asof date
+    :param days: Number of historic prices to populate
+    :param asof: The Date to fininsh the population
+    :return:
+    """
     prices = []
-    today = now().today()
 
     # Do the prices and market caps for the indices
     for ind in MarketIndex.objects.all():
@@ -38,8 +44,8 @@ def populate_prices(days):
             initial += -ps[-1]
         ps += initial
         for i, p in enumerate(ps):
-            prices.append(DailyPrice(instrument=ind, date=today - timedelta(days=i), price=p))
-        MarketCap.objects.create(instrument=ind, date=today, value=np.random.uniform(10000000, 50000000000000))
+            prices.append(DailyPrice(instrument=ind, date=asof - timedelta(days=i), price=p))
+        MarketCap.objects.create(instrument=ind, date=asof, value=np.random.uniform(10000000, 50000000000000))
 
     # Do the prices for the funds
     for fund in Ticker.objects.all():
@@ -50,9 +56,33 @@ def populate_prices(days):
             initial += -ps[-1]
         ps += initial
         for i, p in enumerate(ps):
-            prices.append(DailyPrice(instrument=fund, date=today - timedelta(days=i), price=p))
+            prices.append(DailyPrice(instrument=fund, date=asof - timedelta(days=i), price=p))
 
     DailyPrice.objects.bulk_create(prices)
+
+
+def populate_cycle_obs(days, asof=now().date()):
+    cycle = int(np.random.uniform(0, 6))
+    prog = [0, 1, 2, 0, 3, 4]
+    dt = asof - timedelta(days=days)
+    while days:
+        run = min(int(np.random.uniform(20, 70)), days)
+        while run:
+            InvestmentCycleObservationFactory.create(as_of=dt, cycle=prog[cycle])
+            dt += timedelta(days=1)
+            run -= 1
+            days -= 1
+        cycle += 1
+        cycle %= 6
+
+
+def populate_cycle_prediction(asof=now().date()):
+    InvestmentCyclePredictionFactory.create(as_of=asof - timedelta(days=1),
+                                            eq=0.3,
+                                            eq_pk=0.4,
+                                            pk_eq=0.2,
+                                            eq_pit=0.1,
+                                            pit_eq=0.6)
 
 
 class Command(BaseCommand):
@@ -69,9 +99,10 @@ class Command(BaseCommand):
                             help='Only clear out the existing values, do not populate')
 
     def handle(self, *args, **options):
-        resp = input('The database you are connected to is: {}|{}|{}. Are you sure? y/N: '.format(connection.settings_dict['ENGINE'],
-                                                                                                  connection.settings_dict['HOST'],
-                                                                                                  connection.settings_dict['NAME']))
+        istr = 'The database you are connected to is: {}|{}|{}. Are you sure? y/N: '
+        resp = input(istr.format(connection.settings_dict['ENGINE'],
+                                 connection.settings_dict['HOST'],
+                                 connection.settings_dict['NAME']))
         if resp.lower() != 'y':
             print("Returning with DB unchanged.")
             return
@@ -84,4 +115,6 @@ class Command(BaseCommand):
         if not options['clear_only']:
             print("Repopulating.")
             populate_prices(400)
+            populate_cycle_obs(400)
+            populate_cycle_prediction()
         print("Done.")
