@@ -116,6 +116,57 @@ class InviteTests(APITestCase):
         self.assertEqual('onboarding_data' in response.data, False,
                          msg='/api/v1/invites/:key should not show onboarding_data to anonymous')
 
+    def test_register_logout_then_login(self):
+        # Bring an invite key, get logged in as a new user
+        PW = 'testpassword'
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT)
+
+        url = reverse('api:v1:client-user-register')
+        data = {
+            'first_name': invite.first_name,
+            'last_name': invite.last_name,
+            'invite_key': invite.invite_key,
+            'password': PW,
+            'question_one': 'what is the first answer?',
+            'question_one_answer': 'answer one',
+            'question_two': 'what is the second answer?',
+            'question_two_answer': 'answer two',
+        }
+
+        # Accept an invitation and create a user
+        response = self.client.post(url, data)
+        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
+        invite_detail_url = reverse('api:v1:invite-detail', kwargs={'invite_key': invite.invite_key} )
+        me_url = reverse('api:v1:user-me')
+        self.assertEqual(EmailInvite.STATUS_ACCEPTED, lookup_invite.status)
+
+        # New user must be logged in and able to see invite data
+        self.assertIn('sessionid', response.cookies)
+        response = self.client.get(me_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='/api/v1/me should be valid during invitation')
+
+        # If a session is not logged in, return 200 with data
+        self.client.logout()
+        response = self.client.get(me_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN,
+                         msg='/api/v1/me denies unauthenticated user')
+
+        # But this user can still log in again
+        url = '/api/v1/login'
+        data = {
+            'username': lookup_invite.user.email,
+            'password': PW,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='A user still onboarding can log in')
+        self.assertIn('sessionid', response.cookies)
+
+        response = self.client.get(me_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='/api/v1/me works for newly authenticated user')
+
     def test_onboard_after_register(self):
         # Bring an invite key, get logged in as a new user
         invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT)
