@@ -14,6 +14,11 @@ from portfolios.calculation import MIN_PORTFOLIO_PCT, \
 from portfolios.providers.execution.abstract \
     import Reason, ExecutionProviderAbstract
 
+from main.models import GoalMetric, Ticker
+from collections import defaultdict
+from django.db.models import Q
+import operator
+
 logger = logging.getLogger('rebalance')
 
 
@@ -208,17 +213,43 @@ def perturbate_withdrawal(perf_groups):
     pass
 
 
-def perturbate_mix(perf_groups, min_weights):
-    """
-    - while we are not satisfiable:
-        - Calculate the drift due to portfolio mix metrics using current minimums scaled to sum to 1
-        - For each performance group, starting from the top, only doing one instrument at a time..
-            - Build a group of assets from the overweight features (or anti-features) in the current performance group.
-                - Choose the most overweight
-                - Remove enough units to bring its weight to the port weight, available from the active-settings.
-                - Try and optimise again
+def perturbate_mix(goal, min_weights):
+    '''
+    metrics = GoalMetric.objects.\
+        filter(group__settings__goal_active=goal).\
+        filter(type=0).\
+        filter(Q(comparison=1) | Q(comparison=2)) #only exact or maximums - we are interested in sells only
 
-    :return: An optimised set of weights. Always returns weights.
+    metrics_weights = defaultdict(defaultdict)
+    for metric in metrics:
+        asset_ids = Ticker.objects.all().filter(features__feature_id=metric.feature_id)
+
+        ids = set([asset_id for asset_id in asset_ids])
+        metrics_weights[metric.id]['asset_ids'] = ids
+        metrics_weights[metric.id]['drift'] = metric.drift_score
+
+    to_be_sorted = dict()
+    for id, value in metrics_weights.items():
+        if value['drift'] > 0:
+            to_be_sorted[id] = value['drift']
+
+    sorted_positive_drifts = sorted(to_be_sorted.items(), key=lambda x : -x[1]) #desc
+
+    for id, drift in sorted_positive_drifts.items():
+        pass
+        # we are in group with biggest difference now
+        # start selling lots'''
+
+    """
+                        order assets into groups of metrics constraints - compare with metrics constraints in settings.
+
+                        - go into group with biggest difference - start selling assets from the group (from lowest tax loss further)
+
+                        until sum of current assets in group == metric constraint for that group
+
+                        try to find solution
+
+                        repeat until solution found
     """
 
 
@@ -294,10 +325,11 @@ def perturbate(goal, idata, data_provider, execution_provider):
             # Then reoptimise using the current minimum weights
             weights = optimise_up(min_weights)
             if weights is None:
-                min_weights, weights = perturbate_mix(perf_groups, min_weights)
+                min_weights, weights = perturbate_mix(goal, min_weights)
         else:
             reason = execution_provider.get_execution_request(Reason.DRIFT.value)
-            min_weights, weights = perturbate_mix(perf_groups, held_weights)
+
+            min_weights, weights = perturbate_mix(goal, held_weights)
 
         # By here we should have a satisfiable portfolio, so check and fix any risk_drift
         weights = process_risk(weights, min_weights)

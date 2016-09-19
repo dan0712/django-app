@@ -14,19 +14,24 @@ from main.models import Ticker
 class RebalanceTest(test.TestCase):
     def test_perturbate_mix(self):
 
-        t1 = TickerFactory.create(symbol='SPY')
-        t2 = TickerFactory.create(symbol='QQQ')
-        t3 = TickerFactory.create(symbol='TLT')
-        t4 = TickerFactory.create(symbol='IEF')
-        equity = AssetFeatureValueFactory.create(assets=[t1, t2])
-        bond = AssetFeatureValueFactory.create(assets=[t3, t4])
+        t1 = TickerFactory.create(symbol='SPY', unit_price=5)
+        t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
+        t3 = TickerFactory.create(symbol='TLT', unit_price=100)
+        t4 = TickerFactory.create(symbol='IEF', unit_price=100)
+        equity = AssetFeatureValueFactory.create(name='equity', assets=[t1, t2])
+        bond = AssetFeatureValueFactory.create(name='bond', assets=[t3, t4])
 
         goal_settings = GoalSettingFactory.create()
 
-        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity)
-        GoalMetricFactory.create(group=goal_settings.metric_group, feature=bond)
+        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=0, rebalance_thr=0.05)
+        GoalMetricFactory.create(group=goal_settings.metric_group, feature=bond, type=0, rebalance_thr=0.05)
 
-        goal = GoalFactory.create(active_settings=goal_settings)
+        goal = GoalFactory.create(active_settings=goal_settings, cash_balance=100)
+
+        PositionFactory.create(goal=goal, ticker=t1, share=1)
+        PositionFactory.create(goal=goal, ticker=t2, share=1)
+        PositionFactory.create(goal=goal, ticker=t3, share=1)
+        PositionFactory.create(goal=goal, ticker=t4, share=1)
 
         #t = Ticker.objects.get(symbol='TLT', features__name=bond)
 
