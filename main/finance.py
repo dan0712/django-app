@@ -37,7 +37,7 @@ def mod_dietz_rate(goals: Iterable) -> float:
     if not transactions:
         return 0
 
-    if not end_value:  # all goals have zero balance
+    if not end_value and cash_flows:  # all goals have zero balance
         # get closing date and balance from the last transaction
         _, end_value, closing_date = cash_flows.pop()
         # last transaction is withdrawal with negative amount,
@@ -48,6 +48,11 @@ def mod_dietz_rate(goals: Iterable) -> float:
 
     cash_flow_balance = sum(i[1] for i in cash_flows)
     total_days = (closing_date - start_date).days
+
+    # FEEDBACK: Is this OK logic?
+    # Since we can have a goal with start=end=today()
+    # It makes sense to show the return as if total_days=1
+    if total_days == 0: total_days = 1
     prorated_sum = sum(cfi * (total_days - d) / total_days
                        for d, cfi, _ in cash_flows)
     result = (end_value - begin_value -

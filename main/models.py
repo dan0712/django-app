@@ -1074,7 +1074,7 @@ class Ticker(FinancialInstrument):
         """
         # AssetFeatureValue types
         satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
-        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()        
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
 
         logger.info('Populating features for ticker %s' % self)
         r_feat = self.get_region_feature_value()

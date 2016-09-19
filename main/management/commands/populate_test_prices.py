@@ -31,26 +31,27 @@ def populate_prices(days):
 
     # Do the prices and market caps for the indices
     for ind in MarketIndex.objects.all():
-        delta = np.random.uniform(0, 5)
+        delta = np.random.uniform(1, 5)
         ps = random_walk(days, delta)
-        initial = np.random.uniform(0, 200)
+        initial = np.random.uniform(100, 200)
         if ps[-1] < 0:
             initial += -ps[-1]
         ps += initial
         for i, p in enumerate(ps):
-            prices.append(DailyPrice(instrument=ind, date=today - timedelta(days=i), price=p))
+            prices.append(DailyPrice(instrument=ind, date=today - timedelta(days=i+1), price=p))
         MarketCap.objects.create(instrument=ind, date=today, value=np.random.uniform(10000000, 50000000000000))
 
     # Do the prices for the funds
     for fund in Ticker.objects.all():
-        delta = np.random.uniform(0, 5)
+        delta = np.random.uniform(1, 5)
         ps = random_walk(days, delta)
-        initial = np.random.uniform(0, 200)
+        initial = np.random.uniform(100, 200)
         if ps[-1] < 0:
             initial += -ps[-1]
         ps += initial
+        prices.append(DailyPrice(instrument=fund, date=today, price=p))
         for i, p in enumerate(ps):
-            prices.append(DailyPrice(instrument=fund, date=today - timedelta(days=i), price=p))
+            prices.append(DailyPrice(instrument=fund, date=today - timedelta(days=i+1), price=p))
 
     DailyPrice.objects.bulk_create(prices)
 

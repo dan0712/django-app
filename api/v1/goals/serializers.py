@@ -632,6 +632,11 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                 # and return a message to the user. It it perfectly reasonable for a goal to be created without a
                 # portfolio.
                 logger.exception("No suitable portfolio could be found. Leaving empty.")
+            except KeyError:
+                # FEEDBACK: calculate_portfolio is raising this in tests
+                # from inside portfolio.calculation.get_settings_mask
+                # What can cause this? Catch it here and move on?
+                logger.error("No suitable portfolio could be found. Leaving empty.")
 
         return goal
 

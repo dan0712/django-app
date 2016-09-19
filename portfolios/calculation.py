@@ -406,6 +406,7 @@ def get_settings_masks(settings, masks):
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
     cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}
+
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("CVX masks for settings: {}: {}".format(settings, cvx_masks))
 

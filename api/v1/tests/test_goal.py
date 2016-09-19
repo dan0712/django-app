@@ -11,13 +11,14 @@ from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
-    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType
+    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType, Portfolio, \
+    Goal, Transaction
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
-    GoalMetricFactory, GoalMetricGroupFactory
-from api.v1.goals.serializers import GoalSettingSerializer
+    GoalMetricFactory, GoalMetricGroupFactory, GoalTypeFactory, TransactionFactory
+from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer
 from django.contrib.contenttypes.models import ContentType
 from main.management.commands.populate_test_prices import populate_prices
 
@@ -27,6 +28,25 @@ class GoalTests(APITestCase):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
         self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+        # # ticker checks django contenttype model for some reason so
+        # # we have to manage this in fixtures a little, have to be unique per model
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        #self.content_type = ContentType.objects.get_for_model(MarketIndex)
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
+        # Add the asset classes to the portfolio set
+        self.portfolio_set = PortfolioSetFactory.create()
+        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
+                                                 benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                                  benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+        # populate some price data
+        populate_prices(400)
 
     def tearDown(self):
         self.client.logout()
@@ -332,25 +352,6 @@ class GoalTests(APITestCase):
         expects the setting parameter to be a json dump
         of the goal settings to use for the portfolio calculation
         """
-        # tickers for testing portfolio calculations in goals endpoint
-        # otherwise, No valid instruments found
-        self.bonds_index = MarketIndexFactory.create()
-        self.stocks_index = MarketIndexFactory.create()
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        # Add the asset classes to the portfolio set
-        self.portfolio_set = PortfolioSetFactory.create()
-        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
-                                                 benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                                  benchmark=self.stocks_index)
-
-        # Set the markowitz bounds for today
-        self.m_scale = MarkowitzScaleFactory.create()
-
-        # populate some price data
-        populate_prices(400)
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
@@ -371,30 +372,6 @@ class GoalTests(APITestCase):
         expects the setting parameter to be a json dump
         of the goal settings to use for the portfolio calculation
         """
-        # tickers for testing portfolio calculations in goals endpoint
-        # otherwise, No valid instruments found
-        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
-        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
-        # # ticker checks django contenttype model for some reason so
-        # # we have to manage this in fixtures a little, have to be unique per model
-        self.bonds_index = MarketIndexFactory.create()
-        self.stocks_index = MarketIndexFactory.create()
-        #self.content_type = ContentType.objects.get_for_model(MarketIndex)
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
-        # Add the asset classes to the portfolio set
-        self.portfolio_set = PortfolioSetFactory.create()
-        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
-                                                 benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                                  benchmark=self.stocks_index)
-
-        # Set the markowitz bounds for today
-        self.m_scale = MarkowitzScaleFactory.create()
-
-        # populate some price data
-        populate_prices(400)
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
@@ -411,45 +388,61 @@ class GoalTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_add_goal_0_target(self):
-        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        url = '/api/v1/goals'
         self.client.force_authenticate(user=Fixture1.client1().user)
-        settings_changes = {"target": 0}
-        response = self.client.put(url, settings_changes)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['target'], 0)
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        goal_settings = GoalSettingFactory.create()
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        portfolio = Portfolio.objects.create(setting=goal_settings, stdev=0, er=0)
+        ser = GoalCreateSerializer(data={
+            'account': account.id,
+            'name': 'Zero Goal Target',
+            'type': GoalTypeFactory().id,
+            'target': 0,
+            'completion': timezone.now().date() + timedelta(days=7),
+            'initial_deposit': 0,
+            'ethical': True,
+        })
+        self.assertEqual(ser.is_valid(), True, msg="Serializer has errors %s"%ser.errors)
+        response = self.client.post(url, ser.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['selected_settings']['target'], 0)
+        self.assertEqual(response.data['on_track'], True)
 
     def test_add_goal_complete(self):
-        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        url = '/api/v1/goals'
         self.client.force_authenticate(user=Fixture1.client1().user)
-        settings_changes = {"completion_date": '2000-01-01'}
-        response = self.client.put(url, settings_changes)
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        goal_settings = GoalSettingFactory.create()
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        portfolio = Portfolio.objects.create(setting=goal_settings, stdev=0, er=0)
+        ser = GoalCreateSerializer(data={
+            'account': account.id,
+            'name': 'Zero Goal Target',
+            'type': GoalTypeFactory().id,
+            'target': 500,
+            'completion': timezone.now().date(),
+            'initial_deposit': 0,
+            'ethical': True,
+        })
+        self.assertEqual(ser.is_valid(), True, msg="Serializer has errors %s"%ser.errors)
+        response = self.client.post(url, ser.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['selected_settings']['target'], 500)
+        # "OnTrack" is false because the 500 deposit is still pending
+        self.assertEqual(response.data['on_track'], False)
+
+        goal = Goal.objects.get(pk=response.data['id'])
+        goal.cash_balance += 500
+        goal.save()
+
+        response = self.client.get('%s/%s'%(url, goal.id))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['completion'], '2000-01-01')
+        self.assertEqual(response.data['selected_settings']['target'], 500)
+        self.assertEqual(response.data['on_track'], True)
+
 
     def test_calculate_portfolio_complete(self):
-
-        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
-        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
-        # # ticker checks django contenttype model for some reason so
-        # # we have to manage this in fixtures a little, have to be unique per model
-        self.bonds_index = MarketIndexFactory.create()
-        self.stocks_index = MarketIndexFactory.create()
-        #self.content_type = ContentType.objects.get_for_model(MarketIndex)
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
-        # Add the asset classes to the portfolio set
-        self.portfolio_set = PortfolioSetFactory.create()
-        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
-                                                 benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                                  benchmark=self.stocks_index)
-
-        # Set the markowitz bounds for today
-        self.m_scale = MarkowitzScaleFactory.create()
-
-        # populate some price data
-        populate_prices(400)
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
