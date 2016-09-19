@@ -27,8 +27,12 @@ class ChoiceEnum(Enum):
         :param human_name:
         """
         if human_name is not None:
-            self.human_name = human_name
+            self._human_name_ = human_name
+
+    @property
+    def human_name(self):
+        return getattr(self, '_human_name_', self.name)
 
     @classmethod
     def choices(cls):
-        return [(item.value, getattr(item, 'human_name', item.name)) for item in cls]
+        return [(item.value, item.human_name) for item in cls]

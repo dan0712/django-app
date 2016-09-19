@@ -151,17 +151,17 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
             'username': invite.email,
             'first_name': invite.first_name,
             'last_name': invite.last_name,
-            'password': serializer.data['password']
+            'password': serializer.validated_data['password'],
         }
         user = User.objects.create_user(**user_params)
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer.data['question_one'],
-                                      answer=serializer.data['question_one_answer'])
+                                      question=serializer.validated_data['question_one'],
+                                      answer=serializer.validated_data['question_one_answer'])
 
         SecurityAnswer.objects.create(user=user,
-                                      question=serializer.data['question_two'],
-                                      answer=serializer.data['question_two_answer'])
+                                      question=serializer.validated_data['question_two'],
+                                      answer=serializer.validated_data['question_two_answer'])
 
         invite.status = EmailInvite.STATUS_ACCEPTED
         invite.user = user
@@ -170,7 +170,7 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
 
         login_params = {
             'username': user.email,
-            'password': serializer.data['password']
+            'password': serializer.validated_data['password']
         }
 
         user = authenticate(**login_params)

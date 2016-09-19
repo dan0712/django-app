@@ -49,7 +49,7 @@ main() {
         REDDB=2
     else
         echo "Unsupported auto-deployment for domain: ${2}" >&2
-	exit 1
+    exit 1
     fi
     pushd repo/betasmartz
     echo fetching latest repo
@@ -58,42 +58,22 @@ main() {
     git checkout $1
     echo building docker image
     docker build -t betasmartz/backend:${2}_cd .
-    # run tests on a docker testing container before taking down
-    # currently serving container - ${2}_betasmartz_app_test
-    # this should minimize downtime switching old builds to new ones
-    docker run -e "DB_PASSWORD=${DBPW}" \
+    docker stop ${2}_betasmartz_app
+    docker rm ${2}_betasmartz_app_rollback
+    docker rename ${2}_betasmartz_app ${2}_betasmartz_app_rollback
+    docker run -v /home/bsmartz/${2}_media:/betasmartz/media \
+               -v /home/bsmartz/${2}_static:/collected_static \
+               -e "DB_PASSWORD=${DBPW}" \
                -e 'POSTGRES_PASSWORD='${POSTGRES_PASSWORD} \
                -e ENVIRONMENT=${2} \
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                -e 'ST_AUTH='${ST_AUTH} \
                -e 'ST_USER='${ST_USER} \
                -e 'ST_KEY='${ST_KEY} \
-               -e 'MAILGUN_API_KEY='${MAILGUN_API_KEY} \
-               -e 'WEBHOOK_AUTHORIZATION='${WEBHOOK_AUTHORIZATION} \
-               -e 'DEFAULT_FROM_EMAIL='${DEFAULT_FROM_EMAIL} \
                --net=betasmartz-local \
-               --name=${2}_betasmartz_app_test \
+               --name=${2}_betasmartz_app \
                -d betasmartz/backend:${2}_cd
-    
-    docker exec ${2}_betasmartz_app_test bash -c "cd betasmartz && pip install -r requirements/dev.txt && python3.5 manage.py test --settings=tests.test_settings --noinput"
-    if [ $? -eq 0 ]  # tests ran successfully?
-    then
-        echo "Tests passed successfully, switching out current app container."
-        # tests passed ok, lets take down the current app and put the test container live
-        # delete old rollback
-        docker rm ${2}_betasmartz_app_rollback
-        
-        docker rename ${2}_betasmartz_app ${2}_betasmartz_app_rollback
-        docker rename ${2}_betasmartz_app_test ${2}_betasmartz_app
-
-        docker exec nginx nginx -s reload  # have nginx load new app
-        docker stop ${2}_betasmartz_app_rollback  # stop old container
-    else
-        echo "Tests failed, keeping current app container, removing test container."
-        # tests failed, keep current app container, rm test container
-        docker stop ${2}_betasmartz_app_test
-        docker rm ${2}_betasmartz_app_test
-    fi
+    docker exec nginx nginx -s reload
     popd
 }
 

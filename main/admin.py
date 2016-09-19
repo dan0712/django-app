@@ -8,14 +8,14 @@ from genericadmin.admin import BaseGenericModelAdmin, GenericAdminModelAdmin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from suit.admin import SortableModelAdmin, SortableTabularInline
-
 from advisors import models as advisor_models
 from main.models import AccountGroup, ActivityLog, \
     ActivityLogEvent, Advisor, AuthorisedRepresentative, Dividend, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     Position, ProxyAssetClass, ProxyTicker, \
-    Transaction, User, View, InvestmentType, FiscalYear
+    Transaction, User, View, InvestmentType, FiscalYear, Ticker, \
+    AssetFeature
 
 admin.site.register(AccountGroup)
 
@@ -305,6 +305,35 @@ class FiscalYearAdmin(admin.ModelAdmin):
     model = FiscalYear
 
 
+class TickerAdmin(admin.ModelAdmin):
+    model = Ticker
+    list_display = (
+        'symbol',
+        'unit_price',
+        'region_feature',
+        'asset_class_feature',
+        'investment_type_feature',
+        'currency_feature',
+        'ethical_feature',
+    )
+    search_fields = ['symbol']
+
+    def region_feature(self, obj):
+        return obj.get_region_feature_value()
+
+    def asset_class_feature(self, obj):
+        return obj.get_asset_class_feature_value()
+
+    def investment_type_feature(self, obj):
+        return obj.get_asset_type_feature_value()
+
+    def currency_feature(self, obj):
+        return obj.get_currency_feature_value()
+
+    def ethical_feature(self, obj):
+        return obj.get_ethical_feature_value()
+
+
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
@@ -327,10 +356,11 @@ admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(ActivityLog, ActivityLogAdmin)
 admin.site.register(InvestmentType, InvestmentTypeAdmin)
 admin.site.register(FiscalYear, FiscalYearAdmin)
+admin.site.register(Ticker, TickerAdmin)
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,
-                             ExecutionDistribution, Ticker)
+                             ExecutionDistribution)
 
 
     class DailyPriceAdmin(GenericAdminModelAdmin):
@@ -350,4 +380,3 @@ if settings.DEBUG:
     admin.site.register(MarketOrderRequest)
     admin.site.register(Execution)
     admin.site.register(ExecutionDistribution)
-    admin.site.register(Ticker)
