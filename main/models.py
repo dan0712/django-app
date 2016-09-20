@@ -1836,18 +1836,21 @@ class Goal(models.Model):
         predicted_balance = self.balance_at(self.selected_settings.completion)
         return predicted_balance >= self.selected_settings.target
 
-    @property
-    def total_balance(self):
-        b = self.cash_balance
 
+    def __sum_holdings(self, func):
+        b = 0
         lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
 
         for l in lots:
             ticker = Ticker.objects.get(executions__distributions__position_lot=l)
-            b += l.quantity * ticker.unit_price
+            if func(ticker):
+                b += l.quantity * ticker.unit_price
+        return b
 
-        #for p in Position.objects.filter(goal=self).all():
-        #    b += p.value
+    @property
+    def total_balance(self):
+        b = self.cash_balance
+        b += self.__sum_holdings(lambda x: True)
         return b
 
     @property
@@ -1859,42 +1862,19 @@ class Goal(models.Model):
 
     @property
     def stock_balance(self):
-        v = 0
-
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
-
-        for l in lots:
-            ticker = Ticker.objects.get(executions__distributions__position_lot=l)
-            if ticker.is_stock:
-                v += l.quantity * ticker.unit_price
-        return v
+        return self.__sum_holdings(lambda x: x.is_stock)
 
     @property
     def bond_balance(self):
-        v = 0
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
-
-        for l in lots:
-            ticker = Ticker.objects.get(executions__distributions__position_lot=l)
-            if not ticker.is_stock:
-                v += l.quantity * ticker.unit_price
-        return v
+        return self.__sum_holdings(lambda x: not x.is_stock)
 
     @property
     def core_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_core:
-                v += p.value
-        return v
+        return self.__sum_holdings(lambda x: not x.is_core)
 
     @property
     def satellite_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_satellite:
-                v += p.value
-        return v
+        return self.__sum_holdings(lambda x: not x.is_satellite)
 
     @property
     def total_return(self):

@@ -1,21 +1,22 @@
 import json
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from pinax.eventlog.models import Log
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+
 from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
-    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType
+    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType, Execution, Transaction, ExecutionDistribution
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
-    GoalMetricFactory, GoalMetricGroupFactory
+    GoalMetricFactory, GoalMetricGroupFactory, TransactionFactory, PositionLotFactory
 from api.v1.goals.serializers import GoalSettingSerializer
 from django.contrib.contenttypes.models import ContentType
 from main.management.commands.populate_test_prices import populate_prices
@@ -364,3 +365,31 @@ class GoalTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_sum_stocks_for_goal(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+
+        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        goal = GoalFactory.create()
+
+        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec = Execution.objects.create(asset=fund1,
+                                        volume=10,
+                                        order=order,
+                                        price=2,
+                                        executed=date(2014, 6, 1),
+                                        amount=20)
+        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=10)
+        PositionLotFactory(quantity=10, execution_distribution=dist)
+        weight_stocks = goal.stock_balance
+        weight_bonds = goal.bond_balance
+        self.assertTrue(weight_stocks == 100)
+        self.assertTrue(weight_bonds == 0)
