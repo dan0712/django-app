@@ -126,10 +126,11 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         invite = find_invite.get()
 
-        if not request.user.is_authenticated():
-            data = serializers.InvitationSerializer(instance=invite).data
-        else:
+        if request.user.is_authenticated():
+            # include onboarding data
             data = self.serializer_class(instance=invite).data
+        else:
+            data = serializers.InvitationSerializer(instance=invite).data
         return Response(data)
 
     def put(self, request, invite_key):
@@ -149,7 +150,7 @@ class InvitesView(ApiViewMixin, views.APIView):
                     (client.first_name, client.last_name, client.email))
 
         if invite.status != EmailInvite.STATUS_ACCEPTED:
-            return Response(serializers.InvitationSerializer(invite).data,
+            return Response(self.serializer_class(instance=invite).data,
                             status=status.HTTP_304_NOT_MODIFIED)
 
         serializer = self.serializer_class(invite, data=request.data,
@@ -157,7 +158,7 @@ class InvitesView(ApiViewMixin, views.APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
 
-        return Response(serializers.InvitationSerializer(invite).data)
+        return Response(self.serializer_class(instance=invite).data)
 
 
 class ClientUserRegisterView(ApiViewMixin, views.APIView):
