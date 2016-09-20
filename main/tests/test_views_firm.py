@@ -157,7 +157,6 @@ class FirmAnalyticsMixinTests(TestCase):
         self.assertSequenceEqual(positions.get('region'), [])
         self.assertSequenceEqual(positions.get('investment_type'), [])
 
-
         # now we're going to add some data and rerun sequence tests
         # have to specify content_type here because ticker uses the django
         # built in contenttype it causes problems here otherwise,
@@ -167,58 +166,53 @@ class FirmAnalyticsMixinTests(TestCase):
         ticker3 = TickerFactory.create(benchmark_content_type=ticker1.benchmark_content_type)
 
         goal = GoalFactory.create()
-        today = datetime.date(2016, 1, 1)
+        today = date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
         order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
         exec1 = Execution.objects.create(asset=ticker1,
-                                        volume=10,
-                                        order=order,
-                                        price=2,
-                                        executed=datetime.date(2014, 6, 1),
-                                        amount=20)
+                                         volume=10,
+                                         order=order,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
         t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
                                        to_goal=None,
                                        from_goal=goal,
                                        status=Transaction.STATUS_EXECUTED,
-                                       executed=datetime.date(2014, 6, 1),
+                                       executed=date(2014, 6, 1),
                                        amount=20)
         dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist1)
+        position1 = PositionLotFactory(quantity=10, execution_distribution=dist1)
 
         exec2 = Execution.objects.create(asset=ticker2,
-                                        volume=10,
-                                        order=order,
-                                        price=2,
-                                        executed=datetime.date(2014, 6, 1),
-                                        amount=20)
+                                         volume=10,
+                                         order=order,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
         t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
                                        to_goal=None,
                                        from_goal=goal,
                                        status=Transaction.STATUS_EXECUTED,
-                                       executed=datetime.date(2014, 6, 1),
+                                       executed=date(2014, 6, 1),
                                        amount=20)
         dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist2)
+        position2 = PositionLotFactory(quantity=10, execution_distribution=dist2)
 
         exec3 = Execution.objects.create(asset=ticker3,
-                                        volume=10,
-                                        order=order,
-                                        price=2,
-                                        executed=datetime.date(2014, 6, 1),
-                                        amount=20)
+                                         volume=10,
+                                         order=order,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
         t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
                                        to_goal=None,
                                        from_goal=goal,
                                        status=Transaction.STATUS_EXECUTED,
-                                       executed=datetime.date(2014, 6, 1),
+                                       executed=date(2014, 6, 1),
                                        amount=20)
         dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist3)
-
-        position1 = PositionLotFactory.create(ticker=ticker1, execution_distribution=exec1)
-        position2 = PositionLotFactory.create(ticker=ticker2, execution_distribution=exec2)
-        position3 = PositionLotFactory.create(ticker=ticker3, execution_distribution=exec3)
-
+        position3 = PositionLotFactory(quantity=10, execution_distribution=dist3)
 
         positions = self.view.get_context_positions(**kwargs)
 
@@ -228,9 +222,10 @@ class FirmAnalyticsMixinTests(TestCase):
         self.assertEqual(len(positions.get('investment_type')), 3)
 
         # compare sum of values to double check values being passed
+        expected_sum = position1.quantity * ticker1.unit_price + \
+                       position2.quantity * ticker2.unit_price + \
+                       position3.quantity * ticker3.unit_price
 
-
-        expected_sum = position1.value + position2.value + position3.value
         asset_actual_sum = sum([x.get('value') for x in positions.get('asset_class')])
         region_actual_sum = sum([x.get('value') for x in positions.get('region')])
         investment_actual_sum = sum([x.get('value') for x in positions.get('investment_type')])

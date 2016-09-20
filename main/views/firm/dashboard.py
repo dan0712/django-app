@@ -441,38 +441,30 @@ class FirmAnalyticsMixin(object):
 
     def get_context_positions(self):
         qs_positions = self.get_queryset_positions()
-        '''
+
         positions_by_asset_class = qs_positions \
             .annotate(
-                asset_class=F('ticker__asset_class'),
-                name=F('ticker__asset_class__display_name'),
-                color=F('ticker__asset_class__primary_color'),
+                asset_class=F('execution_distribution__execution__asset__asset_class'),
+                name=F('execution_distribution__execution__asset__asset_class__display_name'),
+                color=F('execution_distribution__execution__asset__asset_class__primary_color'),
             ) \
             .values('asset_class', 'name', 'color') \
-            .annotate_value()'''
-        positions_by_asset_class = qs_positions \
-            .annotate(
-                asset_class=F('execution_distribution__execution_asset__asset_class'),
-                name=F('execution_distribution__execution_asset__asset_class__display_name'),
-                color=F('execution_distribution__execution_asset__asset_class__primary_color'),
-            ) \
-            .values('asset_class', 'name', 'color') \
-            .annotate_value()
+            .annotate(value=Coalesce(Sum(F('quantity') * F('execution_distribution__execution__asset__unit_price')), 0))
 
         positions_by_region = qs_positions \
             .annotate(
-                region=F('ticker__region'),
-                name=F('ticker__region__name')
+                region=F('execution_distribution__execution__asset__region'),
+                name=F('execution_distribution__execution__asset__region__name')
             ) \
             .values('region', 'name') \
-            .annotate_value()
+            .annotate(value=Coalesce(Sum(F('quantity') * F('execution_distribution__execution__asset__unit_price')), 0))
 
         positions_by_investment_type = qs_positions \
             .annotate(
-                name=F('ticker__asset_class__investment_type__name'),
+                name=F('execution_distribution__execution__asset__asset_class__investment_type__name'),
             ) \
             .values('name') \
-            .annotate_value()
+            .annotate(value=Coalesce(Sum(F('quantity') * F('execution_distribution__execution__asset__unit_price')), 0))
 
         data = {
             'asset_class': positions_by_asset_class,

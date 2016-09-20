@@ -11,12 +11,14 @@ from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
-    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType, Execution, Transaction, ExecutionDistribution
+    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType, Execution, Transaction, ExecutionDistribution, \
+    AssetFeature, AssetFeatureValue
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
-    GoalMetricFactory, GoalMetricGroupFactory, TransactionFactory, PositionLotFactory
+    GoalMetricFactory, GoalMetricGroupFactory, TransactionFactory, PositionLotFactory, AssetFeatureValueFactory, \
+    AssetFeatureFactory
 from api.v1.goals.serializers import GoalSettingSerializer
 from django.contrib.contenttypes.models import ContentType
 from main.management.commands.populate_test_prices import populate_prices
@@ -370,8 +372,13 @@ class GoalTests(APITestCase):
         self.content_type = ContentTypeFactory.create()
         self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
         self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                     benchmark_content_type=self.content_type,
+                                     etf=True)
+        #feature = AssetFeature.Standard.FUND_TYPE.get_object()
+        #self.asv = AssetFeatureValueFactory.create(feature=feature, assets=fund1)
 
-        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+
         goal = GoalFactory.create()
 
         order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
@@ -391,5 +398,7 @@ class GoalTests(APITestCase):
         PositionLotFactory(quantity=10, execution_distribution=dist)
         weight_stocks = goal.stock_balance
         weight_bonds = goal.bond_balance
+        weight_core = goal.core_balance
         self.assertTrue(weight_stocks == 100)
         self.assertTrue(weight_bonds == 0)
+        self.assertTrue(weight_core == 100)

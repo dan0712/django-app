@@ -12,6 +12,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
@@ -1061,15 +1063,10 @@ class Ticker(FinancialInstrument):
         return not self.is_core
 
     def value(self, goal):
-        v = 0
+        total_qty = PositionLot.objects.filter(execution_distribution__transaction__from_goal=goal).\
+            aggregate(Sum('quantity'))
 
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=goal)
-
-        for l in lots:
-            v += l.quantity * self.unit_price
-
-        #for p in Position.objects.filter(goal=goal, ticker=self).all():
-        #    v += p.value
+        v = total_qty * self.unit_price
 
         return v
 
@@ -1512,10 +1509,6 @@ class Goal(models.Model):
     def get_positions_all(self):
         lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
         return lots
-        #for l in lots:
-        #    v += l.quantity * self.unit_price
-        #
-        #return Position.objects.filter(goal=self).all()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1836,21 +1829,18 @@ class Goal(models.Model):
         predicted_balance = self.balance_at(self.selected_settings.completion)
         return predicted_balance >= self.selected_settings.target
 
+    def _sum_holdings(self, qs):
+        total_holdings = qs.filter(execution_distribution__transaction__from_goal=self).\
+            annotate(cur_price=F('execution_distribution__execution__asset__unit_price')).\
+            aggregate(total_value=Coalesce(Sum(F('cur_price') * F('quantity')), 0))
 
-    def __sum_holdings(self, func):
-        b = 0
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
-
-        for l in lots:
-            ticker = Ticker.objects.get(executions__distributions__position_lot=l)
-            if func(ticker):
-                b += l.quantity * ticker.unit_price
-        return b
+        result = total_holdings['total_value']
+        return result
 
     @property
     def total_balance(self):
         b = self.cash_balance
-        b += self.__sum_holdings(lambda x: True)
+        b += self._sum_holdings(PositionLot.objects.all())
         return b
 
     @property
@@ -1862,19 +1852,29 @@ class Goal(models.Model):
 
     @property
     def stock_balance(self):
-        return self.__sum_holdings(lambda x: x.is_stock)
+        stocks = InvestmentType.Standard.STOCKS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=stocks)
+        )
 
     @property
     def bond_balance(self):
-        return self.__sum_holdings(lambda x: not x.is_stock)
+        bonds = InvestmentType.Standard.BONDS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=bonds)
+        )
 
     @property
     def core_balance(self):
-        return self.__sum_holdings(lambda x: not x.is_core)
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__etf=True)
+        )
 
     @property
     def satellite_balance(self):
-        return self.__sum_holdings(lambda x: not x.is_satellite)
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset_etf=False)
+        )
 
     @property
     def total_return(self):
@@ -2259,7 +2259,8 @@ class PositionLot(models.Model):
 
 class Sale(models.Model):
     #create on every sale
-    execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='sold_lot')
+    sell_execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='sold_lot')
+    buy_execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='bought_lot')
     quantity = models.FloatField(null=True, blank=True, default=None)
 
 
