@@ -13,19 +13,13 @@ from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
     GoalSetting, GoalType, Portfolio, PortfolioItem, \
     RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
-from portfolios.calculation import Unsatisfiable, \
-    calculate_portfolio, current_stats_from_weights, get_instruments
-from portfolios.providers.data.django import \
-    DataProviderDjango
-from portfolios.providers.execution.django import \
-    ExecutionProviderDjango
+from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
+from portfolios.providers.data.django import DataProviderDjango
+from portfolios.providers.execution.django import ExecutionProviderDjango
 from support.models import SupportRequest
 
 
 logger = logging.getLogger('goal_serializer')
-
-
-# TODO: too messy module. deeply refactor later.
 
 
 class PortfolioItemSerializer(ReadOnlyModelSerializer):
@@ -270,10 +264,9 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                 port_items_data = port_data.pop('items')
                 # Get the current portfolio statistics of the given weights.
                 try:
-                    data_provider = DataProviderDjango()
-                    er, stdev, idatas = current_stats_from_weights(weights=[(item['asset'].id,
+                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                              item['weight']) for item in port_items_data],
-                                                                   data_provider=data_provider
+                                                                   DataProviderDjango()
                                                                    )
                 except Unsatisfiable as e:
                     raise ValidationError(e.msg)
@@ -357,10 +350,9 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
             if port_data is not None:
                 port_items_data = port_data.pop('items')
                 try:
-                    data_provider = DataProviderDjango()
-                    er, stdev, idatas = current_stats_from_weights(weights=[(item['asset'].id,
+                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                      item['weight']) for item in port_items_data],
-                                                                   data_provider=data_provider)
+                                                                   DataProviderDjango())
                 except Unsatisfiable as e:
                     raise ValidationError(e.msg)
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
@@ -554,7 +546,9 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
         """
         account = validated_data['account']
 
-        idata = get_instruments()
+        data_provider = DataProviderDjango()
+        execution_provider = ExecutionProviderDjango()
+        idata = get_instruments(data_provider)
 
         with transaction.atomic():
             metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)
@@ -613,10 +607,10 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
 
             # Calculate the optimised portfolio
             try:
-                weights, er, stdev = calculate_portfolio(settings=settings,
-                                                         idata=idata,
-                                                         data_provider=DataProviderDjango(),
-                                                         execution_provider=ExecutionProviderDjango())
+                weights, er, stdev = calculate_portfolio(settings,
+                                                         data_provider,
+                                                         execution_provider,
+                                                         idata)
                 portfolio = Portfolio.objects.create(
                     setting=settings,
                     stdev=stdev,

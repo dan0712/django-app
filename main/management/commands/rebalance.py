@@ -8,9 +8,9 @@ import logging
 import copy
 import numpy as np
 
-from portfolios.bl_model import markowitz_optimizer_3
+from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.calculation import MIN_PORTFOLIO_PCT, \
-    calc_opt_inputs, create_portfolio_weights
+    calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 from portfolios.providers.execution.abstract \
     import Reason, ExecutionProviderAbstract
 
@@ -24,11 +24,12 @@ def optimise_up(opt_inputs, min_weights):
     :param min_weights: A dict from asset_id to new minimum weight.
     :return: weights - The new dict of weights, or None if impossible.
     """
-    xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
+    xs, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
 
-    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights, abs_min=0)
     new_cons = constraints + [xs >= pweights]
-    weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, new_cons)
+    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu, new_cons)
     return dict(zip(settings_instruments['id'].values, weights)) if weights.any() else None
 
 
@@ -263,7 +264,7 @@ def perturbate(goal, idata, data_provider, execution_provider):
     held_weights = get_held_weights(goal)
     tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(goal, data_provider.get_current_date())
     min_weights = get_largest_min_weight_per_asset(held_weights=held_weights, tax_weights=tax_min_weights)
-    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider=data_provider)
+    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider, execution_provider)
     weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:

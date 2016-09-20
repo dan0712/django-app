@@ -6,9 +6,9 @@
 main() {
     # postgres on multiple environment VM
     POSTGRES_PASSWORD='gD6OA22yXjMgrzLI4pT9*B63o^'
-    if [[ ${2} == 'proto' ]]
+    if [[ ${2} == 'demostaging' ]]
     then
-        DBPW='4T*-!r37H.L+hn'
+        DBPW='*821917ic2bB&82'
         REDDB=1
     elif [[ ${2} == 'v2' ]]
     then

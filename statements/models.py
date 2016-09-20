@@ -3,11 +3,14 @@ from django.db import models
 from jsonfield.fields import JSONField
 from weasyprint import HTML
 from django.conf import settings
+from io import BytesIO
+from django.core.files.base import ContentFile
 
-logger = logging.getLogger('client.models')
+logger = logging.getLogger(__name__)
 
 class PDFStatement(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
+    pdf = models.FileField(null=True, blank=True)
     @property
     def date(self):
         return self.create_date.strftime('%Y-%m-%d_%H:%I:%S')
@@ -19,10 +22,10 @@ class PDFStatement(models.Model):
             'object': self,
             'statement': self,
             'account': self.account,
-            'client': self.account.primary_owner,
-            'owner': self.account.primary_owner,
-            'advisor': self.account.primary_owner.advisor,
-            'firm': self.account.primary_owner.advisor.firm,
+            'client': self.client,
+            'owner': self.client,
+            'advisor': self.client.advisor,
+            'firm': self.client.advisor.firm,
         })
 
     def render_pdf(self, template_name=None):
@@ -33,9 +36,20 @@ class PDFStatement(models.Model):
         pdf_builder = HTML(string=html)
         return pdf_builder.write_pdf()
 
+    def save(self, *args, **kwargs):
+        super(PDFStatement, self).save(*args, **kwargs)
+        if not self.pdf:
+            bio = BytesIO(self.render_pdf())
+            self.pdf.save('%s.pdf'%self.account,
+                          ContentFile(bio.getvalue()))
+
     @property
     def default_template(self):
         return None
+
+    @property
+    def client(self):
+        return self.account.primary_owner
 
     class Meta:
         abstract = True
@@ -47,6 +61,25 @@ class StatementOfAdvice(PDFStatement):
 
     def __str__(self):
         return 'Statement of Advice for %s'%self.account
+
+    @property
+    def default_template(self):
+        return "statements/statement_of_advice.html"
+
+class RetirementStatementOfAdvice(PDFStatement):
+    retirement_plan = models.OneToOneField('retiresmartz.RetirementPlan',
+                        related_name='statement_of_advice')
+
+    def __str__(self):
+        return 'Statement of Advice for %s'%self.retirement_plan
+
+    @property
+    def account(self):
+        return None
+
+    @property
+    def client(self):
+        return self.retirement_plan.client
 
     @property
     def default_template(self):

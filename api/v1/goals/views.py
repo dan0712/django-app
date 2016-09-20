@@ -300,8 +300,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         if total_weight > 1.0001:
             raise ValidationError("Sum of item weights must be less than or equal to 1")
         try:
-            data_provider = DataProviderDjango()
-            er, stdev, _ = current_stats_from_weights(weights=port_items, data_provider=data_provider)
+            er, stdev, _ = current_stats_from_weights(port_items, DataProviderDjango())
         except Unsatisfiable as e:
             raise ValidationError(e.msg)
         return Response({'er': er, 'stdev': stdev})

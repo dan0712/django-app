@@ -30,13 +30,12 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from portfolios.returns import get_price_returns
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .management.commands.build_returns import get_price_returns
-from .managers import ExternalAssetQuerySet, \
-    GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -301,7 +300,7 @@ class ExternalAsset(models.Model):
     owner = models.ForeignKey('client.Client', related_name='external_assets')
     description = models.TextField(blank=True, null=True)
     valuation = models.DecimalField(decimal_places=2,
-                                    max_digits=15, # Up to 9.9... trillion
+                                    max_digits=15,  # Up to 9.9... trillion
                                     help_text='In the system currency. Could be negative if a debt')
     valuation_date = models.DateField(help_text='Date when the asset was valued')
     growth = models.DecimalField(decimal_places=4,
@@ -872,75 +871,9 @@ class AccountGroup(models.Model):
         return self.name
 
 
-class RetirementPlan(models.Model):
-    name = models.CharField(max_length=128)
-    description = models.TextField(null=True, blank=True)
-    client = models.ForeignKey('client.Client')
-    # Assigning a partner_plan gives anyone with permissions to modify the partner_plan authority to modify this plan.
-    partner_plan = models.OneToOneField('RetirementPlan',
-                                        related_name='partner_plan_reverse',
-                                        null=True,
-                                        on_delete=models.SET_NULL)
-    begin_date = models.DateField(auto_now_add=True, help_text="Date the retirement plan is supposed to begin.")
-    retirement_date = models.DateField()
-    life_expectancy = models.IntegerField(help_text="Until what age do we want to plan retirement spending?")
-    spendable_income = models.IntegerField(default=0, help_text="The current annual spendable income. This must be identical across partner plans as they have a common spendable income.")
-    desired_income = models.IntegerField(default=0, help_text="The desired annual spendable income in retirement")
-    # Each account can have at most one retirement plan. Hence the relationship goes this way.
-    smsf_account = models.OneToOneField('client.ClientAccount',
-                                        related_name='retirement_plan',
-                                        help_text="The associated SMSF account.",
-                                        null=True)
-    # Also has fields btc, atc and external_income from related models.
-
-    # Install the custom manager that knows how to filter.
-    objects = RetirementPlanQuerySet.as_manager()
-
-    class Meta:
-        unique_together = ('name', 'client')
-
-    def save(self, *args, **kwargs):
-        """
-        Override save() so we can do some custom validation of partner plans.
-        """
-        reverse_plan = getattr(self, 'partner_plan_reverse', None)
-        if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
-            raise ValidationError("Partner plan relationship must be symmetric.")
-
-        if self.smsf_account and not self.smsf_account.confirmed:
-            raise ValidationError('Account is not verified.')
-
-        super(RetirementPlan, self).save(*args, **kwargs)
-
-@receiver(post_save, sender=RetirementPlan)
-def resolve_retirement_invitations(sender, instance, created, **kwargs):
-    """Create a matching profile whenever a user object is created."""
-    from client.models import EmailInvite
-    try:
-        invitation = instance.client.user.invitation
-    except EmailInvite.DoesNotExist: invitation = None
-    if created and invitation \
-            and invitation.status != EmailInvite.STATUS_COMPLETE \
-            and invitation.reason == EmailInvite.REASON_RETIREMENT:
-        invitation.onboarding_data = None
-        invitation.status = EmailInvite.STATUS_COMPLETE
-        invitation.save()
-
 
 class ExternalAssetTransfer(TransferPlan):
     asset = models.OneToOneField(ExternalAsset, related_name='transfer_plan', on_delete=CASCADE)
-
-
-class RetirementPlanBTC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='btc')
-
-
-class RetirementPlanATC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='atc')
-
-
-class RetirementPlanEinc(TransferPlan):
-    plan = models.ForeignKey(RetirementPlan, related_name='external_income')
 
 
 class MarkowitzScale(models.Model):
@@ -980,8 +913,7 @@ class MarketIndex(FinancialInstrument):
     def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -1073,8 +1005,7 @@ class Ticker(FinancialInstrument):
     def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -1100,8 +1031,8 @@ class Ticker(FinancialInstrument):
         elif name == 'EM':
             return AssetFeatureValue.objects.get_or_create(name='Emerging Markets', feature=region_feature)[0]
         else:
-            # tests run random region names, just going to set to an unknown region assetfeaturevalue here
-            return AssetFeatureValue.objects.get_or_create(name='Unknown region', feature=region_feature)[0]
+            # tests run random region names, and people may not put one of the standard regions in.
+            return AssetFeatureValue.objects.get_or_create(name=name, feature=region_feature)[0]
 
     def get_region_feature_value(self):
         """
@@ -1127,15 +1058,13 @@ class Ticker(FinancialInstrument):
         """
         Returns the AssetFeatureValue for Ticker's Asset Class Investment Type
         """
-        stocks = InvestmentType.objects.get(pk=1)
-        bonds = InvestmentType.objects.get(pk=2)
-        if self.asset_class.investment_type == stocks:
+        if self.asset_class.investment_type == InvestmentType.Standard.STOCKS.value:
             return AssetFeatureValue.Standard.ASSET_TYPE_STOCK.get_object()
-        else:
+        elif self.asset_class.investment_type == InvestmentType.Standard.BONDS.value:
             return AssetFeatureValue.Standard.ASSET_TYPE_BOND.get_object()
-
-    def get_ethical_feature_value(self):
-        return AssetFeatureValue.Standard.SRI_OTHER.get_object()
+        else:
+            return AssetFeatureValue.objects.get_or_create(name=self.asset_class.investment_type.name,
+                                                           feature=AssetFeature.Standard.ASSET_TYPE.get_object())[0]
 
     def populate_features(self):
         """
@@ -1153,8 +1082,7 @@ class Ticker(FinancialInstrument):
         self.features.clear()
         self.features.add(r_feat, ac_feat, curr_feat, at_feat)
         if self.ethical:
-            eth_feature_value = self.get_ethical_feature_value()
-            self.features.add(eth_feature_value)
+            self.features.add(AssetFeatureValue.Standard.SRI_OTHER.get_object())
         self.features.add(core_feature_value if self.etf else satellite_feature_value)
 
     def save(self,
@@ -1163,8 +1091,7 @@ class Ticker(FinancialInstrument):
              using=None,
              update_fields=None):
         self.symbol = self.symbol.upper()
-        super(Ticker, self).save(force_insert, force_update, using,
-                                 update_fields)
+        super(Ticker, self).save(force_insert, force_update, using, update_fields)
 
 
 @receiver(post_save, sender=Ticker)
@@ -2120,37 +2047,6 @@ class GoalMetric(models.Model):
                                                                  1 + self.configured_val * 99,
                                                                  self.id)
 
-
-'''
-class Position(models.Model):
-    class Meta:
-        unique_together = ('goal', 'ticker')
-
-    goal = models.ForeignKey(Goal, related_name='positions')
-    ticker = models.ForeignKey(Ticker)
-    share = models.FloatField(default=0)
-
-    objects = PositionQuerySet.as_manager()
-
-    @property
-    def is_stock(self):
-        return self.ticker.is_stock
-
-    @property
-    def is_core(self):
-        return self.ticker.is_core
-
-    @property
-    def is_satellite(self):
-        return self.ticker.is_satellite
-
-    @property
-    def value(self):
-        return self.share * self.ticker.unit_price
-
-    def __str__(self):
-        return "{}|{}|{}".format(self.goal, self.ticker.symbol, self.share)
-'''
 
 class MarketOrderRequest(models.Model):
     """

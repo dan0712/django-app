@@ -2,6 +2,14 @@ import json
 from decimal import Decimal
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+
+from datetime import datetime
+from unittest import mock
+from unittest.mock import MagicMock
+
+from django.utils import timezone
+
+
 from pinax.eventlog.models import Log
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -10,6 +18,7 @@ from rest_framework.test import APITestCase
 from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
+
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
     MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType, Execution, Transaction, ExecutionDistribution, \
     AssetFeature, AssetFeatureValue
@@ -19,16 +28,23 @@ from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
     GoalMetricFactory, GoalMetricGroupFactory, TransactionFactory, PositionLotFactory, AssetFeatureValueFactory, \
     AssetFeatureFactory
+
+from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
+from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
+from main.tests.fixture import Fixture1
+from .factories import GroupFactory, GoalFactory, ClientAccountFactory, GoalSettingFactory, TickerFactory, \
+    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory
+
 from api.v1.goals.serializers import GoalSettingSerializer
-from django.contrib.contenttypes.models import ContentType
-from main.management.commands.populate_test_prices import populate_prices
+
+mocked_now = datetime(2016, 1, 1)
 
 
 class GoalTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
-        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
-        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+        self.bonds_type = InvestmentType.Standard.BONDS.get()
+        self.stocks_type = InvestmentType.Standard.STOCKS.get()
 
     def tearDown(self):
         self.client.logout()
@@ -329,6 +345,7 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_all_portfolios(self):
         """
         expects the setting parameter to be a json dump
@@ -351,8 +368,11 @@ class GoalTests(APITestCase):
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
 
-        # populate some price data
-        populate_prices(400)
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()

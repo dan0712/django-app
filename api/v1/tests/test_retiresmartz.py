@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from common.constants import GROUP_SUPPORT_STAFF
-from main.models import RetirementPlan
+from retiresmartz.models import RetirementPlan
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory
 
@@ -14,6 +14,25 @@ from .factories import GroupFactory
 class RetiresmartzTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+        self.base_plan_data = {
+            "name": "Personal Plan",
+            "description": "My solo plan",
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 1000,
+            'atc': 300,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        }
 
     def tearDown(self):
         self.client.logout()
@@ -29,7 +48,6 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['client'], plan1.client.id)
 
-    @skip("Broken")
     def test_add_plan(self):
         '''
         Tests:
@@ -38,62 +56,35 @@ class RetiresmartzTests(APITestCase):
         '''
         url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
         self.client.force_authenticate(user=Fixture1.client1().user)
-        plan_data = {
-            "name": "Personal Plan",
-            "description": "My solo plan",
-            "btc": {
-                'begin_date': now().today(),
-                'amount': 1000,
-                'growth': 0.025,
-                'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
-            },
-            "external_income": [{
-                'begin_date': now().today(),
-                'amount': 2000,
-                'growth': 0.01,
-                'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
-            }],
-        }
-        response = self.client.post(url, plan_data)
+        response = self.client.post(url, self.base_plan_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['btc']['amount'], 1000)
+        self.assertEqual(response.data['btc'], 1000)
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
-        self.assertEqual(saved_plan.btc.amount, 1000)
-        self.assertEqual(saved_plan.external_income.count(), 1)
-        self.assertEqual(saved_plan.external_income.first().amount, 2000)
+        self.assertEqual(saved_plan.btc, 1000)
 
-    @skip("Broken")
-    def test_add_plan_smsf_account_ignored(self):
+    def test_cant_change_after_agreed(self):
         '''
         Tests:
-        - clients cannot create a retirement plan assigning an smsf account.
+        - clients can create a retirement plan.
+        - specifying btc on creation works
         '''
-        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        client = Fixture1.client1()
+        url = '/api/v1/clients/%s/retirement-plans'%client.id
         self.client.force_authenticate(user=Fixture1.client1().user)
-        plan_data = {
-            "name": "Personal Plan",
-            "description": "My solo plan",
-            "smsf_account": 1,
-        }
-        response = self.client.post(url, plan_data)
+        response = self.client.post(url, self.base_plan_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(RetirementPlan.objects.get(id=response.data['id']).smsf_account, None)
 
-    @skip("Broken")
-    def test_add_plan_id_ignored(self):
-        '''
-        Tests clients cannot create a retirement plan and specify the id manually.
-        '''
-        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
-        plan_data = {
-            "name": "Personal Plan",
-            "description": "My solo plan",
-            "id": 756,
-        }
-        response = self.client.post(url, plan_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertNotEqual(response.data['id'], 756)
+        # Now update it with agreed_on=Now
+        url = '/api/v1/clients/%s/retirement-plans/%s'%(client.id, response.data['id'])
+        dt = now()
+        new_data = dict(self.base_plan_data, agreed_on=dt)
+        response = self.client.put(url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Now we can't update it
+        url = '/api/v1/clients/%s/retirement-plans/%s'%(client.id, response.data['id'])
+        response = self.client.put(url, self.base_plan_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_list_plans(self):
         """
@@ -107,23 +98,64 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['client'], plan1.client.id)
 
+    def test_retirement_incomes(self):
+        """
+        Test listing and creating retirement incomes
+        """
+        client = Fixture1.client1()
+        plan = Fixture1.client1_retirementplan1()
+
+        # Create an income
+        url = '/api/v1/clients/%s/retirement-incomes'%client.id
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        income_data = {'name': 'RetirementIncome1',
+                       'plan': plan.id,
+                       'begin_date': now().date(),
+                       'amount': 200,
+                       'growth': 1.0,
+                       'schedule': 'DAILY'
+                       }
+        response = self.client.post(url, income_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        income = response.data
+        self.assertEqual(income['schedule'], 'DAILY')
+        self.assertEqual(income['amount'], 200)
+        self.assertEqual(income['growth'], 1.0)
+        self.assertEqual(income['plan'], plan.id)
+
+        # Update it
+        url = '/api/v1/clients/%s/retirement-incomes/%s'%(client.id,
+                                                          income['id'])
+        income_data = { 'schedule': 'WEEKLY' }
+        response = self.client.put(url, income_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Make sure it's in the list
+        url = '/api/v1/clients/%s/retirement-incomes'%client.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], income['id'])
+
+        # And unprivileged users can't see it
+        self.client.force_authenticate(user=Fixture1.client2().user)
+        url = '/api/v1/clients/%s/retirement-incomes'%client.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+
     def test_put_partner(self):
         """
         Test update partner_plan after tax contribution
         """
         plan1 = Fixture1.client1_partneredplan()
-        Fixture1.retirement_plan_atc3()
         plan2 = plan1.partner_plan
         url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client2().id, plan2.id)
         self.client.force_authenticate(user=Fixture1.client1().user)
-        response = self.client.put(url, data={'atc': {
-            'begin_date': plan2.atc.begin_date,
-            'amount': 7654,
-            'growth': plan2.atc.growth,
-            'schedule': plan2.atc.schedule,
-        }})
+        response = self.client.put(url, data={'atc': 45000})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Fixture1.client2_retirementplan1().atc.amount, 7654)
+        self.assertEqual(Fixture1.client2_retirementplan1().atc, 45000)
 
     def test_get_bad_permissions(self):
         """
@@ -167,11 +199,3 @@ class RetiresmartzTests(APITestCase):
         # Make sure cascade not in force, but null.
         self.assertEqual(RetirementPlan.objects.get(id=plan2_id).id, plan2_id)
         self.assertEqual(Fixture1.client2_retirementplan1().partner_plan, None)
-
-    def test_todos(self):
-        # TODO: Advisor tests.
-        # Test a clients' primary and secondary advisors are able to access the appropriate plans.
-        # Test partner plan clients' primary and secondary advisors are able to access the appropriate plans.
-        # Test non-advising advisors cannot access
-        # Test only advisors and clients can view and edit the plans. (No-one with firm privileges)
-        pass

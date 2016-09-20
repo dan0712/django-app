@@ -1,21 +1,20 @@
-from datetime import datetime, timedelta
+from unittest.case import skip
 
 import pandas as pd
-from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from random import randint, random
 from statsmodels.stats.correlation_tools import cov_nearest
 
-from main.models import AssetClass, DailyPrice, GoalMetric, InvestmentType, \
-    MarketCap, MarketIndex, MarkowitzScale, Portfolio, PortfolioItem, Region, \
+from main.models import AssetClass, GoalMetric, InvestmentType, \
+    MarketIndex, MarkowitzScale, Portfolio, PortfolioItem, Region, \
     Ticker
 from main.tests.fixture import Fixture1
 from portfolios.calculation import build_instruments, calculate_portfolio, \
-    calculate_portfolios
+    calculate_portfolios, get_instruments
 from portfolios.providers.execution.django import ExecutionProviderDjango
 from portfolios.providers.data.django import DataProviderDjango
 
 
+@skip
 class BaseTest(TestCase):
     def setUp(self):
         Region.objects.create(name="AU")
@@ -80,31 +79,7 @@ class BaseTest(TestCase):
                                      benchmark=index,
                                      data_api='portfolios.api.bloomberg',
                                      data_api_param='AUMS')
-        assets = [ass, ubs, usb1, aums, index]
 
-        num_days = 600
-        end = datetime.today().date()
-        start = end - timedelta(days=num_days)
-
-        dates = list()
-        current = start
-        while end > current:
-            dates.append(pd.Timestamp(current).to_datetime())
-            current = current + timedelta(days=1)
-
-        prices = [str(random()/100+1) for i in range(0, num_days)]
-        self._mkt_caps = [str(randint(1000,2000)) for i in range(0, num_days)]
-
-        for asset in assets:
-            for dt, price, mkt_cap in zip(dates, prices, self._mkt_caps):
-                    DailyPrice.objects.create(instrument_object_id=asset.id,
-                                              instrument_content_type=ContentType.objects.get_for_model(asset),
-                                              price=price,
-                                              date=dt)
-                    MarketCap.objects.create(instrument_object_id=asset.id,
-                                             instrument_content_type=ContentType.objects.get_for_model(asset),
-                                             value=mkt_cap,
-                                             date=dt)
         self._data_provider = DataProviderDjango()
         self._execution_provider = ExecutionProviderDjango()
         self._covars, self._samples, self._instruments, self._masks = build_instruments(self._data_provider)
@@ -136,11 +111,11 @@ class BaseTest(TestCase):
                                                        ]
         goal1.selected_settings.SYSTEM_CURRENCY = 'USD'
         goal1.cash_balance = 1000
-        idata = self._data_provider.get_instruments()
+        idata = get_instruments(self._data_provider)
         portfolio, er, var = calculate_portfolio(settings=goal1.selected_settings,
-                                                 idata=idata,
                                                  data_provider=self._data_provider,
-                                                 execution_provider=self._execution_provider)
+                                                 execution_provider=self._execution_provider,
+                                                 idata=idata)
         self.assertEqual(len(portfolio), 4)
 
     def test_calculate_portfolios(self):

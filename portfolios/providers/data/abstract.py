@@ -1,22 +1,13 @@
-from datetime import timedelta
-
 from abc import ABC, abstractmethod
 
 
 class DataProviderAbstract(ABC):
     @abstractmethod
-    def set_cache(self, *args):
-        raise NotImplementedError()
-
-    def get_start_date(self):
-        return self.get_current_date() - timedelta(days=365*5)
-
-    @abstractmethod
-    def get_instruments(self):
+    def get_instrument_cache(self):
         raise NotImplementedError()
 
     @abstractmethod
-    def move_date_forward(self):
+    def set_instrument_cache(self, data):
         raise NotImplementedError()
 
     @abstractmethod
@@ -43,15 +34,11 @@ class DataProviderAbstract(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_ticker(self, id):
+    def get_ticker(self, tid):
         raise NotImplementedError()
 
     @abstractmethod
     def get_market_weight(self, content_type_id, content_object_id):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_masks(self, instruments, fund_mask_name, portfolio_set_mask_prefix):
         raise NotImplementedError()
 
     @abstractmethod
@@ -63,5 +50,25 @@ class DataProviderAbstract(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def set_markowitz_scale(self, date, min, max, a, b ,c):
+    def set_markowitz_scale(self, date, mn, mx, a, b, c):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_fund_price_latest(self, ticker):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_investment_cycles(self):
+        """
+        Returns the query set containing the investment cycle observations ordered by ascending date
+        up until the self.get_current_date().
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_investment_cycle_predictions(self):
+        """
+        Returns the query set containing the investment cycle predictions ordered by ascending date
+        up until the self.get_current_date().
+        """
         raise NotImplementedError()

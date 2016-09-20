@@ -6,14 +6,18 @@ from api.v1.tests.factories import GoalFactory, TickerFactory, \
     TransactionFactory, InvestmentTypeFactory, PositionLotFactory
 from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
     Transaction, PositionLot
+from api.v1.tests.factories import GoalFactory, TickerFactory, \
+    TransactionFactory
+from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
+    Transaction, InvestmentType
 from portfolios.providers.execution.django import ExecutionProviderDjango
 
 
 class DjangoExecutionProviderTest(test.TestCase):
     def setUp(self):
         # for tickers
-        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
-        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+        self.bonds_type = InvestmentType.Standard.BONDS.get()
+        self.stocks_type = InvestmentType.Standard.STOCKS.get()
 
     def test_get_asset_weights_held_less_than1y_with_new_postions(self):
         fund = TickerFactory.create(unit_price=2.1)

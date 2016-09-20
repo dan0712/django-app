@@ -3,7 +3,7 @@ import pandas.io.data as web
 
 from main.management.commands.rebalance import rebalance
 from portfolios.calculation import build_instruments, \
-    calculate_portfolio, calculate_portfolios
+    calculate_portfolio, calculate_portfolios, get_instruments
 from portfolios.providers.data.backtester import DataProviderBacktester
 from portfolios.providers.dummy_models import GoalFactory, PositionMock
 from portfolios.providers.execution.backtester import ExecutionProviderBacktester
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
         # generate orders for tomorrow
         try:
-            requests = rebalance(idata=setup.data_provider.get_instruments(),
+            requests = rebalance(idata=get_instruments(setup.data_provider),
                                  goal=setup.goal,
                                  data_provider=setup.data_provider,
                                  execution_provider=setup.execution_provider)

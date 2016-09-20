@@ -6,9 +6,9 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 from scipy.optimize.minpack import curve_fit
 
-from portfolios.bl_model import markowitz_optimizer_3
-from portfolios.calculation import FUND_MASK_NAME, \
-    MIN_PORTFOLIO_PCT, get_core_constraints, run_bl
+from portfolios.algorithms.markowitz import markowitz_optimizer_3
+from portfolios.calculation import MIN_PORTFOLIO_PCT, get_core_constraints, get_instruments, \
+    INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger("markowitz_finder")
@@ -22,27 +22,25 @@ class Command(BaseCommand):
         # find extremes
         data_provider = DataProviderDjango()
         # Get the funds from the instruments table
-        covars, samples, instruments, masks = data_provider.get_instruments()
-        funds = instruments[masks[FUND_MASK_NAME]]
+        covars, funds, masks = get_instruments(data_provider)
+        sigma = covars.values
 
-        # Generate the BL ERs and Sigma
-        # TODO: Add views. I.e. Have markowitz limits per portfolio set.
-        mu, sigma = run_bl(instruments, covars, funds, samples, None)
+        mu = funds[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
 
         # Get the instrument with the best BL ER.
         perfix = np.argmax(mu)
-        logger.info("Found largest BL ER instrument: {} at index: {}".format(
-            funds.index[perfix], perfix))
+        logger.info("Found largest ER instrument: {} at index: {}".format(funds.index[perfix], perfix))
 
         xs, constraints = get_core_constraints(funds.shape[0])
+
+        constraints += [xs >= 0]
 
         # Find the lambda that gives only the best BL ER.
         lowerb = 0.0
         upperb = 100000000.0
         mval = 10
         while upperb - lowerb > .001:  # We want lambda to 3 decimal places
-            weights, cost = markowitz_optimizer_3(xs, sigma, mval, mu,
-                                                  constraints)
+            weights, cost = markowitz_optimizer_3(xs, sigma, mval, mu, constraints)
             changed = False
             for ix, weight in enumerate(weights):
                 # print("ix={}, weight={}".format(ix, weight))
@@ -87,15 +85,15 @@ class Command(BaseCommand):
         x = [-50, 0, 50]
         y = [min_lambda, 1.2, max_lambda]
 
-        def func(x, a, b, c):
-            return a * np.power(b, x) + c
+        def func(xx, a, b, c):
+            return a * np.power(b, xx) + c
 
         vals, _ = curve_fit(func, x, y)
         logger.info("Found function fit using params: {}".format(vals))
 
-        data_provider.set_markowitz_scale(date=now().today(),
-                                          min=min_lambda,
-                                          max=max_lambda,
+        data_provider.set_markowitz_scale(dt=now().today(),
+                                          mn=min_lambda,
+                                          mx=max_lambda,
                                           a=vals[0],
                                           b=vals[1],
                                           c=vals[2])

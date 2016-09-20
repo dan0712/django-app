@@ -210,14 +210,14 @@ class InviteTests(APITestCase):
 
         # PUT: /api/v1/invites/:key
         # Submit with onboarding_data
-        onboarding = {'onboarding_data': json.dumps({'foo': 'bar'})}
+        onboarding = {'onboarding_data': {'foo': 'bar'}}
         response = self.client.put(invite_detail_url, data=onboarding)
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='Onboarding must accept json')
+                         msg='Onboarding must accept json objects')
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
-        self.assertEqual(json.loads(lookup_invite.onboarding_data)['foo'], 'bar',
+        self.assertEqual(lookup_invite.onboarding_data['foo'], 'bar',
                          msg='should save onboarding_file')
 
         # Submit with onboarding_file_1

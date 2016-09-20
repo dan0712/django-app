@@ -16,3 +16,5 @@ KEY_SUPPORT_TICKET = '__support_ticket'
 PERM_CAN_CREATE_SUPPORT_REQUESTS = ('can_create_support_requests',
                                     _('Can create support requests'))
 GROUP_SUPPORT_STAFF = 'SupportStaff'
+
+WEEKDAYS_PER_YEAR = 260
