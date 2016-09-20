@@ -13,7 +13,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, InvestmentCycleObservation, \
-    InvestmentCyclePrediction
+                        InvestmentCyclePrediction
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -162,14 +162,19 @@ class AdvisorFactory(factory.django.DjangoModelFactory):
     residential_address = factory.SubFactory(AddressFactory)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
 
+
 class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AuthorisedRepresentative
 
     user = factory.SubFactory(UserFactory)
     firm = factory.SubFactory(FirmFactory)
-    residential_address = factory.SubFactory(AddressFactory)
+    letter_of_authority = factory.django.FileField(filename='tests/test_letter_of_authority.txt')
     betasmartz_agreement = True
+    is_accepted = True
+    is_confirmed = True
+
+    residential_address = factory.SubFactory(AddressFactory)
 
 
 class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
@@ -464,17 +469,3 @@ class SupervisorFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     firm = factory.SubFactory(FirmFactory)
-
-
-class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AuthorisedRepresentative
-
-    user = factory.SubFactory(UserFactory)
-    firm = factory.SubFactory(FirmFactory)
-    letter_of_authority = factory.django.FileField(filename='tests/test_letter_of_authority.txt')
-    betasmartz_agreement = True
-    is_accepted = True
-    is_confirmed = True
-
-    residential_address = factory.SubFactory(AddressFactory)

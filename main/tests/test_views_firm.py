@@ -3,16 +3,14 @@ from django.test import TestCase
 from django.views.generic import TemplateView
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
-from main.models import Transaction, Goal, GoalType
+from main.models import Transaction, Goal, GoalType, InvestmentType
 from django.db.models import Q
 from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
     TransactionFactory, AccountTypeRiskProfileGroupFactory, \
-    ExternalAssetFactory, PositionFactory, TickerFactory, \
-    SupervisorFactory, AuthorisedRepresentativeFactory, \
-    InvestmentTypeFactory
+    ExternalAssetFactory, PositionFactory, TickerFactory
 from client.models import Client
-from datetime import datetime, date
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
@@ -23,8 +21,8 @@ class FirmAnalyticsMixinTests(TestCase):
 
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
-        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
-        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+        self.bonds_type = InvestmentType.Standard.BONDS.get()
+        self.stocks_type = InvestmentType.Standard.STOCKS.get()
 
         self.view = self.DummyView()
         self.today = today = timezone.now().date()

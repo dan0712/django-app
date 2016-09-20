@@ -911,8 +911,7 @@ class MarketIndex(FinancialInstrument):
     def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -1004,8 +1003,7 @@ class Ticker(FinancialInstrument):
     def get_returns(self, dates):
         """
         Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -1031,8 +1029,8 @@ class Ticker(FinancialInstrument):
         elif name == 'EM':
             return AssetFeatureValue.objects.get_or_create(name='Emerging Markets', feature=region_feature)[0]
         else:
-            # tests run random region names, just going to set to an unknown region assetfeaturevalue here
-            return AssetFeatureValue.objects.get_or_create(name='Unknown region', feature=region_feature)[0]
+            # tests run random region names, and people may not put one of the standard regions in.
+            return AssetFeatureValue.objects.get_or_create(name=name, feature=region_feature)[0]
 
     def get_region_feature_value(self):
         """
@@ -1058,15 +1056,13 @@ class Ticker(FinancialInstrument):
         """
         Returns the AssetFeatureValue for Ticker's Asset Class Investment Type
         """
-        stocks = InvestmentType.objects.get(pk=1)
-        bonds = InvestmentType.objects.get(pk=2)
-        if self.asset_class.investment_type == stocks:
+        if self.asset_class.investment_type == InvestmentType.Standard.STOCKS.value:
             return AssetFeatureValue.Standard.ASSET_TYPE_STOCK.get_object()
-        else:
+        elif self.asset_class.investment_type == InvestmentType.Standard.BONDS.value:
             return AssetFeatureValue.Standard.ASSET_TYPE_BOND.get_object()
-
-    def get_ethical_feature_value(self):
-        return AssetFeatureValue.Standard.SRI_OTHER.get_object()
+        else:
+            return AssetFeatureValue.objects.get_or_create(name=self.asset_class.investment_type.name,
+                                                           feature=AssetFeature.Standard.ASSET_TYPE.get_object())[0]
 
     def populate_features(self):
         """
@@ -1084,8 +1080,7 @@ class Ticker(FinancialInstrument):
         self.features.clear()
         self.features.add(r_feat, ac_feat, curr_feat, at_feat)
         if self.ethical:
-            eth_feature_value = self.get_ethical_feature_value()
-            self.features.add(eth_feature_value)
+            self.features.add(AssetFeatureValue.Standard.SRI_OTHER.get_object())
         self.features.add(core_feature_value if self.etf else satellite_feature_value)
 
     def save(self,
@@ -1094,8 +1089,7 @@ class Ticker(FinancialInstrument):
              using=None,
              update_fields=None):
         self.symbol = self.symbol.upper()
-        super(Ticker, self).save(force_insert, force_update, using,
-                                 update_fields)
+        super(Ticker, self).save(force_insert, force_update, using, update_fields)
 
 
 @receiver(post_save, sender=Ticker)
