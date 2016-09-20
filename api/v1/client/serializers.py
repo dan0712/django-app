@@ -139,7 +139,6 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
             ser.save(asset=instance)
         return instance
 
-
 class InvitationSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = EmailInvite
@@ -155,6 +154,8 @@ class InvitationSerializer(ReadOnlyModelSerializer):
 class PrivateInvitationSerializer(serializers.ModelSerializer):
     # Includes onboarding data
     # Allows POST for registered users
+    onboarding_data = serializers.JSONField()
+
     class Meta:
         model = EmailInvite
         read_only_fields = ('invite_key', 'status')

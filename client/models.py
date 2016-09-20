@@ -5,6 +5,8 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import (MaxValueValidator, MinLengthValidator,
+                                    MinValueValidator, MaxLengthValidator, ValidationError)
 from django.db import models
 from django.db.models import PROTECT
 from django.db.models.aggregates import Min, Max, Sum
@@ -60,6 +62,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
     employer = models.CharField(max_length=255, null=True, blank=True)
+    smoker = models.NullBooleanField(null=True, blank=True)
+    daily_exercise = models.PositiveIntegerField(null=True, blank=True,
+                                                 help_text="In Minutes")
+    weight = models.PositiveIntegerField(null=True, blank=True, help_text="In kilograms")
+    height = models.PositiveIntegerField(null=True, blank=True, help_text="In centimeters")
+
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)
@@ -656,3 +664,7 @@ class EmailInvite(models.Model):
         self.send_count += 1
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
+
+class RiskCategory(models.Model):
+    upper_bound = models.FloatField(validators=[MinValueValidator(0),
+                                                MaxValueValidator(1)])

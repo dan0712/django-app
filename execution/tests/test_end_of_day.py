@@ -14,11 +14,15 @@ from execution.end_of_day import *
 from execution.end_of_day import get_execution_requests, transform_execution_requests
 from main.models import ExternalInstrument
 from main.tests.fixture import Fixture1
+from api.v1.tests.factories import InvestmentTypeFactory
 
 
 class BaseTest(TestCase):
 
     def setUp(self):
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
+
         self.con = Mock(IBroker)
         self.con.connect.return_value = True
 

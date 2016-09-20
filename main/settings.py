@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'advisors',
     'portfolios',
     'statements',
+    'retiresmartz',
     'swift',
     'anymail',
 )

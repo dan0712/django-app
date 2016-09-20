@@ -7,8 +7,9 @@ import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
 
-from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
 # Swap this to use a different prediction algo.
+from django.conf import settings as sys_settings
+from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
 
@@ -620,7 +621,7 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         if budget < req_budget:
             emsg = "The budget of {0} {1} is insufficient to purchase all the assets in the portfolio with allocated " \
                    "proportions over {2}%. Please increase the budget to at least {3} {1} to purchase this portfolio."
-            raise Unsatisfiable(emsg.format(budget, settings.SYSTEM_CURRENCY, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget)),
+            raise Unsatisfiable(emsg.format(budget, sys_settings.SYSTEM_CURRENCY, LMT_PORTFOLIO_PCT * 100, math.ceil(req_budget)),
                                 math.ceil(req_budget))
 
     inactive_ilocs = inactive_unit.nonzero()[0].tolist()

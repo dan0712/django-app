@@ -26,6 +26,8 @@ mocked_now = datetime(2016, 1, 1)
 class GoalTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
+        self.bonds_type = InvestmentTypeFactory.create(name='BONDS')
+        self.stocks_type = InvestmentTypeFactory.create(name='STOCKS')
 
     def tearDown(self):
         self.client.logout()
