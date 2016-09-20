@@ -1,5 +1,4 @@
 from ujson import loads
-from unittest import skip
 
 from django.utils.timezone import now
 from rest_framework import status
@@ -7,8 +6,10 @@ from rest_framework.test import APITestCase
 
 from common.constants import GROUP_SUPPORT_STAFF
 from retiresmartz.models import RetirementPlan
+from main.models import InvestmentType
 from main.tests.fixture import Fixture1
-from .factories import GroupFactory
+from .factories import GroupFactory, RetirementPlanFactory, TickerFactory, \
+    AssetClassFactory, ContentTypeFactory
 
 
 class RetiresmartzTests(APITestCase):
@@ -199,3 +200,39 @@ class RetiresmartzTests(APITestCase):
         # Make sure cascade not in force, but null.
         self.assertEqual(RetirementPlan.objects.get(id=plan2_id).id, plan2_id)
         self.assertEqual(Fixture1.client2_retirementplan1().partner_plan, None)
+
+    def test_todos(self):
+        # TODO: Advisor tests.
+        # Test a clients' primary and secondary advisors are able to access the appropriate plans.
+        # Test partner plan clients' primary and secondary advisors are able to access the appropriate plans.
+        # Test non-advising advisors cannot access
+        # Test only advisors and clients can view and edit the plans. (No-one with firm privileges)
+        pass
+
+    def test_retirement_plan_calculate_unauthenticated(self):
+        plan = RetirementPlanFactory.create()
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_retirement_plan_calculate_not_found(self):
+        plan = RetirementPlanFactory.create()
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id+999)
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retirement_plan_calculate(self):
+        # some tickers for portfolio
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        plan = RetirementPlanFactory.create()
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('portfolio' in response.data)
+        self.assertTrue('projection' in response.data)

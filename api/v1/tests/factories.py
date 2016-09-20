@@ -14,6 +14,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, InvestmentCycleObservation, \
                         InvestmentCyclePrediction
+from retiresmartz.models import RetirementPlan
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -22,7 +23,7 @@ from statements.models import StatementOfAdvice, RecordOfAdvice
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
-
+from django.utils import timezone
 from random import randrange
 
 
@@ -100,6 +101,7 @@ class FirmFactory(factory.django.DjangoModelFactory):
     token = factory.Sequence(lambda n: 'Token %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
     slug = factory.Sequence(lambda n: 'Slug %d' % n)
+
 
 class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -243,11 +245,13 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     confirmed = True
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 
+
 class StatementOfAdviceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StatementOfAdvice
 
     account = factory.SubFactory(ClientAccountFactory)
+
 
 class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -469,3 +473,26 @@ class SupervisorFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     firm = factory.SubFactory(FirmFactory)
+
+
+class RetirementPlanFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementPlan
+    name = factory.Sequence(lambda n: 'RetirementPlan %d' % n)
+    client = factory.SubFactory(ClientFactory)
+    retirement_age = 55
+    calculated_life_expectancy = 80
+    selected_life_expectancy = 80
+    desired_income = 250000
+    income = 100000
+    btc = 0
+    atc = 0
+    volunteer_days = factory.LazyAttribute(lambda n: random.randrange(7))
+    paid_days = factory.LazyAttribute(lambda n: random.randrange(7))
+    same_home = False
+    retirement_postal_code = 11901
+    reverse_mortgage = True
+    expected_return_confidence = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    desired_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    recommended_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    max_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
