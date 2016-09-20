@@ -308,7 +308,8 @@ def optimize_settings(settings, idata, data_provider, execution_provider):
     Calculates the portfolio weights for a given settings object
     :param settings: GoalSettings object
     :param idata: Global instrument data
-    :return:
+    :return: (weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars)
+            - lcovars - A Pandas dataframe indexed in both directions on ticker id.
     """
     # Optimise for the instrument weights given the constraints
     result = calc_opt_inputs(settings=settings,
@@ -319,8 +320,8 @@ def optimize_settings(settings, idata, data_provider, execution_provider):
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
 
-    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
-    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu, constraints)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]
+    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu.values, constraints)
 
     if not weights.any():
         raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(settings))
@@ -393,8 +394,8 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     weights, cost = make_orderable(weights,
                                    cost,
                                    xs,
-                                   lcovars,
-                                   settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL],
+                                   lcovars.values,
+                                   settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values,
                                    lam,
                                    constraints,
                                    settings,

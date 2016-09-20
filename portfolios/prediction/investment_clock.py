@@ -7,7 +7,8 @@ from common.constants import WEEKDAYS_PER_YEAR
 from portfolios.exceptions import OptimizationException
 from portfolios.returns import get_return_history, get_benchmark_returns, filter_returns
 
-OLDEST_ACCEPTABLE_DATA = 35  # The number of days back we will look data before we consider it too old.
+# TODO: Once we have automated predictions, reduce this value.
+OLDEST_ACCEPTABLE_DATA = 180  # The number of days back we will look data before we consider it too old.
 
 MAX_HISTORY = 20  # The maximum years of history we want to use
 CYCLE_LABEL = 'CYCLE'
