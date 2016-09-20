@@ -23,6 +23,7 @@ class Command(BaseCommand):
         data_provider = DataProviderDjango()
         # Get the funds from the instruments table
         covars, funds, masks = get_instruments(data_provider)
+        sigma = covars.values
 
         mu = funds[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
 
@@ -32,12 +33,14 @@ class Command(BaseCommand):
 
         xs, constraints = get_core_constraints(funds.shape[0])
 
+        constraints += [xs >= 0]
+
         # Find the lambda that gives only the best BL ER.
         lowerb = 0.0
         upperb = 100000000.0
         mval = 10
         while upperb - lowerb > .001:  # We want lambda to 3 decimal places
-            weights, cost = markowitz_optimizer_3(xs, covars, mval, mu, constraints)
+            weights, cost = markowitz_optimizer_3(xs, sigma, mval, mu, constraints)
             changed = False
             for ix, weight in enumerate(weights):
                 # print("ix={}, weight={}".format(ix, weight))
@@ -55,7 +58,7 @@ class Command(BaseCommand):
 
         # Find the least variance portfolio.
         constraints.append(mul_elemwise(mu, xs) >= 0)
-        weights, cost = markowitz_optimizer_3(xs, covars, 0.0, mu, constraints)
+        weights, cost = markowitz_optimizer_3(xs, sigma, 0.0, mu, constraints)
         # Remove any below minimum percent and round to find the target portfolio
         weights[weights < MIN_PORTFOLIO_PCT] = 0
         target = np.round(weights, 2)
@@ -65,7 +68,7 @@ class Command(BaseCommand):
         upperb = max_lambda
         mval = max_lambda / 2
         while upperb - lowerb > .001:  # We want lambda to 3 decimal places
-            weights, cost = markowitz_optimizer_3(xs, covars, mval, mu,
+            weights, cost = markowitz_optimizer_3(xs, sigma, mval, mu,
                                                   constraints)
             weights[weights < MIN_PORTFOLIO_PCT] = 0
             comp = np.round(weights, 2)

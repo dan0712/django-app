@@ -8,29 +8,32 @@ from django.db import connection
 from django.utils.timezone import now
 
 from api.v1.tests.factories import InvestmentCycleObservationFactory, InvestmentCyclePredictionFactory
-from main.models import MarketIndex, DailyPrice, MarketCap, Ticker
+from main.models import MarketIndex, DailyPrice, MarketCap, Ticker, InvestmentCycleObservation, \
+    InvestmentCyclePrediction
 
 logger = logging.getLogger("populate_test_prices")
 
 
-def random_walk(N, delta):
+def random_walk(n, delta):
     """
     Use numpy.cumsum and numpy.random.uniform to generate
     a one dimensional random walk of length N, each step with a random delta between +=delta.
     """
-    return np.cumsum(np.random.uniform(-delta, delta, N))
+    return np.cumsum(np.random.uniform(-delta, delta, n))
 
 
 def delete_data():
     DailyPrice.objects.all().delete()
     MarketCap.objects.all().delete()
+    InvestmentCycleObservation.objects.all().delete()
+    InvestmentCyclePrediction.objects.all().delete()
 
 
 def populate_prices(days, asof=now().date()):
     """
     Populate days worth of test prices as of the given asof date
     :param days: Number of historic prices to populate
-    :param asof: The Date to fininsh the population
+    :param asof: The Date to finish the population
     :return:
     """
     prices = []
