@@ -1434,7 +1434,10 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self)
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+            annotate(ticker_id=F('execution_distribution__execution__asset__id'),
+                     price=F('execution_distribution__execution__asset__unit_price'))\
+            .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
         return lots
 
     def save(self, force_insert=False, force_update=False, using=None,

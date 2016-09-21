@@ -51,7 +51,7 @@ def get_position_weights(goal):
     res = []
     total = 0.0
     for position in goal.get_positions_all():
-        res.append((position.ticker.id, position.value))
+        res.append((position['ticker_id'], position['quantity'] * position['price']))
         total += position.value
     return {tid: val/total for tid, val in res}
 
@@ -64,7 +64,7 @@ def get_held_weights(goal):
     :return: dict from symbol to current weight in that goal.
     """
     avail = goal.available_balance
-    return {pos.ticker.id: pos.value/avail for pos in goal.get_positions_all()}
+    return {pos['ticker_id']: (pos['quantity'] * pos['price'])/avail for pos in goal.get_positions_all()}
 
 
 def metrics_changed(goal):
@@ -118,14 +118,17 @@ def create_request(goal, new_positions, reason, execution_provider, data_provide
     new_positions = copy.copy(new_positions)
 
     # Change any existing positions
-    for position in goal.get_positions_all():
-        new_pos = new_positions.pop(position.ticker.id, 0)
-        if new_pos - position.share == 0:
+    positions = goal.get_positions_all()
+    for position in positions:
+
+        new_pos = new_positions.pop(position['ticker_id'], 0)
+        if new_pos - position['quantity'] == 0:
             continue
+        ticker = data_provider.get_ticker(id=position['quantity'])
         request = execution_provider.create_execution_request(reason=reason,
                                                               goal=goal,
-                                                              asset=position.ticker,
-                                                              volume=new_pos - position.share,
+                                                              asset=ticker,
+                                                              volume=new_pos - position['quantity'],
                                                               order=order,
                                                               limit_price=None)
         requests.append(request)
