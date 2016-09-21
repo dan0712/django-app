@@ -635,7 +635,6 @@ class EmailInvite(models.Model):
     onboarding_data = JSONField(null=True, blank=True)
     onboarding_file_1 = models.FileField(null=True, blank=True)
 
-
     def __unicode__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
                                       self.last_name, self.email)
