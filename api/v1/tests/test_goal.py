@@ -395,10 +395,6 @@ class GoalTests(APITestCase):
         fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
                                      benchmark_content_type=self.content_type,
                                      etf=True)
-        #feature = AssetFeature.Standard.FUND_TYPE.get_object()
-        #self.asv = AssetFeatureValueFactory.create(feature=feature, assets=fund1)
-
-
         goal = GoalFactory.create()
 
         order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)

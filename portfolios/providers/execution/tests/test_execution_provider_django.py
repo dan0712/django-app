@@ -40,8 +40,6 @@ class DjangoExecutionProviderTest(test.TestCase):
         dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=10)
         PositionLotFactory(quantity=10, execution_distribution=dist)
 
-        #PositionFactory.create(goal=goal, ticker=fund, share=10)
-
         ep = ExecutionProviderDjango()
         vals = ep.get_asset_weights_held_less_than1y(goal, today)
         self.assertAlmostEqual(vals[fund.id], 21/goal.available_balance)
@@ -66,7 +64,6 @@ class DjangoExecutionProviderTest(test.TestCase):
                                        amount=20)
         dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=10)
         PositionLotFactory(quantity=10, execution_distribution=dist)
-        #PositionFactory.create(goal=goal, ticker=fund, share=10)
         ep = ExecutionProviderDjango()
         vals = ep.get_asset_weights_held_less_than1y(goal, today)
         self.assertEqual(len(vals), 0)

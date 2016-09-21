@@ -2155,8 +2155,8 @@ class PositionLot(models.Model):
 
 class Sale(models.Model):
     #create on every sale
-    sell_execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='sold_lot')
-    buy_execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='bought_lot')
+    sell_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='sold_lot')
+    buy_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='bought_lot')
     quantity = models.FloatField(null=True, blank=True, default=None)
 
 

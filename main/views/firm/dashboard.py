@@ -18,7 +18,7 @@ from main.constants import (INVITATION_ADVISOR, INVITATION_SUPERVISOR,
                             INVITATION_TYPE_DICT)
 from main.forms import BetaSmartzGenericUserSignupForm, EmailInvitationForm
 from main.models import (Advisor, EmailInvitation, Goal, GoalMetric, GoalType,
-                         PositionLot, Supervisor, Transaction, User, PositionLot)
+                         Supervisor, Transaction, User, PositionLot)
 from main.views.base import LegalView
 from notifications.models import Notification
 from support.models import SupportRequest
@@ -295,7 +295,6 @@ class FirmAnalyticsMixin(object):
 
     def get_queryset_positions(self):
         if not hasattr(self, '_queryset_positions'):
-            #qs = Position.objects.all()
             qs = PositionLot.objects.all()
 
             if hasattr(self, 'firm'):
@@ -308,7 +307,6 @@ class FirmAnalyticsMixin(object):
                         qs = qs.filter_by_advisors(advisors)
                     else:
                         qs = PositionLot.objects.none()
-                        #qs = Position.objects.none()
 
             if hasattr(self, 'client_filter'):
                 clients = self.client_filter.qs

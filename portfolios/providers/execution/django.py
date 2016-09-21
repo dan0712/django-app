@@ -34,6 +34,7 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
 
         weights = dict()
 
+        bal = goal.available_balance
         for l in lots:
-            weights[l['tid']] = l['value'] / goal.available_balance
+            weights[l['tid']] = l['value'] / bal
         return weights

@@ -14,18 +14,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PositionLot',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('quantity', models.FloatField(blank=True, null=True, default=None)),
-                ('execution_distribution', models.OneToOneField(related_name='position_lot', to='main.ExecutionDistribution')),
+                ('execution_distribution', models.OneToOneField(to='main.ExecutionDistribution', related_name='position_lot')),
             ],
         ),
         migrations.CreateModel(
             name='Sale',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('quantity', models.FloatField(blank=True, null=True, default=None)),
-                ('buy_execution_distribution', models.OneToOneField(related_name='bought_lot', to='main.ExecutionDistribution')),
-                ('sell_execution_distribution', models.OneToOneField(related_name='sold_lot', to='main.ExecutionDistribution')),
+                ('buy_execution_distribution', models.ForeignKey(to='main.ExecutionDistribution', related_name='bought_lot')),
+                ('sell_execution_distribution', models.ForeignKey(to='main.ExecutionDistribution', related_name='sold_lot')),
             ],
         ),
         migrations.AlterUniqueTogether(
