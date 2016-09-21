@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 import numpy as np
@@ -12,6 +13,8 @@ OLDEST_ACCEPTABLE_DATA = 180  # The number of days back we will look data before
 
 MAX_HISTORY = 20  # The maximum years of history we want to use
 CYCLE_LABEL = 'CYCLE'
+
+logger = logging.getLogger(__name__)
 
 
 class InvestmentClock(object):
@@ -118,7 +121,9 @@ class InvestmentClock(object):
         """
         returns[CYCLE_LABEL] = cycles.reindex(returns.index, method='pad')
         if len(returns[CYCLE_LABEL].unique()) != 5:
-            raise OptimizationException("All investment cycles were not represented in data.")
+            emsg = "A full investment cycle was not present in the available history ({} - {})"
+            logger.error(emsg.format(returns.index[0], returns.index[-1]))
+            raise OptimizationException("Not enough data for portfolio optimisation.")
         return returns
 
     def _expected_returns_prob_v1(self, merged_df, prob_vector):

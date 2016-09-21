@@ -4,15 +4,14 @@ import numpy as np
 from cvxpy import mul_elemwise
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
-from scipy.optimize.minpack import curve_fit
 
 from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.calculation import MIN_PORTFOLIO_PCT, get_core_constraints, get_instruments, \
     INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
+from portfolios.markowitz_scale import get_risk_curve
 from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger("markowitz_finder")
-
 
 class Command(BaseCommand):
     help = 'Calculate all the optimal portfolios for ' \
@@ -82,14 +81,7 @@ class Command(BaseCommand):
         min_lambda = round(mval, 3)
         logger.info("Found MIN_LAMBDA: {}".format(min_lambda))
 
-        x = [-50, 0, 50]
-        y = [min_lambda, 1.2, max_lambda]
-
-        def func(xx, a, b, c):
-            return a * np.power(b, xx) + c
-
-        vals, _ = curve_fit(func, x, y)
-        logger.info("Found function fit using params: {}".format(vals))
+        vals = get_risk_curve(min_lambda, max_lambda)
 
         data_provider.set_markowitz_scale(dt=now().today(),
                                           mn=min_lambda,

@@ -7,7 +7,8 @@ import pandas as pd
 from django.db.models.query import QuerySet
 
 # The largest acceptable daily return. Anything above this will be filtered out and replaced with an average.
-LARGEST_DAILY_RETURN = 0.5
+# This is an extremely poor way to deal with splits.
+LARGEST_DAILY_RETURN = 0.48
 
 logger = logging.getLogger('portfolios.returns')
 
@@ -98,7 +99,8 @@ def get_benchmark_returns(funds, benchmark_returns):
 
 def get_return_history(funds, start_date, end_date):
     """
-    Returns the longest consecutive daily return history of the funds and their benchmarks for the given date range.
+    Returns the longest daily return history of the funds and their benchmarks for the given date range.
+    The history may have gaps.
 
     :param funds: The iterable of funds (Tickers) we want the data for.
     :param start_date: The first date inclusive.
@@ -252,7 +254,8 @@ def get_prices(instrument, dates):
     frame = instrument.daily_prices.filter(
         date__range=(dates[0] - timedelta(days=1), dates[-1]))
 
-    #to_timeseries only works with django-pandas from QuerySet. We might be sending DataFrame already with different data_provider
+    # to_timeseries only works with django-pandas from QuerySet.
+    # We might be sending DataFrame already with different data_provider
     if isinstance(frame, QuerySet):
         frame = frame.to_timeseries(fieldnames=['price'], index='date')
 
@@ -267,20 +270,23 @@ def get_prices(instrument, dates):
     return prices.interpolate(method='time', limit=2)
 
 
-def get_price_returns(instrument, dates):
+def get_price_returns(instrument, dates, consecutive=False):
     """
-    Get the longest consecutive daily returns series from the end date based of the availability of daily prices.
+    Get the daily returns series for the given instrument.
+    The data should be clean from outliers, but may have gaps.
     :param instrument:
-    :param dates:
+    :param dates: Pandas datetime index of dates to collect.
+    :param consecutive: Only return the latest consecutive run of returns.
     :return:
     """
     prices = get_prices(instrument, dates)
     consec = prices[prices.first_valid_index():prices.last_valid_index()]
-    consec = consec[first_consec_index(consec):]
+    if consecutive:
+        consec = consec[first_consec_index(consec):]
 
     if consec.count() != consec.size:
         emsg = "Not generating full returns for instrument: {}. " \
-               "Generating longest, most recent consecutive run available from {} - {}"
+               "Generating longest data available from {} - {}"
         logger.warn(emsg.format(instrument.id, consec.index[0], consec.index[-1]))
 
     # Convert the prices to returns

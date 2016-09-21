@@ -912,7 +912,8 @@ class MarketIndex(FinancialInstrument):
 
     def get_returns(self, dates):
         """
-        Get the longest available consecutive daily returns series from the end date.
+        Get the daily returns series for the given index.
+        The data should be clean of outliers, but may have gaps.
         :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
@@ -1004,7 +1005,8 @@ class Ticker(FinancialInstrument):
 
     def get_returns(self, dates):
         """
-        Get the longest available consecutive daily returns series from the end date.
+        Get the daily returns series for the given index.
+        The data may have gaps.
         :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """

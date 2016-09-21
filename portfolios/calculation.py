@@ -1,15 +1,14 @@
 import logging
 import math
 import sys
-from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
-
-# Swap this to use a different prediction algo.
 from django.conf import settings as sys_settings
+
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
+from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
 
@@ -271,27 +270,6 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
 
     lambda_risk = risk_score_to_lambda(risk_score=risk_score, data_provider=data_provider)
     return lambda_risk, constraints
-
-
-def risk_score_to_lambda(risk_score, data_provider):
-    scale = data_provider.get_markowitz_scale()
-    if scale is None:
-        raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
-    scale_date = scale.date
-    if scale_date < (data_provider.get_current_date() - timedelta(days=7)):
-        logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
-
-
-def lambda_to_risk_score(lam, data_provider):
-    # Turn the markowitz lambda into a risk score
-    scale = data_provider.get_markowitz_scale()
-    if scale is None:
-        raise Exception("No Markowitz limits available. Cannot convert The Markowitz lambda into a risk score.")
-    scale_date = pd.Timestamp(scale.date).to_datetime()
-    if scale_date < (datetime.now().today() - timedelta(days=7)):
-        logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return (math.log((lam - scale.c)/scale.a, scale.b) + 50) / 100
 
 
 class Unsatisfiable(Exception):
