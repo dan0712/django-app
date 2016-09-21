@@ -416,16 +416,6 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     to_goal = factory.SubFactory(GoalFactory)
 
 
-'''
-class PositionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Position
-
-    goal = factory.SubFactory(GoalFactory)
-    ticker = factory.SubFactory(TickerFactory)
-    share = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
-'''
-
 class PositionLotFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PositionLot
