@@ -474,8 +474,6 @@ class GoalTests(APITestCase):
         PositionLotFactory(quantity=1, execution_distribution=dist3)
 
         positions = goal.get_positions_all()
-        for p in positions:
-            print('1')
 
         self.assertTrue(positions[0]['quantity'] == 15)
         self.assertTrue(positions[1]['quantity'] == 1)
