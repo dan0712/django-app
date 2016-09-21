@@ -50,6 +50,7 @@ class ExternalAssetViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewS
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
+
 class RetirementIncomeViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     model = RetirementPlanEinc
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
@@ -75,6 +76,7 @@ class RetirementIncomeViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelVi
         user = SupportRequest.target_user(self.request)
         allow_plans = RetirementPlan.objects.filter_by_user(user)
         return qs.filter(plan__in=allow_plans)
+
 
 class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     model = Client
@@ -109,8 +111,7 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
                     "you're ready to start using BetaSmartz!")
             return super(ClientViewSet, self).post(request)
         return Response({'error': 'requires account with accepted invitation'},
-                        status=HTTP_405_METHOD_NOT_ALLOWED)
-
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class InvitesView(ApiViewMixin, views.APIView):
