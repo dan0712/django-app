@@ -10,7 +10,7 @@ from api.v1.serializers import EventMemoMixin, NoCreateModelSerializer, \
     NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.event import Event
 from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
-    GoalSetting, GoalType, Portfolio, PortfolioItem, Position, \
+    GoalSetting, GoalType, Portfolio, PortfolioItem, \
     RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk
 from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
@@ -691,12 +691,3 @@ class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
     """
     class Meta:
         model = GoalType
-
-
-class GoalPositionListSerializer(ReadOnlyModelSerializer):
-    """
-    Experimental
-    For read (GET) requests only
-    """
-    class Meta:
-        model = Position

@@ -2,7 +2,7 @@ from rest_framework import status
 from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
     TransactionFactory, AccountTypeRiskProfileGroupFactory, \
-    ExternalAssetFactory, PositionFactory, TickerFactory, \
+    ExternalAssetFactory, TickerFactory, \
     SupervisorFactory, AuthorisedRepresentativeFactory, GroupFactory
 from main import constants
 from main.models import Supervisor

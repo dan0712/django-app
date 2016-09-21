@@ -12,6 +12,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
@@ -993,10 +995,10 @@ class Ticker(FinancialInstrument):
         return not self.is_core
 
     def value(self, goal):
-        v = 0
+        total_qty = PositionLot.objects.filter(execution_distribution__transaction__from_goal=goal).\
+            aggregate(Sum('quantity'))
 
-        for p in Position.objects.filter(goal=goal, ticker=self).all():
-            v += p.value
+        v = total_qty * self.unit_price
 
         return v
 
@@ -1432,7 +1434,11 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        return Position.objects.filter(goal=self).all()
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+            annotate(ticker_id=F('execution_distribution__execution__asset__id'),
+                     price=F('execution_distribution__execution__asset__unit_price'))\
+            .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
+        return lots
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1753,11 +1759,18 @@ class Goal(models.Model):
         predicted_balance = self.balance_at(self.selected_settings.completion)
         return predicted_balance >= self.selected_settings.target
 
+    def _sum_holdings(self, qs):
+        total_holdings = qs.filter(execution_distribution__transaction__from_goal=self).\
+            annotate(cur_price=F('execution_distribution__execution__asset__unit_price')).\
+            aggregate(total_value=Coalesce(Sum(F('cur_price') * F('quantity')), 0))
+
+        result = total_holdings['total_value']
+        return result
+
     @property
     def total_balance(self):
         b = self.cash_balance
-        for p in Position.objects.filter(goal=self).all():
-            b += p.value
+        b += self._sum_holdings(PositionLot.objects.all())
         return b
 
     @property
@@ -1769,35 +1782,29 @@ class Goal(models.Model):
 
     @property
     def stock_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_stock:
-                v += p.value
-        return v
+        stocks = InvestmentType.Standard.STOCKS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=stocks)
+        )
 
     @property
     def bond_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if not p.is_stock:
-                v += p.value
-        return v
+        bonds = InvestmentType.Standard.BONDS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=bonds)
+        )
 
     @property
     def core_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_core:
-                v += p.value
-        return v
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__etf=True)
+        )
 
     @property
     def satellite_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_satellite:
-                v += p.value
-        return v
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset_etf=False)
+        )
 
     @property
     def total_return(self):
@@ -2044,36 +2051,6 @@ class GoalMetric(models.Model):
                                                                  self.id)
 
 
-class Position(models.Model):
-    class Meta:
-        unique_together = ('goal', 'ticker')
-
-    goal = models.ForeignKey(Goal, related_name='positions')
-    ticker = models.ForeignKey(Ticker)
-    share = models.FloatField(default=0)
-
-    objects = PositionQuerySet.as_manager()
-
-    @property
-    def is_stock(self):
-        return self.ticker.is_stock
-
-    @property
-    def is_core(self):
-        return self.ticker.is_core
-
-    @property
-    def is_satellite(self):
-        return self.ticker.is_satellite
-
-    @property
-    def value(self):
-        return self.share * self.ticker.unit_price
-
-    def __str__(self):
-        return "{}|{}|{}".format(self.goal, self.ticker.symbol, self.share)
-
-
 class MarketOrderRequest(models.Model):
     """
     A Market Order Request defines a request for an order to buy or sell one or more assets on a market.
@@ -2170,6 +2147,20 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
+
+
+class PositionLot(models.Model):
+    #create on every buy
+    execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
+    #quantity get decreased on every sell, until it it zero, then delete the model
+
+
+class Sale(models.Model):
+    #create on every sale
+    sell_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='sold_lot')
+    buy_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='bought_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
 
 
 class SymbolReturnHistory(models.Model):
