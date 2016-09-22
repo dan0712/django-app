@@ -1,10 +1,10 @@
 [Betasmartz](http://betasmartz.com)
 
 
-## Docker Development Environment Installation
-Please use and follow quick readme instructions for https://bitbucket.org/betasmartz/betasmartz_dev_setup
+## Docker Development Environment Setup
+Please follow the quick readme instructions for https://bitbucket.org/betasmartz/betasmartz_dev_setup
 
-Which will setup both the backend (this repository) and frontend repositories, build docker containers, setup postgres dev database and run everything including nginx proxy between backend and frontend.
+Which will setup both the backend (this repository) and frontend, build docker containers, setup postgres dev database and run everything including nginx proxy between backend and frontend.
 
 
 ## Installation
