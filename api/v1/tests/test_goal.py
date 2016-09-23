@@ -337,13 +337,15 @@ class GoalTests(APITestCase):
         """
         expects the years parameter for the span of risk scores
         """
-        url = '/api/v1/goals/{}/recommended-risk-score-data'.format(Fixture1.goal1().id)
+        url = '/api/v1/goals/{}/risk-score-data'.format(Fixture1.goal1().id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['max'], 0.5)
+        self.assertEqual(response.data['recommended'], 0.5)
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_all_portfolios(self):

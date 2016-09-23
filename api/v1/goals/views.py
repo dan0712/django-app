@@ -418,7 +418,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @detail_route(methods=['get'], url_path='recommended-risk-score-data')
+    @detail_route(methods=['get'], url_path='risk-score-data')
     def recommended_risk_scores(self, request, pk=None, **kwargs):
         setting = self.get_object().selected_settings
         return Response(risk_data(setting))

@@ -3,11 +3,13 @@ from main.constants import ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_PERSONAL, ACCOUNT_TY
 # The risk score if we don't have enough info to say anything.
 NEUTRAL_RISK = 0.5
 
+
 def scale(val, src, dst):
     """
     Scale the given value from the scale of src to the scale of dst.
     """
     return ((val - src[0]) / (src[1]-src[0])) * (dst[1]-dst[0]) + dst[0]
+
 
 class GoalSettingRiskProfile(object):
     def __init__(self, setting):
@@ -70,7 +72,7 @@ class GoalSettingRiskProfile(object):
         scores = self.goal_bas_scores()
         return {
             'recommended': self._recommend_risk(scores),
-            'max_risk': self._max_risk(scores),
+            'max': self._max_risk(scores),
         }
 
     @classmethod
@@ -98,14 +100,18 @@ class GoalSettingRiskProfile(object):
 def recommend_risk(setting):
     return GoalSettingRiskProfile(setting).recommend_risk()
 
+
 def max_risk(setting):
     return GoalSettingRiskProfile(setting).max_risk()
+
 
 def recommend_ttl_risks(setting):
     raise NotImplementedError('recommend_ttl_risks has been deprecated, use recommend_risk instead')
 
+
 def get_risk_willingness(account):
     raise NotImplementedError('get_risk_willingness has been deprecated, use recommend_risk instead')
+
 
 def risk_data(setting):
     return GoalSettingRiskProfile(setting).risk_data()

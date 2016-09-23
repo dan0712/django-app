@@ -103,12 +103,11 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         return qs.filter_by_user(user)
 
     def post(self, request):
-        if EmailInvite.STATUS_ACCEPTED == getattr(
-            self.request.user.invitation, 'status', None):
+        if EmailInvite.STATUS_ACCEPTED == getattr(self.request.user.invitation, 'status', None):
             # Email the user "Welcome Aboard"
             self.request.user.email_user('Welcome to BetaSmartz!',
-                    "Congratulations! You've setup your first account, "
-                    "you're ready to start using BetaSmartz!")
+                                         "Congratulations! You've setup your first account, "
+                                         "you're ready to start using BetaSmartz!")
             return super(ClientViewSet, self).post(request)
         return Response({'error': 'requires account with accepted invitation'},
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -120,6 +119,7 @@ class InvitesView(ApiViewMixin, views.APIView):
     parser_classes = (
         parsers.JSONParser, parsers.FileUploadParser, parsers.MultiPartParser,
     )
+
     def get(self, request, invite_key):
         find_invite = EmailInvite.objects.filter(invite_key=invite_key)
         if not find_invite.exists:
@@ -146,16 +146,15 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         if invite.status == EmailInvite.STATUS_EXPIRED:
             invite.advisor.user.email_user('A client tried to use an expired invitation'
-                    "Your client %s %s (%s) just tried to register using an invite "
+                    "Your potential client %s %s (%s) just tried to register using an invite "
                     "you sent them, but it has expired!"%
-                    (client.first_name, client.last_name, client.email))
+                    (invite.first_name, invite.last_name, invite.email))
 
         if invite.status != EmailInvite.STATUS_ACCEPTED:
             return Response(self.serializer_class(instance=invite).data,
                             status=status.HTTP_304_NOT_MODIFIED)
 
-        serializer = self.serializer_class(invite, data=request.data,
-                                           partial=True)
+        serializer = self.serializer_class(invite, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
 
