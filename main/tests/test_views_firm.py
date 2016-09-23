@@ -12,7 +12,7 @@ from api.v1.tests.factories import ClientAccountFactory, \
     ExternalAssetFactory, TickerFactory, \
     SupervisorFactory, AuthorisedRepresentativeFactory, \
     InvestmentTypeFactory, PositionLotFactory, \
-    ExternalAssetFactory, TickerFactory
+    ExternalAssetFactory, TickerFactory, ExecutionRequestFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -171,6 +171,7 @@ class FirmAnalyticsMixinTests(TestCase):
         today = date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
         order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution_request1 = ExecutionRequestFactory.create(goal=goal, asset=ticker1, volume=10, order=order)
         exec1 = Execution.objects.create(asset=ticker1,
                                          volume=10,
                                          order=order,
@@ -183,9 +184,11 @@ class FirmAnalyticsMixinTests(TestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
+        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10,
+                                                     execution_request=execution_request1)
         position1 = PositionLotFactory(quantity=10, execution_distribution=dist1)
 
+        execution_request2 = ExecutionRequestFactory.create(goal=goal, asset=ticker2, volume=10, order=order)
         exec2 = Execution.objects.create(asset=ticker2,
                                          volume=10,
                                          order=order,
@@ -198,9 +201,11 @@ class FirmAnalyticsMixinTests(TestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=10)
+        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=10,
+                                                     execution_request=execution_request2)
         position2 = PositionLotFactory(quantity=10, execution_distribution=dist2)
 
+        execution_request3 = ExecutionRequestFactory.create(goal=goal, asset=ticker3, volume=10, order=order)
         exec3 = Execution.objects.create(asset=ticker3,
                                          volume=10,
                                          order=order,
@@ -213,7 +218,8 @@ class FirmAnalyticsMixinTests(TestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=10)
+        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=10,
+                                                     execution_request=execution_request3)
         position3 = PositionLotFactory(quantity=10, execution_distribution=dist3)
 
         positions = self.view.get_context_positions(**kwargs)

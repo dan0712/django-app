@@ -89,6 +89,12 @@ def transform_execution_requests(execution_requests):
         allocations[e.asset.symbol][e.order.account.ib_account.ib_account] += e.volume
     return allocations
 
+def create_apex_order():
+    '''
+    from outstanding MOR and ER create ApexOrder and MorApex
+    '''
+
+
 
 def example_usage_with_IB():
     options = get_options()

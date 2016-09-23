@@ -27,7 +27,7 @@ from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
     GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
     AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
     GoalMetricFactory, GoalMetricGroupFactory, TransactionFactory, PositionLotFactory, AssetFeatureValueFactory, \
-    AssetFeatureFactory
+    AssetFeatureFactory, ExecutionRequestFactory
 
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
@@ -157,6 +157,7 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data, [])
 
     def test_performance_history(self):
+        goal = GoalFactory.create()
         prices = (
             (Fixture1.fund1(), '20160101', 10),
             (Fixture1.fund1(), '20160102', 10.5),
@@ -183,6 +184,7 @@ class GoalTests(APITestCase):
             (Fixture1.personal_account1(), MarketOrderRequest.State.COMPLETE),
             (Fixture1.personal_account1(), MarketOrderRequest.State.COMPLETE),
         )
+
         orders = Fixture1.add_orders(order_details)
 
         execution_details = (
@@ -197,6 +199,7 @@ class GoalTests(APITestCase):
             (Fixture1.fund2(), orders[5], -5, 52, 255, '20160106'),
         )
         executions = Fixture1.add_executions(execution_details)
+        execution_requests = Fixture1.add_execution_requests(goal, execution_details, executions)
 
         # We distribute the entire executions to one goal.
         distributions = (
@@ -210,7 +213,7 @@ class GoalTests(APITestCase):
             (executions[7], -2, Fixture1.goal1()),
             (executions[8], -5, Fixture1.goal1()),
         )
-        Fixture1.add_execution_distributions(distributions)
+        Fixture1.add_execution_distributions(distributions, execution_requests)
 
         url = '/api/v1/goals/{}/performance-history'.format(Fixture1.goal1().id)
         self.client.force_authenticate(user=Fixture1.client1().user)
@@ -397,9 +400,11 @@ class GoalTests(APITestCase):
                                      etf=True)
         goal = GoalFactory.create()
 
+        volume = 10
         order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution_request = ExecutionRequestFactory.create(goal=goal, asset=fund1, volume=volume, order=order)
         exec = Execution.objects.create(asset=fund1,
-                                        volume=10,
+                                        volume=volume,
                                         order=order,
                                         price=2,
                                         executed=date(2014, 6, 1),
@@ -410,7 +415,8 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=10)
+        dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=volume,
+                                                    execution_request=execution_request)
         PositionLotFactory(quantity=10, execution_distribution=dist)
         weight_stocks = goal.stock_balance
         weight_bonds = goal.bond_balance
@@ -425,7 +431,10 @@ class GoalTests(APITestCase):
         goal = GoalFactory.create()
         today = date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
+
+
         order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution_request1 = ExecutionRequestFactory.create(goal=goal, asset=fund, volume=10, order=order1)
         exec1 = Execution.objects.create(asset=fund,
                                          volume=10,
                                          order=order1,
@@ -438,10 +447,12 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
+        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10,
+                                                     execution_request=execution_request1)
         PositionLotFactory(quantity=10, execution_distribution=dist1)
 
         order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution_request2 = ExecutionRequestFactory.create(goal=goal, asset=fund, volume=5, order=order2)
         exec2 = Execution.objects.create(asset=fund,
                                          volume=5,
                                          order=order2,
@@ -454,10 +465,12 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=10)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=5)
+        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=5,
+                                                     execution_request=execution_request2)
         PositionLotFactory(quantity=5, execution_distribution=dist2)
 
         order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution_request3 = ExecutionRequestFactory.create(goal=goal, asset=fund2, volume=1, order=order3)
         exec3 = Execution.objects.create(asset=fund2,
                                          volume=1,
                                          order=order3,
@@ -470,7 +483,8 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=4)
-        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=1)
+        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=1,
+                                                     execution_request=execution_request3)
         PositionLotFactory(quantity=1, execution_distribution=dist3)
 
         positions = goal.get_positions_all()

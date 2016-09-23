@@ -13,7 +13,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
-                        InvestmentCycleObservation, InvestmentCyclePrediction
+                        InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest
 from retiresmartz.models import RetirementPlan
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -424,6 +424,13 @@ class PositionLotFactory(factory.django.DjangoModelFactory):
 class ExecutionDistributionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExecutionDistribution
+
+
+class ExecutionRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExecutionRequest
+    reason = ExecutionRequest.Reason.DRIFT.value
+
 
 
 class DailyPriceFactory(factory.django.DjangoModelFactory):

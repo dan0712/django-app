@@ -2051,9 +2051,37 @@ class GoalMetric(models.Model):
                                                                  self.id)
 
 
+class ExecutionApexFill(models.Model):
+    #one execution may contribute to many ExecutionApexFills
+    execution = models.OneToOneField('Execution', related_name='execution_apex_fill')
+
+    # one fill may contribute to many ExecutionApexFills
+    apex_fill = models.ForeignKey('ApexFill', related_name='execution_apex_fill')
+
+
+class ApexFill(models.Model):
+    apex_order = models.ForeignKey('ApexOrder', related_name='apex_fill')
+    volume = models.FloatField(help_text="Will be negative for a sell.")
+    # also has field 'execution_apex_fill' from model ExecutionApexFill
+
+
+class ApexOrder(models.Model):
+    ticker = models.ForeignKey('Ticker', related_name='apex_order', on_delete=PROTECT)
+    volume = models.FloatField(help_text="Will be negative for a sell.")
+    # also has morAPEX field from MarketOrderRequestAPEX
+    # also has apex_fill field from ApexFill
+
+
+class MarketOrderRequestAPEX(models.Model):
+    apex_order = models.ForeignKey(ApexOrder, related_name='morAPEX')
+    market_order_request = models.ForeignKey('MarketOrderRequest', related_name='morAPEX')
+
+
 class MarketOrderRequest(models.Model):
     """
     A Market Order Request defines a request for an order to buy or sell one or more assets on a market.
+    It aggregates ExecutionRequests (each execution request is per goal per client) into a group of ExecutionRequests
+    of various goals for single client
     """
     class State(ChoiceEnum):
         PENDING = 0  # Raised somehow, but not yet approved to send to market
@@ -2069,6 +2097,7 @@ class MarketOrderRequest(models.Model):
     account = models.ForeignKey('client.ClientAccount', related_name='market_orders', on_delete=PROTECT)
     # Also has 'execution_requests' field showing all the requests that went into this one order.
     # Also has 'executions' once the request has had executions.
+    # also has 'morAPEX' from MarketOrderRequestAPEX
 
     def __str__(self):
         return "[{}] - {}".format(self.id, self.State(self.state).name)
@@ -2107,6 +2136,8 @@ class ExecutionRequest(models.Model):
     # transaction can be null because once the request is complete, the transaction is removed.
     transaction = models.OneToOneField('Transaction', related_name='execution_request', null=True)
 
+    # also has field 'execution_distribution' from model ExecutionDistribution
+
     def __repr__(self):
         return {
             'reason': str(self.reason),
@@ -2138,6 +2169,9 @@ class Execution(models.Model):
     # Also has field 'distributions' from the ExecutionDistribution model describing to what goals this execution was
     # distributed
 
+    # also has field 'execution_apex_fill' from model ExecutionApexFill to map execution to ApexFill via
+    # ExecutionApexFill
+
     def __str__(self):
         return '{}|{}|{}|{}@{}'.format(self.id, self.executed, self.asset, self.volume, self.price)
 
@@ -2147,17 +2181,21 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
+    execution_request = models.OneToOneField('ExecutionRequest', related_name='execution_distribution')
+    # also has field 'position_lot' from PositionLot model
+    # also has field 'sold_lot' from Sale model
+    # also has field 'bought_lot' from Sale model
 
 
 class PositionLot(models.Model):
-    #create on every buy
+    # create on every buy
     execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
     quantity = models.FloatField(null=True, blank=True, default=None)
-    #quantity get decreased on every sell, until it it zero, then delete the model
+    # quantity gets decreased on every sell, until it it zero, then delete the model
 
 
 class Sale(models.Model):
-    #create on every sale
+    # create on every sale
     sell_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='sold_lot')
     buy_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='bought_lot')
     quantity = models.FloatField(null=True, blank=True, default=None)

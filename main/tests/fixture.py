@@ -13,7 +13,7 @@ from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
-    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
+    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument, ExecutionRequest
 
 from retiresmartz.models import RetirementPlan
 
@@ -696,6 +696,18 @@ class Fixture1:
         return res
 
     @classmethod
+    def add_execution_requests(cls, goal, execution_details, executions):
+        execution_requests = []
+        for detail, ed in zip(execution_details, executions):
+            mor = detail[1]
+            execution_requests.append(ExecutionRequest.objects.create(reason=ExecutionRequest.Reason.DRIFT.value,
+                                                                      goal=goal,
+                                                                      asset=ed.asset,
+                                                                      volume=ed.volume,
+                                                                      order=mor))
+        return execution_requests
+
+    @classmethod
     def add_executions(cls, execution_details):
         """
         Adds a bunch of order executions to the system
@@ -713,14 +725,15 @@ class Fixture1:
         return res
 
     @classmethod
-    def add_execution_distributions(cls, distribution_details):
+    def add_execution_distributions(cls, distribution_details, execution_requests):
         """
         Adds a bunch of order execution distributions to the system
         :param distribution_details: Iterable of (execution, volume, goal) tuples.
         :return: the newly created distributions as a list.
         """
         res = []
-        for execution, volume, goal in distribution_details:
+        for dd, er in zip(distribution_details, execution_requests):
+            execution, volume, goal = dd
             amount = abs(execution.amount * volume / execution.volume)
             if volume > 0:
                 tx = Transaction.objects.create(reason=Transaction.REASON_EXECUTION,
@@ -739,5 +752,6 @@ class Fixture1:
 
             res.append(ExecutionDistribution.objects.create(execution=execution,
                                                             transaction=tx,
-                                                            volume=volume))
+                                                            volume=volume,
+                                                            execution_request=er))
         return res
