@@ -7,9 +7,11 @@ from django.db import transaction
 from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
-from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder
 import types
 from collections import defaultdict
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -94,6 +96,18 @@ def create_apex_order():
     from outstanding MOR and ER create ApexOrder and MorApex
     '''
 
+    ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)\
+        .annotate(ticker_id=F('asset__id'), mor_id=F('order__id'))\
+        .values('ticker_id','mor_id')\
+        .annotate(volume=Sum('volume'))
+    return ers
+
+def save_apex_order(aggregated_ers_on_ticker):
+    '''
+    :param aggregated_ers_on_ticker:
+    :return:
+    '''
+    #ApexOrder.objects.create(ticker=Ticker.objects.get(id=aggregated_ers_on_ticker.ticker_id),volume=aggregated_ers_on_ticker.volume)
 
 
 def example_usage_with_IB():

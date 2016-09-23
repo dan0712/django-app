@@ -2074,7 +2074,7 @@ class ApexOrder(models.Model):
 
 class MarketOrderRequestAPEX(models.Model):
     apex_order = models.ForeignKey(ApexOrder, related_name='morAPEX')
-    market_order_request = models.ForeignKey('MarketOrderRequest', related_name='morAPEX')
+    market_order_request = models.OneToOneField('MarketOrderRequest', related_name='morAPEX')
 
 
 class MarketOrderRequest(models.Model):
