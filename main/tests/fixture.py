@@ -6,9 +6,10 @@ from django.utils import timezone
 from pinax.eventlog.models import Log
 
 import address.models as ad
+from api.v1.tests.factories import GoalMetricFactory
 from client.models import Client, ClientAccount, RiskProfileAnswer,\
     RiskProfileGroup, RiskProfileQuestion, IBAccount
-from main.constants import ACCOUNT_TYPE_PERSONAL, SUPER_ASSET_CLASSES
+from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
@@ -370,14 +371,19 @@ class Fixture1:
 
     @classmethod
     def metric_group1(cls):
-        return GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
                                                      name='metricgroup1')[0]
+        # A metric group isn't valid without a risk score
+        GoalMetricFactory.create(group=g, configured_val=0.4)
+        return g
 
     @classmethod
     def metric_group2(cls):
-        return GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
                                                      name='metricgroup2')[0]
-
+        # A metric group isn't valid without a risk score
+        GoalMetricFactory.create(group=g, configured_val=0.4)
+        return g
 
     @classmethod
     def settings1(cls):

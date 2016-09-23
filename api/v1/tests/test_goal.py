@@ -1,7 +1,6 @@
 import json
 from decimal import Decimal
-from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
+from datetime import date
 
 from datetime import datetime
 from unittest import mock
@@ -19,15 +18,9 @@ from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 
-from main.models import ActivityLog, ActivityLogEvent, EventMemo, \
-    MarketOrderRequest, MarketIndex, GoalMetric, InvestmentType, Execution, Transaction, ExecutionDistribution, \
-    AssetFeature, AssetFeatureValue
-from main.tests.fixture import Fixture1
-from .factories import GroupFactory, GoalFactory, ClientAccountFactory, \
-    GoalSettingFactory, TickerFactory, ContentTypeFactory, InvestmentTypeFactory, \
-    AssetClassFactory, PortfolioSetFactory, DailyPriceFactory, MarketIndexFactory, \
-    GoalMetricFactory, GoalMetricGroupFactory, TransactionFactory, PositionLotFactory, AssetFeatureValueFactory, \
-    AssetFeatureFactory
+from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution
+from main.risk_profiler import max_risk
+from .factories import ContentTypeFactory, TransactionFactory, PositionLotFactory
 
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
@@ -45,6 +38,14 @@ class GoalTests(APITestCase):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.bonds_type = InvestmentType.Standard.BONDS.get()
         self.stocks_type = InvestmentType.Standard.STOCKS.get()
+
+        self.risk_score_metric = {
+            "type": GoalMetric.METRIC_TYPE_RISK_SCORE,
+            "comparison": GoalMetric.METRIC_COMPARISON_EXACTLY,
+            "configured_val": 0.4,
+            "rebalance_type": GoalMetric.REBALANCE_TYPE_RELATIVE,
+            "rebalance_thr": 0.1
+        }
 
     def tearDown(self):
         self.client.logout()
@@ -289,7 +290,8 @@ class GoalTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         new_settings = {
             "completion": "2016-01-01",
-            "metric_group": {"metrics": []},
+            # Any metrics set must have a risk score metric.
+            "metric_group": {"metrics": [self.risk_score_metric]},
             "hedge_fx": False,
             "event_memo": "Replaced because the old one smelled.",
             "event_memo_staff": False,
@@ -304,6 +306,18 @@ class GoalTests(APITestCase):
         memo = EventMemo.objects.order_by('-id')[0]
         self.assertFalse(memo.staff)
         self.assertEqual(memo.comment, new_settings['event_memo'])
+
+    def test_put_settings_with_risk_too_high(self):
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        rsm = self.risk_score_metric.copy()
+        rsm['configured_val'] = 0.9
+        new_settings = {
+            "metric_group": {"metrics": [rsm]},
+        }
+        self.assertLess(max_risk(Fixture1.goal1().selected_settings), 0.9)
+        response = self.client.put(url, new_settings)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_pending_transfers(self):
         # Populate an executed deposit and make sure no pending transfers are returned

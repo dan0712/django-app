@@ -30,12 +30,13 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from main.risk_profiler import validate_risk_score
 from portfolios.returns import get_price_returns
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -1322,6 +1323,17 @@ class GoalSetting(models.Model):
         return self.portfolio.items.all()
 
     @property
+    def risk_score(self):
+        """
+        Returns the configured value of the risk score metric for this setting.
+        If no risk score metric is configured, returns None.
+        :return:
+        """
+        return GoalMetric.objects.filter(group=self.metric_group,
+                                         type=GoalMetric.METRIC_TYPE_RISK_SCORE).values_list('configured_val',
+                                                                                             flat=True).first()
+
+    @property
     def goal(self):
         if hasattr(self, 'goal_selected'):
             return self.goal_selected
@@ -1487,6 +1499,9 @@ class Goal(models.Model):
         if setting == old_setting:
             return
         self.selected_settings = setting
+        # We need to validate the risk score after assigning the setting to the goal because in the risk score checking,
+        # we go back to the goal from the setting to get information. If we do it any earlier, the info is not there.
+        validate_risk_score(setting)
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
             custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
