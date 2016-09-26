@@ -2067,14 +2067,18 @@ class ApexFill(models.Model):
 
 class ApexOrder(models.Model):
     ticker = models.ForeignKey('Ticker', related_name='apex_order', on_delete=PROTECT)
-    volume = models.FloatField(help_text="Will be negative for a sell.")
+    volume = models.FloatField(help_text="Will be negative for a sell.", default=0)
     # also has morAPEX field from MarketOrderRequestAPEX
     # also has apex_fill field from ApexFill
 
 
 class MarketOrderRequestAPEX(models.Model):
-    apex_order = models.ForeignKey(ApexOrder, related_name='morAPEX')
-    market_order_request = models.OneToOneField('MarketOrderRequest', related_name='morAPEX')
+    ticker = models.ForeignKey('Ticker', related_name='morAPEX', on_delete=PROTECT)
+    apex_order = models.ForeignKey('ApexOrder', related_name='morAPEX')
+    market_order_request = models.ForeignKey('MarketOrderRequest', related_name='morAPEX')
+
+    class Meta:
+        unique_together = ("ticker", "market_order_request")
 
 
 class MarketOrderRequest(models.Model):

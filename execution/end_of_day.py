@@ -7,7 +7,7 @@ from django.db import transaction
 from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
-from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder, MarketOrderRequestAPEX
 import types
 from collections import defaultdict
 from django.db.models import Sum, F
@@ -91,23 +91,28 @@ def transform_execution_requests(execution_requests):
         allocations[e.asset.symbol][e.order.account.ib_account.ib_account] += e.volume
     return allocations
 
-def create_apex_order():
+def create_apex_orders():
     '''
-    from outstanding MOR and ER create ApexOrder and MorApex
+    from outstanding MOR and ER create MorApex and ApexOrder
     '''
-
     ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)\
-        .annotate(ticker_id=F('asset__id'), mor_id=F('order__id'))\
-        .values('ticker_id','mor_id')\
+        .annotate(ticker_id=F('asset__id'))\
+        .values('ticker_id')\
         .annotate(volume=Sum('volume'))
-    return ers
 
-def save_apex_order(aggregated_ers_on_ticker):
-    '''
-    :param aggregated_ers_on_ticker:
-    :return:
-    '''
-    #ApexOrder.objects.create(ticker=Ticker.objects.get(id=aggregated_ers_on_ticker.ticker_id),volume=aggregated_ers_on_ticker.volume)
+    for grouped_volume_per_share in ers:
+        ticker = Ticker.objects.get(id=grouped_volume_per_share['ticker_id'])
+        apex_order = ApexOrder.objects.create(ticker=ticker, volume=grouped_volume_per_share['volume'])
+
+        mor_ids = MarketOrderRequest.objects.all().filter(state=MarketOrderRequest.State.APPROVED.value,
+                                                          execution_requests__asset_id=ticker.id).\
+            values_list('id', flat=True).distinct()
+
+        for id in mor_ids:
+            mor = MarketOrderRequest.objects.get(id=id)
+            morApex, created = MarketOrderRequestAPEX.objects.get_or_create(market_order_request=mor,
+                                                                            ticker=ticker,
+                                                                            apex_order=apex_order)
 
 
 def example_usage_with_IB():
