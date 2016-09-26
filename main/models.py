@@ -152,6 +152,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self._is_client
 
     @property
+    def is_supervisor(self):
+        """
+        Custom helper method for User class to check user type/profile.
+        """
+        if not hasattr(self, '_is_supervisor'):
+            supervisor = hasattr(self, 'supervisor')
+            self._is_supervisor = supervisor
+
+        return self._is_supervisor
+
+    @property
     def is_support_staff(self):
         if not hasattr(self, '_is_support_staff'):
             group = Group.objects.get(name=GROUP_SUPPORT_STAFF)
