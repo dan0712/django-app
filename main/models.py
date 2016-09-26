@@ -2060,22 +2060,22 @@ class ExecutionApexFill(models.Model):
 
 
 class ApexFill(models.Model):
-    apex_order = models.ForeignKey('ApexOrder', related_name='apex_fill')
+    apex_order = models.ForeignKey('ApexOrder', related_name='apex_fills')
     volume = models.FloatField(help_text="Will be negative for a sell.")
     # also has field 'execution_apex_fill' from model ExecutionApexFill
 
 
 class ApexOrder(models.Model):
-    ticker = models.ForeignKey('Ticker', related_name='apex_order', on_delete=PROTECT)
-    volume = models.FloatField(help_text="Will be negative for a sell.", default=0)
-    # also has morAPEX field from MarketOrderRequestAPEX
-    # also has apex_fill field from ApexFill
+    ticker = models.ForeignKey('Ticker', related_name='apex_orders', on_delete=PROTECT)
+    volume = models.FloatField(help_text="Will be negative for a sell.")
+    # also has morsAPEX field from MarketOrderRequestAPEX
+    # also has apex_fills field from ApexFill
 
 
 class MarketOrderRequestAPEX(models.Model):
-    ticker = models.ForeignKey('Ticker', related_name='morAPEX', on_delete=PROTECT)
-    apex_order = models.ForeignKey('ApexOrder', related_name='morAPEX')
-    market_order_request = models.ForeignKey('MarketOrderRequest', related_name='morAPEX')
+    ticker = models.ForeignKey('Ticker', related_name='morsAPEX', on_delete=PROTECT)
+    apex_order = models.ForeignKey('ApexOrder', related_name='morsAPEX')
+    market_order_request = models.ForeignKey('MarketOrderRequest', related_name='morsAPEX')
 
     class Meta:
         unique_together = ("ticker", "market_order_request")
@@ -2101,7 +2101,7 @@ class MarketOrderRequest(models.Model):
     account = models.ForeignKey('client.ClientAccount', related_name='market_orders', on_delete=PROTECT)
     # Also has 'execution_requests' field showing all the requests that went into this one order.
     # Also has 'executions' once the request has had executions.
-    # also has 'morAPEX' from MarketOrderRequestAPEX
+    # also has 'morsAPEX' from MarketOrderRequestAPEX
 
     def __str__(self):
         return "[{}] - {}".format(self.id, self.State(self.state).name)
