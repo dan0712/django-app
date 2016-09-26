@@ -16,6 +16,7 @@ from main.models import AccountGroup, ActivityLog, \
     ProxyAssetClass, ProxyTicker, \
     Transaction, User, View, InvestmentType, FiscalYear, Ticker, \
     AssetFeature, PositionLot
+from retiresmartz.models import RetirementLifestyle
 
 admin.site.register(AccountGroup)
 
@@ -314,7 +315,6 @@ class TickerAdmin(admin.ModelAdmin):
         'asset_class_feature',
         'investment_type_feature',
         'currency_feature',
-        'ethical_feature',
     )
     search_fields = ['symbol']
 
@@ -330,9 +330,10 @@ class TickerAdmin(admin.ModelAdmin):
     def currency_feature(self, obj):
         return obj.get_currency_feature_value()
 
-    def ethical_feature(self, obj):
-        return obj.get_ethical_feature_value()
 
+class RetirementLifestyleAdmin(admin.ModelAdmin):
+    model = RetirementLifestyle
+    list_display = ('cost',)
 
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
@@ -356,6 +357,7 @@ admin.site.register(ActivityLog, ActivityLogAdmin)
 admin.site.register(InvestmentType, InvestmentTypeAdmin)
 admin.site.register(FiscalYear, FiscalYearAdmin)
 admin.site.register(Ticker, TickerAdmin)
+admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,

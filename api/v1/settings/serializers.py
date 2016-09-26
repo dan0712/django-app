@@ -64,15 +64,19 @@ class RiskProfileGroupSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RiskProfileGroup
 
+
 class InvestorRiskCategorySerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RiskCategory
+
 
 class RetirementLifestyleSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RetirementLifestyle
 
+
 class EnumSerializer(serializers.Serializer):
     choices = serializers.SerializerMethodField()
+
     def get_choices(self, obj):
         return [ {'id': k, 'title': v} for k, v in obj.choices() ]

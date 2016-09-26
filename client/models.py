@@ -238,6 +238,9 @@ class ClientAccount(models.Model):
                                       related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
+    # The confirmed field indicates the account is fully ready to be used by the client.
+    # The ClientAccount should be responsible for checking and setting the confirmed filed through
+    # an as yet undefined set_confirmed() method.
     confirmed = models.BooleanField(default=False)
     tax_loss_harvesting_consent = models.BooleanField(default=False)
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(

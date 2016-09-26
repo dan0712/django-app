@@ -108,8 +108,8 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Before-tax annual income")
-    atc = models.PositiveIntegerField(help_text="After-tax annual income")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
 
     max_employer_match_percent = models.FloatField(null=True, blank=True,
         help_text="The percent the employer matches of before-tax contributions")
@@ -195,6 +195,7 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
             and invitation.status != EmailInvite.STATUS_COMPLETE \
             and invitation.reason == EmailInvite.REASON_RETIREMENT:
         invitation.onboarding_data = None
+        invitation.onboarding_file_1 = None
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
@@ -215,17 +216,17 @@ class RetirementPlanAccount(models.Model):
 
 
 class RetirementLifestyle(models.Model):
-    cost = models.PositiveIntegerField(help_text="The expected cost in system currency of this lifestyle in today's dollars")
+    cost = models.PositiveIntegerField(help_text="The minimum expected cost in system currency of this lifestyle in today's dollars")
     holidays = models.TextField(help_text="The text for the holidays block")
     eating_out = models.TextField(help_text="The text for the eating out block")
     health = models.TextField(help_text="The text for the health block")
     interests = models.TextField(help_text="The text for the interests block")
     leisure = models.TextField(help_text="The text for the leisure block")
     default_volunteer_days = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),MaxValueValidator(7)],
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of volunteer work days selected for this lifestyle")
 
     default_paid_days = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),MaxValueValidator(7)],
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of paid work days selected for this lifestyle")
 
