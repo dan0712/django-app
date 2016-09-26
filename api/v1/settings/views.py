@@ -171,6 +171,6 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'], url_path='retirement-lifestyles')
     def retirement_lifestyles(self, request):
-        lifestyles = retirement_models.RetirementLifestyle.objects.all()
+        lifestyles = retirement_models.RetirementLifestyle.objects.all().order_by('cost')
         serializer = serializers.RetirementLifestyleSerializer(lifestyles, many=True)
         return Response(serializer.data)
