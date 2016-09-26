@@ -13,10 +13,6 @@ docker start dev_betasmartz_app
 docker start beta_betasmartz_app
 docker start betastaging_betasmartz_app
 docker start staging_betasmartz_app
-
-
-# wordpress
-docker start wordpress_db
-docker start wordpress
+docker start demostaging_betasmartz_app
 
 docker start nginx

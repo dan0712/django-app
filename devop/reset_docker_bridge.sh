@@ -22,4 +22,7 @@ docker start demo_betasmartz_app
 docker start wordpress_db
 docker start wordpress
 
+# jenkins
+docker start betajenkins-master
+
 docker start nginx
