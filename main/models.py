@@ -2052,11 +2052,9 @@ class GoalMetric(models.Model):
 
 
 class ExecutionApexFill(models.Model):
-    #one execution may contribute to many ExecutionApexFills
-    execution = models.OneToOneField('Execution', related_name='execution_apex_fill')
-
-    # one fill may contribute to many ExecutionApexFills
+    # one apex_fill may contribute to many ExecutionApexFills and many Executions
     apex_fill = models.ForeignKey('ApexFill', related_name='execution_apex_fill')
+    execution = models.OneToOneField('Execution', related_name='execution_apex_fill')
 
 
 class ApexFill(models.Model):

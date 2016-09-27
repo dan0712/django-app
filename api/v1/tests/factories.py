@@ -13,7 +13,8 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
-                        InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest, MarketOrderRequest
+                        InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest, MarketOrderRequest, \
+    ApexFill, ApexOrder, ExecutionApexFill, Execution
 from retiresmartz.models import RetirementPlan
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -436,6 +437,43 @@ class MarketOrderRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MarketOrderRequest
     state = MarketOrderRequest.State.APPROVED.value
+    account = factory.SubFactory(ClientAccountFactory)
+
+
+class ApexOrderFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ApexOrder
+
+    ticker = factory.SubFactory(TickerFactory)
+    volume = factory.LazyAttribute(lambda n: random.randrange(1000))
+
+
+class ApexFillFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ApexFill
+
+    apex_order = factory.SubFactory(ApexOrderFactory)
+    volume = factory.SelfAttribute('apex_order.volume')
+
+
+class ExecutionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Execution
+    asset = factory.SubFactory(TickerFactory)
+    volume = factory.LazyAttribute(lambda n: random.randrange(1000))
+    order = factory.SubFactory(MarketOrderRequestFactory)
+    price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
+    executed = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
+    amount = factory.LazyAttribute(lambda n: random.randrange(1000))
+
+
+class ExecutionApexFillFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExecutionApexFill
+
+    apex_fill = factory.SubFactory(ApexFillFactory)
+    execution = factory.SubFactory(ExecutionFactory)
+
 
 class DailyPriceFactory(factory.django.DjangoModelFactory):
     """
