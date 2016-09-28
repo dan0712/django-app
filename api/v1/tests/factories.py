@@ -454,6 +454,8 @@ class ApexFillFactory(factory.django.DjangoModelFactory):
 
     apex_order = factory.SubFactory(ApexOrderFactory)
     volume = factory.SelfAttribute('apex_order.volume')
+    price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
+    executed = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
 
 
 class ExecutionFactory(factory.django.DjangoModelFactory):

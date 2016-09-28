@@ -17,6 +17,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
                 ('volume', models.FloatField(help_text='Will be negative for a sell.')),
+                ('price', models.FloatField(help_text='Price for the fill.')),
+                ('executed', models.DateTimeField(help_text='The time the trade was executed.')),
             ],
         ),
         migrations.CreateModel(
@@ -24,7 +26,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
                 ('volume', models.FloatField(help_text='Will be negative for a sell.')),
-                ('ticker', models.ForeignKey(to='main.Ticker', related_name='apex_orders', on_delete=django.db.models.deletion.PROTECT)),
+                ('ticker', models.ForeignKey(to='main.Ticker', on_delete=django.db.models.deletion.PROTECT, related_name='apex_orders')),
             ],
         ),
         migrations.CreateModel(
@@ -32,7 +34,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
                 ('apex_fill', models.ForeignKey(to='main.ApexFill', related_name='execution_apex_fill')),
-                ('execution', models.OneToOneField(to='main.Execution', related_name='execution_apex_fill')),
+                ('execution', models.OneToOneField(related_name='execution_apex_fill', to='main.Execution')),
             ],
         ),
         migrations.CreateModel(
@@ -41,13 +43,13 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
                 ('apex_order', models.ForeignKey(to='main.ApexOrder', related_name='morsAPEX')),
                 ('market_order_request', models.ForeignKey(to='main.MarketOrderRequest', related_name='morsAPEX')),
-                ('ticker', models.ForeignKey(to='main.Ticker', related_name='morsAPEX', on_delete=django.db.models.deletion.PROTECT)),
+                ('ticker', models.ForeignKey(to='main.Ticker', on_delete=django.db.models.deletion.PROTECT, related_name='morsAPEX')),
             ],
         ),
         migrations.AddField(
             model_name='executiondistribution',
             name='execution_request',
-            field=models.OneToOneField(to='main.ExecutionRequest', default=None, related_name='execution_distribution'),
+            field=models.ForeignKey(related_name='execution_distributions', default=None, to='main.ExecutionRequest'),
             preserve_default=False,
         ),
         migrations.AddField(

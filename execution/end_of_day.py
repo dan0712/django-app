@@ -7,11 +7,13 @@ from django.db import transaction
 from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
-from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder, MarketOrderRequestAPEX
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder, MarketOrderRequestAPEX, \
+    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction
 import types
 from collections import defaultdict
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Avg
 from django.db.models.functions import Coalesce
+import numpy as np
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -91,10 +93,12 @@ def transform_execution_requests(execution_requests):
         allocations[e.asset.symbol][e.order.account.ib_account.ib_account] += e.volume
     return allocations
 
+
 def create_apex_orders():
     '''
     from outstanding MOR and ER create MorApex and ApexOrder
     '''
+    sent_mor_ids = set()
     ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)\
         .annotate(ticker_id=F('asset__id'))\
         .values('ticker_id')\
@@ -109,10 +113,54 @@ def create_apex_orders():
             values_list('id', flat=True).distinct()
 
         for id in mor_ids:
+            sent_mor_ids.add(id)
             mor = MarketOrderRequest.objects.get(id=id)
             morApex, created = MarketOrderRequestAPEX.objects.get_or_create(market_order_request=mor,
                                                                             ticker=ticker,
                                                                             apex_order=apex_order)
+    for sent_id in sent_mor_ids:
+        mor = MarketOrderRequest.objects.get(id=sent_id)
+        mor.state = MarketOrderRequest.State.SENT.value
+        mor.save()
+
+
+def create_executions_eds_transactions_from_apex_fills():
+    '''
+    from existing apex fills create executions, execution distributions, transactions and positionLots - pro rata all fills
+    :return:
+    '''
+    fills = ApexFill.objects\
+        .filter(apex_order__morsAPEX__market_order_request__state=MarketOrderRequest.State.SENT.value)\
+        .annotate(ticker_id=F('apex_order__ticker__id'))\
+        .values('id', 'ticker_id', 'price', 'volume','executed')
+
+    complete_mor_ids = set()
+    for fill in fills:
+        ers = ExecutionRequest.objects.all()\
+            .filter(asset_id=fill['ticker_id'], order__state=MarketOrderRequest.State.SENT.value)
+        sum_ers = np.sum([er.volume for er in ers])
+
+        for er in ers:
+            pro_rata = er.volume/float(sum_ers)
+            volume = fill['volume'] * pro_rata
+
+            apex_fill = ApexFill.objects.get(id=fill['id'])
+            ticker = Ticker.objects.get(id=fill['ticker_id'])
+            mor = MarketOrderRequest.objects.get(execution_requests__id=er.id)
+            complete_mor_ids.add(mor.id)
+
+            execution = Execution.objects.create(asset=ticker, volume=volume, price=fill['price'],
+                                                 amount=volume*fill['price'], order=mor, executed=fill['executed'])
+            ExecutionApexFill.objects.create(apex_fill=apex_fill, execution=execution)
+            transaction = Transaction.objects.create(reason=Transaction.REASON_ORDER,
+                                                     amount=volume*fill['price'], to_goal=er.goal)
+            ExecutionDistribution.objects.create(execution=execution, transaction=transaction, volume=volume,
+                                                 execution_request=er)
+
+    for mor_id in complete_mor_ids:
+        mor = MarketOrderRequest.objects.get(id=mor_id)
+        mor.state = MarketOrderRequest.State.COMPLETE.value
+        mor.save()
 
 
 def example_usage_with_IB():
