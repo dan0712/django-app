@@ -46,6 +46,8 @@ def filter_returns(returns, end_tol=0, min_days=None, latest_start=None):
     :param min_days: The minimum number of days that need to be available for a column to remain in the series.
     :return: A Pandas DataFrame of series for each column meeting the data requirements.
     """
+    if returns.empty:
+        return returns.drop(returns.columns, axis=1)
     min_end = (returns.index[-1] - timedelta(days=end_tol)).date()
     to_drop = []
     for name, ret in returns.iteritems():

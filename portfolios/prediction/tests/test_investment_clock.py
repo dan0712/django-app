@@ -6,6 +6,7 @@ from django.test import TestCase
 from api.v1.tests.factories import InvestmentCycleObservationFactory, InvestmentCyclePredictionFactory, \
     DailyPriceFactory, TickerFactory
 from main.models import InvestmentCycleObservation
+from portfolios.exceptions import OptimizationException
 from portfolios.prediction.investment_clock import InvestmentClock
 from portfolios.providers.data.django import DataProviderDjango
 
@@ -91,3 +92,8 @@ class InvestmentClockTest(TestCase):
         self.assertAlmostEqual(mu[1], 2.728974, 6)
         self.assertAlmostEqual(mu[2], -0.340570, 6)
         self.assertAlmostEqual(mu[3], -0.294249, 6)
+
+    def test_get_fund_predictions_no_returns(self):
+        self.populate_probabilities()
+        with self.assertRaises(OptimizationException):
+            self.predictor.get_fund_predictions()

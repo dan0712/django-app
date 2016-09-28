@@ -74,6 +74,9 @@ class InvestmentClock(object):
         latest_start = self.get_last_cycle_start()
         returns = filter_returns(returns, OLDEST_ACCEPTABLE_DATA, latest_start=latest_start)
 
+        if returns.empty:
+            raise OptimizationException('Not returns data available')
+
         oldest_dt = today - timedelta(days=OLDEST_ACCEPTABLE_DATA)
         cycles = self.get_cycle_obs(begin_date)
         if cycles.index[-1] < oldest_dt:
