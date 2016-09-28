@@ -35,7 +35,6 @@ django-nested-admin==3.0.2
 git+git://github.com/ITCase-django/django-tinymce-4#egg=django_tinymce_4
 django-page-cms==1.8.1
 django-phonenumber-field==1.1.0
-django-suit==0.2.15
 django-taggit==0.17.5
 # Using the below git link until drf-extensions==0.3.0 becomes available in pip.
 git+git://github.com/chibisov/drf-extensions@0a82b4c57ab95e53c56e5e71cfe71f5a33812a65 # For nested viewsets
