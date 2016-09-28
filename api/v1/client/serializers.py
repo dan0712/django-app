@@ -164,7 +164,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'invite_key',
             'status',
             'onboarding_data',
-            'onboarding_file_1'
+            'onboarding_file_1',
         )
 
 

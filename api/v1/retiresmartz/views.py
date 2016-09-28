@@ -169,8 +169,6 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             portfolio.append([ticker.id, percent])
         # grab 50 evenly spaced time points between dob and current time
         now = timezone.now()
-        logger.error(retirement_plan.client.date_of_birth.year)
-        logger.error(retirement_plan.retirement_age)
         first_year = retirement_plan.client.date_of_birth.year + retirement_plan.retirement_age
         last_year = retirement_plan.client.date_of_birth.year + retirement_plan.selected_life_expectancy
         day_interval = ((last_year - first_year) * 365) / 50

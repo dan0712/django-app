@@ -223,11 +223,14 @@ class InviteTests(APITestCase):
         # Submit with onboarding_file_1
         fh = SimpleUploadedFile("test.txt", b'123')
         onboarding = {'onboarding_file_1': fh}
-        response = self.client.put(invite_detail_url, files=onboarding,
-                                   content_type=MULTIPART_CONTENT)
+        response = self.client.put(invite_detail_url, data=onboarding,
+                                   format='multipart')
+
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Onboarding must accept files')
+        self.assertNotEqual(response.data.get('onboarding_file_1'), None,
+                            msg='onboarding_file_1 is not null')
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
 

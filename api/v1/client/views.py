@@ -117,7 +117,7 @@ class InvitesView(ApiViewMixin, views.APIView):
     permission_classes = []
     serializer_class = serializers.PrivateInvitationSerializer
     parser_classes = (
-        parsers.JSONParser, parsers.FileUploadParser, parsers.MultiPartParser,
+        parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser,
     )
 
     def get(self, request, invite_key):
@@ -135,14 +135,14 @@ class InvitesView(ApiViewMixin, views.APIView):
         return Response(data)
 
     def put(self, request, invite_key):
+        if not request.user.is_authenticated():
+            return Response({'error': 'not logged in'}, status=status.HTTP_401_UNAUTHORIZED)
+
         find_invite = EmailInvite.objects.filter(invite_key=invite_key)
         if not find_invite.exists:
             return Response({'error': 'invitation not found'}, status=status.HTTP_404_NOT_FOUND)
 
         invite = find_invite.get()
-
-        if not request.user.is_authenticated():
-            return Response({'error': 'not logged in'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if invite.status == EmailInvite.STATUS_EXPIRED:
             invite.advisor.user.email_user('A client tried to use an expired invitation'
@@ -156,9 +156,9 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         serializer = self.serializer_class(invite, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            invitation = serializer.save()
 
-        return Response(self.serializer_class(instance=invite).data)
+        return Response(serializer.data)
 
 
 class ClientUserRegisterView(ApiViewMixin, views.APIView):
