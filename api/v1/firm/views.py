@@ -28,12 +28,8 @@ class FirmSingleView(ApiViewMixin, RetrieveAPIView):
                 serializer = self.serializer_class(user.supervisor.firm)
         elif user.is_client:
             # make sure user is a client of the requested firm
-            try:
-                firm = Firm.objects.get(pk=pk)
-            except:
-                return Response('Firm not found', status=status.HTTP_404_NOT_FOUND)
-            if user.client in firm.get_clients():
-                serializer = self.serializer_class(firm)
+            if user.client.advisor.firm.pk == int(pk):
+                serializer = self.serializer_class(user.client.advisor.firm)
 
         if serializer:
             return Response(serializer.data)
