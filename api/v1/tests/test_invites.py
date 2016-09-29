@@ -2,19 +2,15 @@ from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 from django.test import Client as DjangoClient
 from common.constants import GROUP_SUPPORT_STAFF
-from main.constants import ACCOUNT_TYPES, ACCOUNT_TYPE_PERSONAL
-from .factories import AdvisorFactory, SecurityQuestionFactory, \
-    EmailInviteFactory, GroupFactory
-
+from main.constants import ACCOUNT_TYPE_PERSONAL
+from .factories import AdvisorFactory, SecurityQuestionFactory, EmailInviteFactory
 from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
-    ClientAccountFactory, ClientFactory, ExternalAssetFactory, GoalFactory, \
-    GroupFactory, RegionFactory, RiskProfileGroupFactory, UserFactory
+    ClientAccountFactory, ClientFactory, GroupFactory, RegionFactory, RiskProfileGroupFactory
 
 from client.models import EmailInvite
-from django.test.client import MULTIPART_CONTENT
 import json
 
 
@@ -269,7 +265,6 @@ class InviteTests(APITestCase):
         response = self.client.put(invite_detail_url, data=onboarding)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Onboarding must accept json')
-
 
         betasmartz_client = ClientFactory.create(user=user)
         betasmartz_client_account = ClientAccountFactory(primary_owner=betasmartz_client, account_type=ACCOUNT_TYPE_PERSONAL, confirmed=False)

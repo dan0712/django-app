@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate, login as auth_login
-from rest_framework import viewsets, views
+from rest_framework import viewsets, views, mixins
 from rest_framework import exceptions, parsers, status
 from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
 
@@ -78,7 +79,16 @@ class RetirementIncomeViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelVi
         return qs.filter(plan__in=allow_plans)
 
 
-class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class ClientViewSet(ApiViewMixin,
+                    NestedViewSetMixin,
+                    mixins.CreateModelMixin,
+                    mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.ListModelMixin,
+                    GenericViewSet):
+    """
+    Everything except delete
+    """
     model = Client
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
     queryset = Client.objects.all()
@@ -102,15 +112,29 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
-    def post(self, request):
-        if EmailInvite.STATUS_ACCEPTED == getattr(self.request.user.invitation, 'status', None):
-            # Email the user "Welcome Aboard"
-            self.request.user.email_user('Welcome to BetaSmartz!',
-                                         "Congratulations! You've setup your first account, "
-                                         "you're ready to start using BetaSmartz!")
-            return super(ClientViewSet, self).post(request)
-        return Response({'error': 'requires account with accepted invitation'},
-                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    def create(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'invitation') or EmailInvite.STATUS_ACCEPTED != getattr(request.user.invitation,
+                                                                                             'status',
+                                                                                             None):
+            return Response({'error': 'requires account with accepted invitation'},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        client = serializer.save(advisor=request.user.invitation.advisor, user=request.user)
+
+        # Email the user "Welcome Aboard"
+        self.request.user.email_user('Welcome to BetaSmartz!',
+                                     "Congratulations! You've setup your first account, "
+                                     "you're ready to start using BetaSmartz!")
+
+        headers = self.get_success_headers(serializer.data)
+        serializer = self.serializer_response_class(client)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super(ClientViewSet, self).update(request, *args, **kwargs)
 
 
 class InvitesView(ApiViewMixin, views.APIView):
