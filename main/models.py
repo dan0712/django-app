@@ -618,7 +618,8 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         except User.DoesNotExist:
             user = None
 
-        invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
+        email_invite = self.invites.filter(email=email).first()
+        invitation_url = settings.SITE_URL + "/client/onboarding/" + email_invite.invite_key
 
         # resending invitation
         if user:
