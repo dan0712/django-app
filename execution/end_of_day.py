@@ -124,20 +124,26 @@ def create_apex_orders():
         mor.save()
 
 
+def send_apex_order(apex_order):
+    apex_order.state = ApexOrder.State.SENT.value
+    apex_order.save()
+
+
 def create_executions_eds_transactions_from_apex_fills():
     '''
     from existing apex fills create executions, execution distributions, transactions and positionLots - pro rata all fills
     :return:
     '''
     fills = ApexFill.objects\
-        .filter(apex_order__morsAPEX__market_order_request__state=MarketOrderRequest.State.SENT.value)\
+        .filter(apex_order__state=ApexOrder.State.SENT.value)\
         .annotate(ticker_id=F('apex_order__ticker__id'))\
         .values('id', 'ticker_id', 'price', 'volume','executed')
 
     complete_mor_ids = set()
+    complete_apex_order_ids = set()
     for fill in fills:
         ers = ExecutionRequest.objects.all()\
-            .filter(asset_id=fill['ticker_id'], order__state=MarketOrderRequest.State.SENT.value)
+            .filter(asset_id=fill['ticker_id'], order__morsAPEX__apex_order__state=ApexOrder.State.SENT.value)
         sum_ers = np.sum([er.volume for er in ers])
 
         for er in ers:
@@ -148,6 +154,9 @@ def create_executions_eds_transactions_from_apex_fills():
             ticker = Ticker.objects.get(id=fill['ticker_id'])
             mor = MarketOrderRequest.objects.get(execution_requests__id=er.id)
             complete_mor_ids.add(mor.id)
+
+            apex_order = ApexOrder.objects.get(morsAPEX__market_order_request__execution_requests__id=er.id)
+            complete_apex_order_ids.add(apex_order.id)
 
             execution = Execution.objects.create(asset=ticker, volume=volume, price=fill['price'],
                                                  amount=volume*fill['price'], order=mor, executed=fill['executed'])
@@ -161,6 +170,11 @@ def create_executions_eds_transactions_from_apex_fills():
         mor = MarketOrderRequest.objects.get(id=mor_id)
         mor.state = MarketOrderRequest.State.COMPLETE.value
         mor.save()
+
+    for apex_order_id in complete_apex_order_ids:
+        apex_order = ApexOrder.objects.get(id=apex_order_id)
+        apex_order.state = ApexOrder.State.COMPLETE.value
+        apex_order.save()
 
 
 def example_usage_with_IB():

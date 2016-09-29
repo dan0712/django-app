@@ -2066,10 +2066,34 @@ class ApexFill(models.Model):
 
 
 class ApexOrder(models.Model):
+    class State(ChoiceEnum):
+        PENDING = 0  # Raised somehow, but not yet approved to send to market
+        APPROVED = 1  # Approved to send to market, but not yet sent.
+        SENT = 2  # Sent to the broker (at least partially outstanding).
+        CANCEL_PENDING = 3 # Sent, but have also sent a cancel
+        COMPLETE = 4  # May be fully or partially executed, but there is none left outstanding.
+
+    # The list of Order states that are still considered open.
+    OPEN_STATES = [State.PENDING.value, State.APPROVED.value, State.SENT.value]
+
+    state = models.IntegerField(choices=State.choices(), default=State.PENDING.value)
+
     ticker = models.ForeignKey('Ticker', related_name='apex_orders', on_delete=PROTECT)
     volume = models.FloatField(help_text="Will be negative for a sell.")
     # also has morsAPEX field from MarketOrderRequestAPEX
     # also has apex_fills field from ApexFill
+
+    def __str__(self):
+        return "[{}] - {}".format(self.id, self.State(self.state).name)
+
+    def __repr__(self):
+        return {
+            'state': self.state,
+            'ticker': self.ticker,
+            'volume': self.volume,
+            'morsAPEX': list(self.morsAPEX) if hasattr(self, 'morsAPEX') else [],
+            'apex_fills': list(self.apex_fills) if hasattr(self, 'apex_fills') else [],
+        }
 
 
 class MarketOrderRequestAPEX(models.Model):
@@ -2087,6 +2111,7 @@ class MarketOrderRequest(models.Model):
     It aggregates ExecutionRequests (each execution request is per goal per client) into a group of ExecutionRequests
     of various goals for single client
     """
+
     class State(ChoiceEnum):
         PENDING = 0  # Raised somehow, but not yet approved to send to market
         APPROVED = 1  # Approved to send to market, but not yet sent.
