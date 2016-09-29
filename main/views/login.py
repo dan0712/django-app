@@ -58,15 +58,15 @@ def login(request, template_name='registration/login.html',
 
         if not is_confirmed:
             # check if user is in the middle of onboarding
-            if user.invitation.status == 2 or user.invitation.status == 3:
-                # redirect to client onboarding
-                return redirect('/client/onboarding/' + user.invitation.invite_key)
-            else:
-                messages.error(request, 'Your account has not been confirmed yet.')
-                form = authentication_form(request)
-                context = {'form': form}
+            if hasattr(user, 'invitation'):
+                if user.invitation.status == 2 or user.invitation.status == 3:
+                    # redirect to client onboarding
+                    return redirect('/client/onboarding/' + user.invitation.invite_key)
+            messages.error(request, 'Your account has not been confirmed yet.')
+            form = authentication_form(request)
+            context = {'form': form}
 
-                return TemplateResponse(request, template_name, context)
+            return TemplateResponse(request, template_name, context)
 
         # custom redirect
         redirect_to = request.GET.get('next',
