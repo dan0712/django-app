@@ -162,9 +162,9 @@ class InviteTests(APITestCase):
             'password': PW,
         }
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='A user still onboarding can log in')
-        self.assertIn('sessionid', response.cookies)
+        # redirects to frontend client onboarding
+        self.assertRedirects(response, '/client/onboarding/' + lookup_invite.invite_key, fetch_redirect_response=False)
+        self.assertIn('sessionid', response.cookies, msg='A user still onboarding can log in')
 
         response = self.client.get(me_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,

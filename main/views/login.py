@@ -4,7 +4,7 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
-    login as auth_views_login ,
+    login as auth_views_login,
 )
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
@@ -12,6 +12,7 @@ from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
+from django.shortcuts import redirect
 import logging
 
 logger = logging.getLogger('main.views.login')
@@ -56,11 +57,16 @@ def login(request, template_name='registration/login.html',
         )
 
         if not is_confirmed:
-            messages.error(request, 'Your account has not been confirmed yet.')
-            form = authentication_form(request)
-            context = {'form': form}
+            # check if user is in the middle of onboarding
+            if user.invitation.status == 2 or user.invitation.status == 3:
+                # redirect to client onboarding
+                return redirect('/client/onboarding/' + user.invitation.invite_key)
+            else:
+                messages.error(request, 'Your account has not been confirmed yet.')
+                form = authentication_form(request)
+                context = {'form': form}
 
-            return TemplateResponse(request, template_name, context)
+                return TemplateResponse(request, template_name, context)
 
         # custom redirect
         redirect_to = request.GET.get('next',
