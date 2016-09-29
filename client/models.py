@@ -667,6 +667,11 @@ class EmailInvite(models.Model):
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
 
+    class Meta:
+        # shouldn't have multiple EmailInvites from same advisor to same email address
+        unique_together = ('advisor', 'email')
+
+
 class RiskCategory(models.Model):
     upper_bound = models.FloatField(validators=[MinValueValidator(0),
                                                 MaxValueValidator(1)])
