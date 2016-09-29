@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework.decorators import list_route
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -116,7 +117,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
                              "name": value
                          } for key, value in comparisons.items()])
 
-    @list_route(methods=['get'], url_path='risk-profile-groups')
+    @list_route(methods=['get'], url_path='risk-profile-groups', permission_classes=[IsAuthenticated])
     def risk_profile_groups(self, request):
         groups = RiskProfileGroup.objects.all()
         serializer = serializers.RiskProfileGroupSerializer(groups, many=True)

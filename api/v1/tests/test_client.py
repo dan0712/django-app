@@ -293,6 +293,10 @@ class ClientTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # Ensure it is created approved and accepted.
+        self.assertEqual(response.data['is_confirmed'], True)
+        self.assertEqual(response.data['is_accepted'], True)
+
     def test_create_client_no_address(self):
         # We need an accepted invitation to be able to create a client
         usr = UserFactory.create()
@@ -373,12 +377,12 @@ class ClientTests(APITestCase):
                     "code": "NSW",
                 }
             },
-            "is_confirmed": True
+            "is_confirmed": False
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['is_confirmed'], False)
+        self.assertEqual(response.data['is_confirmed'], True)
 
     def test_create_client_with_user(self):
         """

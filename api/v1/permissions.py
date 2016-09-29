@@ -74,9 +74,6 @@ class IsMyAdvisorCompany(IsAdvisor):
         if isinstance(obj, Advisor):
             return obj.company == advisor.company
 
-        # if isinstance(obj, Company):
-        #    return obj == advisor.company
-
         if isinstance(obj, Client):
             # "get_clients" supposed to be role-awared
             try:
@@ -84,22 +81,6 @@ class IsMyAdvisorCompany(IsAdvisor):
                 return True
             except Client.DoesNotExist:
                 return False
-
-        # if isinstance(obj, Household):
-        #    # "get_households" supposed to be role-awared
-        #    try:
-        #        advisor.get_households().get(pk=obj.pk)
-        #        return True
-        #    except Household.DoesNotExist:
-        #        return False
-
-        # if isinstance(obj, Portfolio):
-        #    # "get_portfolios" supposed to be role-awared
-        #    try:
-        #        advisor.get_portfolios().get(pk=obj.pk)
-        #        return True
-        #    except Portfolio.DoesNotExist:
-        #        return False
 
         else:
             # reserved

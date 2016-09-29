@@ -21,7 +21,7 @@ class InviteTests(APITestCase):
         self.region = RegionFactory.create()
         self.betasmartz_client_address = AddressFactory(region=self.region)
         self.risk_group = RiskProfileGroupFactory.create(name='Personal Risk Profile Group')
-        self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=0,
+        self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=ACCOUNT_TYPE_PERSONAL,
                                                                                risk_profile_group=self.risk_group)
         self.advisor = AdvisorFactory.create()
         self.question_one = SecurityQuestionFactory.create()
@@ -203,6 +203,13 @@ class InviteTests(APITestCase):
                          msg='/api/v1/invites/:key should have invitation status ACCEPTED')
         self.assertEqual('onboarding_data' in response.data, True,
                          msg='/api/v1/invites/:key should show onboarding_data to user')
+        self.assertEqual(response.data['risk_profile_group'], self.risk_group.id)
+
+        # Make sure the user now has access to the risk-profile-groups endpoint
+        rpg_url = reverse('api:v1:settings-risk-profile-groups-list')
+        response = self.client.get(rpg_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['id'], self.risk_group.id)
 
         # PUT: /api/v1/invites/:key
         # Submit with onboarding_data

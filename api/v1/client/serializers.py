@@ -5,8 +5,10 @@ from rest_framework import serializers, exceptions
 from api.v1.address.serializers import AddressSerializer, AddressUpdateSerializer
 from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
+from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.models import ExternalAsset, ExternalAssetTransfer, User
-from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup
+from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup, \
+    AccountTypeRiskProfileGroup
 from notifications.signals import notify
 from main import constants
 
@@ -71,6 +73,10 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
         address_ser = AddressUpdateSerializer(data=validated_data.pop(RESIDENTIAL_ADDRESS_KEY))
         address_ser.is_valid(raise_exception=True)
         validated_data[RESIDENTIAL_ADDRESS_KEY] = address_ser.save()
+
+        # For now we auto confirm and approve the client.
+        validated_data['is_confirmed'] = True
+        validated_data['is_accepted'] = True
 
         return super(ClientUpdateSerializer, self).create(validated_data)
 
@@ -176,6 +182,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
     # Includes onboarding data
     # Allows POST for registered users
     onboarding_data = serializers.JSONField()
+    risk_profile_group = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -185,7 +192,11 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'status',
             'onboarding_data',
             'onboarding_file_1',
+            'risk_profile_group',
         )
+
+    def get_risk_profile_group(self, obj):
+        return AccountTypeRiskProfileGroup.objects.get(account_type=ACCOUNT_TYPE_PERSONAL).id
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):

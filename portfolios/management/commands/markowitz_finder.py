@@ -12,6 +12,8 @@ from portfolios.markowitz_scale import get_risk_curve
 from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger("markowitz_finder")
+# logger.setLevel(logging.DEBUG)
+
 
 class Command(BaseCommand):
     help = 'Calculate all the optimal portfolios for ' \
@@ -22,13 +24,16 @@ class Command(BaseCommand):
         data_provider = DataProviderDjango()
         # Get the funds from the instruments table
         covars, funds, masks = get_instruments(data_provider)
+        logger.debug("Using instruments:\n {}\n\n with covars:\n{}".format(funds, covars))
         sigma = covars.values
 
         mu = funds[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
 
-        # Get the instrument with the best BL ER.
+        # Get the instruments with the best BL ER.
         perfix = np.argmax(mu)
-        logger.info("Found largest ER instrument: {} at index: {}".format(funds.index[perfix], perfix))
+        itms = np.argwhere(mu == mu[perfix])
+        ilist = [i[0] for i in itms.tolist()]
+        logger.info("Found largest ER instruments: {} at index: {}, ilist: {}".format(funds.index[itms], itms, ilist))
 
         xs, constraints = get_core_constraints(funds.shape[0])
 
@@ -43,7 +48,7 @@ class Command(BaseCommand):
             changed = False
             for ix, weight in enumerate(weights):
                 # print("ix={}, weight={}".format(ix, weight))
-                if ix != perfix and weight > MIN_PORTFOLIO_PCT:
+                if ix not in itms and weight > MIN_PORTFOLIO_PCT:
                     lowerb = mval
                     mval = min(mval * 2, mval + ((upperb - mval) / 2))
                     changed = True
@@ -53,6 +58,7 @@ class Command(BaseCommand):
                 mval -= ((mval - lowerb) / 2)
 
         max_lambda = round(mval, 3)
+        logger.debug("Weights at max_lambda: {}".format(weights))
         logger.info("Found MAX_LAMBDA: {}".format(max_lambda))
 
         # Find the least variance portfolio.
