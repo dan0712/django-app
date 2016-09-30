@@ -454,7 +454,6 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             goal = goalt
             target = validated_data.pop('target')
             completion = serializers.DateField().to_internal_value(validated_data.pop('completion'))
-            hedge_fx = validated_data.pop('hedge_fx')
             metric_group = mtric_group
 
             def get_metrics_all(self):
