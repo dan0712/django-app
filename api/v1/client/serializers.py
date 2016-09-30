@@ -62,6 +62,10 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'employer',
             'civil_status',
             'risk_profile_responses',
+            'betasmartz_agreement',
+            'advisor_agreement',
+            'phone_num',
+            'regional_data',
         )
 
     def create(self, validated_data):

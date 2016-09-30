@@ -1,7 +1,6 @@
+import json
 from datetime import date
-
 from django.core.urlresolvers import reverse
-
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -271,6 +270,19 @@ class ClientTests(APITestCase):
         usr = UserFactory.create()
         EmailInviteFactory.create(user=usr, status=EmailInvite.STATUS_ACCEPTED)
         url = reverse('api:v1:client-list')
+        address = {
+            "address": "123 My Street\nSome City",
+            "post_code": "112233",
+            "region": {
+                "name": "New South Wales",
+                "country": "AU",
+                "code": "NSW",
+            }
+        }
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
         data = {
             "advisor_agreement": True,
             "betasmartz_agreement": True,
@@ -278,24 +290,22 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "1234567890",
-            "residential_address": {
-                "address": "123 My Street\nSome City",
-                "post_code": "112233",
-                "region": {
-                    "name": "New South Wales",
-                    "country": "AU",
-                    "code": "NSW",
-                }
-            }
+            "phone_num": "+41524204249",
+            "residential_address": address,
+            "regional_data": json.dumps(regional_data)
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         # Ensure it is created approved and accepted.
         self.assertEqual(response.data['is_confirmed'], True)
         self.assertEqual(response.data['is_accepted'], True)
+        self.assertEqual(response.data['phone_num'], "+41524204249")
+        self.assertEqual(response.data['residential_address']['address'], address['address'])
+        self.assertEqual(response.data['residential_address']['post_code'], address['post_code'])
+        self.assertEqual(response.data['betasmartz_agreement'], True)
+        self.assertEqual(response.data['advisor_agreement'], True)
+        self.assertEqual(json.loads(response.data['regional_data']), regional_data)
 
     def test_create_client_no_address(self):
         # We need an accepted invitation to be able to create a client
@@ -310,7 +320,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "1234567890"
+            "phone_num": "+41524204249"
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
@@ -333,7 +343,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "1234567890",
+            "phone_num": "+41524204249",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",
@@ -367,7 +377,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "1234567890",
+            "phone_num": "+41524204249",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",
@@ -383,6 +393,7 @@ class ClientTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['is_confirmed'], True)
+        self.assertEqual(response.data['is_accepted'], True)
 
     def test_create_client_with_user(self):
         """
@@ -400,7 +411,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "1234567890",
+            "phone_num": "+41524204249",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",
