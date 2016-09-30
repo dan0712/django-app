@@ -226,7 +226,7 @@ def create_sale(ticker_id, volume, current_price, execution_distribution):
         if new_quantity == 0:
             held_lot.delete()
 
-        Sale.objects.create(quantity=lot['quantity'] - new_quantity,
+        Sale.objects.create(quantity=- (lot['quantity'] - new_quantity),
                             sell_execution_distribution=execution_distribution,
                             buy_execution_distribution=held_lot.execution_distribution)
 

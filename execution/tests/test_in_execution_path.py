@@ -146,9 +146,9 @@ class BaseTest(TestCase):
         self.assertTrue(order1.fill_info == ApexOrder.FillInfo.PARTIALY_FILLED.value)
 
         mor2 = MarketOrderRequestFactory.create(account=self.account1)
-        ExecutionRequestFactory.create(goal=self.goal1, asset=self.ticker1, volume=-50, order=mor2)
+        ExecutionRequestFactory.create(goal=self.goal1, asset=self.ticker1, volume=-60, order=mor2)
         create_apex_orders()
-        fill2_volume = -50
+        fill2_volume = -60
         fill2_price = 10
         order2 = ApexOrder.objects.get(ticker=self.ticker1, state=ApexOrder.State.PENDING.value)
         order2_id = order2.id
