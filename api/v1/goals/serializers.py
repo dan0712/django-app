@@ -13,7 +13,7 @@ from api.v1.serializers import EventMemoMixin, NoCreateModelSerializer, \
 from main.event import Event
 from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
     GoalSetting, GoalType, Portfolio, PortfolioItem, \
-    RecurringTransaction, Ticker, Transaction
+    RecurringTransaction, Ticker, Transaction, PositionLot
 from main.risk_profiler import recommend_risk, validate_risk_score
 from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
 from portfolios.providers.data.django import DataProviderDjango
@@ -705,3 +705,15 @@ class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
     """
     class Meta:
         model = GoalType
+
+
+class GoalPositionListSerializer(ReadOnlyModelSerializer):
+    """
+    Just serializes list of positions
+    """
+    class Meta:
+        model = PositionLot
+        fields = (
+            'execution_distribution',
+            'quantity',
+        )

@@ -21,7 +21,7 @@ from api.v1.utils import activity
 from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
-    Transaction
+    Transaction, PositionLot
 from main.risk_profiler import risk_data
 from portfolios.calculation import Unsatisfiable, \
     calculate_portfolio, calculate_portfolios, current_stats_from_weights
@@ -158,8 +158,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     @detail_route(methods=['get'])
     def positions(self, request, pk=None, **kwargs):
         goal = self.get_object()
-
-        positions = goal.positions.all()
+        positions = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=goal)
         serializer = serializers.GoalPositionListSerializer(positions, many=True)
         return Response(serializer.data)
 
