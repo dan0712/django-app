@@ -8,15 +8,20 @@ from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
 from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder, MarketOrderRequestAPEX, \
-    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot
+    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale
 import types
 from collections import defaultdict
-from django.db.models import Sum, F, Avg
+from django.db.models import Sum, F, Avg,Case, When, Value, FloatField
 from django.db.models.functions import Coalesce
 import numpy as np
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
+
+tax_bracket_egt1Y = 0.2
+tax_bracket_lt1Y = 0.3
 
 verbose_levels = {
     3 : DEBUG,
@@ -162,15 +167,16 @@ def create_executions_eds_transactions_from_apex_fills():
                                                  amount=volume*fill['price'], order=mor, executed=fill['executed'])
             ExecutionApexFill.objects.create(apex_fill=apex_fill, execution=execution)
             transaction = Transaction.objects.create(reason=Transaction.REASON_ORDER,
-                                                     amount=volume*fill['price'], to_goal=er.goal)
+                                                     amount=volume*fill['price'],
+                                                     to_goal=er.goal, executed=fill['executed'])
             ed = ExecutionDistribution.objects.create(execution=execution, transaction=transaction, volume=volume,
                                                       execution_request=er)
-            '''
+
             if volume > 0:
-                PositionLot.create(quantity=volume, execution_distribution=ed)
+                PositionLot.objects.create(quantity=volume, execution_distribution=ed)
             else:
-                create_sale(ticker.id, volume)
-                '''
+                create_sale(ticker.id, volume, fill['price'], ed)
+
 
     for mor_id in complete_mor_ids:
         mor = MarketOrderRequest.objects.get(id=mor_id)
@@ -192,14 +198,38 @@ def create_executions_eds_transactions_from_apex_fills():
         apex_order.save()
 
 
-def create_sale(ticker_id, volume):
+def create_sale(ticker_id, volume, current_price, execution_distribution):
+    # start selling PositionLots from 1st until quantity sold == volume
+    year_ago = timezone.now() - timedelta(days=365)
     position_lots = PositionLot.objects.all()\
         .filter(execution_distribution__execution__asset_id=ticker_id)\
-        .annotate(price=F('execution_distribution__execution__price'))\
-        .values('price', 'quantity')
+        .annotate(price=F('execution_distribution__execution__price'),
+                  executed=F('execution_distribution__execution__executed'))\
+        .annotate(tax_bracket=Case(
+                      When(executed__gte=year_ago, then=Value(tax_bracket_lt1Y)),
+                      When(executed__lt=year_ago, then=Value(tax_bracket_egt1Y)),
+                      output_field=FloatField()))\
+        .annotate(unit_tax_cost=(current_price - F('price')) * F('tax_bracket'))\
+        .values('id', 'price', 'quantity', 'executed', 'unit_tax_cost')\
+        .order_by('-unit_tax_cost')
 
-    #calculate tax loss for each lot sold
-    #start selling ones with
+    left_to_sell = abs(volume)
+    for lot in position_lots:
+        if left_to_sell == 0:
+            break
+
+        new_quantity = max(lot['quantity'] - left_to_sell, 0)
+        left_to_sell -= lot['quantity'] - new_quantity
+        held_lot = PositionLot.objects.get(id=lot['id'])
+        held_lot.quantity = new_quantity
+        held_lot.save()
+        if new_quantity == 0:
+            held_lot.delete()
+
+        Sale.objects.create(quantity=lot['quantity'] - new_quantity,
+                            sell_execution_distribution=execution_distribution,
+                            buy_execution_distribution=held_lot.execution_distribution)
+
 
 def example_usage_with_IB():
     options = get_options()
