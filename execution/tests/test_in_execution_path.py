@@ -121,3 +121,45 @@ class BaseTest(TestCase):
         sum_volume = Execution.objects.filter(distributions__execution_request__asset=self.ticker2)\
             .aggregate(sum=Sum('volume'))
         self.assertTrue(sum_volume['sum'] == 50)
+
+    def test_full_in_and_out_path3(self):
+        # test sale as well
+        mor1 = MarketOrderRequestFactory.create(account=self.account1)
+        ExecutionRequestFactory.create(goal=self.goal1, asset=self.ticker1, volume=101, order=mor1)
+
+        create_apex_orders()
+
+        #in
+        fill1a_volume = 50
+        fill1a_price = 10
+        fill1b_volume = 50
+        fill1b_price = 15
+
+        order1 = ApexOrder.objects.get(ticker=self.ticker1)
+        send_apex_order(order1)
+
+        ApexFillFactory.create(apex_order=order1, volume=fill1a_volume, price=fill1a_price)
+        ApexFillFactory.create(apex_order=order1, volume=fill1b_volume, price=fill1b_price)
+
+        create_executions_eds_transactions_from_apex_fills()
+        order1 = ApexOrder.objects.get(ticker=self.ticker1)
+        self.assertTrue(order1.fill_info == ApexOrder.FillInfo.PARTIALY_FILLED.value)
+
+        mor2 = MarketOrderRequestFactory.create(account=self.account1)
+        ExecutionRequestFactory.create(goal=self.goal1, asset=self.ticker1, volume=-50, order=mor2)
+        create_apex_orders()
+        fill2_volume = -50
+        fill2_price = 10
+        order2 = ApexOrder.objects.get(ticker=self.ticker1, state=ApexOrder.State.PENDING.value)
+        order2_id = order2.id
+        send_apex_order(order2)
+
+        ApexFillFactory.create(apex_order=order2, volume=fill2_volume, price=fill2_price)
+        create_executions_eds_transactions_from_apex_fills()
+        order2 = ApexOrder.objects.get(id=order2_id)
+        self.assertTrue(order2.fill_info == ApexOrder.FillInfo.FILLED.value)
+
+
+
+
+

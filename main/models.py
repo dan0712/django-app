@@ -2073,10 +2073,16 @@ class ApexOrder(models.Model):
         CANCEL_PENDING = 3 # Sent, but have also sent a cancel
         COMPLETE = 4  # May be fully or partially executed, but there is none left outstanding.
 
+    class FillInfo(ChoiceEnum):
+        FILLED = 0 # entire quantity of order was filled
+        PARTIALY_FILLED = 1 # less than entire quantity was filled, but > 0
+        UNFILLED = 2 # 0 shares were transacted for this order
+
     # The list of Order states that are still considered open.
     OPEN_STATES = [State.PENDING.value, State.APPROVED.value, State.SENT.value]
 
     state = models.IntegerField(choices=State.choices(), default=State.PENDING.value)
+    fill_info = models.IntegerField(choices=FillInfo.choices(), default=FillInfo.UNFILLED.value)
 
     ticker = models.ForeignKey('Ticker', related_name='apex_orders', on_delete=PROTECT)
     volume = models.FloatField(help_text="Will be negative for a sell.")

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ApexFill',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('volume', models.FloatField(help_text='Will be negative for a sell.')),
                 ('price', models.FloatField(help_text='Price for the fill.')),
                 ('executed', models.DateTimeField(help_text='The time the trade was executed.')),
@@ -24,33 +24,34 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ApexOrder',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
-                ('state', models.IntegerField(default=0, choices=[(0, 'PENDING'), (1, 'APPROVED'), (2, 'SENT'), (3, 'CANCEL_PENDING'), (4, 'COMPLETE')])),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
+                ('state', models.IntegerField(choices=[(0, 'PENDING'), (1, 'APPROVED'), (2, 'SENT'), (3, 'CANCEL_PENDING'), (4, 'COMPLETE')], default=0)),
+                ('fill_info', models.IntegerField(choices=[(0, 'FILLED'), (1, 'PARTIALY_FILLED'), (2, 'UNFILLED')], default=2)),
                 ('volume', models.FloatField(help_text='Will be negative for a sell.')),
-                ('ticker', models.ForeignKey(related_name='apex_orders', to='main.Ticker', on_delete=django.db.models.deletion.PROTECT)),
+                ('ticker', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='main.Ticker', related_name='apex_orders')),
             ],
         ),
         migrations.CreateModel(
             name='ExecutionApexFill',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('apex_fill', models.ForeignKey(related_name='execution_apex_fill', to='main.ApexFill')),
-                ('execution', models.OneToOneField(related_name='execution_apex_fill', to='main.Execution')),
+                ('execution', models.OneToOneField(to='main.Execution', related_name='execution_apex_fill')),
             ],
         ),
         migrations.CreateModel(
             name='MarketOrderRequestAPEX',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('apex_order', models.ForeignKey(related_name='morsAPEX', to='main.ApexOrder')),
                 ('market_order_request', models.ForeignKey(related_name='morsAPEX', to='main.MarketOrderRequest')),
-                ('ticker', models.ForeignKey(related_name='morsAPEX', to='main.Ticker', on_delete=django.db.models.deletion.PROTECT)),
+                ('ticker', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='main.Ticker', related_name='morsAPEX')),
             ],
         ),
         migrations.AddField(
             model_name='executiondistribution',
             name='execution_request',
-            field=models.ForeignKey(default=None, related_name='execution_distributions', to='main.ExecutionRequest'),
+            field=models.ForeignKey(to='main.ExecutionRequest', related_name='execution_distributions', default=None),
             preserve_default=False,
         ),
         migrations.AddField(

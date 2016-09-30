@@ -8,7 +8,7 @@ from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
 from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder, MarketOrderRequestAPEX, \
-    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction
+    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot
 import types
 from collections import defaultdict
 from django.db.models import Sum, F, Avg
@@ -163,8 +163,14 @@ def create_executions_eds_transactions_from_apex_fills():
             ExecutionApexFill.objects.create(apex_fill=apex_fill, execution=execution)
             transaction = Transaction.objects.create(reason=Transaction.REASON_ORDER,
                                                      amount=volume*fill['price'], to_goal=er.goal)
-            ExecutionDistribution.objects.create(execution=execution, transaction=transaction, volume=volume,
-                                                 execution_request=er)
+            ed = ExecutionDistribution.objects.create(execution=execution, transaction=transaction, volume=volume,
+                                                      execution_request=er)
+            '''
+            if volume > 0:
+                PositionLot.create(quantity=volume, execution_distribution=ed)
+            else:
+                create_sale(ticker.id, volume)
+                '''
 
     for mor_id in complete_mor_ids:
         mor = MarketOrderRequest.objects.get(id=mor_id)
@@ -174,8 +180,26 @@ def create_executions_eds_transactions_from_apex_fills():
     for apex_order_id in complete_apex_order_ids:
         apex_order = ApexOrder.objects.get(id=apex_order_id)
         apex_order.state = ApexOrder.State.COMPLETE.value
+
+        sum_fills = ApexFill.objects.filter(apex_order_id=apex_order_id).aggregate(sum=Sum('volume'))
+        if sum_fills['sum'] == apex_order.volume:
+            apex_order.fill_info = ApexOrder.FillInfo.FILLED.value
+        elif sum_fills['sum'] == 0:
+            apex_order.fill_info = ApexOrder.FillInfo.UNFILLED.value
+        else:
+            apex_order.fill_info = ApexOrder.FillInfo.PARTIALY_FILLED.value
+
         apex_order.save()
 
+
+def create_sale(ticker_id, volume):
+    position_lots = PositionLot.objects.all()\
+        .filter(execution_distribution__execution__asset_id=ticker_id)\
+        .annotate(price=F('execution_distribution__execution__price'))\
+        .values('price', 'quantity')
+
+    #calculate tax loss for each lot sold
+    #start selling ones with
 
 def example_usage_with_IB():
     options = get_options()
