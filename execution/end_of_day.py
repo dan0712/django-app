@@ -134,7 +134,7 @@ def send_apex_order(apex_order):
     apex_order.save()
 
 
-def create_executions_eds_transactions_from_apex_fills():
+def create_all_from_apex_fills():
     '''
     from existing apex fills create executions, execution distributions, transactions and positionLots - pro rata all fills
     :return:

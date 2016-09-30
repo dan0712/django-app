@@ -18,7 +18,7 @@ from main.tests.fixture import Fixture1
 from api.v1.tests.factories import ExecutionRequestFactory, MarketOrderRequestFactory, \
     ClientAccountFactory, GoalFactory, TickerFactory, ApexFillFactory, ApexOrderFactory, ExecutionFactory, ExecutionApexFillFactory, ExecutionDistributionFactory, TransactionFactory
 
-from execution.end_of_day import create_apex_orders, create_executions_eds_transactions_from_apex_fills, send_apex_order
+from execution.end_of_day import create_apex_orders, create_all_from_apex_fills, send_apex_order
 
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
@@ -70,7 +70,7 @@ class BaseTest(TestCase):
         ApexFillFactory.create(apex_order=order1, volume=fill1_volume, price=fill1_price)
         ApexFillFactory.create(apex_order=order1, volume=fill2_volume, price=fill2_price)
 
-        create_executions_eds_transactions_from_apex_fills()
+        create_all_from_apex_fills()
 
         sum_volume = Execution.objects.filter(distributions__execution_request__goal=self.goal1)\
             .aggregate(sum=Sum('volume'))
@@ -104,7 +104,7 @@ class BaseTest(TestCase):
         ApexFillFactory.create(apex_order=order1, volume=fill1a_volume, price=fill1a_price)
         ApexFillFactory.create(apex_order=order1, volume=fill1b_volume, price=fill1b_price)
 
-        create_executions_eds_transactions_from_apex_fills()
+        create_all_from_apex_fills()
 
         sum_volume = Execution.objects.filter(distributions__execution_request__goal=self.goal1)\
             .aggregate(sum=Sum('volume'))
@@ -117,7 +117,7 @@ class BaseTest(TestCase):
 
         ApexFillFactory.create(apex_order=order2_3, volume=fill2_3_volume, price=fill2_3_price)
 
-        create_executions_eds_transactions_from_apex_fills()
+        create_all_from_apex_fills()
         sum_volume = Execution.objects.filter(distributions__execution_request__asset=self.ticker2)\
             .aggregate(sum=Sum('volume'))
         self.assertTrue(sum_volume['sum'] == 50)
@@ -141,7 +141,7 @@ class BaseTest(TestCase):
         ApexFillFactory.create(apex_order=order1, volume=fill1a_volume, price=fill1a_price)
         ApexFillFactory.create(apex_order=order1, volume=fill1b_volume, price=fill1b_price)
 
-        create_executions_eds_transactions_from_apex_fills()
+        create_all_from_apex_fills()
         order1 = ApexOrder.objects.get(ticker=self.ticker1)
         self.assertTrue(order1.fill_info == ApexOrder.FillInfo.PARTIALY_FILLED.value)
 
@@ -155,11 +155,7 @@ class BaseTest(TestCase):
         send_apex_order(order2)
 
         ApexFillFactory.create(apex_order=order2, volume=fill2_volume, price=fill2_price)
-        create_executions_eds_transactions_from_apex_fills()
+        create_all_from_apex_fills()
         order2 = ApexOrder.objects.get(id=order2_id)
         self.assertTrue(order2.fill_info == ApexOrder.FillInfo.FILLED.value)
-
-
-
-
 
