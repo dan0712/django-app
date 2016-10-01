@@ -51,6 +51,7 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
                                                                 queryset=qs,
                                                                 required=False)
     residential_address = AddressUpdateSerializer()
+    regional_data = serializers.JSONField()
 
     class Meta:
         model = Client

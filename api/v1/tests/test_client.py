@@ -313,6 +313,10 @@ class ClientTests(APITestCase):
         EmailInviteFactory.create(user=usr, status=EmailInvite.STATUS_ACCEPTED)
 
         url = reverse('api:v1:client-list')
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
         data = {
             "advisor_agreement": True,
             "betasmartz_agreement": True,
@@ -320,11 +324,51 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249"
+            "phone_num": "+41524204249",
+            'regional_data': regional_data,
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_client_no_regional_data(self):
+        """
+        regional_data is a required field, needs ssn and politically_exposed fields
+        at a minimum
+        """
+        usr = UserFactory.create()
+        EmailInviteFactory.create(user=usr, status=EmailInvite.STATUS_ACCEPTED)
+        url = reverse('api:v1:client-list')
+        address = {
+            "address": "123 My Street\nSome City",
+            "post_code": "112233",
+            "region": {
+                "name": "New South Wales",
+                "country": "AU",
+                "code": "NSW",
+            }
+        }
+        data = {
+            "advisor_agreement": True,
+            "betasmartz_agreement": True,
+            "date_of_birth": date(2016, 9, 21),
+            "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
+            "gender": GENDER_MALE,
+            "income": 1234,
+            "phone_num": "+41524204249",
+            "residential_address": address,
+        }
+        self.client.force_authenticate(usr)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
+        data['regional_data'] = json.dumps(regional_data)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_client_with_advisor(self):
         """
@@ -336,6 +380,10 @@ class ClientTests(APITestCase):
 
         url = reverse('api:v1:client-list')
         advisor = AdvisorFactory.create()
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
         data = {
             "advisor_agreement": True,
             "betasmartz_agreement": True,
@@ -354,6 +402,7 @@ class ClientTests(APITestCase):
                 }
             },
             "advisor": advisor.id,
+            'regional_data': regional_data,
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
@@ -370,6 +419,10 @@ class ClientTests(APITestCase):
         EmailInviteFactory.create(user=usr, status=EmailInvite.STATUS_ACCEPTED)
 
         url = reverse('api:v1:client-list')
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
         data = {
             "advisor_agreement": True,
             "betasmartz_agreement": True,
@@ -387,7 +440,8 @@ class ClientTests(APITestCase):
                     "code": "NSW",
                 }
             },
-            "is_confirmed": False
+            "is_confirmed": False,
+            'regional_data': regional_data,
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
@@ -404,6 +458,10 @@ class ClientTests(APITestCase):
         EmailInviteFactory.create(user=usr, status=EmailInvite.STATUS_ACCEPTED)
 
         url = reverse('api:v1:client-list')
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
         data = {
             "advisor_agreement": True,
             "betasmartz_agreement": True,
@@ -421,7 +479,8 @@ class ClientTests(APITestCase):
                     "code": "NSW",
                 }
             },
-            "user_id": 44
+            "user_id": 44,
+            'regional_data': regional_data,
         }
         self.client.force_authenticate(usr)
         response = self.client.post(url, data)
