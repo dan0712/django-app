@@ -1,6 +1,11 @@
 [Betasmartz](http://betasmartz.com)
 
 
+## Docker Development Environment Setup
+Please follow the quick readme instructions for https://bitbucket.org/betasmartz/betasmartz_dev_setup
+
+Which will setup both the backend (this repository) and frontend, build docker containers, setup postgres dev database and run everything including nginx proxy between backend and frontend.
+
 
 ## Installation
 Ubuntu non-docker install instructions
@@ -60,43 +65,6 @@ python manage.py migrate main
 ...possible other apps
 python manage.py migrate
 ```
-
-
-## Docker Development Environment Installation
-Install docker for whatever operating system you're running on.  https://docs.docker.com/engine/installation/
-
-Run this part for the initial setup and if project requirements are updated.
-
-Copy dev settings connecting to the dev_database.sqlite3 db for the local_settings.py.
-````shell
-cp docker_dev_settings_sqlite.py local_settings.py
-````
-
-Start the necessary containers to run the development server.  The -d option detaches from your current shell so its in the background, but if you want to track stdout actively in a shell, then you can just run without the -d option.
-````shell
-docker-compose up --build -d
-````
-
-
-Run migrations for the initial setup or if you're making or pulling in new migrations.
-````shell
-alias dej="docker exec django $*"
-dej ./betasmartz/manage.py migrate main
-dej ./betasmartz/manage.py migrate
-````
-
-Open http://0.0.0.0 in a browser to access the django backend.
-
-
-Load data fixtures
-````shell
-alias dej="docker exec django $*"
-dej ./betasmartz/manage.py loaddata betasmartz/main/fixtures/executions.json
-dej ./betasmartz/manage.py loaddata betasmartz/main/fixtures/groups.json
-dej ./betasmartz/manage.py loaddata betasmartz/main/fixtures/superuser.json
-dej ./betasmartz/manage.py loaddata betasmartz/main/fixtures/transactions.json
-````
-
 
 
 ## Dev Site

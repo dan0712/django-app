@@ -12,24 +12,38 @@ from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
+from django.shortcuts import redirect
+import logging
+
+logger = logging.getLogger('main.views.login')
+
+
+class AuthenticationFormWithInactiveUsersOkay(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        # users in the middle of onboarding
+        # have is_active as False and caused login
+        # to fail with users coming back
+        # TODO: when login is re-worked remove this
+        # and use is_active to determine what users
+        # can login ok.
+        pass
 
 
 @never_cache
 @csrf_protect
 @sensitive_post_parameters()
 def login(request, template_name='registration/login.html',
-          authentication_form=AuthenticationForm,
+          authentication_form=AuthenticationFormWithInactiveUsersOkay,
           extra_context=None):
 
-    # TODO: maybe to add expected user role (based on url) to extra_context 
+    # TODO: maybe to add expected user role (based on url) to extra_context
     response = auth_views_login(request,
                                 authentication_form=authentication_form,
                                 extra_context=extra_context)
-
     user = request.user
 
     if user.is_authenticated():
-        # custom extra checking 
+        # custom extra checking
 
         # TODO: temp temp temp
         # TODO: discuss "confirmation" feature
@@ -43,6 +57,11 @@ def login(request, template_name='registration/login.html',
         )
 
         if not is_confirmed:
+            # check if user is in the middle of onboarding
+            if hasattr(user, 'invitation'):
+                if user.invitation.status == 2 or user.invitation.status == 3:
+                    # redirect to client onboarding
+                    return redirect('/client/onboarding/' + user.invitation.invite_key)
             messages.error(request, 'Your account has not been confirmed yet.')
             form = authentication_form(request)
             context = {'form': form}

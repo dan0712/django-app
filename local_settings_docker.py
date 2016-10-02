@@ -5,10 +5,10 @@ environment = os.environ["ENVIRONMENT"]
 if environment in ["production", "demo"]:
     hn = 'app' if environment == 'production' else environment
     ALLOWED_HOSTS = ["{}.betasmartz.com".format(hn)]
-    SITE_URL = "http://{}.betasmartz.com".format(hn)
+    SITE_URL = "https://{}.betasmartz.com".format(hn)
     DEBUG = False
 else:
-    SITE_URL = "http://{}.betasmartz.com".format(environment)
+    SITE_URL = "https://{}.betasmartz.com".format(environment)
     DEBUG = True
     TEMPLATE_DEBUG = True
 
@@ -36,6 +36,12 @@ CACHES = {
 }
 
 STATIC_ROOT = "/collected_static"
+
+# Mailgun on deployments
+# Mailgun Email settings if MAILGUN_API_KEY is in environ
+if os.environ.get('MAILGUN_API_KEY'):
+    EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
+
 
 # Cloud Swift Storage Settings
 SOFTLAYER_REGION = 'tor01'  # Toronto

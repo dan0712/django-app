@@ -6,9 +6,9 @@
 main() {
     # postgres on multiple environment VM
     POSTGRES_PASSWORD='gD6OA22yXjMgrzLI4pT9*B63o^'
-    if [[ ${2} == 'proto' ]]
+    if [[ ${2} == 'demostaging' ]]
     then
-        DBPW='4T*-!r37H.L+hn'
+        DBPW='*821917ic2bB&82'
         REDDB=1
     elif [[ ${2} == 'v2' ]]
     then
@@ -61,20 +61,21 @@ main() {
     # run tests on a docker testing container before taking down
     # currently serving container - ${2}_betasmartz_app_test
     # this should minimize downtime switching old builds to new ones
-    docker run -v /home/bsmartz/${2}_media:/betasmartz/media \
-               -v /home/bsmartz/${2}_static:/collected_static \
-               -e "DB_PASSWORD=${DBPW}" \
+    docker run -e "DB_PASSWORD=${DBPW}" \
                -e 'POSTGRES_PASSWORD='${POSTGRES_PASSWORD} \
                -e ENVIRONMENT=${2} \
                -e 'REDIS_URI=redis://redis:6379/'${REDDB} \
                -e 'ST_AUTH='${ST_AUTH} \
                -e 'ST_USER='${ST_USER} \
                -e 'ST_KEY='${ST_KEY} \
+               -e 'MAILGUN_API_KEY='${MAILGUN_API_KEY} \
+               -e 'WEBHOOK_AUTHORIZATION='${WEBHOOK_AUTHORIZATION} \
+               -e 'DEFAULT_FROM_EMAIL='${DEFAULT_FROM_EMAIL} \
                --net=betasmartz-local \
                --name=${2}_betasmartz_app_test \
                -d betasmartz/backend:${2}_cd
     
-    docker exec ${2}_betasmartz_app_test python3.5 betasmartz/manage.py test --noinput
+    docker exec ${2}_betasmartz_app_test bash -c "cd betasmartz && pip install -r requirements/dev.txt && python3.5 manage.py test --settings=tests.test_settings --noinput"
     if [ $? -eq 0 ]  # tests ran successfully?
     then
         echo "Tests passed successfully, switching out current app container."

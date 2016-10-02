@@ -67,7 +67,8 @@ class UserTests(APITestCase):
         self.assertTrue(response.data['id'] == self.user2.id)
         self.assertTrue(response.data['client']['id'] == self.client2.id)
         self.assertTrue(response.data['client']['income'] == self.client2.income)
-        self.assertTrue(response.data['client']['residential_address']['id'] == self.client2.residential_address.pk)
+        self.assertEqual(response.data['client']['residential_address']['address'],
+                         self.client2.residential_address.address)
 
     def test_update_user_settings(self):
         # the user must be a client, advisor or possibly supportstaff here, otherwise 403

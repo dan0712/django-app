@@ -1,7 +1,9 @@
 import logging
 
 import copy
+
 from django.db import transaction
+from django.core.exceptions import ValidationError as CVE
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.fields import FloatField, IntegerField
@@ -10,22 +12,16 @@ from api.v1.serializers import EventMemoMixin, NoCreateModelSerializer, \
     NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.event import Event
 from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
-    GoalSetting, GoalType, Portfolio, PortfolioItem, Position, \
-    RecurringTransaction, Ticker, Transaction
-from main.risk_profiler import recommend_risk
-from portfolios.calculation import Unsatisfiable, \
-    calculate_portfolio, current_stats_from_weights, get_instruments
-from portfolios.providers.data.django import \
-    DataProviderDjango
-from portfolios.providers.execution.django import \
-    ExecutionProviderDjango
+    GoalSetting, GoalType, Portfolio, PortfolioItem, \
+    RecurringTransaction, Ticker, Transaction, PositionLot
+from main.risk_profiler import recommend_risk, validate_risk_score
+from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
+from portfolios.providers.data.django import DataProviderDjango
+from portfolios.providers.execution.django import ExecutionProviderDjango
 from support.models import SupportRequest
 
 
 logger = logging.getLogger('goal_serializer')
-
-
-# TODO: too messy module. deeply refactor later.
 
 
 class PortfolioItemSerializer(ReadOnlyModelSerializer):
@@ -270,10 +266,9 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                 port_items_data = port_data.pop('items')
                 # Get the current portfolio statistics of the given weights.
                 try:
-                    data_provider = DataProviderDjango()
-                    er, stdev, idatas = current_stats_from_weights(weights=[(item['asset'].id,
+                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                              item['weight']) for item in port_items_data],
-                                                                   data_provider=data_provider
+                                                                   DataProviderDjango()
                                                                    )
                 except Unsatisfiable as e:
                     raise ValidationError(e.msg)
@@ -303,7 +298,10 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                      for i_data in tx_data]
                 )
 
-            goal.set_selected(setting)
+            try:
+                goal.set_selected(setting)
+            except CVE as verr:
+                raise ValidationError(verr.message)
 
         return setting
 
@@ -357,10 +355,9 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
             if port_data is not None:
                 port_items_data = port_data.pop('items')
                 try:
-                    data_provider = DataProviderDjango()
-                    er, stdev, idatas = current_stats_from_weights(weights=[(item['asset'].id,
+                    er, stdev, idatas = current_stats_from_weights([(item['asset'].id,
                                                                      item['weight']) for item in port_items_data],
-                                                                   data_provider=data_provider)
+                                                                   DataProviderDjango())
                 except Unsatisfiable as e:
                     raise ValidationError(e.msg)
                 port = Portfolio.objects.create(setting=setting, er=er, stdev=stdev)
@@ -380,7 +377,10 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                      for i_data in tx_data]
                 )
 
-            goal.set_selected(setting)
+            try:
+                goal.set_selected(setting)
+            except CVE as verr:
+                raise ValidationError(verr.message)
 
         return setting
 
@@ -454,7 +454,6 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
             goal = goalt
             target = validated_data.pop('target')
             completion = serializers.DateField().to_internal_value(validated_data.pop('completion'))
-            hedge_fx = validated_data.pop('hedge_fx')
             metric_group = mtric_group
 
             def get_metrics_all(self):
@@ -554,7 +553,9 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
         """
         account = validated_data['account']
 
-        idata = get_instruments()
+        data_provider = DataProviderDjango()
+        execution_provider = ExecutionProviderDjango()
+        idata = get_instruments(data_provider)
 
         with transaction.atomic():
             metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)
@@ -604,6 +605,12 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                     configured_val=1  # Start with 100% ethical.
                 )
 
+            # Make sure the risk score assigned is appropriate for the goal.
+            try:
+                validate_risk_score(settings)
+            except CVE as verr:
+                raise ValidationError(verr.message)
+
             # Add the initial deposit if specified.
             initial_dep = validated_data.pop('initial_deposit', None)
             if initial_dep is not None:
@@ -613,10 +620,10 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
 
             # Calculate the optimised portfolio
             try:
-                weights, er, stdev = calculate_portfolio(settings=settings,
-                                                         idata=idata,
-                                                         data_provider=DataProviderDjango(),
-                                                         execution_provider=ExecutionProviderDjango())
+                weights, er, stdev = calculate_portfolio(settings,
+                                                         data_provider,
+                                                         execution_provider,
+                                                         idata)
                 portfolio = Portfolio.objects.create(
                     setting=settings,
                     stdev=stdev,
@@ -701,8 +708,11 @@ class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
 
 class GoalPositionListSerializer(ReadOnlyModelSerializer):
     """
-    Experimental
-    For read (GET) requests only
+    Just serializes list of positions
     """
     class Meta:
-        model = Position
+        model = PositionLot
+        fields = (
+            'execution_distribution',
+            'quantity',
+        )

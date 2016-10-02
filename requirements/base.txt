@@ -17,6 +17,7 @@ django-redis==4.3.0
 beautifulsoup4==4.4.0
 
 diff-match-patch==20121119
+django-anymail==0.5
 django-authority==0.9
 django-ckeditor-updated==4.4.4
 django-common-helpers==0.7.0
@@ -36,7 +37,6 @@ django-page-cms==1.8.1
 django-phonenumber-field==1.1.0
 django-suit==0.2.15
 django-taggit==0.17.5
-git+git://github.com/arthanson/django-genericadmin  # For user friendly generic foreign keys in admin interface
 # Using the below git link until drf-extensions==0.3.0 becomes available in pip.
 git+git://github.com/chibisov/drf-extensions@0a82b4c57ab95e53c56e5e71cfe71f5a33812a65 # For nested viewsets
 ecos==2.0.4

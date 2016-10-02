@@ -103,6 +103,8 @@ urlpatterns = patterns(
         {'post_reset_redirect': '/login'},
         name='password_reset_confirm'),
 
+    url(r'^anymail/', include('anymail.urls')),
+
     #url(r'^client/2.0/api/',  include(router.urls)),
 )
 

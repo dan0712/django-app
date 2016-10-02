@@ -4,16 +4,17 @@ from django.db import transaction
 from django.utils.timezone import now
 
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import RetirementPlan, RetirementPlanBTC, RetirementPlanEinc, RetirementPlanATC
-from client.models import Client
+from main.constants import GENDER_MALE
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc
+import json
 
 
 def get_default_tx_plan():
     return {
-        'begin_date': now().today(),
+        'begin_date': now().today().date(),
         'amount': 0,
         'growth': settings.BETASMARTZ_CPI,
         'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
@@ -21,79 +22,75 @@ def get_default_tx_plan():
 
 
 def get_default_life_expectancy(client):
-    return settings.MALE_LIFE_EXPECTANCY if client.gender == 'Male' else settings.FEMALE_LIFE_EXPECTANCY
+    return settings.MALE_LIFE_EXPECTANCY if client.gender == GENDER_MALE else settings.FEMALE_LIFE_EXPECTANCY
 
 
 def get_default_retirement_date(client):
     return date(client.date_of_birth.year + 67, client.date_of_birth.month, client.date_of_birth.day)
 
 
-class BTCSerializer(ReadOnlyModelSerializer):
-    class Meta:
-        model = RetirementPlanBTC
-        exclude = ('plan',)
+def who_validator(value):
+    if value not in ['self', 'partner', 'joint']:
+        raise ValidationError("'who' must be (self|partner|joint)")
 
 
-class ATCSerializer(ReadOnlyModelSerializer):
-    class Meta:
-        model = RetirementPlanATC
-        exclude = ('plan',)
+def make_category_validator(category):
+    def category_validator(value):
+        if not value in category:
+            raise ValidationError("'cat' for %s must be one of %s"%(category, category.choices()))
 
 
-class EincSerializer(ReadOnlyModelSerializer):
-    class Meta:
-        model = RetirementPlanEinc
-        exclude = ('plan',)
+def make_json_list_validator(field, serializer):
+    def list_item_validator(value):
+        try: value = json.loads(value)
+        except ValueError: raise ValidationError("Invalid json for %s"%field)
+        if not isinstance(value, list):
+            raise ValidationError("%s must be a JSON list of objects"%(field))
+        for item in value:
+            if not isinstance(item, dict) or not serializer(data=item).is_valid(raise_exception=True):
+                raise ValidationError("Invalid %s object"%field)
+    return list_item_validator
 
 
-class BTCWritableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RetirementPlanBTC
-        fields = (
-            'begin_date',
-            'amount',
-            'growth',
-            'schedule',
-        )
+class ExpensesSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    desc = serializers.CharField()
+    cat = serializers.IntegerField(validators=[make_category_validator(RetirementPlan.ExpenseCategory)])
+    who = serializers.CharField(validators=[who_validator])
+    amt = serializers.IntegerField()
 
 
-class ATCWritableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RetirementPlanATC
-        fields = (
-            'begin_date',
-            'amount',
-            'growth',
-            'schedule',
-        )
+class SavingsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    desc = serializers.CharField()
+    cat = serializers.IntegerField(validators=[make_category_validator(RetirementPlan.SavingCategory)])
+    who = serializers.CharField(validators=[who_validator])
+    amt = serializers.IntegerField()
 
 
-class EincWritableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RetirementPlanEinc
-        fields = (
-            'begin_date',
-            'amount',
-            'growth',
-            'schedule',
-        )
+class InitialDepositsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    asset = serializers.IntegerField(required=False)
+    goal = serializers.IntegerField(required=False)
+    amt = serializers.IntegerField()
 
 
 class RetirementPlanSerializer(ReadOnlyModelSerializer):
-    btc = BTCSerializer()
-    atc = ATCSerializer()
-    external_income = EincSerializer(many=True)
-
     class Meta:
         model = RetirementPlan
 
 
 class RetirementPlanWritableSerializer(serializers.ModelSerializer):
-    btc = BTCWritableSerializer(required=False)
-    atc = ATCWritableSerializer(required=False)
-    external_income = EincWritableSerializer(required=False, many=True)
-    life_expectancy = serializers.IntegerField(required=False)
-    retirement_date = serializers.DateField(required=False)
+    expenses = serializers.JSONField(required=False,
+        help_text = RetirementPlan._meta.get_field('expenses').help_text,
+        validators=[make_json_list_validator('expenses', ExpensesSerializer)])
+    savings = serializers.JSONField(required=False,
+        help_text = RetirementPlan._meta.get_field('savings').help_text,
+        validators=[make_json_list_validator('savings', SavingsSerializer)])
+    initial_deposits = serializers.JSONField(required=False,
+        help_text = RetirementPlan._meta.get_field('initial_deposits').help_text,
+        validators=[make_json_list_validator('initial_deposits', InitialDepositsSerializer)])
+    retirement_postal_code = serializers.CharField(max_length=10, required=False)
 
     class Meta:
         model = RetirementPlan
@@ -101,13 +98,38 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'partner_plan',
-            'retirement_date',
-            'life_expectancy',
-            'spendable_income',
+            'lifestyle',
+            'desired_income',
+            'income',
+            'volunteer_days',
+            'paid_days',
+            'same_home',
+            'retirement_postal_code',
+            'reverse_mortgage',
+            'retirement_home_style',
+            'retirement_home_price',
+            'beta_partner',
+            'expenses',
+            'savings',
+            'initial_deposits',
+            'income_growth',
+            'expected_return_confidence',
+            'retirement_age',
+
             'btc',
             'atc',
-            'external_income',
-            'desired_income',
+
+            'max_employer_match_percent',
+            'desired_risk',
+            'recommended_risk',
+            'max_risk',
+            'calculated_life_expectancy',
+            'selected_life_expectancy',
+
+            'portfolio',
+            'partner_data',
+            'agreed_on',
+
         )
 
     def __init__(self, *args, **kwargs):
@@ -121,30 +143,16 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        btc = validated_data.pop('btc', None) or get_default_tx_plan()
-        atc = validated_data.pop('atc', None) or get_default_tx_plan()
-        einc = validated_data.pop('external_income', None)
         client = validated_data['client']
-
-        if 'life_expectancy' not in validated_data:
-            validated_data['life_expectancy'] = get_default_life_expectancy(client)
-        if 'retirement_date' not in validated_data:
-            validated_data['retirement_date'] = get_default_retirement_date(client)
+        if not validated_data.get('retirement_postal_code', ''):
+            if validated_data['same_home']:
+                postal_code = client.residential_address.post_code
+                validated_data['retirement_postal_code'] = postal_code
+            else:
+                raise ValidationError('retirement_postal_code required if not same_home')
 
         plan = RetirementPlan.objects.create(**validated_data)
-
-        ser = BTCWritableSerializer(data=btc)
-        ser.is_valid(raise_exception=True)
-        ser.save(plan=plan)
-
-        ser = ATCWritableSerializer(data=atc)
-        ser.is_valid(raise_exception=True)
-        ser.save(plan=plan)
-
-        if einc is not None:
-            ser = EincWritableSerializer(data=einc, many=True)
-            ser.is_valid(raise_exception=True)
-            ser.save(plan=plan)
+        if plan.agreed_on: plan.generate_soa()
 
         return plan
 
@@ -157,9 +165,8 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         :return: The updated RetirementPlan
         """
 
-        btc = validated_data.pop('btc', None)
-        atc = validated_data.pop('atc', None)
-        einc = validated_data.pop('external_income', None)
+        if instance.agreed_on:
+            raise ValidationError("Unable to make changes to a plan that has been agreed on")
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -172,23 +179,29 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
 
         instance.save()
 
-        if btc:
-            if instance.btc is not None:
-                instance.btc.delete()
-            ser = BTCWritableSerializer(data=btc)
-            ser.is_valid(raise_exception=True)
-            ser.save(plan=instance)
-        if atc:
-            if instance.atc is not None:
-                instance.atc.delete()
-            ser = ATCWritableSerializer(data=atc)
-            ser.is_valid(raise_exception=True)
-            ser.save(plan=instance)
-        if einc:
-            if instance.external_income is not None:
-                instance.external_income.all().delete()
-            ser = EincWritableSerializer(data=einc, many=True)
-            ser.is_valid(raise_exception=True)
-            ser.save(plan=instance)
-
         return instance
+
+
+class RetirementPlanEincSerializer(ReadOnlyModelSerializer):
+    class Meta:
+        model = RetirementPlanEinc
+
+
+class RetirementPlanEincWritableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RetirementPlanEinc
+        fields = (
+            'name',
+            'plan',
+            'begin_date',
+            'amount',
+            'growth',
+            'schedule'
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RetirementPlanEincWritableSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            for field in self.fields.values():
+                field.required = False

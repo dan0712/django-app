@@ -4,15 +4,17 @@ import factory
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.contrib.auth.models import Group
 
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
-                        Transaction, Position, GoalSetting, GoalMetricGroup, \
+                        Transaction, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
-                        MarkowitzScale, Supervisor, AuthorisedRepresentative
+                        MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
+                        InvestmentCycleObservation, InvestmentCyclePrediction
+from retiresmartz.models import RetirementPlan
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -21,7 +23,7 @@ from statements.models import StatementOfAdvice, RecordOfAdvice
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
-
+from django.utils import timezone
 from random import randrange
 
 
@@ -34,6 +36,22 @@ def random_date(start, end):
     int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
     random_second = randrange(int_delta)
     return start + timedelta(seconds=random_second)
+
+
+class InvestmentCycleObservationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestmentCycleObservation
+
+    recorded = factory.Sequence(lambda n: date(year=int(1990 + n), month=1, day=1))
+    source = ''
+
+
+class InvestmentCyclePredictionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InvestmentCyclePrediction
+
+    pred_dt = factory.Sequence(lambda n: date(year=int(1990 + n), month=1, day=1))
+    source = ''
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -72,7 +90,7 @@ class FiscalYearFactory(factory.django.DjangoModelFactory):
     year = factory.Sequence(lambda n: int(1990 + n))
     begin_date = factory.Sequence(lambda n: datetime(year=int(1990 + n), month=1, day=1))
     end_date = factory.Sequence(lambda n: datetime(year=int(1990 + n), month=12, day=20))
-    month_ends = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    month_ends = '31,29,31,30,31,30,31,31,30,31,30,31'
 
 
 class FirmFactory(factory.django.DjangoModelFactory):
@@ -83,6 +101,7 @@ class FirmFactory(factory.django.DjangoModelFactory):
     token = factory.Sequence(lambda n: 'Token %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
     slug = factory.Sequence(lambda n: 'Slug %d' % n)
+
 
 class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -145,14 +164,19 @@ class AdvisorFactory(factory.django.DjangoModelFactory):
     residential_address = factory.SubFactory(AddressFactory)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
 
+
 class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AuthorisedRepresentative
 
     user = factory.SubFactory(UserFactory)
     firm = factory.SubFactory(FirmFactory)
-    residential_address = factory.SubFactory(AddressFactory)
+    letter_of_authority = factory.django.FileField(filename='tests/test_letter_of_authority.txt')
     betasmartz_agreement = True
+    is_accepted = True
+    is_confirmed = True
+
+    residential_address = factory.SubFactory(AddressFactory)
 
 
 class AccountTypeRiskProfileGroupFactory(factory.django.DjangoModelFactory):
@@ -221,11 +245,13 @@ class ClientAccountFactory(factory.django.DjangoModelFactory):
     confirmed = True
     cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(10000000)) / 100)
 
+
 class StatementOfAdviceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = StatementOfAdvice
 
     account = factory.SubFactory(ClientAccountFactory)
+
 
 class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -419,6 +445,17 @@ class TickerFactory(factory.django.DjangoModelFactory):
     region = factory.SubFactory(MainRegionFactory)
     data_api_param = factory.Sequence(lambda n: str(n))
 
+    @factory.post_generation
+    def features(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.features.add(item)
+
 
 class TransactionFactory(factory.django.DjangoModelFactory):
     """
@@ -432,13 +469,14 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     to_goal = factory.SubFactory(GoalFactory)
 
 
-class PositionFactory(factory.django.DjangoModelFactory):
+class PositionLotFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Position
+        model = PositionLot
 
-    goal = factory.SubFactory(GoalFactory)
-    ticker = factory.SubFactory(TickerFactory)
-    share = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+class ExecutionDistributionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExecutionDistribution
 
 
 class DailyPriceFactory(factory.django.DjangoModelFactory):
@@ -448,7 +486,7 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DailyPrice
 
-    instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
+    #instrument_object_id = factory.LazyAttribute(lambda obj: obj.instrument.id)
     instrument = factory.SubFactory(TickerFactory)
     date = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
@@ -489,3 +527,25 @@ class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
 
     residential_address = factory.SubFactory(AddressFactory)
 
+
+class RetirementPlanFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementPlan
+    name = factory.Sequence(lambda n: 'RetirementPlan %d' % n)
+    client = factory.SubFactory(ClientFactory)
+    retirement_age = 55
+    calculated_life_expectancy = 80
+    selected_life_expectancy = 80
+    desired_income = 250000
+    income = 100000
+    btc = 0
+    atc = 0
+    volunteer_days = factory.LazyAttribute(lambda n: random.randrange(7))
+    paid_days = factory.LazyAttribute(lambda n: random.randrange(7))
+    same_home = False
+    retirement_postal_code = 11901
+    reverse_mortgage = True
+    expected_return_confidence = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    desired_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    recommended_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    max_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))

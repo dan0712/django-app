@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework.decorators import list_route
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -11,6 +12,8 @@ from ..goals.serializers import GoalSettingSerializer
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
+from client import models as client_models
+from retiresmartz import models as retirement_models
 
 
 class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
@@ -36,6 +39,12 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
             'civil_statuses': self.civil_statuses(request).data,
             'employment_statuses': self.employment_statuses(request).data,
             'external_asset_types': self.external_asset_types(request).data,
+            'investor_risk_categories': self.investor_risk_categories(request).data,
+            'retirement_saving_categories': self.retirement_saving_categories(request).data,
+            'retirement_expense_categories': self.retirement_expense_categories(request).data,
+            'retirement_housing_categories': self.retirement_housing_categories(request).data,
+            'retirement_lifestyle_categories': self.retirement_lifestyle_categories(request).data,
+            'retirement_lifestyles': self.retirement_lifestyles(request).data,
             'constants': self.constants(request).data,
         }
         return Response(data)
@@ -108,7 +117,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
                              "name": value
                          } for key, value in comparisons.items()])
 
-    @list_route(methods=['get'], url_path='risk-profile-groups')
+    @list_route(methods=['get'], url_path='risk-profile-groups', permission_classes=[IsAuthenticated])
     def risk_profile_groups(self, request):
         groups = RiskProfileGroup.objects.all()
         serializer = serializers.RiskProfileGroupSerializer(groups, many=True)
@@ -134,3 +143,35 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
         return Response({
             'session_length': settings.SESSION_LENGTH,
         })
+
+    @list_route(methods=['get'], url_path='investor-risk-categories')
+    def investor_risk_categories(self, request):
+        categories = client_models.RiskCategory.objects.all()
+        serializer = serializers.InvestorRiskCategorySerializer(categories, many=True)
+        return Response(serializer.data)
+
+    @list_route(methods=['get'], url_path='retirement-saving-categories')
+    def retirement_saving_categories(self, request):
+        serializer = serializers.EnumSerializer(retirement_models.RetirementPlan.SavingCategory)
+        return Response(serializer.data)
+
+    @list_route(methods=['get'], url_path='retirement-expense-categories')
+    def retirement_expense_categories(self, request):
+        serializer = serializers.EnumSerializer(retirement_models.RetirementPlan.ExpenseCategory)
+        return Response(serializer.data)
+
+    @list_route(methods=['get'], url_path='retirement-housing-categories')
+    def retirement_housing_categories(self, request):
+        serializer = serializers.EnumSerializer(retirement_models.RetirementPlan.HomeStyle)
+        return Response(serializer.data)
+
+    @list_route(methods=['get'], url_path='retirement-lifestyle-categories')
+    def retirement_lifestyle_categories(self, request):
+        serializer = serializers.EnumSerializer(retirement_models.RetirementPlan.LifestyleCategory)
+        return Response(serializer.data)
+
+    @list_route(methods=['get'], url_path='retirement-lifestyles')
+    def retirement_lifestyles(self, request):
+        lifestyles = retirement_models.RetirementLifestyle.objects.all().order_by('cost')
+        serializer = serializers.RetirementLifestyleSerializer(lifestyles, many=True)
+        return Response(serializer.data)

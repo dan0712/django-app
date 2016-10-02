@@ -12,13 +12,16 @@ from execution.broker.interactive_brokers.order.order import Order, OrderStatus
 from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
 from execution.end_of_day import *
 from execution.end_of_day import get_execution_requests, transform_execution_requests
-from main.models import ExternalInstrument
+from main.models import ExternalInstrument, InvestmentType
 from main.tests.fixture import Fixture1
 
 
 class BaseTest(TestCase):
 
     def setUp(self):
+        self.bonds_type = InvestmentType.Standard.BONDS.get()
+        self.stocks_type = InvestmentType.Standard.STOCKS.get()
+
         self.con = Mock(IBroker)
         self.con.connect.return_value = True
 

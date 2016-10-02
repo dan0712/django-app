@@ -8,9 +8,9 @@ import logging
 import copy
 import numpy as np
 
-from portfolios.bl_model import markowitz_optimizer_3
+from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.calculation import MIN_PORTFOLIO_PCT, \
-    calc_opt_inputs, create_portfolio_weights
+    calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 from portfolios.providers.execution.abstract \
     import Reason, ExecutionProviderAbstract
 
@@ -29,11 +29,12 @@ def optimise_up(opt_inputs, min_weights):
     :param min_weights: A dict from asset_id to new minimum weight.
     :return: weights - The new dict of weights, or None if impossible.
     """
-    xs, sigma, mu, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
+    xs, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
 
-    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+    pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights, abs_min=0)
     new_cons = constraints + [xs >= pweights]
-    weights, cost = markowitz_optimizer_3(xs, sigma, lam, mu, new_cons)
+    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu, new_cons)
     return dict(zip(settings_instruments['id'].values, weights)) if weights.any() else None
 
 
@@ -55,7 +56,7 @@ def get_position_weights(goal):
     res = []
     total = 0.0
     for position in goal.get_positions_all():
-        res.append((position.ticker.id, position.value))
+        res.append((position['ticker_id'], position['quantity'] * position['price']))
         total += position.value
     return {tid: val/total for tid, val in res}
 
@@ -68,7 +69,7 @@ def get_held_weights(goal):
     :return: dict from symbol to current weight in that goal.
     """
     avail = goal.available_balance
-    return {pos.ticker.id: pos.value/avail for pos in goal.get_positions_all()}
+    return {pos['ticker_id']: (pos['quantity'] * pos['price'])/avail for pos in goal.get_positions_all()}
 
 
 def metrics_changed(goal):
@@ -122,14 +123,17 @@ def create_request(goal, new_positions, reason, execution_provider, data_provide
     new_positions = copy.copy(new_positions)
 
     # Change any existing positions
-    for position in goal.get_positions_all():
-        new_pos = new_positions.pop(position.ticker.id, 0)
-        if new_pos - position.share == 0:
+    positions = goal.get_positions_all()
+    for position in positions:
+
+        new_pos = new_positions.pop(position['ticker_id'], 0)
+        if new_pos - position['quantity'] == 0:
             continue
+        ticker = data_provider.get_ticker(id=position['ticker_id'])
         request = execution_provider.create_execution_request(reason=reason,
                                                               goal=goal,
-                                                              asset=position.ticker,
-                                                              volume=new_pos - position.share,
+                                                              asset=ticker,
+                                                              volume=new_pos - position['quantity'],
                                                               order=order,
                                                               limit_price=None)
         requests.append(request)
@@ -301,7 +305,7 @@ def perturbate(goal, idata, data_provider, execution_provider):
     held_weights = get_held_weights(goal)
     tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(goal, data_provider.get_current_date())
     min_weights = get_largest_min_weight_per_asset(held_weights=held_weights, tax_weights=tax_min_weights)
-    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider=data_provider)
+    opt_inputs = calc_opt_inputs(goal.active_settings, idata, data_provider, execution_provider)
     weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:

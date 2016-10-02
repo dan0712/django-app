@@ -12,7 +12,8 @@ from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from common.structures import ChoiceEnum
-from main.utils import d2dt
+from common.utils import d2dt
+from main.constants import GENDER_MALE, GENDERS
 
 
 class PersonalData(models.Model):
@@ -24,9 +25,7 @@ class PersonalData(models.Model):
         MARRIED = 1  # May be married, or any other financially recognised relationship.
 
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
-    gender = models.CharField(max_length=20,
-                              default="Male",
-                              choices=(("Male", "Male"), ("Female", "Female")))
+    gender = models.CharField(max_length=20, default=GENDER_MALE, choices=GENDERS)
     residential_address = models.ForeignKey('address.Address', related_name='+')
     # A person may not have a phone.
     phone_num = PhoneNumberField(null=True, max_length=16)

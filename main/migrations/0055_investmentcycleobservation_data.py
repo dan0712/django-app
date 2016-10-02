@@ -5,6 +5,8 @@ from django.db import migrations
 import csv
 from datetime import datetime
 import json
+import os
+from django.conf import settings
 
 
 def load_cycle_data(apps, schema_editor):
@@ -16,7 +18,7 @@ def load_cycle_data(apps, schema_editor):
         Date, Integer
         30/11/1992,5
     """
-    cycle_var_path = 'main/fixtures/CycleVar.csv'
+    cycle_var_path = os.path.join(settings.BASE_DIR, 'main/fixtures/CycleVar.csv')
     InvestmentCycleObservation = apps.get_model('main', 'InvestmentCycleObservation')
     with open(cycle_var_path) as f:
         reader = csv.reader(f)

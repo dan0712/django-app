@@ -3,13 +3,16 @@ from django.test import TestCase
 from django.views.generic import TemplateView
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
-from main.models import Transaction, Goal, GoalType
+from main.models import Transaction, Goal, GoalType, MarketOrderRequest, Execution, ExecutionDistribution
+from main.models import Transaction, Goal, GoalType, InvestmentType
 from django.db.models import Q
 from api.v1.tests.factories import ClientAccountFactory, \
     ClientFactory, GoalFactory, \
     TransactionFactory, AccountTypeRiskProfileGroupFactory, \
-    ExternalAssetFactory, PositionFactory, TickerFactory, \
-    SupervisorFactory, AuthorisedRepresentativeFactory
+    ExternalAssetFactory, TickerFactory, \
+    SupervisorFactory, AuthorisedRepresentativeFactory, \
+    InvestmentTypeFactory, PositionLotFactory, \
+    ExternalAssetFactory, TickerFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -22,6 +25,9 @@ class FirmAnalyticsMixinTests(TestCase):
 
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
+        self.bonds_type = InvestmentType.Standard.BONDS.get()
+        self.stocks_type = InvestmentType.Standard.STOCKS.get()
+
         self.view = self.DummyView()
         self.today = today = timezone.now().date()
         # Populate the AccountType -> RiskProfileGroup mapping
@@ -147,6 +153,7 @@ class FirmAnalyticsMixinTests(TestCase):
         kwargs = {}
         # empty queries tests, should be empty unless Positions are
         # added to setUp
+
         positions = self.view.get_context_positions(**kwargs)
         self.assertSequenceEqual(positions.get('asset_class'), [])
         self.assertSequenceEqual(positions.get('region'), [])
@@ -159,9 +166,55 @@ class FirmAnalyticsMixinTests(TestCase):
         ticker1 = TickerFactory.create()
         ticker2 = TickerFactory.create(benchmark_content_type=ticker1.benchmark_content_type)
         ticker3 = TickerFactory.create(benchmark_content_type=ticker1.benchmark_content_type)
-        position1 = PositionFactory.create(ticker=ticker1)
-        position2 = PositionFactory.create(ticker=ticker2)
-        position3 = PositionFactory.create(ticker=ticker3)
+
+        goal = GoalFactory.create()
+        today = date(2016, 1, 1)
+        # Create a 6 month old execution, transaction and a distribution that caused the transaction
+        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec1 = Execution.objects.create(asset=ticker1,
+                                         volume=10,
+                                         order=order,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
+        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
+        position1 = PositionLotFactory(quantity=10, execution_distribution=dist1)
+
+        exec2 = Execution.objects.create(asset=ticker2,
+                                         volume=10,
+                                         order=order,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
+        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=10)
+        position2 = PositionLotFactory(quantity=10, execution_distribution=dist2)
+
+        exec3 = Execution.objects.create(asset=ticker3,
+                                         volume=10,
+                                         order=order,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
+        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=10)
+        position3 = PositionLotFactory(quantity=10, execution_distribution=dist3)
 
         positions = self.view.get_context_positions(**kwargs)
 
@@ -171,7 +224,10 @@ class FirmAnalyticsMixinTests(TestCase):
         self.assertEqual(len(positions.get('investment_type')), 3)
 
         # compare sum of values to double check values being passed
-        expected_sum = position1.value + position2.value + position3.value
+        expected_sum = position1.quantity * ticker1.unit_price + \
+                       position2.quantity * ticker2.unit_price + \
+                       position3.quantity * ticker3.unit_price
+
         asset_actual_sum = sum([x.get('value') for x in positions.get('asset_class')])
         region_actual_sum = sum([x.get('value') for x in positions.get('region')])
         investment_actual_sum = sum([x.get('value') for x in positions.get('investment_type')])

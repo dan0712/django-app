@@ -1,15 +1,21 @@
+from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from rest_framework_extensions.mixins import NestedViewSetMixin
-
 from api.v1.views import ApiViewMixin
-from main.models import RetirementPlan
+from retiresmartz.models import RetirementPlan
+from main.models import Ticker
 from client.models import Client
 from support.models import SupportRequest
-
+from django.db.models import Q
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 from . import serializers
+import logging
+
+logger = logging.getLogger('api.v1.retiresmartz.views')
 
 
 class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
@@ -54,6 +60,14 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         user = SupportRequest.target_user(self.request)
         client = Client.objects.filter_by_user(user).get(id=int(self.get_parents_query_dict()['client']))
         return serializer.save(client=client)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.agreed_on:
+            return Response(
+            {'error': 'Unable to update a RetirementPlan that has been agreed on'},
+            status=status.HTTP_400_BAD_REQUEST)
+        return super(RetiresmartzViewSet, self).update(request, *args, **kwargs)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
     def suggested_retirement_income(self):
@@ -112,3 +126,57 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         """
         # TODO: Make this work
         return Response({'btc_amount': 2222, 'atc_amount': 88})
+
+    @detail_route(methods=['get'], url_path='calculate')
+    def calculate(self, request, parent_lookup_client, pk, format=None):
+        """
+        Calculate the single projection values for the
+        current retirement plan settings.
+        {
+          "portfolio": [
+            # list of [fund id, weight as percent]. There will be max 33 of these. Likely 5-10
+            [1, 5],
+            [53, 12],
+            ...
+          ],
+          "projection": [
+            # this is the asset and cash-flow projection. It is a list of [date, assets, income]. There will be at most 50 of these. (21 bytes each)
+            [143356, 120000, 2000],
+            [143456, 119000, 2004],
+            ...
+          ]
+        }
+        "portfolio": 10% each for the first 10 tickers in the systems
+        that aren't Closed.
+        "projection": 50 time points evenly spaced along the
+        remaining time until expected end of life.  Each time
+        point with assets starting at 100000,
+        going up by 1000 every point, income starting
+        at 200000, increasing by 50 every point.
+        """
+        try:
+            retirement_plan = RetirementPlan.objects.get(pk=pk)
+        except:
+            return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+        tickers = Ticker.objects.filter(~Q(state=Ticker.State.CLOSED.value))
+        portfolio = []
+        projection = []
+        for idx, ticker in enumerate(tickers[:10]):
+            percent = 0
+            if idx <= 9:
+                # 10% each for first 10 tickers
+                percent = 10
+            portfolio.append([ticker.id, percent])
+        # grab 50 evenly spaced time points between dob and current time
+        now = timezone.now()
+        first_year = retirement_plan.client.date_of_birth.year + retirement_plan.retirement_age
+        last_year = retirement_plan.client.date_of_birth.year + retirement_plan.selected_life_expectancy
+        day_interval = ((last_year - first_year) * 365) / 50
+        income_start = 20000
+        assets_start = 100000
+        for i in range(1, 50):
+            income = income_start + (i * 50)
+            assets = assets_start + (i * 1000)
+            dt = now + relativedelta(days=i * day_interval)
+            projection.append([income, assets, dt])
+        return Response({'portfolio': portfolio, 'projection': projection})

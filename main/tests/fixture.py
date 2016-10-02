@@ -6,15 +6,17 @@ from django.utils import timezone
 from pinax.eventlog.models import Log
 
 import address.models as ad
+from api.v1.tests.factories import GoalMetricFactory
 from client.models import Client, ClientAccount, RiskProfileAnswer,\
     RiskProfileGroup, RiskProfileQuestion, IBAccount
-from main.constants import ACCOUNT_TYPE_PERSONAL, SUPER_ASSET_CLASSES
+from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
-    PortfolioSet, Region, RetirementPlan, RetirementPlanATC, \
-    RetirementPlanBTC, Ticker, Transaction, User, ExternalInstrument
+    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
+
+from retiresmartz.models import RetirementPlan
 
 
 class Fixture1:
@@ -125,96 +127,69 @@ class Fixture1:
         return Client.objects.get_or_create(id=2, defaults=params)[0]
 
     @classmethod
-    def tx1(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 1000,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanBTC.objects.get_or_create(id=1, defaults=params)[0]
-
-    @classmethod
-    def retirement_plan_atc1(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 0,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanATC.objects.get_or_create(id=2, defaults=params)[0]
-
-    @classmethod
-    def tx3(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 500,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanBTC.objects.get_or_create(id=3, defaults=params)[0]
-
-    @classmethod
-    def retirement_plan_atc2(cls):
-        params = {
-            'plan': Fixture1.client1_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 200,
-            'growth': 0.01,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanATC.objects.get_or_create(id=4, defaults=params)[0]
-
-    @classmethod
-    def tx5(cls):
-        params = {
-            'plan': Fixture1.client2_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 500,
-            'growth': 0,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanBTC.objects.get_or_create(id=5, defaults=params)[0]
-
-    @classmethod
-    def retirement_plan_atc3(cls):
-        params = {
-            'plan': Fixture1.client2_retirementplan1(),
-            'begin_date': datetime.date(2016, 1, 1),
-            'amount': 200,
-            'growth': 0.01,
-            'schedule': 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
-        }
-        return RetirementPlanATC.objects.get_or_create(id=6, defaults=params)[0]
-
-    @classmethod
     def client1_retirementplan1(cls):
         return RetirementPlan.objects.get_or_create(id=1, defaults={
-                                                    'name': 'Plan1',
-                                                    'client': Fixture1.client1(),
-                                                    'retirement_date': datetime.date(2055, 1, 1),
-                                                    'life_expectancy': 80,
-                                                    })[0]
+            'name': 'Plan1',
+            'client': Fixture1.client1(),
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 50000,
+            'atc': 30000,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        })[0]
 
     @classmethod
     def client2_retirementplan1(cls):
         return RetirementPlan.objects.get_or_create(id=2, defaults={
-                                                    'name': 'Plan1',
-                                                    'client': Fixture1.client2(),
-                                                    'retirement_date': datetime.date(2055, 1, 1),
-                                                    'life_expectancy': 84,
+            'name': 'Plan1',
+            'client': Fixture1.client2(),
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 50000,
+            'atc': 30000,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
                                                     })[0]
 
     @classmethod
     def client2_retirementplan2(cls):
         return RetirementPlan.objects.get_or_create(id=4, defaults={
-                                                    'name': 'Plan2',
-                                                    'client': Fixture1.client2(),
-                                                    'retirement_date': datetime.date(2055, 1, 1),
-                                                    'life_expectancy': 84,
+            'name': 'Plan2',
+            'client': Fixture1.client2(),
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 50000,
+            'atc': 30000,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
                                                     })[0]
 
     @classmethod
@@ -396,14 +371,19 @@ class Fixture1:
 
     @classmethod
     def metric_group1(cls):
-        return GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
                                                      name='metricgroup1')[0]
+        # A metric group isn't valid without a risk score
+        GoalMetricFactory.create(group=g, configured_val=0.4)
+        return g
 
     @classmethod
     def metric_group2(cls):
-        return GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
                                                      name='metricgroup2')[0]
-
+        # A metric group isn't valid without a risk score
+        GoalMetricFactory.create(group=g, configured_val=0.4)
+        return g
 
     @classmethod
     def settings1(cls):

@@ -5,6 +5,8 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import (MaxValueValidator, MinLengthValidator,
+                                    MinValueValidator, MaxLengthValidator, ValidationError)
 from django.db import models
 from django.db.models import PROTECT
 from django.db.models.aggregates import Min, Max, Sum
@@ -60,11 +62,16 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     income = models.FloatField(verbose_name="Income ($)", default=0)
     occupation = models.CharField(max_length=255, null=True, blank=True)
     employer = models.CharField(max_length=255, null=True, blank=True)
+    smoker = models.NullBooleanField(null=True, blank=True)
+    daily_exercise = models.PositiveIntegerField(null=True, blank=True,
+                                                 help_text="In Minutes")
+    weight = models.PositiveIntegerField(null=True, blank=True, help_text="In kilograms")
+    height = models.PositiveIntegerField(null=True, blank=True, help_text="In centimeters")
+
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)
-    risk_profile_group = models.ForeignKey('RiskProfileGroup',
-                                           related_name='clients', null=True)
+    risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='clients', null=True)
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
     objects = ClientQuerySet.as_manager()
@@ -230,6 +237,9 @@ class ClientAccount(models.Model):
                                       related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
+    # The confirmed field indicates the account is fully ready to be used by the client.
+    # The ClientAccount should be responsible for checking and setting the confirmed filed through
+    # an as yet undefined set_confirmed() method.
     confirmed = models.BooleanField(default=False)
     tax_loss_harvesting_consent = models.BooleanField(default=False)
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(
@@ -627,7 +637,6 @@ class EmailInvite(models.Model):
     onboarding_data = JSONField(null=True, blank=True)
     onboarding_file_1 = models.FileField(null=True, blank=True)
 
-
     def __unicode__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
                                       self.last_name, self.email)
@@ -656,3 +665,12 @@ class EmailInvite(models.Model):
         self.send_count += 1
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
+
+    class Meta:
+        # shouldn't have multiple EmailInvites from same advisor to same email address
+        unique_together = ('advisor', 'email')
+
+
+class RiskCategory(models.Model):
+    upper_bound = models.FloatField(validators=[MinValueValidator(0),
+                                                MaxValueValidator(1)])

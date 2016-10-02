@@ -12,6 +12,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
@@ -28,13 +30,13 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from main.risk_profiler import validate_risk_score
+from portfolios.returns import get_price_returns
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .management.commands.build_returns import get_price_returns
-from .managers import ExternalAssetQuerySet, \
-    GoalQuerySet, PositionQuerySet, RetirementPlanQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 import numpy as np
@@ -151,6 +153,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self._is_client
 
     @property
+    def is_supervisor(self):
+        """
+        Custom helper method for User class to check user type/profile.
+        """
+        if not hasattr(self, '_is_supervisor'):
+            supervisor = hasattr(self, 'supervisor')
+            self._is_supervisor = supervisor
+
+        return self._is_supervisor
+
+    @property
     def is_support_staff(self):
         if not hasattr(self, '_is_support_staff'):
             group = Group.objects.get(name=GROUP_SUPPORT_STAFF)
@@ -204,6 +217,15 @@ class InvestmentType(models.Model):
                                 message="Invalid character only accept (0-9a-zA-Z_) ")],
                             unique=True)
     description = models.CharField(max_length=255, blank=True)
+
+    @unique
+    class Standard(Enum):
+        BONDS = 1
+        STOCKS = 2
+        MIXED = 3
+
+        def get(self):
+            return InvestmentType.objects.get_or_create(name=self.name)[0]
 
     def __str__(self):
         return self.name
@@ -291,7 +313,7 @@ class ExternalAsset(models.Model):
     owner = models.ForeignKey('client.Client', related_name='external_assets')
     description = models.TextField(blank=True, null=True)
     valuation = models.DecimalField(decimal_places=2,
-                                    max_digits=15, # Up to 9.9... trillion
+                                    max_digits=15,  # Up to 9.9... trillion
                                     help_text='In the system currency. Could be negative if a debt')
     valuation_date = models.DateField(help_text='Date when the asset was valued')
     growth = models.DecimalField(decimal_places=4,
@@ -597,7 +619,8 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         except User.DoesNotExist:
             user = None
 
-        invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
+        email_invite = self.invites.filter(email=email).first()
+        invitation_url = settings.SITE_URL + "/client/onboarding/" + email_invite.invite_key
 
         # resending invitation
         if user:
@@ -862,75 +885,9 @@ class AccountGroup(models.Model):
         return self.name
 
 
-class RetirementPlan(models.Model):
-    name = models.CharField(max_length=128)
-    description = models.TextField(null=True, blank=True)
-    client = models.ForeignKey('client.Client')
-    # Assigning a partner_plan gives anyone with permissions to modify the partner_plan authority to modify this plan.
-    partner_plan = models.OneToOneField('RetirementPlan',
-                                        related_name='partner_plan_reverse',
-                                        null=True,
-                                        on_delete=models.SET_NULL)
-    begin_date = models.DateField(auto_now_add=True, help_text="Date the retirement plan is supposed to begin.")
-    retirement_date = models.DateField()
-    life_expectancy = models.IntegerField(help_text="Until what age do we want to plan retirement spending?")
-    spendable_income = models.IntegerField(default=0, help_text="The current annual spendable income. This must be identical across partner plans as they have a common spendable income.")
-    desired_income = models.IntegerField(default=0, help_text="The desired annual spendable income in retirement")
-    # Each account can have at most one retirement plan. Hence the relationship goes this way.
-    smsf_account = models.OneToOneField('client.ClientAccount',
-                                        related_name='retirement_plan',
-                                        help_text="The associated SMSF account.",
-                                        null=True)
-    # Also has fields btc, atc and external_income from related models.
-
-    # Install the custom manager that knows how to filter.
-    objects = RetirementPlanQuerySet.as_manager()
-
-    class Meta:
-        unique_together = ('name', 'client')
-
-    def save(self, *args, **kwargs):
-        """
-        Override save() so we can do some custom validation of partner plans.
-        """
-        reverse_plan = getattr(self, 'partner_plan_reverse', None)
-        if self.partner_plan is not None and reverse_plan is not None and self.partner_plan != reverse_plan:
-            raise ValidationError("Partner plan relationship must be symmetric.")
-
-        if self.smsf_account and not self.smsf_account.confirmed:
-            raise ValidationError('Account is not verified.')
-
-        super(RetirementPlan, self).save(*args, **kwargs)
-
-@receiver(post_save, sender=RetirementPlan)
-def resolve_retirement_invitations(sender, instance, created, **kwargs):
-    """Create a matching profile whenever a user object is created."""
-    from client.models import EmailInvite
-    try:
-        invitation = instance.client.user.invitation
-    except EmailInvite.DoesNotExist: invitation = None
-    if created and invitation \
-            and invitation.status != EmailInvite.STATUS_COMPLETE \
-            and invitation.reason == EmailInvite.REASON_RETIREMENT:
-        invitation.onboarding_data = None
-        invitation.status = EmailInvite.STATUS_COMPLETE
-        invitation.save()
-
 
 class ExternalAssetTransfer(TransferPlan):
     asset = models.OneToOneField(ExternalAsset, related_name='transfer_plan', on_delete=CASCADE)
-
-
-class RetirementPlanBTC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='btc')
-
-
-class RetirementPlanATC(TransferPlan):
-    plan = models.OneToOneField(RetirementPlan, related_name='atc')
-
-
-class RetirementPlanEinc(TransferPlan):
-    plan = models.ForeignKey(RetirementPlan, related_name='external_income')
 
 
 class MarkowitzScale(models.Model):
@@ -969,9 +926,9 @@ class MarketIndex(FinancialInstrument):
 
     def get_returns(self, dates):
         """
-        Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        Get the daily returns series for the given index.
+        The data should be clean of outliers, but may have gaps.
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -991,6 +948,12 @@ class ExternalInstrument(models.Model):
 
 
 class Ticker(FinancialInstrument):
+    class State(ChoiceEnum):
+        INACTIVE = 1, 'Inactive'  # The fund has been removed from our Approved Product List. Only Sells are allowed.
+        ACTIVE = 2, 'Active'  # We can buy and sell the fund.
+        # The Fund has closed and will never become active again. It is kept for history. Buys and Sells are not allowed
+        CLOSED = 3, 'Closed'
+
     symbol = models.CharField(
         max_length=10,
         blank=False,
@@ -1017,6 +980,9 @@ class Ticker(FinancialInstrument):
     daily_prices = GenericRelation('DailyPrice',
                                    content_type_field='instrument_content_type',
                                    object_id_field='instrument_object_id')
+    state = models.IntegerField(choices=State.choices(),
+                                default=State.ACTIVE.value,
+                                help_text='The current state of this ticker.')
 
     # Also may have 'features' property from the AssetFeatureValue model.
     # also has external_instruments foreign key - to get instrument_id per institution
@@ -1033,39 +999,107 @@ class Ticker(FinancialInstrument):
 
     @property
     def is_stock(self):
-        # InvestmentType stocks id = 2
-        return self.asset_class.investment_type_id == 2
+        return self.asset_class.investment_type == InvestmentType.Standard.STOCKS.get()
 
     @property
     def is_core(self):
-        # Experimental
-        # TODO: it will be deadly slow. need to to change all core models asap
-        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
-        return self.features.filter(pk=core_feature_value.pk).exists()
+        return self.etf
 
     @property
     def is_satellite(self):
-        # Experimental
-        # TODO: it will be deadly slow. need to to change all core models asap
-        satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
-        return self.features.filter(pk=satellite_feature_value.pk).exists()
+        return not self.is_core
 
     def value(self, goal):
-        v = 0
+        total_qty = PositionLot.objects.filter(execution_distribution__transaction__from_goal=goal).\
+            aggregate(Sum('quantity'))
 
-        for p in Position.objects.filter(goal=goal, ticker=self).all():
-            v += p.value
+        v = total_qty * self.unit_price
 
         return v
 
     def get_returns(self, dates):
         """
-        Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        Get the daily returns series for the given index.
+        The data may have gaps.
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
+
+    def _get_region_feature(self, name):
+        region_feature = AssetFeature.Standard.REGION.get_object()
+        if name == 'AU':
+            return AssetFeatureValue.Standard.REGION_AUSTRALIAN.get_object()
+        elif name == 'EU':
+            return AssetFeatureValue.objects.get_or_create(name='European', feature=region_feature)[0]
+        elif name == 'US':
+            return AssetFeatureValue.objects.get_or_create(name='American (US)', feature=region_feature)[0]
+        elif name == 'CN':
+            return AssetFeatureValue.objects.get_or_create(name='Chinese', feature=region_feature)[0]
+        elif name == 'INT':
+            return AssetFeatureValue.objects.get_or_create(name='International', feature=region_feature)[0]
+        elif name == 'AS':
+            return AssetFeatureValue.objects.get_or_create(name='Asian', feature=region_feature)[0]
+        elif name == 'JAPAN':
+            return AssetFeatureValue.objects.get_or_create(name='Japanese', feature=region_feature)[0]
+        elif name == 'UK':
+            return AssetFeatureValue.objects.get_or_create(name='UK', feature=region_feature)[0]
+        elif name == 'EM':
+            return AssetFeatureValue.objects.get_or_create(name='Emerging Markets', feature=region_feature)[0]
+        else:
+            # tests run random region names, and people may not put one of the standard regions in.
+            return AssetFeatureValue.objects.get_or_create(name=name, feature=region_feature)[0]
+
+    def get_region_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Region
+        """
+        return self._get_region_feature(self.region.name)
+
+    def get_currency_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Currency
+        """
+        curr_feature = AssetFeature.Standard.CURRENCY.get_object()
+        return AssetFeatureValue.objects.get_or_create(name=self.currency, feature=curr_feature)[0]
+
+    def get_asset_class_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Asset Class
+        """
+        ac_feature = AssetFeature.Standard.ASSET_CLASS.get_object()
+        return AssetFeatureValue.objects.get_or_create(name=self.asset_class.display_name, feature=ac_feature)[0]
+
+    def get_asset_type_feature_value(self):
+        """
+        Returns the AssetFeatureValue for Ticker's Asset Class Investment Type
+        """
+        if self.asset_class.investment_type == InvestmentType.Standard.STOCKS.value:
+            return AssetFeatureValue.Standard.ASSET_TYPE_STOCK.get_object()
+        elif self.asset_class.investment_type == InvestmentType.Standard.BONDS.value:
+            return AssetFeatureValue.Standard.ASSET_TYPE_BOND.get_object()
+        else:
+            return AssetFeatureValue.objects.get_or_create(name=self.asset_class.investment_type.name,
+                                                           feature=AssetFeature.Standard.ASSET_TYPE.get_object())[0]
+
+    def populate_features(self):
+        """
+        Has a Ticker populates its own features
+        """
+        # AssetFeatureValue types
+        satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()        
+
+        logger.info('Populating features for ticker %s' % self)
+        r_feat = self.get_region_feature_value()
+        ac_feat = self.get_asset_class_feature_value()
+        curr_feat = self.get_currency_feature_value()
+        at_feat = self.get_asset_type_feature_value()
+        self.features.clear()
+        self.features.add(r_feat, ac_feat, curr_feat, at_feat)
+        if self.ethical:
+            self.features.add(AssetFeatureValue.Standard.SRI_OTHER.get_object())
+        self.features.add(core_feature_value if self.etf else satellite_feature_value)
 
     def save(self,
              force_insert=False,
@@ -1073,9 +1107,12 @@ class Ticker(FinancialInstrument):
              using=None,
              update_fields=None):
         self.symbol = self.symbol.upper()
+        super(Ticker, self).save(force_insert, force_update, using, update_fields)
 
-        super(Ticker, self).save(force_insert, force_update, using,
-                                 update_fields)
+
+@receiver(post_save, sender=Ticker)
+def populate_ticker_features(sender, instance, created, **kwargs):
+    instance.populate_features()
 
 
 class EmailInvitation(models.Model):
@@ -1299,6 +1336,17 @@ class GoalSetting(models.Model):
         return self.portfolio.items.all()
 
     @property
+    def risk_score(self):
+        """
+        Returns the configured value of the risk score metric for this setting.
+        If no risk score metric is configured, returns None.
+        :return:
+        """
+        return GoalMetric.objects.filter(group=self.metric_group,
+                                         type=GoalMetric.METRIC_TYPE_RISK_SCORE).values_list('configured_val',
+                                                                                             flat=True).first()
+
+    @property
     def goal(self):
         if hasattr(self, 'goal_selected'):
             return self.goal_selected
@@ -1413,7 +1461,11 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        return Position.objects.filter(goal=self).all()
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+            annotate(ticker_id=F('execution_distribution__execution__asset__id'),
+                     price=F('execution_distribution__execution__asset__unit_price'))\
+            .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
+        return lots
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1460,6 +1512,9 @@ class Goal(models.Model):
         if setting == old_setting:
             return
         self.selected_settings = setting
+        # We need to validate the risk score after assigning the setting to the goal because in the risk score checking,
+        # we go back to the goal from the setting to get information. If we do it any earlier, the info is not there.
+        validate_risk_score(setting)
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
             custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
@@ -1734,11 +1789,18 @@ class Goal(models.Model):
         predicted_balance = self.balance_at(self.selected_settings.completion)
         return predicted_balance >= self.selected_settings.target
 
+    def _sum_holdings(self, qs):
+        total_holdings = qs.filter(execution_distribution__transaction__from_goal=self).\
+            annotate(cur_price=F('execution_distribution__execution__asset__unit_price')).\
+            aggregate(total_value=Coalesce(Sum(F('cur_price') * F('quantity')), 0))
+
+        result = total_holdings['total_value']
+        return result
+
     @property
     def total_balance(self):
         b = self.cash_balance
-        for p in Position.objects.filter(goal=self).all():
-            b += p.value
+        b += self._sum_holdings(PositionLot.objects.all())
         return b
 
     @property
@@ -1750,35 +1812,29 @@ class Goal(models.Model):
 
     @property
     def stock_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_stock:
-                v += p.value
-        return v
+        stocks = InvestmentType.Standard.STOCKS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=stocks)
+        )
 
     @property
     def bond_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if not p.is_stock:
-                v += p.value
-        return v
+        bonds = InvestmentType.Standard.BONDS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=bonds)
+        )
 
     @property
     def core_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_core:
-                v += p.value
-        return v
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__etf=True)
+        )
 
     @property
     def satellite_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_satellite:
-                v += p.value
-        return v
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset_etf=False)
+        )
 
     @property
     def total_return(self):
@@ -1986,11 +2042,14 @@ class GoalMetric(models.Model):
 
     @property
     def measured_val(self):
-        asset_ids = Ticker.objects.all().filter(features__feature_id=self.feature_id)
-        ids = set([asset_id.id for asset_id in asset_ids])
+        asset_ids = AssetFeatureValue.objects.all().filter(id=self.feature.id)\
+            .annotate(asset_id=F('assets__id'))\
+            .values('asset_id')
+
+        ids = set([asset_id['asset_id'] for asset_id in asset_ids])
 
         goal = Goal.objects.get(active_settings__metric_group_id=self.group_id)
-        sum = float(np.sum([pos.value if pos.ticker_id in ids else 0 for pos in goal.get_positions_all()]))
+        sum = float(np.sum([pos['price']*pos['quantity'] if pos['ticker_id'] in ids else 0 for pos in goal.get_positions_all()]))
         return sum/goal.available_balance
 
     @property
@@ -2032,36 +2091,6 @@ class GoalMetric(models.Model):
                                                                  self.comparisons[self.comparison],
                                                                  1 + self.configured_val * 99,
                                                                  self.id)
-
-
-class Position(models.Model):
-    class Meta:
-        unique_together = ('goal', 'ticker')
-
-    goal = models.ForeignKey(Goal, related_name='positions')
-    ticker = models.ForeignKey(Ticker)
-    share = models.FloatField(default=0)
-
-    objects = PositionQuerySet.as_manager()
-
-    @property
-    def is_stock(self):
-        return self.ticker.is_stock
-
-    @property
-    def is_core(self):
-        return self.ticker.is_core
-
-    @property
-    def is_satellite(self):
-        return self.ticker.is_satellite
-
-    @property
-    def value(self):
-        return self.share * self.ticker.unit_price
-
-    def __str__(self):
-        return "{}|{}|{}".format(self.goal, self.ticker.symbol, self.share)
 
 
 class MarketOrderRequest(models.Model):
@@ -2160,6 +2189,20 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
+
+
+class PositionLot(models.Model):
+    #create on every buy
+    execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
+    #quantity get decreased on every sell, until it it zero, then delete the model
+
+
+class Sale(models.Model):
+    #create on every sale
+    sell_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='sold_lot')
+    buy_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='bought_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
 
 
 class SymbolReturnHistory(models.Model):

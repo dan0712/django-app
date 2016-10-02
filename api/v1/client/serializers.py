@@ -2,22 +2,26 @@ from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers, exceptions
 
-from api.v1.address.serializers import AddressSerializer
+from api.v1.address.serializers import AddressSerializer, AddressUpdateSerializer
 from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
+from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.models import ExternalAsset, ExternalAssetTransfer, User
-from user.models import SecurityQuestion, SecurityAnswer
-from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup
+from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup, \
+    AccountTypeRiskProfileGroup
 from notifications.signals import notify
 from main import constants
 
 from ..user.serializers import UserFieldSerializer
+
+RESIDENTIAL_ADDRESS_KEY = 'residential_address'
 
 
 class ClientSerializer(ReadOnlyModelSerializer):
     user = UserFieldSerializer()
     advisor = AdvisorFieldSerializer()
     residential_address = AddressSerializer()
+    regional_data = serializers.JSONField()
 
     class Meta:
         model = Client
@@ -26,6 +30,7 @@ class ClientSerializer(ReadOnlyModelSerializer):
 class ClientFieldSerializer(ReadOnlyModelSerializer):
     residential_address = AddressSerializer()
     advisor = AdvisorFieldSerializer()
+    regional_data = serializers.JSONField()
 
     class Meta:
         model = Client
@@ -45,21 +50,49 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
     risk_profile_responses = serializers.PrimaryKeyRelatedField(many=True,
                                                                 queryset=qs,
                                                                 required=False)
+    residential_address = AddressUpdateSerializer()
+    regional_data = serializers.JSONField()
+
+    class Meta:
+        model = Client
+        fields = (
+            'employment_status',
+            RESIDENTIAL_ADDRESS_KEY,
+            'income',
+            'occupation',
+            'employer',
+            'civil_status',
+            'risk_profile_responses',
+            'betasmartz_agreement',
+            'advisor_agreement',
+            'phone_num',
+            'regional_data',
+        )
+
     def create(self, validated_data):
         # Default to Personal account type for risk profile group on a brand
         # new client (since they have no accounts yet, we have to assume)
         rpg = RiskProfileGroup.objects.get(account_types__account_type=constants.ACCOUNT_TYPE_PERSONAL)
-        validated_data.update({
-            'risk_profile_group': rpg
-        })
-        return (super(ClientUpdateSerializer, self)
-                .create(validated_data))
-    class Meta:
-        model = Client
-        fields = (
-            'employment_status', 'income', 'occupation',
-            'employer', 'civil_status', 'risk_profile_responses'
-        )
+        validated_data['risk_profile_group'] = rpg
+
+        address_ser = AddressUpdateSerializer(data=validated_data.pop(RESIDENTIAL_ADDRESS_KEY))
+        address_ser.is_valid(raise_exception=True)
+        validated_data[RESIDENTIAL_ADDRESS_KEY] = address_ser.save()
+
+        # For now we auto confirm and approve the client.
+        validated_data['is_confirmed'] = True
+        validated_data['is_accepted'] = True
+
+        return super(ClientUpdateSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        add_data = validated_data.pop(RESIDENTIAL_ADDRESS_KEY, None)
+        if add_data is not None:
+            address_ser = AddressUpdateSerializer(data=add_data)
+            address_ser.is_valid(raise_exception=True)
+            validated_data[RESIDENTIAL_ADDRESS_KEY] = address_ser.save()
+
+        return super(ClientUpdateSerializer, self).update(instance, validated_data)
 
 
 class EATransferPlanSerializer(serializers.ModelSerializer):
@@ -153,6 +186,9 @@ class InvitationSerializer(ReadOnlyModelSerializer):
 class PrivateInvitationSerializer(serializers.ModelSerializer):
     # Includes onboarding data
     # Allows POST for registered users
+    onboarding_data = serializers.JSONField()
+    risk_profile_group = serializers.SerializerMethodField()
+
     class Meta:
         model = EmailInvite
         read_only_fields = ('invite_key', 'status')
@@ -160,8 +196,12 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'invite_key',
             'status',
             'onboarding_data',
-            'onboarding_file_1'
+            'onboarding_file_1',
+            'risk_profile_group',
         )
+
+    def get_risk_profile_group(self, obj):
+        return AccountTypeRiskProfileGroup.objects.get(account_type=ACCOUNT_TYPE_PERSONAL).id
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):

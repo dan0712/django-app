@@ -3,9 +3,11 @@ from collections import defaultdict
 from datetime import timedelta
 
 import pandas as pd
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
 
-from main.models import MarketOrderRequest, Transaction
+from main.models import MarketOrderRequest, Transaction, Ticker, PositionLot
 from .abstract import ExecutionProviderAbstract
 
 logger = logging.getLogger('betasmartz.execution_provider_django')
@@ -71,34 +73,16 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
         return weights
 
     def get_asset_weights_held_less_than1y(self, goal, today):
-        qs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                        reason=Transaction.REASON_EXECUTION).order_by('executed')
-
-        txs = qs.values_list('execution_distribution__execution__executed',
-                             'execution_distribution__execution__asset__id',
-                             'execution_distribution__volume')
-        executions_per_ticker = defaultdict(dict)
-        for tx in txs:
-            executions_per_ticker[tx[1]][tx[0]] = tx[2]
-
-        executions = self._construct_matrix(executions_per_ticker)
-        executions = executions.sort_index(ascending=False)
-        executions[executions < 0] = 0  # we take into account only buys/not sells
-        executions = executions.cumsum()
-
-        positions = goal.get_positions_all()
+        m1y = today - timedelta(days=366)
+        lots = PositionLot.objects.\
+            filter(execution_distribution__execution__executed__gt=m1y,
+                   execution_distribution__transaction__from_goal=goal).\
+            annotate(tid=F('execution_distribution__execution__asset__id')).values('tid').\
+            annotate(value=Coalesce(Sum(F('quantity') * F('execution_distribution__execution__asset__unit_price')), 0))
 
         weights = dict()
-        bal = goal.available_balance
-        for position in positions:
-            if position.ticker.id not in executions:
-                logger.warn("Position: {} has no matching executions.".format(position))
-                continue
-            executions_single_asset = pd.DataFrame(executions[position.ticker.id])
-            # search this year's buys only
-            executions_this_year = executions_single_asset[today-timedelta(365):]
-            if not executions_this_year.empty:
-                vol = min(int(executions_this_year.iloc[-1]), position.share)
-                weights[position.ticker.id] = (vol * position.ticker.unit_price) / bal
 
+        bal = goal.available_balance
+        for l in lots:
+            weights[l['tid']] = l['value'] / bal
         return weights
