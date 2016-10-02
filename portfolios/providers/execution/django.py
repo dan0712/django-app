@@ -53,22 +53,23 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
         weights = dict()
         bal = goal.available_balance
         for position in positions:
-            if position.ticker.id not in executions:
+            if position['ticker_id'] not in executions:
                 logger.warn("Position: {} has no matching executions.".format(position))
                 continue
 
-            date_of_first_lot = executions_cumsum[executions_cumsum[position.ticker.id] >= position.share].index[0]
-            executions_single_asset = pd.DataFrame(executions[position.ticker.id][:date_of_first_lot])
-            prices = pd.DataFrame(prices[position.ticker.id][:date_of_first_lot])
+            date_of_first_lot = executions_cumsum[executions_cumsum[position['ticker_id']] >= position['quantity']].index[0]
+            executions_single_asset = pd.DataFrame(executions[position['ticker_id']][:date_of_first_lot])
+            prices = pd.DataFrame(prices[position['ticker_id']][:date_of_first_lot])
 
             # find lots with price > position.ticker.unit_price
-            tax_winners_dates = prices[prices[position.ticker.id] > position.ticker.unit_price].index
+            ticker = Ticker.objects.get(id=position['ticker_id'])
+            tax_winners_dates = prices[prices[position['ticker_id']] > ticker.unit_price].index
             amount_of_tax_winners_per_ticker = int(executions_single_asset.ix[tax_winners_dates].sum())
 
             # search buys only
             if not executions_single_asset.empty:
-                vol = min(amount_of_tax_winners_per_ticker, position.share)
-                weights[position.ticker.id] = (vol * position.ticker.unit_price) / bal
+                vol = min(amount_of_tax_winners_per_ticker, position['quantity'])
+                weights[position['ticker_id']] = (vol * ticker.unit_price) / bal
 
         return weights
 

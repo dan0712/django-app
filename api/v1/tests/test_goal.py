@@ -18,7 +18,7 @@ from api.v1.tests.factories import MarkowitzScaleFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 
-from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution
+from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Ticker
 from main.risk_profiler import max_risk
 
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
@@ -413,7 +413,9 @@ class GoalTests(APITestCase):
     def test_goal_metric(self):
         t1 = TickerFactory.create(symbol='SPY', unit_price=5)
         t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
-        equity = AssetFeatureValueFactory.create(name='equity', assets=[t1, t2])
+
+        equity = AssetFeatureValueFactory.create(name='equity', assets=[t1,t2])
+
         goal_settings = GoalSettingFactory.create()
 
         GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX, rebalance_thr=0.05,
@@ -450,7 +452,7 @@ class GoalTests(APITestCase):
                                        executed=date(2014, 6, 1),
                                        amount=2)
         dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=tr2, volume=1)
-        PositionLotFactory(quantity=1, execution_distribution=dist2)
+        PositionLotFactory.create(quantity=1, execution_distribution=dist2)
 
         metric = GoalMetric.objects.get(group__settings__goal_active=goal)
 
