@@ -27,59 +27,9 @@ def groups_remove(self, name):
     return self
 
 
-@property
-def is_advisor(self):
-    """
-    Custom helper method for User class to check user type/profile.
-    """
-    if not hasattr(self, '_is_advisor'):
-        self._is_advisor = self.groups.filter(name=User.GROUP_ADVISOR).exists()
-
-    return self._is_advisor
-
-
-@property
-def is_authorized_representative(self):
-    """
-    Custom helper method for User class to check user type/profile.
-    """
-    if not hasattr(self, '_is_authorized_representative'):
-        self._is_authorized_representative = self.groups.filter(
-            name=User.GROUP_AUTHORIZED_REPRESENTATIVE).exists()
-
-    return self._is_authorized_representative
-
-
-@property
-def is_supervisor(self):
-    """
-    Custom helper method for User class to check user type/profile.
-    """
-    if not hasattr(self, '_is_supervisor'):
-        self._is_supervisor = self.groups.filter(name=User.GROUP_SUPERVISOR).exists()
-
-    return self._is_supervisor
-
-
-@property
-def is_client(self):
-    """
-    Custom helper method for User class to check user type/profile.
-    """
-    if not hasattr(self, '_is_client'):
-        self._is_client = self.groups.filter(name=User.GROUP_CLIENT).exists()
-
-    return self._is_client
-
-
 # Add custom methods to User class
 User.add_to_class('groups_add', groups_add)
 User.add_to_class('groups_remove', groups_remove)
-
-User.add_to_class('is_advisor', is_advisor)
-User.add_to_class('is_authorized_representative', is_authorized_representative)
-User.add_to_class('is_supervisor', is_supervisor)
-User.add_to_class('is_client', is_client)
 
 User.add_to_class('GROUP_ADVISOR', 'Advisors')
 User.add_to_class('GROUP_AUTHORIZED_REPRESENTATIVE', 'AuthorizedRepresentatives') # TODO: would be nice to rename

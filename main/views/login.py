@@ -50,12 +50,9 @@ def login(request, template_name='registration/login.html',
         # it should be deeply refactored in the first place
         # we need to (also) use "is_active" user flag for that stuff
 
-        # cached versions of is_client, is_advisor, and is_authorised_representative
-        # are not returning expected values are initial creation, using hasattr here
-        # which does return the correct value
-        is_client = hasattr(user, 'client')
-        is_advisor = hasattr(user, 'advisor')
-        is_representative = hasattr(user, 'authorised_representative')
+        is_client = user.is_client
+        is_advisor = user.is_advisor
+        is_representative = user.is_authorised_representative
         confirmed_client = is_client and user.client.is_confirmed
         confirmed_advisor = is_advisor and user.advisor.is_confirmed
         confirmed_representative = is_representative and user.authorised_representative.is_confirmed

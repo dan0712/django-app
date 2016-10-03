@@ -323,6 +323,11 @@ class ClientTests(APITestCase):
         # redirect to application
         self.assertRedirects(response, reverse('client:app', args=[usr.client.id, ]))
 
+        # can retrieve profile info ok
+        url = reverse('api:v1:user-me')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_create_client_no_address(self):
         # We need an accepted invitation to be able to create a client
         usr = UserFactory.create()
