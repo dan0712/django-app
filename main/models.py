@@ -39,6 +39,7 @@ from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.functional import cached_property
 
 logger = logging.getLogger('main.models')
 
@@ -120,7 +121,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def full_name(self):
         return self.get_full_name()
 
-    @property
+    @cached_property
     def is_advisor(self):
         """
         Custom helper method for User class to check user type/profile.
@@ -130,39 +131,36 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return self._is_advisor
 
-    @property
+    @cached_property
     def is_authorised_representative(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_authorised_representative'):
-            ar = hasattr(self, 'authorised_representative')
-            self._is_authorised_representative = ar
+            self._is_authorised_representative = hasattr(self, 'authorised_representative')
 
         return self._is_authorised_representative
 
-    @property
+    @cached_property
     def is_client(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_client'):
             self._is_client = hasattr(self, 'client')
-
         return self._is_client
 
-    @property
+    @cached_property
     def is_supervisor(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_supervisor'):
-            supervisor = hasattr(self, 'supervisor')
-            self._is_supervisor = supervisor
+            self._is_supervisor = hasattr(self, 'supervisor')
 
         return self._is_supervisor
 
-    @property
+    @cached_property
     def is_support_staff(self):
         if not hasattr(self, '_is_support_staff'):
             group = Group.objects.get(name=GROUP_SUPPORT_STAFF)

@@ -49,12 +49,10 @@ def login(request, template_name='registration/login.html',
         # TODO: discuss "confirmation" feature
         # it should be deeply refactored in the first place
         # we need to (also) use "is_active" user flag for that stuff
-        is_confirmed = (
-            user.is_client and user.client.is_confirmed or
-            user.is_advisor and user.advisor.is_confirmed or
-            user.is_authorised_representative and
-            user.authorised_representative.is_confirmed
-        )
+        confirmed_client = hasattr(user, 'client') and user.client.is_confirmed
+        confirmed_advisor = hasattr(user, 'advisor') and user.advisor.is_confirmed
+        confirmed_representative = hasattr(user, 'authorised_representative') and user.authorised_representative.is_confirmed
+        is_confirmed = confirmed_client or confirmed_advisor or confirmed_representative
 
         if not is_confirmed:
             # check if user is in the middle of onboarding
