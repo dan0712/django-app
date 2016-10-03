@@ -123,6 +123,8 @@ class ClientViewSet(ApiViewMixin,
         serializer.is_valid(raise_exception=True)
         # creat new client
         client = serializer.save(advisor=request.user.invitation.advisor, user=request.user)
+        client.user._is_client = True
+        client.user.save()
 
         # set client invitation status to complete
         client.user.invitation.status = EmailInvite.STATUS_COMPLETE

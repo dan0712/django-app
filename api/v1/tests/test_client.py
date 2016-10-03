@@ -321,7 +321,7 @@ class ClientTests(APITestCase):
         }
         response = self.client.post(url, data)
         # redirect to application
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertRedirects(response, reverse('client:app', args=[usr.client.id, ]))
 
     def test_create_client_no_address(self):
         # We need an accepted invitation to be able to create a client

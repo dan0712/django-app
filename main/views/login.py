@@ -49,9 +49,16 @@ def login(request, template_name='registration/login.html',
         # TODO: discuss "confirmation" feature
         # it should be deeply refactored in the first place
         # we need to (also) use "is_active" user flag for that stuff
-        confirmed_client = hasattr(user, 'client') and user.client.is_confirmed
-        confirmed_advisor = hasattr(user, 'advisor') and user.advisor.is_confirmed
-        confirmed_representative = hasattr(user, 'authorised_representative') and user.authorised_representative.is_confirmed
+
+        # cached versions of is_client, is_advisor, and is_authorised_representative
+        # are not returning expected values are initial creation, using hasattr here
+        # which does return the correct value
+        is_client = hasattr(user, 'client')
+        is_advisor = hasattr(user, 'advisor')
+        is_representative = hasattr(user, 'authorised_representative')
+        confirmed_client = is_client and user.client.is_confirmed
+        confirmed_advisor = is_advisor and user.advisor.is_confirmed
+        confirmed_representative = is_representative and user.authorised_representative.is_confirmed
         is_confirmed = confirmed_client or confirmed_advisor or confirmed_representative
 
         if not is_confirmed:
@@ -70,11 +77,11 @@ def login(request, template_name='registration/login.html',
         redirect_to = request.GET.get('next',
                                       reverse_lazy('client:app',
                                                    args=(user.client.id,))
-                                      if user.is_client
+                                      if is_client
                                       else reverse_lazy('advisor:overview')
-                                      if user.is_advisor
+                                      if is_advisor
                                       else reverse_lazy('firm:overview')
-                                      if user.is_authorised_representative
+                                      if is_representative
                                       else None)
 
         if redirect_to:
