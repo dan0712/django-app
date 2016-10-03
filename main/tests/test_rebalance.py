@@ -1,8 +1,7 @@
-import datetime
-
 from django import test
 
-from api.v1.tests.factories import GoalFactory, PositionFactory, TickerFactory, \
+from main.tests.fixture import Fixture1
+from api.v1.tests.factories import GoalFactory, PositionLotFactory, TickerFactory, \
     TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory
 from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
     Transaction
@@ -10,6 +9,7 @@ from portfolios.providers.execution.django import ExecutionProviderDjango
 from main.management.commands.rebalance import perturbate_mix
 
 from main.models import Ticker
+from datetime import datetime, date
 
 class RebalanceTest(test.TestCase):
     def test_perturbate_mix(self):
@@ -28,10 +28,10 @@ class RebalanceTest(test.TestCase):
 
         goal = GoalFactory.create(active_settings=goal_settings, cash_balance=100)
 
-        PositionFactory.create(goal=goal, ticker=t1, share=1)
-        PositionFactory.create(goal=goal, ticker=t2, share=1)
-        PositionFactory.create(goal=goal, ticker=t3, share=1)
-        PositionFactory.create(goal=goal, ticker=t4, share=1)
+        Fixture1.create_execution_details(goal, t1, 1, 5, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t2, 1, 5, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t3, 1, 100, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t4, 1, 100, date(2016, 1, 1))
 
         #t = Ticker.objects.get(symbol='TLT', features__name=bond)
 

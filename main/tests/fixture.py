@@ -6,7 +6,7 @@ from django.utils import timezone
 from pinax.eventlog.models import Log
 
 import address.models as ad
-from api.v1.tests.factories import GoalMetricFactory
+from api.v1.tests.factories import GoalMetricFactory, TransactionFactory, PositionLotFactory
 from client.models import Client, ClientAccount, RiskProfileAnswer,\
     RiskProfileGroup, RiskProfileQuestion, IBAccount
 from main.constants import ACCOUNT_TYPE_PERSONAL
@@ -747,3 +747,23 @@ class Fixture1:
                                                             transaction=tx,
                                                             volume=volume))
         return res
+
+    @classmethod
+    def create_execution_details(cls, goal, ticker, quantity, price, executed):
+        mor = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution = Execution.objects.create(asset=ticker,
+                                             volume=quantity,
+                                             order=mor,
+                                             price=price,
+                                             executed=executed,
+                                             amount=quantity*price)
+        transaction = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                                to_goal=None,
+                                                from_goal=goal,
+                                                status=Transaction.STATUS_EXECUTED,
+                                                executed=executed,
+                                                amount=quantity*price)
+        distribution = ExecutionDistribution.objects.create(execution=execution,
+                                                            transaction=transaction,
+                                                            volume=quantity)
+        PositionLotFactory.create(quantity=quantity, execution_distribution=distribution)
