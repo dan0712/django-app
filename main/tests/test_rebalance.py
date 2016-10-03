@@ -2,7 +2,7 @@ from django import test
 
 from main.tests.fixture import Fixture1
 from api.v1.tests.factories import GoalFactory, PositionLotFactory, TickerFactory, \
-    TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory
+    TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory, GoalMetricGroupFactory
 from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
     Transaction
 from portfolios.providers.execution.django import ExecutionProviderDjango
@@ -23,15 +23,17 @@ class RebalanceTest(test.TestCase):
 
         goal_settings = GoalSettingFactory.create()
 
-        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=0, rebalance_thr=0.05)
-        GoalMetricFactory.create(group=goal_settings.metric_group, feature=bond, type=0, rebalance_thr=0.05)
+        GoalMetricFactory.create(group=goal_settings.metric_group,
+                                 feature=equity, type=0, rebalance_thr=0.05, configured_val=0.01)
+        GoalMetricFactory.create(group=goal_settings.metric_group,
+                                 feature=bond, type=0, rebalance_thr=0.05, configured_val=0.01)
 
         goal = GoalFactory.create(active_settings=goal_settings, cash_balance=100)
 
-        Fixture1.create_execution_details(goal, t1, 1, 5, date(2016, 1, 1))
-        Fixture1.create_execution_details(goal, t2, 1, 5, date(2016, 1, 1))
-        Fixture1.create_execution_details(goal, t3, 1, 100, date(2016, 1, 1))
-        Fixture1.create_execution_details(goal, t4, 1, 100, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t1, 5, 5, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t2, 5, 5, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t3, 5, 100, date(2016, 1, 1))
+        Fixture1.create_execution_details(goal, t4, 5, 100, date(2016, 1, 1))
 
         #t = Ticker.objects.get(symbol='TLT', features__name=bond)
 

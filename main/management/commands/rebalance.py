@@ -14,8 +14,9 @@ from portfolios.calculation import MIN_PORTFOLIO_PCT, \
 from portfolios.providers.execution.abstract \
     import Reason, ExecutionProviderAbstract
 
-from main.models import GoalMetric, Ticker
+from main.models import GoalMetric, Ticker, AssetFeature, AssetFeatureValue, PositionLot
 from collections import defaultdict
+from django.db.models import Sum, F
 from django.db.models import Q
 import operator
 
@@ -218,31 +219,45 @@ def perturbate_withdrawal(perf_groups):
 
 
 def perturbate_mix(goal, min_weights):
-    '''
     metrics = GoalMetric.objects.\
         filter(group__settings__goal_active=goal).\
-        filter(type=0).\
-        filter(Q(comparison=1) | Q(comparison=2)) #only exact or maximums - we are interested in sells only
+        filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX).\
+        filter(Q(comparison=GoalMetric.METRIC_COMPARISON_EXACTLY) |
+               Q(comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM))
+        #only exact or maximums - we are interested in sells only
 
     metrics_weights = defaultdict(defaultdict)
     for metric in metrics:
-        asset_ids = Ticker.objects.all().filter(features__feature_id=metric.feature_id)
+        asset_ids = AssetFeatureValue.objects.all().filter(id=metric.feature_id)\
+            .annotate(ticker_id=F('assets__id'))\
+            .values('ticker_id')
 
-        ids = set([asset_id for asset_id in asset_ids])
+        ids = set([asset_id['ticker_id'] for asset_id in asset_ids])
         metrics_weights[metric.id]['asset_ids'] = ids
         metrics_weights[metric.id]['drift'] = metric.drift_score
 
     to_be_sorted = dict()
-    for id, value in metrics_weights.items():
+    for metric_id, value in metrics_weights.items():
         if value['drift'] > 0:
-            to_be_sorted[id] = value['drift']
+            to_be_sorted[metric_id] = value['drift']
+    sorted_positive_drifts = sorted(to_be_sorted.items(), key=lambda x: -x[1]) #desc
 
-    sorted_positive_drifts = sorted(to_be_sorted.items(), key=lambda x : -x[1]) #desc
+    #tax lots
+    lots = PositionLot.objects.filter(quantity__gt=0)\
+        .filter(execution_distribution__transaction__from_goal=goal) \
+        .annotate(ticker_id=F('execution_distribution__execution__asset__id'),
+                  price=F('execution_distribution__execution__asset__unit_price'),
+                  executed=F('execution_distribution__execution__executed')) \
+        .values('ticker_id', 'price','quantity')
 
-    for id, drift in sorted_positive_drifts.items():
+
+    PositionLot.objects.all().values('ticker_id', 'quantity', 'price', 'executed')
+    # create in-memory representation of positionLot model play with them
+
+    for metric_id, drift in sorted_positive_drifts.items():
         pass
         # we are in group with biggest difference now
-        # start selling lots'''
+        # start selling lots
 
     """
                         order assets into groups of metrics constraints - compare with metrics constraints in settings.
