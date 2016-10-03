@@ -121,7 +121,12 @@ class ClientViewSet(ApiViewMixin,
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # creat new client
         client = serializer.save(advisor=request.user.invitation.advisor, user=request.user)
+
+        # set client invitation status to complete
+        client.user.invitation.status = EmailInvite.STATUS_COMPLETE
+        client.user.invitation.save()
 
         # Email the user "Welcome Aboard"
         self.request.user.email_user('Welcome to BetaSmartz!',

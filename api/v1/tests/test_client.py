@@ -307,6 +307,10 @@ class ClientTests(APITestCase):
         self.assertEqual(response.data['advisor_agreement'], True)
         self.assertEqual(json.loads(response.data['regional_data']), regional_data)
 
+        # check onboarding status is complete
+        lookup_invite = EmailInvite.objects.get(user=usr)
+        self.assertEqual(lookup_invite.status, EmailInvite.STATUS_COMPLETE)
+
     def test_create_client_no_address(self):
         # We need an accepted invitation to be able to create a client
         usr = UserFactory.create()
