@@ -6,6 +6,7 @@ import pandas as pd
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
+from main.management.commands.rebalance import get_weights
 
 from main.models import MarketOrderRequest, Transaction, Ticker, PositionLot
 from .abstract import ExecutionProviderAbstract
@@ -25,52 +26,17 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
         pass
 
     def get_asset_weights_without_tax_winners(self, goal):
-        qs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                        reason=Transaction.REASON_EXECUTION).order_by('executed')
+        lots = PositionLot.objects \
+            .filter(execution_distribution__transaction__from_goal=goal) \
+            .annotate(ticker_id=F('execution_distribution__execution__asset__id'),
+                      price=F('execution_distribution__execution__asset__unit_price'),
+                      bought_price=F('execution_distribution__execution__price')) \
+            .annotate(tax_gain=F('price')-F('bought_price'))\
+            .values('ticker_id', 'tax_gain', 'quantity', 'price')
 
-        txs = qs.values_list('execution_distribution__execution__executed',
-                             'execution_distribution__execution__asset__id',
-                             'execution_distribution__volume',
-                             'execution_distribution__execution__price')
-        executions_per_ticker = defaultdict(dict)
-        prices_per_ticker = defaultdict(dict)
-        for tx in txs:
-            executions_per_ticker[tx[1]][tx[0]] = tx[2]
-            prices_per_ticker[tx[1]][tx[0]] = tx[3]
+        lots_no_tax_gain = [lot for lot in lots if lot['tax_gain'] < 0]
 
-        executions = self._construct_matrix(executions_per_ticker)
-        executions = executions.sort_index(ascending=False)
-        executions[executions < 0] = 0  # we take into account only buys/not sells
-
-        prices = self._construct_matrix(prices_per_ticker)
-        prices = prices.sort_index(ascending=False)
-        prices[executions < 0] = 0  # we take into account only buys/not sells
-
-        executions_cumsum = executions.cumsum()
-
-        positions = goal.get_positions_all()
-
-        weights = dict()
-        bal = goal.available_balance
-        for position in positions:
-            if position['ticker_id'] not in executions:
-                logger.warn("Position: {} has no matching executions.".format(position))
-                continue
-
-            date_of_first_lot = executions_cumsum[executions_cumsum[position['ticker_id']] >= position['quantity']].index[0]
-            executions_single_asset = pd.DataFrame(executions[position['ticker_id']][:date_of_first_lot])
-            prices = pd.DataFrame(prices[position['ticker_id']][:date_of_first_lot])
-
-            # find lots with price > position.ticker.unit_price
-            ticker = Ticker.objects.get(id=position['ticker_id'])
-            tax_winners_dates = prices[prices[position['ticker_id']] > ticker.unit_price].index
-            amount_of_tax_winners_per_ticker = int(executions_single_asset.ix[tax_winners_dates].sum())
-
-            # search buys only
-            if not executions_single_asset.empty:
-                vol = min(amount_of_tax_winners_per_ticker, position['quantity'])
-                weights[position['ticker_id']] = (vol * ticker.unit_price) / bal
-
+        weights = get_weights(lots_no_tax_gain, goal.available_balance)
         return weights
 
     def get_asset_weights_held_less_than1y(self, goal, today):

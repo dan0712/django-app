@@ -2044,12 +2044,10 @@ class GoalMetric(models.Model):
     def measured_val(self):
         asset_ids = AssetFeatureValue.objects.all().filter(id=self.feature.id)\
             .annotate(asset_id=F('assets__id'))\
-            .values('asset_id')
-
-        ids = set([asset_id['asset_id'] for asset_id in asset_ids])
+            .values_list('asset_id', flat=True)
 
         goal = Goal.objects.get(active_settings__metric_group_id=self.group_id)
-        sum = float(np.sum([pos['price']*pos['quantity'] if pos['ticker_id'] in ids else 0 for pos in goal.get_positions_all()]))
+        sum = float(np.sum([pos['price']*pos['quantity'] if pos['ticker_id'] in asset_ids else 0 for pos in goal.get_positions_all()]))
         return sum/goal.available_balance
 
     @property
