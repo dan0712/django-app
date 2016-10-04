@@ -11,9 +11,9 @@ from main.management.commands.rebalance import perturbate_mix
 from main.models import Ticker, GoalMetric
 from datetime import datetime, date
 
+
 class RebalanceTest(test.TestCase):
     def test_perturbate_mix(self):
-
         t1 = TickerFactory.create(symbol='SPY', unit_price=5)
         t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
         t3 = TickerFactory.create(symbol='TLT', unit_price=100)
