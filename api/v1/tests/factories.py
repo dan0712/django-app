@@ -501,7 +501,7 @@ class GoalMetricFactory(factory.django.DjangoModelFactory):
     group = factory.SubFactory(GoalMetricGroupFactory)
     type = GoalMetric.METRIC_TYPE_RISK_SCORE
     comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
-    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+    rebalance_type = factory.sequence(lambda n: random.randint(0, 1))
     rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
 
