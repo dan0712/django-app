@@ -172,6 +172,12 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
 
 
 class InvitationSerializer(ReadOnlyModelSerializer):
+    """
+    A user in the middle of onboarding will use this
+    serializer, pre-registration and non-authenticated
+    """
+    firm_name = serializers.SerializerMethodField()
+
     class Meta:
         model = EmailInvite
         fields = (
@@ -180,14 +186,25 @@ class InvitationSerializer(ReadOnlyModelSerializer):
             'first_name',
             'middle_name',
             'last_name',
+            'reason',
+            'advisor',
+            'firm_name',
         )
+
+    def get_firm_name(self, obj):
+        return obj.advisor.firm.name
 
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
+    """
+    Authenticated users will retrieve and update through this
+    serializer.
+    """
     # Includes onboarding data
     # Allows POST for registered users
     onboarding_data = serializers.JSONField()
     risk_profile_group = serializers.SerializerMethodField()
+    firm_name = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -198,10 +215,16 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'onboarding_data',
             'onboarding_file_1',
             'risk_profile_group',
+            'reason',
+            'advisor',
+            'firm_name',
         )
 
     def get_risk_profile_group(self, obj):
         return AccountTypeRiskProfileGroup.objects.get(account_type=ACCOUNT_TYPE_PERSONAL).id
+
+    def get_firm_name(self, obj):
+        return obj.advisor.firm.name
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):
