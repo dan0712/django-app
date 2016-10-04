@@ -13,8 +13,8 @@ from .abstract import ExecutionProviderAbstract
 
 logger = logging.getLogger('betasmartz.execution_provider_django')
 
-class ExecutionProviderDjango(ExecutionProviderAbstract):
 
+class ExecutionProviderDjango(ExecutionProviderAbstract):
     def get_execution_request(self, reason):
         pass
 
