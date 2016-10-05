@@ -168,14 +168,14 @@ def get_mix_drift(weights, constraints):
     # Get the risk score given the portfolio mix constraints.
 
 
-def process_risk(weights, min_weights):
+def process_risk(weights, min_weights, goal):
     """
     Checks if the weights are within our acceptable risk drift, and if not, perturbates to make it so.
     :param weights:
     :param min_weights:
     :return: (changed,
     """
-    return weights
+
 
 
 def perturbate_risk(min_weights, removals):
@@ -200,9 +200,11 @@ def perturbate_risk(min_weights, removals):
     pass
 
 
-def perturbate_withdrawal(perf_groups):
-
+def perturbate_withdrawal(goal):
     """
+    For each performance group, starting from the top, remove assets until we have a <1 min weight sum scenario.
+    start removing first from metric where difference is biggest, and start with tax winners, same procedure as with perturbate_mix
+
     use specific lots technique - so perf. groups will not help, but we will need to calculate lots for current holding, calculate specific lots for holding
      and then start selling largest tax gain to largest tax loss (largest losers to largest winners)
      To use specific lots technique, we need to know tax burden 1Y> and 1Y<, e.g. 28% vs 15%
@@ -210,6 +212,9 @@ def perturbate_withdrawal(perf_groups):
      specific lots vs. getting close to portfolio mix (in active_settings.portfolio.portfolio_items vs current holdings?)
 -------------------------------------------------------------------------------
     - For each performance group, starting from the top, remove assets until we have a <1 min weight sum scenario.
+    start removing first from metric where difference is biggest, and start with tax winners, same procedure as with perturbate_mix
+
+
         - Calculate the drift due to portfolio mix metrics using current minimums
         - while we have overweight drift due to portfolio mix metrics:
             - For each performance group, starting from    the top,
@@ -217,9 +222,9 @@ def perturbate_withdrawal(perf_groups):
                     - Choose the most overweight
                     - Remove enough units to bring its weight to the port weight, available from the active-settings.
             - Then biggest looser / weakest winner first, preferring assets we have already removed..
-    :return: A set of weights tht sum to < 1
-    """
-    pass
+    :return: A set of weights tht sum to < 1"""
+    return perturbate_mix(goal)
+
 
 
 def perturbate_mix(goal, min_weights):
@@ -413,22 +418,14 @@ def perturbate(goal, idata, data_provider, execution_provider):
 
     if weights is None:
         # We have a withdrawal or mix drift, perturbate.
-        perf_groups = get_perf_groups(goal)
         if sum(held_weights.values()) > 1.0001:
-            # We have a withdrawal scenario
-
             reason = execution_provider.get_execution_request(Reason.WITHDRAWAL.value)
-            min_weights = perturbate_withdrawal(perf_groups)
-            # Then reoptimise using the current minimum weights
-            weights = optimise_up(min_weights)
-            if weights is None:
-                min_weights, weights = perturbate_mix(goal)
         else:
             reason = execution_provider.get_execution_request(Reason.DRIFT.value)
-            weights = perturbate_mix(goal)
 
-        # By here we should have a satisfiable portfolio, so check and fix any risk_drift
-        weights = process_risk(weights, min_weights)
+        min_weights = perturbate_mix(goal)
+        weights = optimise_up(min_weights)
+        weights = process_risk(weights, held_weights)
 
     else:
         # We got a satisfiable optimisation (mix metrics satisfied), now check and fix any risk drift.
