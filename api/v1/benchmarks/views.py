@@ -2,25 +2,22 @@ from __future__ import unicode_literals
 
 from dateutil import parser
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from common.constants import EPOCH_DT
 from main.models import MarketIndex
 from .serializers import BenchmarkSerializer
+from ..views import ApiViewMixin
 
 
-class AvailableListView(generics.ListAPIView):
-    permission_classes = IsAuthenticated,
+class AvailableListView(ApiViewMixin, generics.ListAPIView):
     serializer_class = BenchmarkSerializer
 
     def get_queryset(self):
         return MarketIndex.objects.all()
 
 
-class ReturnsView(generics.ListAPIView):
-    permission_classes = IsAuthenticated,
-
+class ReturnsView(ApiViewMixin, generics.ListAPIView):
     def get_query_date(self, name):
         try:
             dt = parser.parse(self.request.query_params.get(name))
