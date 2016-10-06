@@ -229,6 +229,9 @@ class InviteTests(APITestCase):
         response = self.client.put(invite_detail_url, data=onboarding,
                                    format='multipart')
 
+        self.assertEqual(response._headers['content-type'], ('Content-Type', 'application/json'),
+                         msg='Response content type is application/json after upload')
+
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Onboarding must accept files')
@@ -236,6 +239,11 @@ class InviteTests(APITestCase):
                             msg='onboarding_file_1 is not null')
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
+
+        response = self.client.get(invite_detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response._headers['content-type'], ('Content-Type', 'application/json'),
+                         msg='Response content type is application/json after upload')
 
     def test_complete_invitation(self):
 

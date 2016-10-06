@@ -146,7 +146,7 @@ class InvitesView(ApiViewMixin, views.APIView):
     permission_classes = []
     serializer_class = serializers.PrivateInvitationSerializer
     parser_classes = (
-        parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser,
+        parsers.MultiPartParser, parsers.JSONParser,
     )
 
     def get(self, request, invite_key):
@@ -271,7 +271,6 @@ class ClientResendInviteView(SingleObjectMixin, views.APIView):
 
     def post(self, request, *args, **kwargs):
         invite = self.get_object()
-        logger.error(invite)
         if invite.user != self.request.user:
             return Response('forbidden', status=status.HTTP_403_FORBIDDEN)
         invite.send()
