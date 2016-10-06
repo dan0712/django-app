@@ -110,6 +110,9 @@ class InviteTests(APITestCase):
                          msg='/api/v1/invites/:key should have invitation status ACCEPTED')
         self.assertEqual('onboarding_data' in response.data, False,
                          msg='/api/v1/invites/:key should not show onboarding_data to anonymous')
+        # verify firm data is present in response
+        self.assertEqual(response.data['firm_logo'], lookup_invite.advisor.firm.logo)
+        self.assertEqual(response.data['firm_name'], lookup_invite.advisor.firm.name)
 
     def test_register_logout_then_login(self):
         # Bring an invite key, get logged in as a new user

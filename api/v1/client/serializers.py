@@ -177,6 +177,7 @@ class InvitationSerializer(ReadOnlyModelSerializer):
     serializer, pre-registration and non-authenticated
     """
     firm_name = serializers.SerializerMethodField()
+    firm_logo = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -189,10 +190,14 @@ class InvitationSerializer(ReadOnlyModelSerializer):
             'reason',
             'advisor',
             'firm_name',
+            'firm_logo',
         )
 
     def get_firm_name(self, obj):
         return obj.advisor.firm.name
+
+    def get_firm_logo(self, obj):
+        return obj.advisor.firm.logo
 
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
@@ -205,6 +210,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
     onboarding_data = serializers.JSONField()
     risk_profile_group = serializers.SerializerMethodField()
     firm_name = serializers.SerializerMethodField()
+    firm_logo = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -218,6 +224,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'reason',
             'advisor',
             'firm_name',
+            'firm_logo',
         )
 
     def get_risk_profile_group(self, obj):
@@ -225,6 +232,9 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
 
     def get_firm_name(self, obj):
         return obj.advisor.firm.name
+
+    def get_firm_logo(self, obj):
+        return obj.advisor.firm.logo
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):

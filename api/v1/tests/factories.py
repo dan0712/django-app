@@ -101,6 +101,7 @@ class FirmFactory(factory.django.DjangoModelFactory):
     token = factory.Sequence(lambda n: 'Token %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
     slug = factory.Sequence(lambda n: 'Slug %d' % n)
+    logo = factory.django.FileField(filename='some_firm_logo.jpg')
 
 
 class RiskProfileGroupFactory(factory.django.DjangoModelFactory):
