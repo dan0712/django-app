@@ -5,7 +5,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
-
+from django import http
 from api.v1.client.serializers import EmailNotificationsSerializer, \
     PersonalInfoSerializer
 from api.v1.permissions import IsClient
@@ -18,9 +18,10 @@ from api.v1.user.serializers import UserSerializer, AuthSerializer
 from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
     RetirementPlanEincWritableSerializer
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
-
+from django.views.generic.detail import SingleObjectMixin
 from . import serializers
-
+from django.core.urlresolvers import reverse
+from django.contrib import messages
 import logging
 
 logger = logging.getLogger('api.v1.client.views')
@@ -263,3 +264,13 @@ class ProfileView(ApiViewMixin, RetrieveUpdateAPIView):
 
     def get_object(self):
         return Client.objects.get(user=self.request.user)
+
+
+class ClientResendInviteView(SingleObjectMixin, views.APIView):
+    permission_classes = []
+    queryset = EmailInvite.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        invite = self.get_object()
+        invite.send()
+        return Response('ok', status=status.HTTP_200_OK)

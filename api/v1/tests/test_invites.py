@@ -281,3 +281,14 @@ class InviteTests(APITestCase):
         invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(invite.onboarding_data, None)
         self.assertEqual(invite.status, EmailInvite.STATUS_COMPLETE)
+
+    def test_resend_client_invite(self):
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT,
+                                           reason=EmailInvite.REASON_PERSONAL_INVESTING)
+        url = reverse('api:v1:resend-invite', args=[invite.pk])
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(mail.outbox[0].subject, 'BetaSmartz client sign up form url',
+                         msg='Email outbox has email with expected resend email subject')
+        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
+        self.assertEqual(lookup_invite.send_count, 1)
