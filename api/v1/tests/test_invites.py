@@ -283,12 +283,36 @@ class InviteTests(APITestCase):
         self.assertEqual(invite.status, EmailInvite.STATUS_COMPLETE)
 
     def test_resend_client_invite(self):
+        """
+        Allow authenticated users to resend email invites for onboarding
+        """
         invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT,
                                            reason=EmailInvite.REASON_PERSONAL_INVESTING)
+        url = reverse('api:v1:client-user-register')
+        data = {
+            'first_name': invite.first_name,
+            'last_name': invite.last_name,
+            'invite_key': invite.invite_key,
+            'password': 'test',
+            'question_one': 'what is the first answer?',
+            'question_one_answer': 'answer one',
+            'question_two': 'what is the second answer?',
+            'question_two_answer': 'answer two',
+        }
+
+        # Accept an invitation and create a user
+        response = self.client.post(url, data)
+        invite = EmailInvite.objects.get(pk=invite.pk)
+
+        self.client.logout()
         url = reverse('api:v1:resend-invite', args=[invite.pk])
         response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(invite.user)
+        response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(mail.outbox[0].subject, 'BetaSmartz client sign up form url',
+        self.assertEqual(mail.outbox[-1].subject, 'BetaSmartz client sign up form url',
                          msg='Email outbox has email with expected resend email subject')
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(lookup_invite.send_count, 1)

@@ -5,13 +5,13 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
-from django import http
+from rest_framework.permissions import IsAuthenticated
 from api.v1.client.serializers import EmailNotificationsSerializer, \
     PersonalInfoSerializer
 from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
 from main.models import ExternalAsset, User
-from user.models import SecurityQuestion, SecurityAnswer
+from user.models import SecurityAnswer
 from client.models import Client, EmailInvite
 from support.models import SupportRequest
 from api.v1.user.serializers import UserSerializer, AuthSerializer
@@ -21,7 +21,6 @@ from retiresmartz.models import RetirementPlan, RetirementPlanEinc
 from django.views.generic.detail import SingleObjectMixin
 from . import serializers
 from django.core.urlresolvers import reverse
-from django.contrib import messages
 import logging
 
 logger = logging.getLogger('api.v1.client.views')
@@ -267,10 +266,13 @@ class ProfileView(ApiViewMixin, RetrieveUpdateAPIView):
 
 
 class ClientResendInviteView(SingleObjectMixin, views.APIView):
-    permission_classes = []
+    permission_classes = [IsAuthenticated, ]
     queryset = EmailInvite.objects.all()
 
     def post(self, request, *args, **kwargs):
         invite = self.get_object()
+        logger.error(invite)
+        if invite.user != self.request.user:
+            return Response('forbidden', status=status.HTTP_403_FORBIDDEN)
         invite.send()
         return Response('ok', status=status.HTTP_200_OK)

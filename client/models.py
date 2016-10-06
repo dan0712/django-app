@@ -643,7 +643,7 @@ class EmailInvite(models.Model):
 
     @property
     def can_resend(self):
-        return self.status in [self.STATUS_CREATED, self.STATUS_SENT]
+        return self.status in [self.STATUS_CREATED, self.STATUS_SENT, self.STATUS_ACCEPTED]
 
     def send(self):
         if not self.can_resend:
