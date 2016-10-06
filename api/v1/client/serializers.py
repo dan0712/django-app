@@ -11,7 +11,6 @@ from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfi
     AccountTypeRiskProfileGroup
 from notifications.signals import notify
 from main import constants
-
 from ..user.serializers import UserFieldSerializer
 
 RESIDENTIAL_ADDRESS_KEY = 'residential_address'
@@ -197,7 +196,7 @@ class InvitationSerializer(ReadOnlyModelSerializer):
         return obj.advisor.firm.name
 
     def get_firm_logo(self, obj):
-        return obj.advisor.firm.logo
+        return obj.advisor.firm.logo.url
 
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
@@ -234,7 +233,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
         return obj.advisor.firm.name
 
     def get_firm_logo(self, obj):
-        return obj.advisor.firm.logo
+        return obj.advisor.firm.logo.url
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):
