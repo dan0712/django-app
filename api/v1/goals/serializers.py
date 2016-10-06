@@ -580,20 +580,6 @@ class GoalCreateSerializer(NoUpdateModelSerializer):
                                       rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
                                       rebalance_thr=0.05,
                                       configured_val=recommended_risk)
-            GoalMetric.objects.create(group=metric_group,
-                                      type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
-                                      feature=AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object(),
-                                      comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
-                                      rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
-                                      rebalance_thr=0.05,
-                                      configured_val=1.0)
-            GoalMetric.objects.create(group=metric_group,
-                                      type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
-                                      feature=AssetFeatureValue.Standard.REGION_AUSTRALIAN.get_object(),
-                                      comparison=GoalMetric.METRIC_COMPARISON_MINIMUM,
-                                      rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
-                                      rebalance_thr=0.05,
-                                      configured_val=0.3)
             if validated_data['ethical']:
                 GoalMetric.objects.create(
                     group=metric_group,
