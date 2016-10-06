@@ -26,6 +26,7 @@ logger = logging.getLogger('rebalance')
 
 tax_bracket_less1Y = 0.3
 tax_bracket_more1Y = 0.2
+max_weight_sum = 1.0001
 
 def optimise_up(opt_inputs, min_weights):
     """
@@ -168,14 +169,27 @@ def get_mix_drift(weights, constraints):
     # Get the risk score given the portfolio mix constraints.
 
 
-def process_risk(weights, min_weights, goal):
+def process_risk(weights, held_weights, goal):
     """
     Checks if the weights are within our acceptable risk drift, and if not, perturbates to make it so.
+    check difference in risk between held weights and weights
+
+    if difference big, start perturbating - decreasing/increasing risk of weights as needed
+
+
     :param weights:
     :param min_weights:
     :return: (changed,
     """
 
+    metric = GoalMetric.objects\
+        .filter(group__settings__goal_active=goal)\
+        .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE)\
+        .first()
+
+    level = metric.get_risk_level()
+
+    print('a')
 
 
 def perturbate_risk(min_weights, removals):
@@ -201,47 +215,27 @@ def perturbate_risk(min_weights, removals):
 
 
 def perturbate_withdrawal(goal):
-    """
-    For each performance group, starting from the top, remove assets until we have a <1 min weight sum scenario.
-    start removing first from metric where difference is biggest, and start with tax winners, same procedure as with perturbate_mix
+    # start getting rid of lots in units of 0.01 of a lot, and always check if we are already in 100%
+    position_lots = _get_position_lots(goal)
 
-    use specific lots technique - so perf. groups will not help, but we will need to calculate lots for current holding, calculate specific lots for holding
-     and then start selling largest tax gain to largest tax loss (largest losers to largest winners)
-     To use specific lots technique, we need to know tax burden 1Y> and 1Y<, e.g. 28% vs 15%
+    desired_lots = position_lots[:]
+    weights = get_weights(desired_lots, goal.available_balance)
 
-     specific lots vs. getting close to portfolio mix (in active_settings.portfolio.portfolio_items vs current holdings?)
--------------------------------------------------------------------------------
-    - For each performance group, starting from the top, remove assets until we have a <1 min weight sum scenario.
-    start removing first from metric where difference is biggest, and start with tax winners, same procedure as with perturbate_mix
-
-
-        - Calculate the drift due to portfolio mix metrics using current minimums
-        - while we have overweight drift due to portfolio mix metrics:
-            - For each performance group, starting from    the top,
-                - Build a group of assets from the overweight features in the current performance group.
-                    - Choose the most overweight
-                    - Remove enough units to bring its weight to the port weight, available from the active-settings.
-            - Then biggest looser / weakest winner first, preferring assets we have already removed..
-    :return: A set of weights tht sum to < 1"""
-    return perturbate_mix(goal)
+    for lot in desired_lots:
+        while lot['quantity'] > 0 and sum(weights.values()) > max_weight_sum:
+            lot['quantity'] -= 1
+            lot['quantity'] = max(lot['quantity'], 0)
+            weights = get_weights(desired_lots, goal.available_balance)
+        if sum(weights.values()) <= max_weight_sum:
+            return weights
 
 
-
-def perturbate_mix(goal, min_weights):
-    """
-                        order assets into groups of metrics constraints - compare with metrics constraints in settings
-                        go into group with biggest difference - start selling assets from the group (from lowest tax loss further)
-                        until sum of current assets in group == metric constraint for that group
-                        try to find solution
-                        repeat until solution found
-    """
-    metrics = GoalMetric.objects.\
-        filter(group__settings__goal_active=goal).\
-        filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX).\
-        filter(Q(comparison=GoalMetric.METRIC_COMPARISON_EXACTLY) |
-               Q(comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM))
-        #only exact or maximums - we are interested in sells only
-
+def _get_position_lots(goal):
+    '''
+    returns position lots sorted by unit tax cost for a given goal
+    :param goal:
+    :return:
+    '''
     year_ago = timezone.now() - timedelta(days=365)
     position_lots = PositionLot.objects.filter(quantity__gt=0) \
                         .filter(execution_distribution__transaction__from_goal=goal) \
@@ -254,8 +248,27 @@ def perturbate_mix(goal, min_weights):
                           When(executed__lte=year_ago, then=Value(tax_bracket_more1Y)),
                           output_field=FloatField())) \
                         .annotate(unit_tax_cost=(F('current_price') - F('price')) * F('tax_bracket')) \
-                        .values('id', 'price', 'quantity', 'executed', 'unit_tax_cost','ticker_id','current_price') \
+                        .values('id', 'price', 'quantity', 'executed', 'unit_tax_cost', 'ticker_id', 'current_price') \
                         .order_by('-unit_tax_cost')
+    return position_lots
+
+
+def perturbate_mix(goal, min_weights):
+    """
+                        order assets into groups of metrics constraints - compare with metrics constraints in settings
+                        go into group with biggest difference - start selling assets from the group (from lowest tax loss further)
+                        until sum of current assets in group == metric constraint for that group
+                        try to find solution
+                        repeat until solution found
+    """
+    position_lots = _get_position_lots(goal)
+
+    metrics = GoalMetric.objects.\
+        filter(group__settings__goal_active=goal).\
+        filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX).\
+        filter(Q(comparison=GoalMetric.METRIC_COMPARISON_EXACTLY) |
+               Q(comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM))
+        #only exact or maximums - we are interested in sells only
 
     metrics_weights = defaultdict(defaultdict)
     for metric in metrics:
@@ -279,7 +292,7 @@ def perturbate_mix(goal, min_weights):
     for metric_id, drift in sorted_positive_drifts:
         # we are in group with biggest difference now
         metric = [m for m in metrics if m.id == metric_id][0]
-        _sell_quantity(desired_lots, metrics_weights[metric_id]['asset_ids'], goal, metric)
+        _sell_due_to_drift(desired_lots, metrics_weights[metric_id]['asset_ids'], goal, metric)
 
     weights = get_weights(desired_lots, goal.available_balance)
     return weights
@@ -325,7 +338,7 @@ def _get_drift(measured_val, goal_metric):
         return ((measured_val - goal_metric.configured_val) / goal_metric.configured_val) / goal_metric.rebalance_thr
 
 
-def _sell_quantity(position_lots, asset_ids, goal, metric):
+def _sell_due_to_drift(position_lots, asset_ids, goal, metric):
     """
     how much to sell to get to drift 0
     :param position_lots: list of tuples, where each tuple contains info for position lot ('id', 'price', 'quantity', 'executed', 'unit_tax_cost')
@@ -417,16 +430,17 @@ def perturbate(goal, idata, data_provider, execution_provider):
         weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:
-        # We have a withdrawal or mix drift, perturbate.
-        if sum(held_weights.values()) > 1.0001:
+        if sum(held_weights.values()) > max_weight_sum:
             reason = execution_provider.get_execution_request(Reason.WITHDRAWAL.value)
+            min_weights = perturbate_withdrawal(goal)
+            weights = optimise_up(opt_inputs, min_weights)
         else:
             reason = execution_provider.get_execution_request(Reason.DRIFT.value)
 
+    if weights is None:
         min_weights = perturbate_mix(goal)
-        weights = optimise_up(min_weights)
+        weights = optimise_up(opt_inputs, min_weights)
         weights = process_risk(weights, held_weights)
-
     else:
         # We got a satisfiable optimisation (mix metrics satisfied), now check and fix any risk drift.
         new_weights = process_risk(weights, held_weights)

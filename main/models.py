@@ -1715,7 +1715,7 @@ class Goal(models.Model):
         # Experimental
         goal_metric = GoalMetric.objects \
             .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE) \
-            .filter(group__settings__goal_approved=self) \
+            .filter(group__settings__goal_active=self) \
             .first()
 
         if goal_metric:
