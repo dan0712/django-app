@@ -40,12 +40,11 @@ class StatementTest(TestCase):
         TEST_TEMPLATE = "statements/_test_soa.html"
         soa = StatementOfAdviceFactory(account=self.betasmartz_client_account)
 
-
         html = soa.render_template(TEST_TEMPLATE)
         # Make sure we have the basic stuff
         self.assertIn(self.betasmartz_client.full_name, html)
         self.assertIn(self.betasmartz_client.advisor.name, html)
-        self.assertIn(self.betasmartz_client.firm.colored_logo, html)
+        self.assertIn(self.betasmartz_client.firm.colored_logo.replace('&', '&amp;'), html)
 
         test_pdf = soa.render_pdf(TEST_TEMPLATE)
         real_soa = soa.render_pdf()

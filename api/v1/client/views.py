@@ -146,7 +146,7 @@ class InvitesView(ApiViewMixin, views.APIView):
     permission_classes = []
     serializer_class = serializers.PrivateInvitationSerializer
     parser_classes = (
-        parsers.MultiPartParser, parsers.JSONParser,
+        parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,
     )
 
     def get(self, request, invite_key):

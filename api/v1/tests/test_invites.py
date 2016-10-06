@@ -112,6 +112,7 @@ class InviteTests(APITestCase):
                          msg='/api/v1/invites/:key should not show onboarding_data to anonymous')
         # verify firm data is present in response
         self.assertEqual(response.data['firm_logo'], lookup_invite.advisor.firm.logo.url)
+        self.assertEqual(response.data['firm_colored_logo'], lookup_invite.advisor.firm.colored_logo)
         self.assertEqual(response.data['firm_name'], lookup_invite.advisor.firm.name)
 
     def test_register_logout_then_login(self):
@@ -218,6 +219,7 @@ class InviteTests(APITestCase):
         # Submit with onboarding_data
         onboarding = {'onboarding_data': {'foo': 'bar'}}
         response = self.client.put(invite_detail_url, data=onboarding)
+
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Onboarding must accept json objects')
@@ -227,7 +229,7 @@ class InviteTests(APITestCase):
                          msg='should save onboarding_file')
 
         # Submit with onboarding_file_1
-        fh = SimpleUploadedFile("test.txt", b'123')
+        fh = SimpleUploadedFile("tax_transcript.pdf", b'123')
         onboarding = {'onboarding_file_1': fh}
         response = self.client.put(invite_detail_url, data=onboarding,
                                    format='multipart')
@@ -242,11 +244,6 @@ class InviteTests(APITestCase):
                             msg='onboarding_file_1 is not null')
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
-
-        response = self.client.get(invite_detail_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response._headers['content-type'], ('Content-Type', 'application/json'),
-                         msg='Response content type is application/json after upload')
 
     def test_complete_invitation(self):
 

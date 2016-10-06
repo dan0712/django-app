@@ -9,6 +9,7 @@ class FirmSerializer(ReadOnlyModelSerializer):
         fields = (
             'id',
             'logo',
+            'colored_logo',
             'name',
             'slug',
         )

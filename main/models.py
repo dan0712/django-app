@@ -40,6 +40,7 @@ from .managers import ExternalAssetQuerySet, GoalQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.functional import cached_property
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 logger = logging.getLogger('main.models')
 
@@ -419,21 +420,21 @@ class Firm(models.Model):
     def white_logo(self):
 
         if self.logo is None:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
         elif not self.logo.name:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
 
-        return settings.MEDIA_URL + self.logo.name
+        return self.logo.url
 
     @property
     def colored_logo(self):
 
         if self.knocked_out_logo is None:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
         elif not self.knocked_out_logo.name:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
 
-        return settings.MEDIA_URL + self.knocked_out_logo.name
+        return self.knocked_out_logo.url
 
     @property
     def fees_ytd(self):

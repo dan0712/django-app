@@ -177,6 +177,7 @@ class InvitationSerializer(ReadOnlyModelSerializer):
     """
     firm_name = serializers.SerializerMethodField()
     firm_logo = serializers.SerializerMethodField()
+    firm_colored_logo = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -190,13 +191,17 @@ class InvitationSerializer(ReadOnlyModelSerializer):
             'advisor',
             'firm_name',
             'firm_logo',
+            'firm_colored_logo',
         )
 
     def get_firm_name(self, obj):
         return obj.advisor.firm.name
 
     def get_firm_logo(self, obj):
-        return obj.advisor.firm.logo.url
+        return obj.advisor.firm.white_logo
+
+    def get_firm_colored_logo(self, obj):
+        return obj.advisor.firm.colored_logo
 
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
@@ -210,6 +215,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
     risk_profile_group = serializers.SerializerMethodField()
     firm_name = serializers.SerializerMethodField()
     firm_logo = serializers.SerializerMethodField()
+    firm_colored_logo = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -224,6 +230,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'advisor',
             'firm_name',
             'firm_logo',
+            'firm_colored_logo',
         )
 
     def get_risk_profile_group(self, obj):
@@ -233,7 +240,10 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
         return obj.advisor.firm.name
 
     def get_firm_logo(self, obj):
-        return obj.advisor.firm.logo.url
+        return obj.advisor.firm.white_logo
+
+    def get_firm_colored_logo(self, obj):
+        return obj.advisor.firm.colored_logo
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):
