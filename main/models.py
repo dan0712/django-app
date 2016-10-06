@@ -36,7 +36,7 @@ from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .managers import ExternalAssetQuerySet, GoalQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.functional import cached_property
@@ -2181,6 +2181,8 @@ class PositionLot(models.Model):
     execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
     quantity = models.FloatField(null=True, blank=True, default=None)
     #quantity get decreased on every sell, until it it zero, then delete the model
+
+    objects = PositionLotQuerySet.as_manager()
 
 
 class Sale(models.Model):

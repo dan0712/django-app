@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.views.generic import TemplateView
+from django.core.urlresolvers import reverse
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
 from main.models import Transaction, Goal, GoalType, MarketOrderRequest, Execution, ExecutionDistribution
@@ -12,11 +13,14 @@ from api.v1.tests.factories import ClientAccountFactory, \
     ExternalAssetFactory, TickerFactory, \
     SupervisorFactory, AuthorisedRepresentativeFactory, \
     InvestmentTypeFactory, PositionLotFactory, \
-    ExternalAssetFactory, TickerFactory
+    ExternalAssetFactory, TickerFactory, \
+    GroupFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+from rest_framework import status
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class FirmAnalyticsMixinTests(TestCase):
@@ -25,6 +29,7 @@ class FirmAnalyticsMixinTests(TestCase):
 
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.bonds_type = InvestmentType.Standard.BONDS.get()
         self.stocks_type = InvestmentType.Standard.STOCKS.get()
 
@@ -263,3 +268,13 @@ class FirmAnalyticsMixinTests(TestCase):
         actual_categories = [x.get('category') for x in context]
         for category in expected_categories:
             self.assertTrue(category in actual_categories)
+
+    def test_get_firm_analytics(self):
+        """
+        Test get request to firm analytics page
+        """
+        url = reverse('firm:analytics')
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
