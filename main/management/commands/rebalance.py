@@ -172,9 +172,14 @@ def get_mix_drift(weights, constraints):
 def process_risk(weights, held_weights, goal):
     """
     Checks if the weights are within our acceptable risk drift, and if not, perturbates to make it so.
-    check difference in risk between held weights and weights
+    check difference in risk between held weights and weights - weights should be target? and if risk in held_weights
+    different than in weights - perturbate_risk
 
     if difference big, start perturbating - decreasing/increasing risk of weights as needed
+
+    we can increase risk by buying more of a risky asset, selling less risky asset
+    but even if we start removing risky asset, total risk can increase due to correlation
+    so this is iterative problem, not analytical
 
 
     :param weights:
@@ -188,30 +193,20 @@ def process_risk(weights, held_weights, goal):
         .first()
 
     level = metric.get_risk_level()
+    weights = perturbate_risk(goal=goal)
 
     print('a')
 
 
-def perturbate_risk(min_weights, removals):
-    """
-    Weighted vol is not the right metric here to rate removability. We want to look at what happens to portfolio risk
-    (currently historic variance) when the instrument is removed, rather than looking at the instrument in isolation.
-    - While we have drift due to risk > 25% of our threshold,
-    - For each performance group, starting from the top, remove assets from the minimal set:
-      - If the current risk is higher:
-        - Build a group of assets that have increased in volatility*current_weight against the active-portfolio.
-            - Prefer an asset that has already been removed
-            - Choose the highest volatility*weight delta.
-            - Remove enough units from minimal set to bring it's volatility*weight down to the active-portfolio level.
-      - If the current risk is lower:
-        - Build a group of assets that have decreased in volatility/current_weight against the active-portfolio.
-            - Prefer an asset that has already been removed
-            - Choose the biggest volatility_weight delta.
-            - Remove enough units from minimal set to increase it's volatility/current_weight up to the active-portfolio level.
-      - Reoptimise and calculate drift due to risk using the new optimised weights.
-    :return: An optimised set of weights that also have acceptable risk_drift
-    """
-    pass
+def perturbate_risk(min_weights, removals, goal):
+    position_lots = _get_position_lots(goal)
+
+    #get statistics for each lot - unit_risk (positive or negative number) calculated by removing position lot from portfolio
+    # and seeing how much risk of the portfolio changes (increases or decreases)
+
+    #multiply unit_risk with unit_tax_cost to arrive at number how quickly we get closer to desired risk - marginal tax_risk
+    #prefer highest marginal tax_risk - start selling those first
+    #if we need to increase risk - start selling negative tax_risks? - so always be selling as an adjustment?
 
 
 def perturbate_withdrawal(goal):
