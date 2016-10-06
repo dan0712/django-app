@@ -2175,6 +2175,9 @@ class ExecutionDistribution(models.Model):
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
 
+    def __str__(self):
+        return "{}|{}|{}".format(self.execution, self.transaction, self.volume)
+
 
 class PositionLot(models.Model):
     #create on every buy
@@ -2183,6 +2186,9 @@ class PositionLot(models.Model):
     #quantity get decreased on every sell, until it it zero, then delete the model
 
     objects = PositionLotQuerySet.as_manager()
+
+    def __str__(self):
+        return "{}|{}".format(self.execution_distribution, self.quantity)
 
 
 class Sale(models.Model):
