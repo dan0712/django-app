@@ -213,6 +213,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             scores['s_score'] / extents['max_s_sum'],
         )
 
+
 class IBAccount(models.Model):
     '''
     Specification of Interactive Brokers Account
@@ -263,7 +264,6 @@ class ClientAccount(models.Model):
 
     class Meta:
         unique_together = ('primary_owner', 'account_name')
-
 
     def __init__(self, *args, **kwargs):
         super(ClientAccount, self).__init__(*args, **kwargs)

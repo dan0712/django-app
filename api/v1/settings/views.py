@@ -57,19 +57,11 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'], url_path='account-types')
     def account_types(self, request):
-        maps = dict(AccountTypeRiskProfileGroup.objects
-                    .values_list('account_type', 'risk_profile_group__id'))
         res = []
         for key, value in constants.ACCOUNT_TYPES:
-            rpg = maps.get(key, None)
-            if rpg is None:
-                raise Exception("Configuration Error: AccountType: {}({}) "
-                                "has no default Risk Profile Group."
-                                .format(value, key))
             res.append({
                 "id": key,
-                "name": value,
-                "default_risk_profile_group": rpg,
+                "name": value
             })
 
         return Response(res)

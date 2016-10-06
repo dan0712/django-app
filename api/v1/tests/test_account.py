@@ -23,9 +23,6 @@ class AccountTests(APITestCase):
             'primary_owner': client.id,
         }
         old_count = ClientAccount.objects.count()
-        # The account creator gets the risk profile group from the default for the account, so we need to set that up.
-        AccountTypeRiskProfileGroup.objects.create(account_type=ACCOUNT_TYPE_PERSONAL,
-                                                   risk_profile_group=Fixture1.risk_profile_group1())
         self.client.force_authenticate(user=Fixture1.client1_user())
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
