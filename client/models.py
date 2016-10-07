@@ -297,7 +297,6 @@ class ClientAccount(models.Model):
             invitation.status = EmailInvite.STATUS_COMPLETE
             invitation.save()
 
-
     def remove_from_group(self):
         old_group = self.account_group
 

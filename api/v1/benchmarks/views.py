@@ -11,6 +11,8 @@ from ..views import ApiViewMixin
 
 
 class AvailableListView(ApiViewMixin, generics.ListAPIView):
+    # We don't want pagination on benchmarks, as usually callers will want them all.
+    pagination_class = None
     serializer_class = BenchmarkSerializer
 
     def get_queryset(self):
@@ -18,6 +20,9 @@ class AvailableListView(ApiViewMixin, generics.ListAPIView):
 
 
 class ReturnsView(ApiViewMixin, generics.ListAPIView):
+    # We don't want pagination on benchmark returns, as there is a range feature.
+    pagination_class = None
+
     def get_query_date(self, name):
         try:
             dt = parser.parse(self.request.query_params.get(name))
