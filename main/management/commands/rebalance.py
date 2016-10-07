@@ -20,6 +20,7 @@ from django.db.models import Sum, F, Case, When, Value, FloatField
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
+from portfolios.management.commands.measure_goals import get_risk_score
 import operator
 
 logger = logging.getLogger('rebalance')
@@ -169,7 +170,7 @@ def get_mix_drift(weights, constraints):
     # Get the risk score given the portfolio mix constraints.
 
 
-def process_risk(weights, held_weights, goal):
+def process_risk(weights, goal, idata, data_provider, execution_provider):
     """
     Checks if the weights are within our acceptable risk drift, and if not, perturbates to make it so.
     check difference in risk between held weights and weights - weights should be target? and if risk in held_weights
@@ -186,7 +187,7 @@ def process_risk(weights, held_weights, goal):
     :param min_weights:
     :return: (changed,
     """
-
+    risk_score = get_risk_score(goal, weights, idata, data_provider, execution_provider)
     metric = GoalMetric.objects\
         .filter(group__settings__goal_active=goal)\
         .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE)\
@@ -200,6 +201,9 @@ def process_risk(weights, held_weights, goal):
 
 def perturbate_risk(min_weights, removals, goal):
     position_lots = _get_position_lots(goal)
+    # for each lot get information whether removing this lot would increase/decrease total portfolio risk
+    # start removing lots that get our portfolio risk in right direction, starting from lowest tax lost
+    # iterate until our risk == desired risk
 
     #get statistics for each lot - unit_risk (positive or negative number) calculated by removing position lot from portfolio
     # and seeing how much risk of the portfolio changes (increases or decreases)
@@ -234,16 +238,16 @@ def _get_position_lots(goal):
     year_ago = timezone.now() - timedelta(days=365)
     position_lots = PositionLot.objects.filter(quantity__gt=0) \
                         .filter(execution_distribution__transaction__from_goal=goal) \
-                        .annotate(price=F('execution_distribution__execution__price'),
+                        .annotate(price_entry=F('execution_distribution__execution__price'),
                                   executed=F('execution_distribution__execution__executed'),
-                                  current_price=F('execution_distribution__execution__asset__unit_price'),
+                                  price=F('execution_distribution__execution__asset__unit_price'),
                                   ticker_id=F('execution_distribution__execution__asset_id')) \
                         .annotate(tax_bracket=Case(
                           When(executed__gt=year_ago, then=Value(tax_bracket_less1Y)),
                           When(executed__lte=year_ago, then=Value(tax_bracket_more1Y)),
                           output_field=FloatField())) \
-                        .annotate(unit_tax_cost=(F('current_price') - F('price')) * F('tax_bracket')) \
-                        .values('id', 'price', 'quantity', 'executed', 'unit_tax_cost', 'ticker_id', 'current_price') \
+                        .annotate(unit_tax_cost=(F('price_entry') - F('price')) * F('tax_bracket')) \
+                        .values('id', 'price_entry', 'quantity', 'executed', 'unit_tax_cost', 'ticker_id', 'price') \
                         .order_by('-unit_tax_cost')
     return position_lots
 
@@ -315,7 +319,7 @@ def _get_measured_val(position_lots, asset_ids, goal):
     The function duplicates GoalMetric.measured_val - but does all calculation on in-memory data structures
     """
     amount_shares = float(np.sum(
-        [pos['current_price'] * pos['quantity'] if pos['ticker_id'] in asset_ids else 0 for pos in position_lots]
+        [pos['price'] * pos['quantity'] if pos['ticker_id'] in asset_ids else 0 for pos in position_lots]
     ))
     return amount_shares / goal.available_balance
 
@@ -364,32 +368,6 @@ def _sell_due_to_drift(position_lots, asset_ids, goal, metric):
 
         if abs(drift) < 1:
             break
-
-
-def get_perf_groups(goal):
-    """
-    - collect all assets into performance groups below:
-    - Assets with a short-term loss (< 1 year)
-    - Assets with a long-term loss (> 1 year)
-    - Assets with a long-term gain (> 1 year)
-    - Assets with a short-term gain (< 1 year) (the remaining)
-
-
-    :return: (STL Perf, LTL Perf, LTG Perf, STG Perf)
-        Where a Perf is dict asset_id -> [(perf, volume)]. The list is ordered from biggest loser to biggest winner.
-            Where perf is a loss (-) or gain (+) of the double volume amount.
-            The reason we have many volumes per ticker is because we can buy or sell lots at different times,
-            and hold times are per lot.
-    """
-
-    # Assuming the tax rules are FIFO, for each asset, search backwards through the executions until the sum of the buys
-    # is greater than or equal to the current position.
-    # As I am working back, add each lot to the
-    #  appropriate result list
-
-    #positions = Position.objects.filter()
-    #executions = Execution.objects.filter()
-    pass
 
 
 def get_largest_min_weight_per_asset(held_weights,tax_weights):

@@ -18,6 +18,9 @@ class DataProviderDjango(DataProviderAbstract):
     def get_fund_price_latest(self, ticker):
         return ticker.daily_prices.order_by('-date')[0].price
 
+    def get_instrument_daily_prices(self, ticker):
+        return ticker.daily_prices.order_by('-date')
+
     def get_features(self, ticker):
         return ticker.features.values_list('id', flat=True)
 

@@ -81,6 +81,17 @@ class PortfolioSetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'PortfolioSet %d' % n)
     risk_free_rate = factory.Sequence(lambda n: n * .01)
 
+    @factory.post_generation
+    def asset_classes(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.asset_classes.add(item)
+
 
 class FiscalYearFactory(factory.django.DjangoModelFactory):
     class Meta:

@@ -42,6 +42,10 @@ class DataProviderBacktester(DataProviderAbstract):
             print("cannot move date forward")
         return success
 
+    def get_instrument_daily_prices(self, ticker):
+        prices = get_prices(ticker, self.get_start_date(), self.get_current_date())
+        return prices
+
     def get_current_date(self):
         date = self.dates[self.__current_date]
         return pd.Timestamp(date).to_datetime()
@@ -51,7 +55,7 @@ class DataProviderBacktester(DataProviderAbstract):
         return pd.Timestamp(date).to_datetime()
 
     def get_fund_price_latest(self, ticker):
-        prices = get_prices(ticker, self.get_start_date(), self.get_current_date())
+        prices = self.get_instrument_daily_prices(ticker)
         prices = prices.irow(-1)
         return prices
 

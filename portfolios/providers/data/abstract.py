@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 
 class DataProviderAbstract(ABC):
     @abstractmethod
+    def get_instrument_daily_prices(self, ticker):
+        raise NotImplementedError()
+
+    @abstractmethod
     def get_instrument_cache(self):
         raise NotImplementedError()
 
