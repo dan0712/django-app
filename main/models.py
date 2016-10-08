@@ -1086,7 +1086,7 @@ class Ticker(FinancialInstrument):
         """
         # AssetFeatureValue types
         satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
-        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()        
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
 
         logger.info('Populating features for ticker %s' % self)
         r_feat = self.get_region_feature_value()
@@ -1871,13 +1871,23 @@ class Goal(models.Model):
 
         term = (self.selected_settings.completion.year - today.year
                 if self.selected_settings else None)
-
         return term
 
     @property
     def auto_term(self):
         return "{0}y".format(self.get_term)
 
+
+    @property
+    def amount_achieved(self):
+        if self.selected_settings is None:
+            return False
+
+        # If we don't have a target or completion date, we have no concept of OnTrack.
+        if self.selected_settings.target is None:
+            return False
+
+        return self.total_balance >= self.selected_settings.target
 
 class HistoricalBalance(models.Model):
     """
