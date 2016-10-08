@@ -71,8 +71,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
     last_action = models.DateTimeField(null=True)
-    risk_profile_group = models.ForeignKey('RiskProfileGroup',
-                                           related_name='clients', null=True)
+    risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='clients', null=True)
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
 
     objects = ClientQuerySet.as_manager()
@@ -214,6 +213,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             scores['s_score'] / extents['max_s_sum'],
         )
 
+
 class IBAccount(models.Model):
     '''
     Specification of Interactive Brokers Account
@@ -238,6 +238,9 @@ class ClientAccount(models.Model):
                                       related_name="primary_accounts")
     created_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=36, editable=False)
+    # The confirmed field indicates the account is fully ready to be used by the client.
+    # The ClientAccount should be responsible for checking and setting the confirmed filed through
+    # an as yet undefined set_confirmed() method.
     confirmed = models.BooleanField(default=False)
     tax_loss_harvesting_consent = models.BooleanField(default=False)
     tax_loss_harvesting_status = models.CharField(max_length=255, choices=(
@@ -261,7 +264,6 @@ class ClientAccount(models.Model):
 
     class Meta:
         unique_together = ('primary_owner', 'account_name')
-
 
     def __init__(self, *args, **kwargs):
         super(ClientAccount, self).__init__(*args, **kwargs)
@@ -294,7 +296,6 @@ class ClientAccount(models.Model):
             invitation.onboarding_data = None
             invitation.status = EmailInvite.STATUS_COMPLETE
             invitation.save()
-
 
     def remove_from_group(self):
         old_group = self.account_group
@@ -635,14 +636,13 @@ class EmailInvite(models.Model):
     onboarding_data = JSONField(null=True, blank=True)
     onboarding_file_1 = models.FileField(null=True, blank=True)
 
-
-    def __unicode__(self):
+    def __str__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
                                       self.last_name, self.email)
 
     @property
     def can_resend(self):
-        return self.status in [self.STATUS_CREATED, self.STATUS_SENT]
+        return self.status in [self.STATUS_CREATED, self.STATUS_SENT, self.STATUS_ACCEPTED]
 
     def send(self):
         if not self.can_resend:
@@ -664,6 +664,11 @@ class EmailInvite(models.Model):
         self.send_count += 1
 
         self.save(update_fields=['last_sent_at', 'send_count', 'status'])
+
+    class Meta:
+        # shouldn't have multiple EmailInvites from same advisor to same email address
+        unique_together = ('advisor', 'email')
+
 
 class RiskCategory(models.Model):
     upper_bound = models.FloatField(validators=[MinValueValidator(0),

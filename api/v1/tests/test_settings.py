@@ -38,25 +38,10 @@ class SettingsTests(APITestCase):
         url = '/api/v1/settings/account-types'
         self.client.force_authenticate(user=Fixture1.client1().user)
 
-        # Make sure we have a problem when getting the account types.
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        # Populate the rest of the account mappings
-        m2 = AccountTypeRiskProfileGroup.objects.create(account_type=ACCOUNT_TYPE_JOINT,
-                                                        risk_profile_group=Fixture1.risk_profile_group1())
-        m3 = AccountTypeRiskProfileGroup.objects.create(account_type=ACCOUNT_TYPE_CORPORATE,
-                                                        risk_profile_group=Fixture1.risk_profile_group1())
-        m4 = AccountTypeRiskProfileGroup.objects.create(account_type=ACCOUNT_TYPE_SMSF,
-                                                        risk_profile_group=Fixture1.risk_profile_group1())
-        m5 = AccountTypeRiskProfileGroup.objects.create(account_type=ACCOUNT_TYPE_TRUST,
-                                                        risk_profile_group=Fixture1.risk_profile_group1())
-
-        # Make sure all ok now.
+        # Make sure all ok.
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 5)
-        self.assertEqual(response.data[0]['default_risk_profile_group'], Fixture1.risk_profile_group1().id)
 
     def test_all_settings(self):
         # Populate a goal type

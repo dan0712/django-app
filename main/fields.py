@@ -1,11 +1,11 @@
 import re
-import ujson
 from django import forms
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 color_re = re.compile('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 validate_color = RegexValidator(color_re, _('Enter a valid color.'), 'invalid')
@@ -13,7 +13,7 @@ validate_color = RegexValidator(color_re, _('Enter a valid color.'), 'invalid')
 
 class ColorWidget(forms.Widget):
     class Media:
-        js = [settings.STATIC_URL + 'colorfield/jscolor/jscolor.js']
+        js = [static('colorfield/jscolor/jscolor.js')]
 
     def render(self, name, value, attrs=None):
         return render_to_string('colorfield/color.html', locals())

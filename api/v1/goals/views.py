@@ -21,7 +21,7 @@ from api.v1.utils import activity
 from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
-    Transaction
+    Transaction, PositionLot
 from main.risk_profiler import risk_data
 from portfolios.calculation import Unsatisfiable, \
     calculate_portfolio, calculate_portfolios, current_stats_from_weights
@@ -158,8 +158,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     @detail_route(methods=['get'])
     def positions(self, request, pk=None, **kwargs):
         goal = self.get_object()
-
-        positions = goal.positions.all()
+        positions = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=goal)
         serializer = serializers.GoalPositionListSerializer(positions, many=True)
         return Response(serializer.data)
 
@@ -300,8 +299,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         if total_weight > 1.0001:
             raise ValidationError("Sum of item weights must be less than or equal to 1")
         try:
-            data_provider = DataProviderDjango()
-            er, stdev, _ = current_stats_from_weights(weights=port_items, data_provider=data_provider)
+            er, stdev, _ = current_stats_from_weights(port_items, DataProviderDjango())
         except Unsatisfiable as e:
             raise ValidationError(e.msg)
         return Response({'er': er, 'stdev': stdev})
@@ -419,7 +417,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @detail_route(methods=['get'], url_path='recommended-risk-score-data')
+    @detail_route(methods=['get'], url_path='risk-score-data')
     def recommended_risk_scores(self, request, pk=None, **kwargs):
         setting = self.get_object().selected_settings
         return Response(risk_data(setting))

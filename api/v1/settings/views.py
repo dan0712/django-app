@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework.decorators import list_route
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -56,19 +57,11 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'], url_path='account-types')
     def account_types(self, request):
-        maps = dict(AccountTypeRiskProfileGroup.objects
-                    .values_list('account_type', 'risk_profile_group__id'))
         res = []
         for key, value in constants.ACCOUNT_TYPES:
-            rpg = maps.get(key, None)
-            if rpg is None:
-                raise Exception("Configuration Error: AccountType: {}({}) "
-                                "has no default Risk Profile Group."
-                                .format(value, key))
             res.append({
                 "id": key,
-                "name": value,
-                "default_risk_profile_group": rpg,
+                "name": value
             })
 
         return Response(res)
@@ -116,7 +109,7 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
                              "name": value
                          } for key, value in comparisons.items()])
 
-    @list_route(methods=['get'], url_path='risk-profile-groups')
+    @list_route(methods=['get'], url_path='risk-profile-groups', permission_classes=[IsAuthenticated])
     def risk_profile_groups(self, request):
         groups = RiskProfileGroup.objects.all()
         serializer = serializers.RiskProfileGroupSerializer(groups, many=True)
@@ -171,6 +164,6 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'], url_path='retirement-lifestyles')
     def retirement_lifestyles(self, request):
-        lifestyles = retirement_models.RetirementLifestyle.objects.all()
+        lifestyles = retirement_models.RetirementLifestyle.objects.all().order_by('cost')
         serializer = serializers.RetirementLifestyleSerializer(lifestyles, many=True)
         return Response(serializer.data)

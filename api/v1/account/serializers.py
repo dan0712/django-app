@@ -3,7 +3,7 @@ from rest_framework import serializers
 from api.v1.serializers import (NoCreateModelSerializer,
                                 NoUpdateModelSerializer,
                                 ReadOnlyModelSerializer)
-from client.models import ClientAccount, RiskProfileAnswer, RiskProfileGroup
+from client.models import ClientAccount
 
 
 class ClientAccountSerializer(ReadOnlyModelSerializer):

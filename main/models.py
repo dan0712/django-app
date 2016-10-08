@@ -12,6 +12,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
+from django.db.models import Sum, F
+from django.db.models.functions import Coalesce
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
@@ -28,14 +30,17 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from main.risk_profiler import validate_risk_score
+from portfolios.returns import get_price_returns
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .management.commands.build_returns import get_price_returns
-from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.functional import cached_property
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 logger = logging.getLogger('main.models')
 
@@ -117,7 +122,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def full_name(self):
         return self.get_full_name()
 
-    @property
+    @cached_property
     def is_advisor(self):
         """
         Custom helper method for User class to check user type/profile.
@@ -127,28 +132,36 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return self._is_advisor
 
-    @property
+    @cached_property
     def is_authorised_representative(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_authorised_representative'):
-            ar = hasattr(self, 'authorised_representative')
-            self._is_authorised_representative = ar
+            self._is_authorised_representative = hasattr(self, 'authorised_representative')
 
         return self._is_authorised_representative
 
-    @property
+    @cached_property
     def is_client(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_client'):
             self._is_client = hasattr(self, 'client')
-
         return self._is_client
 
-    @property
+    @cached_property
+    def is_supervisor(self):
+        """
+        Custom helper method for User class to check user type/profile.
+        """
+        if not hasattr(self, '_is_supervisor'):
+            self._is_supervisor = hasattr(self, 'supervisor')
+
+        return self._is_supervisor
+
+    @cached_property
     def is_support_staff(self):
         if not hasattr(self, '_is_support_staff'):
             group = Group.objects.get(name=GROUP_SUPPORT_STAFF)
@@ -298,7 +311,7 @@ class ExternalAsset(models.Model):
     owner = models.ForeignKey('client.Client', related_name='external_assets')
     description = models.TextField(blank=True, null=True)
     valuation = models.DecimalField(decimal_places=2,
-                                    max_digits=15, # Up to 9.9... trillion
+                                    max_digits=15,  # Up to 9.9... trillion
                                     help_text='In the system currency. Could be negative if a debt')
     valuation_date = models.DateField(help_text='Date when the asset was valued')
     growth = models.DecimalField(decimal_places=4,
@@ -407,21 +420,21 @@ class Firm(models.Model):
     def white_logo(self):
 
         if self.logo is None:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
         elif not self.logo.name:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
 
-        return settings.MEDIA_URL + self.logo.name
+        return self.logo.url
 
     @property
     def colored_logo(self):
 
         if self.knocked_out_logo is None:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
         elif not self.knocked_out_logo.name:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
 
-        return settings.MEDIA_URL + self.knocked_out_logo.name
+        return self.knocked_out_logo.url
 
     @property
     def fees_ytd(self):
@@ -604,7 +617,8 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         except User.DoesNotExist:
             user = None
 
-        invitation_url = settings.SITE_URL + "/" + self.firm.slug + "/client/signup/" + self.token
+        email_invite = self.invites.filter(email=email).first()
+        invitation_url = settings.SITE_URL + "/client/onboarding/" + email_invite.invite_key
 
         # resending invitation
         if user:
@@ -910,9 +924,9 @@ class MarketIndex(FinancialInstrument):
 
     def get_returns(self, dates):
         """
-        Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        Get the daily returns series for the given index.
+        The data should be clean of outliers, but may have gaps.
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -994,18 +1008,18 @@ class Ticker(FinancialInstrument):
         return not self.is_core
 
     def value(self, goal):
-        v = 0
+        total_qty = PositionLot.objects.filter(execution_distribution__transaction__from_goal=goal).\
+            aggregate(Sum('quantity'))
 
-        for p in Position.objects.filter(goal=goal, ticker=self).all():
-            v += p.value
+        v = total_qty * self.unit_price
 
         return v
 
     def get_returns(self, dates):
         """
-        Get the longest available consecutive daily returns series from the end date.
-        :param start_date:
-        :param end_date:
+        Get the daily returns series for the given index.
+        The data may have gaps.
+        :param dates: The pandas index of dates to gather.
         :return: A pandas time-series of the returns
         """
         return get_price_returns(self, dates)
@@ -1031,8 +1045,8 @@ class Ticker(FinancialInstrument):
         elif name == 'EM':
             return AssetFeatureValue.objects.get_or_create(name='Emerging Markets', feature=region_feature)[0]
         else:
-            # tests run random region names, just going to set to an unknown region assetfeaturevalue here
-            return AssetFeatureValue.objects.get_or_create(name='Unknown region', feature=region_feature)[0]
+            # tests run random region names, and people may not put one of the standard regions in.
+            return AssetFeatureValue.objects.get_or_create(name=name, feature=region_feature)[0]
 
     def get_region_feature_value(self):
         """
@@ -1058,15 +1072,13 @@ class Ticker(FinancialInstrument):
         """
         Returns the AssetFeatureValue for Ticker's Asset Class Investment Type
         """
-        stocks = InvestmentType.objects.get(pk=1)
-        bonds = InvestmentType.objects.get(pk=2)
-        if self.asset_class.investment_type == stocks:
+        if self.asset_class.investment_type == InvestmentType.Standard.STOCKS.value:
             return AssetFeatureValue.Standard.ASSET_TYPE_STOCK.get_object()
-        else:
+        elif self.asset_class.investment_type == InvestmentType.Standard.BONDS.value:
             return AssetFeatureValue.Standard.ASSET_TYPE_BOND.get_object()
-
-    def get_ethical_feature_value(self):
-        return AssetFeatureValue.Standard.SRI_OTHER.get_object()
+        else:
+            return AssetFeatureValue.objects.get_or_create(name=self.asset_class.investment_type.name,
+                                                           feature=AssetFeature.Standard.ASSET_TYPE.get_object())[0]
 
     def populate_features(self):
         """
@@ -1084,8 +1096,7 @@ class Ticker(FinancialInstrument):
         self.features.clear()
         self.features.add(r_feat, ac_feat, curr_feat, at_feat)
         if self.ethical:
-            eth_feature_value = self.get_ethical_feature_value()
-            self.features.add(eth_feature_value)
+            self.features.add(AssetFeatureValue.Standard.SRI_OTHER.get_object())
         self.features.add(core_feature_value if self.etf else satellite_feature_value)
 
     def save(self,
@@ -1094,8 +1105,7 @@ class Ticker(FinancialInstrument):
              using=None,
              update_fields=None):
         self.symbol = self.symbol.upper()
-        super(Ticker, self).save(force_insert, force_update, using,
-                                 update_fields)
+        super(Ticker, self).save(force_insert, force_update, using, update_fields)
 
 
 @receiver(post_save, sender=Ticker)
@@ -1324,6 +1334,17 @@ class GoalSetting(models.Model):
         return self.portfolio.items.all()
 
     @property
+    def risk_score(self):
+        """
+        Returns the configured value of the risk score metric for this setting.
+        If no risk score metric is configured, returns None.
+        :return:
+        """
+        return GoalMetric.objects.filter(group=self.metric_group,
+                                         type=GoalMetric.METRIC_TYPE_RISK_SCORE).values_list('configured_val',
+                                                                                             flat=True).first()
+
+    @property
     def goal(self):
         if hasattr(self, 'goal_selected'):
             return self.goal_selected
@@ -1438,7 +1459,11 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        return Position.objects.filter(goal=self).all()
+        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+            annotate(ticker_id=F('execution_distribution__execution__asset__id'),
+                     price=F('execution_distribution__execution__asset__unit_price'))\
+            .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
+        return lots
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -1485,6 +1510,9 @@ class Goal(models.Model):
         if setting == old_setting:
             return
         self.selected_settings = setting
+        # We need to validate the risk score after assigning the setting to the goal because in the risk score checking,
+        # we go back to the goal from the setting to get information. If we do it any earlier, the info is not there.
+        validate_risk_score(setting)
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
             custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
@@ -1759,11 +1787,18 @@ class Goal(models.Model):
         predicted_balance = self.balance_at(self.selected_settings.completion)
         return predicted_balance >= self.selected_settings.target
 
+    def _sum_holdings(self, qs):
+        total_holdings = qs.filter(execution_distribution__transaction__from_goal=self).\
+            annotate(cur_price=F('execution_distribution__execution__asset__unit_price')).\
+            aggregate(total_value=Coalesce(Sum(F('cur_price') * F('quantity')), 0))
+
+        result = total_holdings['total_value']
+        return result
+
     @property
     def total_balance(self):
         b = self.cash_balance
-        for p in Position.objects.filter(goal=self).all():
-            b += p.value
+        b += self._sum_holdings(PositionLot.objects.all())
         return b
 
     @property
@@ -1775,35 +1810,29 @@ class Goal(models.Model):
 
     @property
     def stock_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_stock:
-                v += p.value
-        return v
+        stocks = InvestmentType.Standard.STOCKS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=stocks)
+        )
 
     @property
     def bond_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if not p.is_stock:
-                v += p.value
-        return v
+        bonds = InvestmentType.Standard.BONDS.get()
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=bonds)
+        )
 
     @property
     def core_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_core:
-                v += p.value
-        return v
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset__etf=True)
+        )
 
     @property
     def satellite_balance(self):
-        v = 0
-        for p in self.positions.all():
-            if p.is_satellite:
-                v += p.value
-        return v
+        return self._sum_holdings(
+            PositionLot.objects.filter(execution_distribution__execution__asset_etf=False)
+        )
 
     @property
     def total_return(self):
@@ -2060,36 +2089,6 @@ class GoalMetric(models.Model):
                                                                  self.id)
 
 
-class Position(models.Model):
-    class Meta:
-        unique_together = ('goal', 'ticker')
-
-    goal = models.ForeignKey(Goal, related_name='positions')
-    ticker = models.ForeignKey(Ticker)
-    share = models.FloatField(default=0)
-
-    objects = PositionQuerySet.as_manager()
-
-    @property
-    def is_stock(self):
-        return self.ticker.is_stock
-
-    @property
-    def is_core(self):
-        return self.ticker.is_core
-
-    @property
-    def is_satellite(self):
-        return self.ticker.is_satellite
-
-    @property
-    def value(self):
-        return self.share * self.ticker.unit_price
-
-    def __str__(self):
-        return "{}|{}|{}".format(self.goal, self.ticker.symbol, self.share)
-
-
 class MarketOrderRequest(models.Model):
     """
     A Market Order Request defines a request for an order to buy or sell one or more assets on a market.
@@ -2186,6 +2185,20 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
+
+
+class PositionLot(models.Model):
+    #create on every buy
+    execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
+    #quantity get decreased on every sell, until it it zero, then delete the model
+
+
+class Sale(models.Model):
+    #create on every sale
+    sell_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='sold_lot')
+    buy_execution_distribution = models.ForeignKey(ExecutionDistribution, related_name='bought_lot')
+    quantity = models.FloatField(null=True, blank=True, default=None)
 
 
 class SymbolReturnHistory(models.Model):

@@ -17,9 +17,10 @@ from django.db import transaction
 from scipy.optimize import minimize_scalar
 
 from main.models import Goal, GoalMetric, Position
-from portfolios.bl_model import markowitz_cost
+from portfolios.algorithms.markowitz import markowitz_cost
 from portfolios.calculation import Unsatisfiable, get_instruments, \
-    lambda_to_risk_score, optimize_settings, run_bl
+    optimize_settings, run_bl
+from portfolios.markowitz_scale import lambda_to_risk_score
 from portfolios.providers.data.django import DataProviderDjango
 
 logger = logging.getLogger("measure_goals")
@@ -127,6 +128,6 @@ class Command(BaseCommand):
     help = 'Measure and record all the metrics for all the goals in the system.'
 
     def handle(self, *args, **options):
-        idata = get_instruments()
+        idata = get_instruments(DataProviderDjango())
         for goal in Goal.objects.all():
             measure(goal, idata)

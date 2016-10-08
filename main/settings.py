@@ -158,6 +158,7 @@ PAGE_LANGUAGES = (
 
 LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/'
+LOGOUT_URL = '/logout'
 
 CMS_UNIHANDECODE_HOST = '/static/unihandecode/'
 CMS_UNIHANDECODE_VERSION = '1.0.0'
@@ -247,6 +248,6 @@ FEMALE_LIFE_EXPECTANCY = 84
 #SECURITY_QUESTIONS_CASE_SENSITIVE = False
 
 # What is the system currency?
-SYSTEM_CURRENCY = 'AUD'
+SYSTEM_CURRENCY = 'USD'
 
 from local_settings import *

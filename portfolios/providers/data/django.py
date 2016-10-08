@@ -1,19 +1,19 @@
+from collections import defaultdict
+
 from django.core.cache import cache
+from django.utils import timezone
 
 from main import redis
 from main.models import AssetFeatureValue, MarketCap, MarkowitzScale, \
-    PortfolioSet, Ticker
-from portfolios.calculation import *
+    PortfolioSet, Ticker, InvestmentCycleObservation, InvestmentCyclePrediction
+
 from .abstract import DataProviderAbstract
 
 
 class DataProviderDjango(DataProviderAbstract):
-    def move_date_forward(self):
-        # this function is only used in backtesting
-        pass
 
     def get_current_date(self):
-        return datetime.today()
+        return timezone.now().date()
 
     def get_fund_price_latest(self, ticker):
         return ticker.daily_prices.order_by('-date')[0].price
@@ -36,8 +36,14 @@ class DataProviderDjango(DataProviderAbstract):
         """
         return Ticker.objects.all()
 
-    def get_ticker(self, id):
-        return Ticker.objects.get(id=id)
+    def get_ticker(self, tid):
+        return Ticker.objects.get(id=tid)
+
+    def get_investment_cycles(self):
+        return InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
+
+    def get_investment_cycle_predictions(self):
+        return InvestmentCyclePrediction.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
 
     def get_market_weight(self, content_type_id, content_object_id):
         mp = MarketCap.objects.filter(instrument_content_type__id=content_type_id,
@@ -50,47 +56,24 @@ class DataProviderDjango(DataProviderAbstract):
     def get_asset_feature_values_ids(self):
         return AssetFeatureValue.objects.values_list('id', flat=True)
 
-    def get_masks(self, instruments, fund_mask_name, portfolio_set_mask_prefix):
-        masks = pd.DataFrame(False, index=instruments.index, columns=self.get_asset_feature_values_ids())
-        masks[fund_mask_name] = instruments['bid'].notnull()
-
-        psid_miloc = {}
-        portfolio_sets_ids = self.get_portfolio_sets_ids()
-        for psid in portfolio_sets_ids:
-            mid = portfolio_set_mask_prefix + str(psid)
-            masks[mid] = False
-            psid_miloc[psid] = masks.columns.get_loc(mid)
-
-        # Add the feature masks
-        for ix, row in enumerate(instruments.itertuples()):
-            for fid in row[5]:
-                masks.iloc[ix, masks.columns.get_loc(fid)] = True
-            for psid in row[6]:
-                masks.iloc[ix, psid_miloc[psid]] = True
-        return masks
-
     def get_goals(self):
         return
 
     def get_markowitz_scale(self):
         return MarkowitzScale.objects.order_by('-date').first()
 
-    def set_markowitz_scale(self, date, min, max, a, b ,c):
-        MarkowitzScale.objects.create(date=date,
-                                      min=min,
-                                      max=max,
+    def set_markowitz_scale(self, dt, mn, mx, a, b, c):
+        MarkowitzScale.objects.create(date=dt,
+                                      min=mn,
+                                      max=mx,
                                       a=a,
                                       b=b,
                                       c=c)
 
-    def get_instruments(self):
-        key = redis.KEY_INSTRUMENTS(datetime.today().date().isoformat())
-        data = cache.get(key)
+    def get_instrument_cache(self):
+        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
+        return cache.get(key)
 
-        if data is None:
-            data = build_instruments(data_provider=self)
-            cache.set(key, data, timeout=60 * 60 * 24)
-        return data
-
-    def set_cache(self, *args):
-        pass
+    def set_instrument_cache(self, data):
+        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
+        cache.set(key, data, timeout=60 * 60 * 24)

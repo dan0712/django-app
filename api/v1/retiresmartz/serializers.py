@@ -4,11 +4,11 @@ from django.db import transaction
 from django.utils.timezone import now
 
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
+from main.constants import GENDER_MALE
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
-from client.models import Client
 import json
 
 
@@ -22,20 +22,23 @@ def get_default_tx_plan():
 
 
 def get_default_life_expectancy(client):
-    return settings.MALE_LIFE_EXPECTANCY if client.gender == 'Male' else settings.FEMALE_LIFE_EXPECTANCY
+    return settings.MALE_LIFE_EXPECTANCY if client.gender == GENDER_MALE else settings.FEMALE_LIFE_EXPECTANCY
 
 
 def get_default_retirement_date(client):
     return date(client.date_of_birth.year + 67, client.date_of_birth.month, client.date_of_birth.day)
 
+
 def who_validator(value):
     if value not in ['self', 'partner', 'joint']:
         raise ValidationError("'who' must be (self|partner|joint)")
+
 
 def make_category_validator(category):
     def category_validator(value):
         if not value in category:
             raise ValidationError("'cat' for %s must be one of %s"%(category, category.choices()))
+
 
 def make_json_list_validator(field, serializer):
     def list_item_validator(value):
@@ -48,6 +51,7 @@ def make_json_list_validator(field, serializer):
                 raise ValidationError("Invalid %s object"%field)
     return list_item_validator
 
+
 class ExpensesSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     desc = serializers.CharField()
@@ -55,12 +59,14 @@ class ExpensesSerializer(serializers.Serializer):
     who = serializers.CharField(validators=[who_validator])
     amt = serializers.IntegerField()
 
+
 class SavingsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     desc = serializers.CharField()
     cat = serializers.IntegerField(validators=[make_category_validator(RetirementPlan.SavingCategory)])
     who = serializers.CharField(validators=[who_validator])
     amt = serializers.IntegerField()
+
 
 class InitialDepositsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -174,6 +180,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
 
 class RetirementPlanEincSerializer(ReadOnlyModelSerializer):
     class Meta:

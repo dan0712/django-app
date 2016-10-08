@@ -4,7 +4,7 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
-    login as auth_views_login ,
+    login as auth_views_login,
 )
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
@@ -12,6 +12,7 @@ from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
+from django.shortcuts import redirect
 import logging
 
 logger = logging.getLogger('main.views.login')
@@ -48,14 +49,21 @@ def login(request, template_name='registration/login.html',
         # TODO: discuss "confirmation" feature
         # it should be deeply refactored in the first place
         # we need to (also) use "is_active" user flag for that stuff
-        is_confirmed = (
-            user.is_client and user.client.is_confirmed or
-            user.is_advisor and user.advisor.is_confirmed or
-            user.is_authorised_representative and
-            user.authorised_representative.is_confirmed
-        )
+
+        is_client = user.is_client
+        is_advisor = user.is_advisor
+        is_representative = user.is_authorised_representative
+        confirmed_client = is_client and user.client.is_confirmed
+        confirmed_advisor = is_advisor and user.advisor.is_confirmed
+        confirmed_representative = is_representative and user.authorised_representative.is_confirmed
+        is_confirmed = confirmed_client or confirmed_advisor or confirmed_representative
 
         if not is_confirmed:
+            # check if user is in the middle of onboarding
+            if hasattr(user, 'invitation'):
+                if user.invitation.status == 2 or user.invitation.status == 3:
+                    # redirect to client onboarding
+                    return redirect('/client/onboarding/' + user.invitation.invite_key)
             messages.error(request, 'Your account has not been confirmed yet.')
             form = authentication_form(request)
             context = {'form': form}
@@ -66,11 +74,11 @@ def login(request, template_name='registration/login.html',
         redirect_to = request.GET.get('next',
                                       reverse_lazy('client:app',
                                                    args=(user.client.id,))
-                                      if user.is_client
+                                      if is_client
                                       else reverse_lazy('advisor:overview')
-                                      if user.is_advisor
+                                      if is_advisor
                                       else reverse_lazy('firm:overview')
-                                      if user.is_authorised_representative
+                                      if is_representative
                                       else None)
 
         if redirect_to:

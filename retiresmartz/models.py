@@ -11,6 +11,7 @@ from jsonfield.fields import JSONField
 
 logger = logging.getLogger(__name__)
 
+
 class RetirementPlan(models.Model):
     class LifestyleCategory(ChoiceEnum):
         OK = 1, 'Doing OK'
@@ -47,7 +48,6 @@ class RetirementPlan(models.Model):
     description = models.TextField(null=True, blank=True)
     client = models.ForeignKey('client.Client')
 
-
     partner_plan = models.OneToOneField('RetirementPlan',
                                         related_name='partner_plan_reverse',
                                         null=True,
@@ -55,7 +55,6 @@ class RetirementPlan(models.Model):
 
     lifestyle = models.PositiveIntegerField(choices=LifestyleCategory.choices(), default=1,
                                     help_text="The desired retirement lifestyle")
-
 
     desired_income = models.PositiveIntegerField(
         help_text="The desired annual household pre-tax retirement income in system currency")
@@ -73,7 +72,8 @@ class RetirementPlan(models.Model):
     same_home = models.BooleanField(
         help_text="Will you be retiring in the same home?")
 
-    retirement_postal_code = models.CharField(max_length=10,
+    retirement_postal_code = models.CharField(
+        max_length=10,
         validators=[MinLengthValidator(5),MaxLengthValidator(10)],
         help_text="What postal code will you retire in?")
 
@@ -84,14 +84,19 @@ class RetirementPlan(models.Model):
         choices=HomeStyle.choices(), null=True, blank=True,
         help_text="The style of your retirement home")
 
-    retirement_home_price = models.PositiveIntegerField(null=True, blank=True,
+    retirement_home_price = models.PositiveIntegerField(
+        null=True,
+        blank=True,
         help_text="The price of your future retirement home (in today's dollars)")
 
-    beta_partner = models.BooleanField(default=False,
+    beta_partner = models.BooleanField(
+        default=False,
         help_text="Will BetaSmartz manage your partner's retirement assets as well?")
 
-    expenses = JSONField(null=True, blank=True,
-                help_text="List of expenses [{id, desc, cat, who, amt},...]")
+    expenses = JSONField(
+        null=True,
+        blank=True,
+        help_text="List of expenses [{id, desc, cat, who, amt},...]")
     savings = JSONField(null=True, blank=True,
                 help_text="List of savings [{id, desc, cat, who, amt},...]")
     initial_deposits = JSONField(null=True, blank=True,
@@ -103,8 +108,8 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Before-tax annual income")
-    atc = models.PositiveIntegerField(help_text="After-tax annual income")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
 
     max_employer_match_percent = models.FloatField(null=True, blank=True,
         help_text="The percent the employer matches of before-tax contributions")
@@ -178,6 +183,7 @@ class RetirementPlan(models.Model):
         soa.save()
         return soa
 
+
 @receiver(post_save, sender=RetirementPlan)
 def resolve_retirement_invitations(sender, instance, created, **kwargs):
     """Create a matching profile whenever a user object is created."""
@@ -189,33 +195,38 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
             and invitation.status != EmailInvite.STATUS_COMPLETE \
             and invitation.reason == EmailInvite.REASON_RETIREMENT:
         invitation.onboarding_data = None
+        invitation.onboarding_file_1 = None
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
+
 
 class RetirementPlanEinc(TransferPlan):
     name = models.CharField(max_length=128)
     plan = models.ForeignKey(RetirementPlan, related_name='external_income')
 
+
 class RetirementSpendingGoal(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='retirement_goals')
     goal = models.OneToOneField('main.Goal', related_name='retirement_plan')
+
 
 class RetirementPlanAccount(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='retiree')
     account = models.OneToOneField('client.ClientAccount', related_name='retirement')
 
+
 class RetirementLifestyle(models.Model):
-    cost = models.PositiveIntegerField(help_text="The expected cost in system currency of this lifestyle in today's dollars")
+    cost = models.PositiveIntegerField(help_text="The minimum expected cost in system currency of this lifestyle in today's dollars")
     holidays = models.TextField(help_text="The text for the holidays block")
     eating_out = models.TextField(help_text="The text for the eating out block")
     health = models.TextField(help_text="The text for the health block")
     interests = models.TextField(help_text="The text for the interests block")
     leisure = models.TextField(help_text="The text for the leisure block")
     default_volunteer_days = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),MaxValueValidator(7)],
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of volunteer work days selected for this lifestyle")
 
     default_paid_days = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),MaxValueValidator(7)],
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of paid work days selected for this lifestyle")
 

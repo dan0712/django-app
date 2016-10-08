@@ -1,25 +1,26 @@
 from django.contrib.auth import authenticate, login as auth_login
-from rest_framework import viewsets, views
+from rest_framework import viewsets, views, mixins
 from rest_framework import exceptions, parsers, status
 from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
 from api.v1.client.serializers import EmailNotificationsSerializer, \
     PersonalInfoSerializer
 from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
 from main.models import ExternalAsset, User
-from user.models import SecurityQuestion, SecurityAnswer
+from user.models import SecurityAnswer
 from client.models import Client, EmailInvite
 from support.models import SupportRequest
 from api.v1.user.serializers import UserSerializer, AuthSerializer
 from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
     RetirementPlanEincWritableSerializer
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
-
+from django.views.generic.detail import SingleObjectMixin
 from . import serializers
-
+from django.core.urlresolvers import reverse
 import logging
 
 logger = logging.getLogger('api.v1.client.views')
@@ -50,6 +51,7 @@ class ExternalAssetViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewS
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
+
 class RetirementIncomeViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     model = RetirementPlanEinc
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
@@ -76,7 +78,17 @@ class RetirementIncomeViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelVi
         allow_plans = RetirementPlan.objects.filter_by_user(user)
         return qs.filter(plan__in=allow_plans)
 
-class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+
+class ClientViewSet(ApiViewMixin,
+                    NestedViewSetMixin,
+                    mixins.CreateModelMixin,
+                    mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.ListModelMixin,
+                    GenericViewSet):
+    """
+    Everything except delete
+    """
     model = Client
     # We define the queryset because our get_queryset calls super so the Nested queryset works.
     queryset = Client.objects.all()
@@ -100,25 +112,43 @@ class ClientViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelView
         user = SupportRequest.target_user(self.request)
         return qs.filter_by_user(user)
 
-    def post(self, request):
-        if EmailInvite.STATUS_ACCEPTED == getattr(
-            self.request.user.invitation, 'status', None):
-            # Email the user "Welcome Aboard"
-            self.request.user.email_user('Welcome to BetaSmartz!',
-                    "Congratulations! You've setup your first account, "
-                    "you're ready to start using BetaSmartz!")
-            return super(ClientViewSet, self).post(request)
-        return Response({'error': 'requires account with accepted invitation'},
-                        status=HTTP_405_METHOD_NOT_ALLOWED)
+    def create(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'invitation') or EmailInvite.STATUS_ACCEPTED != getattr(request.user.invitation,
+                                                                                             'status',
+                                                                                             None):
+            return Response({'error': 'requires account with accepted invitation'},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # creat new client
+        client = serializer.save(advisor=request.user.invitation.advisor, user=request.user)
+
+        # set client invitation status to complete
+        client.user.invitation.status = EmailInvite.STATUS_COMPLETE
+        client.user.invitation.save()
+
+        # Email the user "Welcome Aboard"
+        self.request.user.email_user('Welcome to BetaSmartz!',
+                                     "Congratulations! You've setup your first account, "
+                                     "you're ready to start using BetaSmartz!")
+
+        headers = self.get_success_headers(serializer.data)
+        serializer = self.serializer_response_class(client)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super(ClientViewSet, self).update(request, *args, **kwargs)
 
 
 class InvitesView(ApiViewMixin, views.APIView):
     permission_classes = []
     serializer_class = serializers.PrivateInvitationSerializer
     parser_classes = (
-        parsers.JSONParser, parsers.FileUploadParser, parsers.MultiPartParser,
+        parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,
     )
+
     def get(self, request, invite_key):
         find_invite = EmailInvite.objects.filter(invite_key=invite_key)
         if not find_invite.exists:
@@ -126,38 +156,38 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         invite = find_invite.get()
 
-        if not request.user.is_authenticated():
-            data = serializers.InvitationSerializer(instance=invite).data
-        else:
+        if request.user.is_authenticated():
+            # include onboarding data
             data = self.serializer_class(instance=invite).data
+        else:
+            data = serializers.InvitationSerializer(instance=invite).data
         return Response(data)
 
     def put(self, request, invite_key):
+        if not request.user.is_authenticated():
+            return Response({'error': 'not logged in'}, status=status.HTTP_401_UNAUTHORIZED)
+
         find_invite = EmailInvite.objects.filter(invite_key=invite_key)
         if not find_invite.exists:
             return Response({'error': 'invitation not found'}, status=status.HTTP_404_NOT_FOUND)
 
         invite = find_invite.get()
 
-        if not request.user.is_authenticated():
-            return Response({'error': 'not logged in'}, status=status.HTTP_401_UNAUTHORIZED)
-
         if invite.status == EmailInvite.STATUS_EXPIRED:
             invite.advisor.user.email_user('A client tried to use an expired invitation'
-                    "Your client %s %s (%s) just tried to register using an invite "
+                    "Your potential client %s %s (%s) just tried to register using an invite "
                     "you sent them, but it has expired!"%
-                    (client.first_name, client.last_name, client.email))
+                    (invite.first_name, invite.last_name, invite.email))
 
         if invite.status != EmailInvite.STATUS_ACCEPTED:
-            return Response(serializers.InvitationSerializer(invite).data,
+            return Response(self.serializer_class(instance=invite).data,
                             status=status.HTTP_304_NOT_MODIFIED)
 
-        serializer = self.serializer_class(invite, data=request.data,
-                                           partial=True)
+        serializer = self.serializer_class(invite, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            invitation = serializer.save()
 
-        return Response(serializers.InvitationSerializer(invite).data)
+        return Response(serializer.data)
 
 
 class ClientUserRegisterView(ApiViewMixin, views.APIView):
@@ -233,3 +263,15 @@ class ProfileView(ApiViewMixin, RetrieveUpdateAPIView):
 
     def get_object(self):
         return Client.objects.get(user=self.request.user)
+
+
+class ClientResendInviteView(SingleObjectMixin, views.APIView):
+    permission_classes = [IsAuthenticated, ]
+    queryset = EmailInvite.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        invite = self.get_object()
+        if invite.user != self.request.user:
+            return Response('forbidden', status=status.HTTP_403_FORBIDDEN)
+        invite.send()
+        return Response('ok', status=status.HTTP_200_OK)
