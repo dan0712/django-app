@@ -76,7 +76,6 @@ class GoalTotalReturnTest(TestCase):
         with mock.patch.object(timezone, 'now', self.mocked_date(days)):
             return self.goal.total_balance
 
-
     def test_zero_balance(self):
         goal = Fixture1.goal1()
         self.load_fixture('main/tests/fixtures/transactions.json')

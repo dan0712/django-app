@@ -49,10 +49,10 @@ def mod_dietz_rate(goals: Iterable) -> float:
     cash_flow_balance = sum(i[1] for i in cash_flows)
     total_days = (closing_date - start_date).days
 
-    # FEEDBACK: Is this OK logic?
     # Since we can have a goal with start=end=today()
     # It makes sense to show the return as if total_days=1
-    if total_days == 0: total_days = 1
+    if total_days == 0:
+        total_days = 1
     prorated_sum = sum(cfi * (total_days - d) / total_days
                        for d, cfi, _ in cash_flows)
     result = (end_value - begin_value -

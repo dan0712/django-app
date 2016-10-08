@@ -496,7 +496,6 @@ class GoalTests(APITestCase):
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         goal_settings = GoalSettingFactory.create()
         goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
-        portfolio = Portfolio.objects.create(setting=goal_settings, stdev=0, er=0)
         ser = GoalCreateSerializer(data={
             'account': account.id,
             'name': 'Zero Goal Target',
@@ -535,7 +534,6 @@ class GoalTests(APITestCase):
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         goal_settings = GoalSettingFactory.create()
         goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
-        portfolio = Portfolio.objects.create(setting=goal_settings, stdev=0, er=0)
         ser = GoalCreateSerializer(data={
             'account': account.id,
             'name': 'Zero Goal Target',
