@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
-from main.models import Goal, Transaction, Position
+from main.models import Goal, Transaction
 from main.tests.fixture import Fixture1
 
 
