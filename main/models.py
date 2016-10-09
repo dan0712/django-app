@@ -30,6 +30,7 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
 from portfolios.returns import get_price_returns
 from . import constants
@@ -197,7 +198,7 @@ class FiscalYear(models.Model):
                                                    help_text="Comma separated month end days each month of the year. First element is January.")
 
     def __str__(self):
-        return "[%s] %s %s" % (self.id, self.name, self.year)
+        return "[%s] (%s) %s" % (self.id, self.year, self.name)
 
 
 class Company(models.Model):
@@ -357,6 +358,17 @@ class PortfolioSet(models.Model):
         return self.name
 
 
+class AccountType(models.Model):
+    """
+    This model is simply a technique to bring the list of Supported Account Types into the database layer.
+    """
+    id = models.IntegerField(choices=constants.ACCOUNT_TYPES, primary_key=True)
+    objects = AccountTypeQuerySet.as_manager()
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, dict(constants.ACCOUNT_TYPES)[self.id])
+
+
 class Firm(models.Model):
     name = models.CharField(max_length=255)
     dealer_group_number = models.CharField(max_length=50,
@@ -380,8 +392,9 @@ class Firm(models.Model):
     fee = models.PositiveIntegerField(default=0)
     can_use_ethical_portfolio = models.BooleanField(default=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
-
     fiscal_years = models.ManyToManyField(FiscalYear)
+    account_types = models.ManyToManyField(AccountType, help_text="The set of supported account "
+                                                                  "types offered to clients of this firm.")
 
     def save(self,
              force_insert=False,

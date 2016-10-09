@@ -8,6 +8,8 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
+from main.constants import US_RETIREMENT_ACCOUNT_TYPES
+from main.models import AccountType
 from ..goals.serializers import GoalSettingSerializer
 from . import serializers
 from ..permissions import IsAdvisorOrClient
@@ -58,10 +60,12 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
     @list_route(methods=['get'], url_path='account-types')
     def account_types(self, request):
         res = []
-        for key, value in constants.ACCOUNT_TYPES:
+        act = dict(constants.ACCOUNT_TYPES)
+        for a_t in AccountType.objects.filter_by_user(request.user):
             res.append({
-                "id": key,
-                "name": value
+                "id": a_t.id,
+                "name": act[a_t.id],
+                "creatable": a_t.id not in US_RETIREMENT_ACCOUNT_TYPES
             })
 
         return Response(res)
