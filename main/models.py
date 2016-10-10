@@ -513,9 +513,7 @@ class Firm(models.Model):
 
     @property
     def average_client_balance(self):
-        if self.total_clients > 0:
-            return self.total_balance / self.total_clients
-        return 0
+        return self.total_balance / self.total_clients if self.total_clients > 0 else 0
 
     @property
     def total_account_groups(self):
@@ -525,10 +523,8 @@ class Firm(models.Model):
         return total
 
     @property
-    def average_balance(self):
-        if self.total_account_groups > 0:
-            return self.total_balance / self.total_account_groups
-        return 0
+    def average_group_balance(self):
+        return self.total_balance / self.total_account_groups if self.total_account_groups > 0 else 0
 
     @property
     def content_type(self):
@@ -728,24 +724,6 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return total_fees
 
     @property
-    def total_fees(self):
-        """
-        """
-        from client.models import ClientAccount
-        total_fees = 0.0
-        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
-            for year in self.firm.fiscal_years.all():
-                for goal in ca.goals:
-                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                                     status=Transaction.STATUS_EXECUTED,
-                                                     reason=Transaction.REASON_FEE,
-                                                     executed__gte=year.begin_date,
-                                                     executed__lte=year.end_date)
-                    for tx in txs:
-                        total_fees += tx.amount
-        return total_fees
-
-    @property
     def average_return(self):
         goals = Goal.objects.filter(account__in=self.client_accounts)
         return mod_dietz_rate(goals)
@@ -755,15 +733,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return len(self.households)
 
     @property
-    def average_balance(self):
-        if self.total_account_groups > 0:
-            return self.total_balance / self.total_account_groups
-        return 0
+    def average_group_balance(self):
+        return self.total_balance / self.total_account_groups if self.total_account_groups > 0 else 0
 
     @property
     def average_client_balance(self):
         balances = [client.total_balance for client in self.clients]
-        return sum(balances) / len(balances)
+        return sum(balances) / len(balances) if balances else 0
 
     def get_inviter_name(self):
         return self.user.get_full_name()

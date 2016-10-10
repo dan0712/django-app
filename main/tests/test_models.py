@@ -60,3 +60,13 @@ class RegionalDataTest(BaseTest):
 
         advisor = self.o(advisor)
         self.assertEqual(advisor.regional_data, {})
+
+
+class AdvisorTest(BaseTest):
+    def test_average_client_balance(self):
+        advisor = Fixture1.advisor1()
+        self.assertEqual(advisor.average_client_balance, 0)
+
+    def test_average_group_balance(self):
+        advisor = Fixture1.advisor1()
+        self.assertEqual(advisor.average_group_balance, 0)
