@@ -213,6 +213,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             scores['s_score'] / extents['max_s_sum'],
         )
 
+
 class IBAccount(models.Model):
     '''
     Specification of Interactive Brokers Account
@@ -264,7 +265,6 @@ class ClientAccount(models.Model):
     class Meta:
         unique_together = ('primary_owner', 'account_name')
 
-
     def __init__(self, *args, **kwargs):
         super(ClientAccount, self).__init__(*args, **kwargs)
         self.__was_confirmed = self.confirmed
@@ -296,7 +296,6 @@ class ClientAccount(models.Model):
             invitation.onboarding_data = None
             invitation.status = EmailInvite.STATUS_COMPLETE
             invitation.save()
-
 
     def remove_from_group(self):
         old_group = self.account_group
@@ -637,13 +636,13 @@ class EmailInvite(models.Model):
     onboarding_data = JSONField(null=True, blank=True)
     onboarding_file_1 = models.FileField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
                                       self.last_name, self.email)
 
     @property
     def can_resend(self):
-        return self.status in [self.STATUS_CREATED, self.STATUS_SENT]
+        return self.status in [self.STATUS_CREATED, self.STATUS_SENT, self.STATUS_ACCEPTED]
 
     def send(self):
         if not self.can_resend:

@@ -89,9 +89,9 @@ class InvestmentClockTest(TestCase):
         self.populate_probabilities()
         self.populate_returns()
         mu, sigma = self.predictor.get_fund_predictions()
-        self.assertAlmostEqual(mu[1], 2.728974, 6)
-        self.assertAlmostEqual(mu[2], -0.340570, 6)
-        self.assertAlmostEqual(mu[3], -0.294249, 6)
+        self.assertAlmostEqual(mu[1], 2.657963, 6)
+        self.assertAlmostEqual(mu[2], -0.346672, 6)
+        self.assertAlmostEqual(mu[3], -0.297815, 6)
 
     def test_get_fund_predictions_no_returns(self):
         self.populate_probabilities()

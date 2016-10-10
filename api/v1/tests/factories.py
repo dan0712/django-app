@@ -23,7 +23,6 @@ from statements.models import StatementOfAdvice, RecordOfAdvice
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
-from django.utils import timezone
 from random import randrange
 
 
@@ -101,6 +100,8 @@ class FirmFactory(factory.django.DjangoModelFactory):
     token = factory.Sequence(lambda n: 'Token %d' % n)
     default_portfolio_set = factory.SubFactory(PortfolioSetFactory)
     slug = factory.Sequence(lambda n: 'Slug %d' % n)
+    logo = factory.django.ImageField(filename='some_firm_logo.jpg')
+    knocked_out_logo = factory.django.ImageField(filename='some_colored_logo.jpg')
 
 
 class RiskProfileGroupFactory(factory.django.DjangoModelFactory):

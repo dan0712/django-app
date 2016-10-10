@@ -31,7 +31,7 @@ def load_cycle_data(apps, schema_editor):
                 _, created = InvestmentCycleObservation.objects.get_or_create(
                     as_of='-'.join([as_of_split[2], as_of_split[1], as_of_split[0]]),
                     recorded=datetime(year=2016, day=15, month=9),
-                    cycle=row[1],
+                    cycle=int(row[1])-1, # We use 0 for the eq phase of the cycle
                     source=json.dumps({}),
                 )
 

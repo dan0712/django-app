@@ -30,6 +30,7 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
 from portfolios.returns import get_price_returns
 from . import constants
@@ -40,6 +41,7 @@ from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.functional import cached_property
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 logger = logging.getLogger('main.models')
 
@@ -196,7 +198,7 @@ class FiscalYear(models.Model):
                                                    help_text="Comma separated month end days each month of the year. First element is January.")
 
     def __str__(self):
-        return "[%s] %s %s" % (self.id, self.name, self.year)
+        return "[%s] (%s) %s" % (self.id, self.year, self.name)
 
 
 class Company(models.Model):
@@ -356,6 +358,17 @@ class PortfolioSet(models.Model):
         return self.name
 
 
+class AccountType(models.Model):
+    """
+    This model is simply a technique to bring the list of Supported Account Types into the database layer.
+    """
+    id = models.IntegerField(choices=constants.ACCOUNT_TYPES, primary_key=True)
+    objects = AccountTypeQuerySet.as_manager()
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, dict(constants.ACCOUNT_TYPES)[self.id])
+
+
 class Firm(models.Model):
     name = models.CharField(max_length=255)
     dealer_group_number = models.CharField(max_length=50,
@@ -379,8 +392,9 @@ class Firm(models.Model):
     fee = models.PositiveIntegerField(default=0)
     can_use_ethical_portfolio = models.BooleanField(default=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
-
     fiscal_years = models.ManyToManyField(FiscalYear)
+    account_types = models.ManyToManyField(AccountType, help_text="The set of supported account "
+                                                                  "types offered to clients of this firm.")
 
     def save(self,
              force_insert=False,
@@ -419,21 +433,21 @@ class Firm(models.Model):
     def white_logo(self):
 
         if self.logo is None:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
         elif not self.logo.name:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
 
-        return settings.MEDIA_URL + self.logo.name
+        return self.logo.url
 
     @property
     def colored_logo(self):
 
         if self.knocked_out_logo is None:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
         elif not self.knocked_out_logo.name:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
 
-        return settings.MEDIA_URL + self.knocked_out_logo.name
+        return self.knocked_out_logo.url
 
     @property
     def fees_ytd(self):
@@ -499,9 +513,7 @@ class Firm(models.Model):
 
     @property
     def average_client_balance(self):
-        if self.total_clients > 0:
-            return self.total_balance / self.total_clients
-        return 0
+        return self.total_balance / self.total_clients if self.total_clients > 0 else 0
 
     @property
     def total_account_groups(self):
@@ -511,10 +523,8 @@ class Firm(models.Model):
         return total
 
     @property
-    def average_balance(self):
-        if self.total_account_groups > 0:
-            return self.total_balance / self.total_account_groups
-        return 0
+    def average_group_balance(self):
+        return self.total_balance / self.total_account_groups if self.total_account_groups > 0 else 0
 
     @property
     def content_type(self):
@@ -714,24 +724,6 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return total_fees
 
     @property
-    def total_fees(self):
-        """
-        """
-        from client.models import ClientAccount
-        total_fees = 0.0
-        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
-            for year in self.firm.fiscal_years.all():
-                for goal in ca.goals:
-                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                                     status=Transaction.STATUS_EXECUTED,
-                                                     reason=Transaction.REASON_FEE,
-                                                     executed__gte=year.begin_date,
-                                                     executed__lte=year.end_date)
-                    for tx in txs:
-                        total_fees += tx.amount
-        return total_fees
-
-    @property
     def average_return(self):
         goals = Goal.objects.filter(account__in=self.client_accounts)
         return mod_dietz_rate(goals)
@@ -741,15 +733,13 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return len(self.households)
 
     @property
-    def average_balance(self):
-        if self.total_account_groups > 0:
-            return self.total_balance / self.total_account_groups
-        return 0
+    def average_group_balance(self):
+        return self.total_balance / self.total_account_groups if self.total_account_groups > 0 else 0
 
     @property
     def average_client_balance(self):
         balances = [client.total_balance for client in self.clients]
-        return sum(balances) / len(balances)
+        return sum(balances) / len(balances) if balances else 0
 
     def get_inviter_name(self):
         return self.user.get_full_name()
@@ -1085,7 +1075,7 @@ class Ticker(FinancialInstrument):
         """
         # AssetFeatureValue types
         satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
-        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()        
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
 
         logger.info('Populating features for ticker %s' % self)
         r_feat = self.get_region_feature_value()
@@ -1870,13 +1860,23 @@ class Goal(models.Model):
 
         term = (self.selected_settings.completion.year - today.year
                 if self.selected_settings else None)
-
         return term
 
     @property
     def auto_term(self):
         return "{0}y".format(self.get_term)
 
+
+    @property
+    def amount_achieved(self):
+        if self.selected_settings is None:
+            return False
+
+        # If we don't have a target or completion date, we have no concept of OnTrack.
+        if self.selected_settings.target is None:
+            return False
+
+        return self.total_balance >= self.selected_settings.target
 
 class HistoricalBalance(models.Model):
     """
