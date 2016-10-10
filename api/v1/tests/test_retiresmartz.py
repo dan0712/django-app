@@ -5,11 +5,11 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from common.constants import GROUP_SUPPORT_STAFF
-from retiresmartz.models import RetirementPlan
 from main.models import InvestmentType
 from main.tests.fixture import Fixture1
-from .factories import GroupFactory, RetirementPlanFactory, TickerFactory, \
-    AssetClassFactory, ContentTypeFactory
+from retiresmartz.models import RetirementPlan
+from .factories import AssetClassFactory, ContentTypeFactory, GroupFactory, \
+    RetirementPlanFactory, TickerFactory
 
 
 class RetiresmartzTests(APITestCase):

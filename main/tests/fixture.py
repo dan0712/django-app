@@ -7,15 +7,14 @@ from pinax.eventlog.models import Log
 
 import address.models as ad
 from api.v1.tests.factories import GoalMetricFactory
-from client.models import Client, ClientAccount, RiskProfileAnswer,\
-    RiskProfileGroup, RiskProfileQuestion, IBAccount
+from client.models import Client, ClientAccount, IBAccount, RiskProfileAnswer, \
+    RiskProfileGroup, RiskProfileQuestion
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
-    ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
-    GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
-    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
-
+    ExecutionDistribution, ExternalAsset, ExternalInstrument, Firm, Goal, \
+    GoalMetricGroup, GoalSetting, GoalType, HistoricalBalance, MarketIndex, \
+    MarketOrderRequest, PortfolioSet, Region, Ticker, Transaction, User
 from retiresmartz.models import RetirementPlan
 
 

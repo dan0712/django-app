@@ -1,19 +1,20 @@
+import logging
+
+from dateutil.relativedelta import relativedelta
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
 from rest_framework_extensions.mixins import NestedViewSetMixin
+
 from api.v1.views import ApiViewMixin
-from retiresmartz.models import RetirementPlan
-from main.models import Ticker
 from client.models import Client
+from main.models import Ticker
+from retiresmartz.models import RetirementPlan
 from support.models import SupportRequest
-from django.db.models import Q
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
 from . import serializers
-import logging
 
 logger = logging.getLogger('api.v1.retiresmartz.views')
 

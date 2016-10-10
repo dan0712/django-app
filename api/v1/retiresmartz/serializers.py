@@ -1,15 +1,15 @@
+import json
 from datetime import date
+
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
-import json
 
 
 def get_default_tx_plan():

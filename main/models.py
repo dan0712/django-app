@@ -1,6 +1,6 @@
-from datetime import datetime
 import logging
 import uuid
+from datetime import datetime
 from enum import Enum, unique
 
 import scipy.stats as st
@@ -9,18 +9,21 @@ from django.contrib.auth.models import AbstractBaseUser, Group, \
     PermissionsMixin, UserManager, send_mail
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
-from django.db.models import Sum, F
-from django.db.models.functions import Coalesce
+from django.db.models import F, Sum
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
+from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template.loader import render_to_string
+from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
-from django.dispatch import receiver
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -37,11 +40,9 @@ from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .managers import ExternalAssetQuerySet, GoalQuerySet
+from .managers import ExternalAssetQuerySet, \
+    GoalQuerySet
 from .slug import unique_slugify
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.functional import cached_property
-from django.contrib.staticfiles.templatetags.staticfiles import static
 
 logger = logging.getLogger('main.models')
 
@@ -870,7 +871,6 @@ class AccountGroup(models.Model):
 
     def __str__(self):
         return self.name
-
 
 
 class ExternalAssetTransfer(TransferPlan):
