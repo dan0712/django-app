@@ -237,8 +237,8 @@ class GoalAdmin(admin.ModelAdmin):
     actions = (rebalance,)
 
 
-class PositionAdmin(admin.ModelAdmin):
-    list_display = ('goal', 'ticker', 'value')
+class PositionLotAdmin(admin.ModelAdmin):
+    list_display = ('execution_distribution', 'quantity')
 
 
 class PortfolioItemInline(admin.StackedInline):
@@ -358,6 +358,7 @@ admin.site.register(InvestmentType, InvestmentTypeAdmin)
 admin.site.register(FiscalYear, FiscalYearAdmin)
 admin.site.register(Ticker, TickerAdmin)
 admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
+admin.site.register(PositionLot, PositionLotAdmin)
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,
