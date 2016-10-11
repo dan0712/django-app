@@ -8,3 +8,5 @@
 ./manage.py loaddata main/fixtures/ticker.json
 ./manage.py loaddata main/fixtures/riskprofilequestion.json
 ./manage.py loaddata main/fixtures/riskprofileanswer.json
+./manage.py loaddata main/fixtures/activitylog.json
+./manage.py loaddata main/fixtures/activitylogevent.json
