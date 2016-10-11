@@ -139,3 +139,4 @@ local_settings.py
 .vagrant
 .DS_Store
 reports/
+dev_database.sqlite3

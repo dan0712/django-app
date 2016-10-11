@@ -257,7 +257,8 @@ class ClientAccount(models.Model):
     signatories = models.ManyToManyField('Client',
                                          related_name='signatory_accounts',
                                          help_text='Other clients authorised '
-                                                   'to operate the account.')
+                                                   'to operate the account.',
+                                         blank=True)
     # also has ib_account foreign key to IBAccount
 
     objects = ClientAccountQuerySet.as_manager()
@@ -550,6 +551,9 @@ class RiskProfileQuestion(models.Model):
         ordering = ['order']
         unique_together = ('group', 'order')
 
+    def __str__(self):
+        return self.text
+
 
 class RiskProfileAnswer(models.Model):
     """
@@ -572,6 +576,9 @@ class RiskProfileAnswer(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ('question', 'order')
+
+    def __str__(self):
+        return self.text
 
 
 class EmailNotificationPrefs(models.Model):

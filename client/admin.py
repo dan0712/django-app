@@ -56,8 +56,20 @@ class AccountTypeRiskProfileGroupAdmin(admin.ModelAdmin):
     list_editable = ('account_type', 'risk_profile_group')
 
 
+class RiskProfileQuestionAdmin(admin.ModelAdmin):
+    model = RiskProfileQuestion
+    list_display = ('text', 'group', 'order')
+
+
+class RiskProfileAnswerAdmin(admin.ModelAdmin):
+    model = RiskProfileAnswer
+    list_display = ('text', 'question', 'order')
+
+
 admin.site.register(Client, ClientAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)
 admin.site.register(AccountTypeRiskProfileGroup,
                     AccountTypeRiskProfileGroupAdmin)
+admin.site.register(RiskProfileQuestion, RiskProfileQuestionAdmin)
+admin.site.register(RiskProfileAnswer, RiskProfileAnswerAdmin)

@@ -110,14 +110,17 @@ class PersonalData(models.Model):
 
     @cached_property
     def country(self):
-        return self.residential_address.region.country
+        try:
+            return self.residential_address.region.country
+        except:
+            return None
 
 
 class NeedApprobation(models.Model):
     class Meta:
         abstract = True
 
-    is_accepted = models.BooleanField(default=False, editable=False)
+    is_accepted = models.BooleanField(default=False)
 
     def approve(self):
         if self.is_accepted is True:

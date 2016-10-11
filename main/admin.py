@@ -15,7 +15,7 @@ from main.models import AccountGroup, ActivityLog, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     ProxyAssetClass, ProxyTicker, \
     Transaction, User, View, InvestmentType, FiscalYear, Ticker, \
-    AssetFeature, PositionLot
+    AssetFeature, PositionLot, AssetFeePlan
 from retiresmartz.models import RetirementLifestyle
 
 admin.site.register(AccountGroup)
@@ -331,9 +331,14 @@ class TickerAdmin(admin.ModelAdmin):
         return obj.get_currency_feature_value()
 
 
+class AssetFeePlanAdmin(admin.ModelAdmin):
+    model = AssetFeePlan
+
+
 class RetirementLifestyleAdmin(admin.ModelAdmin):
     model = RetirementLifestyle
     list_display = ('cost',)
+
 
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
@@ -359,6 +364,8 @@ admin.site.register(FiscalYear, FiscalYearAdmin)
 admin.site.register(Ticker, TickerAdmin)
 admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
 admin.site.register(PositionLot, PositionLotAdmin)
+admin.site.register(AssetFeePlan, AssetFeePlanAdmin)
+
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,

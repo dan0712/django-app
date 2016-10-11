@@ -746,6 +746,10 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
 
     def save(self, *args, **kw):
         send_confirmation_mail = False
+        if self.pk is None:
+            # generate token for advisor on first save
+            self.token = str(uuid.uuid4())
+
         if self.pk is not None:
             orig = Advisor.objects.get(pk=self.pk)
             if (orig.is_accepted != self.is_accepted) and (
