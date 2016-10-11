@@ -113,9 +113,9 @@ class InvestmentClock(object):
         :param prob_vector: A 1x5 numpy array of the probabilities of each investment cycle.
         :return: Expected Return Vector as a pandas series, index Ticker id
         """
-        summary_df = merged_df.groupby(CYCLE_LABEL, as_index=True).mean().T
+        summary_df = np.exp(np.log(merged_df + 1).groupby(CYCLE_LABEL, as_index=True).mean().T)
         expected_return = summary_df.dot(prob_vector.T)
-        return expected_return[0]
+        return expected_return[0] - 1
 
     def _covariance_matrix_prob_v1(self, merged_df, prob_vector):
         """

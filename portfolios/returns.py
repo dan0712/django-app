@@ -293,7 +293,7 @@ def get_price_returns(instrument, dates, consecutive=False):
         logger.warn(emsg.format(instrument.id, consec.index[0], consec.index[-1]))
 
     # Convert the prices to log returns
-    rets = np.log(consec) - np.log(consec.shift(1))
+    rets = consec.pct_change()[1:]
 
     # Remove any outlandish returns.
     brets = rets.loc[rets.abs() > LARGEST_DAILY_RETURN]
