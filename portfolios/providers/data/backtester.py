@@ -1,9 +1,9 @@
 from collections import defaultdict
-
-from portfolios.calculation import *
+from datetime import timedelta
+import pandas as pd
 from portfolios.providers.dummy_models import AssetClassMock, \
     AssetFeatureValueMock, InstrumentsFactory, MarkowitzScaleMock, \
-    PortfolioSetMock
+    PortfolioSetMock, InvestmentCycleObservationFactory
 from portfolios.returns import get_prices
 from .abstract import DataProviderAbstract
 
@@ -30,6 +30,7 @@ class DataProviderBacktester(DataProviderAbstract):
         self.dates = InstrumentsFactory.get_dates()
         self.__current_date = self.sliding_window_length
         self.time_constrained_tickers = []
+        self.investment_cycles = InvestmentCycleObservationFactory.create_cycles()
 
     def move_date_forward(self):
         # this function is only used in backtesting
@@ -119,3 +120,16 @@ class DataProviderBacktester(DataProviderAbstract):
 
     def set_instrument_cache(self, data):
         self.cache = data
+
+    def get_investment_cycles(self):
+        return self.investment_cycles
+
+    def get_last_cycle_start(self):
+        pass
+
+    def get_cycle_obs(self, begin_date):
+        pass
+
+    def get_probs_df(self, begin_date):
+        pass
+

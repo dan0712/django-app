@@ -1,12 +1,12 @@
 import pandas as pd
 import pandas.io.data as web
 
-from main.management.commands.rebalance import rebalance
-from portfolios.calculation import build_instruments, \
-    calculate_portfolio, calculate_portfolios, get_instruments
 from portfolios.providers.data.backtester import DataProviderBacktester
 from portfolios.providers.dummy_models import GoalFactory, PositionMock
 from portfolios.providers.execution.backtester import ExecutionProviderBacktester
+from main.management.commands.rebalance import rebalance
+from portfolios.calculation import build_instruments, \
+    calculate_portfolio, calculate_portfolios, get_instruments
 
 
 class GetETFTickers(object):

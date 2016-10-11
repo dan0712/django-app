@@ -9,6 +9,7 @@ from main.models import InvestmentCycleObservation
 from portfolios.exceptions import OptimizationException
 from portfolios.prediction.investment_clock import InvestmentClock
 from portfolios.providers.data.django import DataProviderDjango
+import numpy as np
 
 
 class InvestmentClockTest(TestCase):
@@ -97,3 +98,8 @@ class InvestmentClockTest(TestCase):
         self.populate_probabilities()
         with self.assertRaises(OptimizationException):
             self.predictor.get_fund_predictions()
+
+    def test_get_cycle_obs(self):
+        predictors = self.predictor.get_cycle_obs(self.last_cycle_start)
+        equal_values = sum(np.array([0, 1, 2, 0, 3, 4]) == predictors.values)
+        self.assertTrue(equal_values == 6)

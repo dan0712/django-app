@@ -9,10 +9,9 @@ import copy
 import numpy as np
 
 from portfolios.algorithms.markowitz import markowitz_optimizer_3
-from portfolios.calculation import MIN_PORTFOLIO_PCT, \
-    calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
-from portfolios.providers.execution.abstract \
-    import Reason, ExecutionProviderAbstract
+from portfolios.providers.execution.abstract import Reason, ExecutionProviderAbstract
+from portfolios.calculation import \
+    MIN_PORTFOLIO_PCT, calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 
 logger = logging.getLogger('rebalance')
 
