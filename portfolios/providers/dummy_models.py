@@ -51,6 +51,9 @@ class TickerMock(object):
     def get_returns(self, start_date, end_date):
         return get_price_returns(self, start_date, end_date)
 
+    def get_returns(self, dates):
+        return get_price_returns(self, dates)
+
     def __str__(self):
         return self.symbol
 
@@ -258,14 +261,13 @@ class InvestmentCycleObservationMock(object):
         EQ_PIT = (3, 'eq_pit')
         PIT_EQ = (4, 'pit_eq')
 
-    def __init(self, as_of, recorded, cycle):
+    def __init__(self, as_of, cycle):
         self.as_of = as_of
-        self.recorded = recorded
         self.cycle = cycle
 
 
 class InvestmentCyclePredictionMock(object):
-    def __init(self, as_of, pred_dt, eq, eq_pk, pk_eq, eq_pit, pit_eq):
+    def __init__(self, as_of, pred_dt, eq, eq_pk, pk_eq, eq_pit, pit_eq):
         _check_numbers(min=0, max=1, numbers=[eq, eq_pk, pk_eq, eq_pit, pit_eq])
 
         self.as_of = as_of

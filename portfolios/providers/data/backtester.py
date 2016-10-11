@@ -133,3 +133,6 @@ class DataProviderBacktester(DataProviderAbstract):
     def get_probs_df(self, begin_date):
         pass
 
+    def get_investment_cycle_predictions(self):
+        pass
+

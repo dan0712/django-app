@@ -10,7 +10,7 @@ from django.conf import settings as sys_settings
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
 from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
-from portfolios.providers.data.django import DataProviderDjango
+
 
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
@@ -33,8 +33,6 @@ logger.setLevel(logging.WARN)
 
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
-
-predictor = Predictor(DataProviderDjango())
 
 
 def create_portfolio_weights(instruments, min_weights, abs_min):
@@ -63,6 +61,7 @@ def build_instruments(data_provider):
     """
     ac_ps = data_provider.get_asset_class_to_portfolio_set()
 
+    predictor = Predictor(data_provider)
     ers, covars = predictor.get_fund_predictions()
 
     tickers = data_provider.get_tickers()
