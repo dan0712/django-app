@@ -75,17 +75,20 @@ class DataProviderDjango(DataProviderAbstract):
         cache.set(key, data, timeout=60 * 60 * 24)
 
     def get_investment_cycles(self):
-        return InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
+        obs = InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
+        if not obs:
+            raise OptimizationException("There are no historic observations available")
+        return obs
 
     def get_last_cycle_start(self):
         obs = self.get_investment_cycles()
         # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population
-        if not obs:
-            raise OptimizationException("There are no historic observations available")
 
         # Get the investment cycle for the current date
         current_cycle = obs.last().cycle
 
+        if len(obs) < 2:
+            raise Exception("There are less than 2 investment cycles")
         # Get the end date of the last non-current cycle before the current one
         pre_dt = obs.exclude(cycle=current_cycle).last().as_of
 

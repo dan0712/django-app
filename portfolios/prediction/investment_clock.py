@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 
 import numpy as np
+import pandas as pd
 
 from common.constants import WEEKDAYS_PER_YEAR
 from portfolios.exceptions import OptimizationException
@@ -100,7 +101,7 @@ class InvestmentClock(object):
         :return: Returns the merged dataframe
         """
         returns[CYCLE_LABEL] = cycles.reindex(returns.index, method='pad')
-        if len(returns[CYCLE_LABEL].unique()) != 5:
+        if len(returns[CYCLE_LABEL].unique()) < 5: #!=5 not sure about this change, but seems reasonable
             emsg = "A full investment cycle was not present in the available history ({} - {})"
             logger.error(emsg.format(returns.index[0], returns.index[-1]))
             raise OptimizationException("Not enough data for portfolio optimisation.")
