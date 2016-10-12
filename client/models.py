@@ -184,6 +184,18 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
         )
 
+    @cached_property
+    def on_track(self):
+        """
+            If any of client's accounts are off track,
+            return False.  If all accounts are
+            on track, return True.
+        """
+        for account in self.accounts:
+            if not account.on_track:
+                return False
+        return True
+
     def get_risk_profile_bas_scores(self):
         """
         Get the scores for an entity's willingness to take risk, based on a previous elicitation of its preferences.
