@@ -857,10 +857,15 @@ class AccountGroup(models.Model):
 
     @property
     def on_track(self):
-        on_track = True
+        """
+            If any of the advisors' client accounts are
+            off track, return False.  If all client
+            accounts are on track, return True.
+        """
         for account in self.accounts.all():
-            on_track = on_track and account.on_track
-        return on_track
+            if not account.on_track:
+                return False
+        return True
 
     @property
     def since(self):

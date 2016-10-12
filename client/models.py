@@ -444,12 +444,17 @@ class ClientAccount(models.Model):
     def account_type_name(self):
         return constants.ACCOUNT_TYPES[self.account_type][1]
 
-    @property
+    @cached_property
     def on_track(self):
-        on_track = True
-        for goal in self.goals.all():
-            on_track = on_track and goal.on_track
-        return on_track
+        """
+            If any of client's goals are off track,
+            return False.  If all goals are
+            on track, return True.
+        """
+        for goal in self.goals:
+            if not goal.on_track:
+                return False
+        return True
 
     @property
     def goals_length(self):
