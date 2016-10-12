@@ -7,13 +7,45 @@ from main.constants import ACCOUNT_TYPE_CORPORATE, ACCOUNT_TYPE_JOINT, \
 from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, AccountType
 from main.tests.fixture import Fixture1
+from common.constants import GROUP_SUPPORT_STAFF
+from api.v1.tests.factories import GoalFactory, MarketIndexFactory, TickerFactory, \
+    AssetFeatureFactory, GoalSettingFactory, ClientAccountFactory, GoalMetricFactory, \
+    MarkowitzScaleFactory, GroupFactory, InvestmentType, PortfolioSetFactory, \
+    AssetClassFactory
+from main.models import GoalMetric, AssetFeature
+from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
+from unittest import mock
+from unittest.mock import MagicMock
+from django.utils import timezone
+from datetime import datetime
+
+mocked_now = datetime(2016, 1, 1)
 
 
 class SettingsTests(APITestCase):
 
     def setUp(self):
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.personal_account_type = AccountType.objects.create(id=ACCOUNT_TYPE_PERSONAL)
         self.r401k_account_type = AccountType.objects.create(id=ACCOUNT_TYPE_ROTH401K)
+        self.bonds_type = InvestmentType.Standard.BONDS.get()
+        self.stocks_type = InvestmentType.Standard.STOCKS.get()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
+        self.portfolio_set = PortfolioSetFactory.create()
+        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
+
+        self.risk_score_metric = {
+            "type": GoalMetric.METRIC_TYPE_RISK_SCORE,
+            "comparison": GoalMetric.METRIC_COMPARISON_EXACTLY,
+            "configured_val": 0.4,
+            "rebalance_type": GoalMetric.REBALANCE_TYPE_RELATIVE,
+            "rebalance_thr": 0.1
+        }
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
 
     def test_get_goal_types(self):
         Fixture1.goal_type1()
@@ -99,3 +131,36 @@ class SettingsTests(APITestCase):
         # Make sure the external_asset_types are there
         self.assertTrue('external_asset_types' in response.data)
         self.assertEqual(set(('id', 'name')), set(response.data['external_asset_types'][0].keys()))
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_only_active_asset_features_in_settings(self):
+        """
+            Should only return asset features values
+            for active Ticker assets where we have funds.
+        """
+        url = '/api/v1/settings/asset-features'
+
+
+        # add some assets
+        # Set the markowitz bounds for today
+        self.bonds_ticker.state = 1
+        self.bonds_ticker.save()
+        self.m_scale = MarkowitzScaleFactory.create()
+
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
+        goal_settings = GoalSettingFactory.create()
+        # Create a risk score metric for the settings
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        self.client.force_authenticate(user=goal.account.primary_owner.user)
+        response = self.client.get(url)
+        inactive_asset_feature = [af for af in AssetFeature.objects.all() if not af.active]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), AssetFeature.objects.count() - len(inactive_asset_feature))

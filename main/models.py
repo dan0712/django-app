@@ -1926,6 +1926,15 @@ class AssetFeature(models.Model):
     name = models.CharField(max_length=127, unique=True, help_text="This should be a noun such as 'Region'.")
     description = models.TextField(blank=True, null=True)
 
+    @cached_property
+    def active(self):
+        for value in self.values.all():
+            if value.active:
+                return True
+        # if none of the asset feature values are active then
+        # this assetfeature is not active
+        return False
+
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
 
@@ -1964,6 +1973,13 @@ class AssetFeatureValue(models.Model):
                                 on_delete=PROTECT,
                                 help_text="The asset feature this is one value for.")
     assets = models.ManyToManyField(Ticker, related_name='features')
+
+    @cached_property
+    def active(self):
+        for asset in self.assets.all():
+            if asset.state != 2:
+                return False
+        return True
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)

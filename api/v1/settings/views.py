@@ -9,7 +9,7 @@ from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
 from main.constants import US_RETIREMENT_ACCOUNT_TYPES
-from main.models import AccountType
+from main.models import AccountType, Ticker, AssetFeatureValue
 from ..goals.serializers import GoalSettingSerializer
 from . import serializers
 from ..permissions import IsAdvisorOrClient
@@ -101,8 +101,8 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
                                   "id": v.id,
                                   "name": v.name,
                                   "description": v.description
-                              } for v in af.values.all()]
-               } for af in models.AssetFeature.objects.all()]
+                              } for v in af.values.all() if v.active]
+               } for af in models.AssetFeature.objects.all() if af.active]
         return Response(res)
 
     @list_route(methods=['get'])
