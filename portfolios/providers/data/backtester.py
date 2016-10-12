@@ -55,7 +55,7 @@ class DataProviderBacktester(DataProviderAbstract):
         return date
 
     def get_fund_price_latest(self, ticker):
-        prices = get_prices(ticker, self.get_start_date(), self.get_current_date())
+        prices = get_prices(ticker, [self.get_current_date()])
         prices = prices.irow(-1)
         return prices
 
@@ -112,7 +112,7 @@ class DataProviderBacktester(DataProviderAbstract):
 
     def get_markowitz_scale(self):
         if self.markowitz_scale is None:
-            self.set_markowitz_scale(date=self.get_current_date(), min=-1, max=1, a=1, b=2, c=3)
+            self.set_markowitz_scale(date=self.get_current_date(), mn=-1, mx=1, a=1, b=2, c=3)
         return self.markowitz_scale
 
     def set_markowitz_scale(self, date, mn, mx, a, b, c):
@@ -172,7 +172,7 @@ class DataProviderBacktester(DataProviderAbstract):
         data = pd.DataFrame(columns=['eq', 'eq_pk', 'pk_eq', 'eq_pit', 'pit_eq'])
         for p in predictions:
             if p.as_of >= begin_date:
-                row = pd.DataFrame(data=[[p.eq,p.eq_pk,p.pk_eq,p.eq_pit,p.pit_eq]],  index=[p.as_of], columns=['eq', 'eq_pk', 'pk_eq', 'eq_pit', 'pit_eq'])
+                row = pd.DataFrame(data=[[p.eq, p.eq_pk, p.pk_eq, p.eq_pit, p.pit_eq]],  index=[p.as_of], columns=['eq', 'eq_pk', 'pk_eq', 'eq_pit', 'pit_eq'])
                 data = data.append(row)
         return data
 

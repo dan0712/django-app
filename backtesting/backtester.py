@@ -133,14 +133,14 @@ if __name__ == "__main__":
                                               execution_provider=setup.execution_provider)
 
         # generate orders for tomorrow
-        try:
-            requests = rebalance(idata=get_instruments(setup.data_provider),
-                                 goal=setup.goal,
-                                 data_provider=setup.data_provider,
-                                 execution_provider=setup.execution_provider)
-        except:
-            print("reblance not succesful")
-            requests = [setup.execution_provider.create_empty_market_order()]
+        #try:
+        requests = rebalance(idata=get_instruments(setup.data_provider),
+                             goal=setup.goal,
+                             data_provider=setup.data_provider,
+                             execution_provider=setup.execution_provider)
+        #except:
+        #    print("reblance not succesful")
+        #    requests = [setup.execution_provider.create_empty_market_order()]
 
         backtester.execute_order(settings=setup.goal,
                                  order=requests,

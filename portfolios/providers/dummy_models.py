@@ -6,7 +6,7 @@ import copy
 import functools
 import numpy as np
 import pandas as pd
-from datetime import date
+from datetime import date, timedelta
 
 from .execution.abstract import State
 from portfolios.returns import get_price_returns
@@ -129,6 +129,7 @@ class GoalMock(object):
 
 
 class PositionMock(object):
+    #we need to replace this with PositionLot and also have Sale model
     def __init__(self, ticker, share=0):
         self.ticker = ticker
         self.share = share
@@ -267,11 +268,10 @@ class InvestmentCycleObservationMock(object):
 
 
 class InvestmentCyclePredictionMock(object):
-    def __init__(self, as_of, pred_dt, eq, eq_pk, pk_eq, eq_pit, pit_eq):
+    def __init__(self, as_of, eq, eq_pk, pk_eq, eq_pit, pit_eq):
         _check_numbers(min=0, max=1, numbers=[eq, eq_pk, pk_eq, eq_pit, pit_eq])
 
         self.as_of = as_of
-        self.pred_dt = pred_dt
         self.eq = eq
         self.eq_pk = eq_pk
         self.pk_eq = pk_eq
@@ -290,20 +290,47 @@ class InvestmentCycleObservationFactory(object):
     def create_cycles():
         observations = list()
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 1), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 1), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 7), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 5), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 11), cycle=InvestmentCycleObservationMock.Cycle.EQ_PK.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 7), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 13), cycle=InvestmentCycleObservationMock.Cycle.PK_EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 11), cycle=InvestmentCycleObservationMock.Cycle.EQ_PK.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 15), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 13), cycle=InvestmentCycleObservationMock.Cycle.PK_EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 18), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 15), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 20), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 18), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 20), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
         return observations
+
+    @staticmethod
+    def create_predictions():
+        predictions = list()
+        vals = [
+            [0.08089787, 0.167216193, 0.007325566, 0.143641463, 0.733230633],
+            [0.080636192, 0.151937142, 0.187936638, 0.39640021, 0.420692639],
+            [0.087140048, 0.122145455, 0.043799137, 0.508127278, 0.412764823],
+            [0.086595196, 0.163545905, 0.029313429, 0.329095078, 0.370009886],
+            [0.087243834, 0.19905742, 0.00229681, 0.09144718, 0.390732573],
+            [0.081566295, 0.277402407, 0.080812535, 0.045212519, 0.360884538],
+            [0.07358428, 0.117376517, 0.001417166, 0.143329684, 0.395081559],
+            [0.073802749, 0.133804588, 0.000635776, 0.394104881, 0.39465102],
+            [0.075446787, 0.082311401, 0.000812869, 0.271816537, 0.69018451],
+            [0.078041426, 0.244725389, 0.014591784, 0.049618232, 0.472784413],
+            [0.076303139, 0.115293179, 0.176512979, 0.07634871, 0.375165155],
+            [0.073802749, 0.133804588, 0.000635776, 0.394104881, 0.39465102],
+        ]
+        dt = date(2011, 1, 1)
+        for p in vals:
+            predictions.append(
+                InvestmentCyclePredictionMock(as_of=dt, eq=p[0], eq_pk=p[1], pk_eq=p[2], eq_pit=p[3], pit_eq=p[4])
+            )
+            dt += timedelta(days=31)
+        return predictions
 
 
 class InstrumentsFactory(object):

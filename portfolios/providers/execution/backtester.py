@@ -56,6 +56,8 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
         self.executions.append(execution)
 
     def get_asset_weights_held_less_than1y(self, goal, today):
+        #needs to be rewritten using PositionLots
+        '''
         assets_held_less = dict()
 
         ept = ExecutionProviderBacktester._build_executions_per_ticker('volume', self.executions)
@@ -76,7 +78,7 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
         for pos in positions:
             value = (assets_held_less[pos.ticker.id] * pos.ticker.daily_prices.last()) / goal.available_balance
             weights[pos.ticker.id] = value
-        return weights
+        return weights'''
 
     def cash_left(self, time, cash):
         self.cash[time] = float(cash)

@@ -23,8 +23,8 @@ def optimise_up(opt_inputs, min_weights):
     :param min_weights: A dict from asset_id to new minimum weight.
     :return: weights - The new dict of weights, or None if impossible.
     """
-    xs, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
 
+    xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = opt_inputs
     mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
     pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights, abs_min=0)
     new_cons = constraints + [xs >= pweights]
@@ -136,7 +136,7 @@ def create_request(goal, new_positions, reason, execution_provider, data_provide
     for tid, pos in new_positions.items():
         if pos == 0:
             continue
-        ticker = data_provider.get_ticker(id=tid)
+        ticker = data_provider.get_ticker(tid=tid)
         request = execution_provider.create_execution_request(reason=reason,
                                                               goal=goal,
                                                               asset=ticker,
@@ -335,7 +335,8 @@ def rebalance(goal, idata, data_provider, execution_provider):
 
         #A goal is a portfolio? If the rebalance is being made by goal it could be inneficient from a cost perspective
 
-    new_positions = build_positions(goal, weights, idata[2])
+    _, instruments, _ = idata
+    new_positions = build_positions(goal, weights, instruments)
     #idata[2] is a matrix containing latest instrument price
     order = create_request(goal, new_positions, reason,
                            execution_provider=execution_provider,
