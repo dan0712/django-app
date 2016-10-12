@@ -1,8 +1,6 @@
 import json
 from decimal import Decimal
-from datetime import date, timedelta
-
-from datetime import datetime
+from datetime import date, timedelta, datetime
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -393,6 +391,7 @@ class GoalTests(APITestCase):
         # Create a risk score metric for the settings
         goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
         goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        goal_settings.completion_date = timezone.now().date() - timedelta(days=365)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
         response = self.client.get(url)
@@ -648,6 +647,50 @@ class GoalTests(APITestCase):
 
         self.assertTrue(positions[0]['quantity'] == 15)
         self.assertTrue(positions[1]['quantity'] == 1)
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_create_goal(self):
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        # Add the asset classes to the portfolio set
+        self.portfolio_set = PortfolioSetFactory.create()
+        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
+                                                 benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                                  benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
+        goal_settings = GoalSettingFactory.create()
+        goal_type = GoalTypeFactory.create()
+        url = '/api/v1/goals'
+        data = {
+            'account': account.id,
+            'name': 'Fancy new goal',
+            'type': goal_type.id,
+            'target': 15000.0,
+            'completion': "2016-01-01",
+            'initial_deposit': 5000,
+            'ethical': True,
+        }
+        # unauthenticated 403
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # authenticated 200
+        self.client.force_authenticate(account.primary_owner.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_goal_positions(self):
         client = Fixture1.client1()

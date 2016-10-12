@@ -4,7 +4,7 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
-    login as auth_views_login,
+    login as auth_views_login ,
 )
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
