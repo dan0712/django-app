@@ -47,6 +47,7 @@
             <tr>
               <th>Account Type</th>
               <th>Account Name</th>
+              <th>Status</th>
               <th>Balance</th>
               <th>Earnings</th>
               <th>Fee</th>
@@ -58,6 +59,7 @@
               <tr>
                 <td>{{ account.account_type_name }}</td>
                 <td>{{ account.name }}</td>
+                <td>{% if account.on_track %}On Track{% else %}Off Track{% endif %}</td>
                 <td>{{ account.total_balance|currency }}</td>
                 <td>{{ account.total_earnings|currency }}</td>
                 <td>{{ account.custom_fee|currency }}</td>
