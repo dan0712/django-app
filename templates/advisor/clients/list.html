@@ -76,7 +76,7 @@
                 <td>
                   <div><a href="{% url 'advisor:clients:detail' client.0 %}">{{ client.1 }}</a></div>
                 </td>
-                <td>{% if client.2 %}On Track{% else %}Off Track{% endif %}</td>
+                <td>{% if client.2 %}<span style='color:green;'>On Track</span>{% else %}<span style='color:red;'>Off Track</span>{% endif %}</td>
                 <td>{{ client.3|currency }}</td>
                 <td><a href="mailto:{{ client.4 }}">{{ client.4 }}</a></td>
                 <td>{{ client.5 }}</td>

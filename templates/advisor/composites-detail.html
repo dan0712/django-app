@@ -68,7 +68,7 @@
             <tr>
               <td><a href="{% url "advisors:clients:detail" account.primary_owner.id %}">{{ account.primary_owner }}</a></td>
               <td>{{ account.name }}</td>
-              <td>{% if account.on_track %}On Track{% else %}Off Track{% endif %}</td>
+              <td>{% if account.on_track %}<span style='color:green;'>On Track</span>{% else %}<span style='color:red;'>Off Track</span>{% endif %}</td>
               <td>{{ account.total_balance|currency }}</td>
               <td>{{ account.total_returns|currency }}</td>
               <td>
