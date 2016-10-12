@@ -8,12 +8,9 @@ from main.event import Event
 from main.models import ActivityLog, ActivityLogEvent, AccountType
 from main.tests.fixture import Fixture1
 from common.constants import GROUP_SUPPORT_STAFF
-from api.v1.tests.factories import GoalFactory, MarketIndexFactory, TickerFactory, \
-    AssetFeatureFactory, GoalSettingFactory, ClientAccountFactory, GoalMetricFactory, \
-    MarkowitzScaleFactory, GroupFactory, InvestmentType, PortfolioSetFactory, \
-    AssetClassFactory
+from api.v1.tests.factories import MarketIndexFactory, TickerFactory, AssetFeatureFactory, GroupFactory, \
+    InvestmentType, PortfolioSetFactory, AssetClassFactory, AssetFeatureValueFactory
 from main.models import GoalMetric, AssetFeature
-from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
 from unittest import mock
 from unittest.mock import MagicMock
 from django.utils import timezone
@@ -140,27 +137,21 @@ class SettingsTests(APITestCase):
         """
         url = '/api/v1/settings/asset-features'
 
-
         # add some assets
-        # Set the markowitz bounds for today
         self.bonds_ticker.state = 1
         self.bonds_ticker.save()
-        self.m_scale = MarkowitzScaleFactory.create()
 
-        # populate the data needed for the optimisation
-        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
-        populate_prices(500, asof=mocked_now.date())
-        populate_cycle_obs(500, asof=mocked_now.date())
-        populate_cycle_prediction(asof=mocked_now.date())
+        # Add some asset features that have no values, and some feature values that have no assets.
+        # They should also not be included.
+        orphan_feature = AssetFeatureFactory.create()
+        orphan_feature_value = AssetFeatureValueFactory.create()
 
-        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
-        # setup some inclusive goal settings
-        goal_settings = GoalSettingFactory.create()
-        # Create a risk score metric for the settings
-        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
-        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
-        self.client.force_authenticate(user=goal.account.primary_owner.user)
+        self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         inactive_asset_feature = [af for af in AssetFeature.objects.all() if not af.active]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), AssetFeature.objects.count() - len(inactive_asset_feature))
+        self.assertTrue(orphan_feature.id not in [f['id'] for f in response.data])
+        for f in response.data:
+            for fv in f['values']:
+                self.assertNotEqual(fv['id'], orphan_feature_value.id, msg='Orphaned feature value in setting endpoint')

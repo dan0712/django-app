@@ -1892,6 +1892,7 @@ class Goal(models.Model):
 
         return self.total_balance >= self.selected_settings.target
 
+
 class HistoricalBalance(models.Model):
     """
     The historical balance model is a cache of the information that can be built from the Execution and Transaction
@@ -1933,12 +1934,7 @@ class AssetFeature(models.Model):
 
     @cached_property
     def active(self):
-        for value in self.values.all():
-            if value.active:
-                return True
-        # if none of the asset feature values are active then
-        # this assetfeature is not active
-        return False
+        return AssetFeatureValue.objects.filter(feature=self, assets__state=Ticker.State.ACTIVE.value).exists()
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
@@ -1981,10 +1977,7 @@ class AssetFeatureValue(models.Model):
 
     @cached_property
     def active(self):
-        for asset in self.assets.all():
-            if asset.state != 2:
-                return False
-        return True
+        return self.assets.filter(state=Ticker.State.ACTIVE.value).exists()
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
