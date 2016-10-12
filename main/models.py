@@ -855,7 +855,7 @@ class AccountGroup(models.Model):
         percentage = self.satellite_balance / self.total_balance * 100
         return "{0}".format(int(round(percentage)))
 
-    @property
+    @cached_property
     def on_track(self):
         """
             If any of the advisors' client accounts are
