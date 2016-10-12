@@ -696,5 +696,12 @@ class EmailInvite(models.Model):
 
 
 class RiskCategory(models.Model):
+    name = models.CharField(max_length=64, null=False, blank=False, unique=True)
     upper_bound = models.FloatField(validators=[MinValueValidator(0),
                                                 MaxValueValidator(1)])
+
+    class Meta:
+        ordering = ['upper_bound']
+
+    def __str__(self):
+        return '[<{}] {}'.format(self.upper_bound, self.name)

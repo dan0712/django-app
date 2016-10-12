@@ -1,7 +1,8 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from client.models import AccountTypeRiskProfileGroup
+from api.v1.settings.serializers import InvestorRiskCategorySerializer
+from client.models import AccountTypeRiskProfileGroup, RiskCategory
 from main.constants import ACCOUNT_TYPE_CORPORATE, ACCOUNT_TYPE_JOINT, \
     ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF, ACCOUNT_TYPE_TRUST, ACCOUNT_TYPE_ROTH401K
 from main.event import Event
@@ -155,3 +156,14 @@ class SettingsTests(APITestCase):
         for f in response.data:
             for fv in f['values']:
                 self.assertNotEqual(fv['id'], orphan_feature_value.id, msg='Orphaned feature value in setting endpoint')
+
+    def test_get_investor_risk_categories(self):
+        RiskCategory.objects.create(name='Ripping', upper_bound=0.7)
+
+        url = '/api/v1/settings/investor-risk-categories'
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'Ripping')
+        self.assertEqual(response.data[0]['upper_bound'], 0.7)
