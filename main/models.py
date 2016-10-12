@@ -1457,7 +1457,7 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+        lots = PositionLot.objects.filter(quantity__gt=0, execution_distribution__transaction__from_goal=self).\
             annotate(ticker_id=F('execution_distribution__execution__asset__id'),
                      price=F('execution_distribution__execution__asset__unit_price'))\
             .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
@@ -1470,20 +1470,24 @@ class Goal(models.Model):
         return super(Goal, self).save(force_insert, force_update, using,
                                       update_fields)
 
-    @transaction.atomic
     def archive(self):
         """
-        Archives a goal, creating a closing order to neutralise any positions.
+        Flags a goal as CLOSING, which will trigger the daily process to clear it.
         :return: None
         """
-        from main.ordering import OrderManager
         if self.State(self.state) != self.State.ARCHIVE_REQUESTED:
             raise InvalidStateError(self.State(self.state), self.State.ARCHIVE_REQUESTED)
 
-        # Remove outstanding orders and close existing positions
-        async_id = OrderManager.close_positions(self)
+        self.state = self.State.CLOSING.value
+        self.save()
 
-        self.state = self.State.ARCHIVED.value if async_id is None else self.State.CLOSING.value
+    def complete_archive(self):
+        """
+        Completes the goal archive process once a goal has no open market positions.
+        :return:
+        """
+        if self.get_positions_all():
+            raise InvalidStateError("Cannot completely archive a goal while it has open positions.")
 
         # Change the name to _ARCHIVED so it doesn't affect the way the client can name any new goals, as there is a
         # unique index on account and name
@@ -1495,6 +1499,7 @@ class Goal(models.Model):
                 suf += 1
             self.name += '_{}'.format(suf)
 
+        self.state = Goal.State.ARCHIVED
         self.save()
 
     @transaction.atomic

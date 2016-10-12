@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from main.models import MarketOrderRequest, Transaction, ExecutionRequest
+from main.models import MarketOrderRequest, Transaction, ExecutionRequest, Ticker
 from main.event import Event
 
 
@@ -84,35 +84,34 @@ class OrderManager(object):
         """
         Create close position requests for all the positions owned by the given goal.
         :param goal: The goal you want to close the positions of.
-        :return:
+        :return: A MarketOrderRequest if the goal had positions.
         """
 
         # Make sure this goal has no open MarketOrderRequests that include this goal.
         async_id = OrderManager.cancel_open_orders(goal)
 
         # Send whatever neutralising orders need to be sent
-        if async_id is None:
+        positions = goal.get_positions_all()
+        if async_id is None and positions:
             order_request = MarketOrderRequest.objects.create(account=goal.account)
             execution_requests = []
             transactions = []
-            for position in goal.positions.all():
-                # We can be short, so be prepared for that.
-                if position.share > 0:
-                    transactions.append(Transaction(reason=Transaction.REASON_ORDER,
-                                                    to_goal=goal,
-                                                    amount=position.value))
-                else:
-                    transactions.append(Transaction(reason=Transaction.REASON_ORDER,
-                                                    from_goal=goal,
-                                                    amount=-position.value))
+            for position in positions:
+                # We should never be short.
+                if position.quantity < 0:
+                    raise ValueError("We have a negative position, and we should NEVER have that.")
+                transactions.append(Transaction(reason=Transaction.REASON_ORDER,
+                                                to_goal=goal,
+                                                amount=position.price * position.quantity))
                 execution_requests.append(ExecutionRequest(reason=ExecutionRequest.Reason.WITHDRAWAL,
                                                            goal=goal,
-                                                           asset=position.ticker,
-                                                           volume=-position.share,
+                                                           asset=Ticker.objects.get(position.ticker_id),
+                                                           volume=-position.quantity,
                                                            order=order_request,
                                                            transaction=transactions[-1]))
             Transaction.objects.bulk_create(transactions)
             ExecutionRequest.objects.bulk_create(execution_requests)
+            return order_request
         else:
             # First stage was asynchronous, we need to wait
             # TODO: Queue up another call to close_positions based on the completion of async_id

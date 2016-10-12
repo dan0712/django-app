@@ -745,3 +745,22 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Goal positions endpoint returns ok for Goal with positions')
+
+    def test_archive_goal(self):
+        client = Fixture1.client1()
+        account = ClientAccountFactory.create(primary_owner=client)
+        goal = GoalFactory.create(account=account)
+        url = '/api/v1/goals/{}/archive'.format(goal.pk)
+
+        # First login as client and flag the goal as archive-requested
+        self.client.force_authenticate(client.user)
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.ARCHIVE_REQUESTED.value)
+
+        # Then login as Advisor and actually archive it
+        self.client.force_authenticate(client.advisor.user)
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.CLOSING.value)
+
