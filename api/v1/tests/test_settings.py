@@ -10,7 +10,7 @@ from main.tests.fixture import Fixture1
 from common.constants import GROUP_SUPPORT_STAFF
 from api.v1.tests.factories import MarketIndexFactory, TickerFactory, AssetFeatureFactory, GroupFactory, \
     InvestmentType, PortfolioSetFactory, AssetClassFactory, AssetFeatureValueFactory, \
-    EmailInviteFactory
+    EmailInviteFactory, RiskProfileGroupFactory
 from main.models import GoalMetric, AssetFeature
 from unittest import mock
 from unittest.mock import MagicMock
@@ -204,5 +204,7 @@ class SettingsTests(APITestCase):
 
         # can retrieve risk-profile-groups
         url = '/api/v1/settings/risk-profile-groups'
+        group = RiskProfileGroupFactory.create()
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['name'], group.name)
