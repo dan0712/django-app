@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-from api.v1.settings.serializers import InvestorRiskCategorySerializer
+from django.core.urlresolvers import reverse
 from client.models import AccountTypeRiskProfileGroup, RiskCategory
 from main.constants import ACCOUNT_TYPE_CORPORATE, ACCOUNT_TYPE_JOINT, \
     ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF, ACCOUNT_TYPE_TRUST, ACCOUNT_TYPE_ROTH401K
@@ -10,12 +9,14 @@ from main.models import ActivityLog, ActivityLogEvent, AccountType
 from main.tests.fixture import Fixture1
 from common.constants import GROUP_SUPPORT_STAFF
 from api.v1.tests.factories import MarketIndexFactory, TickerFactory, AssetFeatureFactory, GroupFactory, \
-    InvestmentType, PortfolioSetFactory, AssetClassFactory, AssetFeatureValueFactory
+    InvestmentType, PortfolioSetFactory, AssetClassFactory, AssetFeatureValueFactory, \
+    EmailInviteFactory, RiskProfileGroupFactory
 from main.models import GoalMetric, AssetFeature
 from unittest import mock
 from unittest.mock import MagicMock
 from django.utils import timezone
 from datetime import datetime
+from client.models import EmailInvite
 
 mocked_now = datetime(2016, 1, 1)
 
@@ -167,3 +168,43 @@ class SettingsTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Ripping')
         self.assertEqual(response.data[0]['upper_bound'], 0.7)
+
+    def test_get_risk_profile_groups(self):
+        """
+        Should be accessible by clients and onboarding users.
+        """
+        # Bring an invite key, get logged in as a new user
+        PW = 'testpassword'
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT)
+
+        url = reverse('api:v1:client-user-register')
+        data = {
+            'first_name': invite.first_name,
+            'last_name': invite.last_name,
+            'invite_key': invite.invite_key,
+            'password': PW,
+            'question_one': 'what is the first answer?',
+            'question_one_answer': 'answer one',
+            'question_two': 'what is the second answer?',
+            'question_two_answer': 'answer two',
+        }
+
+        # Accept an invitation and create a user
+        response = self.client.post(url, data)
+        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
+        invite_detail_url = reverse('api:v1:invite-detail', kwargs={'invite_key': invite.invite_key} )
+        me_url = reverse('api:v1:user-me')
+        self.assertEqual(EmailInvite.STATUS_ACCEPTED, lookup_invite.status)
+
+        # New user must be logged in and able to see invite data
+        self.assertIn('sessionid', response.cookies)
+        response = self.client.get(me_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='/api/v1/me should be valid during invitation')
+
+        # can retrieve risk-profile-groups
+        url = '/api/v1/settings/risk-profile-groups'
+        group = RiskProfileGroupFactory.create()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['name'], group.name)
