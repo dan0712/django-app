@@ -36,8 +36,7 @@ def optimise_up(opt_inputs, min_weights):
     :param min_weights: A dict from asset_id to new minimum weight.
     :return: weights - The new dict of weights, or None if impossible.
     """
-    xs, lam, constraints, settings_instruments, settings_symbol_ixs, instruments, lcovars = opt_inputs
-
+    xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = opt_inputs
     mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
     pweights = create_portfolio_weights(settings_instruments['id'].values, min_weights=min_weights, abs_min=0)
     new_cons = constraints + [xs >= pweights]
@@ -252,7 +251,7 @@ def get_tax_lots(goal):
     return position_lots
 
 
-def perturbate_mix(goal, min_weights):
+def perturbate_mix(goal, opt_inputs):
     """
                         order assets into groups of metrics constraints - compare with metrics constraints in settings
                         go into group with biggest difference - start selling assets from the group (from lowest tax loss further)
@@ -296,9 +295,15 @@ def perturbate_mix(goal, min_weights):
         # we are in group with biggest difference now
         metric = [m for m in metrics if m.id == metric_id][0]
         _sell_due_to_drift(desired_lots, metrics_weights[metric_id]['asset_ids'], goal, metric)
+        weights = None
+        try:
+            weights = optimise_up(opt_inputs, get_weights(desired_lots, goal.available_balance))
+        except:
+            pass
+        if weights is not None:
+            return weights
 
-    weights = get_weights(desired_lots, goal.available_balance)
-    return weights
+    return weights, get_weights(desired_lots, goal.available_balance)
 
 
 def get_weights(lots, available_balance):
@@ -418,7 +423,7 @@ def perturbate(goal, idata, data_provider, execution_provider):
             reason = execution_provider.get_execution_request(Reason.DRIFT.value)
 
     if weights is None:
-        min_weights = perturbate_mix(goal)
+        min_weights = perturbate_mix(goal, opt_inputs)
         weights = optimise_up(opt_inputs, min_weights)
         weights = process_risk(weights, held_weights)
     else:
