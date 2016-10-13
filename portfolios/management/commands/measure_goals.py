@@ -56,7 +56,7 @@ def get_risk_score(goal, weights, idata, data_provider, execution_provider):
         return 0.0
 
     # Get the cost of a clean optimisation using the current constraints.
-    current_cost = optimize_settings(goal.active_settings, idata, data_provider, execution_provider)[1]
+    current_cost = optimize_settings(goal.approved_settings, idata, data_provider, execution_provider)[1]
 
     # Set up the required data
     covars, instruments, masks = idata

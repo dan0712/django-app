@@ -25,9 +25,9 @@ import operator
 
 logger = logging.getLogger('rebalance')
 
-tax_bracket_less1Y = 0.3
-tax_bracket_more1Y = 0.2
-max_weight_sum = 1.0001
+TAX_BRACKET_LESS1Y = 0.3
+TAX_BRACKET_MORE1Y = 0.2
+MAX_WEIGHT_SUM = 1.0001
 
 def optimise_up(opt_inputs, min_weights):
     """
@@ -189,7 +189,7 @@ def process_risk(weights, goal, idata, data_provider, execution_provider):
     """
     risk_score = get_risk_score(goal, weights, idata, data_provider, execution_provider)
     metric = GoalMetric.objects\
-        .filter(group__settings__goal_active=goal)\
+        .filter(group__settings__goal_approved=goal)\
         .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE)\
         .first()
 
@@ -200,7 +200,7 @@ def process_risk(weights, goal, idata, data_provider, execution_provider):
 
 
 def perturbate_risk(min_weights, removals, goal):
-    position_lots = _get_position_lots(goal)
+    position_lots = get_tax_lots(goal)
     # for each lot get information whether removing this lot would increase/decrease total portfolio risk
     # start removing lots that get our portfolio risk in right direction, starting from lowest tax lost
     # iterate until our risk == desired risk
@@ -215,27 +215,27 @@ def perturbate_risk(min_weights, removals, goal):
 
 def perturbate_withdrawal(goal):
     # start getting rid of lots in units of 0.01 of a lot, and always check if we are already in 100%
-    position_lots = _get_position_lots(goal)
+    position_lots = get_tax_lots(goal)
 
     desired_lots = position_lots[:]
     weights = get_weights(desired_lots, goal.available_balance)
 
     for lot in desired_lots:
-        while lot['quantity'] > 0 and sum(weights.values()) > max_weight_sum:
+        while lot['quantity'] > 0 and sum(weights.values()) > MAX_WEIGHT_SUM:
             lot['quantity'] -= 1
             lot['quantity'] = max(lot['quantity'], 0)
             weights = get_weights(desired_lots, goal.available_balance)
-        if sum(weights.values()) <= max_weight_sum:
+        if sum(weights.values()) <= MAX_WEIGHT_SUM:
             return weights
 
 
-def _get_position_lots(goal):
+def get_tax_lots(goal):
     '''
-    returns position lots sorted by unit tax cost for a given goal
+    returns position lots sorted by increasing unit tax cost for a given goal
     :param goal:
     :return:
     '''
-    year_ago = timezone.now() - timedelta(days=365)
+    year_ago = timezone.now() - timedelta(days=366)
     position_lots = PositionLot.objects.filter(quantity__gt=0) \
                         .filter(execution_distribution__transaction__from_goal=goal) \
                         .annotate(price_entry=F('execution_distribution__execution__price'),
@@ -243,12 +243,12 @@ def _get_position_lots(goal):
                                   price=F('execution_distribution__execution__asset__unit_price'),
                                   ticker_id=F('execution_distribution__execution__asset_id')) \
                         .annotate(tax_bracket=Case(
-                          When(executed__gt=year_ago, then=Value(tax_bracket_less1Y)),
-                          When(executed__lte=year_ago, then=Value(tax_bracket_more1Y)),
+                          When(executed__gt=year_ago, then=Value(TAX_BRACKET_LESS1Y)),
+                          When(executed__lte=year_ago, then=Value(TAX_BRACKET_MORE1Y)),
                           output_field=FloatField())) \
-                        .annotate(unit_tax_cost=(F('price_entry') - F('price')) * F('tax_bracket')) \
+                        .annotate(unit_tax_cost=(F('price') - F('price_entry')) * F('tax_bracket')) \
                         .values('id', 'price_entry', 'quantity', 'executed', 'unit_tax_cost', 'ticker_id', 'price') \
-                        .order_by('-unit_tax_cost')
+                        .order_by('unit_tax_cost')
     return position_lots
 
 
@@ -260,20 +260,24 @@ def perturbate_mix(goal, min_weights):
                         try to find solution
                         repeat until solution found
     """
-    position_lots = _get_position_lots(goal)
+    position_lots = get_tax_lots(goal)
 
     metrics = GoalMetric.objects.\
-        filter(group__settings__goal_active=goal).\
-        filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX).\
-        filter(Q(comparison=GoalMetric.METRIC_COMPARISON_EXACTLY) |
-               Q(comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM))
-        #only exact or maximums - we are interested in sells only
+        filter(group__settings__goal_approved=goal).\
+        filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX)
 
     metrics_weights = defaultdict(defaultdict)
     for metric in metrics:
-        asset_ids = AssetFeatureValue.objects.all().filter(id=metric.feature_id)\
-            .annotate(ticker_id=F('assets__id'))\
-            .values_list('ticker_id', flat=True).distinct()
+        if metric.comparison == GoalMetric.METRIC_COMPARISON_EXACTLY or \
+                        metric.comparison == GoalMetric.METRIC_COMPARISON_MAXIMUM:
+            asset_ids = AssetFeatureValue.objects.filter(id=metric.feature_id)\
+                .annotate(ticker_id=F('assets__id'))\
+                .values_list('ticker_id', flat=True).distinct()
+        else:
+            asset_ids = AssetFeatureValue.objects.exclude(id=metric.feature_id) \
+                .annotate(ticker_id=F('assets__id'))\
+                .values_list('ticker_id', flat=True).distinct()
+            # minimum - we will use anti-group here
 
         measured_val = _get_measured_val(position_lots, asset_ids, goal)
         drift = _get_drift(measured_val, metric)
@@ -350,6 +354,7 @@ def _sell_due_to_drift(position_lots, asset_ids, goal, metric):
 
     measured_val = _get_measured_val(position_lots, asset_ids, goal)
     drift = _get_drift(measured_val, metric)
+
     if abs(drift) < 1:
         return
 
@@ -357,12 +362,10 @@ def _sell_due_to_drift(position_lots, asset_ids, goal, metric):
         if not lot['ticker_id'] in asset_ids:
             continue
 
-        lot['quantity'] = 0
-        measured_val = _get_measured_val(position_lots, asset_ids, goal)
-        drift = _get_drift(measured_val, metric)
+        while (abs(drift) > 1) and lot['quantity'] > 0:
+            lot['quantity'] -= 1
+            lot['quantity'] = max(lot['quantity'], 0)
 
-        while drift < -1:
-            lot['quantity'] += 0.01
             measured_val = _get_measured_val(position_lots, asset_ids, goal)
             drift = _get_drift(measured_val, metric)
 
@@ -403,7 +406,7 @@ def perturbate(goal, idata, data_provider, execution_provider):
         weights = optimise_up(opt_inputs, min_weights)
 
     if weights is None:
-        if sum(held_weights.values()) > max_weight_sum:
+        if sum(held_weights.values()) > MAX_WEIGHT_SUM:
             reason = execution_provider.get_execution_request(Reason.WITHDRAWAL.value)
             min_weights = perturbate_withdrawal(goal)
             weights = optimise_up(opt_inputs, min_weights)
