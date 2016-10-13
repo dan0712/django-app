@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.io.data as web
 
 from portfolios.providers.data.backtester import DataProviderBacktester
-from portfolios.providers.dummy_models import GoalFactory, PositionMock
+from portfolios.providers.dummy_models import GoalFactory, PositionLot
 from portfolios.providers.execution.backtester import ExecutionProviderBacktester
 from main.management.commands.rebalance import rebalance
 from portfolios.calculation import build_instruments, \
@@ -44,24 +44,16 @@ class DownloadDataYahoo(object):
 class Backtester(object):
     def execute_order(self, settings, order, data_provider, execution_provider):
         for request in order[0].execution_requests:
-            in_portfolio = False
-            for position in settings.positions:
-                if position.ticker.symbol == request.asset.symbol:
-                    in_portfolio = True
-                    ticker = data_provider.get_ticker(position.ticker.symbol)
-                    share_value = ticker.daily_prices.last() * request.volume
-                    settings.current_balance -= share_value
-                    settings.cash_balance -= share_value
-                    position.share += request.volume
+            ticker = data_provider.get_ticker(request.asset.symbol)
+            share_value = ticker.daily_prices.last() * request.volume
+            settings.current_balance -= share_value
+            settings.cash_balance -= share_value
+            #position = PositionMock(ticker=ticker, share=request.volume)
 
-            if not in_portfolio:
-                ticker = data_provider.get_ticker(request.asset.symbol)
-                share_value = ticker.daily_prices.last() * request.volume
-                settings.current_balance -= share_value
-                settings.cash_balance -= share_value
-                position = PositionMock(ticker=ticker, share=request.volume)
-                position.data_provider = data_provider
-                settings.positions.append(position)
+            positionLot = PositionLot(ticker=ticker, price=ticker.daily_prices.last(),
+                                      quantity=request.volume,executed=data_provider.get_current_date())
+            positionLot.data_provider = data_provider
+            settings.positions.append(positionLot)
             execution_provider.order_executed(execution_request=request,
                                               price=ticker.daily_prices.last(),
                                               time=data_provider.get_current_date())

@@ -56,29 +56,21 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
         self.executions.append(execution)
 
     def get_asset_weights_held_less_than1y(self, goal, today):
-        #needs to be rewritten using PositionLots
-        '''
-        assets_held_less = dict()
+        m1y = today - timedelta(days=366)
+        assets = defaultdict(float)
 
-        ept = ExecutionProviderBacktester._build_executions_per_ticker('volume', self.executions)
-        executions = self._construct_matrix(ept)
-        executions = executions.sort_index(ascending=False)
-        executions[executions < 0] = 0  # we take into account only buys/not sells
-        executions = executions.cumsum()
-
-        positions = goal.get_positions_all()
-
-        for position in positions:
-            # search this year's buys only
-            executions_single_asset = pd.DataFrame(executions[position.ticker.symbol])
-            executions_this_year = executions_single_asset[executions_single_asset.index > today-timedelta(365)]
-            assets_held_less[position.ticker.symbol] = min(int(executions_this_year.iloc[-1]), position.share)
+        for execution in self.executions:
+            if execution.executed > m1y:
+                assets[execution.asset.id] += execution.volume
 
         weights = dict()
+        positions = goal.get_positions_all()
+
         for pos in positions:
-            value = (assets_held_less[pos.ticker.id] * pos.ticker.daily_prices.last()) / goal.available_balance
-            weights[pos.ticker.id] = value
-        return weights'''
+            value = (assets[pos['ticker_id']] * float(pos['price'])) / goal.available_balance
+            weights[pos['ticker_id']] = value
+        return weights
+
 
     def cash_left(self, time, cash):
         self.cash[time] = float(cash)

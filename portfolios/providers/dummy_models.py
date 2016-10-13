@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import uuid
-
+import types
 import copy
 import functools
 import numpy as np
@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from .execution.abstract import State
 from portfolios.returns import get_price_returns
 from common.structures import ChoiceEnum
+from collections import defaultdict
 
 
 class AssetClassMock(object):
@@ -115,31 +116,55 @@ class GoalMock(object):
         return self.current_balance
 
     def get_positions_all(self):
-        return self.positions
+        positions = defaultdict(float)
+        prices = defaultdict(float)
+        for p in self.positions:
+            positions[p.execution_distribution.execution.ticker.id] += p.quantity
+            prices[p.execution_distribution.execution.ticker.id] = p.price
+
+        pos = list()
+        for id, quantity in positions.items():
+            position = dict()
+            position['ticker_id'] = id
+            position['quantity'] = quantity
+            position['price'] = prices[id]
+            pos.append(position)
+        return pos
+
 
     @property
     def available_balance(self):
         balance = 0
         for position in self.get_positions_all():
-            balance += position.value
+            balance += position['quantity'] * position['price']
         return balance + self.cash_balance
 
     def __str__(self):
         return '[' + self.name + " : " + self.account.primary_owner
 
 
-class PositionMock(object):
-    #we need to replace this with PositionLot and also have Sale model
-    def __init__(self, ticker, share=0):
-        self.ticker = ticker
-        self.share = share
+class PositionLot(object):
+    def __init__(self, quantity, price, ticker, executed):
+        self.quantity = quantity
+        self.execution_distribution = types.SimpleNamespace()
+        self.execution_distribution.execution = types.SimpleNamespace()
+        self.execution_distribution.transaction = types.SimpleNamespace()
+        self.execution_distribution.execution.price = price
+        self.execution_distribution.execution.ticker = ticker
+        self.execution_distribution.execution.executed = executed
+        self.execution_distribution.transaction.from_goal = None
         self.data_provider = None
 
     @property
-    def value(self):
+    def price(self):
         if self.data_provider is not None:
-            self.ticker = self.data_provider.get_ticker(self.ticker.symbol)
-        return self.share * self.ticker.daily_prices.last()
+            ticker = self.data_provider.get_ticker(self.execution_distribution.execution.ticker.id)
+        return float(ticker.daily_prices.last())
+
+
+    @property
+    def value(self):
+        return float(self.quantity * self.price)
 
 
 class GoalSettingMock(object):
@@ -421,6 +446,6 @@ class GoalFactory(object):
 
         goal_non_nested = copy.copy(goal)
         goal_non_nested.active_settings = None
-        goal.active_settings.goal = goal_non_nested
+        goal.approved_settings.goal = goal_non_nested
 
         return goal
