@@ -335,10 +335,14 @@ def _get_drift(measured_val, goal_metric):
     :return:
     The function duplicates GoalMetric.get_drift - but does all calculation on in-memory measured_val
     """
+    configured_val = goal_metric.configured_val
+    if goal_metric.comparison == GoalMetric.METRIC_COMPARISON_MINIMUM:
+        configured_val = 1 - configured_val
+
     if goal_metric.rebalance_type == GoalMetric.REBALANCE_TYPE_ABSOLUTE:
-        return (measured_val - goal_metric.configured_val) / goal_metric.rebalance_thr
+        return (measured_val - configured_val) / goal_metric.rebalance_thr
     else:
-        return ((measured_val - goal_metric.configured_val) / goal_metric.configured_val) / goal_metric.rebalance_thr
+        return ((measured_val - configured_val) / goal_metric.configured_val) / goal_metric.rebalance_thr
 
 
 def _sell_due_to_drift(position_lots, asset_ids, goal, metric):
