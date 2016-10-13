@@ -638,7 +638,7 @@ class EmailInvite(models.Model):
     advisor = models.ForeignKey('main.Advisor', related_name='invites')
 
     first_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
     user = models.OneToOneField('main.User', related_name='invitation',
