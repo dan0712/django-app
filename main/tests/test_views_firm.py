@@ -278,3 +278,40 @@ class FirmAnalyticsMixinTests(TestCase):
         self.client.login(username=rep.user.email, password='test')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_risk_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?advisor=&client=&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_worth_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?client=' + self.betasmartz_client.email + '&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_client_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?worth=high&advisor=&client='
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_advisor_filter(self):
+        url = reverse('firm:analytics') + '?advisor=' + self.betasmartz_client.advisor.email + '&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
