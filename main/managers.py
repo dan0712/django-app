@@ -233,7 +233,7 @@ class PositionLotQuerySet(QuerySet):
                    execution_distribution__transaction__from_goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
             q |= Q(execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
                    execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
-        qs = self.filter(q, goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+        qs = self.filter(q, execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
 
         return qs
 
