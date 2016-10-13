@@ -123,7 +123,7 @@ def create_request(goal, new_positions, reason, execution_provider, data_provide
         new_pos = new_positions.pop(position['ticker_id'], 0)
         if new_pos - position['quantity'] == 0:
             continue
-        ticker = data_provider.get_ticker(id=position['ticker_id'])
+        ticker = data_provider.get_ticker(tid=position['ticker_id'])
         request = execution_provider.create_execution_request(reason=reason,
                                                               goal=goal,
                                                               asset=ticker,
