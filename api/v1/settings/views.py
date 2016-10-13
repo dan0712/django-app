@@ -9,13 +9,14 @@ from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
 from main.constants import US_RETIREMENT_ACCOUNT_TYPES
-from main.models import AccountType, Ticker, AssetFeatureValue
+from main.models import AccountType, GoalSetting
 from ..goals.serializers import GoalSettingSerializer
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
 from client import models as client_models
 from retiresmartz import models as retirement_models
+from django.shortcuts import get_object_or_404
 
 
 class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
@@ -50,6 +51,12 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
             'constants': self.constants(request).data,
         }
         return Response(data)
+
+    def retrieve(self, request, pk=None):
+        queryset = GoalSetting.objects.all()
+        goal = get_object_or_404(queryset, pk=pk)
+        serializer = self.serializer_class(goal)
+        return Response(serializer.data)
 
     @list_route(methods=['get'], url_path='goal-types')
     def goal_types(self, request):

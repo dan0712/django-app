@@ -10,7 +10,7 @@ from main.tests.fixture import Fixture1
 from common.constants import GROUP_SUPPORT_STAFF
 from api.v1.tests.factories import MarketIndexFactory, TickerFactory, AssetFeatureFactory, GroupFactory, \
     InvestmentType, PortfolioSetFactory, AssetClassFactory, AssetFeatureValueFactory, \
-    EmailInviteFactory, RiskProfileGroupFactory
+    EmailInviteFactory, RiskProfileGroupFactory, GoalSettingFactory
 from main.models import GoalMetric, AssetFeature
 from unittest import mock
 from unittest.mock import MagicMock
@@ -130,6 +130,14 @@ class SettingsTests(APITestCase):
         # Make sure the external_asset_types are there
         self.assertTrue('external_asset_types' in response.data)
         self.assertEqual(set(('id', 'name')), set(response.data['external_asset_types'][0].keys()))
+
+    def test_get_settings_detail(self):
+        goal_setting = GoalSettingFactory.create()
+        url = '/api/v1/settings/{}'.format(goal_setting.id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], goal_setting.id)
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_only_active_asset_features_in_settings(self):
