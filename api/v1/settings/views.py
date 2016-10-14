@@ -16,14 +16,12 @@ from ..permissions import IsAdvisorOrClient
 from ..views import ApiViewMixin
 from client import models as client_models
 from retiresmartz import models as retirement_models
-from django.shortcuts import get_object_or_404
 
 
 class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
     """
     Experimental
     """
-    serializer_class = GoalSettingSerializer
     permission_classes = (
         IsAdvisorOrClient,
     )
@@ -51,12 +49,6 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
             'constants': self.constants(request).data,
         }
         return Response(data)
-
-    def retrieve(self, request, pk=None):
-        queryset = GoalSetting.objects.all()
-        goal = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(goal)
-        return Response(serializer.data)
 
     @list_route(methods=['get'], url_path='goal-types')
     def goal_types(self, request):

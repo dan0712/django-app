@@ -686,3 +686,24 @@ class GoalTests(APITestCase):
         response = self.client.put(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.CLOSING.value)
+
+    def test_get_goal_settings_by_id(self):
+        goal = Fixture1.goal1()
+        goal.approve_selected()
+        setting = GoalSettingFactory.create()
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+        # unauthenticated
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # authenticated
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data, [])
+        self.assertEqual(response.data.get('id'), setting.id)
+
+        # 404 check
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, 99999)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

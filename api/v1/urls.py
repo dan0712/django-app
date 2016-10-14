@@ -35,6 +35,10 @@ retirement_incomes_router = client_router.register(r'retirement-incomes',
                                                 parents_query_lookups=['plan__client'])
 goals_router = router.register(r'goals',
                                goals_views.GoalViewSet)
+goal_settings_router = goals_router.register(r'settings',
+                                            goals_views.GoalSettingViewSet,
+                                            base_name='goal-settings',
+                                            parents_query_lookups=['goal'])
 account_router = router.register(r'accounts',
                                  account_views.AccountViewSet)
 account_goals_router = account_router.register(r'goals',

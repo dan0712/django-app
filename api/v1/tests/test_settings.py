@@ -131,14 +131,6 @@ class SettingsTests(APITestCase):
         self.assertTrue('external_asset_types' in response.data)
         self.assertEqual(set(('id', 'name')), set(response.data['external_asset_types'][0].keys()))
 
-    def test_get_settings_detail(self):
-        goal_setting = GoalSettingFactory.create()
-        url = '/api/v1/settings/{}'.format(goal_setting.id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], goal_setting.id)
-
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_only_active_asset_features_in_settings(self):
         """
