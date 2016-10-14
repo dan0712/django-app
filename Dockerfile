@@ -3,7 +3,7 @@ ENV PYTHONUNBUFFERED 1
 ENV TERM xterm
 # install requirements
 RUN apt-get update -y &&\
-    apt-get install -y gfortran libopenblas-dev liblapack-dev git cron supervisor vim less libmagic1 &&\
+    apt-get install -y gfortran libopenblas-dev liblapack-dev git cron supervisor vim less libmagic1 poppler-utils &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 
