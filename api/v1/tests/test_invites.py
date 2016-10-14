@@ -245,7 +245,7 @@ class InviteTests(APITestCase):
         self.assertNotEqual(response.data['tax_transcript_data'], None,
                             msg='tax_transcript_data is in the response and not None')
         self.assertEqual(response.data['tax_transcript_data'], expected_tax_transcript_data,
-                                    msg='Parsed tax_transcript_data matches expected')
+                         msg='Parsed tax_transcript_data matches expected')
 
 
         self.assertEqual(response._headers['content-type'], ('Content-Type', 'application/json'),
