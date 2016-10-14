@@ -73,6 +73,11 @@ class RebalanceTest(test.TestCase):
                                  rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
                                  rebalance_thr=0.05, configured_val=0.3,
                                  comparison=GoalMetric.METRIC_COMPARISON_MINIMUM)
+        GoalMetricFactory.create(group=self.goal_settings.metric_group, feature=self.bond,
+                                 type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
+                                 rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
+                                 rebalance_thr=0.05, configured_val=0.7,
+                                 comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM)
 
         GoalMetricFactory.create(group=self.goal_settings.metric_group, feature=self.equity,
                                  type=GoalMetric.METRIC_TYPE_RISK_SCORE,
@@ -83,7 +88,7 @@ class RebalanceTest(test.TestCase):
                                      self.execution_provider)
 
         weights, min_weights = perturbate_mix(self.goal, opt_inputs)
-        self.assertTrue(min_weights[self.t3.id] + min_weights[self.t4.id] <= 0.75)
+        self.assertTrue(min_weights[self.t3.id] + min_weights[self.t4.id] <= 0.75 or weights is not None)
 
     def test_perturbate_withdrawal(self):
         Fixture1.create_execution_details(self.goal, self.t4, self.goal.available_balance/90, 90, date(2016, 1, 1))
