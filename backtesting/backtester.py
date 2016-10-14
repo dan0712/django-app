@@ -53,11 +53,12 @@ class Backtester(object):
             positionLot = PositionLot(ticker=ticker, price=ticker.daily_prices.last(),
                                       quantity=request.volume,executed=data_provider.get_current_date())
             positionLot.data_provider = data_provider
-            settings.positions.append(positionLot)
+            settings.position_lots.append(positionLot)
             execution_provider.order_executed(execution_request=request,
                                               price=ticker.daily_prices.last(),
                                               time=data_provider.get_current_date())
-            execution_provider.attribute_sell(execution_request=request, goal=settings)
+            execution_provider.attribute_sell(execution_request=request, goal=settings,
+                                              data_provider=data_provider)
         execution_provider.cancel_pending_orders()
         execution_provider.cash_left(cash=settings.cash_balance, time=data_provider.get_current_date())
 

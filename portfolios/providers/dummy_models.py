@@ -109,7 +109,8 @@ class GoalMock(object):
         self.approved_settings = self.active_settings
         self.portfolio_set = portfolio_set
         self.current_balance = self.cash_balance = current_balance
-        self.positions = positions
+        self.position_lots = positions
+        self.sale = list()
         self.data_provider = data_provider
 
     def total_balance(self):
@@ -118,7 +119,7 @@ class GoalMock(object):
     def get_positions_all(self):
         positions = defaultdict(float)
         prices = defaultdict(float)
-        for p in self.positions:
+        for p in self.position_lots:
             positions[p.execution_distribution.execution.ticker.id] += p.quantity
             prices[p.execution_distribution.execution.ticker.id] = p.price
 
@@ -131,6 +132,24 @@ class GoalMock(object):
             pos.append(position)
         return pos
 
+    def get_lots_all(self):
+        lots = list()
+        for l in self.position_lots:
+            lot = dict()
+            lot['ticker_id'] = l.execution_distribution.execution.ticker.id
+            lot['quantity'] = l.quantity
+            lot['price'] = l.execution_distribution.execution.price
+            lot['executed'] = l.execution_distribution.execution.executed
+            lots.append(lot)
+        return lots
+
+    def get_lots_symbol(self, symbol):
+        lots = list()
+        all_lots = self.get_lots_all()
+        for l in all_lots:
+            if l['ticker_id'] == symbol:
+                lots.append(l)
+        return lots
 
     @property
     def available_balance(self):
@@ -165,6 +184,13 @@ class PositionLot(object):
     @property
     def value(self):
         return float(self.quantity * self.price)
+
+
+class Sale(object):
+    def __init__(self, ticker, price, quantity):
+        self.ticker = ticker
+        self.price = price
+        self.quantity = quantity
 
 
 class GoalSettingMock(object):

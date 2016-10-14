@@ -5,8 +5,11 @@ import numpy as np
 import pandas as pd
 
 from portfolios.providers.dummy_models import ExecutionMock, \
-    ExecutionRequestMock, MarketOrderRequestMock
+    ExecutionRequestMock, MarketOrderRequestMock, Sale
 from .abstract import ExecutionProviderAbstract, Reason
+
+TAXES_MORE1Y_HELD = 0.2
+TAXES_LESS1Y_HELD = 0.3
 
 
 class ExecutionProviderBacktester(ExecutionProviderAbstract):
@@ -99,66 +102,26 @@ class ExecutionProviderBacktester(ExecutionProviderAbstract):
             executions_per_ticker[execution.asset.id][execution.executed] = getattr(execution, attribute)
         return executions_per_ticker
 
-    def attribute_sell(self, execution_request, goal):
+    def attribute_sell(self, execution_request, goal, data_provider):
+        #create sale and choose lot/s to decrease
+        m1y = data_provider.get_current_date() - timedelta(days=366)
         if execution_request.volume > 0:
             return
+        lots = goal.get_lots_symbol(execution_request.asset.id)
+        unit_tax_costs = dict()
 
-        ept = ExecutionProviderBacktester._build_executions_per_ticker('volume', self.executions)
-        executions = self._construct_matrix(ept)
-        executions = executions[execution_request.asset.id]
-        executions = executions.sort_index(ascending=False)
-        executions[executions < 0] = 0 #we take into account only buys/not sells
-        executions = executions.cumsum()
-
-        positions = goal.get_positions_all()
-        shares_held_after_sell = sum([p.share if p.ticker == execution_request.asset.id else 0 for p in positions])
-        shares_held_before_sell = shares_held_after_sell + abs(execution_request.volume)
-
-        executions_before_sell_date = executions[executions >= shares_held_before_sell].index[0]
-        executions_after_sell_date = executions[executions >= shares_held_after_sell].index[0]
-
-        lot_dates = executions.index[executions_before_sell_date:executions_after_sell_date].index
-
-        affected_lots = {}
-        total_sell_volume = abs(execution_request.volume)
-        for execution in reversed(self.executions):
-            if execution.executed in lot_dates and \
-                            execution.asset.id == execution_request.asset.id and \
-                            execution.volume < 0:
-                info = dict()
-                info['price'] = execution.price
-
-                if total_sell_volume > execution.volume:
-                    total_sell_volume -= execution.volume
-                    info['volume'] = execution.volume
-                else:
-                    info['volume'] = int(total_sell_volume)
-                    total_sell_volume = 0
-                affected_lots[execution.executed] = info
-
-        below_1y_amount = 0
-        above_1y_amount = 0
-        below_1y_volume = 0
-        above_1y_volume = 0
-        for date, lot in affected_lots.items():
-            if execution_request.executed - timedelta(days=365) > date:
-                above_1y_amount += lot['volume']*lot['price']
-                above_1y_volume += lot['volume']
+        id = 0
+        for lot in lots:
+            if lot['executed'] < m1y:
+               lot['tax_bracket'] = TAXES_MORE1Y_HELD
             else:
-                below_1y_amount += lot['volume']*lot['price']
-                below_1y_volume += lot['volume']
+                lot['tax_bracket'] = TAXES_LESS1Y_HELD
+            ticker = data_provider.get_ticker(tid=lot['ticker_id'])
+            lot['current_price'] = float(ticker.daily_prices.last())
+            lot['unit_tax_cost'] = float((lot['current_price'] - lot['price']) * lot['tax_bracket'])
+            lot['id'] = id
+            unit_tax_costs[id] = lot['unit_tax_cost']
+            id += 1
 
-        last_sell = self.executions[-1]
-        below_1y_amount -= last_sell.price * below_1y_volume
-        above_1y_amount -= last_sell.price * above_1y_volume
-
-        if below_1y_amount > 0:
-            self.gains_losses['below_1y_gains'] += below_1y_amount
-        else:
-            self.gains_losses['below_1y_losses'] += below_1y_amount
-
-        if above_1y_amount > 0:
-            self.gains_losses['above_1y_gains'] += above_1y_amount
-        else:
-            self.gains_losses['above_1y_losses'] += above_1y_amount
-
+        s = sorted(unit_tax_costs.items(), key = lambda x:x[1], reverse=True)
+        #left to do - start decreasing lots and creating sales
