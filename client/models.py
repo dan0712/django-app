@@ -702,6 +702,8 @@ class RiskCategory(models.Model):
 
     class Meta:
         ordering = ['upper_bound']
+        verbose_name = 'Risk Category'
+        verbose_name_plural = 'Risk Categories'
 
     def __str__(self):
         return '[<{}] {}'.format(self.upper_bound, self.name)

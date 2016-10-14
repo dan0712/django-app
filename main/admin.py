@@ -5,7 +5,6 @@ from django.db.models.fields import TextField
 from django.forms.widgets import Textarea
 from django.shortcuts import HttpResponseRedirect, render_to_response
 
-from client.models import RiskCategory
 from genericadmin.admin import BaseGenericModelAdmin, GenericAdminModelAdmin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -366,7 +365,6 @@ admin.site.register(Ticker, TickerAdmin)
 admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
 admin.site.register(PositionLot, PositionLotAdmin)
 admin.site.register(AssetFeePlan, AssetFeePlanAdmin)
-admin.site.register(RiskCategory)
 
 
 if settings.DEBUG:
