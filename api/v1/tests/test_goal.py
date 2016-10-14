@@ -686,4 +686,3 @@ class GoalTests(APITestCase):
         response = self.client.put(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.CLOSING.value)
-

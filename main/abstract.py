@@ -56,7 +56,10 @@ class PersonalData(models.Model):
             'medicare_number': f([AU], str),
             'ssn': f([US], str, True),
             'politically_exposed': f([US], bool, True),
-            'tax_transcript': f([US], str),
+            'tax_transcript': f([US], str),  # url to file
+            'tax_transcript_data': f([US], str),  # JSON Object
+            'social_security_statement': f([US], str),  # url to file
+            'social_security_statement_data': f([US], str),  # JSON Object
         }
 
         VE = curry(lambda m: ValueError({'regional_data': m}))

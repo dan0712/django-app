@@ -195,7 +195,7 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
             and invitation.status != EmailInvite.STATUS_COMPLETE \
             and invitation.reason == EmailInvite.REASON_RETIREMENT:
         invitation.onboarding_data = None
-        invitation.onboarding_file_1 = None
+        invitation.tax_transcript = None
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
