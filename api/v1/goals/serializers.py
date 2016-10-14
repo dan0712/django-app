@@ -690,15 +690,3 @@ class GoalGoalTypeListSerializer(ReadOnlyModelSerializer):
     """
     class Meta:
         model = GoalType
-
-
-class GoalPositionListSerializer(ReadOnlyModelSerializer):
-    """
-    Just serializes list of positions
-    """
-    class Meta:
-        model = PositionLot
-        fields = (
-            'execution_distribution',
-            'quantity',
-        )

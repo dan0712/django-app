@@ -158,9 +158,8 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     @detail_route(methods=['get'])
     def positions(self, request, pk=None, **kwargs):
         goal = self.get_object()
-        positions = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=goal)
-        serializer = serializers.GoalPositionListSerializer(positions, many=True)
-        return Response(serializer.data)
+        positions = goal.get_positions_all()
+        return Response([{'ticker': item['ticker_id'], 'quantity': item['quantity']} for item in positions])
 
     @detail_route(methods=['get'])
     def activity(self, request, pk=None, **kwargs):

@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-from api.v1.tests.factories import MarkowitzScaleFactory, GoalTypeFactory
+from api.v1.tests.factories import MarkowitzScaleFactory, GoalTypeFactory, ExecutionDistributionFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 
@@ -558,96 +558,6 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data['selected_settings']['target'], 500)
         self.assertEqual(response.data['on_track'], True)
 
-    def test_sum_stocks_for_goal(self):
-        self.content_type = ContentTypeFactory.create()
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                     benchmark_content_type=self.content_type,
-                                     etf=True)
-        goal = GoalFactory.create()
-
-        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec = Execution.objects.create(asset=fund1,
-                                        volume=10,
-                                        order=order,
-                                        price=2,
-                                        executed=date(2014, 6, 1),
-                                        amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist)
-        weight_stocks = goal.stock_balance
-        weight_bonds = goal.bond_balance
-        weight_core = goal.core_balance
-        self.assertTrue(weight_stocks == 100)
-        self.assertTrue(weight_bonds == 0)
-        self.assertTrue(weight_core == 100)
-
-    def test_get_positions_all(self):
-        fund = TickerFactory.create(unit_price=2.1)
-        fund2 = TickerFactory.create(unit_price=4)
-        goal = GoalFactory.create()
-        today = date(2016, 1, 1)
-        # Create a 6 month old execution, transaction and a distribution that caused the transaction
-        order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec1 = Execution.objects.create(asset=fund,
-                                         volume=10,
-                                         order=order1,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist1)
-
-        order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec2 = Execution.objects.create(asset=fund,
-                                         volume=5,
-                                         order=order2,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=10)
-        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=10)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=5)
-        PositionLotFactory(quantity=5, execution_distribution=dist2)
-
-        order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec3 = Execution.objects.create(asset=fund2,
-                                         volume=1,
-                                         order=order3,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=4)
-        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=4)
-        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=1)
-        PositionLotFactory(quantity=1, execution_distribution=dist3)
-
-        positions = goal.get_positions_all()
-
-        self.assertTrue(positions[0]['quantity'] == 15)
-        self.assertTrue(positions[1]['quantity'] == 1)
-
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_create_goal(self):
         self.bonds_index = MarketIndexFactory.create()
@@ -693,23 +603,17 @@ class GoalTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_goal_positions(self):
-        client = Fixture1.client1()
-        account = ClientAccountFactory.create(primary_owner=client)
-        goal = GoalFactory.create(account=account)
+        goal = GoalFactory.create()
+
         url = '/api/v1/goals/{}/positions'.format(goal.pk)
-        self.client.force_authenticate(client.user)
+        self.client.force_authenticate(goal.account.primary_owner.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Goal positions endpoint returns ok for Goal with no positions')
-        # add a position
-        # lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
-        #     annotate(ticker_id=F('execution_distribution__execution__asset__id'),
-        #              price=F('execution_distribution__execution__asset__unit_price'))\
-        #     .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
+
+        # Create a 6 month old execution, transaction and a distribution that caused the transaction
         fund = TickerFactory.create(unit_price=2.1)
         fund2 = TickerFactory.create(unit_price=4)
-        today = date(2016, 1, 1)
-        # Create a 6 month old execution, transaction and a distribution that caused the transaction
         order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
         exec1 = Execution.objects.create(asset=fund,
                                          volume=10,
@@ -723,7 +627,7 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
+        dist1 = ExecutionDistributionFactory.create(execution=exec1, transaction=t1, volume=10)
         PositionLotFactory(quantity=10, execution_distribution=dist1)
 
         order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
@@ -739,12 +643,31 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=10)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=5)
+        dist2 = ExecutionDistributionFactory.create(execution=exec2, transaction=t2, volume=5)
         PositionLotFactory(quantity=5, execution_distribution=dist2)
+
+        order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec3 = Execution.objects.create(asset=fund2,
+                                         volume=1,
+                                         order=order3,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=4)
+        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=4)
+        dist3 = ExecutionDistributionFactory.create(execution=exec3, transaction=t3, volume=1)
+        PositionLotFactory(quantity=1, execution_distribution=dist3)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Goal positions endpoint returns ok for Goal with positions')
+        self.assertEqual(len(response.data), 2)
+        self.assertDictEqual(response.data[0], {'ticker': fund.id, 'quantity': 15.0})  # Sum of the two fills
+        self.assertDictEqual(response.data[1], {'ticker': fund2.id, 'quantity': 1.0})
 
     def test_archive_goal(self):
         client = Fixture1.client1()
