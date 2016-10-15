@@ -16,7 +16,10 @@ class DataProviderDjango(DataProviderAbstract):
         return timezone.now().date()
 
     def get_fund_price_latest(self, ticker):
-        return ticker.daily_prices.order_by('-date')[0].price
+        latest_ticker = ticker.daily_prices.order_by('-date').first()
+        if latest_ticker:
+            return latest_ticker.price
+        return None
 
     def get_features(self, ticker):
         return ticker.features.values_list('id', flat=True)

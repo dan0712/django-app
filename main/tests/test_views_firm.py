@@ -100,7 +100,6 @@ class FirmAnalyticsMixinTests(TestCase):
 
                 # gather clients of firm of this age
                 firm_clients = Client.objects.filter(advisor__firm=firm)
-                # print(firm_clients.first())
                 clients_by_age = firm_clients.filter(date_of_birth__range=range_dates)
                 # sum client.net_worth and divide by number of clients
                 for client in clients_by_age:
@@ -327,5 +326,4 @@ class FirmAnalyticsMixinTests(TestCase):
 
         self.client.login(username=rep.user.email, password='test')
         response = self.client.get(url)
-        print(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
