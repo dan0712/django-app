@@ -14,7 +14,7 @@ from api.v1.tests.factories import ClientAccountFactory, \
     SupervisorFactory, AuthorisedRepresentativeFactory, \
     InvestmentTypeFactory, PositionLotFactory, \
     ExternalAssetFactory, TickerFactory, \
-    GroupFactory
+    GroupFactory, AdvisorFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -314,4 +314,18 @@ class FirmAnalyticsMixinTests(TestCase):
         rep = AuthorisedRepresentativeFactory.create()
         self.client.login(username=rep.user.email, password='test')
         response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_worth_and_risk_filter(self):
+        # /firm/analytics?worth=affluent&risk=0&risk=20&advisor=&client=
+        url = reverse('firm:analytics') + '?worth=affluent&risk=0&risk=20&advisor=&client='
+        rep = AuthorisedRepresentativeFactory.create(firm=self.firm)
+        advisor = AdvisorFactory.create(firm=self.firm)
+        aclient = ClientFactory.create(advisor=advisor)
+        aaccount = ClientAccountFactory.create(primary_owner=aclient)
+        goal = GoalFactory.create(account=aaccount)
+
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        print(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -243,7 +243,7 @@ class PositionLotQuerySet(QuerySet):
         if worth is None:
             return self
 
-        clients = [p.execution_distribution__transaction__to_goal__account__primary_owner for p in qs]
+        clients = [p.execution_distribution.transaction.to_goal.account.primary_owner for p in qs]
         cmap = {}
         if worth == Client.WORTH_AFFLUENT:
             cmap['affluent'] = [c.id for c in clients if c.get_worth() == Client.WORTH_AFFLUENT]
