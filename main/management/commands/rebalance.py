@@ -250,12 +250,14 @@ def get_tax_lots(goal):
                         .order_by('unit_tax_cost')
     return position_lots
 
+
 def get_metric_tickers(metric_id):
     return GoalMetric.objects \
         .filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX, id=metric_id) \
         .annotate(ticker_id=F('feature__assets__id')) \
         .values_list('ticker_id', flat=True) \
         .distinct()
+
 
 def get_anti_metric_tickers(metric_id):
     return GoalMetric.objects \
@@ -280,27 +282,27 @@ def perturbate_mix(goal, opt_inputs):
         filter(group__settings__goal_approved=goal).\
         filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX)
 
-    assets = set()
+    assets_positive_drift = set()
+    metric_tickers = defaultdict(set)
     for metric in metrics:
         if metric.comparison == GoalMetric.METRIC_COMPARISON_EXACTLY or \
                         metric.comparison == GoalMetric.METRIC_COMPARISON_MAXIMUM:
-            asset_ids = get_metric_tickers(metric.id)
+            metric_tickers[metric.id].update(get_metric_tickers(metric.id))
         else:
-            asset_ids = get_anti_metric_tickers(metric.id)
+            metric_tickers[metric.id].update(get_anti_metric_tickers(metric.id))
             # minimum - we will use anti-group here
 
-        measured_val = _get_measured_val(position_lots, metric, goal)
+        measured_val = _get_measured_val(position_lots, metric_tickers[metric.id], goal)
         drift = _get_drift(measured_val, metric)
 
         if drift > 0:
-            assets.update(asset_ids)
+            assets_positive_drift.update(metric_tickers[metric.id])
 
     desired_lots = position_lots[:]
 
     weights = None
     for l in desired_lots:
-        # we are in group with biggest difference now
-        if l['ticker_id'] not in asset_ids:
+        if l['ticker_id'] not in assets_positive_drift:
             continue
 
         metrics = GoalMetric.objects.\
@@ -309,7 +311,7 @@ def perturbate_mix(goal, opt_inputs):
             filter(feature__assets__id=l['ticker_id'])
 
         for metric in metrics:
-            _sell_due_to_drift(desired_lots, l['ticker_id'], goal, metric)
+            _sell_due_to_drift(desired_lots, l['ticker_id'], goal, metric_tickers[metric.id], metric)
 
         try:
             weights = optimise_up(opt_inputs, get_weights(desired_lots, goal.available_balance))
@@ -334,22 +336,16 @@ def get_weights(lots, available_balance):
     return weights
 
 
-def _get_measured_val(position_lots, metric, goal):
+def _get_measured_val(position_lots, metric_tickers, goal):
     """
     :param position_lots: list of tuples, where each tuple contains info for position lot ('id', 'price', 'quantity', 'executed', 'unit_tax_cost')
-    :param asset_ids: list of asset ids which belong to given metric
+    :param metric_tickers: tickers to which given metric refers
     :param goal: Goal
     :return:
     The function duplicates GoalMetric.measured_val - but does all calculation on in-memory data structures
     """
-    if metric.comparison == GoalMetric.METRIC_COMPARISON_MAXIMUM \
-            or metric.comparison == GoalMetric.METRIC_COMPARISON_EXACTLY:
-        symbols = get_metric_tickers(metric.id)
-    else:
-        symbols = get_anti_metric_tickers(metric.id)
-
     amount_shares = float(np.sum(
-        [pos['price'] * pos['quantity'] if pos['ticker_id'] in symbols else 0 for pos in position_lots]
+        [pos['price'] * pos['quantity'] if pos['ticker_id'] in metric_tickers else 0 for pos in position_lots]
     ))
     return amount_shares / goal.available_balance
 
@@ -371,39 +367,41 @@ def _get_drift(measured_val, goal_metric):
         return ((measured_val - configured_val) / goal_metric.configured_val) / goal_metric.rebalance_thr
 
 
-def _sell_due_to_drift(position_lots, asset_id, goal, metric):
+def _sell_due_to_drift(position_lots, asset_id, goal, metric_tickers, metric):
     """
-    how much to sell to get to drift 0
+    Changes positions lots to bring drift <= 0 for the given metric
     :param position_lots: list of tuples, where each tuple contains info for position lot ('id', 'price', 'quantity', 'executed', 'unit_tax_cost')
     :param asset_ids: list of asset ids which belong to given metric
     :param goal: Goal
+    :param metric_tickers: tickers to which metric refers
+    :param goal metric
     :return:
     try selling whole lots until we are in tolerance or we have surpassed if.
     if we surpassed tolerance, try to get back by increasing sold lot by 0.01
     """
 
-    measured_val = _get_measured_val(position_lots, metric, goal)
+    measured_val = _get_measured_val(position_lots, metric_tickers, goal)
     drift = _get_drift(measured_val, metric)
 
-    if abs(drift) <= 0:
+    if drift <= 0:
         return
 
     for lot in position_lots:
         if not lot['ticker_id'] == asset_id:
             continue
 
-        while (abs(drift) > 0) and lot['quantity'] > 0:
+        while drift > 0 and lot['quantity'] > 0:
             lot['quantity'] -= 1
             lot['quantity'] = max(lot['quantity'], 0)
 
-            measured_val = _get_measured_val(position_lots, metric, goal)
+            measured_val = _get_measured_val(position_lots, metric_tickers, goal)
             drift = _get_drift(measured_val, metric)
 
-        if abs(drift) <= 0:
+        if drift <= 0:
             break
 
 
-def get_largest_min_weight_per_asset(held_weights,tax_weights):
+def get_largest_min_weight_per_asset(held_weights, tax_weights):
     min_weights = dict()
     for w in held_weights.items():
         if w[0] in tax_weights:
