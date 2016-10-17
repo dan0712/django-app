@@ -75,6 +75,7 @@ class DataProviderDjango(DataProviderAbstract):
         cache.set(key, data, timeout=60 * 60 * 24)
 
     def get_investment_cycles(self):
+        # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population
         obs = InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
         if not obs:
             raise OptimizationException("There are no historic observations available")
@@ -82,7 +83,6 @@ class DataProviderDjango(DataProviderAbstract):
 
     def get_last_cycle_start(self):
         obs = self.get_investment_cycles()
-        # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population
 
         # Get the investment cycle for the current date
         current_cycle = obs.last().cycle
