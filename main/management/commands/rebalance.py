@@ -375,9 +375,7 @@ def _sell_due_to_drift(position_lots, asset_id, goal, metric_tickers, metric):
     :param goal: Goal
     :param metric_tickers: tickers to which metric refers
     :param goal metric
-    :return:
-    try selling whole lots until we are in tolerance or we have surpassed if.
-    if we surpassed tolerance, try to get back by increasing sold lot by 0.01
+    :return: returns nothing, operates via position_lots, which is changed in place
     """
 
     measured_val = _get_measured_val(position_lots, metric_tickers, goal)
