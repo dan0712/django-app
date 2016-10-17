@@ -360,11 +360,16 @@ class ClientAccount(models.Model):
 
     @property
     def fee(self):
+        platform = Platform.objects.first()
+        if platform:
+            platform_fee = platform.fee
+        else:
+            platform_fee = 0
         if self.custom_fee != 0:
-            return self.custom_fee + Platform.objects.first().fee
+            return self.custom_fee + platform_fee
         else:
             return self.primary_owner.advisor.firm.fee + \
-                   Platform.objects.first().fee
+                   platform_fee
 
     @property
     def fee_fraction(self):
