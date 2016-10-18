@@ -5,23 +5,24 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
 from api.v1.client.serializers import EmailNotificationsSerializer, \
     PersonalInfoSerializer
 from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
 from main.models import ExternalAsset, User
-from user.models import SecurityQuestion, SecurityAnswer
+from user.models import SecurityAnswer
 from client.models import Client, EmailInvite
 from support.models import SupportRequest
 from api.v1.user.serializers import UserSerializer, AuthSerializer
 from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
     RetirementPlanEincWritableSerializer
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
-
+from django.views.generic.detail import SingleObjectMixin
 from . import serializers
-
+from django.core.urlresolvers import reverse
 import logging
+import json
 
 logger = logging.getLogger('api.v1.client.views')
 
@@ -121,7 +122,25 @@ class ClientViewSet(ApiViewMixin,
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # creat new client
         client = serializer.save(advisor=request.user.invitation.advisor, user=request.user)
+        if isinstance(client.regional_data, dict):
+            rd = client.regional_data
+        else:
+            rd = json.loads(client.regional_data)
+        if not rd.get('tax_transcript_data'):
+            # add tax_transcript and tax_transcript_data from
+            # the invitation serializer to client.regional_data
+            invitation_serializer = serializers.PrivateInvitationSerializer(request.user.invitation)
+            if invitation_serializer.data.get('tax_transcript', None) is not None:
+                rd['tax_transcript'] = invitation_serializer.data.get('tax_transcript')
+                rd['tax_transcript_data'] = invitation_serializer.data.get('tax_transcript_data')
+                client.regional_data = json.dumps(rd)
+                client.save()
+
+        # set client invitation status to complete
+        client.user.invitation.status = EmailInvite.STATUS_COMPLETE
+        client.user.invitation.save()
 
         # Email the user "Welcome Aboard"
         self.request.user.email_user('Welcome to BetaSmartz!',
@@ -141,7 +160,7 @@ class InvitesView(ApiViewMixin, views.APIView):
     permission_classes = []
     serializer_class = serializers.PrivateInvitationSerializer
     parser_classes = (
-        parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser,
+        parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,
     )
 
     def get(self, request, invite_key):
@@ -258,3 +277,15 @@ class ProfileView(ApiViewMixin, RetrieveUpdateAPIView):
 
     def get_object(self):
         return Client.objects.get(user=self.request.user)
+
+
+class ClientResendInviteView(SingleObjectMixin, views.APIView):
+    permission_classes = [IsAuthenticated, ]
+    queryset = EmailInvite.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        invite = self.get_object()
+        if invite.user != self.request.user:
+            return Response('forbidden', status=status.HTTP_403_FORBIDDEN)
+        invite.send()
+        return Response('ok', status=status.HTTP_200_OK)

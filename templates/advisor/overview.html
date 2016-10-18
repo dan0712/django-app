@@ -79,6 +79,7 @@
             <tr>
               <th>#</th>
               <th>Name</th>
+              <th>Status</th>
               <th>Total balance</th>
               <th>Total return</th>
             </tr>
@@ -94,6 +95,7 @@
                     <a href="{% url 'advisor:composites-detail' group.id %}">{{ group.name }}</a>
                   </div>
                 </td>
+                <td>{% if group.on_track %}<span style='color:green;'>On Track</span>{% else %}<span style='color:red;'>Off Track</span>{% endif %}</td>
                 <td>{{ group.total_balance|currency }}</td>
                 <td>
                   <div>{{ group.total_returns|percentage }}</div>

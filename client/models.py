@@ -73,6 +73,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     last_action = models.DateTimeField(null=True)
     risk_profile_group = models.ForeignKey('RiskProfileGroup', related_name='clients', null=True)
     risk_profile_responses = models.ManyToManyField('RiskProfileAnswer')
+    other_income = models.IntegerField(null=True, blank=True)
 
     objects = ClientQuerySet.as_manager()
 
@@ -183,6 +184,18 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
         )
 
+    @cached_property
+    def on_track(self):
+        """
+            If any of client's accounts are off track,
+            return False.  If all accounts are
+            on track, return True.
+        """
+        for account in self.accounts:
+            if not account.on_track:
+                return False
+        return True
+
     def get_risk_profile_bas_scores(self):
         """
         Get the scores for an entity's willingness to take risk, based on a previous elicitation of its preferences.
@@ -212,6 +225,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             scores['a_score'] / extents['max_a_sum'],
             scores['s_score'] / extents['max_s_sum'],
         )
+
 
 class IBAccount(models.Model):
     '''
@@ -256,14 +270,14 @@ class ClientAccount(models.Model):
     signatories = models.ManyToManyField('Client',
                                          related_name='signatory_accounts',
                                          help_text='Other clients authorised '
-                                                   'to operate the account.')
+                                                   'to operate the account.',
+                                         blank=True)
     # also has ib_account foreign key to IBAccount
 
     objects = ClientAccountQuerySet.as_manager()
 
     class Meta:
         unique_together = ('primary_owner', 'account_name')
-
 
     def __init__(self, *args, **kwargs):
         super(ClientAccount, self).__init__(*args, **kwargs)
@@ -296,7 +310,6 @@ class ClientAccount(models.Model):
             invitation.onboarding_data = None
             invitation.status = EmailInvite.STATUS_COMPLETE
             invitation.save()
-
 
     def remove_from_group(self):
         old_group = self.account_group
@@ -347,11 +360,16 @@ class ClientAccount(models.Model):
 
     @property
     def fee(self):
+        platform = Platform.objects.first()
+        if platform:
+            platform_fee = platform.fee
+        else:
+            platform_fee = 0
         if self.custom_fee != 0:
-            return self.custom_fee + Platform.objects.first().fee
+            return self.custom_fee + platform_fee
         else:
             return self.primary_owner.advisor.firm.fee + \
-                   Platform.objects.first().fee
+                   platform_fee
 
     @property
     def fee_fraction(self):
@@ -443,12 +461,17 @@ class ClientAccount(models.Model):
     def account_type_name(self):
         return constants.ACCOUNT_TYPES[self.account_type][1]
 
-    @property
+    @cached_property
     def on_track(self):
-        on_track = True
-        for goal in self.goals.all():
-            on_track = on_track and goal.on_track
-        return on_track
+        """
+            If any of client's goals are off track,
+            return False.  If all goals are
+            on track, return True.
+        """
+        for goal in self.goals:
+            if not goal.on_track:
+                return False
+        return True
 
     @property
     def goals_length(self):
@@ -551,6 +574,9 @@ class RiskProfileQuestion(models.Model):
         ordering = ['order']
         unique_together = ('group', 'order')
 
+    def __str__(self):
+        return self.text
+
 
 class RiskProfileAnswer(models.Model):
     """
@@ -573,6 +599,9 @@ class RiskProfileAnswer(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ('question', 'order')
+
+    def __str__(self):
+        return self.text
 
 
 class EmailNotificationPrefs(models.Model):
@@ -614,7 +643,7 @@ class EmailInvite(models.Model):
     advisor = models.ForeignKey('main.Advisor', related_name='invites')
 
     first_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
     user = models.OneToOneField('main.User', related_name='invitation',
@@ -635,15 +664,15 @@ class EmailInvite(models.Model):
                                          default=STATUS_CREATED)
 
     onboarding_data = JSONField(null=True, blank=True)
-    onboarding_file_1 = models.FileField(null=True, blank=True)
+    tax_transcript = models.FileField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
                                       self.last_name, self.email)
 
     @property
     def can_resend(self):
-        return self.status in [self.STATUS_CREATED, self.STATUS_SENT]
+        return self.status in [self.STATUS_CREATED, self.STATUS_SENT, self.STATUS_ACCEPTED]
 
     def send(self):
         if not self.can_resend:
@@ -672,5 +701,14 @@ class EmailInvite(models.Model):
 
 
 class RiskCategory(models.Model):
+    name = models.CharField(max_length=64, null=False, blank=False, unique=True)
     upper_bound = models.FloatField(validators=[MinValueValidator(0),
                                                 MaxValueValidator(1)])
+
+    class Meta:
+        ordering = ['upper_bound']
+        verbose_name = 'Risk Category'
+        verbose_name_plural = 'Risk Categories'
+
+    def __str__(self):
+        return '[<{}] {}'.format(self.upper_bound, self.name)

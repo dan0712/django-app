@@ -1,8 +1,6 @@
 import json
 from decimal import Decimal
-from datetime import date
-
-from datetime import datetime
+from datetime import date, timedelta, datetime
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -14,11 +12,13 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-from api.v1.tests.factories import MarkowitzScaleFactory
+from api.v1.tests.factories import MarkowitzScaleFactory, GoalTypeFactory, ExecutionDistributionFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 
-from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Ticker
+
+from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Portfolio, Goal
+
 from main.risk_profiler import max_risk
 
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
@@ -27,7 +27,7 @@ from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, GoalSettingFactory, TickerFactory, \
     AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory, ContentTypeFactory, PositionLotFactory, ExecutionDistributionFactory
 
-from api.v1.goals.serializers import GoalSettingSerializer
+from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer
 
 from django.contrib.contenttypes.models import ContentType
 
@@ -43,6 +43,10 @@ class GoalTests(APITestCase):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.bonds_type = InvestmentType.Standard.BONDS.get()
         self.stocks_type = InvestmentType.Standard.STOCKS.get()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
+        self.portfolio_set = PortfolioSetFactory.create()
+        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
 
         self.risk_score_metric = {
             "type": GoalMetric.METRIC_TYPE_RISK_SCORE,
@@ -376,15 +380,8 @@ class GoalTests(APITestCase):
         # otherwise, No valid instruments found
         self.bonds_index = MarketIndexFactory.create()
         self.stocks_index = MarketIndexFactory.create()
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        # Add the asset classes to the portfolio set
-        self.portfolio_set = PortfolioSetFactory.create()
-        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
-                                                 benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                                  benchmark=self.stocks_index)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
@@ -394,12 +391,14 @@ class GoalTests(APITestCase):
         populate_prices(500, asof=mocked_now.date())
         populate_cycle_obs(500, asof=mocked_now.date())
         populate_cycle_prediction(asof=mocked_now.date())
+
         account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
         # Create a risk score metric for the settings
         goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
         goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        goal_settings.completion_date = timezone.now().date() - timedelta(days=365)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
         response = self.client.get(url)
@@ -409,6 +408,76 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_calculate_portfolio(self):
+        """
+        expects the setting parameter to be a json dump
+        of the goal settings to use for the portfolio calculation
+        """
+        # tickers for testing portfolio calculations in goals endpoint
+        # otherwise, No valid instruments found
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
+        goal_settings = GoalSettingFactory.create()
+        # Create a risk score metric for the settings
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        serializer = GoalSettingSerializer(goal_settings)
+        url = '/api/v1/goals/{}/calculate-portfolio?setting={}'.format(goal.id, json.dumps(serializer.data))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_calculate_portfolio_complete(self):
+        # tickers for testing portfolio calculations in goals endpoint
+        # otherwise, No valid instruments found
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
+        goal_settings = GoalSettingFactory.create()
+        # Create a risk score metric for the settings
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        goal_settings.completion_date = timezone.now().date() - timedelta(days=365)
+        serializer = GoalSettingSerializer(goal_settings)
+        url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_goal_metric(self):
         t1 = TickerFactory.create(symbol='SPY', unit_price=5)
@@ -439,57 +508,241 @@ class GoalTests(APITestCase):
 
     def test_sum_stocks_for_goal(self):
         self.content_type = ContentTypeFactory.create()
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_add_goal_0_target(self):
+        # tickers for testing portfolio calculations in goals endpoint
+        # otherwise, No valid instruments found
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+
+        url = '/api/v1/goals'
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        goal_settings = GoalSettingFactory.create()
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        ser = GoalCreateSerializer(data={
+            'account': account.id,
+            'name': 'Zero Goal Target',
+            'type': GoalTypeFactory().id,
+            'target': 0,
+            'completion': timezone.now().date() + timedelta(days=7),
+            'initial_deposit': 0,
+            'ethical': True,
+        })
+        self.assertEqual(ser.is_valid(), True, msg="Serializer has errors %s"%ser.errors)
+        response = self.client.post(url, ser.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['selected_settings']['target'], 0)
+        self.assertEqual(response.data['on_track'], True)
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_add_goal_complete(self):
+        # tickers for testing portfolio calculations in goals endpoint
+        # otherwise, No valid instruments found
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+
+        url = '/api/v1/goals'
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        goal_settings = GoalSettingFactory.create()
+        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
+        ser = GoalCreateSerializer(data={
+            'account': account.id,
+            'name': 'Zero Goal Target',
+            'type': GoalTypeFactory().id,
+            'target': 500,
+            'completion': timezone.now().date(),
+            'initial_deposit': 0,
+            'ethical': True,
+        })
+        self.assertEqual(ser.is_valid(), True, msg="Serializer has errors %s"%ser.errors)
+        response = self.client.post(url, ser.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['selected_settings']['target'], 500)
+        # "OnTrack" is false because the 500 deposit is still pending
+        self.assertEqual(response.data['on_track'], False)
+
+        goal = Goal.objects.get(pk=response.data['id'])
+        goal.cash_balance += 500
+        goal.save()
+
+        response = self.client.get('%s/%s'%(url, goal.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['selected_settings']['target'], 500)
+        self.assertEqual(response.data['on_track'], True)
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_create_goal(self):
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+
         self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
         self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                     benchmark_content_type=self.content_type,
-                                     etf=True)
-        goal = GoalFactory.create()
+        # Add the asset classes to the portfolio set
+        self.portfolio_set = PortfolioSetFactory.create()
+        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
+                                                 benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                                  benchmark=self.stocks_index)
 
-        Fixture1.create_execution_details(goal, fund1, 10, 2, date(2014, 6, 1))
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
+        goal_settings = GoalSettingFactory.create()
+        goal_type = GoalTypeFactory.create()
+        url = '/api/v1/goals'
+        data = {
+            'account': account.id,
+            'name': 'Fancy new goal',
+            'type': goal_type.id,
+            'target': 15000.0,
+            'completion': "2016-01-01",
+            'initial_deposit': 5000,
+            'ethical': True,
+        }
+        # unauthenticated 403
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        weight_stocks = goal.stock_balance
-        weight_bonds = goal.bond_balance
-        weight_core = goal.core_balance
-        self.assertTrue(weight_stocks == 100)
-        self.assertTrue(weight_bonds == 0)
-        self.assertTrue(weight_core == 100)
-
-    def test_get_positions_all(self):
-        fund = TickerFactory.create(unit_price=2.1)
-        fund2 = TickerFactory.create(unit_price=4)
-        goal = GoalFactory.create()
-        today = date(2016, 1, 1)
-        # Create a 6 month old execution, transaction and a distribution that caused the transaction
-
-        Fixture1.create_execution_details(goal, fund, 10, 2, date(2014, 6, 1))
-        Fixture1.create_execution_details(goal, fund, 5, 2, date(2014, 6, 1))
-        Fixture1.create_execution_details(goal, fund2, 1, 2, date(2014, 6, 1))
-
-        positions = goal.get_positions_all()
-
-        self.assertTrue(positions[0]['quantity'] == 15)
-        self.assertTrue(positions[1]['quantity'] == 1)
+        # authenticated 200
+        self.client.force_authenticate(account.primary_owner.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_goal_positions(self):
-        client = Fixture1.client1()
-        account = ClientAccountFactory.create(primary_owner=client)
-        goal = GoalFactory.create(account=account)
+        goal = GoalFactory.create()
+
         url = '/api/v1/goals/{}/positions'.format(goal.pk)
-        self.client.force_authenticate(client.user)
+        self.client.force_authenticate(goal.account.primary_owner.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Goal positions endpoint returns ok for Goal with no positions')
 
+        # Create a 6 month old execution, transaction and a distribution that caused the transaction
         fund = TickerFactory.create(unit_price=2.1)
         fund2 = TickerFactory.create(unit_price=4)
-        today = date(2016, 1, 1)
-        # Create a 6 month old execution, transaction and a distribution that caused the transaction
+        order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec1 = Execution.objects.create(asset=fund,
+                                         volume=10,
+                                         order=order1,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
+        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist1 = ExecutionDistributionFactory.create(execution=exec1, transaction=t1, volume=10)
+        PositionLotFactory(quantity=10, execution_distribution=dist1)
 
-        Fixture1.create_execution_details(goal, fund, 10, 2, date(2014, 6, 1))
-        Fixture1.create_execution_details(goal, fund, 5, 2, date(2014, 6, 1))
+        order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec2 = Execution.objects.create(asset=fund,
+                                         volume=5,
+                                         order=order2,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=10)
+        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=10)
+        dist2 = ExecutionDistributionFactory.create(execution=exec2, transaction=t2, volume=5)
+        PositionLotFactory(quantity=5, execution_distribution=dist2)
+
+        order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec3 = Execution.objects.create(asset=fund2,
+                                         volume=1,
+                                         order=order3,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=4)
+        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=4)
+        dist3 = ExecutionDistributionFactory.create(execution=exec3, transaction=t3, volume=1)
+        PositionLotFactory(quantity=1, execution_distribution=dist3)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Goal positions endpoint returns ok for Goal with positions')
+        self.assertEqual(len(response.data), 2)
+        self.assertDictEqual(response.data[0], {'ticker': fund.id, 'quantity': 15.0})  # Sum of the two fills
+        self.assertDictEqual(response.data[1], {'ticker': fund2.id, 'quantity': 1.0})
+
+    def test_archive_goal(self):
+        client = Fixture1.client1()
+        account = ClientAccountFactory.create(primary_owner=client)
+        goal = GoalFactory.create(account=account)
+        url = '/api/v1/goals/{}/archive'.format(goal.pk)
+
+        # First login as client and flag the goal as archive-requested
+        self.client.force_authenticate(client.user)
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.ARCHIVE_REQUESTED.value)
+
+        # Then login as Advisor and actually archive it
+        self.client.force_authenticate(client.advisor.user)
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.CLOSING.value)
+
+    def test_get_goal_settings_by_id(self):
+        goal = Fixture1.goal1()
+        goal.approve_selected()
+        setting = GoalSettingFactory.create()
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+        # unauthenticated
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # authenticated
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data, [])
+        self.assertEqual(response.data.get('id'), setting.id)
+
+        # 404 check
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, 99999)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 

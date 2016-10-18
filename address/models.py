@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils.translation import ugettext as _
 """
 After looking through the addressing options available (django-postal, django-address) Neither worked well with
 addresses that have a apartment number, and chinese addresses, and had a DRF backend, so I had to roll my own :(
@@ -20,6 +20,11 @@ class Region(models.Model):
             ('country', 'name'),
             ('country', 'code')
         )
+        verbose_name = _('region')
+        verbose_name_plural = _('regions')
+
+    def __str__(self):
+        return '%s %s' % (self.name, self.country)
 
 
 class Address(models.Model):
@@ -39,3 +44,10 @@ class Address(models.Model):
                                  unique=True,
                                  help_text='Global identifier of the address in whatever API we are using (if any)')
     region = models.ForeignKey(Region, related_name='+')
+
+    def __str__(self):
+        return self.address
+
+    class Meta:
+        verbose_name = _('address')
+        verbose_name_plural = _('addresses')

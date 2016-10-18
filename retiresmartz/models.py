@@ -8,6 +8,7 @@ from common.structures import ChoiceEnum
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, MaxLengthValidator, ValidationError)
 from jsonfield.fields import JSONField
+from pinax.eventlog.models import Log
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +196,7 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
             and invitation.status != EmailInvite.STATUS_COMPLETE \
             and invitation.reason == EmailInvite.REASON_RETIREMENT:
         invitation.onboarding_data = None
-        invitation.onboarding_file_1 = None
+        invitation.tax_transcript = None
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
@@ -230,3 +231,27 @@ class RetirementLifestyle(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of paid work days selected for this lifestyle")
 
+
+class RetirementAdvice(models.Model):
+    plan = models.ForeignKey(RetirementPlan, related_name='advice')
+    trigger = models.ForeignKey(Log, related_name='advice')    
+    dt = models.DateTimeField(auto_now_add=True)
+    read = models.DateTimeField(blank=True, null=True)
+    text = models.CharField(max_length=512)
+    action = models.CharField(max_length=12, blank=True)
+    action_url = models.CharField(max_length=512, blank=True)
+    action_data = models.CharField(max_length=512, blank=True)
+
+    def clean(self, *args, **kwargs):
+        if self.action and not self.action_url:
+            # make sure action_url is set if the action is
+            raise ValidationError('must provide action_url if action is set')
+        super(RetirementAdvice, self).save(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(RetirementAdvice, self).save(*args, **kwargs)
+
+    
+    def __str__(self):
+        return "{} Advice".format(self.plan)

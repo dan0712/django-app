@@ -1,3 +1,4 @@
+import os
 import json
 from datetime import date
 from django.core.urlresolvers import reverse
@@ -7,12 +8,15 @@ from rest_framework.test import APITestCase
 from address.models import Region
 from api.v1.tests.factories import AdvisorFactory, EmailInviteFactory
 from client.models import EmailInvite
+from django.test import Client as DjangoClient
 from common.constants import GROUP_SUPPORT_STAFF
 from main.constants import ACCOUNT_TYPE_PERSONAL, EMPLOYMENT_STATUS_FULL_TIME, GENDER_MALE
 from main.models import ExternalAsset, User
 from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
     ClientAccountFactory, ClientFactory, ExternalAssetFactory, GoalFactory, \
     GroupFactory, RegionFactory, RiskProfileGroupFactory, UserFactory
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf import settings
 
 
 class ClientTests(APITestCase):
@@ -305,7 +309,29 @@ class ClientTests(APITestCase):
         self.assertEqual(response.data['residential_address']['post_code'], address['post_code'])
         self.assertEqual(response.data['betasmartz_agreement'], True)
         self.assertEqual(response.data['advisor_agreement'], True)
-        self.assertEqual(json.loads(response.data['regional_data']), regional_data)
+        regional_data_load = json.loads(response.data['regional_data'])
+        self.assertEqual(regional_data_load['ssn'], regional_data['ssn'])
+        self.assertEqual(regional_data_load['politically_exposed'], regional_data['politically_exposed'])
+
+        # check onboarding status is complete
+        lookup_invite = EmailInvite.objects.get(user=usr)
+        self.assertEqual(lookup_invite.status, EmailInvite.STATUS_COMPLETE)
+
+        # can login with new client
+        self.client = DjangoClient()  # django
+        url = reverse('login')
+        data = {
+            'username': usr.email,
+            'password': 'test',
+        }
+        response = self.client.post(url, data)
+        # redirect to application
+        self.assertRedirects(response, reverse('client:app', args=[usr.client.id, ]))
+
+        # can retrieve profile info ok
+        url = reverse('api:v1:user-me')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_client_no_address(self):
         # We need an accepted invitation to be able to create a client
@@ -447,7 +473,6 @@ class ClientTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['is_confirmed'], True)
-        self.assertEqual(response.data['is_accepted'], True)
 
     def test_create_client_with_user(self):
         """
@@ -487,3 +512,48 @@ class ClientTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotEqual(usr.id, 44)
         self.assertEqual(response.data['user']['id'], usr.id)
+
+    def test_update_client_tax_filing_status(self):
+        """
+
+
+        """
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_ACCEPTED)
+        url = reverse('api:v1:client-list')
+        usr = UserFactory.create()
+        EmailInviteFactory.create(user=usr, status=EmailInvite.STATUS_ACCEPTED)
+
+        url = reverse('api:v1:client-list')
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+            'tax_transcript': 'some.random.url',
+            'tax_transcript_data': {"sections":[{"name":"Introduction","fields":{"FILING STATUS":"test"}}]},
+        }
+        data = {
+            "advisor_agreement": True,
+            "betasmartz_agreement": True,
+            "date_of_birth": date(2016, 9, 21),
+            "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
+            "gender": GENDER_MALE,
+            "income": 1234,
+            "phone_num": "+41524204249",
+            "residential_address": {
+                "address": "123 My Street\nSome City",
+                "post_code": "112233",
+                "region": {
+                    "name": "New South Wales",
+                    "country": "AU",
+                    "code": "NSW",
+                }
+            },
+            "user_id": 44,
+            'regional_data': regional_data,
+        }
+        self.client.force_authenticate(usr)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(usr.id, 44)
+        self.assertEqual(response.data['user']['id'], usr.id)
+        regional_data_load = response.data.get('regional_data')
+        self.assertEqual(regional_data_load['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'], 'test')

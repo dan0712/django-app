@@ -147,7 +147,7 @@ def get_masks(instruments, data_provider):
 
 def get_settings_masks(settings, masks):
     '''
-    Removes benchmarks from the masks and any funds that we don't need.
+    Removes any funds that do not fit within our metric constraints.
     :param settings: The goal.active_settings we want to modify the global masks for
     :param masks: The global asset feature masks
     :return: (settings_symbol_ixs, cvx_masks)
@@ -171,6 +171,8 @@ def get_settings_masks(settings, masks):
                 # Saying a maximum percentage of 100% is superfluous
                 pass
             else:
+                if metric.feature.id not in masks.columns:
+                    raise Unsatisfiable("The are no funds that satisfy metric: {}".format(metric))
                 fids.append(metric.feature.id)
 
     # Do the removals
@@ -189,6 +191,7 @@ def get_settings_masks(settings, masks):
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
     cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}
+
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("CVX masks for settings: {}: {}".format(settings, cvx_masks))
 

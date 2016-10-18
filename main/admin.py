@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 from django.db.models.fields import TextField
 from django.forms.widgets import Textarea
 from django.shortcuts import HttpResponseRedirect, render_to_response
+
 from genericadmin.admin import BaseGenericModelAdmin, GenericAdminModelAdmin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -14,8 +15,7 @@ from main.models import AccountGroup, ActivityLog, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     ProxyAssetClass, ProxyTicker, \
-    Transaction, User, View, InvestmentType, FiscalYear, Ticker, \
-    AssetFeature, PositionLot
+    Transaction, User, View, InvestmentType, FiscalYear, Ticker, PositionLot, AssetFeePlan
 from retiresmartz.models import RetirementLifestyle
 
 admin.site.register(AccountGroup)
@@ -237,8 +237,8 @@ class GoalAdmin(admin.ModelAdmin):
     actions = (rebalance,)
 
 
-class PositionAdmin(admin.ModelAdmin):
-    list_display = ('goal', 'ticker', 'value')
+class PositionLotAdmin(admin.ModelAdmin):
+    list_display = ('execution_distribution', 'quantity')
 
 
 class PortfolioItemInline(admin.StackedInline):
@@ -331,9 +331,14 @@ class TickerAdmin(admin.ModelAdmin):
         return obj.get_currency_feature_value()
 
 
+class AssetFeePlanAdmin(admin.ModelAdmin):
+    model = AssetFeePlan
+
+
 class RetirementLifestyleAdmin(admin.ModelAdmin):
     model = RetirementLifestyle
     list_display = ('cost',)
+
 
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
@@ -358,6 +363,9 @@ admin.site.register(InvestmentType, InvestmentTypeAdmin)
 admin.site.register(FiscalYear, FiscalYearAdmin)
 admin.site.register(Ticker, TickerAdmin)
 admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
+admin.site.register(PositionLot, PositionLotAdmin)
+admin.site.register(AssetFeePlan, AssetFeePlanAdmin)
+
 
 if settings.DEBUG:
     from main.models import (MarketOrderRequest, Execution, DailyPrice,

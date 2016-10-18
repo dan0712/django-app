@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.views.generic import TemplateView
+from django.core.urlresolvers import reverse
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
 from main.models import Transaction, Goal, GoalType, MarketOrderRequest, Execution, ExecutionDistribution
@@ -12,11 +13,14 @@ from api.v1.tests.factories import ClientAccountFactory, \
     ExternalAssetFactory, TickerFactory, \
     SupervisorFactory, AuthorisedRepresentativeFactory, \
     InvestmentTypeFactory, PositionLotFactory, \
-    ExternalAssetFactory, TickerFactory
+    ExternalAssetFactory, TickerFactory, \
+    GroupFactory, AdvisorFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+from rest_framework import status
+from common.constants import GROUP_SUPPORT_STAFF
 
 
 class FirmAnalyticsMixinTests(TestCase):
@@ -25,6 +29,7 @@ class FirmAnalyticsMixinTests(TestCase):
 
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.bonds_type = InvestmentType.Standard.BONDS.get()
         self.stocks_type = InvestmentType.Standard.STOCKS.get()
 
@@ -95,7 +100,6 @@ class FirmAnalyticsMixinTests(TestCase):
 
                 # gather clients of firm of this age
                 firm_clients = Client.objects.filter(advisor__firm=firm)
-                # print(firm_clients.first())
                 clients_by_age = firm_clients.filter(date_of_birth__range=range_dates)
                 # sum client.net_worth and divide by number of clients
                 for client in clients_by_age:
@@ -263,3 +267,63 @@ class FirmAnalyticsMixinTests(TestCase):
         actual_categories = [x.get('category') for x in context]
         for category in expected_categories:
             self.assertTrue(category in actual_categories)
+
+    def test_get_firm_analytics(self):
+        """
+        Test get request to firm analytics page
+        """
+        url = reverse('firm:analytics')
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_risk_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?advisor=&client=&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_worth_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?client=' + self.betasmartz_client.email + '&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_client_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?worth=high&advisor=&client='
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_advisor_filter(self):
+        url = reverse('firm:analytics') + '?advisor=' + self.betasmartz_client.advisor.email + '&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_worth_and_risk_filter(self):
+        # /firm/analytics?worth=affluent&risk=0&risk=20&advisor=&client=
+        url = reverse('firm:analytics') + '?worth=affluent&risk=0&risk=20&advisor=&client='
+        rep = AuthorisedRepresentativeFactory.create(firm=self.firm)
+        advisor = AdvisorFactory.create(firm=self.firm)
+        aclient = ClientFactory.create(advisor=advisor)
+        aaccount = ClientAccountFactory.create(primary_owner=aclient)
+        goal = GoalFactory.create(account=aaccount)
+
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

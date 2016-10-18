@@ -21,7 +21,7 @@ from api.v1.utils import activity
 from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
-    Transaction, PositionLot
+    Transaction, PositionLot, GoalSetting
 from main.risk_profiler import risk_data
 from portfolios.calculation import Unsatisfiable, \
     calculate_portfolio, calculate_portfolios, current_stats_from_weights
@@ -158,9 +158,8 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     @detail_route(methods=['get'])
     def positions(self, request, pk=None, **kwargs):
         goal = self.get_object()
-        positions = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=goal)
-        serializer = serializers.GoalPositionListSerializer(positions, many=True)
-        return Response(serializer.data)
+        positions = goal.get_positions_all()
+        return Response([{'ticker': item['ticker_id'], 'quantity': item['quantity']} for item in positions])
 
     @detail_route(methods=['get'])
     def activity(self, request, pk=None, **kwargs):
@@ -218,6 +217,16 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
                 serializer = serializers.GoalSettingSerializer(settings)
                 headers = self.get_success_headers(serializer.data)
                 return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+    @detail_route(methods=['get'], url_path='settings')
+    def settings_by_id(self, request, pk=None, **kwargs):
+        try:
+            settings = GoalSetting.objects.get(pk=pk)
+        except:
+            return Response('Settings not found', status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.GoalSettingSerializer(settings)
+        return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='approved-settings')
     def approved_settings(self, request, pk=None, **kwargs):
@@ -581,3 +590,18 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             return res
         else:
             return {'risk_score': risk_score, 'portfolio': res}
+
+
+class GoalSettingViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+    permission_classes = (
+        IsAdvisorOrClient,
+    )
+
+    def retrieve(self, request, pk=None, **kwargs):
+        try:
+            settings = GoalSetting.objects.get(pk=pk)
+        except:
+            return Response('Settings not found', status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.GoalSettingSerializer(settings)
+        return Response(serializer.data)

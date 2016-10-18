@@ -1,7 +1,7 @@
 from django.db.models.query_utils import Q
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import detail_route
-from rest_framework.exceptions import PermissionDenied, NotFound
+from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.response import Response
 
@@ -11,6 +11,8 @@ from api.v1.views import ApiViewMixin
 
 from client.models import ClientAccount
 from main import constants
+from main.constants import US_RETIREMENT_ACCOUNT_TYPES
+from main.models import AccountType
 from support.models import SupportRequest
 
 from . import serializers
@@ -103,4 +105,12 @@ class AccountViewSet(ApiViewMixin,
             if serializer.validated_data['account_type'] == constants.ACCOUNT_TYPE_PERSONAL \
                     and other_personals.count() >= 1:
                 return Response({'error': 'Limit 1 personal account'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            firm = serializer.validated_data['primary_owner'].advisor.firm
+            if not firm.account_types.filter(id=serializer.validated_data['account_type']).exists():
+                emsg = 'Account Type: {} is not active for {}'
+                a_t = AccountType.objects.filter(id=serializer.validated_data['account_type']).first()
+                return Response({'error': emsg.format(a_t, firm)}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            if serializer.validated_data['account_type'] in US_RETIREMENT_ACCOUNT_TYPES:
+                emsg = 'US Retirement account types are not user creatable.'
+                return Response({'error': emsg}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super(AccountViewSet, self).create(request)

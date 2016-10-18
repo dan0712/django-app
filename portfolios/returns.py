@@ -3,6 +3,7 @@ from datetime import timedelta, date
 import logging
 
 import pandas as pd
+import numpy as np
 
 from django.db.models.query import QuerySet
 
@@ -282,7 +283,7 @@ def get_price_returns(instrument, dates, consecutive=False):
     :return:
     """
     prices = get_prices(instrument, dates)
-    consec = prices[prices.first_valid_index():prices.last_valid_index()]
+    consec = prices[prices.first_valid_index():prices.last_valid_index()].astype(float)
     if consecutive:
         consec = consec[first_consec_index(consec):]
 
@@ -291,7 +292,7 @@ def get_price_returns(instrument, dates, consecutive=False):
                "Generating longest data available from {} - {}"
         logger.warn(emsg.format(instrument.id, consec.index[0], consec.index[-1]))
 
-    # Convert the prices to returns
+    # Convert the prices to log returns
     rets = consec.pct_change()[1:]
 
     # Remove any outlandish returns.

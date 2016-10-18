@@ -16,24 +16,17 @@ class BenchmarkListTest(BaseApiTest):
     def test_anonymous_access_forbidden(self):
         r = self.request()
         content = ujson.loads(r.content)
-        self.assertDictEqual(content, {
-            'error': {
-                'code': 403,
-                'message': 'Authentication credentials were not provided.',
-                'reason': 'NotAuthenticated',
-            }
+        self.assertDictEqual(content['error'], {
+            'code': 403,
+            'reason': 'NotAuthenticated',
+            'message': 'Authentication credentials were not provided.'
         })
 
     def test_logged_in_access(self):
         self.client.force_authenticate(user=Fixture1.client1().user)
         r = self.request()
         content = ujson.loads(r.content)
-        self.assertDictEqual(content, {
-            'count': 0,
-            'next': None,
-            'previous': None,
-            'results': []
-        })
+        self.assertEqual(content['data'], [])
 
 
 class SingleBenchmarkTest(BaseApiTest):
@@ -47,11 +40,8 @@ class SingleBenchmarkTest(BaseApiTest):
     def test_all_dates(self):
         self.client.force_authenticate(user=Fixture1.client1().user)
         r = self.request(status_code=200)
-        content = ujson.loads(r.content)
-        # page count is greater by one as the result of processing the query
-        # I avoided paginating a processed data as it may be huge
-        self.assertEqual(content['count'], 5)
-        self.assertEqual(content['results'], [
+        content = ujson.loads(r.content)['data']
+        self.assertEqual(content, [
             [16893, 0.1],
             [16894, -0.045454545454545005],
             [16895, -0.019047619047619],
@@ -64,9 +54,8 @@ class SingleBenchmarkTest(BaseApiTest):
             'sd': '2016-04-02',
             'ed': '2016-04-04',
         }, status_code=200)
-        content = ujson.loads(r.content)
-        self.assertEqual(content['count'], 3)
-        self.assertEqual(content['results'], [
+        content = ujson.loads(r.content)['data']
+        self.assertEqual(content, [
             [16894, -0.045454545454545005],
             [16895, -0.019047619047619],
         ])
@@ -76,9 +65,8 @@ class SingleBenchmarkTest(BaseApiTest):
         r = self.request(data={
             'sd': '2016-04-02',
         }, status_code=200)
-        content = ujson.loads(r.content)
-        self.assertEqual(content['count'], 4)
-        self.assertEqual(content['results'], [
+        content = ujson.loads(r.content)['data']
+        self.assertEqual(content, [
             [16894, -0.045454545454545005],
             [16895, -0.019047619047619],
             [16896, 0.03883495145631],
@@ -89,9 +77,8 @@ class SingleBenchmarkTest(BaseApiTest):
         r = self.request(data={
             'ed': '2016-04-04',
         }, status_code=200)
-        content = ujson.loads(r.content)
-        self.assertEqual(content['count'], 4)
-        self.assertEqual(content['results'], [
+        content = ujson.loads(r.content)['data']
+        self.assertEqual(content, [
             [16893, 0.1],
             [16894, -0.045454545454545005],
             [16895, -0.019047619047619],

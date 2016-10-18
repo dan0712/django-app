@@ -59,7 +59,7 @@ class Event(ChoiceEnum):
     GOAL_TRANSFER_EXECUTED = (17, ['txid'], 'main.Goal')
     GOAL_ORDER_DISTRIBUTION = (18, ['txid'], 'main.Goal')
 
-    def __init__(self, id, log_keys, obj_class:str):
+    def __init__(self, id, log_keys, obj_class: str):
         """
         Create an Event enumeration.
         This is overridden to have all the extra data we want.

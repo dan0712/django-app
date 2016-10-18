@@ -8,11 +8,11 @@ import logging
 import copy
 import numpy as np
 
+from main.models import Goal
 from portfolios.algorithms.markowitz import markowitz_optimizer_3
-from portfolios.calculation import MIN_PORTFOLIO_PCT, \
-    calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
-from portfolios.providers.execution.abstract \
-    import Reason, ExecutionProviderAbstract
+from portfolios.providers.execution.abstract import Reason, ExecutionProviderAbstract
+from portfolios.calculation import \
+    MIN_PORTFOLIO_PCT, calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 
 from main.models import GoalMetric, Ticker, AssetFeature, AssetFeatureValue, PositionLot
 from collections import defaultdict
@@ -499,3 +499,17 @@ def rebalance(goal, idata, data_provider, execution_provider):
     # So, the rebalance could not be in place if the excecution algo might not determine how much it will cost to rebalance.
 
     return order
+
+
+def archive_goal(goal):
+    """
+    This method should be called when the rebalance algo finds a goal in the CLOSING state.
+    :param goal: The goal to process
+    :return: ExecutionRequests??
+    """
+
+    # TODO: Build the execution requests to clear the positions if any.
+    # TODO: Do the ordering along with all the ordering in the main rebalance loop.
+    # TODO: Once we've received response from the market that the goal has no more positions,
+    # TODO: complete the goal's archive process.
+    # TODO: goal.complete_archive()

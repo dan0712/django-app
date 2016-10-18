@@ -34,10 +34,10 @@ class SecurityQuestionsTests(APITestCase):
         number_of_questions = 3
         for x in range(number_of_questions):
             SecurityQuestionFactory.create()
-        # 403 on unauthenticated requests
+        # unauthenticated requests
         response = self.client.get(url, {})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN,
-                         msg='403 for unauthenticated request to get canned security questions')
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for unauthenticated request to get canned security questions')
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url, {})

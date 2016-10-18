@@ -30,15 +30,19 @@ from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from main.finance import mod_dietz_rate
+from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
 from portfolios.returns import get_price_returns
 from . import constants
 from .abstract import FinancialInstrument, NeedApprobation, \
     NeedConfirmation, PersonalData, TransferPlan
 from .fields import ColorField
-from .managers import ExternalAssetQuerySet, GoalQuerySet
+from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
+
+from django.utils.functional import cached_property
+from django.contrib.staticfiles.templatetags.staticfiles import static
 import numpy as np
 
 logger = logging.getLogger('main.models')
@@ -121,7 +125,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def full_name(self):
         return self.get_full_name()
 
-    @property
+    @cached_property
     def is_advisor(self):
         """
         Custom helper method for User class to check user type/profile.
@@ -131,39 +135,36 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return self._is_advisor
 
-    @property
+    @cached_property
     def is_authorised_representative(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_authorised_representative'):
-            ar = hasattr(self, 'authorised_representative')
-            self._is_authorised_representative = ar
+            self._is_authorised_representative = hasattr(self, 'authorised_representative')
 
         return self._is_authorised_representative
 
-    @property
+    @cached_property
     def is_client(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_client'):
             self._is_client = hasattr(self, 'client')
-
         return self._is_client
 
-    @property
+    @cached_property
     def is_supervisor(self):
         """
         Custom helper method for User class to check user type/profile.
         """
         if not hasattr(self, '_is_supervisor'):
-            supervisor = hasattr(self, 'supervisor')
-            self._is_supervisor = supervisor
+            self._is_supervisor = hasattr(self, 'supervisor')
 
         return self._is_supervisor
 
-    @property
+    @cached_property
     def is_support_staff(self):
         if not hasattr(self, '_is_support_staff'):
             group = Group.objects.get(name=GROUP_SUPPORT_STAFF)
@@ -199,7 +200,7 @@ class FiscalYear(models.Model):
                                                    help_text="Comma separated month end days each month of the year. First element is January.")
 
     def __str__(self):
-        return "[%s] %s %s" % (self.id, self.name, self.year)
+        return "[%s] (%s) %s" % (self.id, self.year, self.name)
 
 
 class Company(models.Model):
@@ -359,6 +360,17 @@ class PortfolioSet(models.Model):
         return self.name
 
 
+class AccountType(models.Model):
+    """
+    This model is simply a technique to bring the list of Supported Account Types into the database layer.
+    """
+    id = models.IntegerField(choices=constants.ACCOUNT_TYPES, primary_key=True)
+    objects = AccountTypeQuerySet.as_manager()
+
+    def __str__(self):
+        return "[{}] {}".format(self.id, dict(constants.ACCOUNT_TYPES)[self.id])
+
+
 class Firm(models.Model):
     name = models.CharField(max_length=255)
     dealer_group_number = models.CharField(max_length=50,
@@ -382,8 +394,9 @@ class Firm(models.Model):
     fee = models.PositiveIntegerField(default=0)
     can_use_ethical_portfolio = models.BooleanField(default=True)
     default_portfolio_set = models.ForeignKey(PortfolioSet)
-
     fiscal_years = models.ManyToManyField(FiscalYear)
+    account_types = models.ManyToManyField(AccountType, help_text="The set of supported account "
+                                                                  "types offered to clients of this firm.")
 
     def save(self,
              force_insert=False,
@@ -422,21 +435,21 @@ class Firm(models.Model):
     def white_logo(self):
 
         if self.logo is None:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
         elif not self.logo.name:
-            return settings.STATIC_URL + 'images/white_logo.png'
+            return static('images/white_logo.png')
 
-        return settings.MEDIA_URL + self.logo.name
+        return self.logo.url
 
     @property
     def colored_logo(self):
 
         if self.knocked_out_logo is None:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
         elif not self.knocked_out_logo.name:
-            return settings.STATIC_URL + 'images/colored_logo.png'
+            return static('images/colored_logo.png')
 
-        return settings.MEDIA_URL + self.knocked_out_logo.name
+        return self.knocked_out_logo.url
 
     @property
     def fees_ytd(self):
@@ -502,9 +515,7 @@ class Firm(models.Model):
 
     @property
     def average_client_balance(self):
-        if self.total_clients > 0:
-            return self.total_balance / self.total_clients
-        return 0
+        return self.total_balance / self.total_clients if self.total_clients > 0 else 0
 
     @property
     def total_account_groups(self):
@@ -514,10 +525,8 @@ class Firm(models.Model):
         return total
 
     @property
-    def average_balance(self):
-        if self.total_account_groups > 0:
-            return self.total_balance / self.total_account_groups
-        return 0
+    def average_group_balance(self):
+        return self.total_balance / self.total_account_groups if self.total_account_groups > 0 else 0
 
     @property
     def content_type(self):
@@ -717,24 +726,6 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return total_fees
 
     @property
-    def total_fees(self):
-        """
-        """
-        from client.models import ClientAccount
-        total_fees = 0.0
-        for ca in ClientAccount.objects.filter(primary_owner__advisor=self):
-            for year in self.firm.fiscal_years.all():
-                for goal in ca.goals:
-                    txs = Transaction.objects.filter(Q(to_goal=goal) | Q(from_goal=goal),
-                                                     status=Transaction.STATUS_EXECUTED,
-                                                     reason=Transaction.REASON_FEE,
-                                                     executed__gte=year.begin_date,
-                                                     executed__lte=year.end_date)
-                    for tx in txs:
-                        total_fees += tx.amount
-        return total_fees
-
-    @property
     def average_return(self):
         goals = Goal.objects.filter(account__in=self.client_accounts)
         return mod_dietz_rate(goals)
@@ -744,21 +735,23 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         return len(self.households)
 
     @property
-    def average_balance(self):
-        if self.total_account_groups > 0:
-            return self.total_balance / self.total_account_groups
-        return 0
+    def average_group_balance(self):
+        return self.total_balance / self.total_account_groups if self.total_account_groups > 0 else 0
 
     @property
     def average_client_balance(self):
         balances = [client.total_balance for client in self.clients]
-        return sum(balances) / len(balances)
+        return sum(balances) / len(balances) if balances else 0
 
     def get_inviter_name(self):
         return self.user.get_full_name()
 
     def save(self, *args, **kw):
         send_confirmation_mail = False
+        if self.pk is None:
+            # generate token for advisor on first save
+            self.token = str(uuid.uuid4())
+
         if self.pk is not None:
             orig = Advisor.objects.get(pk=self.pk)
             if (orig.is_accepted != self.is_accepted) and (
@@ -864,12 +857,17 @@ class AccountGroup(models.Model):
         percentage = self.satellite_balance / self.total_balance * 100
         return "{0}".format(int(round(percentage)))
 
-    @property
+    @cached_property
     def on_track(self):
-        on_track = True
+        """
+            If any of the advisors' client accounts are
+            off track, return False.  If all client
+            accounts are on track, return True.
+        """
         for account in self.accounts.all():
-            on_track = on_track and account.on_track
-        return on_track
+            if not account.on_track:
+                return False
+        return True
 
     @property
     def since(self):
@@ -916,7 +914,9 @@ class MarketIndex(FinancialInstrument):
     """
     For the moment, an index is a concrete FinancialInstrument that may have one or more tickers(funds) that track it.
     """
-    trackers = GenericRelation('Ticker')
+    trackers = GenericRelation('Ticker',
+                               content_type_field='benchmark_content_type',
+                               object_id_field='benchmark_object_id')
     daily_prices = GenericRelation('DailyPrice',
                                    content_type_field='instrument_content_type',
                                    object_id_field='instrument_object_id')
@@ -1088,7 +1088,7 @@ class Ticker(FinancialInstrument):
         """
         # AssetFeatureValue types
         satellite_feature_value = AssetFeatureValue.Standard.FUND_TYPE_SATELLITE.get_object()
-        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()        
+        core_feature_value = AssetFeatureValue.Standard.FUND_TYPE_CORE.get_object()
 
         logger.info('Populating features for ticker %s' % self)
         r_feat = self.get_region_feature_value()
@@ -1461,7 +1461,7 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+        lots = PositionLot.objects.filter(quantity__gt=0, execution_distribution__transaction__from_goal=self).\
             annotate(ticker_id=F('execution_distribution__execution__asset__id'),
                      price=F('execution_distribution__execution__asset__unit_price'))\
             .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
@@ -1474,20 +1474,24 @@ class Goal(models.Model):
         return super(Goal, self).save(force_insert, force_update, using,
                                       update_fields)
 
-    @transaction.atomic
     def archive(self):
         """
-        Archives a goal, creating a closing order to neutralise any positions.
+        Flags a goal as CLOSING, which will trigger the daily process to clear it.
         :return: None
         """
-        from main.ordering import OrderManager
         if self.State(self.state) != self.State.ARCHIVE_REQUESTED:
             raise InvalidStateError(self.State(self.state), self.State.ARCHIVE_REQUESTED)
 
-        # Remove outstanding orders and close existing positions
-        async_id = OrderManager.close_positions(self)
+        self.state = self.State.CLOSING.value
+        self.save()
 
-        self.state = self.State.ARCHIVED.value if async_id is None else self.State.CLOSING.value
+    def complete_archive(self):
+        """
+        Completes the goal archive process once a goal has no open market positions.
+        :return:
+        """
+        if self.get_positions_all():
+            raise InvalidStateError("Cannot completely archive a goal while it has open positions.")
 
         # Change the name to _ARCHIVED so it doesn't affect the way the client can name any new goals, as there is a
         # unique index on account and name
@@ -1499,6 +1503,7 @@ class Goal(models.Model):
                 suf += 1
             self.name += '_{}'.format(suf)
 
+        self.state = Goal.State.ARCHIVED
         self.save()
 
     @transaction.atomic
@@ -1873,12 +1878,23 @@ class Goal(models.Model):
 
         term = (self.selected_settings.completion.year - today.year
                 if self.selected_settings else None)
-
         return term
 
     @property
     def auto_term(self):
         return "{0}y".format(self.get_term)
+
+
+    @property
+    def amount_achieved(self):
+        if self.selected_settings is None:
+            return False
+
+        # If we don't have a target or completion date, we have no concept of OnTrack.
+        if self.selected_settings.target is None:
+            return False
+
+        return self.total_balance >= self.selected_settings.target
 
 
 class HistoricalBalance(models.Model):
@@ -1920,6 +1936,10 @@ class AssetFeature(models.Model):
     name = models.CharField(max_length=127, unique=True, help_text="This should be a noun such as 'Region'.")
     description = models.TextField(blank=True, null=True)
 
+    @cached_property
+    def active(self):
+        return AssetFeatureValue.objects.filter(feature=self, assets__state=Ticker.State.ACTIVE.value).exists()
+
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
 
@@ -1958,6 +1978,10 @@ class AssetFeatureValue(models.Model):
                                 on_delete=PROTECT,
                                 help_text="The asset feature this is one value for.")
     assets = models.ManyToManyField(Ticker, related_name='features')
+
+    @cached_property
+    def active(self):
+        return self.assets.filter(state=Ticker.State.ACTIVE.value).exists()
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
@@ -2188,12 +2212,20 @@ class ExecutionDistribution(models.Model):
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
 
+    def __str__(self):
+        return "{}|{}|{}".format(self.execution, self.transaction, self.volume)
+
 
 class PositionLot(models.Model):
     #create on every buy
     execution_distribution = models.OneToOneField(ExecutionDistribution, related_name='position_lot')
     quantity = models.FloatField(null=True, blank=True, default=None)
     #quantity get decreased on every sell, until it it zero, then delete the model
+
+    objects = PositionLotQuerySet.as_manager()
+
+    def __str__(self):
+        return "{}|{}".format(self.execution_distribution, self.quantity)
 
 
 class Sale(models.Model):
