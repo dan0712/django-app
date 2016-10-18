@@ -1759,7 +1759,7 @@ class Goal(models.Model):
         predicted = 0
         for dt, val in cf_events:
             tdelta = dt - current_time
-            y_delta = (tdelta.days + tdelta.seconds/86400.0)/365.2425
+            y_delta = (tdelta.days + tdelta.seconds/86400.0)/365.25
             predicted += val * (er ** y_delta + z_mult * stdev * (y_delta ** 0.5))
 
         return predicted
