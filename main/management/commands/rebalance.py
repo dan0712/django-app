@@ -213,7 +213,7 @@ def perturbate_risk(min_weights, removals, goal):
 
 
 def perturbate_withdrawal(goal):
-    # start getting rid of lots in units of 0.01 of a lot, and always check if we are already in 100%
+    # start getting rid of lots in - by 1 share and always check if we are already in 100% weight
     position_lots = get_tax_lots(goal)
 
     desired_lots = position_lots[:]
