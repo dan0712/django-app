@@ -120,9 +120,8 @@ def create_apex_orders():
         for id in mor_ids:
             sent_mor_ids.add(id)
             mor = MarketOrderRequest.objects.get(id=id)
-            morApex, created = MarketOrderRequestAPEX.objects.get_or_create(market_order_request=mor,
-                                                                            ticker=ticker,
-                                                                            apex_order=apex_order)
+            MarketOrderRequestAPEX.objects.create(market_order_request=mor, ticker=ticker, apex_order=apex_order)
+
     for sent_id in sent_mor_ids:
         mor = MarketOrderRequest.objects.get(id=sent_id)
         mor.state = MarketOrderRequest.State.SENT.value
