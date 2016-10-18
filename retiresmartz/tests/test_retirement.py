@@ -8,6 +8,7 @@ from retiresmartz.calculator.assets import TaxDeferredAccount, TaxPaidAccount
 from retiresmartz.calculator.cashflows import AccountContribution, JobIncome, \
     ReverseMortgage, SocialSecurity
 from retiresmartz.calculator.desired_cashflows import RetirementDesiredCashFlow
+from retiresmartz.models import InflationForecast, InflationForecastImport
 
 
 class CalculatorTest(TestCase):
@@ -48,3 +49,18 @@ class CalculatorTest(TestCase):
                          ['desired', 'actual'])
         self.assertEqual(len(asset_values.values), 181)
         self.assertEqual(len(income_values.values), 181)
+
+
+class InflationForecastModelTest(TestCase):
+    def test_loader(self):
+        data = (0.020619787, 0.017658812, 0.01676485, 0.01646296, 0.016408307,
+                0.016477804, 0.016615633, 0.016792673, 0.016992324, 0.01720454,
+                0.017422986, 0.017643544, 0.017863485, 0.018080979,
+                0.018294792, 0.018504101, 0.018708364, 0.018907242,
+                0.019100536, 0.019288151, 0.019470068, 0.01964632, 0.019816982,
+                0.019982156, 0.020141964, 0.020296542, 0.020446037,
+                0.020590602, 0.02073039, 0.020865559,)
+        imp = InflationForecastImport(date=datetime.date(2016, 1, 1))
+        imp.load(2016, data)
+
+        self.assertEqual(InflationForecast.objects.count(), len(data) * 12)

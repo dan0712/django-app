@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+from django.utils.timezone import now
+
 from retiresmartz.models import InflationForecast
 
 
@@ -13,7 +15,7 @@ class FinancialResource:
         :param date:
         :return:
         """
-        return InflationForecast.objects.on_date(date)
+        return InflationForecast.objects.on_date(now().date(), date)
 
     def reset(self):
         raise NotImplementedError()

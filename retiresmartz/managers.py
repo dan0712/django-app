@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
+from typing import Iterable
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Max, Q, QuerySet
@@ -57,66 +58,17 @@ class RetirementPlanQuerySet(QuerySet):
 
 
 class InflationForecastQuerySet(QuerySet):
-    def load(self, data):
-        """
-        loads data from a iterable
+    def on_date(self, begin_date: datetime.date,
+                end_date: datetime.date) -> float:
+        begin_date = begin_date.replace(day=1)
+        end_date = end_date.replace(day=1)
+        if begin_date >= end_date:
+            raise ValueError('End date must be after begin date.')
 
-        :param data: [(1/1/2016|2017, value), ...]
-        """
+        try:
+            first_month = self.filter(date__gte=begin_date)[0]
+            last_month = self.filter(date__lt=end_date).order_by('-date')[0]
+        except IndexError:
+            return 0.
 
-        def create(y, r):
-            d = datetime.date(y, 1, 1)
-            v = []
-            while d.year <= y:
-                v.append(self.model(date=d, value=r))
-                d += relativedelta(months=1)
-            return v
-
-        models = []
-        last_year = None
-        last_monthly_rate = None
-        for input_date, value in data:  # type: str, float
-            values = []
-            monthly_rate = value / 12.
-            try:
-                year = float(input_date)
-                if last_year is None:
-                    last_year = year
-                    last_monthly_rate = monthly_rate
-                else:
-                    if year - last_year > 1:  # cover 5 year forecast
-                        for year in range(last_year + 1, year):
-                            values.extend(create(year, last_monthly_rate))
-
-                values = create(year, monthly_rate)
-            except ValueError:  # it's date, not year
-                date = datetime.date(input_date.split('/')[::-1])
-                values.append(self.model(date=date, value=monthly_rate))
-            models.extend(values)
-
-    def on_date(self, end_date: datetime.date,
-                begin_date: datetime.date = None,
-                version: datetime.datetime = None) -> float:
-        """
-        :param end_date:
-        :param begin_date: start date or use current date
-        :param version: limit query to data created before or on a date
-        :return:
-        """
-        if begin_date is None:
-            begin_date = now().date()
-        if begin_date > end_date:
-            raise ValueError('Begin date must be greater than end date')
-
-        # SELECT date, value, max(version) FROM t GROUP BY date
-        kwargs = {
-            'date__range': (begin_date, end_date),
-        }
-        if version is not None:
-            kwargs['created_date__lte'] = version
-        data = (self.filter(**kwargs).annotate(Max('created_date'))
-                .values_list('value', flat=True))
-
-        rate = float(sum(data))
-
-        return rate
+        return (last_month.value / first_month.value) - 1

@@ -1,12 +1,16 @@
 from __future__ import unicode_literals
 
+import datetime
 import logging
+from typing import Iterable
 
+from dateutil.relativedelta import relativedelta
 from django.core.validators import MaxLengthValidator, MaxValueValidator, \
     MinLengthValidator, MinValueValidator, ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.timezone import now
 from jsonfield.fields import JSONField
 
 from common.structures import ChoiceEnum
@@ -271,6 +275,57 @@ class RetirementLifestyle(models.Model):
 class InflationForecast(models.Model):
     date = models.DateField()
     value = models.FloatField()
-    created_date = models.DateTimeField(auto_now_add=True)
+    imported = models.ForeignKey('InflationForecastImport')
 
     objects = InflationForecastQuerySet.as_manager()
+
+    def __str__(self):
+        return '{0.date:%Y-%m-%d} {0.value}'.format(self)
+
+
+class InflationForecastImport(models.Model):
+    date = models.DateField(help_text='Date the forecast been made on.')
+    csv_file = models.FileField(help_text='CSV file with one column of values '
+                                          'starting the `date`.')
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '{0.date:%Y-%m-%d}'.format(self)
+
+    def load(self, start_year, data):
+        """
+        loads data from an iterable
+
+        :param start_year: the year of first value in data
+        :type data: [float]
+        :param data: list of inflation forecasts.
+                     [0.0206, 0.017,...]
+                     first value is start_date-the year end
+        """
+
+        # TODO make sure this model saved, create IF models
+        if self.id is None:
+            self.save()
+
+        model_list = []
+
+        cur_date = datetime.date(start_year, 1, 1)
+        cur_year = start_year
+        prev_value = None
+        for forecast_value in data:
+            monthly_rate = (1 + forecast_value) ** (1. / 12)
+            while True:
+                if cur_date.year > cur_year:
+                    cur_year += 1
+                    break
+                try:
+                    cur_value = prev_value * monthly_rate
+                except TypeError:
+                    cur_value = 1
+                prev_value = cur_value
+                model_list.append(InflationForecast(date=cur_date,
+                                                value=cur_value,
+                                                imported=self))
+                cur_date += relativedelta(months=1)
+
+        InflationForecast.objects.bulk_create(model_list)
