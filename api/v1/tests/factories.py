@@ -6,14 +6,15 @@ import random
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, date
 from django.contrib.auth.models import Group
-
+from django.utils import timezone
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
-                        InvestmentCycleObservation, InvestmentCyclePrediction
+                        InvestmentCycleObservation, InvestmentCyclePrediction, \
+                        RecurringTransaction
 from retiresmartz.models import RetirementPlan
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -561,3 +562,13 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     desired_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     recommended_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     max_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
+class RecurringTransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RecurringTransaction
+    setting = factory.SubFactory(GoalSettingFactory)
+    begin_date = timezone.now().date()
+    amount = factory.LazyAttribute(lambda n: int(random.randrange(10000)))
+    growth = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    schedule = factory.Sequence(lambda n: 'RRULE %s' % n)
