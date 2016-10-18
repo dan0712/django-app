@@ -15,6 +15,7 @@ from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
     PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
+from main.risk_profiler import MINIMUM_RISK
 
 from retiresmartz.models import RetirementPlan
 
@@ -371,18 +372,22 @@ class Fixture1:
 
     @classmethod
     def metric_group1(cls):
-        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
-                                                     name='metricgroup1')[0]
-        # A metric group isn't valid without a risk score
-        GoalMetricFactory.create(group=g, configured_val=0.4)
+        g, c = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+                                                     name='metricgroup1')
+        # A metric group isn't valid without a risk score, and we only want to create the metric if the group was
+        # newly created.
+        if c:
+            GoalMetricFactory.create(group=g, configured_val=MINIMUM_RISK)
         return g
 
     @classmethod
     def metric_group2(cls):
-        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
-                                                     name='metricgroup2')[0]
-        # A metric group isn't valid without a risk score
-        GoalMetricFactory.create(group=g, configured_val=0.4)
+        g, c = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+                                                     name='metricgroup2')
+        # A metric group isn't valid without a risk score, and we only want to create the metric if the group was
+        # newly created.
+        if c:
+            GoalMetricFactory.create(group=g, configured_val=MINIMUM_RISK)
         return g
 
     @classmethod

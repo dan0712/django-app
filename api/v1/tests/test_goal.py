@@ -19,7 +19,8 @@ from main.event import Event
 
 from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Portfolio, Goal
 
-from main.risk_profiler import max_risk
+from main.risk_profiler import max_risk, MINIMUM_RISK
+from .factories import ContentTypeFactory, TransactionFactory, PositionLotFactory
 
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
@@ -51,7 +52,7 @@ class GoalTests(APITestCase):
         self.risk_score_metric = {
             "type": GoalMetric.METRIC_TYPE_RISK_SCORE,
             "comparison": GoalMetric.METRIC_COMPARISON_EXACTLY,
-            "configured_val": 0.4,
+            "configured_val": MINIMUM_RISK,
             "rebalance_type": GoalMetric.REBALANCE_TYPE_RELATIVE,
             "rebalance_thr": 0.1
         }
@@ -367,8 +368,8 @@ class GoalTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['max'], 0.5)
-        self.assertEqual(response.data['recommended'], 0.5)
+        self.assertEqual(response.data['max'], MINIMUM_RISK)
+        self.assertEqual(response.data['recommended'], MINIMUM_RISK)
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_all_portfolios(self):
