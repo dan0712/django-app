@@ -912,7 +912,9 @@ class MarketIndex(FinancialInstrument):
     """
     For the moment, an index is a concrete FinancialInstrument that may have one or more tickers(funds) that track it.
     """
-    trackers = GenericRelation('Ticker')
+    trackers = GenericRelation('Ticker',
+                               content_type_field='benchmark_content_type',
+                               object_id_field='benchmark_object_id')
     daily_prices = GenericRelation('DailyPrice',
                                    content_type_field='instrument_content_type',
                                    object_id_field='instrument_object_id')
