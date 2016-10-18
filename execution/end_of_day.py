@@ -133,7 +133,7 @@ def send_apex_order(apex_order):
     apex_order.save()
 
 
-def create_all_from_apex_fills():
+def process_apex_fills():
     '''
     from existing apex fills create executions, execution distributions, transactions and positionLots - pro rata all fills
     :return:
@@ -146,7 +146,7 @@ def create_all_from_apex_fills():
     complete_mor_ids = set()
     complete_apex_order_ids = set()
     for fill in fills:
-        ers = ExecutionRequest.objects.all()\
+        ers = ExecutionRequest.objects\
             .filter(asset_id=fill['ticker_id'], order__morsAPEX__apex_order__state=ApexOrder.State.SENT.value)
         sum_ers = np.sum([er.volume for er in ers])
 
@@ -200,7 +200,7 @@ def create_all_from_apex_fills():
 def create_sale(ticker_id, volume, current_price, execution_distribution):
     # start selling PositionLots from 1st until quantity sold == volume
     year_ago = timezone.now() - timedelta(days=365)
-    position_lots = PositionLot.objects.all()\
+    position_lots = PositionLot.objects\
         .filter(execution_distribution__execution__asset_id=ticker_id)\
         .annotate(price=F('execution_distribution__execution__price'),
                   executed=F('execution_distribution__execution__executed'))\
