@@ -37,7 +37,6 @@ django-page-cms==1.8.1
 django-phonenumber-field==1.1.0
 django-suit==0.2.15
 django-taggit==0.17.5
-git+git://github.com/arthanson/django-genericadmin  # For user friendly generic foreign keys in admin interface
 # Using the below git link until drf-extensions==0.3.0 becomes available in pip.
 git+git://github.com/chibisov/drf-extensions@0a82b4c57ab95e53c56e5e71cfe71f5a33812a65 # For nested viewsets
 ecos==2.0.4
@@ -48,6 +47,7 @@ pydenticon==0.2
 pinax-eventlog==1.1.1
 psycopg2==2.6.1
 ptyprocess==0.5
+PyPDF2==1.26.0
 pysftp==0.2.8
 python-dateutil==2.5.3 # For rrule parsing
 pytz==2015.7

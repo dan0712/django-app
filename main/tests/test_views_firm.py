@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.views.generic import TemplateView
+from django.core.urlresolvers import reverse
 from main.views.firm.dashboard import FirmAnalyticsMixin
 from main import constants
 from main.models import Transaction, Goal, GoalType, MarketOrderRequest, Execution, ExecutionDistribution
@@ -12,12 +13,15 @@ from api.v1.tests.factories import ClientAccountFactory, \
     ExternalAssetFactory, TickerFactory, \
     SupervisorFactory, AuthorisedRepresentativeFactory, \
     InvestmentTypeFactory, PositionLotFactory, \
-    ExternalAssetFactory, TickerFactory, ExecutionRequestFactory
+    ExternalAssetFactory, TickerFactory, \
+    GroupFactory, AdvisorFactory
 from client.models import Client
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
-
+from rest_framework import status
+from common.constants import GROUP_SUPPORT_STAFF
+from main.tests.fixture import Fixture1
 
 class FirmAnalyticsMixinTests(TestCase):
     class DummyView(FirmAnalyticsMixin, TemplateView):
@@ -25,6 +29,7 @@ class FirmAnalyticsMixinTests(TestCase):
 
     def setUp(self):
         super(FirmAnalyticsMixinTests, self).setUp()
+        self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.bonds_type = InvestmentType.Standard.BONDS.get()
         self.stocks_type = InvestmentType.Standard.STOCKS.get()
 
@@ -95,7 +100,6 @@ class FirmAnalyticsMixinTests(TestCase):
 
                 # gather clients of firm of this age
                 firm_clients = Client.objects.filter(advisor__firm=firm)
-                # print(firm_clients.first())
                 clients_by_age = firm_clients.filter(date_of_birth__range=range_dates)
                 # sum client.net_worth and divide by number of clients
                 for client in clients_by_age:
@@ -170,57 +174,9 @@ class FirmAnalyticsMixinTests(TestCase):
         goal = GoalFactory.create()
         today = date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
-        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        execution_request1 = ExecutionRequestFactory.create(goal=goal, asset=ticker1, volume=10, order=order)
-        exec1 = Execution.objects.create(asset=ticker1,
-                                         volume=10,
-                                         order=order,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10,
-                                                     execution_request=execution_request1)
-        position1 = PositionLotFactory(quantity=10, execution_distribution=dist1)
-
-        execution_request2 = ExecutionRequestFactory.create(goal=goal, asset=ticker2, volume=10, order=order)
-        exec2 = Execution.objects.create(asset=ticker2,
-                                         volume=10,
-                                         order=order,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=10,
-                                                     execution_request=execution_request2)
-        position2 = PositionLotFactory(quantity=10, execution_distribution=dist2)
-
-        execution_request3 = ExecutionRequestFactory.create(goal=goal, asset=ticker3, volume=10, order=order)
-        exec3 = Execution.objects.create(asset=ticker3,
-                                         volume=10,
-                                         order=order,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=10,
-                                                     execution_request=execution_request3)
-        position3 = PositionLotFactory(quantity=10, execution_distribution=dist3)
+        data1 = Fixture1.create_execution_details(goal, ticker1, 10, 2, date(2014, 6, 1))
+        data2 = Fixture1.create_execution_details(goal, ticker2, 10, 2, date(2014, 6, 1))
+        data3 = Fixture1.create_execution_details(goal, ticker3, 10, 2, date(2014, 6, 1))
 
         positions = self.view.get_context_positions(**kwargs)
 
@@ -230,9 +186,9 @@ class FirmAnalyticsMixinTests(TestCase):
         self.assertEqual(len(positions.get('investment_type')), 3)
 
         # compare sum of values to double check values being passed
-        expected_sum = position1.quantity * ticker1.unit_price + \
-                       position2.quantity * ticker2.unit_price + \
-                       position3.quantity * ticker3.unit_price
+        expected_sum = data1[-1].quantity * ticker1.unit_price + \
+                       data2[-1].quantity * ticker2.unit_price + \
+                       data3[-1].quantity * ticker3.unit_price
 
         asset_actual_sum = sum([x.get('value') for x in positions.get('asset_class')])
         region_actual_sum = sum([x.get('value') for x in positions.get('region')])
@@ -269,3 +225,63 @@ class FirmAnalyticsMixinTests(TestCase):
         actual_categories = [x.get('category') for x in context]
         for category in expected_categories:
             self.assertTrue(category in actual_categories)
+
+    def test_get_firm_analytics(self):
+        """
+        Test get request to firm analytics page
+        """
+        url = reverse('firm:analytics')
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_risk_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?advisor=&client=&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_worth_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?client=' + self.betasmartz_client.email + '&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_client_filter(self):
+        """
+          Test get request to firm analytics with risk filter
+        """
+        url = reverse('firm:analytics') + '?worth=high&advisor=&client='
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_advisor_filter(self):
+        url = reverse('firm:analytics') + '?advisor=' + self.betasmartz_client.advisor.email + '&worth=&risk=40'
+        rep = AuthorisedRepresentativeFactory.create()
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_firm_analytics_worth_and_risk_filter(self):
+        # /firm/analytics?worth=affluent&risk=0&risk=20&advisor=&client=
+        url = reverse('firm:analytics') + '?worth=affluent&risk=0&risk=20&advisor=&client='
+        rep = AuthorisedRepresentativeFactory.create(firm=self.firm)
+        advisor = AdvisorFactory.create(firm=self.firm)
+        aclient = ClientFactory.create(advisor=advisor)
+        aaccount = ClientAccountFactory.create(primary_owner=aclient)
+        goal = GoalFactory.create(account=aaccount)
+
+        self.client.login(username=rep.user.email, password='test')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

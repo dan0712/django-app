@@ -2,16 +2,24 @@ from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers, exceptions
 
-from api.v1.address.serializers import AddressSerializer
+from api.v1.address.serializers import AddressSerializer, AddressUpdateSerializer
 from api.v1.advisor.serializers import AdvisorFieldSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
+from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.models import ExternalAsset, ExternalAssetTransfer, User
-from user.models import SecurityQuestion, SecurityAnswer
-from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup
+from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfileAnswer, RiskProfileGroup, \
+    AccountTypeRiskProfileGroup
 from notifications.signals import notify
 from main import constants
-
+from pdf_parsers.tax_return import parse_pdf
 from ..user.serializers import UserFieldSerializer
+import logging
+import tempfile
+import uuid
+import json
+
+logger = logging.getLogger('api.v1.client.serializers')
+RESIDENTIAL_ADDRESS_KEY = 'residential_address'
 
 
 class ClientSerializer(ReadOnlyModelSerializer):
@@ -47,21 +55,49 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
     risk_profile_responses = serializers.PrimaryKeyRelatedField(many=True,
                                                                 queryset=qs,
                                                                 required=False)
+    residential_address = AddressUpdateSerializer()
+    regional_data = serializers.JSONField()
+
+    class Meta:
+        model = Client
+        fields = (
+            'employment_status',
+            RESIDENTIAL_ADDRESS_KEY,
+            'income',
+            'occupation',
+            'employer',
+            'civil_status',
+            'risk_profile_responses',
+            'betasmartz_agreement',
+            'advisor_agreement',
+            'phone_num',
+            'regional_data',
+        )
+
     def create(self, validated_data):
         # Default to Personal account type for risk profile group on a brand
         # new client (since they have no accounts yet, we have to assume)
         rpg = RiskProfileGroup.objects.get(account_types__account_type=constants.ACCOUNT_TYPE_PERSONAL)
-        validated_data.update({
-            'risk_profile_group': rpg
-        })
-        return (super(ClientUpdateSerializer, self)
-                .create(validated_data))
-    class Meta:
-        model = Client
-        fields = (
-            'employment_status', 'income', 'occupation',
-            'employer', 'civil_status', 'risk_profile_responses'
-        )
+        validated_data['risk_profile_group'] = rpg
+
+        address_ser = AddressUpdateSerializer(data=validated_data.pop(RESIDENTIAL_ADDRESS_KEY))
+        address_ser.is_valid(raise_exception=True)
+        validated_data[RESIDENTIAL_ADDRESS_KEY] = address_ser.save()
+
+        # For now we auto confirm and approve the client.
+        validated_data['is_confirmed'] = True
+        validated_data['is_accepted'] = True
+
+        return super(ClientUpdateSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        add_data = validated_data.pop(RESIDENTIAL_ADDRESS_KEY, None)
+        if add_data is not None:
+            address_ser = AddressUpdateSerializer(data=add_data)
+            address_ser.is_valid(raise_exception=True)
+            validated_data[RESIDENTIAL_ADDRESS_KEY] = address_ser.save()
+
+        return super(ClientUpdateSerializer, self).update(instance, validated_data)
 
 
 class EATransferPlanSerializer(serializers.ModelSerializer):
@@ -141,6 +177,14 @@ class ExternalAssetWritableSerializer(serializers.ModelSerializer):
 
 
 class InvitationSerializer(ReadOnlyModelSerializer):
+    """
+    A user in the middle of onboarding will use this
+    serializer, pre-registration and non-authenticated
+    """
+    firm_name = serializers.SerializerMethodField()
+    firm_logo = serializers.SerializerMethodField()
+    firm_colored_logo = serializers.SerializerMethodField()
+
     class Meta:
         model = EmailInvite
         fields = (
@@ -149,13 +193,36 @@ class InvitationSerializer(ReadOnlyModelSerializer):
             'first_name',
             'middle_name',
             'last_name',
+            'reason',
+            'advisor',
+            'firm_name',
+            'firm_logo',
+            'firm_colored_logo',
         )
+
+    def get_firm_name(self, obj):
+        return obj.advisor.firm.name
+
+    def get_firm_logo(self, obj):
+        return obj.advisor.firm.white_logo
+
+    def get_firm_colored_logo(self, obj):
+        return obj.advisor.firm.colored_logo
 
 
 class PrivateInvitationSerializer(serializers.ModelSerializer):
+    """
+    Authenticated users will retrieve and update through this
+    serializer.
+    """
     # Includes onboarding data
     # Allows POST for registered users
     onboarding_data = serializers.JSONField()
+    risk_profile_group = serializers.SerializerMethodField()
+    firm_name = serializers.SerializerMethodField()
+    firm_logo = serializers.SerializerMethodField()
+    firm_colored_logo = serializers.SerializerMethodField()
+    tax_transcript_data = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -164,8 +231,42 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'invite_key',
             'status',
             'onboarding_data',
-            'onboarding_file_1'
+            'risk_profile_group',
+            'reason',
+            'advisor',
+            'firm_name',
+            'firm_logo',
+            'firm_colored_logo',
+            'tax_transcript',
+            'tax_transcript_data',  # this will be stored to client.region_data.tax_transcript_data
         )
+
+    def get_risk_profile_group(self, obj):
+        return AccountTypeRiskProfileGroup.objects.get(account_type=ACCOUNT_TYPE_PERSONAL).id
+
+    def get_firm_name(self, obj):
+        return obj.advisor.firm.name
+
+    def get_firm_logo(self, obj):
+        return obj.advisor.firm.white_logo
+
+    def get_firm_colored_logo(self, obj):
+        return obj.advisor.firm.colored_logo
+
+    def get_tax_transcript_data(self, obj):
+        # parse_pdf
+        if obj.tax_transcript:
+            # save to tmp file to pass to parse_pdf
+            # TODO: parse_pdf using subprocess file status command
+            # to detect pdf_fonts, need to replace that with
+            # something we can pass the in-memory file data here
+            tmp_filename = '/tmp/' + str(uuid.uuid4()) + '.pdf'
+            with open(tmp_filename, 'wb+') as f:
+                for chunk in obj.tax_transcript.chunks():
+                    f.write(chunk)
+            obj.tax_transcript_data = parse_pdf(tmp_filename)
+            return obj.tax_transcript_data
+        return None
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):

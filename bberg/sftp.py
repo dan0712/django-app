@@ -9,6 +9,8 @@ import pandas as pd
 import pysftp
 
 logger = logging.getLogger("bberg.sftp")
+# logger.setLevel(logging.DEBUG)
+
 
 def send_request(sftp, rid, request):
     """
@@ -25,11 +27,25 @@ def send_request(sftp, rid, request):
 def parse_hist_security_response(response, begin_date, end_date, fields):
     in_sec = False
     dframes = {}
+    min_dt = None
+    dt = None
+    col = None
+    cnt = 0
+    dframe = pd.DataFrame(index=pd.date_range(begin_date, end_date), columns=fields)
     for line in StringIO(response):
         bits = line.split('|', 4)
         if in_sec:
             if bits[0] == 'END SECURITY':
+                logger.debug("Read data for security: {}. min_dt: {}, max_dt: {}, col: {}, count: {}".format(sec,
+                                                                                                             min_dt,
+                                                                                                             dt,
+                                                                                                             col,
+                                                                                                             cnt))
                 in_sec = False
+                cnt = 0
+                min_dt = None
+                dt = None
+                col = None
                 ret_code = int(bits[3])
                 if ret_code != 0:
                     estr = "Received return code: {} for history request for security: {}"
@@ -41,8 +57,12 @@ def parse_hist_security_response(response, begin_date, end_date, fields):
                 except ValueError:
                     val = None
                     logger.debug("Could not convert val: {} to float".format(bits[2]))
+                dt = datetime.strptime(bits[1], '%d/%m/%Y')
+                if not min_dt:
+                    min_dt = dt
                 if val:
-                    dframe.loc[datetime.strptime(bits[1], '%d/%m/%Y'), col] = val
+                    cnt += 1
+                    dframe.loc[dt, col] = val
 
         elif bits[0] == 'START SECURITY':
             in_sec = True

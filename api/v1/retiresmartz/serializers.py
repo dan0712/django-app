@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
+from main.constants import GENDER_MALE
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
 import json
 
@@ -21,7 +22,7 @@ def get_default_tx_plan():
 
 
 def get_default_life_expectancy(client):
-    return settings.MALE_LIFE_EXPECTANCY if client.gender == 'Male' else settings.FEMALE_LIFE_EXPECTANCY
+    return settings.MALE_LIFE_EXPECTANCY if client.gender == GENDER_MALE else settings.FEMALE_LIFE_EXPECTANCY
 
 
 def get_default_retirement_date(client):

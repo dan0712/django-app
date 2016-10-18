@@ -121,7 +121,7 @@ def run_bl(instruments, covars, target_instruments, samples, portfolio_set):
     """
 
     # Get the indexes for the benchmarks for each of the funds
-    blabels = target_instruments['bid'].unique()
+    blabels = target_instruments['id'].unique() #we need benchmark, for now just use fund
 
     # Get all the benchmarks and fund instruments
     bl_instruments = instruments.loc[blabels.tolist() + target_instruments.index.tolist()]

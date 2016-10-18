@@ -1,7 +1,7 @@
+import logging
 from datetime import timedelta
 
 import numpy as np
-from django_pandas.io import read_frame
 
 from common.constants import WEEKDAYS_PER_YEAR
 from portfolios.exceptions import OptimizationException
@@ -13,9 +13,10 @@ OLDEST_ACCEPTABLE_DATA = 180  # The number of days back we will look data before
 MAX_HISTORY = 20  # The maximum years of history we want to use
 CYCLE_LABEL = 'CYCLE'
 
+logger = logging.getLogger(__name__)
+
 
 class InvestmentClock(object):
-
     def __init__(self, data_provider):
         self.data_provider = data_provider
 
@@ -24,25 +25,7 @@ class InvestmentClock(object):
         Get the beginning of the last complete investment cycle in our history.
         :return: The date of the first day of the last complete investment cycle.
         """
-        obs = self.data_provider.get_investment_cycles()
-        # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population
-        if not obs:
-            raise OptimizationException("There are no historic observations available")
-
-        # Get the investment cycle for the current date
-        current_cycle = obs.last().cycle
-
-        # Get the end date of the last non-current cycle before the current one
-        pre_dt = obs.exclude(cycle=current_cycle).last().as_of
-
-        # Get the end date of the previous time the current cycle was
-        pre_on_dt = obs.filter(as_of__lt=pre_dt).filter(cycle=current_cycle).last().as_of
-
-        # Get the end date of the time before that when we were not in the current cycle
-        pre_off_dt = obs.filter(as_of__lt=pre_on_dt).exclude(cycle=current_cycle).last().as_of
-
-        # Not get the first date after this when the current cycle was on and we have the answer
-        return obs.filter(as_of__gt=pre_off_dt).first().as_of
+        return self.data_provider.get_last_cycle_start(self.data_provider.get_investment_cycles())
 
     def get_fund_predictions(self):
         """
@@ -71,6 +54,9 @@ class InvestmentClock(object):
         latest_start = self.get_last_cycle_start()
         returns = filter_returns(returns, OLDEST_ACCEPTABLE_DATA, latest_start=latest_start)
 
+        if returns.empty:
+            raise OptimizationException('Not returns data available')
+
         oldest_dt = today - timedelta(days=OLDEST_ACCEPTABLE_DATA)
         cycles = self.get_cycle_obs(begin_date)
         if cycles.index[-1] < oldest_dt:
@@ -89,8 +75,7 @@ class InvestmentClock(object):
         :param begin_date: The earliest date you want the series from.
         :return:
         """
-        qs = self.data_provider.get_investment_cycles().filter(as_of__gt=begin_date)
-        return read_frame(qs, fieldnames=['cycle'], index_col='as_of', verbose=False)['cycle']
+        return self.data_provider.get_cycle_obs(begin_date)
 
     def get_normalized_probabilities(self, begin_date):
         """
@@ -99,10 +84,8 @@ class InvestmentClock(object):
         :return: Dataframe of normalized probabilities.
                  The fields are in positions corresponding to the class ids on InvestmentCycleObservation.
         """
-        qs = self.data_provider.get_investment_cycle_predictions().filter(as_of__gt=begin_date)
-        probs_df = read_frame(qs,
-                              fieldnames=['eq', 'eq_pk', 'pk_eq', 'eq_pit', 'pit_eq'],
-                              index_col='as_of')
+        probs_df = self.data_provider.get_probs_df(begin_date)
+
         if probs_df.empty:
             raise OptimizationException("There are no investment clock predictions available")
         sum_row = probs_df.sum(axis=1)
@@ -118,7 +101,9 @@ class InvestmentClock(object):
         """
         returns[CYCLE_LABEL] = cycles.reindex(returns.index, method='pad')
         if len(returns[CYCLE_LABEL].unique()) != 5:
-            raise OptimizationException("All investment cycles were not represented in data.")
+            emsg = "A full investment cycle was not present in the available history ({} - {})"
+            logger.error(emsg.format(returns.index[0], returns.index[-1]))
+            raise OptimizationException("Not enough data for portfolio optimisation.")
         return returns
 
     def _expected_returns_prob_v1(self, merged_df, prob_vector):
@@ -128,9 +113,9 @@ class InvestmentClock(object):
         :param prob_vector: A 1x5 numpy array of the probabilities of each investment cycle.
         :return: Expected Return Vector as a pandas series, index Ticker id
         """
-        summary_df = merged_df.groupby(CYCLE_LABEL, as_index=True).mean().T
+        summary_df = np.exp(np.log(merged_df + 1).groupby(CYCLE_LABEL, as_index=True).mean().T)
         expected_return = summary_df.dot(prob_vector.T)
-        return expected_return[0]
+        return expected_return[0] - 1
 
     def _covariance_matrix_prob_v1(self, merged_df, prob_vector):
         """

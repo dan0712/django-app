@@ -3,9 +3,9 @@ import logging
 from rest_framework.renderers import JSONRenderer
 
 from api.v1.user.serializers import UserSerializer
-from common.constants import KEY_SUPPORT_TICKET
 from support.models import SupportRequest
 from user.autologout import SessionExpire
+
 
 # format json response
 # https://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml

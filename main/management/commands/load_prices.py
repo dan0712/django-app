@@ -11,11 +11,16 @@ from main.models import Ticker, MarketIndex, DailyPrice, ExchangeRate
 from portfolios.api.bloomberg import get_fund_hist_data as bl_getter, get_fx_rates
 
 logger = logging.getLogger("load_prices")
+# logger.setLevel(logging.DEBUG)
 
 api_map = {'portfolios.api.bloomberg': bl_getter}
 
 # Module level cache of currency data.
 currency_cache = {}
+
+
+class FXException(Exception):
+    pass
 
 
 def load_fx_rates(begin_date, end_date):
@@ -50,13 +55,13 @@ def fx_convert(val, date, currency):
     if currency == settings.SYSTEM_CURRENCY:
         return val
 
-    def make_weekday(date):
-        if date.weekday() > 4:
-            new_date = date - timedelta(days=date.weekday() - 4)
-            msg = "Not attempting currency conversion for weekend day: {}. Trying previous workday: {}."
-            logger.info(msg.format(date.date(), new_date.date()))
-            date = new_date
-        return date
+    def make_weekday(dt):
+        if dt.weekday() > 4:
+            new_date = dt - timedelta(days=dt.weekday() - 4)
+            m = "Not attempting currency conversion for weekend day: {}. Trying previous workday: {}."
+            logger.info(m.format(dt.date(), new_date.date()))
+            dt = new_date
+        return dt
 
     date = make_weekday(date)
     rate = currency_cache.get((currency, date), None)
@@ -75,7 +80,7 @@ def fx_convert(val, date, currency):
                                                second=currency,
                                                date=date).values_list('rate', flat=True)
             if len(rate) == 0 or not rate[0] or not math.isfinite(rate[0]):
-                raise Exception(msg.format(currency, date))
+                raise FXException(msg.format(currency, date))
         # print(rate[0])
         rate = rate[0]
 
@@ -137,11 +142,16 @@ def load_price_data(begin_date, end_date):
             # Insert the new prices
             prices = []
             for dt, price in frame.itertuples():
-                prices.append(DailyPrice(instrument=instr,
-                                         date=dt,
-                                         price=fx_convert(price, dt, instr.currency)))
-                # print("Appended {} from sym: {}, dt: {}, nav: {}".format(prices[-1].nav, key, dt, nav))
+                try:
+                    prices.append(DailyPrice(instrument=instr,
+                                             date=dt,
+                                             price=fx_convert(price, dt, instr.currency)))
+                    # print("Appended {} from sym: {}, dt: {}, nav: {}".format(prices[-1].nav, key, dt, nav))
+                except FXException:
+                    logger.warn("Skipping date: {} for symbol: {} as I cannot convert the currency.".format(dt, key))
+                    pass
 
+            logger.debug("Inserting {} prices for {}".format(len(prices), key))
             DailyPrice.objects.bulk_create(prices)
 
 

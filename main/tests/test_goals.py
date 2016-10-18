@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from unittest import mock
 
 from django.core.exceptions import ValidationError
@@ -6,7 +6,9 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
-from main.models import Goal, Transaction
+from api.v1.tests.factories import TickerFactory, GoalFactory, TransactionFactory, ExecutionDistributionFactory, \
+    PositionLotFactory, ContentTypeFactory, AssetClassFactory
+from main.models import Goal, Transaction, MarketOrderRequest, Execution, InvestmentType
 from main.tests.fixture import Fixture1
 
 
@@ -23,6 +25,42 @@ class CreateGoalTest(TestCase):
                                        type=Fixture1.goal_type1(),
                                        portfolio_set=Fixture1.portfolioset1(),
                                        selected_settings=Fixture1.settings1())
+
+
+class GoalTests(TestCase):
+    def test_get_positions_all(self):
+        fund = TickerFactory.create(unit_price=2.1)
+        fund2 = TickerFactory.create(unit_price=4)
+        goal = GoalFactory.create()
+        today = date(2016, 1, 1)
+        # Create a 6 month old execution, transaction and a distribution that caused the transaction
+
+        Fixture1.create_execution_details(goal, fund, 10, 2, date(2014, 6, 1))
+        Fixture1.create_execution_details(goal, fund, 5, 2, date(2014, 6, 1))
+        Fixture1.create_execution_details(goal, fund2, 1, 2, date(2014, 6, 1))
+
+        positions = goal.get_positions_all()
+
+        self.assertTrue(positions[0]['quantity'] == 15)
+        self.assertTrue(positions[1]['quantity'] == 1)
+
+    def test_sum_stocks_for_goal(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                     benchmark_content_type=self.content_type,
+                                     etf=True)
+        goal = GoalFactory.create()
+
+        Fixture1.create_execution_details(goal, fund1, 10, 2, date(2014, 6, 1))
+
+        weight_stocks = goal.stock_balance
+        weight_bonds = goal.bond_balance
+        weight_core = goal.core_balance
+        self.assertTrue(weight_stocks == 100)
+        self.assertTrue(weight_bonds == 0)
+        self.assertTrue(weight_core == 100)
 
 
 class GoalTotalReturnTest(TestCase):
@@ -65,11 +103,16 @@ class GoalTotalReturnTest(TestCase):
                     'to_goal': self.goal,
                 })
             Transaction.objects.create(**data)
+            self.goal.cash_balance = self.goal.requested_incomings - self.goal.requested_outgoings
 
     def total_return(self, days, closing_balance):
         self.goal.cash_balance = closing_balance
         with mock.patch('main.finance.now', self.mocked_date(days)):
             return self.goal.total_return
+
+    def closing_balance(self, days):
+        with mock.patch.object(timezone, 'now', self.mocked_date(days)):
+            return self.goal.total_balance
 
     def test_zero_balance(self):
         goal = Fixture1.goal1()
@@ -134,3 +177,36 @@ class GoalTotalReturnTest(TestCase):
         self.goal_opening(1000)
         total_return = self.total_return(8 * 30, 900)  # 8m
         self.assertEqual(total_return, -0.14815060547446401)
+
+    def test_amount_achieved(self):
+        """
+        ensure completion does not affect a goal's ability to
+        continue with the same parameters
+        """
+        self.goal_opening(10000)
+        with mock.patch.object(timezone, 'now', self.mocked_date(0)):
+            self.assertEqual(self.goal.amount_achieved, False)
+
+        self.goal_transaction(90000, 365)
+        with mock.patch.object(timezone, 'now', self.mocked_date(365)):
+            self.assertEqual(self.goal.amount_achieved, True)
+
+        self.goal_transaction(50000, 365*2)
+        with mock.patch.object(timezone, 'now', self.mocked_date(365)):
+            self.assertEqual(self.goal.amount_achieved, True)
+
+    def test_zero_target(self):
+        self.goal_opening(10000)
+        self.load_fixture('main/tests/fixtures/transactions.json')
+        self.goal.selected_settings.target = 0
+        self.goal.selected_settings.completion_date = self.goal.created
+        self.assertEqual(self.goal.amount_achieved, True)
+        self.assertEqual(self.goal.on_track, True)
+
+    def test_goal_completion(self):
+        self.goal_opening(100)
+        self.goal_transaction(200, 365)
+        self.goal.selected_settings.target = 300
+        with mock.patch.object(timezone, 'now', self.mocked_date(365)):
+            self.assertEqual(self.goal.amount_achieved, True)
+            # What can we do here to test portfolio optimisation? -- Lee

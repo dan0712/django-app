@@ -248,6 +248,6 @@ FEMALE_LIFE_EXPECTANCY = 84
 #SECURITY_QUESTIONS_CASE_SENSITIVE = False
 
 # What is the system currency?
-SYSTEM_CURRENCY = 'AUD'
+SYSTEM_CURRENCY = 'USD'
 
 from local_settings import *

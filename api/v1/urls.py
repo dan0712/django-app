@@ -35,6 +35,10 @@ retirement_incomes_router = client_router.register(r'retirement-incomes',
                                                 parents_query_lookups=['plan__client'])
 goals_router = router.register(r'goals',
                                goals_views.GoalViewSet)
+goal_settings_router = goals_router.register(r'settings',
+                                            goals_views.GoalSettingViewSet,
+                                            base_name='goal-settings',
+                                            parents_query_lookups=['goal'])
 account_router = router.register(r'accounts',
                                  account_views.AccountViewSet)
 account_goals_router = account_router.register(r'goals',
@@ -46,13 +50,11 @@ urlpatterns = patterns(
     url(r'^me/?$', user_views.MeView.as_view(), name='user-me'),
     url(r'^me/profile/?$', client_views.ProfileView.as_view(), name='user-me-profile'),
     url(r'^me/profile/notifications/?$', client_views.EmailNotificationsView.as_view(), name='user-me-profile-notifications'),
-    # reserved # url(r'^me/image/?$', me_views.MeImageView.as_view(), name='me-image'),
 
     url(r'^register/?$', client_views.ClientUserRegisterView.as_view(), name='client-user-register'),
     url(r'^invites/(?P<invite_key>\w+)/?$', client_views.InvitesView.as_view(), name='invite-detail'),
 
     url(r'^region/(?P<pk>\d+)/?$', address_views.RegionView.as_view(), name='region-detail'),
-    url(r'^address/(?P<pk>\d+)/?$', address_views.AddressView.as_view(), name='address-detail'),
 
     url(r'^firm/(?P<pk>\d+)/?$', firm_views.FirmSingleView.as_view(), name='firm-single'),
 
@@ -60,11 +62,6 @@ urlpatterns = patterns(
     url(r'^returns$', analysis_views.ReturnsView.as_view()),
 
     url(r'^benchmarks/', include('api.v1.benchmarks.urls', namespace='benchmarks')),
-    # reserved # url(r'^register/?$', user_views.RegisterView.as_view(), name='user-register'),
-
-    # reserved # url(r'^register/reset/?$', user_views.ResetView.as_view(), name='user-reset'),
-    # reserved # url(r'^register/send-reset-email/?$', user_views.SendResetEmailView.as_view(), name='user-send-reset-email'),
-
     url(r'^me/password/?$', user_views.ChangePasswordView.as_view(), name='user-change-password'),
 
     url(r'me/security-questions/?$', user_views.SecurityQuestionAnswerView.as_view(), name='user-security-question'),
@@ -75,6 +72,8 @@ urlpatterns = patterns(
     url(r'me/suggested-security-questions/?$', user_views.SecurityQuestionListView.as_view(), name='canned-security-questions'),
 
     url(r'^keep-alive/?$', user_views.KeepAliveView.as_view(), name='keep-alive'),
+
+    url(r'^invites/(?P<pk>\d+)/resend/?$', client_views.ClientResendInviteView.as_view(), name='resend-invite'),
 )
 
 urlpatterns += router.urls

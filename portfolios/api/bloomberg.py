@@ -2,10 +2,14 @@ import gzip
 
 import os
 import pandas as pd
+import logging
 
 from bberg.sftp import Sftp as BbSftp, parse_hist_security_response
 from main.settings import (BLOOMBERG_HOSTNAME, BLOOMBERG_USERNAME,
                            BLOOMBERG_PASSWORD)
+
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 
 
 def get_fx_rates(pairs, begin_date, end_date=None):
@@ -109,10 +113,11 @@ def get_fund_hist_data(ids, begin_date, end_date):
         api = BbSftp(BLOOMBERG_HOSTNAME, BLOOMBERG_USERNAME,
                      BLOOMBERG_PASSWORD)
         hrid, hist_req = api.build_request(hist_headers, hist_fields, ids)
-        print("Using request id: {}".format(hrid))
+        print("Retrieving data from Bloomberg Using request id: {}".format(hrid))
         responses = api.request({hrid: hist_req})
         response = responses[hrid]
     else:
+        logger.info("Reading data from existing history file: {}".format(use_id))
         with gzip.open(use_id) as hist_file:
             response = hist_file.read().decode("utf-8")
     dframes = parse_hist_security_response(response, begin_date, end_date,

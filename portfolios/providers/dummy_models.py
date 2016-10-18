@@ -6,9 +6,11 @@ import copy
 import functools
 import numpy as np
 import pandas as pd
+from datetime import date
 
-from main.management.commands.build_returns import get_price_returns
 from .execution.abstract import State
+from portfolios.returns import get_price_returns
+from common.structures import ChoiceEnum
 
 
 class AssetClassMock(object):
@@ -246,6 +248,60 @@ class ExecutionMock(object):
         self.price = price
         self.executed = executed
         self.amount = amount
+
+
+class InvestmentCycleObservationMock(object):
+    class Cycle(ChoiceEnum):
+        EQ = (0, 'eq')
+        EQ_PK = (1, 'eq_pk')
+        PK_EQ = (2, 'pk_eq')
+        EQ_PIT = (3, 'eq_pit')
+        PIT_EQ = (4, 'pit_eq')
+
+    def __init(self, as_of, recorded, cycle):
+        self.as_of = as_of
+        self.recorded = recorded
+        self.cycle = cycle
+
+
+class InvestmentCyclePredictionMock(object):
+    def __init(self, as_of, pred_dt, eq, eq_pk, pk_eq, eq_pit, pit_eq):
+        _check_numbers(min=0, max=1, numbers=[eq, eq_pk, pk_eq, eq_pit, pit_eq])
+
+        self.as_of = as_of
+        self.pred_dt = pred_dt
+        self.eq = eq
+        self.eq_pk = eq_pk
+        self.pk_eq = pk_eq
+        self.eq_pit = eq_pit
+        self.pit_eq = pit_eq
+
+
+def _check_numbers(min, max, numbers):
+    for n in numbers:
+        if n < min or n > max:
+            raise Exception("number not between 0 and 1")
+
+
+class InvestmentCycleObservationFactory(object):
+    @staticmethod
+    def create_cycles():
+        observations = list()
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 1), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 7), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 11), cycle=InvestmentCycleObservationMock.Cycle.EQ_PK.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 13), cycle=InvestmentCycleObservationMock.Cycle.PK_EQ.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 15), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 18), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2016, 1, 20), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
+        return observations
 
 
 class InstrumentsFactory(object):

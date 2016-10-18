@@ -8,6 +8,7 @@ from common.structures import ChoiceEnum
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, MaxLengthValidator, ValidationError)
 from jsonfield.fields import JSONField
+from pinax.eventlog.models import Log
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +109,8 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Before-tax annual income")
-    atc = models.PositiveIntegerField(help_text="After-tax annual income")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
 
     max_employer_match_percent = models.FloatField(null=True, blank=True,
         help_text="The percent the employer matches of before-tax contributions")
@@ -195,6 +196,7 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
             and invitation.status != EmailInvite.STATUS_COMPLETE \
             and invitation.reason == EmailInvite.REASON_RETIREMENT:
         invitation.onboarding_data = None
+        invitation.tax_transcript = None
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
@@ -215,17 +217,41 @@ class RetirementPlanAccount(models.Model):
 
 
 class RetirementLifestyle(models.Model):
-    cost = models.PositiveIntegerField(help_text="The expected cost in system currency of this lifestyle in today's dollars")
+    cost = models.PositiveIntegerField(help_text="The minimum expected cost in system currency of this lifestyle in today's dollars")
     holidays = models.TextField(help_text="The text for the holidays block")
     eating_out = models.TextField(help_text="The text for the eating out block")
     health = models.TextField(help_text="The text for the health block")
     interests = models.TextField(help_text="The text for the interests block")
     leisure = models.TextField(help_text="The text for the leisure block")
     default_volunteer_days = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),MaxValueValidator(7)],
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of volunteer work days selected for this lifestyle")
 
     default_paid_days = models.PositiveIntegerField(
-        validators=[MinValueValidator(0),MaxValueValidator(7)],
+        validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of paid work days selected for this lifestyle")
 
+
+class RetirementAdvice(models.Model):
+    plan = models.ForeignKey(RetirementPlan, related_name='advice')
+    trigger = models.ForeignKey(Log, related_name='advice')    
+    dt = models.DateTimeField(auto_now_add=True)
+    read = models.DateTimeField(blank=True, null=True)
+    text = models.CharField(max_length=512)
+    action = models.CharField(max_length=12, blank=True)
+    action_url = models.CharField(max_length=512, blank=True)
+    action_data = models.CharField(max_length=512, blank=True)
+
+    def clean(self, *args, **kwargs):
+        if self.action and not self.action_url:
+            # make sure action_url is set if the action is
+            raise ValidationError('must provide action_url if action is set')
+        super(RetirementAdvice, self).save(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(RetirementAdvice, self).save(*args, **kwargs)
+
+    
+    def __str__(self):
+        return "{} Advice".format(self.plan)

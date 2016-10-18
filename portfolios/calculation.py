@@ -1,17 +1,17 @@
 import logging
 import math
 import sys
-from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
-
-# Swap this to use a different prediction algo.
 from django.conf import settings as sys_settings
+
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
+from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
+from main.models import AssetFeatureValue
 
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
@@ -147,7 +147,7 @@ def get_masks(instruments, data_provider):
 
 def get_settings_masks(settings, masks):
     '''
-    Removes benchmarks from the masks and any funds that we don't need.
+    Removes any funds that do not fit within our metric constraints.
     :param settings: The goal.active_settings we want to modify the global masks for
     :param masks: The global asset feature masks
     :return: (settings_symbol_ixs, cvx_masks)
@@ -171,6 +171,8 @@ def get_settings_masks(settings, masks):
                 # Saying a maximum percentage of 100% is superfluous
                 pass
             else:
+                if metric.feature.id not in masks.columns:
+                    raise Unsatisfiable("The are no funds that satisfy metric: {}".format(metric))
                 fids.append(metric.feature.id)
 
     # Do the removals
@@ -189,6 +191,7 @@ def get_settings_masks(settings, masks):
 
     # Convert a global feature masks mask into an index list suitable for the optimisation variables.
     cvx_masks = {fid: masks.loc[settings_mask, fid].nonzero()[0].tolist() for fid in fids}
+
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("CVX masks for settings: {}: {}".format(settings, cvx_masks))
 
@@ -271,27 +274,6 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
 
     lambda_risk = risk_score_to_lambda(risk_score=risk_score, data_provider=data_provider)
     return lambda_risk, constraints
-
-
-def risk_score_to_lambda(risk_score, data_provider):
-    scale = data_provider.get_markowitz_scale()
-    if scale is None:
-        raise Exception("No Markowitz limits available. Cannot convert The risk score into a Markowitz lambda.")
-    scale_date = scale.date
-    if scale_date < (data_provider.get_current_date() - timedelta(days=7)):
-        logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return scale.a * math.pow(scale.b, (risk_score * 100) - 50) + scale.c
-
-
-def lambda_to_risk_score(lam, data_provider):
-    # Turn the markowitz lambda into a risk score
-    scale = data_provider.get_markowitz_scale()
-    if scale is None:
-        raise Exception("No Markowitz limits available. Cannot convert The Markowitz lambda into a risk score.")
-    scale_date = pd.Timestamp(scale.date).to_datetime()
-    if scale_date < (datetime.now().today() - timedelta(days=7)):
-        logger.warn("Most recent Markowitz scale is from {}.".format(scale.date))
-    return (math.log((lam - scale.c)/scale.a, scale.b) + 50) / 100
 
 
 class Unsatisfiable(Exception):
@@ -677,57 +659,11 @@ def make_orderable(weights, original_cost, xs, sigma, mu, lam, constraints, sett
         wts = mcw
 
     if not wts.any():
-        raise Unsatisfiable("Could not find an appropriate allocation given ordering constraints for settings: {} ".format(settings))
+        emsg = "Could not find an appropriate allocation given ordering constraints for settings: {} "
+        raise Unsatisfiable(emsg.format(settings))
 
     logger.info('Ordering cost for settings {}: {}, pre-ordering val: {}'.format(settings.id,
                                                                                  min_cost - original_cost,
                                                                                  original_cost))
 
     return wts[0], min_cost
-
-
-'''
-def get_unconstrained(portfolio_set):
-    covars, samples, instruments, masks = get_instruments()
-    ps_ixs = masks[_PORTFOLIO_SET_MASK_PREFIX + str(portfolio_set.id)].nonzero()[0].tolist()
-    ps_instrs = instruments.iloc[ps_ixs]
-    xs, constraints = get_core_constraints(len(ps_instrs))
-    market_caps = get_market_weights(ps_instrs)
-
-    # Get the views appropriate for the portfolio set
-    views, vers = get_views(portfolio_set, ps_instrs)
-
-    # Pass the data to the BL algorithm to get the the mu and sigma for the optimiser
-    lcovars = covars.iloc[ps_ixs, ps_ixs]
-    mu, sigma = bl_model(lcovars.values,
-                         market_caps.values,
-                         views,
-                         vers,
-                         samples)
-    fid = AssetFeatureValue.objects.get(name='Stocks Only').id
-    stocks_mask = masks.iloc[ps_ixs, masks.columns.get_loc(fid)].nonzero()[0].tolist()
-    logger.debug("Portfolio Set: {}. Unconstrained symbols: {}, stocks: {}".format(portfolio_set.name,
-                                                                                   ps_instrs.index,
-                                                                                   stocks_mask))
-    json_portfolios = {}
-    for allocation in list(np.arange(0, 1.01, 0.01)):
-        nc = constraints + [sum_entries(xs[stocks_mask]) == allocation]
-        weights, cost = markowitz_optimizer_3(xs, sigma, 1.2, mu, nc)
-        if weights.any():
-            weights, er, vol = get_portfolio_stats(ps_instrs, ps_ixs, instruments, lcovars, weights)
-        else:
-            instruments['_weight_'] = 0
-            weights = instruments.groupby('ac')['_weight_'].sum()
-            weights[:] = 1/len(weights)
-            er = 0.0
-            vol = 0.0
-        json_portfolios["{0:.2f}".format(allocation)] = {
-            "allocations": weights.to_dict(),
-            "risk": allocation,
-            "expectedReturn": er * 100,
-            # Vol we return is stddev
-            "volatility": (vol * 100 * 100) ** (1 / 2)
-        }
-
-    return json_portfolios
-'''

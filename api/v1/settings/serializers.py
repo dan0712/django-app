@@ -4,7 +4,8 @@ from api.v1.serializers import ReadOnlyModelSerializer
 from main.models import AssetClass, Ticker, GoalType, ActivityLog, GoalSetting
 from client.models import RiskProfileGroup, RiskProfileQuestion, \
     RiskProfileAnswer, RiskCategory
-from retiresmartz.models import RetirementPlan, RetirementLifestyle
+from retiresmartz.models import RetirementLifestyle
+
 
 class GoalTypeListSerializer(serializers.ModelSerializer):
     """
@@ -64,15 +65,19 @@ class RiskProfileGroupSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RiskProfileGroup
 
+
 class InvestorRiskCategorySerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RiskCategory
+
 
 class RetirementLifestyleSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = RetirementLifestyle
 
+
 class EnumSerializer(serializers.Serializer):
     choices = serializers.SerializerMethodField()
+
     def get_choices(self, obj):
         return [ {'id': k, 'title': v} for k, v in obj.choices() ]

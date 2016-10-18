@@ -13,6 +13,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from common.structures import ChoiceEnum
 from common.utils import d2dt
+from main.constants import GENDER_MALE, GENDERS
 
 
 class PersonalData(models.Model):
@@ -24,9 +25,7 @@ class PersonalData(models.Model):
         MARRIED = 1  # May be married, or any other financially recognised relationship.
 
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
-    gender = models.CharField(max_length=20,
-                              default="Male",
-                              choices=(("Male", "Male"), ("Female", "Female")))
+    gender = models.CharField(max_length=20, default=GENDER_MALE, choices=GENDERS)
     residential_address = models.ForeignKey('address.Address', related_name='+')
     # A person may not have a phone.
     phone_num = PhoneNumberField(null=True, max_length=16)
@@ -57,7 +56,10 @@ class PersonalData(models.Model):
             'medicare_number': f([AU], str),
             'ssn': f([US], str, True),
             'politically_exposed': f([US], bool, True),
-            'tax_transcript': f([US], str),
+            'tax_transcript': f([US], str),  # url to file
+            'tax_transcript_data': f([US], str),  # JSON Object
+            'social_security_statement': f([US], str),  # url to file
+            'social_security_statement_data': f([US], str),  # JSON Object
         }
 
         VE = curry(lambda m: ValueError({'regional_data': m}))
@@ -111,14 +113,17 @@ class PersonalData(models.Model):
 
     @cached_property
     def country(self):
-        return self.residential_address.region.country
+        try:
+            return self.residential_address.region.country
+        except:
+            return None
 
 
 class NeedApprobation(models.Model):
     class Meta:
         abstract = True
 
-    is_accepted = models.BooleanField(default=False, editable=False)
+    is_accepted = models.BooleanField(default=False)
 
     def approve(self):
         if self.is_accepted is True:

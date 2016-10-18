@@ -1,12 +1,16 @@
 from datetime import date, timedelta
 from unittest.mock import MagicMock
 
+import numpy as np
+import pandas as pd
+
 from django.test import TestCase
 
 from api.v1.tests.factories import InvestmentCycleObservationFactory, InvestmentCyclePredictionFactory, \
     DailyPriceFactory, TickerFactory
 from main.models import InvestmentCycleObservation
-from portfolios.prediction.investment_clock import InvestmentClock
+from portfolios.exceptions import OptimizationException
+from portfolios.prediction.investment_clock import InvestmentClock, CYCLE_LABEL
 from portfolios.providers.data.django import DataProviderDjango
 
 
@@ -88,6 +92,68 @@ class InvestmentClockTest(TestCase):
         self.populate_probabilities()
         self.populate_returns()
         mu, sigma = self.predictor.get_fund_predictions()
-        self.assertAlmostEqual(mu[1], 2.728974, 6)
-        self.assertAlmostEqual(mu[2], -0.340570, 6)
-        self.assertAlmostEqual(mu[3], -0.294249, 6)
+        self.assertAlmostEqual(mu[1], 2.689327, 6)
+        self.assertAlmostEqual(mu[2], -0.345612, 6)
+        self.assertAlmostEqual(mu[3], -0.297295, 6)
+
+    def test_get_fund_predictions_no_returns(self):
+        self.populate_probabilities()
+        with self.assertRaises(OptimizationException):
+            self.predictor.get_fund_predictions()
+
+    def test_get_cycle_obs(self):
+        predictors = self.predictor.get_cycle_obs(self.last_cycle_start)
+        equal_values = sum(np.array([0, 1, 2, 0, 3, 4]) == predictors.values)
+        self.assertTrue(equal_values == 6)
+
+    def test_expected_returns_prob_v1(self):
+        probs = np.array((0.1, 0.15, 0.25, 0.1, 0.4)).reshape((1, 5))
+        data = [
+            [0.01,  0.00, 0],
+            [0.02,  0.00, 0],
+            [0.01,  0.01, 1],
+            [0.02,  0.01, 1],
+            [0.01, -0.02, 2],
+            [0.02, -0.01, 2],
+            [0.01,  0.00, 0],
+            [0.02,  0.00, 0],
+            [0.01, -0.03, 3],
+            [0.02, -0.03, 3],
+            [0.01,  0.04, 4],
+            [0.01,  0.04, 4],
+        ]
+        df = pd.DataFrame(data,
+                          index=pd.date_range('1/1/2011', periods=12, freq='b'),
+                          columns=['A', 'B', CYCLE_LABEL])
+
+        # Average simple returns in phases for A are:
+        # 0: (1.01 * 1.02 * 1.01 * 1.02) ** (1/4) = 1.01498768
+        # 1: (1.01 * 1.02) ** (1/2) = 1.01498768
+        # 2: (1.01 * 1.02) ** (1/2) = 1.01498768
+        # 3: (1.01 * 1.02) ** (1/2) = 1.01498768
+        # 4: (1.01 * 1.01) ** (1/2) = 1.01
+
+        # Probability weighted
+        # 1.01498768 * 0.1 + 1.01498768 * 0.15 + 1.01498768 * 0.25 + 1.01498768 * 0.1 + 1.01 * 0.4 = 1.012992608
+
+        # Average simple returns in phases for B are:
+        # 0: (1.0 * 1.0 * 1.0 * 1.0) ** (1/4) = 1.0
+        # 1: (1.01 * 1.01) ** (1/2) = 1.01
+        # 2: (0.98 * 0.99) ** (1/2) = 0.9849873
+        # 3: (0.97 * 0.97) ** (1/2) = 0.97
+        # 4: (1.04 * 1.04) ** (1/2) = 1.04
+
+        # Probability weighted simple returns for B
+        # 1.0 * 0.1 + 1.01 * 0.15 + 0.9849873 * 0.25 + 0.97 * 0.1 + 1.04 * 0.4 = 1.010746825
+
+        # Just to prove the math works, average converted log returns in phases for B are the same as those calculated
+        # for simple returns:
+        # 0: exp((log(1.0) + log(1.0) + log(1.0) + log(1.0)) / 4) = 1.0
+        # 1: exp((log(1.01) + log(1.01)) / 2) = 1.01
+        # 2: exp((log(0.98) + log(0.99)) / 2) = 0.9849873
+        # 3: exp((log(0.97) + log(0.97)) / 2) = 0.97
+        # 4: exp((log(1.04) + log(1.04)) / 2) = 1.04
+
+        returns = self.predictor._expected_returns_prob_v1(df, probs)
+        self.assertAlmostEqual(returns['A'], 0.012993, 6)
+        self.assertAlmostEqual(returns['B'], 0.010747, 6)

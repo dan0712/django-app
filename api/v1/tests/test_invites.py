@@ -1,31 +1,31 @@
+import os
+import json
+from datetime import date
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 from django.test import Client as DjangoClient
 from common.constants import GROUP_SUPPORT_STAFF
-from main.constants import ACCOUNT_TYPES, ACCOUNT_TYPE_PERSONAL
-from .factories import AdvisorFactory, SecurityQuestionFactory, \
-    EmailInviteFactory, GroupFactory
-
+from main.constants import ACCOUNT_TYPE_PERSONAL
+from .factories import AdvisorFactory, SecurityQuestionFactory, EmailInviteFactory
 from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
-    ClientAccountFactory, ClientFactory, ExternalAssetFactory, GoalFactory, \
-    GroupFactory, RegionFactory, RiskProfileGroupFactory, UserFactory
-
+    ClientAccountFactory, ClientFactory, GroupFactory, RegionFactory, RiskProfileGroupFactory
 from client.models import EmailInvite
-from django.test.client import MULTIPART_CONTENT
-import json
+from main.constants import EMPLOYMENT_STATUS_FULL_TIME, GENDER_MALE
 
 
 class InviteTests(APITestCase):
     def setUp(self):
+        self.maxDiff = None
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         # client with some personal assets, cash balance and goals
         self.region = RegionFactory.create()
         self.betasmartz_client_address = AddressFactory(region=self.region)
         self.risk_group = RiskProfileGroupFactory.create(name='Personal Risk Profile Group')
-        self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=0,
+        self.personal_account_type = AccountTypeRiskProfileGroupFactory.create(account_type=ACCOUNT_TYPE_PERSONAL,
                                                                                risk_profile_group=self.risk_group)
         self.advisor = AdvisorFactory.create()
         self.question_one = SecurityQuestionFactory.create()
@@ -114,6 +114,10 @@ class InviteTests(APITestCase):
                          msg='/api/v1/invites/:key should have invitation status ACCEPTED')
         self.assertEqual('onboarding_data' in response.data, False,
                          msg='/api/v1/invites/:key should not show onboarding_data to anonymous')
+        # verify firm data is present in response
+        self.assertEqual(response.data['firm_logo'], lookup_invite.advisor.firm.logo.url)
+        self.assertEqual(response.data['firm_colored_logo'], lookup_invite.advisor.firm.colored_logo)
+        self.assertEqual(response.data['firm_name'], lookup_invite.advisor.firm.name)
 
     def test_register_logout_then_login(self):
         # Bring an invite key, get logged in as a new user
@@ -162,9 +166,9 @@ class InviteTests(APITestCase):
             'password': PW,
         }
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='A user still onboarding can log in')
-        self.assertIn('sessionid', response.cookies)
+        # redirects to frontend client onboarding
+        self.assertRedirects(response, '/client/onboarding/' + lookup_invite.invite_key, fetch_redirect_response=False)
+        self.assertIn('sessionid', response.cookies, msg='A user still onboarding can log in')
 
         response = self.client.get(me_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
@@ -207,11 +211,19 @@ class InviteTests(APITestCase):
                          msg='/api/v1/invites/:key should have invitation status ACCEPTED')
         self.assertEqual('onboarding_data' in response.data, True,
                          msg='/api/v1/invites/:key should show onboarding_data to user')
+        self.assertEqual(response.data['risk_profile_group'], self.risk_group.id)
+
+        # Make sure the user now has access to the risk-profile-groups endpoint
+        rpg_url = reverse('api:v1:settings-risk-profile-groups-list')
+        response = self.client.get(rpg_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['id'], self.risk_group.id)
 
         # PUT: /api/v1/invites/:key
         # Submit with onboarding_data
         onboarding = {'onboarding_data': {'foo': 'bar'}}
         response = self.client.put(invite_detail_url, data=onboarding)
+
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Onboarding must accept json objects')
@@ -220,16 +232,62 @@ class InviteTests(APITestCase):
         self.assertEqual(lookup_invite.onboarding_data['foo'], 'bar',
                          msg='should save onboarding_file')
 
-        # Submit with onboarding_file_1
-        fh = SimpleUploadedFile("test.txt", b'123')
-        onboarding = {'onboarding_file_1': fh}
-        response = self.client.put(invite_detail_url, files=onboarding,
-                                   content_type=MULTIPART_CONTENT)
-        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
+        # PUT: /api/v1/invites/:key
+        # Tax transcript upload and parsing
+        expected_tax_transcript_data = {'sections': [{'name': 'Introduction', 'fields': {'SPOUSE NAME': 'SPOUSE M LAST', 'SPOUSE SSN': '222-22-2222', 'ADDRESS': '999 AVENUE RD  CITY, ST 10.000-90.00-800', 'NAME': 'FIRST M', 'SSN': '111-11-1111', 'FILING STATUS': 'Married Filing Joint'}}, {'name': 'Income', 'fields': {'TOTAL INCOME': '$0.00'}}]}
+        with open(os.path.join(settings.BASE_DIR, 'pdf_parsers', 'samples', 'sample.pdf'), mode="rb") as tax_transcript:
+            data = {
+                'tax_transcript': tax_transcript
+            }
+            response = self.client.put(invite_detail_url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='Onboarding must accept files')
+                         msg='Updating onboarding with tax_transcript PDF returns OK')
+        self.assertNotEqual(response.data['tax_transcript_data'], None,
+                            msg='tax_transcript_data is in the response and not None')
+        self.assertEqual(response.data['tax_transcript_data'], expected_tax_transcript_data,
+                         msg='Parsed tax_transcript_data matches expected')
+
+
+        self.assertEqual(response._headers['content-type'], ('Content-Type', 'application/json'),
+                         msg='Response content type is application/json after upload')
+
+        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
+
+        # create client and make sure tax_transcript data is carried over properly
+        url = reverse('api:v1:client-list')
+        address = {
+            "address": "123 My Street\nSome City",
+            "post_code": "112233",
+            "region": {
+                "name": "New South Wales",
+                "country": "AU",
+                "code": "NSW",
+            }
+        }
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
+        data = {
+            "advisor_agreement": True,
+            "betasmartz_agreement": True,
+            "date_of_birth": date(2016, 9, 21),
+            "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
+            "gender": GENDER_MALE,
+            "income": 1234,
+            "phone_num": "+41524204249",
+            "residential_address": address,
+            "regional_data": json.dumps(regional_data)
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        regional_data_load = json.loads(response.data['regional_data'])
+        self.assertNotEqual(regional_data_load['tax_transcript'], None)
+        self.assertEqual(regional_data_load['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'],
+                         expected_tax_transcript_data['sections'][0]['fields']['FILING STATUS'],
+                         msg='Parsed tax_transcript_data FILING STATUS parsed successfully')
 
     def test_complete_invitation(self):
 
@@ -267,7 +325,6 @@ class InviteTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Onboarding must accept json')
 
-
         betasmartz_client = ClientFactory.create(user=user)
         betasmartz_client_account = ClientAccountFactory(primary_owner=betasmartz_client, account_type=ACCOUNT_TYPE_PERSONAL, confirmed=False)
         betasmartz_client_account.confirmed = True
@@ -276,3 +333,38 @@ class InviteTests(APITestCase):
         invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(invite.onboarding_data, None)
         self.assertEqual(invite.status, EmailInvite.STATUS_COMPLETE)
+
+    def test_resend_client_invite(self):
+        """
+        Allow authenticated users to resend email invites for onboarding
+        """
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT,
+                                           reason=EmailInvite.REASON_PERSONAL_INVESTING)
+        url = reverse('api:v1:client-user-register')
+        data = {
+            'first_name': invite.first_name,
+            'last_name': invite.last_name,
+            'invite_key': invite.invite_key,
+            'password': 'test',
+            'question_one': 'what is the first answer?',
+            'question_one_answer': 'answer one',
+            'question_two': 'what is the second answer?',
+            'question_two_answer': 'answer two',
+        }
+
+        # Accept an invitation and create a user
+        response = self.client.post(url, data)
+        invite = EmailInvite.objects.get(pk=invite.pk)
+
+        self.client.logout()
+        url = reverse('api:v1:resend-invite', args=[invite.pk])
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(invite.user)
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(mail.outbox[-1].subject, 'BetaSmartz client sign up form url',
+                         msg='Email outbox has email with expected resend email subject')
+        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
+        self.assertEqual(lookup_invite.send_count, 1)

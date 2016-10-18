@@ -1,9 +1,9 @@
 from collections import defaultdict
-
-from portfolios.calculation import *
+from datetime import timedelta
+import pandas as pd
 from portfolios.providers.dummy_models import AssetClassMock, \
     AssetFeatureValueMock, InstrumentsFactory, MarkowitzScaleMock, \
-    PortfolioSetMock
+    PortfolioSetMock, InvestmentCycleObservationFactory
 from portfolios.returns import get_prices
 from .abstract import DataProviderAbstract
 
@@ -30,6 +30,7 @@ class DataProviderBacktester(DataProviderAbstract):
         self.dates = InstrumentsFactory.get_dates()
         self.__current_date = self.sliding_window_length
         self.time_constrained_tickers = []
+        self.investment_cycles = InvestmentCycleObservationFactory.create_cycles()
 
     def move_date_forward(self):
         # this function is only used in backtesting
@@ -42,6 +43,10 @@ class DataProviderBacktester(DataProviderAbstract):
             print("cannot move date forward")
         return success
 
+    def get_instrument_daily_prices(self, ticker):
+        prices = get_prices(ticker, self.get_start_date(), self.get_current_date())
+        return prices
+
     def get_current_date(self):
         date = self.dates[self.__current_date]
         return pd.Timestamp(date).to_datetime()
@@ -51,7 +56,7 @@ class DataProviderBacktester(DataProviderAbstract):
         return pd.Timestamp(date).to_datetime()
 
     def get_fund_price_latest(self, ticker):
-        prices = get_prices(ticker, self.get_start_date(), self.get_current_date())
+        prices = self.get_instrument_daily_prices(ticker)
         prices = prices.irow(-1)
         return prices
 
@@ -119,3 +124,16 @@ class DataProviderBacktester(DataProviderAbstract):
 
     def set_instrument_cache(self, data):
         self.cache = data
+
+    def get_investment_cycles(self):
+        return self.investment_cycles
+
+    def get_last_cycle_start(self):
+        pass
+
+    def get_cycle_obs(self, begin_date):
+        pass
+
+    def get_probs_df(self, begin_date):
+        pass
+

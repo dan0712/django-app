@@ -4,6 +4,7 @@ environment = 'dev'
 SITE_URL = "http://{}.betasmartz.com".format(environment)
 ALLOWED_HOSTS = ["*"]
 DEBUG = True
+TEMPLATE_DEBUG = True
 
 DATABASES = {
     'default': {
