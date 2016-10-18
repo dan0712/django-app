@@ -288,6 +288,11 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                     new_tx.setting = setting
                     new_tx.save()
             else:
+                # validate i_data fields
+                for i_data in tx_data:
+                    logger.error(i_data)
+                    if 'enabled' not in i_data.keys():
+                        raise ValidationError('Recurring transaction is missing enabled field.')
                 RecurringTransaction.objects.bulk_create(
                     [RecurringTransaction(setting=setting,
                                           schedule=i_data['schedule'],

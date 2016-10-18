@@ -239,15 +239,14 @@ class GoalTests(APITestCase):
         response = self.client.put(url, settings_changes)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # bad transaction
+        # bad transaction missing enabled field
         data = serializer.data
         del data['enabled']
-        print(data)
         settings_changes = {
             'recurring_transactions': [data, serializer2.data, ],
         }
         response = self.client.put(url, settings_changes)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_put_settings_no_memo(self):
         # Test PUT with no memo
