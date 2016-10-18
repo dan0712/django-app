@@ -204,7 +204,9 @@ class RiskProfileAnswerFactory(factory.django.DjangoModelFactory):
     question = factory.SubFactory(RiskProfileQuestionFactory)
     order = factory.Sequence(lambda n: int(n))
     text = factory.Sequence(lambda n: 'RiskProfileAnswer %d' % n)
-    score = factory.Sequence(lambda n: float(n))
+    b_score = factory.Sequence(lambda n: float(n))
+    a_score = factory.Sequence(lambda n: float(n))
+    s_score = factory.Sequence(lambda n: float(n))
 
 
 class ClientFactory(factory.django.DjangoModelFactory):

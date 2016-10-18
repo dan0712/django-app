@@ -171,18 +171,16 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             # No risk questions assigned, so we can't say anything about their willingness to take risk.
             return None
 
+        aqs = self.risk_profile_responses.all()
         if not self.risk_profile_responses:
-            # No risk responses give, so we can't say anything about their willingness to take risk.
+            # No risk responses given, so we can't say anything about their willingness to take risk.
             return None
 
-        aqs = self.risk_profile_responses.all()
         if not qids == set(aqs.values_list('question_id', flat=True)):
             # Risk responses are not complete, so we can't say anything about their willingness to take risk.
             return None
 
-        return (
-            self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
-        )
+        return aqs
 
     @cached_property
     def on_track(self):
@@ -202,10 +200,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         :return: Tuple of floats [0-1] (b_score, a_score, s_score)
         """
         answers = self.current_risk_profile_responses
-        if not answers: return None
+        if not answers:
+            return None
 
-        scores = (answers.values('b_score', 'a_score', 's_score')
-            .aggregate(b_score=Sum('b_score'),a_score=Sum('a_score'), s_score=Sum('s_score')))
+        scores = (answers.values('b_score', 'a_score', 's_score').aggregate(b_score=Sum('b_score'),
+                                                                            a_score=Sum('a_score'),
+                                                                            s_score=Sum('s_score')))
 
         extents = (
             RiskProfileAnswer.objects.filter(question__group=self.risk_profile_group)
@@ -220,10 +220,13 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             )
         )
 
+        max_b = extents['max_b_sum']
+        max_a = extents['max_a_sum']
+        max_s = extents['max_s_sum']
         return (
-            scores['b_score'] / extents['max_b_sum'],
-            scores['a_score'] / extents['max_a_sum'],
-            scores['s_score'] / extents['max_s_sum'],
+            scores['b_score'] / max_b if max_b > 0 else 0,
+            scores['a_score'] / max_a if max_a > 0 else 0,
+            scores['s_score'] / max_s if max_s > 0 else 0,
         )
 
 
