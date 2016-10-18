@@ -226,7 +226,7 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data[6], (16808, 0))
 
     def test_put_settings_recurring_transactions(self):
-        # Test PUT with bad transaction data
+        # Test PUT with good transaction data
         tx1 = RecurringTransactionFactory.create()
         tx2 = RecurringTransactionFactory.create()
         url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
@@ -236,9 +236,17 @@ class GoalTests(APITestCase):
         settings_changes = {
             'recurring_transactions': [serializer.data, serializer2.data, ],
         }
-        print(settings_changes)
         response = self.client.put(url, settings_changes)
-        print(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # bad transaction
+        data = serializer.data
+        del data['enabled']
+        print(data)
+        settings_changes = {
+            'recurring_transactions': [data, serializer2.data, ],
+        }
+        response = self.client.put(url, settings_changes)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_put_settings_no_memo(self):
