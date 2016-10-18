@@ -200,6 +200,7 @@ def process_risk(weights, goal, idata, data_provider, execution_provider):
 
 def perturbate_risk(min_weights, removals, goal):
     position_lots = get_tax_lots(goal)
+
     # for each lot get information whether removing this lot would increase/decrease total portfolio risk
     # start removing lots that get our portfolio risk in right direction, starting from lowest tax lost
     # iterate until our risk == desired risk
@@ -215,7 +216,6 @@ def perturbate_risk(min_weights, removals, goal):
 def perturbate_withdrawal(goal):
     # start getting rid of lots in - by 1 share and always check if we are already in 100% weight
     position_lots = get_tax_lots(goal)
-
     desired_lots = position_lots[:]
     weights = get_weights(desired_lots, goal.available_balance)
 
@@ -231,23 +231,24 @@ def perturbate_withdrawal(goal):
 def get_tax_lots(goal):
     '''
     returns position lots sorted by increasing unit tax cost for a given goal
-    :param goal:
+    :param goal
     :return:
     '''
     year_ago = timezone.now() - timedelta(days=366)
-    position_lots = PositionLot.objects.filter(quantity__gt=0) \
-                        .filter(execution_distribution__transaction__from_goal=goal) \
-                        .annotate(price_entry=F('execution_distribution__execution__price'),
-                                  executed=F('execution_distribution__execution__executed'),
-                                  price=F('execution_distribution__execution__asset__unit_price'),
-                                  ticker_id=F('execution_distribution__execution__asset_id')) \
-                        .annotate(tax_bracket=Case(
-                          When(executed__gt=year_ago, then=Value(TAX_BRACKET_LESS1Y)),
-                          When(executed__lte=year_ago, then=Value(TAX_BRACKET_MORE1Y)),
-                          output_field=FloatField())) \
-                        .annotate(unit_tax_cost=(F('price') - F('price_entry')) * F('tax_bracket')) \
-                        .values('id', 'price_entry', 'quantity', 'executed', 'unit_tax_cost', 'ticker_id', 'price') \
-                        .order_by('unit_tax_cost')
+    position_lots = PositionLot.objects\
+                    .filter(execution_distribution__transaction__from_goal=goal)\
+                    .filter(quantity__gt=0)\
+                    .annotate(price_entry=F('execution_distribution__execution__price'),
+                              executed=F('execution_distribution__execution__executed'),
+                              ticker_id=F('execution_distribution__execution__asset_id'),
+                              price=F('execution_distribution__execution__asset__unit_price'))\
+                    .annotate(tax_bracket=Case(
+                      When(executed__gt=year_ago, then=Value(TAX_BRACKET_LESS1Y)),
+                      When(executed__lte=year_ago, then=Value(TAX_BRACKET_MORE1Y)),
+                      output_field=FloatField())) \
+                    .annotate(unit_tax_cost=(F('price') - F('price_entry')) * F('tax_bracket')) \
+                    .values('id', 'price_entry', 'quantity', 'executed', 'unit_tax_cost', 'ticker_id', 'price') \
+                    .order_by('unit_tax_cost')
     return position_lots
 
 
@@ -277,7 +278,6 @@ def perturbate_mix(goal, opt_inputs):
                         repeat until solution found
     """
     position_lots = get_tax_lots(goal)
-
     metrics = GoalMetric.objects.\
         filter(group__settings__goal_approved=goal).\
         filter(type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX)

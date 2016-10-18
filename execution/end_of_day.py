@@ -16,6 +16,8 @@ from django.db.models.functions import Coalesce
 import numpy as np
 from datetime import datetime, timedelta
 from django.utils import timezone
+from main.management.commands.rebalance import get_tax_lots
+from main.management.commands.rebalance import TAX_BRACKET_LESS1Y, TAX_BRACKET_MORE1Y
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -199,35 +201,35 @@ def process_apex_fills():
 
 def create_sale(ticker_id, volume, current_price, execution_distribution):
     # start selling PositionLots from 1st until quantity sold == volume
-    year_ago = timezone.now() - timedelta(days=365)
-    position_lots = PositionLot.objects\
-        .filter(execution_distribution__execution__asset_id=ticker_id)\
-        .annotate(price=F('execution_distribution__execution__price'),
-                  executed=F('execution_distribution__execution__executed'))\
-        .annotate(tax_bracket=Case(
-                      When(executed__gte=year_ago, then=Value(tax_bracket_lt1Y)),
-                      When(executed__lt=year_ago, then=Value(tax_bracket_egt1Y)),
-                      output_field=FloatField()))\
-        .annotate(unit_tax_cost=(current_price - F('price')) * F('tax_bracket'))\
-        .values('id', 'price', 'quantity', 'executed', 'unit_tax_cost')\
-        .order_by('-unit_tax_cost')
+    year_ago = timezone.now() - timedelta(days=366)
+    position_lots = PositionLot.objects \
+                    .filter(execution_distribution__execution__asset_id=ticker_id)\
+                    .filter(quantity__gt=0)\
+                    .annotate(price_entry=F('execution_distribution__execution__price'),
+                              executed=F('execution_distribution__execution__executed'),
+                              ticker_id=F('execution_distribution__execution__asset_id'))\
+                    .annotate(tax_bracket=Case(
+                      When(executed__gt=year_ago, then=Value(TAX_BRACKET_LESS1Y)),
+                      When(executed__lte=year_ago, then=Value(TAX_BRACKET_MORE1Y)),
+                      output_field=FloatField())) \
+                    .annotate(unit_tax_cost=(current_price - F('price_entry')) * F('tax_bracket')) \
+                    .order_by('unit_tax_cost')
 
     left_to_sell = abs(volume)
     for lot in position_lots:
         if left_to_sell == 0:
             break
 
-        new_quantity = max(lot['quantity'] - left_to_sell, 0)
-        left_to_sell -= lot['quantity'] - new_quantity
-        held_lot = PositionLot.objects.get(id=lot['id'])
-        held_lot.quantity = new_quantity
-        held_lot.save()
+        new_quantity = max(lot.quantity - left_to_sell, 0)
+        left_to_sell -= lot.quantity - new_quantity
+        lot.quantity = new_quantity
+        lot.save()
         if new_quantity == 0:
-            held_lot.delete()
+            lot.delete()
 
-        Sale.objects.create(quantity=- (lot['quantity'] - new_quantity),
+        Sale.objects.create(quantity=- (lot.quantity - new_quantity),
                             sell_execution_distribution=execution_distribution,
-                            buy_execution_distribution=held_lot.execution_distribution)
+                            buy_execution_distribution=lot.execution_distribution)
 
 
 def example_usage_with_IB():

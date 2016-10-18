@@ -777,11 +777,11 @@ class Fixture1:
                                              volume=quantity,
                                              order=mor)
         execution = ExecutionFactory.create(asset=ticker,
-                                             volume=quantity,
-                                             order=mor,
-                                             price=price,
-                                             executed=executed,
-                                             amount=quantity*price)
+                                            volume=quantity,
+                                            order=mor,
+                                            price=price,
+                                            executed=executed,
+                                            amount=quantity*price)
         transaction = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
                                                 to_goal=None,
                                                 from_goal=goal,
