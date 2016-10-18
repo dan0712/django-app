@@ -11,6 +11,7 @@ from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cos
 from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
+from main.models import AssetFeatureValue
 
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'

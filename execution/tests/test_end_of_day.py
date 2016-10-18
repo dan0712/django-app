@@ -241,7 +241,3 @@ class BaseTest(TestCase):
                                                      ticker__symbol='SPY')
         self.assertTrue(instrument1.instrument_id == 'SPY_APEX')
         self.assertTrue(instrument2.instrument_id == 'SPY_IB')
-
-
-
-

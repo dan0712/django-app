@@ -16,10 +16,12 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from scipy.optimize import minimize_scalar
 
-from main.models import Goal, GoalMetric, Position
+from main.models import Goal, GoalMetric, PositionLot
 from portfolios.algorithms.markowitz import markowitz_cost
 from portfolios.calculation import Unsatisfiable, get_instruments, \
-    optimize_settings, run_bl
+    optimize_settings
+
+from portfolios.prediction.bl_v1 import run_bl
 from portfolios.markowitz_scale import lambda_to_risk_score
 from portfolios.providers.data.django import DataProviderDjango
 
@@ -35,13 +37,13 @@ def get_weights(goal):
     """
     res = []
     total = 0.0
-    for position in Position.objects.filter(goal=goal).all():
+    for position in PositionLot.objects.filter(goal=goal).all():
         res.append((position.ticker.symbol, position.value, position.ticker.features.values_list('id', flat=True)))
         total += position.value
     return [(sym, val/total, fids) for sym, val, fids in res]
 
 
-def get_risk_score(goal, weights, idata):
+def get_risk_score(goal, weights, idata, data_provider, execution_provider):
     """
     Returns the risk score for the provided weights.
     :param goal:
@@ -54,18 +56,20 @@ def get_risk_score(goal, weights, idata):
         return 0.0
 
     # Get the cost of a clean optimisation using the current constraints.
-    current_cost = optimize_settings(goal.active_settings, idata)[1]
+    current_cost = optimize_settings(goal.approved_settings, idata, data_provider, execution_provider)[1]
 
     # Set up the required data
-    covars, samples, instruments, masks = idata
+    covars, instruments, masks = idata
     instruments['_weight_'] = 0.0
     # Build the indexes from the passed in weights
     goal_symbol_ixs = []
-    for sym, weight, _ in weights:
-        goal_symbol_ixs.append(instruments.index.get_loc(sym))
-        instruments.loc[sym, '_weight_'] = weight
+    for id, weight in weights.items():
+        ticker = data_provider.get_ticker(id)
+        goal_symbol_ixs.append(instruments.index.get_loc(ticker.symbol))
+        instruments.loc[ticker.symbol, '_weight_'] = weight
 
     goal_instruments = instruments.iloc[goal_symbol_ixs]
+    samples = data_provider.get_instrument_daily_prices(ticker).count()
     mu, sigma = run_bl(instruments, covars, goal_instruments, samples, goal.portfolio_set)
     ws = np.expand_dims(goal_instruments['_weight_'].values, 0)
 

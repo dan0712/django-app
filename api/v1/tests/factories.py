@@ -80,6 +80,17 @@ class PortfolioSetFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'PortfolioSet %d' % n)
     risk_free_rate = factory.Sequence(lambda n: n * .01)
 
+    @factory.post_generation
+    def asset_classes(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.asset_classes.add(item)
+
 
 class FiscalYearFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -263,6 +274,46 @@ class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(ClientAccountFactory)
 
 
+class AssetFeatureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeature
+
+    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
+
+
+class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeatureValue
+
+    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
+    feature = factory.SubFactory(AssetFeatureFactory)
+
+    @factory.post_generation
+    def assets(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.assets.add(item)
+
+
+class GoalMetricFactory(factory.django.DjangoModelFactory):
+    """
+    By default create a random risk score metric.
+    """
+    class Meta:
+        model = GoalMetric
+
+    type = factory.Sequence(lambda n: random.randint(0, 1))
+    comparison = factory.Sequence(lambda n: random.randint(0, 2))
+    rebalance_type = factory.Sequence(lambda n: random.randint(0, 1))
+    rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
 class GoalMetricGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = GoalMetricGroup
@@ -406,6 +457,17 @@ class TickerFactory(factory.django.DjangoModelFactory):
     region = factory.SubFactory(MainRegionFactory)
     data_api_param = factory.Sequence(lambda n: str(n))
 
+    @factory.post_generation
+    def features(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.features.add(item)
+
 
 class TransactionFactory(factory.django.DjangoModelFactory):
     """
@@ -442,21 +504,6 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
 
 
-class AssetFeatureFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeature
-
-    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
-
-
-class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeatureValue
-
-    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
-    feature = factory.SubFactory(AssetFeatureFactory)
-
-
 class GoalMetricFactory(factory.django.DjangoModelFactory):
     """
     By default create a random risk score metric.
@@ -466,7 +513,7 @@ class GoalMetricFactory(factory.django.DjangoModelFactory):
     group = factory.SubFactory(GoalMetricGroupFactory)
     type = GoalMetric.METRIC_TYPE_RISK_SCORE
     comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
-    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+    rebalance_type = factory.sequence(lambda n: random.randint(0, 1))
     rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
 
@@ -477,6 +524,20 @@ class SupervisorFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     firm = factory.SubFactory(FirmFactory)
+
+
+class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AuthorisedRepresentative
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+    letter_of_authority = factory.django.FileField(filename='tests/test_letter_of_authority.txt')
+    betasmartz_agreement = True
+    is_accepted = True
+    is_confirmed = True
+
+    residential_address = factory.SubFactory(AddressFactory)
 
 
 class RetirementPlanFactory(factory.django.DjangoModelFactory):

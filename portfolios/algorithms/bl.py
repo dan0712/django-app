@@ -1,8 +1,9 @@
 import numpy as np
 from numpy.linalg import inv
 from statsmodels.stats.correlation_tools import cov_nearest
+import logging
 
-from portfolios.bl_model import logger
+logger = logging.getLogger("portfolios.algorithms.bl")
 
 
 def bl_model(sigma, w_tilde, p, v, n, c=1.0, lambda_bar=1.2):

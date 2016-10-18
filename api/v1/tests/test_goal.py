@@ -16,7 +16,9 @@ from api.v1.tests.factories import MarkowitzScaleFactory, GoalTypeFactory, Execu
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
 
+
 from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Portfolio, Goal
+
 from main.risk_profiler import max_risk, MINIMUM_RISK
 from .factories import ContentTypeFactory, TransactionFactory, PositionLotFactory
 
@@ -24,9 +26,15 @@ from main.management.commands.populate_test_data import populate_prices, populat
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, GoalSettingFactory, TickerFactory, \
-    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory
+    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory, ContentTypeFactory, PositionLotFactory, ExecutionDistributionFactory
 
 from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer
+
+from django.contrib.contenttypes.models import ContentType
+
+from api.v1.tests.factories import GoalFactory, TickerFactory, \
+    TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory
+import numpy as np
 
 mocked_now = datetime(2016, 1, 1)
 
@@ -472,6 +480,36 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_goal_metric(self):
+        t1 = TickerFactory.create(symbol='SPY', unit_price=5)
+        t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
+
+        equity = AssetFeatureValueFactory.create(name='equity', assets=[t1,t2])
+
+        goal_settings = GoalSettingFactory.create()
+
+        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX, rebalance_thr=0.05,
+                                 configured_val=0.5, rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE)
+
+        goal = GoalFactory.create(active_settings=goal_settings)
+
+        Fixture1.create_execution_details(goal, t1, 1, 2, date(2014, 6, 1))
+        Fixture1.create_execution_details(goal, t2, 1, 2, date(2014, 6, 1))
+
+        metric = GoalMetric.objects.get(group__settings__goal_active=goal)
+
+        self.assertTrue(10.0 / goal.available_balance == metric.measured_val)
+
+        self.assertTrue((metric.measured_val - metric.configured_val) / metric.rebalance_thr == metric.drift_score)
+
+        metric.rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+        self.assertTrue(((metric.measured_val - metric.configured_val) / metric.configured_val) / metric.rebalance_thr \
+                        == metric.drift_score)
+
+
+    def test_sum_stocks_for_goal(self):
+        self.content_type = ContentTypeFactory.create()
+
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_add_goal_0_target(self):
         # tickers for testing portfolio calculations in goals endpoint
@@ -562,6 +600,7 @@ class GoalTests(APITestCase):
     def test_create_goal(self):
         self.bonds_index = MarketIndexFactory.create()
         self.stocks_index = MarketIndexFactory.create()
+
         self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
         self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
         # Add the asset classes to the portfolio set
@@ -707,3 +746,4 @@ class GoalTests(APITestCase):
         url = '/api/v1/goals/{}/settings/{}'.format(goal.id, 99999)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+

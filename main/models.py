@@ -40,8 +40,10 @@ from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
+
 from django.utils.functional import cached_property
 from django.contrib.staticfiles.templatetags.staticfiles import static
+import numpy as np
 
 logger = logging.getLogger('main.models')
 
@@ -1718,7 +1720,7 @@ class Goal(models.Model):
         # Experimental
         goal_metric = GoalMetric.objects \
             .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE) \
-            .filter(group__settings__goal_approved=self) \
+            .filter(group__settings__goal_active=self) \
             .first()
 
         if goal_metric:
@@ -2047,7 +2049,7 @@ class GoalMetric(models.Model):
     rebalance_thr = models.FloatField(
         help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
-    measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
+
 
     @classmethod
     def risk_level_range(cls, risk_level):
@@ -2061,6 +2063,16 @@ class GoalMetric(models.Model):
 
             if self.configured_val < risk_max / 100:
                 return risk_min
+
+    @property
+    def measured_val(self):
+        asset_ids = AssetFeatureValue.objects.all().filter(id=self.feature.id)\
+            .annotate(asset_id=F('assets__id'))\
+            .values_list('asset_id', flat=True)
+
+        goal = Goal.objects.get(active_settings__metric_group_id=self.group_id)
+        sum = float(np.sum([pos['price']*pos['quantity'] if pos['ticker_id'] in asset_ids else 0 for pos in goal.get_positions_all()]))
+        return sum/goal.available_balance
 
     @property
     def risk_level(self):
@@ -2085,9 +2097,9 @@ class GoalMetric(models.Model):
             return 0.0
 
         if self.rebalance_type == self.REBALANCE_TYPE_ABSOLUTE:
-            return self.rebalance_thr / (self.measured_val - self.configured_val)
+            return (self.measured_val - self.configured_val) / self.rebalance_thr
         else:
-            return self.rebalance_thr / ((self.measured_val - self.configured_val) / self.self.configured_val)
+            return ((self.measured_val - self.configured_val) / self.configured_val) / self.rebalance_thr
 
     def __str__(self):
         if self.type == 0:
