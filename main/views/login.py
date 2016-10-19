@@ -72,7 +72,7 @@ def login(request, template_name='registration/login.html',
 
         # custom redirect
         redirect_to = request.GET.get('next',
-                                      reverse_lazy('client:app',
+                                      reverse_lazy('client:page',
                                                    args=(user.client.id,))
                                       if is_client
                                       else reverse_lazy('advisor:overview')

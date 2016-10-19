@@ -326,7 +326,7 @@ class ClientTests(APITestCase):
         }
         response = self.client.post(url, data)
         # redirect to application
-        self.assertRedirects(response, reverse('client:app', args=[usr.client.id, ]))
+        self.assertRedirects(response, reverse('client:page', args=[usr.client.id, ]))
 
         # can retrieve profile info ok
         url = reverse('api:v1:user-me')
