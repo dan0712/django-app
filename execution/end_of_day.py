@@ -45,33 +45,33 @@ def get_options():
     return opts
 
 
+@transaction.atomic()
 def reconcile_cash_client_account(account):
-    with transaction.atomic():
-        account_cash = account.cash_balance
-        goals = account.goals.all()
+    account_cash = account.cash_balance
+    goals = account.goals.all()
 
-        goals_cash = 0
-        for goal in goals:
-            goals_cash += goal.cash_balance
+    goals_cash = 0
+    for goal in goals:
+        goals_cash += goal.cash_balance
 
-        ib_account = account.ib_account
-        ib_cash = ib_account_cash[ib_account.ib_account]
+    ib_account = account.ib_account
+    ib_cash = ib_account_cash[ib_account.ib_account]
 
-        difference = ib_cash - (account_cash + goals_cash)
-        if difference > 0:
-            #there was deposit
-            account_cash += difference
-        elif difference < 0:
-            #withdrawals
-            if abs(difference) < account_cash:
-                account_cash -= abs(difference)
-            else:
-                logger.exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
-                raise Exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
-                # we have a problem - we should not be able to withdraw more than account_cash
-        account.cash_balance = account_cash
-        account.save()
-        return difference
+    difference = ib_cash - (account_cash + goals_cash)
+    if difference > 0:
+        #there was deposit
+        account_cash += difference
+    elif difference < 0:
+        #withdrawals
+        if abs(difference) < account_cash:
+            account_cash -= abs(difference)
+        else:
+            logger.exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
+            raise Exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
+            # we have a problem - we should not be able to withdraw more than account_cash
+    account.cash_balance = account_cash
+    account.save()
+    return difference
 
 
 def reconcile_cash_client_accounts():
@@ -168,17 +168,16 @@ def process_apex_fills():
             execution = Execution.objects.create(asset=ticker, volume=volume, price=fill['price'],
                                                  amount=volume*fill['price'], order=mor, executed=fill['executed'])
             ExecutionApexFill.objects.create(apex_fill=apex_fill, execution=execution)
-            transaction = Transaction.objects.create(reason=Transaction.REASON_ORDER,
-                                                     amount=volume*fill['price'],
-                                                     to_goal=er.goal, executed=fill['executed'])
-            ed = ExecutionDistribution.objects.create(execution=execution, transaction=transaction, volume=volume,
+            trans = Transaction.objects.create(reason=Transaction.REASON_ORDER,
+                                               amount=volume*fill['price'],
+                                               to_goal=er.goal, executed=fill['executed'])
+            ed = ExecutionDistribution.objects.create(execution=execution, transaction=trans, volume=volume,
                                                       execution_request=er)
 
             if volume > 0:
                 PositionLot.objects.create(quantity=volume, execution_distribution=ed)
             else:
                 create_sale(ticker.id, volume, fill['price'], ed)
-
 
     for mor_id in complete_mor_ids:
         mor = MarketOrderRequest.objects.get(id=mor_id)
