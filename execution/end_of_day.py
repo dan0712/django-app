@@ -135,6 +135,7 @@ def send_apex_order(apex_order):
     apex_order.save()
 
 
+@transaction.atomic
 def process_apex_fills():
     '''
     from existing apex fills create executions, execution distributions, transactions and positionLots - pro rata all fills
