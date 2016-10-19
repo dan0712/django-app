@@ -2,7 +2,7 @@ import logging
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .managers import RetirementPlanQuerySet
+from .managers import RetirementPlanQuerySet, RetirementAdviceQueryset
 from main.models import TransferPlan
 from common.structures import ChoiceEnum
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
@@ -146,6 +146,9 @@ class RetirementPlan(models.Model):
         super(RetirementPlan, self).__init__(*args, **kwargs)
         self.__was_agreed = self.agreed_on
 
+    def __str__(self):
+        return "RetirementPlan {}".format(self.id)
+
     @property
     def was_agreed(self):
         return self.__was_agreed
@@ -231,27 +234,26 @@ class RetirementLifestyle(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(7)],
         help_text="The default number of paid work days selected for this lifestyle")
 
+    def __str__(self):
+        return "RetirementLifestyle {}".format(self.id)
+
 
 class RetirementAdvice(models.Model):
     plan = models.ForeignKey(RetirementPlan, related_name='advice')
-    trigger = models.ForeignKey(Log, related_name='advice')    
+    trigger = models.ForeignKey(Log, related_name='advice')
     dt = models.DateTimeField(auto_now_add=True)
     read = models.DateTimeField(blank=True, null=True)
     text = models.CharField(max_length=512)
     action = models.CharField(max_length=12, blank=True)
     action_url = models.CharField(max_length=512, blank=True)
     action_data = models.CharField(max_length=512, blank=True)
+    objects = RetirementAdviceQueryset.as_manager()
 
-    def clean(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         if self.action and not self.action_url:
             # make sure action_url is set if the action is
             raise ValidationError('must provide action_url if action is set')
         super(RetirementAdvice, self).save(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super(RetirementAdvice, self).save(*args, **kwargs)
-
-    
     def __str__(self):
-        return "{} Advice".format(self.plan)
+        return "{} Advice {}".format(self.plan, self.id)

@@ -1,6 +1,5 @@
 from django.conf.urls import patterns, url, include
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-
 from .user import views as user_views
 from .settings import views as settings_views
 from .client import views as client_views
@@ -24,6 +23,11 @@ retirement_plans_router = client_router.register(r'retirement-plans',
                                                 retiresmartz_views.RetiresmartzViewSet,
                                                 base_name='client-retirement-plans',
                                                 parents_query_lookups=['client'])
+retirement_advice_router = retirement_plans_router.register(r'advice-feed',
+                                                retiresmartz_views.RetiresmartzAdviceViewSet,
+                                                base_name='client-retirement-advice',
+                                                parents_query_lookups=['plan__client', 'plan'])
+
 external_assets_router = client_router.register(r'external-assets',
                                                 client_views.ExternalAssetViewSet,
                                                 base_name='client-external-assets',

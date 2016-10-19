@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import factory
-
+import json
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
@@ -15,7 +15,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, \
                         RecurringTransaction
-from retiresmartz.models import RetirementPlan
+from retiresmartz.models import RetirementPlan, RetirementAdvice
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -561,3 +561,12 @@ class RecurringTransactionFactory(factory.django.DjangoModelFactory):
     amount = factory.LazyAttribute(lambda n: int(random.randrange(10000)))
     growth = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     schedule = factory.Sequence(lambda n: 'RRULE %s' % n)
+
+
+class RetirementAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementAdvice
+
+    plan = factory.SubFactory(RetirementPlanFactory)
+    # trigger = factory.SubFactory(EventLogFactory)
+    text = factory.Sequence(lambda n: 'Retirement Advice %s' % n)

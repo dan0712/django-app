@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
-from retiresmartz.models import RetirementPlan, RetirementPlanEinc
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
 import json
 
 
@@ -201,6 +201,48 @@ class RetirementPlanEincWritableSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(RetirementPlanEincWritableSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            for field in self.fields.values():
+                field.required = False
+
+
+class RetirementAdviceReadSerializer(ReadOnlyModelSerializer):
+    """
+        Read-Only RetirementAdvice serializer, used for 
+        get request for retirement-plans advice-feed endpoint
+    """
+    class Meta:
+        model = RetirementAdvice
+        fields = (
+            'id',
+            'dt',
+            'trigger',
+            'text',
+            'read',
+            'action',
+            'action_url',
+            'action_data',
+        )
+
+
+class RetirementAdviceWritableSerializer(serializers.ModelSerializer):
+    """
+        UPDATE PUT/POST RetirementAdvice serializer, used for 
+        put requests for retirement-plans advice-feed endpoint
+    """
+    class Meta:
+        model = RetirementAdvice
+        fields = (
+            'text',
+            'read',
+            'action',
+            'action_url',
+            'action_data',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RetirementAdviceWritableSerializer, self).__init__(*args, **kwargs)
         request = self.context.get('request')
         if request.method == 'PUT':
             for field in self.fields.values():
