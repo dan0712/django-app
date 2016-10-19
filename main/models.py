@@ -280,6 +280,8 @@ class AssetClass(models.Model):
                                     db_index=True)
     investment_type = models.ForeignKey(InvestmentType, related_name='asset_classes')
 
+    # Also has reverse field 'portfolio_sets' from the PortfolioSet model.
+
     def save(self,
              force_insert=False,
              force_update=False,

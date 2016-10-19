@@ -458,17 +458,6 @@ class TickerFactory(factory.django.DjangoModelFactory):
     region = factory.SubFactory(MainRegionFactory)
     data_api_param = factory.Sequence(lambda n: str(n))
 
-    @factory.post_generation
-    def features(self, create, items, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
-
-        if items:
-            # A list of groups were passed in, use them
-            for item in items:
-                self.features.add(item)
-
 
 class TransactionFactory(factory.django.DjangoModelFactory):
     """

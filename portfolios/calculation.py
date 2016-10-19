@@ -11,7 +11,7 @@ from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cos
 from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
-from main.models import AssetFeatureValue
+from main.models import AssetFeatureValue, GoalMetric
 
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
@@ -249,9 +249,13 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
 
             feature_assets = cvx_masks[metric.feature.id]
             # If we have no possible symbols, and we have a metric with a non-zero allocation, fail.
-            if len(feature_assets) == 0 and metric.comparison != 2:
-                emsg = "Settings metric: {} is not satisfiable. There are no funds available to fulfil the constraint."
-                raise Unsatisfiable(emsg.format(metric))
+            if len(feature_assets) == 0:
+                if metric.comparison != GoalMetric.METRIC_COMPARISON_MAXIMUM:
+                    emsg = "Settings metric: {} is not satisfiable. There are no funds available to fulfil the constraint."
+                    raise Unsatisfiable(emsg.format(metric))
+                # If we don't have assets for the feature, don't worry about inserting maximum constraints,
+                # as the allocation will always be zero for that feature.
+                continue
             if metric.comparison == 0:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
@@ -278,7 +282,7 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
 
 class Unsatisfiable(Exception):
     def __init__(self, msg, req_funds=None):
-        self.msg = msg
+        self.msg = str(msg)
         self.req_funds = req_funds
 
     def __str__(self):
