@@ -133,6 +133,30 @@ class InvestmentClockTest(TestCase):
         last_start = self.predictor.get_last_cycle_start()
         self.assertTrue(dates[4] == last_start)
 
+    def test_last_cycle_start5(self):
+        dates = Fixture1.populate_observations('00033444000112220033', date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[3] == last_start)
+
+    def test_last_cycle_start6(self):
+        dates = Fixture1.populate_observations(111222000334440001122200, date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[6] == last_start)
+
+    def test_last_cycle_start7(self):
+        dates = Fixture1.populate_observations(1112220003344400011222, date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[3] == last_start)
+
+    def test_last_cycle_start8(self):
+        dates = Fixture1.populate_observations('0344400011122200033', date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[1] == last_start)
+
     def test_expected_returns_prob_v1(self):
         probs = np.array((0.1, 0.15, 0.25, 0.1, 0.4)).reshape((1, 5))
         data = [
