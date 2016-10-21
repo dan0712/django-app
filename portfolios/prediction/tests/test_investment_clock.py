@@ -123,15 +123,15 @@ class InvestmentClockTest(TestCase):
         self.assertTrue(dates[7] == last_start)
 
     def test_last_cycle_start3(self):
-        dates = Fixture1.populate_observations(3344400011222003344, date(2016, 1, 1))
-        last_start = self.predictor.get_last_cycle_start()
-        self.assertTrue(dates[2] == last_start)
-
-    def test_last_cycle_start4(self):
         dates = Fixture1.populate_observations(33440001122000334400, date(2016, 1, 1))
         self.predictor.get_cycle_obs(date(2016, 1, 1))
         last_start = self.predictor.get_last_cycle_start()
         self.assertTrue(dates[4] == last_start)
+
+    def test_last_cycle_start4(self):
+        dates = Fixture1.populate_observations(3344400011222003344, date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[2] == last_start)
 
     def test_last_cycle_start5(self):
         dates = Fixture1.populate_observations('00033444000112220033', date(2016, 1, 1))
