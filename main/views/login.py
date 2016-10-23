@@ -13,8 +13,10 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.shortcuts import redirect
+from geolocation.geolocation import check_ip_city
 import logging
-
+import os
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 logger = logging.getLogger('main.views.login')
 
 
@@ -35,6 +37,12 @@ class AuthenticationFormWithInactiveUsersOkay(AuthenticationForm):
 def login(request, template_name='registration/login.html',
           authentication_form=AuthenticationFormWithInactiveUsersOkay,
           extra_context=None):
+
+    if not check_ip_city(request, 'Chicago') and (ENVIRONMENT == 'demo' or ENVIRONMENT == 'production'):
+        messages.error(request, 'Sorry, the BetaSmartz demo is only available to the Chicago area for the moment.')
+        form = authentication_form(request)
+        context = {'form': form}
+        return TemplateResponse(request, template_name, context)
 
     # TODO: maybe to add expected user role (based on url) to extra_context
     response = auth_views_login(request,

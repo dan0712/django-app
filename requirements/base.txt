@@ -84,3 +84,7 @@ git+git://github.com/blampe/IbPy.git
 
 # main migrations rely on this
 django-recurrence==1.3.0
+
+
+# geolocation
+pygeoip==0.3.2
