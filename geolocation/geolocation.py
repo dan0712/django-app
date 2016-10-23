@@ -11,17 +11,17 @@ rawdata = pygeoip.GeoIP(geolite_db)
 
 
 def check_ip_city(request, city=None):
-	"""
-	returns True if the given request is from an IP address
-	that falls within the given location.
-	"""
-	remote_address = request.META.get('HTTP_X_FORWARDED_FOR')or request.META.get('REMOTE_ADDR')
-	data = rawdata.record_by_name(remote_address)
+    """
+    returns True if the given request is from an IP address
+    that falls within the given location.
+    """
+    remote_address = request.META.get('HTTP_X_FORWARDED_FOR')or request.META.get('REMOTE_ADDR')
+    data = rawdata.record_by_name(remote_address)
 
-	x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-	if x_forwarded_for:
-		data = rawdata.record_by_name(x_forwarded_for)
-	if data:
-		if data['city'] == city:
-			return True
-	return False
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        data = rawdata.record_by_name(x_forwarded_for)
+    if data:
+        if data['city'] == city:
+            return True
+    return False
