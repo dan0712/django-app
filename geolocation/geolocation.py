@@ -16,7 +16,7 @@ def check_ip_city(request, city=None):
 	that falls within the given location.
 	"""
 	remote_address = request.META.get('HTTP_X_FORWARDED_FOR')or request.META.get('REMOTE_ADDR')
-	logger.error(remote_address)
+	logger.info('Checking geolocation for %s' % remote_address)
 	data = rawdata.record_by_name(remote_address)
 
 	x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
