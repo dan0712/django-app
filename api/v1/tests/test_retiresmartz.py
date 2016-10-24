@@ -62,6 +62,7 @@ class RetiresmartzTests(APITestCase):
         response = self.client.post(url, self.base_plan_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['btc'], 1000)
+        self.assertNotEqual(response.data['id'], None)
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
         self.assertEqual(saved_plan.btc, 1000)
 

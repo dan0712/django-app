@@ -127,7 +127,9 @@ class RetirementPlan(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text = "The maximum allowable risk appetite for this retirement plan, based on our risk model")
 
-    calculated_life_expectancy = models.PositiveIntegerField()
+    # calculated_life_expectancy should be calculated,
+    # read-only don't let client create/update
+    calculated_life_expectancy = models.PositiveIntegerField(blank=True, null=True)
     selected_life_expectancy = models.PositiveIntegerField()
 
     agreed_on = models.DateTimeField(null=True, blank=True)

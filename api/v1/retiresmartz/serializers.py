@@ -123,7 +123,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'desired_risk',
             'recommended_risk',
             'max_risk',
-            'calculated_life_expectancy',
             'selected_life_expectancy',
 
             'portfolio',
