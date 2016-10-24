@@ -14,7 +14,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, \
-                        RecurringTransaction
+                        RecurringTransaction, Platform
 from retiresmartz.models import RetirementPlan, RetirementAdvice
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -570,3 +570,10 @@ class RetirementAdviceFactory(factory.django.DjangoModelFactory):
     plan = factory.SubFactory(RetirementPlanFactory)
     # trigger = factory.SubFactory(EventLogFactory)
     text = factory.Sequence(lambda n: 'Retirement Advice %s' % n)
+
+
+class PlatformFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Platform
+
+    portfolio_set = factory.SubFactory(PortfolioSetFactory)
