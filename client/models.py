@@ -171,18 +171,28 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             # No risk questions assigned, so we can't say anything about their willingness to take risk.
             return None
 
+        aqs = self.risk_profile_responses.all()
         if not self.risk_profile_responses:
-            # No risk responses give, so we can't say anything about their willingness to take risk.
+            # No risk responses given, so we can't say anything about their willingness to take risk.
             return None
 
-        aqs = self.risk_profile_responses.all()
         if not qids == set(aqs.values_list('question_id', flat=True)):
             # Risk responses are not complete, so we can't say anything about their willingness to take risk.
             return None
 
-        return (
-            self.risk_profile_responses.filter(question__group=self.risk_profile_group)  # All answers for the group
-        )
+        return aqs
+
+    @cached_property
+    def on_track(self):
+        """
+            If any of client's accounts are off track,
+            return False.  If all accounts are
+            on track, return True.
+        """
+        for account in self.accounts:
+            if not account.on_track:
+                return False
+        return True
 
     def get_risk_profile_bas_scores(self):
         """
@@ -190,10 +200,12 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         :return: Tuple of floats [0-1] (b_score, a_score, s_score)
         """
         answers = self.current_risk_profile_responses
-        if not answers: return None
+        if not answers:
+            return None
 
-        scores = (answers.values('b_score', 'a_score', 's_score')
-            .aggregate(b_score=Sum('b_score'),a_score=Sum('a_score'), s_score=Sum('s_score')))
+        scores = (answers.values('b_score', 'a_score', 's_score').aggregate(b_score=Sum('b_score'),
+                                                                            a_score=Sum('a_score'),
+                                                                            s_score=Sum('s_score')))
 
         extents = (
             RiskProfileAnswer.objects.filter(question__group=self.risk_profile_group)
@@ -208,10 +220,13 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             )
         )
 
+        max_b = extents['max_b_sum']
+        max_a = extents['max_a_sum']
+        max_s = extents['max_s_sum']
         return (
-            scores['b_score'] / extents['max_b_sum'],
-            scores['a_score'] / extents['max_a_sum'],
-            scores['s_score'] / extents['max_s_sum'],
+            scores['b_score'] / max_b if max_b > 0 else 0,
+            scores['a_score'] / max_a if max_a > 0 else 0,
+            scores['s_score'] / max_s if max_s > 0 else 0,
         )
 
 
@@ -348,11 +363,16 @@ class ClientAccount(models.Model):
 
     @property
     def fee(self):
+        platform = Platform.objects.first()
+        if platform:
+            platform_fee = platform.fee
+        else:
+            platform_fee = 0
         if self.custom_fee != 0:
-            return self.custom_fee + Platform.objects.first().fee
+            return self.custom_fee + platform_fee
         else:
             return self.primary_owner.advisor.firm.fee + \
-                   Platform.objects.first().fee
+                   platform_fee
 
     @property
     def fee_fraction(self):
@@ -444,12 +464,17 @@ class ClientAccount(models.Model):
     def account_type_name(self):
         return constants.ACCOUNT_TYPES[self.account_type][1]
 
-    @property
+    @cached_property
     def on_track(self):
-        on_track = True
-        for goal in self.goals.all():
-            on_track = on_track and goal.on_track
-        return on_track
+        """
+            If any of client's goals are off track,
+            return False.  If all goals are
+            on track, return True.
+        """
+        for goal in self.goals:
+            if not goal.on_track:
+                return False
+        return True
 
     @property
     def goals_length(self):
@@ -514,7 +539,7 @@ class RiskProfileGroup(models.Model):
     A way to group a set of predefined risk profile questions to
     be asked together.
     """
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField(null=True, blank=True)
 
     # Also has properties:
@@ -621,7 +646,7 @@ class EmailInvite(models.Model):
     advisor = models.ForeignKey('main.Advisor', related_name='invites')
 
     first_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
     user = models.OneToOneField('main.User', related_name='invitation',
@@ -642,7 +667,7 @@ class EmailInvite(models.Model):
                                          default=STATUS_CREATED)
 
     onboarding_data = JSONField(null=True, blank=True)
-    onboarding_file_1 = models.FileField(null=True, blank=True)
+    tax_transcript = models.FileField(null=True, blank=True)
 
     def __str__(self):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
@@ -679,5 +704,14 @@ class EmailInvite(models.Model):
 
 
 class RiskCategory(models.Model):
+    name = models.CharField(max_length=64, null=False, blank=False, unique=True)
     upper_bound = models.FloatField(validators=[MinValueValidator(0),
                                                 MaxValueValidator(1)])
+
+    class Meta:
+        ordering = ['upper_bound']
+        verbose_name = 'Risk Category'
+        verbose_name_plural = 'Risk Categories'
+
+    def __str__(self):
+        return '[<{}] {}'.format(self.upper_bound, self.name)

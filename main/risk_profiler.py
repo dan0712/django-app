@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from main.constants import ACCOUNT_TYPE_JOINT, ACCOUNT_TYPE_PERSONAL, ACCOUNT_TYPE_SMSF
 
 # The risk score if we don't have enough info to say anything.
-NEUTRAL_RISK = 0.5
+MINIMUM_RISK = 0.1
 
 
 def scale(val, src, dst):
@@ -81,12 +81,13 @@ class GoalSettingRiskProfile(object):
     def _recommend_risk(cls, scores):
         """
         Recommend a risk score for the given goal setting
-        :param setting: The goal setting to build the recommedation for
+        :param scores: The B, A and S scores as a tuple
         :return: A Float [0-1]
         """
-        if not scores: return NEUTRAL_RISK
-        else: B, A, S = scores
-        return min(B, A, S)
+        if not scores:
+            return MINIMUM_RISK
+        else:
+            return min(scores)
 
     @classmethod
     def _max_risk(cls, scores):
@@ -94,7 +95,7 @@ class GoalSettingRiskProfile(object):
         Get the max risk [0-1] for a goal, based on
         :return: A risk ability score as a float between 0 and 1
         """
-        if not scores: return NEUTRAL_RISK
+        if not scores: return MINIMUM_RISK
         else: B, A, S = scores
         return min(A, S)
 

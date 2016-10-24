@@ -4,7 +4,7 @@ from django.forms import Textarea
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 
 from client.models import (AccountTypeRiskProfileGroup, Client, ClientAccount,
-    RiskProfileAnswer, RiskProfileGroup, RiskProfileQuestion)
+    RiskProfileAnswer, RiskProfileGroup, RiskProfileQuestion, RiskCategory)
 from main.admin import approve_application
 
 
@@ -66,6 +66,11 @@ class RiskProfileAnswerAdmin(admin.ModelAdmin):
     list_display = ('text', 'question', 'order')
 
 
+class RiskCategoryAdmin(admin.ModelAdmin):
+    model = RiskCategory
+    list_display = ('name', 'upper_bound')
+
+
 admin.site.register(Client, ClientAdmin)
 admin.site.register(ClientAccount, ClientAccountAdmin)
 admin.site.register(RiskProfileGroup, RiskProfileGroupAdmin)
@@ -73,3 +78,4 @@ admin.site.register(AccountTypeRiskProfileGroup,
                     AccountTypeRiskProfileGroupAdmin)
 admin.site.register(RiskProfileQuestion, RiskProfileQuestionAdmin)
 admin.site.register(RiskProfileAnswer, RiskProfileAnswerAdmin)
+admin.site.register(RiskCategory, RiskCategoryAdmin)

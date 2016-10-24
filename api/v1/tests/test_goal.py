@@ -1,8 +1,6 @@
 import json
 from decimal import Decimal
-from datetime import date, timedelta
-
-from datetime import datetime
+from datetime import date, timedelta, datetime
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -14,21 +12,19 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-from api.v1.tests.factories import MarkowitzScaleFactory, GoalTypeFactory
+from .factories import MarkowitzScaleFactory, GoalTypeFactory, \
+    ExecutionDistributionFactory, RecurringTransactionFactory, \
+    ContentTypeFactory, TransactionFactory, PositionLotFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
-
-from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Portfolio, Goal
-from main.risk_profiler import max_risk
-from .factories import ContentTypeFactory, TransactionFactory, PositionLotFactory
-
+from main.models import GoalMetric, Execution, Transaction, Goal
+from main.risk_profiler import max_risk, MINIMUM_RISK
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, GoalSettingFactory, TickerFactory, \
-    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory
-
-from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer
+    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory, AssetFeatureValueFactory
+from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer, RecurringTransactionCreateSerializer
 
 mocked_now = datetime(2016, 1, 1)
 
@@ -46,7 +42,7 @@ class GoalTests(APITestCase):
         self.risk_score_metric = {
             "type": GoalMetric.METRIC_TYPE_RISK_SCORE,
             "comparison": GoalMetric.METRIC_COMPARISON_EXACTLY,
-            "configured_val": 0.4,
+            "configured_val": MINIMUM_RISK,
             "rebalance_type": GoalMetric.REBALANCE_TYPE_RELATIVE,
             "rebalance_thr": 0.1
         }
@@ -229,6 +225,29 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data[5], (16807, Decimal('0.060606')))
         self.assertEqual(response.data[6], (16808, 0))
 
+    def test_put_settings_recurring_transactions(self):
+        # Test PUT with good transaction data
+        tx1 = RecurringTransactionFactory.create()
+        tx2 = RecurringTransactionFactory.create()
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        serializer = RecurringTransactionCreateSerializer(tx1)
+        serializer2 = RecurringTransactionCreateSerializer(tx2)
+        settings_changes = {
+            'recurring_transactions': [serializer.data, serializer2.data, ],
+        }
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # bad transaction missing enabled field
+        data = serializer.data
+        del data['enabled']
+        settings_changes = {
+            'recurring_transactions': [data, serializer2.data, ],
+        }
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_put_settings_no_memo(self):
         # Test PUT with no memo
         old_events = Log.objects.count()
@@ -362,8 +381,8 @@ class GoalTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['max'], 0.5)
-        self.assertEqual(response.data['recommended'], 0.5)
+        self.assertEqual(response.data['max'], MINIMUM_RISK)
+        self.assertEqual(response.data['recommended'], MINIMUM_RISK)
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_all_portfolios(self):
@@ -393,6 +412,7 @@ class GoalTests(APITestCase):
         # Create a risk score metric for the settings
         goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
         goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        goal_settings.completion_date = timezone.now().date() - timedelta(days=365)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
         response = self.client.get(url)
@@ -472,6 +492,36 @@ class GoalTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_goal_metric(self):
+        t1 = TickerFactory.create(symbol='SPY', unit_price=5)
+        t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
+
+        equity = AssetFeatureValueFactory.create(name='equity', assets=[t1,t2])
+
+        goal_settings = GoalSettingFactory.create()
+
+        GoalMetricFactory.create(group=goal_settings.metric_group, feature=equity, type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX, rebalance_thr=0.05,
+                                 configured_val=0.5, rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE)
+
+        goal = GoalFactory.create(active_settings=goal_settings)
+
+        Fixture1.create_execution_details(goal, t1, 1, 2, date(2014, 6, 1))
+        Fixture1.create_execution_details(goal, t2, 1, 2, date(2014, 6, 1))
+
+        metric = GoalMetric.objects.get(group__settings__goal_active=goal)
+
+        self.assertTrue(10.0 / goal.available_balance == metric.measured_val)
+
+        self.assertTrue((metric.measured_val - metric.configured_val) / metric.rebalance_thr == metric.drift_score)
+
+        metric.rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+        self.assertTrue(((metric.measured_val - metric.configured_val) / metric.configured_val) / metric.rebalance_thr \
+                        == metric.drift_score)
+
+
+    def test_sum_stocks_for_goal(self):
+        self.content_type = ContentTypeFactory.create()
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_add_goal_0_target(self):
@@ -559,43 +609,63 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data['selected_settings']['target'], 500)
         self.assertEqual(response.data['on_track'], True)
 
-    def test_sum_stocks_for_goal(self):
-        self.content_type = ContentTypeFactory.create()
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_create_goal(self):
+        self.bonds_index = MarketIndexFactory.create()
+        self.stocks_index = MarketIndexFactory.create()
+
         self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
         self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
-                                     benchmark_content_type=self.content_type,
-                                     etf=True)
+        # Add the asset classes to the portfolio set
+        self.portfolio_set = PortfolioSetFactory.create()
+        self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class,
+                                                 benchmark=self.bonds_index)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                                  benchmark=self.stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+        account = ClientAccountFactory.create(primary_owner=Fixture1.client1())
+        # setup some inclusive goal settings
+        goal_settings = GoalSettingFactory.create()
+        goal_type = GoalTypeFactory.create()
+        url = '/api/v1/goals'
+        data = {
+            'account': account.id,
+            'name': 'Fancy new goal',
+            'type': goal_type.id,
+            'target': 15000.0,
+            'completion': "2016-01-01",
+            'initial_deposit': 5000,
+            'ethical': True,
+        }
+        # unauthenticated 403
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # authenticated 200
+        self.client.force_authenticate(account.primary_owner.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_goal_positions(self):
         goal = GoalFactory.create()
 
-        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec = Execution.objects.create(asset=fund1,
-                                        volume=10,
-                                        order=order,
-                                        price=2,
-                                        executed=date(2014, 6, 1),
-                                        amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist = ExecutionDistribution.objects.create(execution=exec, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist)
-        weight_stocks = goal.stock_balance
-        weight_bonds = goal.bond_balance
-        weight_core = goal.core_balance
-        self.assertTrue(weight_stocks == 100)
-        self.assertTrue(weight_bonds == 0)
-        self.assertTrue(weight_core == 100)
+        url = '/api/v1/goals/{}/positions'.format(goal.pk)
+        self.client.force_authenticate(goal.account.primary_owner.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='Goal positions endpoint returns ok for Goal with no positions')
 
-    def test_get_positions_all(self):
+        # Create a 6 month old execution, transaction and a distribution that caused the transaction
         fund = TickerFactory.create(unit_price=2.1)
         fund2 = TickerFactory.create(unit_price=4)
-        goal = GoalFactory.create()
-        today = date(2016, 1, 1)
-        # Create a 6 month old execution, transaction and a distribution that caused the transaction
         order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
         exec1 = Execution.objects.create(asset=fund,
                                          volume=10,
@@ -609,7 +679,7 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
+        dist1 = ExecutionDistributionFactory.create(execution=exec1, transaction=t1, volume=10)
         PositionLotFactory(quantity=10, execution_distribution=dist1)
 
         order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
@@ -625,7 +695,7 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=10)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=5)
+        dist2 = ExecutionDistributionFactory.create(execution=exec2, transaction=t2, volume=5)
         PositionLotFactory(quantity=5, execution_distribution=dist2)
 
         order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
@@ -641,64 +711,52 @@ class GoalTests(APITestCase):
                                        status=Transaction.STATUS_EXECUTED,
                                        executed=date(2014, 6, 1),
                                        amount=4)
-        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=1)
+        dist3 = ExecutionDistributionFactory.create(execution=exec3, transaction=t3, volume=1)
         PositionLotFactory(quantity=1, execution_distribution=dist3)
-
-        positions = goal.get_positions_all()
-
-        self.assertTrue(positions[0]['quantity'] == 15)
-        self.assertTrue(positions[1]['quantity'] == 1)
-
-    def test_get_goal_positions(self):
-        client = Fixture1.client1()
-        account = ClientAccountFactory.create(primary_owner=client)
-        goal = GoalFactory.create(account=account)
-        url = '/api/v1/goals/{}/positions'.format(goal.pk)
-        self.client.force_authenticate(client.user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='Goal positions endpoint returns ok for Goal with no positions')
-        # add a position
-        # lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
-        #     annotate(ticker_id=F('execution_distribution__execution__asset__id'),
-        #              price=F('execution_distribution__execution__asset__unit_price'))\
-        #     .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
-        fund = TickerFactory.create(unit_price=2.1)
-        fund2 = TickerFactory.create(unit_price=4)
-        today = date(2016, 1, 1)
-        # Create a 6 month old execution, transaction and a distribution that caused the transaction
-        order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec1 = Execution.objects.create(asset=fund,
-                                         volume=10,
-                                         order=order1,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist1)
-
-        order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec2 = Execution.objects.create(asset=fund,
-                                         volume=5,
-                                         order=order2,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=10)
-        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=10)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=5)
-        PositionLotFactory(quantity=5, execution_distribution=dist2)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          msg='Goal positions endpoint returns ok for Goal with positions')
+        self.assertEqual(len(response.data), 2)
+        self.assertDictEqual(response.data[0], {'ticker': fund.id, 'quantity': 15.0})  # Sum of the two fills
+        self.assertDictEqual(response.data[1], {'ticker': fund2.id, 'quantity': 1.0})
+
+    def test_archive_goal(self):
+        client = Fixture1.client1()
+        account = ClientAccountFactory.create(primary_owner=client)
+        goal = GoalFactory.create(account=account)
+        url = '/api/v1/goals/{}/archive'.format(goal.pk)
+
+        # First login as client and flag the goal as archive-requested
+        self.client.force_authenticate(client.user)
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.ARCHIVE_REQUESTED.value)
+
+        # Then login as Advisor and actually archive it
+        self.client.force_authenticate(client.advisor.user)
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(id=goal.id).state, Goal.State.CLOSING.value)
+
+    def test_get_goal_settings_by_id(self):
+        goal = Fixture1.goal1()
+        goal.approve_selected()
+        setting = GoalSettingFactory.create()
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+        # unauthenticated
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # authenticated
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data, [])
+        self.assertEqual(response.data.get('id'), setting.id)
+
+        # 404 check
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, 99999)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+

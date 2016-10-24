@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 from django.db.models.fields import TextField
 from django.forms.widgets import Textarea
 from django.shortcuts import HttpResponseRedirect, render_to_response
+
 from genericadmin.admin import BaseGenericModelAdmin, GenericAdminModelAdmin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -14,8 +15,7 @@ from main.models import AccountGroup, ActivityLog, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     ProxyAssetClass, ProxyTicker, \
-    Transaction, User, View, InvestmentType, FiscalYear, Ticker, \
-    AssetFeature, PositionLot, AssetFeePlan
+    Transaction, User, View, InvestmentType, FiscalYear, Ticker, PositionLot, AssetFeePlan
 from retiresmartz.models import RetirementLifestyle
 
 admin.site.register(AccountGroup)

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class AdvisorClients(TemplateView, AdvisorView):
     model = Client
     template_name = 'advisor/clients/list.html'
-    col_dict = {"full_name": 1, "current_balance": 2, 'email_address': 3}
+    col_dict = {"full_name": 1, 'status': 2, "current_balance": 3, 'email_address': 4}
 
     def __init__(self, *args, **kwargs):
         super(AdvisorClients, self).__init__(*args, **kwargs)
@@ -65,7 +65,7 @@ class AdvisorClients(TemplateView, AdvisorView):
 
         for client in set(pre_clients.distinct().all()):
             relationship = "Primary" if client.advisor == self.advisor else "Secondary"
-            clients.append([client.pk, client.full_name, client.total_balance,
+            clients.append([client.pk, client.full_name, client.on_track, client.total_balance,
                             client.email, relationship])
 
         reverse = self.sort_dir != "asc"

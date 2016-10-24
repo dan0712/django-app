@@ -40,8 +40,10 @@ from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
 from django.core.exceptions import ObjectDoesNotExist
+
 from django.utils.functional import cached_property
 from django.contrib.staticfiles.templatetags.staticfiles import static
+import numpy as np
 
 logger = logging.getLogger('main.models')
 
@@ -277,6 +279,8 @@ class AssetClass(models.Model):
     display_name = models.CharField(max_length=255, blank=False, null=False,
                                     db_index=True)
     investment_type = models.ForeignKey(InvestmentType, related_name='asset_classes')
+
+    # Also has reverse field 'portfolio_sets' from the PortfolioSet model.
 
     def save(self,
              force_insert=False,
@@ -855,12 +859,17 @@ class AccountGroup(models.Model):
         percentage = self.satellite_balance / self.total_balance * 100
         return "{0}".format(int(round(percentage)))
 
-    @property
+    @cached_property
     def on_track(self):
-        on_track = True
+        """
+            If any of the advisors' client accounts are
+            off track, return False.  If all client
+            accounts are on track, return True.
+        """
         for account in self.accounts.all():
-            on_track = on_track and account.on_track
-        return on_track
+            if not account.on_track:
+                return False
+        return True
 
     @property
     def since(self):
@@ -907,7 +916,9 @@ class MarketIndex(FinancialInstrument):
     """
     For the moment, an index is a concrete FinancialInstrument that may have one or more tickers(funds) that track it.
     """
-    trackers = GenericRelation('Ticker')
+    trackers = GenericRelation('Ticker',
+                               content_type_field='benchmark_content_type',
+                               object_id_field='benchmark_object_id')
     daily_prices = GenericRelation('DailyPrice',
                                    content_type_field='instrument_content_type',
                                    object_id_field='instrument_object_id')
@@ -1452,7 +1463,7 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        lots = PositionLot.objects.filter(quantity__gt=0).filter(execution_distribution__transaction__from_goal=self).\
+        lots = PositionLot.objects.filter(quantity__gt=0, execution_distribution__transaction__from_goal=self).\
             annotate(ticker_id=F('execution_distribution__execution__asset__id'),
                      price=F('execution_distribution__execution__asset__unit_price'))\
             .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
@@ -1465,20 +1476,24 @@ class Goal(models.Model):
         return super(Goal, self).save(force_insert, force_update, using,
                                       update_fields)
 
-    @transaction.atomic
     def archive(self):
         """
-        Archives a goal, creating a closing order to neutralise any positions.
+        Flags a goal as CLOSING, which will trigger the daily process to clear it.
         :return: None
         """
-        from main.ordering import OrderManager
         if self.State(self.state) != self.State.ARCHIVE_REQUESTED:
             raise InvalidStateError(self.State(self.state), self.State.ARCHIVE_REQUESTED)
 
-        # Remove outstanding orders and close existing positions
-        async_id = OrderManager.close_positions(self)
+        self.state = self.State.CLOSING.value
+        self.save()
 
-        self.state = self.State.ARCHIVED.value if async_id is None else self.State.CLOSING.value
+    def complete_archive(self):
+        """
+        Completes the goal archive process once a goal has no open market positions.
+        :return:
+        """
+        if self.get_positions_all():
+            raise InvalidStateError("Cannot completely archive a goal while it has open positions.")
 
         # Change the name to _ARCHIVED so it doesn't affect the way the client can name any new goals, as there is a
         # unique index on account and name
@@ -1490,6 +1505,7 @@ class Goal(models.Model):
                 suf += 1
             self.name += '_{}'.format(suf)
 
+        self.state = Goal.State.ARCHIVED
         self.save()
 
     @transaction.atomic
@@ -1706,7 +1722,7 @@ class Goal(models.Model):
         # Experimental
         goal_metric = GoalMetric.objects \
             .filter(type=GoalMetric.METRIC_TYPE_RISK_SCORE) \
-            .filter(group__settings__goal_approved=self) \
+            .filter(group__settings__goal_active=self) \
             .first()
 
         if goal_metric:
@@ -1882,6 +1898,7 @@ class Goal(models.Model):
 
         return self.total_balance >= self.selected_settings.target
 
+
 class HistoricalBalance(models.Model):
     """
     The historical balance model is a cache of the information that can be built from the Execution and Transaction
@@ -1921,6 +1938,10 @@ class AssetFeature(models.Model):
     name = models.CharField(max_length=127, unique=True, help_text="This should be a noun such as 'Region'.")
     description = models.TextField(blank=True, null=True)
 
+    @cached_property
+    def active(self):
+        return AssetFeatureValue.objects.filter(feature=self, assets__state=Ticker.State.ACTIVE.value).exists()
+
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
 
@@ -1959,6 +1980,10 @@ class AssetFeatureValue(models.Model):
                                 on_delete=PROTECT,
                                 help_text="The asset feature this is one value for.")
     assets = models.ManyToManyField(Ticker, related_name='features')
+
+    @cached_property
+    def active(self):
+        return self.assets.filter(state=Ticker.State.ACTIVE.value).exists()
 
     def __str__(self):
         return "[{}] {}".format(self.id, self.name)
@@ -2026,7 +2051,7 @@ class GoalMetric(models.Model):
     rebalance_thr = models.FloatField(
         help_text='The difference between configured and measured value at which a rebalance will be recommended.')
     configured_val = models.FloatField(help_text='The value of the metric that was configured.')
-    measured_val = models.FloatField(help_text='The latest measured value of the metric', null=True)
+
 
     @classmethod
     def risk_level_range(cls, risk_level):
@@ -2040,6 +2065,16 @@ class GoalMetric(models.Model):
 
             if self.configured_val < risk_max / 100:
                 return risk_min
+
+    @property
+    def measured_val(self):
+        asset_ids = AssetFeatureValue.objects.all().filter(id=self.feature.id)\
+            .annotate(asset_id=F('assets__id'))\
+            .values_list('asset_id', flat=True)
+
+        goal = Goal.objects.get(active_settings__metric_group_id=self.group_id)
+        sum = float(np.sum([pos['price']*pos['quantity'] if pos['ticker_id'] in asset_ids else 0 for pos in goal.get_positions_all()]))
+        return sum/goal.available_balance
 
     @property
     def risk_level(self):
@@ -2064,9 +2099,9 @@ class GoalMetric(models.Model):
             return 0.0
 
         if self.rebalance_type == self.REBALANCE_TYPE_ABSOLUTE:
-            return self.rebalance_thr / (self.measured_val - self.configured_val)
+            return (self.measured_val - self.configured_val) / self.rebalance_thr
         else:
-            return self.rebalance_thr / ((self.measured_val - self.configured_val) / self.self.configured_val)
+            return ((self.measured_val - self.configured_val) / self.configured_val) / self.rebalance_thr
 
     def __str__(self):
         if self.type == 0:

@@ -265,7 +265,7 @@ class SecurityQuestionListView(ApiViewMixin, ListAPIView):
     by any authenticated user.
     """
     queryset = SecurityQuestion.objects.all()
-    permission_classes = (IsAuthenticated,)
+    permission_classes = ()
     serializer_class = SecurityQuestionSerializer
 
     def get(self, request):

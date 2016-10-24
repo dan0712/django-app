@@ -233,7 +233,7 @@ class PositionLotQuerySet(QuerySet):
                    execution_distribution__transaction__from_goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
             q |= Q(execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
                    execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
-        qs = self.filter(q, goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+        qs = self.filter(q, execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
 
         return qs
 
@@ -243,7 +243,7 @@ class PositionLotQuerySet(QuerySet):
         if worth is None:
             return self
 
-        clients = [p.execution_distribution__transaction__to_goal__account__primary_owner for p in qs]
+        clients = [p.execution_distribution.transaction.to_goal.account.primary_owner for p in qs]
         cmap = {}
         if worth == Client.WORTH_AFFLUENT:
             cmap['affluent'] = [c.id for c in clients if c.get_worth() == Client.WORTH_AFFLUENT]

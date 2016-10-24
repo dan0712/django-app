@@ -4,8 +4,9 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
-    login as auth_views_login,
+    login as auth_views_login ,
 )
+from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -13,8 +14,10 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.shortcuts import redirect
+from geolocation.geolocation import check_ip_city
 import logging
-
+import os
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 logger = logging.getLogger('main.views.login')
 
 
@@ -44,6 +47,13 @@ def login(request, template_name='registration/login.html',
 
     if user.is_authenticated():
         # custom extra checking
+        if not user.is_superuser:
+            if not check_ip_city(request, 'Chicago') and (ENVIRONMENT == 'demo' or ENVIRONMENT == 'production'):
+                messages.error(request, 'Sorry, the BetaSmartz demo is only available to the Chicago area for the moment.')
+                form = authentication_form(request)
+                context = {'form': form}
+                return TemplateResponse(request, template_name, context)
+
 
         # TODO: temp temp temp
         # TODO: discuss "confirmation" feature
@@ -72,7 +82,7 @@ def login(request, template_name='registration/login.html',
 
         # custom redirect
         redirect_to = request.GET.get('next',
-                                      reverse_lazy('client:app',
+                                      reverse_lazy('client:page',
                                                    args=(user.client.id,))
                                       if is_client
                                       else reverse_lazy('advisor:overview')

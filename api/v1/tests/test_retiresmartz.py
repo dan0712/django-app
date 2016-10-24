@@ -9,7 +9,9 @@ from retiresmartz.models import RetirementPlan
 from main.models import InvestmentType
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, RetirementPlanFactory, TickerFactory, \
-    AssetClassFactory, ContentTypeFactory
+    AssetClassFactory, ContentTypeFactory, RetirementAdviceFactory
+from pinax.eventlog.models import log
+from django.utils import timezone
 
 
 class RetiresmartzTests(APITestCase):
@@ -236,3 +238,57 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('portfolio' in response.data)
         self.assertTrue('projection' in response.data)
+
+    def test_retirement_plan_advice_feed_list_unread(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        plan = RetirementPlanFactory.create()
+        elog = log(user=plan.client.user, action='Triggers retirement advice')
+        advice = RetirementAdviceFactory(plan=plan, trigger=elog, read=timezone.now())
+        elog2 = log(user=plan.client.user, action='Triggers another, unread retirement advice')
+        advice2 = RetirementAdviceFactory(plan=plan, trigger=elog)
+        url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(plan.client.id, plan.id)
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(response.data.get('results')[0]['id'], advice.id)
+        self.assertEqual(response.data.get('results')[0]['id'], advice2.id)
+        self.assertEqual(response.data.get('count'), 1)
+
+    def test_retirement_plan_advice_feed_detail(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        plan = RetirementPlanFactory.create()
+        elog = log(user=plan.client.user, action='Triggers retirement advice')
+        advice = RetirementAdviceFactory(plan=plan, trigger=elog)
+        url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed/{}'.format(plan.client.id, plan.id, advice.id)
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], advice.id)
+
+    def test_retirement_plan_advice_fed_update(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        plan = RetirementPlanFactory.create()
+        elog = log(user=plan.client.user, action='Triggers retirement advice')
+        advice = RetirementAdviceFactory(plan=plan, trigger=elog)
+        url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed/{}'.format(plan.client.id, plan.id, advice.id)
+        self.client.force_authenticate(user=plan.client.user)
+        read_time = timezone.now()
+        data = {
+            'read': read_time,
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], advice.id)
+        self.assertEqual(response.data['read'][:9], str(read_time)[:9])

@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 import factory
-
+import json
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, date
 from django.contrib.auth.models import Group
-
+from django.utils import timezone
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, GoalSetting, GoalMetricGroup, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
-                        InvestmentCycleObservation, InvestmentCyclePrediction
-from retiresmartz.models import RetirementPlan
+                        InvestmentCycleObservation, InvestmentCyclePrediction, \
+                        RecurringTransaction
+from retiresmartz.models import RetirementPlan, RetirementAdvice
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -79,6 +80,17 @@ class PortfolioSetFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'PortfolioSet %d' % n)
     risk_free_rate = factory.Sequence(lambda n: n * .01)
+
+    @factory.post_generation
+    def asset_classes(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.asset_classes.add(item)
 
 
 class FiscalYearFactory(factory.django.DjangoModelFactory):
@@ -204,7 +216,9 @@ class RiskProfileAnswerFactory(factory.django.DjangoModelFactory):
     question = factory.SubFactory(RiskProfileQuestionFactory)
     order = factory.Sequence(lambda n: int(n))
     text = factory.Sequence(lambda n: 'RiskProfileAnswer %d' % n)
-    score = factory.Sequence(lambda n: float(n))
+    b_score = factory.Sequence(lambda n: float(n))
+    a_score = factory.Sequence(lambda n: float(n))
+    s_score = factory.Sequence(lambda n: float(n))
 
 
 class ClientFactory(factory.django.DjangoModelFactory):
@@ -259,6 +273,46 @@ class RecordOfAdviceFactory(factory.django.DjangoModelFactory):
         model = RecordOfAdvice
 
     account = factory.SubFactory(ClientAccountFactory)
+
+
+class AssetFeatureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeature
+
+    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
+
+
+class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssetFeatureValue
+
+    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
+    feature = factory.SubFactory(AssetFeatureFactory)
+
+    @factory.post_generation
+    def assets(self, create, items, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if items:
+            # A list of groups were passed in, use them
+            for item in items:
+                self.assets.add(item)
+
+
+class GoalMetricFactory(factory.django.DjangoModelFactory):
+    """
+    By default create a random risk score metric.
+    """
+    class Meta:
+        model = GoalMetric
+
+    type = factory.Sequence(lambda n: random.randint(0, 1))
+    comparison = factory.Sequence(lambda n: random.randint(0, 2))
+    rebalance_type = factory.Sequence(lambda n: random.randint(0, 1))
+    rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
 
 
 class GoalMetricGroupFactory(factory.django.DjangoModelFactory):
@@ -440,21 +494,6 @@ class DailyPriceFactory(factory.django.DjangoModelFactory):
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
 
 
-class AssetFeatureFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeature
-
-    name = factory.Sequence(lambda n: 'AssetFeature %d' % n)
-
-
-class AssetFeatureValueFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AssetFeatureValue
-
-    name = factory.Sequence(lambda n: 'AssetFeatureValue %d' % n)
-    feature = factory.SubFactory(AssetFeatureFactory)
-
-
 class GoalMetricFactory(factory.django.DjangoModelFactory):
     """
     By default create a random risk score metric.
@@ -464,7 +503,7 @@ class GoalMetricFactory(factory.django.DjangoModelFactory):
     group = factory.SubFactory(GoalMetricGroupFactory)
     type = GoalMetric.METRIC_TYPE_RISK_SCORE
     comparison = GoalMetric.METRIC_COMPARISON_EXACTLY
-    rebalance_type = GoalMetric.REBALANCE_TYPE_RELATIVE
+    rebalance_type = factory.sequence(lambda n: random.randint(0, 1))
     rebalance_thr = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     configured_val = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
 
@@ -475,6 +514,20 @@ class SupervisorFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     firm = factory.SubFactory(FirmFactory)
+
+
+class AuthorisedRepresentativeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AuthorisedRepresentative
+
+    user = factory.SubFactory(UserFactory)
+    firm = factory.SubFactory(FirmFactory)
+    letter_of_authority = factory.django.FileField(filename='tests/test_letter_of_authority.txt')
+    betasmartz_agreement = True
+    is_accepted = True
+    is_confirmed = True
+
+    residential_address = factory.SubFactory(AddressFactory)
 
 
 class RetirementPlanFactory(factory.django.DjangoModelFactory):
@@ -498,3 +551,22 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     desired_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     recommended_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     max_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
+class RecurringTransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RecurringTransaction
+    setting = factory.SubFactory(GoalSettingFactory)
+    begin_date = timezone.now().date()
+    amount = factory.LazyAttribute(lambda n: int(random.randrange(10000)))
+    growth = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    schedule = factory.Sequence(lambda n: 'RRULE %s' % n)
+
+
+class RetirementAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementAdvice
+
+    plan = factory.SubFactory(RetirementPlanFactory)
+    # trigger = factory.SubFactory(EventLogFactory)
+    text = factory.Sequence(lambda n: 'Retirement Advice %s' % n)
