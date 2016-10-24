@@ -66,6 +66,7 @@ class BaseTest(TestCase):
         fill2_price = 15
         order1 = ApexOrder.objects.get(ticker=self.ticker1)
         send_apex_order(order1)
+        mark_as_complete(order1)
 
         ApexFillFactory.create(apex_order=order1, volume=fill1_volume, price=fill1_price)
         ApexFillFactory.create(apex_order=order1, volume=fill2_volume, price=fill2_price)
@@ -100,6 +101,7 @@ class BaseTest(TestCase):
 
         order1 = ApexOrder.objects.get(ticker=self.ticker1)
         send_apex_order(order1)
+        mark_as_complete(order1)
 
         ApexFillFactory.create(apex_order=order1, volume=fill1a_volume, price=fill1a_price)
         ApexFillFactory.create(apex_order=order1, volume=fill1b_volume, price=fill1b_price)
@@ -114,7 +116,7 @@ class BaseTest(TestCase):
         fill2_3_price = 13
         order2_3 = ApexOrder.objects.get(ticker=self.ticker2)
         send_apex_order(order2_3)
-
+        mark_as_complete(order2_3)
         ApexFillFactory.create(apex_order=order2_3, volume=fill2_3_volume, price=fill2_3_price)
 
         process_apex_fills()
@@ -137,7 +139,7 @@ class BaseTest(TestCase):
 
         order1 = ApexOrder.objects.get(ticker=self.ticker1)
         send_apex_order(order1)
-
+        mark_as_complete(order1)
         ApexFillFactory.create(apex_order=order1, volume=fill1a_volume, price=fill1a_price)
         ApexFillFactory.create(apex_order=order1, volume=fill1b_volume, price=fill1b_price)
 
@@ -153,6 +155,7 @@ class BaseTest(TestCase):
         order2 = ApexOrder.objects.get(ticker=self.ticker1, state=ApexOrder.State.PENDING.value)
         order2_id = order2.id
         send_apex_order(order2)
+        mark_as_complete(order2)
 
         ApexFillFactory.create(apex_order=order2, volume=fill2_volume, price=fill2_price)
         process_apex_fills()

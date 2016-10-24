@@ -2136,6 +2136,7 @@ class ApexOrder(models.Model):
         SENT = 2  # Sent to the broker (at least partially outstanding).
         CANCEL_PENDING = 3 # Sent, but have also sent a cancel
         COMPLETE = 4  # May be fully or partially executed, but there is none left outstanding.
+        ARCHIVED = 5 # fills have been processed and input into the system
 
     class FillInfo(ChoiceEnum):
         FILLED = 0 # entire quantity of order was filled

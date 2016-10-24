@@ -105,7 +105,6 @@ def create_apex_orders():
     '''
     from outstanding MOR and ER create MorApex and ApexOrder
     '''
-    sent_mor_ids = set()
     ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)\
         .annotate(ticker_id=F('asset__id'))\
         .values('ticker_id')\
@@ -120,18 +119,20 @@ def create_apex_orders():
             values_list('id', flat=True).distinct()
 
         for id in mor_ids:
-            sent_mor_ids.add(id)
             mor = MarketOrderRequest.objects.get(id=id)
             MarketOrderRequestAPEX.objects.create(market_order_request=mor, ticker=ticker, apex_order=apex_order)
-
-    for sent_id in sent_mor_ids:
-        mor = MarketOrderRequest.objects.get(id=sent_id)
-        mor.state = MarketOrderRequest.State.SENT.value
-        mor.save()
 
 
 def send_apex_order(apex_order):
     apex_order.state = ApexOrder.State.SENT.value
+    apex_order.save()
+    mors = MarketOrderRequest.objects.filter(morsAPEX__apex_order=apex_order).distinct()
+    for m in mors:
+        m.state = MarketOrderRequest.State.SENT.value
+        m.save()
+
+def mark_as_complete(apex_order):
+    apex_order.state = ApexOrder.State.COMPLETE.value
     apex_order.save()
 
 
@@ -142,7 +143,7 @@ def process_apex_fills():
     :return:
     '''
     fills = ApexFill.objects\
-        .filter(apex_order__state=ApexOrder.State.SENT.value)\
+        .filter(apex_order__state=ApexOrder.State.COMPLETE.value)\
         .annotate(ticker_id=F('apex_order__ticker__id'))\
         .values('id', 'ticker_id', 'price', 'volume','executed')
 
@@ -150,7 +151,7 @@ def process_apex_fills():
     complete_apex_order_ids = set()
     for fill in fills:
         ers = ExecutionRequest.objects\
-            .filter(asset_id=fill['ticker_id'], order__morsAPEX__apex_order__state=ApexOrder.State.SENT.value)
+            .filter(asset_id=fill['ticker_id'], order__morsAPEX__apex_order__state=ApexOrder.State.COMPLETE.value)
         sum_ers = np.sum([er.volume for er in ers])
 
         for er in ers:
@@ -186,7 +187,7 @@ def process_apex_fills():
 
     for apex_order_id in complete_apex_order_ids:
         apex_order = ApexOrder.objects.get(id=apex_order_id)
-        apex_order.state = ApexOrder.State.COMPLETE.value
+        apex_order.state = ApexOrder.State.ARCHIVED.value
 
         sum_fills = ApexFill.objects.filter(apex_order_id=apex_order_id).aggregate(sum=Sum('volume'))
         if sum_fills['sum'] == apex_order.volume:
