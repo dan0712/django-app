@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
     login as auth_views_login ,
 )
+from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -38,12 +39,6 @@ def login(request, template_name='registration/login.html',
           authentication_form=AuthenticationFormWithInactiveUsersOkay,
           extra_context=None):
 
-    if not check_ip_city(request, 'Chicago') and (ENVIRONMENT == 'demo' or ENVIRONMENT == 'production'):
-        messages.error(request, 'Sorry, the BetaSmartz demo is only available to the Chicago area for the moment.')
-        form = authentication_form(request)
-        context = {'form': form}
-        return TemplateResponse(request, template_name, context)
-
     # TODO: maybe to add expected user role (based on url) to extra_context
     response = auth_views_login(request,
                                 authentication_form=authentication_form,
@@ -52,6 +47,13 @@ def login(request, template_name='registration/login.html',
 
     if user.is_authenticated():
         # custom extra checking
+        if not user.is_superuser:
+            if not check_ip_city(request, 'Chicago') and (ENVIRONMENT == 'demo' or ENVIRONMENT == 'production'):
+                messages.error(request, 'Sorry, the BetaSmartz demo is only available to the Chicago area for the moment.')
+                form = authentication_form(request)
+                context = {'form': form}
+                return TemplateResponse(request, template_name, context)
+
 
         # TODO: temp temp temp
         # TODO: discuss "confirmation" feature
