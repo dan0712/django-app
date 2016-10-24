@@ -12,7 +12,7 @@ from main.models import InvestmentCycleObservation
 from portfolios.exceptions import OptimizationException
 from portfolios.prediction.investment_clock import InvestmentClock, CYCLE_LABEL
 from portfolios.providers.data.django import DataProviderDjango
-
+from main.tests.fixture import Fixture1
 
 class InvestmentClockTest(TestCase):
     def setUp(self):
@@ -20,6 +20,9 @@ class InvestmentClockTest(TestCase):
         self.data_provider.get_current_date = MagicMock(return_value=date(2016, 2, 1))
         self.last_cycle_start = date(2016, 1, 5)
         self.last_cycle_end = date(2016, 1, 14)  # The last day before the observed next cycle
+        self.predictor = InvestmentClock(self.data_provider)
+
+    def populate_observations(self):
         # We need to have a full range of cycle plus at least one date behind.
         InvestmentCycleObservationFactory.create(as_of=date(2016, 1, 1),
                                                  cycle=InvestmentCycleObservation.Cycle.EQ_PIT.value)
@@ -37,7 +40,6 @@ class InvestmentClockTest(TestCase):
                                                  cycle=InvestmentCycleObservation.Cycle.EQ_PIT.value)
         InvestmentCycleObservationFactory.create(as_of=date(2016, 1, 20),
                                                  cycle=InvestmentCycleObservation.Cycle.PIT_EQ.value)
-        self.predictor = InvestmentClock(self.data_provider)
 
     def populate_returns(self):
         t1 = TickerFactory.create()
@@ -74,6 +76,7 @@ class InvestmentClockTest(TestCase):
             dt += timedelta(days=31)
 
     def test_get_latest_history_date(self):
+        self.populate_observations()
         last_start = self.predictor.get_last_cycle_start()
         self.assertEqual(last_start, self.last_cycle_start)
 
@@ -89,6 +92,7 @@ class InvestmentClockTest(TestCase):
         self.assertAlmostEqual(norm_probs.iloc[0, 4], 0.647552, 6)
 
     def test_get_fund_predictions(self):
+        self.populate_observations()
         self.populate_probabilities()
         self.populate_returns()
         mu, sigma = self.predictor.get_fund_predictions()
@@ -102,9 +106,56 @@ class InvestmentClockTest(TestCase):
             self.predictor.get_fund_predictions()
 
     def test_get_cycle_obs(self):
+        self.populate_observations()
         predictors = self.predictor.get_cycle_obs(self.last_cycle_start)
-        equal_values = sum(np.array([0, 1, 2, 0, 3, 4]) == predictors.values)
-        self.assertTrue(equal_values == 6)
+        equal_values = sum(np.array([4, 0, 1, 2, 0, 3, 4]) == predictors.values)
+        self.assertTrue(equal_values == 7)
+
+    def test_last_cycle_start1(self):
+        self.populate_observations()
+        matrix = self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(last_start == date(2016, 1, 5))
+
+    def test_last_cycle_start2(self):
+        dates = Fixture1.populate_observations(33440001122000334400011, date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[7] == last_start)
+
+    def test_last_cycle_start3(self):
+        dates = Fixture1.populate_observations(33440001122000334400, date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[4] == last_start)
+
+    def test_last_cycle_start4(self):
+        dates = Fixture1.populate_observations(3344400011222003344, date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[2] == last_start)
+
+    def test_last_cycle_start5(self):
+        dates = Fixture1.populate_observations('00033444000112220033', date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[3] == last_start)
+
+    def test_last_cycle_start6(self):
+        dates = Fixture1.populate_observations(111222000334440001122200, date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[6] == last_start)
+
+    def test_last_cycle_start7(self):
+        dates = Fixture1.populate_observations(1112220003344400011222, date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[3] == last_start)
+
+    def test_last_cycle_start8(self):
+        dates = Fixture1.populate_observations('0344400011122200033', date(2016, 1, 1))
+        self.predictor.get_cycle_obs(date(2016, 1, 1))
+        last_start = self.predictor.get_last_cycle_start()
+        self.assertTrue(dates[1] == last_start)
 
     def test_expected_returns_prob_v1(self):
         probs = np.array((0.1, 0.15, 0.25, 0.1, 0.4)).reshape((1, 5))

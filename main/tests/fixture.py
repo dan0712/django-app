@@ -6,7 +6,8 @@ from django.utils import timezone
 from pinax.eventlog.models import Log
 
 import address.models as ad
-from api.v1.tests.factories import GoalMetricFactory, TransactionFactory, PositionLotFactory
+from api.v1.tests.factories import GoalMetricFactory, TransactionFactory, PositionLotFactory, \
+    InvestmentCycleObservationFactory
 from client.models import Client, ClientAccount, RiskProfileAnswer,\
     RiskProfileGroup, RiskProfileQuestion, IBAccount
 from main.constants import ACCOUNT_TYPE_PERSONAL
@@ -14,9 +15,10 @@ from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
     ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
     GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
-    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument
+    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument, InvestmentCycleObservation,\
+    Transaction
+from portfolios.prediction.investment_clock import InvestmentClock, CYCLE_LABEL
 from main.risk_profiler import MINIMUM_RISK
-
 from retiresmartz.models import RetirementPlan
 
 
@@ -752,6 +754,17 @@ class Fixture1:
                                                             transaction=tx,
                                                             volume=volume))
         return res
+
+    @classmethod
+    def populate_observations(cls, values, begin_date):
+        dates = list()
+        values = str(values)
+        for val in values:
+            dates.append(begin_date)
+            InvestmentCycleObservationFactory.create(as_of=begin_date,
+                                                     cycle=int(val))
+            begin_date += datetime.timedelta(1)
+        return dates
 
     @classmethod
     def create_execution_details(cls, goal, ticker, quantity, price, executed):

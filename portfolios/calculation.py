@@ -35,8 +35,6 @@ logger.setLevel(logging.WARN)
 # Raise exceptions if we're doing something dumb with pandas slices
 pd.set_option('mode.chained_assignment', 'raise')
 
-predictor = Predictor(DataProviderDjango())
-
 
 def create_portfolio_weights(instruments, min_weights, abs_min):
     pweights = []
@@ -64,6 +62,7 @@ def build_instruments(data_provider):
     """
     ac_ps = data_provider.get_asset_class_to_portfolio_set()
 
+    predictor = Predictor(data_provider)
     ers, covars = predictor.get_fund_predictions()
 
     tickers = data_provider.get_tickers()

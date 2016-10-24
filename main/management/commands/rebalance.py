@@ -8,20 +8,17 @@ import logging
 import copy
 import numpy as np
 
-from main.models import Goal
 from portfolios.algorithms.markowitz import markowitz_optimizer_3
 from portfolios.providers.execution.abstract import Reason, ExecutionProviderAbstract
 from portfolios.calculation import \
     MIN_PORTFOLIO_PCT, calc_opt_inputs, create_portfolio_weights, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL
 
-from main.models import GoalMetric, Ticker, AssetFeature, AssetFeatureValue, PositionLot
+from main.models import GoalMetric, PositionLot
 from collections import defaultdict
 from django.db.models import Sum, F, Case, When, Value, FloatField
-from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 from portfolios.management.commands.measure_goals import get_risk_score
-import operator
 
 logger = logging.getLogger('rebalance')
 
@@ -135,7 +132,7 @@ def create_request(goal, new_positions, reason, execution_provider, data_provide
         new_pos = new_positions.pop(position['ticker_id'], 0)
         if new_pos - position['quantity'] == 0:
             continue
-        ticker = data_provider.get_ticker(id=position['ticker_id'])
+        ticker = data_provider.get_ticker(tid=position['ticker_id'])
         request = execution_provider.create_execution_request(reason=reason,
                                                               goal=goal,
                                                               asset=ticker,
@@ -148,7 +145,7 @@ def create_request(goal, new_positions, reason, execution_provider, data_provide
     for tid, pos in new_positions.items():
         if pos == 0:
             continue
-        ticker = data_provider.get_ticker(id=tid)
+        ticker = data_provider.get_ticker(tid=tid)
         request = execution_provider.create_execution_request(reason=reason,
                                                               goal=goal,
                                                               asset=ticker,
@@ -490,7 +487,8 @@ def rebalance(goal, idata, data_provider, execution_provider):
 
         #A goal is a portfolio? If the rebalance is being made by goal it could be inneficient from a cost perspective
 
-    new_positions = build_positions(goal, weights, idata[2])
+    _, instruments, _ = idata
+    new_positions = build_positions(goal, weights, instruments)
     #idata[2] is a matrix containing latest instrument price
     order = create_request(goal, new_positions, reason,
                            execution_provider=execution_provider,
