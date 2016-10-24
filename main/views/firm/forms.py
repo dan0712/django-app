@@ -1,7 +1,4 @@
 from django.utils.timezone import now
-
-__author__ = 'cristian'
-
 import json
 
 from django import forms
@@ -12,11 +9,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
 from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
-from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, View, TemplateView
 from django.views.generic.edit import ProcessFormView
 from main.models import Firm, User, AuthorisedRepresentative, \
-    FirmData, Transaction, Ticker, Platform, Goal
+    FirmData, Transaction, Ticker, Platform, Goal, PositionLot
 from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, solve_shares_re_balance
 from ..base import AdminView
 from ..base import LegalView
@@ -335,16 +331,16 @@ class AdminExecuteTransaction(TemplateView, AdminView):
         ctx = super(AdminExecuteTransaction, self).get_context_data(**kwargs)
         ctx["transaction"] = serializers.serialize('json', [self.transaction])
         ctx["amount"] = self.transaction.amount
-        ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.account]))[0]["fields"]
-        ctx["account"]["owner_full_name"] = self.transaction.account.account.primary_owner.user.get_full_name()
+        ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.to_goal.account]))[0]["fields"]
+        ctx["account"]["owner_full_name"] = self.transaction.to_goal.account.primary_owner.user.get_full_name()
         ctx["account"][
-            "advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
-        ctx["account"]["firm_name"] = self.transaction.account.account.primary_owner.advisor.firm.name
-        ctx["account"]["fee"] = self.transaction.account.account.fee
+            "advisor_full_name"] = self.transaction.to_goal.account.primary_owner.advisor.user.get_full_name()
+        ctx["account"]["firm_name"] = self.transaction.to_goal.account.primary_owner.advisor.firm.name
+        ctx["account"]["fee"] = self.transaction.to_goal.account.fee
 
         ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
 
-        goal = self.transaction.account
+        goal = self.transaction.to_goal
         target_allocation_dict = goal.target_allocation
 
         tickers_pk = []
@@ -361,27 +357,22 @@ class AdminExecuteTransaction(TemplateView, AdminView):
             tickers_pk.append(ticker.pk)
             tickers_prices.append(ticker.unit_price)
             target_allocation.append(target_allocation_dict.get(ticker.asset_class.name, 0))
-            positions = Position.objects.filter(goal=self.transaction.account, ticker=ticker).all()
+            positions = PositionLot.objects.filter(execution_distribution__transaction__to_goal=self.transaction.to_goal, ticker=ticker).all()
             cs = 0
             if positions:
                 for p in positions:
-                    cs += p.share
+                    cs += p.quantity
             current_shares.append(cs)
         if self.transaction.status == Transaction.STATUS_PENDING:
             if self.transaction.type == Transaction.REASON_WITHDRAWAL and \
-                    ((self.transaction.account.total_balance - self.transaction.amount) > 0):
+                    ((self.transaction.to_goal.account.total_balance - self.transaction.amount) > 0):
                 result_a = list(map(lambda x: -x, solve_shares_wdw(current_shares, tickers_prices,
                                                                    target_allocation, self.transaction.amount)))
 
             if self.transaction.type == Transaction.REASON_DEPOSIT:
                 result_a = solve_shares_deposit(current_shares, tickers_prices, target_allocation,
                                                 self.transaction.amount * (
-                                                1 - self.transaction.account.account.fee / 1000))
-
-            #if self.transaction.type == TRANSACTION_TYPE_ALLOCATION:
-            #    result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
-            #    ctx["amount"] = 1
-            #    ctx["account"]["fee"] = sum(abs(result_a * tickers_prices)) * ctx["account"]["fee"]
+                                                1 - self.transaction.to_goal.account.fee / 1000))
 
         for i in range(len(result_a)):
             result_dict[str(tickers_pk[i])] = result_a[i]
