@@ -50,6 +50,7 @@ class RetiresmartzTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['client'], plan1.client.id)
+        self.assertEqual(response.data['calculated_life_expectancy'], 73)
 
     def test_add_plan(self):
         '''
@@ -65,6 +66,9 @@ class RetiresmartzTests(APITestCase):
         self.assertNotEqual(response.data['id'], None)
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
         self.assertEqual(saved_plan.btc, 1000)
+        # make sure client cannot set calculated_life_expectancy
+        # should only be set from backend, read-only
+        self.assertNotEqual(response.data['calculated_life_expectancy'], self.base_plan_data['calculated_life_expectancy'])
 
     def test_cant_change_after_agreed(self):
         '''
