@@ -741,9 +741,9 @@ class GoalTests(APITestCase):
 
     def test_get_goal_settings_by_id(self):
         goal = Fixture1.goal1()
-        goal.approve_selected()
-        setting = GoalSettingFactory.create()
+        setting = goal.selected_settings
         url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+
         # unauthenticated
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -760,3 +760,8 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+        # Unauthorized user check
+        self.client.force_authenticate(user=Fixture1.client2().user)
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

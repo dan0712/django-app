@@ -1,27 +1,29 @@
 from django.conf import settings
+
+from rest_framework import serializers as drf_serializers
 from rest_framework.decorators import list_route
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
+from api.v1.views import ReadOnlyApiViewMixin
+from client.models import RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
 from main.constants import US_RETIREMENT_ACCOUNT_TYPES
-from main.models import AccountType, GoalSetting
-from ..goals.serializers import GoalSettingSerializer
+from main.models import AccountType
 from . import serializers
 from ..permissions import IsAdvisorOrClient
-from ..views import ApiViewMixin
 from client import models as client_models
 from retiresmartz import models as retirement_models
 
 
-class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
+class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
     """
     Experimental
     """
+    serializer_class = drf_serializers.Serializer
     permission_classes = (
         IsAdvisorOrClient,
     )

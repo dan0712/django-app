@@ -18,6 +18,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from api.v1.utils import activity
+from api.v1.views import ReadOnlyApiViewMixin
 from common.constants import EPOCH_DT, EPOCH_TM
 from main.event import Event
 from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
@@ -592,16 +593,22 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             return {'risk_score': risk_score, 'portfolio': res}
 
 
-class GoalSettingViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+class GoalSettingViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = (
         IsAdvisorOrClient,
     )
 
+    serializer_class = serializers.GoalSettingSerializer
+
     def retrieve(self, request, pk=None, **kwargs):
-        try:
-            settings = GoalSetting.objects.get(pk=pk)
-        except:
+        settings = GoalSetting.objects.filter(pk=pk).first()
+        if not settings or not (request.user.id == settings.goal.account.primary_owner.user.id or
+                request.user.id == settings.goal.account.primary_owner.advisor.user.id or
+                (settings.goal.account.account_group and (
+                    request.user.id == settings.goal.account.account_group.advisor.user.id or
+                    settings.goal.account.account_group.secondary_advisors.filter(user__id=request.user.id).exists()))):
+            # Don't tell unauthorized people it exists, be stealth and just tell them it doesn't exist.
             return Response('Settings not found', status=status.HTTP_404_NOT_FOUND)
 
-        serializer = serializers.GoalSettingSerializer(settings)
+        serializer = self.serializer_class(settings)
         return Response(serializer.data)
