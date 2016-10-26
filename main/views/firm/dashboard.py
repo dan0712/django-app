@@ -696,11 +696,6 @@ class FirmAdvisorAccountOverview(DetailView, LegalView):
     def get_queryset(self):
         return super(FirmAdvisorAccountOverview, self).get_queryset().filter(firm=self.firm)
 
-    def get_context_data(self, **kwargs):
-        ctx = super(FirmAdvisorAccountOverview, self).get_context_data(
-            **kwargs)
-        return ctx
-
 
 class FirmOverview(TemplateView, LegalView):
     template_name = 'firm/overview.html'

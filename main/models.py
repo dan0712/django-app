@@ -663,7 +663,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         for household in self.households:
             all_accounts = household.accounts.all()
             accounts.extend(all_accounts)
-        return accounts
+        return set(accounts)
 
     @property
     def total_balance(self):
