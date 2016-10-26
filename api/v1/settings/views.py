@@ -1,28 +1,29 @@
 from django.conf import settings
+
+from rest_framework import serializers as drf_serializers
 from rest_framework.decorators import list_route
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from client.models import AccountTypeRiskProfileGroup, RiskProfileGroup
+from api.v1.views import ReadOnlyApiViewMixin
+from client.models import RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
 from main.constants import US_RETIREMENT_ACCOUNT_TYPES
 from main.models import AccountType
-from ..goals.serializers import GoalSettingSerializer
 from . import serializers
 from ..permissions import IsAdvisorOrClient
-from ..views import ApiViewMixin
 from client import models as client_models
 from retiresmartz import models as retirement_models
 
 
-class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
+class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
     """
     Experimental
     """
-    serializer_class = GoalSettingSerializer
+    serializer_class = drf_serializers.Serializer
     permission_classes = (
         IsAdvisorOrClient,
     )
@@ -101,8 +102,8 @@ class SettingsViewSet(ApiViewMixin, NestedViewSetMixin, GenericViewSet):
                                   "id": v.id,
                                   "name": v.name,
                                   "description": v.description
-                              } for v in af.values.all()]
-               } for af in models.AssetFeature.objects.all()]
+                              } for v in af.values.all() if v.active]
+               } for af in models.AssetFeature.objects.all() if af.active]
         return Response(res)
 
     @list_route(methods=['get'])

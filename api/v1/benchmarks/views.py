@@ -45,7 +45,7 @@ class ReturnsView(ApiViewMixin, generics.ListAPIView):
     def get_queryset(self):
         return generics.get_object_or_404(MarketIndex, **{
             self.lookup_field: self.kwargs[self.lookup_field]
-        }).daily_prices.all()
+        }).daily_prices.all().order_by('date')
 
     def get_data(self, daily_prices: list):
         prices = []

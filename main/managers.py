@@ -197,55 +197,26 @@ class GoalQuerySet(QuerySet):
         return qs
 
 
-class PositionQuerySet(QuerySet):
+class PositionLotQuerySet(QuerySet):
     def filter_by_firm(self, firm):
-        qs = self.filter(goal__account__account_group__advisor__firm=firm.pk)
-        return qs
-
-    def filter_by_advisor(self, advisor):
-        # TODO: should we add here "secondary_advisors"?
-        # for advisor in advisors:
-        q = Q()
-        q |= Q(goal__account__primary_owner__advisor=advisor) | \
-            Q(goal__account__primary_owner__secondary_advisors__pk=advisor.pk) | \
-            Q(goal__account__signatories__advisor=advisor) | \
-            Q(goal__account__signatories__secondary_advisors__pk=advisor.pk)
-        # ClientAccounts are not guaranteed to have account groups
-        # filtering breaks here if no account group so we're ignoring these
-        # for the moment
-        # Q(account__account_group__advisor=advisor) |
-        # Q(account__account_group__secondary_advisors__pk=advisor.pk)
-        return self.filter(q)
+        return self.filter(Q(execution_distribution__transaction__from_goal__account__primary_owner__advisor__firm=firm) |
+                           Q(execution_distribution__transaction__to_goal__account__primary_owner__advisor__firm=firm))
 
     def filter_by_advisors(self, advisors):
-        """
-        Accepts list of adviosors and filters by them.
-        """
         q = Q()
         for advisor in advisors:
-            q |= Q(goal__account__primary_owner__advisor=advisor) | \
-                Q(goal__account__primary_owner__secondary_advisors__pk=advisor.pk) | \
-                Q(goal__account__signatories__advisor=advisor) | \
-                Q(goal__account__signatories__secondary_advisors__pk=advisor.pk)
+            q |= Q(execution_distribution__transaction__from_goal__account__primary_owner__advisor=advisor)
+            q |= Q(execution_distribution__transaction__to_goal__account__primary_owner__advisor=advisor)
         return self.filter(q)
 
-    def filter_by_client(self, client):
-        qs = self.filter(goal__account__primary_owner=client.pk)
-        return qs
-
     def filter_by_clients(self, clients):
-        """
-        Accepts list of clients and filters by them.
-        """
         q = Q()
         for client in clients:
-            q |= Q(goal__account__primary_owner=client.pk)
+            q |= Q(execution_distribution__transaction__from_goal__account__primary_owner=client)
+            q |= Q(execution_distribution__transaction__to_goal__account__primary_owner=client)
         return self.filter(q)
 
     def filter_by_risk_level(self, risk_levels=None):
-        """
-        Experimental
-        """
         if risk_levels is None:
             return self
 
@@ -259,9 +230,11 @@ class PositionQuerySet(QuerySet):
         q = Q()
         for level in risk_levels:
             risk_min, risk_max = GoalMetric.risk_level_range(level)
-            q |= Q(goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
-                   goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
-        qs = self.filter(q, goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+            q |= Q(execution_distribution__transaction__from_goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
+                   execution_distribution__transaction__from_goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
+            q |= Q(execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__configured_val__gte=risk_min,
+                   execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__configured_val__lt=risk_max)
+        qs = self.filter(q, execution_distribution__transaction__to_goal__selected_settings__metric_group__metrics__type=GoalMetric.METRIC_TYPE_RISK_SCORE)
 
         return qs
 
@@ -271,37 +244,24 @@ class PositionQuerySet(QuerySet):
         if worth is None:
             return self
 
-        clients = [position.goal.account.primary_owner for position in qs]
+        clients = [p.execution_distribution.transaction.to_goal.account.primary_owner for p in qs]
         cmap = {}
         if worth == Client.WORTH_AFFLUENT:
             cmap['affluent'] = [c.id for c in clients if c.get_worth() == Client.WORTH_AFFLUENT]
-            qs = self.filter(goal__account__primary_owner__in=cmap['affluent'])
+            qs = self.filter(execution_distribution__transaction__to_goal__account__primary_owner__in=cmap['affluent'])
         elif worth == Client.WORTH_HIGH:
             cmap['high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_HIGH]
-            qs = self.filter(goal__account__primary_owner__in=cmap['high'])
+            qs = self.filter(execution_distribution__transaction__to_goal__account__primary_owner__in=cmap['high'])
         elif worth == Client.WORTH_VERY_HIGH:
             cmap['very-high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_VERY_HIGH]
-            qs = self.filter(goal__account__primary_owner__in=cmap['very-high'])
+            qs = self.filter(execution_distribution__transaction__to_goal__account__primary_owner__in=cmap['very-high'])
         elif worth == Client.WORTH_ULTRA_HIGH:
             cmap['ultra-high'] = [c.id for c in clients if c.get_worth() == Client.WORTH_ULTRA_HIGH]
-            qs = self.filter(goal__account__primary_owner__in=cmap['ultra-high'])
+            qs = self.filter(execution_distribution__transaction__to_goal__account__primary_owner__in=cmap['ultra-high'])
         return qs
 
-    def annotate_value(self):
-        """
-        Experimental
 
-        NB. queryset supposed to have .values('xxx') declaration
-        """
-        qs = self.annotate(value=Coalesce(Sum(F('share') * F('ticker__unit_price')),0))
-        return qs
 
-    def aggregate_value(self):
-        """
-        Experimental
-        """
-        qs = self.aggregate(value=Coalesce(Sum(F('share') * F('ticker__unit_price')), 0))
-        return qs
 
 
 class ExternalAssetQuerySet(QuerySet):

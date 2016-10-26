@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from unittest import mock
 
 from django.core.exceptions import ValidationError
@@ -6,7 +6,9 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
-from main.models import Goal, Transaction
+from api.v1.tests.factories import TickerFactory, GoalFactory, TransactionFactory, ExecutionDistributionFactory, \
+    PositionLotFactory, ContentTypeFactory, AssetClassFactory
+from main.models import Goal, Transaction, MarketOrderRequest, Execution, InvestmentType
 from main.tests.fixture import Fixture1
 
 
@@ -23,6 +25,98 @@ class CreateGoalTest(TestCase):
                                        type=Fixture1.goal_type1(),
                                        portfolio_set=Fixture1.portfolioset1(),
                                        selected_settings=Fixture1.settings1())
+
+
+class GoalTests(TestCase):
+    def test_get_positions_all(self):
+        fund = TickerFactory.create(unit_price=2.1)
+        fund2 = TickerFactory.create(unit_price=4)
+        goal = GoalFactory.create()
+        today = date(2016, 1, 1)
+        # Create a 6 month old execution, transaction and a distribution that caused the transaction
+        order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec1 = Execution.objects.create(asset=fund,
+                                         volume=10,
+                                         order=order1,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=20)
+        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist1 = ExecutionDistributionFactory.create(execution=exec1, transaction=t1, volume=10)
+        PositionLotFactory(quantity=10, execution_distribution=dist1)
+
+        order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec2 = Execution.objects.create(asset=fund,
+                                         volume=5,
+                                         order=order2,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=10)
+        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=10)
+        dist2 = ExecutionDistributionFactory.create(execution=exec2, transaction=t2, volume=5)
+        PositionLotFactory(quantity=5, execution_distribution=dist2)
+
+        order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec3 = Execution.objects.create(asset=fund2,
+                                         volume=1,
+                                         order=order3,
+                                         price=2,
+                                         executed=date(2014, 6, 1),
+                                         amount=4)
+        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=4)
+        dist3 = ExecutionDistributionFactory.create(execution=exec3, transaction=t3, volume=1)
+        PositionLotFactory(quantity=1, execution_distribution=dist3)
+
+        positions = goal.get_positions_all()
+
+        self.assertTrue(positions[0]['quantity'] == 15)
+        self.assertTrue(positions[1]['quantity'] == 1)
+
+    def test_sum_stocks_for_goal(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        fund1 = TickerFactory.create(asset_class=self.stocks_asset_class,
+                                     benchmark_content_type=self.content_type,
+                                     etf=True)
+        goal = GoalFactory.create()
+
+        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        exec = Execution.objects.create(asset=fund1,
+                                        volume=10,
+                                        order=order,
+                                        price=2,
+                                        executed=date(2014, 6, 1),
+                                        amount=20)
+        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                       to_goal=None,
+                                       from_goal=goal,
+                                       status=Transaction.STATUS_EXECUTED,
+                                       executed=date(2014, 6, 1),
+                                       amount=20)
+        dist = ExecutionDistributionFactory.create(execution=exec, transaction=t1, volume=10)
+        PositionLotFactory(quantity=10, execution_distribution=dist)
+        weight_stocks = goal.stock_balance
+        weight_bonds = goal.bond_balance
+        weight_core = goal.core_balance
+        self.assertTrue(weight_stocks == 100)
+        self.assertTrue(weight_bonds == 0)
+        self.assertTrue(weight_core == 100)
 
 
 class GoalTotalReturnTest(TestCase):

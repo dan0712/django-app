@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
-from retiresmartz.models import RetirementPlan, RetirementPlanEinc
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
 
 
 def get_default_tx_plan():
@@ -37,15 +37,15 @@ def who_validator(value):
 def make_category_validator(category):
     def category_validator(value):
         if not value in category:
-            raise ValidationError("'cat' for %s must be one of %s"%(category, category.choices()))
+            raise ValidationError("'cat' for %s must be one of %s" % (category, category.choices()))
 
 
 def make_json_list_validator(field, serializer):
     def list_item_validator(value):
         try: value = json.loads(value)
-        except ValueError: raise ValidationError("Invalid json for %s"%field)
+        except ValueError: raise ValidationError("Invalid json for %s" % field)
         if not isinstance(value, list):
-            raise ValidationError("%s must be a JSON list of objects"%(field))
+            raise ValidationError("%s must be a JSON list of objects" % field)
         for item in value:
             if not isinstance(item, dict) or not serializer(data=item).is_valid(raise_exception=True):
                 raise ValidationError("Invalid %s object"%field)
@@ -123,7 +123,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'desired_risk',
             'recommended_risk',
             'max_risk',
-            'calculated_life_expectancy',
             'selected_life_expectancy',
 
             'portfolio',
@@ -201,6 +200,48 @@ class RetirementPlanEincWritableSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(RetirementPlanEincWritableSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            for field in self.fields.values():
+                field.required = False
+
+
+class RetirementAdviceReadSerializer(ReadOnlyModelSerializer):
+    """
+        Read-Only RetirementAdvice serializer, used for 
+        get request for retirement-plans advice-feed endpoint
+    """
+    class Meta:
+        model = RetirementAdvice
+        fields = (
+            'id',
+            'dt',
+            'trigger',
+            'text',
+            'read',
+            'action',
+            'action_url',
+            'action_data',
+        )
+
+
+class RetirementAdviceWritableSerializer(serializers.ModelSerializer):
+    """
+        UPDATE PUT/POST RetirementAdvice serializer, used for 
+        put requests for retirement-plans advice-feed endpoint
+    """
+    class Meta:
+        model = RetirementAdvice
+        fields = (
+            'text',
+            'read',
+            'action',
+            'action_url',
+            'action_data',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RetirementAdviceWritableSerializer, self).__init__(*args, **kwargs)
         request = self.context.get('request')
         if request.method == 'PUT':
             for field in self.fields.values():

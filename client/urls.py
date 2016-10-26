@@ -11,6 +11,6 @@ urlpatterns = patterns(
     # The React code should pick up this route.
     # If it doesn't, there is a configuration problem.
     url(r'^(?P<pk>\d+)$', app_view, name='page'),
-    url(r'^(?P<pk>\d+)/account/(?P<account_id>\d+)$',app_view, name='account'),
-    url(r'^(?P<pk>\d+)/app$', app_view, name='app'),
+    url(r'^(?P<pk>\d+)/account/(?P<account_id>\d+)$', app_view, name='account'),
+    url(r'^(?P<pk>\d+)/app$', app_view, name='app'),  # not using this anymore, use page above
 )

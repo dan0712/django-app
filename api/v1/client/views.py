@@ -22,6 +22,7 @@ from django.views.generic.detail import SingleObjectMixin
 from . import serializers
 from django.core.urlresolvers import reverse
 import logging
+import json
 
 logger = logging.getLogger('api.v1.client.views')
 
@@ -123,6 +124,19 @@ class ClientViewSet(ApiViewMixin,
         serializer.is_valid(raise_exception=True)
         # creat new client
         client = serializer.save(advisor=request.user.invitation.advisor, user=request.user)
+        if isinstance(client.regional_data, dict):
+            rd = client.regional_data
+        else:
+            rd = json.loads(client.regional_data)
+        if not rd.get('tax_transcript_data'):
+            # add tax_transcript and tax_transcript_data from
+            # the invitation serializer to client.regional_data
+            invitation_serializer = serializers.PrivateInvitationSerializer(request.user.invitation)
+            if invitation_serializer.data.get('tax_transcript', None) is not None:
+                rd['tax_transcript'] = invitation_serializer.data.get('tax_transcript')
+                rd['tax_transcript_data'] = invitation_serializer.data.get('tax_transcript_data')
+                client.regional_data = json.dumps(rd)
+                client.save()
 
         # set client invitation status to complete
         client.user.invitation.status = EmailInvite.STATUS_COMPLETE

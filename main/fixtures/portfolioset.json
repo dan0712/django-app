@@ -1,0 +1,1 @@
+[{"model": "main.portfolioset", "fields": {"name": "Default", "asset_classes": [34, 35, 36, 37, 12, 9, 1, 2, 3, 11, 5, 4, 7, 10, 8, 19, 15, 16, 18, 20, 22, 14, 17, 21, 23, 31, 33, 6, 13, 30], "risk_free_rate": 0.025}, "pk": 1}, {"model": "main.portfolioset", "fields": {"name": "Ethical", "asset_classes": [24, 25, 26, 27, 28, 29], "risk_free_rate": 0.025}, "pk": 2}]

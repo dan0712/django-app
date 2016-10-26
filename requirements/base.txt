@@ -47,6 +47,7 @@ pydenticon==0.2
 pinax-eventlog==1.1.1
 psycopg2==2.6.1
 ptyprocess==0.5
+PyPDF2==1.26.0
 pysftp==0.2.8
 python-dateutil==2.5.3 # For rrule parsing
 pytz==2015.7
@@ -83,3 +84,7 @@ git+git://github.com/blampe/IbPy.git
 
 # main migrations rely on this
 django-recurrence==1.3.0
+
+
+# geolocation
+pygeoip==0.3.2

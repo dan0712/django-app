@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now
 from jsonfield.fields import JSONField
+from pinax.eventlog.models import Log
 
 from common.structures import ChoiceEnum
 from main.models import TransferPlan
@@ -150,7 +151,9 @@ class RetirementPlan(models.Model):
         help_text="The maximum allowable risk appetite for this retirement "
                   "plan, based on our risk model")
 
-    calculated_life_expectancy = models.PositiveIntegerField()
+    # calculated_life_expectancy should be calculated,
+    # read-only don't let client create/update
+    calculated_life_expectancy = models.PositiveIntegerField(blank=True, null=True)
     selected_life_expectancy = models.PositiveIntegerField()
 
     agreed_on = models.DateTimeField(null=True, blank=True)
@@ -168,6 +171,9 @@ class RetirementPlan(models.Model):
         # Keep a copy of agreed_on so we can see if it's changed
         super(RetirementPlan, self).__init__(*args, **kwargs)
         self.__was_agreed = self.agreed_on
+
+    def __str__(self):
+        return "RetirementPlan {}".format(self.id)
 
     @property
     def was_agreed(self):
@@ -226,7 +232,7 @@ def resolve_retirement_invitations(sender, instance, created, **kwargs):
             and invitation.status != EmailInvite.STATUS_COMPLETE \
             and invitation.reason == EmailInvite.REASON_RETIREMENT:
         invitation.onboarding_data = None
-        invitation.onboarding_file_1 = None
+        invitation.tax_transcript = None
         invitation.status = EmailInvite.STATUS_COMPLETE
         invitation.save()
 
@@ -270,6 +276,31 @@ class RetirementLifestyle(models.Model):
         help_text="The default number of paid work days selected "
                   "for this lifestyle"
     )
+
+
+    def __str__(self):
+        return "RetirementLifestyle {}".format(self.id)
+
+
+class RetirementAdvice(models.Model):
+    plan = models.ForeignKey(RetirementPlan, related_name='advice')
+    trigger = models.ForeignKey(Log, related_name='advice')
+    dt = models.DateTimeField(auto_now_add=True)
+    read = models.DateTimeField(blank=True, null=True)
+    text = models.CharField(max_length=512)
+    action = models.CharField(max_length=12, blank=True)
+    action_url = models.CharField(max_length=512, blank=True)
+    action_data = models.CharField(max_length=512, blank=True)
+    objects = RetirementAdviceQueryset.as_manager()
+
+    def save(self, *args, **kwargs):
+        if self.action and not self.action_url:
+            # make sure action_url is set if the action is
+            raise ValidationError('must provide action_url if action is set')
+        super(RetirementAdvice, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return "{} Advice {}".format(self.plan, self.id)
 
 
 class InflationForecast(models.Model):

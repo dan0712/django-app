@@ -6,15 +6,18 @@ from django.utils import timezone
 from pinax.eventlog.models import Log
 
 import address.models as ad
-from api.v1.tests.factories import GoalMetricFactory
+from api.v1.tests.factories import GoalMetricFactory, TransactionFactory, PositionLotFactory, \
+    InvestmentCycleObservationFactory
 from client.models import Client, ClientAccount, IBAccount, RiskProfileAnswer, \
     RiskProfileGroup, RiskProfileQuestion
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
-    ExecutionDistribution, ExternalAsset, ExternalInstrument, Firm, Goal, \
+    ExecutionDistribution, ExternalAsset, Firm, Goal, \
     GoalMetricGroup, GoalSetting, GoalType, HistoricalBalance, MarketIndex, \
-    MarketOrderRequest, PortfolioSet, Region, Ticker, Transaction, User
+    PortfolioSet, Region, Ticker, User, ExternalInstrument, \
+    Transaction, MarketOrderRequest
+from main.risk_profiler import MINIMUM_RISK
 from retiresmartz.models import RetirementPlan
 
 
@@ -370,18 +373,22 @@ class Fixture1:
 
     @classmethod
     def metric_group1(cls):
-        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
-                                                     name='metricgroup1')[0]
-        # A metric group isn't valid without a risk score
-        GoalMetricFactory.create(group=g, configured_val=0.4)
+        g, c = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+                                                     name='metricgroup1')
+        # A metric group isn't valid without a risk score, and we only want to create the metric if the group was
+        # newly created.
+        if c:
+            GoalMetricFactory.create(group=g, configured_val=MINIMUM_RISK)
         return g
 
     @classmethod
     def metric_group2(cls):
-        g = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
-                                                     name='metricgroup2')[0]
-        # A metric group isn't valid without a risk score
-        GoalMetricFactory.create(group=g, configured_val=0.4)
+        g, c = GoalMetricGroup.objects.get_or_create(type=GoalMetricGroup.TYPE_PRESET,
+                                                     name='metricgroup2')
+        # A metric group isn't valid without a risk score, and we only want to create the metric if the group was
+        # newly created.
+        if c:
+            GoalMetricFactory.create(group=g, configured_val=MINIMUM_RISK)
         return g
 
     @classmethod
@@ -746,3 +753,34 @@ class Fixture1:
                                                             transaction=tx,
                                                             volume=volume))
         return res
+
+    @classmethod
+    def populate_observations(cls, values, begin_date):
+        dates = list()
+        values = str(values)
+        for val in values:
+            dates.append(begin_date)
+            InvestmentCycleObservationFactory.create(as_of=begin_date,
+                                                     cycle=int(val))
+            begin_date += datetime.timedelta(1)
+        return dates
+
+    @classmethod
+    def create_execution_details(cls, goal, ticker, quantity, price, executed):
+        mor = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
+        execution = Execution.objects.create(asset=ticker,
+                                             volume=quantity,
+                                             order=mor,
+                                             price=price,
+                                             executed=executed,
+                                             amount=quantity*price)
+        transaction = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
+                                                to_goal=None,
+                                                from_goal=goal,
+                                                status=Transaction.STATUS_EXECUTED,
+                                                executed=executed,
+                                                amount=quantity*price)
+        distribution = ExecutionDistribution.objects.create(execution=execution,
+                                                            transaction=transaction,
+                                                            volume=quantity)
+        PositionLotFactory.create(quantity=quantity, execution_distribution=distribution)

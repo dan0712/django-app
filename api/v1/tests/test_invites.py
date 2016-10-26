@@ -1,3 +1,7 @@
+import os
+import json
+from datetime import date
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
@@ -9,13 +13,13 @@ from main.constants import ACCOUNT_TYPE_PERSONAL
 from .factories import AdvisorFactory, SecurityQuestionFactory, EmailInviteFactory
 from .factories import AccountTypeRiskProfileGroupFactory, AddressFactory, \
     ClientAccountFactory, ClientFactory, GroupFactory, RegionFactory, RiskProfileGroupFactory
-
 from client.models import EmailInvite
-import json
+from main.constants import EMPLOYMENT_STATUS_FULL_TIME, GENDER_MALE
 
 
 class InviteTests(APITestCase):
     def setUp(self):
+        self.maxDiff = None
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         # client with some personal assets, cash balance and goals
         self.region = RegionFactory.create()
@@ -228,22 +232,62 @@ class InviteTests(APITestCase):
         self.assertEqual(lookup_invite.onboarding_data['foo'], 'bar',
                          msg='should save onboarding_file')
 
-        # Submit with onboarding_file_1
-        fh = SimpleUploadedFile("tax_transcript.pdf", b'123')
-        onboarding = {'onboarding_file_1': fh}
-        response = self.client.put(invite_detail_url, data=onboarding,
-                                   format='multipart')
+        # PUT: /api/v1/invites/:key
+        # Tax transcript upload and parsing
+        expected_tax_transcript_data = {'sections': [{'name': 'Introduction', 'fields': {'SPOUSE NAME': 'SPOUSE M LAST', 'SPOUSE SSN': '222-22-2222', 'ADDRESS': '999 AVENUE RD  CITY, ST 10.000-90.00-800', 'NAME': 'FIRST M', 'SSN': '111-11-1111', 'FILING STATUS': 'Married Filing Joint'}}, {'name': 'Income', 'fields': {'TOTAL INCOME': '$0.00'}}]}
+        with open(os.path.join(settings.BASE_DIR, 'pdf_parsers', 'samples', 'sample.pdf'), mode="rb") as tax_transcript:
+            data = {
+                'tax_transcript': tax_transcript
+            }
+            response = self.client.put(invite_detail_url, data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='Updating onboarding with tax_transcript PDF returns OK')
+        self.assertNotEqual(response.data['tax_transcript_data'], None,
+                            msg='tax_transcript_data is in the response and not None')
+        self.assertEqual(response.data['tax_transcript_data'], expected_tax_transcript_data,
+                         msg='Parsed tax_transcript_data matches expected')
+
 
         self.assertEqual(response._headers['content-type'], ('Content-Type', 'application/json'),
                          msg='Response content type is application/json after upload')
 
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         msg='Onboarding must accept files')
-        self.assertNotEqual(response.data.get('onboarding_file_1'), None,
-                            msg='onboarding_file_1 is not null')
         self.assertEqual(response.data['status'], EmailInvite.STATUS_ACCEPTED,
                          msg='invitation status ACCEPTED')
+
+        # create client and make sure tax_transcript data is carried over properly
+        url = reverse('api:v1:client-list')
+        address = {
+            "address": "123 My Street\nSome City",
+            "post_code": "112233",
+            "region": {
+                "name": "New South Wales",
+                "country": "AU",
+                "code": "NSW",
+            }
+        }
+        regional_data = {
+            'ssn': '555-55-5555',
+            'politically_exposed': True,
+        }
+        data = {
+            "advisor_agreement": True,
+            "betasmartz_agreement": True,
+            "date_of_birth": date(2016, 9, 21),
+            "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
+            "gender": GENDER_MALE,
+            "income": 1234,
+            "phone_num": "+41524204249",
+            "residential_address": address,
+            "regional_data": json.dumps(regional_data)
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        regional_data_load = json.loads(response.data['regional_data'])
+        self.assertNotEqual(regional_data_load['tax_transcript'], None)
+        self.assertEqual(regional_data_load['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'],
+                         expected_tax_transcript_data['sections'][0]['fields']['FILING STATUS'],
+                         msg='Parsed tax_transcript_data FILING STATUS parsed successfully')
 
     def test_complete_invitation(self):
 

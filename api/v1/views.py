@@ -103,7 +103,7 @@ class MultipleSerializersModelViewMixin(object):
         return serializer.save()
 
 
-class ApiViewMixin(MultipleSerializersModelViewMixin):
+class ReadOnlyApiViewMixin(object):
     permission_classes = IsAuthenticated,
 
     renderer_classes = (
@@ -113,6 +113,10 @@ class ApiViewMixin(MultipleSerializersModelViewMixin):
     def get_nested_data(self, namespace):
         data = self.request.data
         return get_nested_data(data, namespace)
+
+
+class ApiViewMixin(ReadOnlyApiViewMixin, MultipleSerializersModelViewMixin):
+    pass
 
 
 class BaseApiView(ApiViewMixin, APIView):

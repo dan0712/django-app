@@ -522,7 +522,7 @@ class FirmAnalyticsOverviewView(FirmAnalyticsMixin, TemplateView, LegalView):
                 .filter_by_risk_level(risk_level_tuple[0]) \
                 .values('account__primary_owner__id') \
                 .annotate(positions_sum=Coalesce(Sum(
-                    F('positions__share') * F('positions__ticker__unit_price')
+                    F('transactions_to__execution_distribution__position_lot__quantity') * F('transactions_to__execution_distribution__execution__asset__unit_price')
                 ), 0)) \
                 .aggregate(
                     positions=Coalesce(Sum('positions_sum'), 0),

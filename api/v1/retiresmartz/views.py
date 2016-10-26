@@ -7,20 +7,22 @@ from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.views import ApiViewMixin
+from retiresmartz.models import RetirementPlan, RetirementAdvice
 from client.models import Client
 from main.models import Ticker
-from retiresmartz.models import RetirementPlan
+
 from support.models import SupportRequest
 from . import serializers
-
 logger = logging.getLogger('api.v1.retiresmartz.views')
 
 
 class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     model = RetirementPlan
+    permission_classes = (IsAuthenticated,)
 
     # We don't want pagination for this viewset. Remove this line to enable.
     pagination_class = None
@@ -65,9 +67,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.agreed_on:
-            return Response(
-            {'error': 'Unable to update a RetirementPlan that has been agreed on'},
-            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Unable to update a RetirementPlan that has been agreed on'},
+                            status=status.HTTP_400_BAD_REQUEST)
         return super(RetiresmartzViewSet, self).update(request, *args, **kwargs)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
@@ -181,3 +182,27 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             dt = now + relativedelta(days=i * day_interval)
             projection.append([income, assets, dt])
         return Response({'portfolio': portfolio, 'projection': projection})
+
+
+class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
+    model = RetirementPlan
+    permission_classes = (IsAuthenticated,)
+    queryset = RetirementAdvice.objects.filter(read=None)  # unread advice
+    serializer_class = serializers.RetirementAdviceReadSerializer
+    serializer_response_class = serializers.RetirementAdviceReadSerializer
+
+    def get_queryset(self):
+        """
+        The nested viewset takes care of only returning results for the client we are looking at.
+        We need to add logic to only allow access to users that can view the plan.
+        """
+        qs = super(RetiresmartzAdviceViewSet, self).get_queryset()
+        # Check user object permissions
+        user = SupportRequest.target_user(self.request)
+        return qs.filter_by_user(user)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return serializers.RetirementAdviceReadSerializer
+        elif self.request.method == 'PUT':
+            return serializers.RetirementAdviceWritableSerializer

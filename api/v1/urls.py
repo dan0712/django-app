@@ -1,6 +1,5 @@
 from django.conf.urls import patterns, url, include
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-
 from .user import views as user_views
 from .settings import views as settings_views
 from .client import views as client_views
@@ -24,6 +23,11 @@ retirement_plans_router = client_router.register(r'retirement-plans',
                                                 retiresmartz_views.RetiresmartzViewSet,
                                                 base_name='client-retirement-plans',
                                                 parents_query_lookups=['client'])
+retirement_advice_router = retirement_plans_router.register(r'advice-feed',
+                                                retiresmartz_views.RetiresmartzAdviceViewSet,
+                                                base_name='client-retirement-advice',
+                                                parents_query_lookups=['plan__client', 'plan'])
+
 external_assets_router = client_router.register(r'external-assets',
                                                 client_views.ExternalAssetViewSet,
                                                 base_name='client-external-assets',
@@ -35,6 +39,10 @@ retirement_incomes_router = client_router.register(r'retirement-incomes',
                                                 parents_query_lookups=['plan__client'])
 goals_router = router.register(r'goals',
                                goals_views.GoalViewSet)
+goal_settings_router = goals_router.register(r'settings',
+                                            goals_views.GoalSettingViewSet,
+                                            base_name='goal-settings',
+                                            parents_query_lookups=['goal'])
 account_router = router.register(r'accounts',
                                  account_views.AccountViewSet)
 account_goals_router = account_router.register(r'goals',

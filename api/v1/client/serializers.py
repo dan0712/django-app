@@ -11,8 +11,14 @@ from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfi
     AccountTypeRiskProfileGroup
 from notifications.signals import notify
 from main import constants
+from pdf_parsers.tax_return import parse_pdf
 from ..user.serializers import UserFieldSerializer
+import logging
+import tempfile
+import uuid
+import json
 
+logger = logging.getLogger('api.v1.client.serializers')
 RESIDENTIAL_ADDRESS_KEY = 'residential_address'
 
 
@@ -216,6 +222,7 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
     firm_name = serializers.SerializerMethodField()
     firm_logo = serializers.SerializerMethodField()
     firm_colored_logo = serializers.SerializerMethodField()
+    tax_transcript_data = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailInvite
@@ -224,13 +231,14 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
             'invite_key',
             'status',
             'onboarding_data',
-            'onboarding_file_1',
             'risk_profile_group',
             'reason',
             'advisor',
             'firm_name',
             'firm_logo',
             'firm_colored_logo',
+            'tax_transcript',
+            'tax_transcript_data',  # this will be stored to client.region_data.tax_transcript_data
         )
 
     def get_risk_profile_group(self, obj):
@@ -244,6 +252,21 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
 
     def get_firm_colored_logo(self, obj):
         return obj.advisor.firm.colored_logo
+
+    def get_tax_transcript_data(self, obj):
+        # parse_pdf
+        if obj.tax_transcript:
+            # save to tmp file to pass to parse_pdf
+            # TODO: parse_pdf using subprocess file status command
+            # to detect pdf_fonts, need to replace that with
+            # something we can pass the in-memory file data here
+            tmp_filename = '/tmp/' + str(uuid.uuid4()) + '.pdf'
+            with open(tmp_filename, 'wb+') as f:
+                for chunk in obj.tax_transcript.chunks():
+                    f.write(chunk)
+            obj.tax_transcript_data = parse_pdf(tmp_filename)
+            return obj.tax_transcript_data
+        return None
 
 
 class ClientUserRegistrationSerializer(serializers.Serializer):
