@@ -124,6 +124,9 @@ USE_TZ = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_LENGTH = 300
 
+PHONENUMBER_DB_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_REGION = 'US'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
