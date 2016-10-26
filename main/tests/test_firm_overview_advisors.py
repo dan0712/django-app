@@ -33,7 +33,6 @@ class FirmOverviewAdvisorsTests(TestCase):
         self.assertTrue(login)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.content)
         self.assertTrue(self.account.primary_owner.user.get_full_name() in str(response.content))
 
         url = reverse('firm:overview-advisor', args=[self.advisor2.pk])
