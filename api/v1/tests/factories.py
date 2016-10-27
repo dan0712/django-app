@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import factory
-import json
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
@@ -14,7 +13,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, \
-                        RecurringTransaction
+                        RecurringTransaction, AccountGroup
 from retiresmartz.models import RetirementPlan, RetirementAdvice
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -570,3 +569,19 @@ class RetirementAdviceFactory(factory.django.DjangoModelFactory):
     plan = factory.SubFactory(RetirementPlanFactory)
     # trigger = factory.SubFactory(EventLogFactory)
     text = factory.Sequence(lambda n: 'Retirement Advice %s' % n)
+
+
+class AccountGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AccountGroup
+
+    name = factory.Sequence(lambda n: 'Account Group %s' % n)
+    advisor = factory.SubFactory(AdvisorFactory)
+
+    # @factory.post_generation
+    # def secondary_advisors(self, create, extracted, **kwargs):
+    #     if not create:
+    #         return
+    #     if extracted:
+    #         for advisor in extracted:
+    #             self.secondary_advisors.add(advisor)

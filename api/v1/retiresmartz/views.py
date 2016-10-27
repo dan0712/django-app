@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.views import ApiViewMixin
+from common.utils import d2ed
 from retiresmartz.models import RetirementPlan, RetirementAdvice
 from client.models import Client
 from main.models import Ticker
@@ -170,17 +171,16 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                 percent = 10
             portfolio.append([ticker.id, percent])
         # grab 50 evenly spaced time points between dob and current time
-        now = timezone.now()
-        first_year = retirement_plan.client.date_of_birth.year + retirement_plan.retirement_age
-        last_year = retirement_plan.client.date_of_birth.year + retirement_plan.selected_life_expectancy
-        day_interval = ((last_year - first_year) * 365) / 50
+        today = timezone.now().date()
+        last_day = retirement_plan.client.date_of_birth + relativedelta(years=retirement_plan.selected_life_expectancy)
+        day_interval = (last_day - today) / 50
         income_start = 20000
         assets_start = 100000
-        for i in range(1, 50):
+        for i in range(50):
             income = income_start + (i * 50)
             assets = assets_start + (i * 1000)
-            dt = now + relativedelta(days=i * day_interval)
-            projection.append([income, assets, dt])
+            dt = today + i * day_interval
+            projection.append([d2ed(dt), assets, income])
         return Response({'portfolio': portfolio, 'projection': projection})
 
 
