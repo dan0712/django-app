@@ -353,3 +353,37 @@ class RetiresmartzTests(APITestCase):
         self.client.force_authenticate(user=plan.client.user)
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_add_retirement_plan_same_location_no_postal(self):
+        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        data = {
+            "name": "Personal Plan",
+            "description": "My solo plan",
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': False,
+            'same_location': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 1000,
+            'atc': 300,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        }
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['btc'], 1000)
+        self.assertNotEqual(response.data['id'], None)
+        saved_plan = RetirementPlan.objects.get(id=response.data['id'])
+        self.assertEqual(saved_plan.btc, 1000)
+        # make sure client cannot set calculated_life_expectancy
+        # should only be set from backend, read-only
+        self.assertNotEqual(response.data['calculated_life_expectancy'], data['calculated_life_expectancy'])
+
