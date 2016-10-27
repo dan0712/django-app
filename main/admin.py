@@ -158,17 +158,6 @@ def rebalance(modeladmin, request, queryset):
                                     .format(pk=queryset.all()[0].pk))
 
 
-def execute_transaction(modeladmin, request, queryset):
-    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'transaction'}
-
-    if queryset.count() > 1:
-        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
-
-    else:
-        return HttpResponseRedirect('/betasmartz_admin/transaction/{pk}/execute?next=/admin/main/firm/'
-                                    .format(pk=queryset.all()[0].pk))
-
-
 def invite_authorised_representative(modeladmin, request, queryset):
     context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'firm'}
 
@@ -256,7 +245,6 @@ class PortfolioSetAdmin(admin.ModelAdmin):
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('reason', 'from_goal', 'to_goal', 'status', 'amount', 'created')
-    actions = (execute_transaction,)
     list_filter = ('status',)
 
 
