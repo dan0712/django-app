@@ -70,6 +70,36 @@ class RetiresmartzTests(APITestCase):
         # should only be set from backend, read-only
         self.assertNotEqual(response.data['calculated_life_expectancy'], self.base_plan_data['calculated_life_expectancy'])
 
+    def test_add_plan_no_name(self):
+        base_plan_data = {
+            "description": "My solo plan",
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 1000,
+            'atc': 300,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        }
+        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.post(url, base_plan_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['btc'], 1000)
+        self.assertNotEqual(response.data['id'], None)
+        saved_plan = RetirementPlan.objects.get(id=response.data['id'])
+        self.assertEqual(saved_plan.btc, 1000)
+        # make sure name is None
+        self.assertEqual(response.data['name'], None)
+
     def test_cant_change_after_agreed(self):
         '''
         Tests:

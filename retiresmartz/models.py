@@ -45,7 +45,7 @@ class RetirementPlan(models.Model):
         MOBILE_HOME = 6, 'Mobile Home'
         RV = 7, 'RV, Van, Boat, etc'
 
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(null=True, blank=True)
     client = models.ForeignKey('client.Client')
 
