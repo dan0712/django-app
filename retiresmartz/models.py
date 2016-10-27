@@ -129,7 +129,9 @@ class RetirementPlan(models.Model):
 
     # calculated_life_expectancy should be calculated,
     # read-only don't let client create/update
+    # TODO: Always Calculate the below value in the save(). Make it editable=False, null=False, blank=True
     calculated_life_expectancy = models.PositiveIntegerField(blank=True, null=True)
+    # TODO: This field should be blank=True and also calculated if not set on save().
     selected_life_expectancy = models.PositiveIntegerField()
 
     agreed_on = models.DateTimeField(null=True, blank=True)
