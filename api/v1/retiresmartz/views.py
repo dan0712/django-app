@@ -71,7 +71,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return super(RetiresmartzViewSet, self).update(request, *args, **kwargs)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
-    def suggested_retirement_income(self):
+    def suggested_retirement_income(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates a suggested retirement income based on the client's retirement plan and personal profile.
         """
@@ -79,7 +79,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(1234)
 
     @detail_route(methods=['get'], url_path='calculate-contributions')
-    def calculate_contributions(self):
+    def calculate_contributions(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates suggested contributions (value for the amount in the btc and atc) that will generate the desired
         retirement income.
@@ -88,7 +88,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response({'btc_amount': 1111, 'atc_amount': 0})
 
     @detail_route(methods=['get'], url_path='calculate-income')
-    def calculate_income(self):
+    def calculate_income(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates retirement income possible given the current contributions and other details on the retirement plan.
         """
@@ -96,7 +96,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(2345)
 
     @detail_route(methods=['get'], url_path='calculate-balance-income')
-    def calculate_balance_income(self):
+    def calculate_balance_income(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates the retirement balance required to provide the desired_income as specified in the plan.
         """
@@ -104,7 +104,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(5555555)
 
     @detail_route(methods=['get'], url_path='calculate-income-balance')
-    def calculate_income_balance(self):
+    def calculate_income_balance(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates the retirement income possible with a supplied retirement balance and other details on the
         retirement plan.
@@ -113,7 +113,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(1357)
 
     @detail_route(methods=['get'], url_path='calculate-balance-contributions')
-    def calculate_balance_contributions(self):
+    def calculate_balance_contributions(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates the retirement balance generated from the contributions.
         """
@@ -121,7 +121,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(6666666)
 
     @detail_route(methods=['get'], url_path='calculate-contributions-balance')
-    def calculate_contributions_balance(self):
+    def calculate_contributions_balance(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates the contributions required to generate the given retirement balance.
         """

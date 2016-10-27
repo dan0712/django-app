@@ -544,6 +544,7 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     volunteer_days = factory.LazyAttribute(lambda n: random.randrange(7))
     paid_days = factory.LazyAttribute(lambda n: random.randrange(7))
     same_home = False
+    same_location = False
     retirement_postal_code = 11901
     reverse_mortgage = True
     expected_return_confidence = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
