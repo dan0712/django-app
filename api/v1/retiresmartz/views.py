@@ -86,8 +86,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # TODO: Make this work
         return Response({'btc_amount': 1111, 'atc_amount': 0})
 
-    @detail_route(methods=['get'], url_path='calculate-income')
-    def calculate_income(self, request, parent_lookup_client, pk, format=None):
+    @list_route(methods=['post'], url_path='calculate-income')
+    def calculate_income(self, request, parent_lookup_client, format=None):
         """
         Calculates retirement income possible given the current contributions and other details on the retirement plan.
         """
@@ -127,8 +127,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # TODO: Make this work
         return Response({'btc_amount': 2222, 'atc_amount': 88})
 
-    @detail_route(methods=['get'], url_path='calculate')
-    def calculate(self, request, parent_lookup_client, pk, format=None):
+    @list_route(methods=['post'], url_path='calculate')
+    def calculate(self, request, parent_lookup_client, format=None):
         """
         Calculate the single projection values for the
         current retirement plan settings.
@@ -154,10 +154,16 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         going up by 1000 every point, income starting
         at 200000, increasing by 50 every point.
         """
+        # try:
+        #     retirement_plan = RetirementPlan.objects.get(pk=pk)
+        # except:
+        #     return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
         try:
-            retirement_plan = RetirementPlan.objects.get(pk=pk)
+            client = Client.objects.get(pk=parent_lookup_client)
         except:
             return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = serializers.RetirementPlanCalculateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         tickers = Ticker.objects.filter(~Q(state=Ticker.State.CLOSED.value))
         portfolio = []
         projection = []
@@ -169,8 +175,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             portfolio.append([ticker.id, percent])
         # grab 50 evenly spaced time points between dob and current time
         now = timezone.now()
-        first_year = retirement_plan.client.date_of_birth.year + retirement_plan.retirement_age
-        last_year = retirement_plan.client.date_of_birth.year + retirement_plan.selected_life_expectancy
+        first_year = client.date_of_birth.year + serializer.validated_data['retirement_age']
+        last_year = client.date_of_birth.year + serializer.validated_data['selected_life_expectancy']
         day_interval = ((last_year - first_year) * 365) / 50
         income_start = 20000
         assets_start = 100000

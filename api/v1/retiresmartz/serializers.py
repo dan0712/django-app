@@ -246,3 +246,8 @@ class RetirementAdviceWritableSerializer(serializers.ModelSerializer):
         if request.method == 'PUT':
             for field in self.fields.values():
                 field.required = False
+
+
+class RetirementPlanCalculateSerializer(serializers.Serializer):
+    retirement_age = serializers.IntegerField()
+    selected_life_expectancy = serializers.IntegerField()
