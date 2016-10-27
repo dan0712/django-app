@@ -103,7 +103,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(5555555)
 
     @detail_route(methods=['get'], url_path='calculate-income-balance')
-    def calculate_income_balance(self):
+    def calculate_income_balance(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates the retirement income possible with a supplied retirement balance and other details on the
         retirement plan.
