@@ -10,13 +10,13 @@ from django.core.validators import MaxLengthValidator, MaxValueValidator, \
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.timezone import now
 from jsonfield.fields import JSONField
 from pinax.eventlog.models import Log
 
 from common.structures import ChoiceEnum
 from main.models import TransferPlan
-from .managers import InflationForecastQuerySet, RetirementPlanQuerySet
+from retiresmartz.managers import RetirementAdviceQueryset
+from .managers import RetirementPlanQuerySet
 
 logger = logging.getLogger(__name__)
 
@@ -62,10 +62,9 @@ class RetirementPlan(models.Model):
                                         null=True,
                                         on_delete=models.SET_NULL)
 
-    lifestyle = models.PositiveIntegerField(
-        choices=LifestyleCategory.choices(),
-        default=1,
-        help_text="The desired retirement lifestyle")
+    lifestyle = models.PositiveIntegerField(choices=LifestyleCategory.choices(),
+                                            default=1,
+                                            help_text="The desired retirement lifestyle")
 
     desired_income = models.PositiveIntegerField(
         help_text="The desired annual household pre-tax retirement "
@@ -112,18 +111,19 @@ class RetirementPlan(models.Model):
         null=True,
         blank=True,
         help_text="List of expenses [{id, desc, cat, who, amt},...]")
-    savings = JSONField(null=True, blank=True,
-                        help_text="List of savings "
-                                  "[{id, desc, cat, who, amt},...]")
-    initial_deposits = JSONField(null=True, blank=True,
-                                 help_text="List of deposits "
-                                           "[{id, desc, cat, who, amt},...]")
+    savings = JSONField(null=True,
+                        blank=True,
+                        help_text="List of savings [{id, desc, cat, who, amt},...]")
+    initial_deposits = JSONField(null=True,
+                                 blank=True,
+                                 help_text="List of deposits [{id, desc, cat, who, amt},...]")
 
     income_growth = models.FloatField(default=0,
                                       help_text="Above consumer price index "
                                                 "(inflation)")
-    expected_return_confidence = models.FloatField(
-        validators=[MinValueValidator(0), MaxValueValidator(1)])
+    expected_return_confidence = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)],
+                                                   help_text="Planned confidence of the portfolio returns given the "
+                                                             "volatility and risk predictions.")
 
     retirement_age = models.PositiveIntegerField()
 
@@ -277,7 +277,6 @@ class RetirementLifestyle(models.Model):
                   "for this lifestyle"
     )
 
-
     def __str__(self):
         return "RetirementLifestyle {}".format(self.id)
 
@@ -291,6 +290,7 @@ class RetirementAdvice(models.Model):
     action = models.CharField(max_length=12, blank=True)
     action_url = models.CharField(max_length=512, blank=True)
     action_data = models.CharField(max_length=512, blank=True)
+
     objects = RetirementAdviceQueryset.as_manager()
 
     def save(self, *args, **kwargs):
@@ -301,17 +301,6 @@ class RetirementAdvice(models.Model):
 
     def __str__(self):
         return "{} Advice {}".format(self.plan, self.id)
-
-
-class InflationForecast(models.Model):
-    date = models.DateField()
-    value = models.FloatField()
-    imported = models.ForeignKey('InflationForecastImport')
-
-    objects = InflationForecastQuerySet.as_manager()
-
-    def __str__(self):
-        return '{0.date:%Y-%m-%d} {0.value}'.format(self)
 
 
 class InflationForecastImport(models.Model):

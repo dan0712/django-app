@@ -1,50 +1,64 @@
 from __future__ import unicode_literals
 
 import datetime
+from abc import abstractmethod, ABCMeta
 
-from dateutil.relativedelta import relativedelta
-
+from common.utils import months_between
+from main.models import Inflation
 from .base import FinancialResource
 
 
-# noinspection PyAbstractClass
 class CashFlow(FinancialResource):
+    __metaclass__ = ABCMeta
+
     # these dates to set the boundaries when to produce money
     start_date = None
     end_date = None
+    last_date = None
 
-    def on(self, date: datetime.date) -> float:
+    def on(self, dt: datetime.date) -> float:
         """
         Returns non-discretionary cash flow for that
         month. Must be called with monotonically increasing months between
         calls to reset(). The CashFlow is assumed applied independent of
         whether on() is called at any moment.
         """
+        if self.last_date > dt:
+            raise ValueError("Order of dates must be monotonically increasing between resets.")
+
+        self.last_date = dt
+
+        return self._for_date(dt) if self.start_date <= dt <= self.end_date else 0
+
+    @abstractmethod
+    def _for_date(self, date: datetime.date) -> float:
         raise NotImplementedError()
+
+    def reset(self):
+        self.last_date = self.start_date
 
 
 class ReverseMortgage(CashFlow):
-    def __init__(self, home_value: float,
-                 retirement_date: datetime.date,
-                 retirement_years: int):
-        self.retirement_date = retirement_date
-        self.retirement_years = retirement_years
-        self.last_date = retirement_date + \
-                         relativedelta(years=retirement_years)
-        self.future_home_value = home_value * (
-            1 + (self.inflation_on(self.last_date) / 12)
-        )
+    def __init__(self,
+                 home_value: float,
+                 value_date: datetime.date,
+                 start_date: datetime.date,
+                 end_date: datetime.date):
+        """
+        Initialises a reverse mortgage calculator
+        :param home_value:
+        :param value_date:
+        :param start_date:
+        :param end_date:
+        """
+        self.start_date = start_date
+        self.end_date = end_date
+        self.last_date = start_date
+        home_value_at_retirement = home_value * (1 + Inflation.between(value_date, start_date))
+        self.monthly_payment = home_value_at_retirement * 0.9 / months_between(start_date, end_date)
 
-        self.monthly_payment = (self.future_home_value * .9 /
-                                self.retirement_years) / 12
-
-    def on(self, date: datetime.date) -> float:
-        if self.retirement_date <= date <= self.last_date:
-            return self.monthly_payment
-        return 0.
-
-    def reset(self):
-        pass
+    def _for_date(self, date: datetime.date) -> float:
+        return self.monthly_payment
 
 
 class SocialSecurity(CashFlow):
@@ -53,11 +67,8 @@ class SocialSecurity(CashFlow):
         self.birthday = birthday
         self.retirement_date = retirement_date
 
-    def on(self, date: datetime.date) -> float:
+    def _for_date(self, date: datetime.date) -> float:
         return 0.
-
-    def reset(self):
-        pass
 
 
 class AccountContribution(CashFlow):

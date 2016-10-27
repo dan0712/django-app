@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import datetime
 import logging
 from django.db.models import Q, QuerySet
 
@@ -51,23 +50,6 @@ class RetirementPlanQuerySet(QuerySet):
             Q(client=client) |
             Q(partner_plan__client=client)
         )
-
-
-class InflationForecastQuerySet(QuerySet):
-    def on_date(self, begin_date: datetime.date,
-                end_date: datetime.date) -> float:
-        begin_date = begin_date.replace(day=1)
-        end_date = end_date.replace(day=1)
-        if begin_date >= end_date:
-            raise ValueError('End date must be after begin date.')
-
-        try:
-            first_month = self.filter(date__gte=begin_date)[0]
-            last_month = self.filter(date__lt=end_date).order_by('-date')[0]
-        except IndexError:
-            return 0.
-
-        return (last_month.value / first_month.value) - 1
 
 
 class RetirementAdviceQueryset(QuerySet):

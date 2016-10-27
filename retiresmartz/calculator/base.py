@@ -8,17 +8,16 @@ from retiresmartz.models import InflationForecast
 
 
 class FinancialResource:
-    def inflation_on(self, date: datetime.date):
-        """
-        Calculates inflation from now to date
-
-        :param date:
-        :return:
-        """
-        return InflationForecast.objects.on_date(now().date(), date)
 
     def reset(self):
         raise NotImplementedError()
+
+    def inflation_on(self, asof: datetime.date):
+        """
+        Returns the inflation between
+        :param asof:
+        :return:
+        """
 
 
 # noinspection PyAbstractClass

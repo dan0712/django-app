@@ -1,15 +1,17 @@
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from enum import Enum, unique
 
 import scipy.stats as st
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, Group, \
     PermissionsMixin, UserManager, send_mail
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
@@ -32,6 +34,8 @@ from pinax.eventlog import models as el_models
 from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
+from common.utils import months_between
+from main import redis
 from main.finance import mod_dietz_rate
 from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
@@ -2514,3 +2518,63 @@ class ActivityLogEvent(models.Model):
             alog = ActivityLog.objects.create(name=event.name, format_str='DEFAULT_TEXT: {}'.format(event.name))
 
         return ActivityLogEvent.objects.create(id=event.value, activity_log=alog)
+
+
+class Inflation(models.Model):
+    year = models.PositiveIntegerField(help_text="The year the inflation value is for. "
+                                                 "If after recorded, it is a forecast, otherwise it's an observation.")
+    month = models.PositiveIntegerField(help_text="The month the inflation value is for. "
+                                                  "If after recorded, it is a forecast, otherwise it's an observation.")
+    value = models.FloatField(help_text="This is the monthly inflation figure as of the given as_of date.")
+    recorded = models.DateField(auto_now=True, help_text="The date this inflation figure was added.")
+
+    class Meta:
+        ordering = ['year', 'month']
+        unique_together = ('year', 'month')
+
+    @classmethod
+    def cumulative(cls):
+        """
+        :return: A dictionary from (year, month) => cumulative total inflation (1-based) from beginning of records till that time
+        """
+        data = cache.get(redis.Keys.INFLATION)
+        if not data:
+            data = {}
+            vals = cls.objects.all().values_list('year', 'month', 'value')
+            if vals:
+                f_d = date(vals[0][0], vals[0][1], 1)
+                l_d = date(vals[-1][0], vals[-1][1], 1)
+                if (months_between(f_d, l_d) + 1) > len(vals):
+                    raise Exception("Holes exist in the inflation forecast figures, cannot proceed.")
+                isum = 1
+                # Add the entry for the start of the series.
+                data[(f_d - timedelta(days=1).month, f_d - timedelta(days=1).year)] = isum
+                for val in vals:
+                    isum *= val[2]
+                    data[(val[0], val[1])] = isum
+                cache.set(redis.Keys.INFLATION, data, timeout=60 * 60 * 24)
+        return data
+
+    @classmethod
+    def between(cls, begin_date: datetime.date, end_date: datetime.date) -> float:
+        """
+        Calculates inflation (predicted if in future, actual for all past dates)
+        :param start: The start date from when to calculate the inflation
+        :param start: The date until when to calculate the inflation
+        :return: float value for the inflation. 0.05 = 5% inflation
+        """
+
+        if begin_date >= end_date:
+            raise ValueError('End date must be after begin date.')
+        if begin_date.month == end_date.month:
+            return 0
+        data = cls.cumulative()
+        first = data.get((begin_date.year, begin_date.month), None)
+        last = data.get((end_date.year, end_date.month), None)
+        if first is None or last is None:
+            raise ValidationError("Inflation figures don't cover entire period requested: {}-{}".format(begin_date,
+                                                                                                        end_date))
+        return (last / first) - 1
+
+    def __str__(self):
+        return '{0.month}/{0.year}: {0.value}'.format(self)

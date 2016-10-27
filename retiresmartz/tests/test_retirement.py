@@ -32,13 +32,13 @@ class CalculatorTest(TestCase):
             AccountContribution(4000, .05, stop_work_day),  # employer
         )
 
-        calc.add_asset(acc_saving, acc_401k)
+        calc.add_assets(acc_saving, acc_401k)
 
         house = ReverseMortgage(250000, ret_date, ret_years)
         job_income = JobIncome(2000, stop_work_day)
         ss_payments = SocialSecurity(birthday, ret_date)
 
-        calc.add_cash_flow(house, job_income, ss_payments)
+        calc.add_cash_flows(house, job_income, ss_payments)
 
         rdcf = RetirementDesiredCashFlow(4000, ret_date, ret_years)
         asset_values, income_values = calc.calculate(rdcf)

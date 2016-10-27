@@ -7,30 +7,29 @@ from retiresmartz.calculator.base import DesiredCashFlow
 from .assets import Asset, TaxPaidAccount
 from .cashflows import CashFlow
 
+
 class Calculator(object):
     def __init__(self, birthday):
         self.birthday = birthday
         self._cash_flows = []
         self._assets = []
 
-    def add_cash_flow(self, *cash_flows: [CashFlow]) -> None:
+    def add_cash_flows(self, *cash_flows: [CashFlow]) -> None:
         """
         Adds a cash flow provider to the calculator. Order of addition not important.
         """
         self._cash_flows.extend(cash_flows)
 
-    def add_asset(self, *assets: [Asset]) -> None:
+    def add_assets(self, *assets: [Asset]) -> None:
         """
         Adds a financial asset to the list of assets. Kept in order of addition.
         """
         self._assets.extend(assets)
 
-    def calculate(self, desired_cash_flow_calculator: DesiredCashFlow) -> \
-            (DataFrame, DataFrame):
+    def calculate(self, desired_cash_flow_calculator: DesiredCashFlow) -> (DataFrame, DataFrame):
         """
         - desired_cash_flow_calculator is a generator object that yields a
-        (date, amount) tuple. For retirement should be constructed with a the
-        retirement_dates, current income, CPI, income growth etc.
+        (date, amount) tuple.
 
         - asset_values is a pandas dataframe with index being the dates yielded
         by the desired_cash_flow_calculator, columns are each of the assets,
@@ -52,14 +51,6 @@ class Calculator(object):
         asset_values = DataFrame(columns=[a.name for a in self._assets])
         income_values = DataFrame(columns=['desired', 'actual'])
 
-        tax_paid_accounts = []
-        tax_def_accounts = []
-        for acc in self._assets:
-            if isinstance(acc, TaxDeferredAccount):
-                tax_def_accounts.append(acc)
-            else:
-                tax_paid_accounts.append(acc)
-
         for date, desired_amount in desired_cash_flow_calculator:
             cf_amount_total = 0
             for cf in self._cash_flows:
@@ -68,18 +59,15 @@ class Calculator(object):
 
             amount_needed = desired_amount - cf_amount_total
             asset_value = [0] * len(self._assets)
-            i = 0
-            for a in chain(tax_paid_accounts,
-                           tax_def_accounts):  # type: Asset
+            for i, a in enumerate(self._assets):
                 if amount_needed <= 0:
                     break
                 if a.available_after is None or a.available_after >= date:
                     value = a.withdraw(date, amount_needed)
-                    asset_value[i] = value
+                    asset_value[i] = a.balance()
                     amount_needed -= value
-                i += 1
+
             asset_values.loc[date] = asset_value
-            income_values.loc[date] = [desired_amount,
-                                       desired_amount - amount_needed]
+            income_values.loc[date] = [desired_amount, desired_amount - amount_needed]
 
         return asset_values, income_values

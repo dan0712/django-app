@@ -1,13 +1,10 @@
 from __future__ import unicode_literals
 
-import datetime
-
-from dateutil.relativedelta import relativedelta
 from django.contrib import admin, messages
 from django.db import transaction
-from django.utils.timezone import now
 
-from retiresmartz.models import InflationForecast, InflationForecastImport
+from main.models import Inflation
+from retiresmartz.models import InflationForecastImport
 
 
 class ImportDateFilter(admin.SimpleListFilter):
@@ -26,8 +23,8 @@ class ImportDateFilter(admin.SimpleListFilter):
             return queryset.filter(imported=v)
 
 
-class InflationForecastAdmin(admin.ModelAdmin):
-    list_display = 'date', 'value'
+class InflationAdmin(admin.ModelAdmin):
+    list_display = 'year', 'month', 'value'
     list_filter = ImportDateFilter,
 
 
@@ -57,5 +54,5 @@ class InflationForecastImportAdmin(admin.ModelAdmin):
             obj.load(obj.date.year, data)
 
 
-admin.site.register(InflationForecast, InflationForecastAdmin)
+admin.site.register(Inflation, InflationAdmin)
 admin.site.register(InflationForecastImport, InflationForecastImportAdmin)
