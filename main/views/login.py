@@ -47,12 +47,13 @@ def login(request, template_name='registration/login.html',
 
     if user.is_authenticated():
         # custom extra checking
-        if not user.is_superuser:
-            if not check_ip_city(request, 'Chicago') and (ENVIRONMENT == 'demo' or ENVIRONMENT == 'production'):
-                messages.error(request, 'Sorry, the BetaSmartz demo is only available to the Chicago area for the moment.')
-                form = authentication_form(request)
-                context = {'form': form}
-                return TemplateResponse(request, template_name, context)
+        # Geolocation restriction, TODO: Make configurable per account - set region to restrict
+        # if not user.is_superuser:
+        #     if not check_ip_city(request, 'Chicago') and (ENVIRONMENT == 'demo' or ENVIRONMENT == 'production'):
+        #         messages.error(request, 'Sorry, the BetaSmartz demo is only available to the Chicago area for the moment.')
+        #         form = authentication_form(request)
+        #         context = {'form': form}
+        #         return TemplateResponse(request, template_name, context)
 
 
         # TODO: temp temp temp
