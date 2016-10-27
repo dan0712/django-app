@@ -104,6 +104,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'volunteer_days',
             'paid_days',
             'same_home',
+            'same_location',
             'retirement_postal_code',
             'reverse_mortgage',
             'retirement_home_style',
@@ -144,11 +145,11 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         client = validated_data['client']
         if not validated_data.get('retirement_postal_code', ''):
-            if validated_data['same_home']:
+            if validated_data['same_home'] or validated_data['same_location']:
                 postal_code = client.residential_address.post_code
                 validated_data['retirement_postal_code'] = postal_code
             else:
-                raise ValidationError('retirement_postal_code required if not same_home')
+                raise ValidationError('retirement_postal_code required if not same_home and not same_location')
 
         plan = RetirementPlan.objects.create(**validated_data)
         if plan.agreed_on: plan.generate_soa()

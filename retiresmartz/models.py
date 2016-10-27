@@ -73,6 +73,10 @@ class RetirementPlan(models.Model):
     same_home = models.BooleanField(
         help_text="Will you be retiring in the same home?")
 
+    same_location = models.NullBooleanField(
+        help_text="Will you be retiring in the same general location?",
+        blank=True, null=True)
+
     retirement_postal_code = models.CharField(
         max_length=10,
         validators=[MinLengthValidator(5),MaxLengthValidator(10)],
