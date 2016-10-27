@@ -248,23 +248,15 @@ class RetiresmartzTests(APITestCase):
 
     def test_retirement_plan_calculate_unauthenticated(self):
         plan = RetirementPlanFactory.create()
-        url = '/api/v1/clients/{}/retirement-plans/calculate'.format(plan.client.id)
-        data = {
-            'retirement_age': plan.retirement_age,
-            'selected_life_expectancy': plan.selected_life_expectancy,
-        }
-        response = self.client.post(url, data)
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_retirement_plan_calculate_not_found(self):
         plan = RetirementPlanFactory.create()
-        url = '/api/v1/clients/{}/retirement-plans/calculate'.format(plan.client.id+999)
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id+999)
         self.client.force_authenticate(user=plan.client.user)
-        data = {
-            'retirement_age': plan.retirement_age,
-            'selected_life_expectancy': plan.selected_life_expectancy,
-        }
-        response = self.client.post(url, data)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_retirement_plan_calculate(self):
@@ -275,14 +267,9 @@ class RetiresmartzTests(APITestCase):
         self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
         self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
         plan = RetirementPlanFactory.create()
-        url = '/api/v1/clients/{}/retirement-plans/calculate'.format(plan.client.id)
-        data = {
-            'retirement_age': plan.retirement_age,
-            'selected_life_expectancy': plan.selected_life_expectancy,
-        }
-
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
-        response = self.client.post(url, data)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('portfolio' in response.data)
         self.assertTrue('projection' in response.data)
@@ -348,10 +335,9 @@ class RetiresmartzTests(APITestCase):
         self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
         self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
         plan = RetirementPlanFactory.create()
-        data = {}
-        url = '/api/v1/clients/{}/retirement-plans/calculate-income'.format(plan.client.id)
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate-income'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
-        response = self.client.post(url, data)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_add_retirement_plan_same_location_no_postal(self):
@@ -386,4 +372,3 @@ class RetiresmartzTests(APITestCase):
         # make sure client cannot set calculated_life_expectancy
         # should only be set from backend, read-only
         self.assertNotEqual(response.data['calculated_life_expectancy'], data['calculated_life_expectancy'])
-
