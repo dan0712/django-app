@@ -112,7 +112,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         return Response(1357)
 
     @detail_route(methods=['get'], url_path='calculate-balance-contributions')
-    def calculate_balance_contributions(self):
+    def calculate_balance_contributions(self, request, parent_lookup_client, pk, format=None):
         """
         Calculates the retirement balance generated from the contributions.
         """
