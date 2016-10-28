@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from main.models import Inflation
+from retiresmartz.models import RetirementLifestyle
 
 
-class InflationAdmin(admin.ModelAdmin):
-    list_display = 'year', 'month', 'value'
+class RetirementLifestyleAdmin(admin.ModelAdmin):
+    model = RetirementLifestyle
+    list_display = ('cost',)
 
-admin.site.register(Inflation, InflationAdmin)
+admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
