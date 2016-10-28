@@ -13,7 +13,8 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, \
-                        RecurringTransaction, AccountGroup
+                        RecurringTransaction, AccountGroup, Platform
+
 from retiresmartz.models import RetirementPlan, RetirementAdvice
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -544,6 +545,7 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     volunteer_days = factory.LazyAttribute(lambda n: random.randrange(7))
     paid_days = factory.LazyAttribute(lambda n: random.randrange(7))
     same_home = False
+    same_location = False
     retirement_postal_code = 11901
     reverse_mortgage = True
     expected_return_confidence = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
@@ -585,3 +587,10 @@ class AccountGroupFactory(factory.django.DjangoModelFactory):
     #     if extracted:
     #         for advisor in extracted:
     #             self.secondary_advisors.add(advisor)
+
+
+class PlatformFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Platform
+
+    portfolio_set = factory.SubFactory(PortfolioSetFactory)

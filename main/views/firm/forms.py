@@ -1,7 +1,4 @@
 from django.utils.timezone import now
-
-__author__ = 'cristian'
-
 import json
 
 from django import forms
@@ -12,11 +9,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
 from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
-from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, View, TemplateView
 from django.views.generic.edit import ProcessFormView
 from main.models import Firm, User, AuthorisedRepresentative, \
-    FirmData, Transaction, Ticker, Platform, Goal
+    FirmData, Transaction, Ticker, Platform, Goal, PositionLot
 from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, solve_shares_re_balance
 from ..base import AdminView
 from ..base import LegalView
@@ -28,8 +24,7 @@ from main.constants import SUCCESS_MESSAGE, INVITATION_ADVISOR, \
 from main.forms import PERSONAL_DATA_WIDGETS, BetaSmartzGenericUserSignupForm
 
 __all__ = ["InviteLegalView", "AuthorisedRepresentativeSignUp", 'FirmDataView', "EmailConfirmationView",
-           'Confirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "AdminExecuteTransaction",
-           "GoalRebalance"]
+           'Confirmation', 'AdminInviteSupervisorView', 'AdminInviteAdvisorView', "GoalRebalance"]
 
 
 class AuthorisedRepresentativeProfileForm(forms.ModelForm):
@@ -323,147 +318,6 @@ class Confirmation(TemplateView):
 
         messages.info(request, "The new confirmation email has been sent")
         return HttpResponseRedirect(reverse_lazy('login'))
-
-
-class AdminExecuteTransaction(TemplateView, AdminView):
-    template_name = 'admin/betasmartz/transaction-form.html'
-    transaction = None
-
-    def get_context_data(self, **kwargs):
-        portfolio_set = Platform.objects.first().portfolio_set
-
-        ctx = super(AdminExecuteTransaction, self).get_context_data(**kwargs)
-        ctx["transaction"] = serializers.serialize('json', [self.transaction])
-        ctx["amount"] = self.transaction.amount
-        ctx["account"] = json.loads(serializers.serialize('json', [self.transaction.account]))[0]["fields"]
-        ctx["account"]["owner_full_name"] = self.transaction.account.account.primary_owner.user.get_full_name()
-        ctx["account"][
-            "advisor_full_name"] = self.transaction.account.account.primary_owner.advisor.user.get_full_name()
-        ctx["account"]["firm_name"] = self.transaction.account.account.primary_owner.advisor.firm.name
-        ctx["account"]["fee"] = self.transaction.account.account.fee
-
-        ctx["tickers"] = Ticker.objects.filter(asset_class__in=portfolio_set.asset_classes.all())
-
-        goal = self.transaction.account
-        target_allocation_dict = goal.target_allocation
-
-        tickers_pk = []
-        tickers_prices = []
-        target_allocation = []
-        current_shares = []
-        result_dict = {}
-        current_shares_dict = {}
-        price_dict = {}
-        result_a = []
-        target_allocation_dict_2 = {}
-
-        for ticker in ctx["tickers"]:
-            tickers_pk.append(ticker.pk)
-            tickers_prices.append(ticker.unit_price)
-            target_allocation.append(target_allocation_dict.get(ticker.asset_class.name, 0))
-            positions = Position.objects.filter(goal=self.transaction.account, ticker=ticker).all()
-            cs = 0
-            if positions:
-                for p in positions:
-                    cs += p.share
-            current_shares.append(cs)
-        if self.transaction.status == Transaction.STATUS_PENDING:
-            if self.transaction.type == Transaction.REASON_WITHDRAWAL and \
-                    ((self.transaction.account.total_balance - self.transaction.amount) > 0):
-                result_a = list(map(lambda x: -x, solve_shares_wdw(current_shares, tickers_prices,
-                                                                   target_allocation, self.transaction.amount)))
-
-            if self.transaction.type == Transaction.REASON_DEPOSIT:
-                result_a = solve_shares_deposit(current_shares, tickers_prices, target_allocation,
-                                                self.transaction.amount * (
-                                                1 - self.transaction.account.account.fee / 1000))
-
-            #if self.transaction.type == TRANSACTION_TYPE_ALLOCATION:
-            #    result_a = solve_shares_re_balance(current_shares, tickers_prices, target_allocation)
-            #    ctx["amount"] = 1
-            #    ctx["account"]["fee"] = sum(abs(result_a * tickers_prices)) * ctx["account"]["fee"]
-
-        for i in range(len(result_a)):
-            result_dict[str(tickers_pk[i])] = result_a[i]
-            current_shares_dict[str(tickers_pk[i])] = current_shares[i]
-            price_dict[str(tickers_pk[i])] = tickers_prices[i]
-            target_allocation_dict_2[str(tickers_pk[i])] = target_allocation[i]
-
-        ctx["price_dict"] = price_dict
-        ctx["target_allocation_dict"] = target_allocation_dict_2
-        ctx["current_shares_dict"] = current_shares_dict
-        ctx["result_dict"] = result_dict
-        ctx["account"] = json.dumps(ctx["account"])
-        ctx["tickers"] = serializers.serialize('json', ctx["tickers"])
-        ctx["is_executed"] = self.transaction.status == Transaction.STATUS_EXECUTED
-        return ctx
-
-    def dispatch(self, request, *args, **kwargs):
-        self.transaction = get_object_or_404(Transaction, pk=kwargs["pk"])
-        response = super(AdminExecuteTransaction, self).dispatch(request, *args, **kwargs)
-        return response
-
-    def post(self, request, *args, **kwargs):
-        data = json.loads(request.POST.get("data"))
-        positions = []
-        new_amount = 0
-        old_amount = 0
-        new_shares = []
-        old_shares = []
-
-        for pk, v in data.items():
-            if v != 0:
-                ticker = Ticker.objects.get(pk=pk)
-                new_p = Position(ticker=ticker, goal=self.transaction.account, share=v)
-                positions.append(new_p)
-                new_amount += new_p.value
-                new_shares.append(new_p.value)
-
-        for old_p in self.transaction.account.positions.all():
-            old_amount += old_p.value
-            old_shares.append(old_p.value)
-
-        amount = abs(new_amount - old_amount)
-        # delete old positions
-        self.transaction.account.positions.all().delete()
-        # save new
-        # mark transaction as executed
-        self.transaction.executed = now()
-        if self.transaction.type == Transaction.REASON_WITHDRAWAL:
-            fee = amount * self.transaction.account.account.fee / 1000
-            self.transaction.amount = amount * (1 - self.transaction.account.account.fee / 1000)
-            # save fee transaction
-            fee_t = Transaction()
-            fee_t.account = self.transaction.account
-            fee_t.type = Transaction.REASON_FEE
-            fee_t.amount = fee
-            fee_t.status = Transaction.STATUS_EXECUTED
-            fee_t.executed = now()
-            fee_t.new_balance = old_amount - fee
-            fee_t.save()
-            self.transaction.new_balance = new_amount
-
-        if self.transaction.type == Transaction.REASON_DEPOSIT:
-            fee = self.transaction.amount * self.transaction.account.account.fee / 1000
-            self.transaction.amount = amount
-            # save fee transaction
-            fee_t = Transaction()
-            fee_t.account = self.transaction.account
-            fee_t.type = Transaction.REASON_FEE
-            fee_t.amount = fee
-            fee_t.status = Transaction.STATUS_EXECUTED
-            fee_t.executed = now()
-            fee_t.save()
-            self.transaction.new_balance = new_amount
-
-        if self.transaction.type ==  TRANSACTION_TYPE_ALLOCATION:
-            pass
-
-        self.transaction.status = Transaction.STATUS_EXECUTED
-        self.transaction.save()
-        list(map(lambda x: x.save(), positions))
-
-        return HttpResponse('')
 
 
 class GoalRebalance(TemplateView, AdminView):

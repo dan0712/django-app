@@ -50,7 +50,7 @@ class RetirementPlan(models.Model):
         MOBILE_HOME = 6, 'Mobile Home'
         RV = 7, 'RV, Van, Boat, etc'
 
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, blank=True, null=True)
     description = models.TextField(null=True, blank=True)
     client = models.ForeignKey('client.Client')
 
@@ -80,6 +80,10 @@ class RetirementPlan(models.Model):
 
     same_home = models.BooleanField(
         help_text="Will you be retiring in the same home?")
+
+    same_location = models.NullBooleanField(
+        help_text="Will you be retiring in the same general location?",
+        blank=True, null=True)
 
     retirement_postal_code = models.CharField(
         max_length=10,

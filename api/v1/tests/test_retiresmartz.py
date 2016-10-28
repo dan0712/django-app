@@ -69,6 +69,36 @@ class RetiresmartzTests(APITestCase):
         # should only be set from backend, read-only
         self.assertNotEqual(response.data['calculated_life_expectancy'], self.base_plan_data['calculated_life_expectancy'])
 
+    def test_add_plan_no_name(self):
+        base_plan_data = {
+            "description": "My solo plan",
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 1000,
+            'atc': 300,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        }
+        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.post(url, base_plan_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['btc'], 1000)
+        self.assertNotEqual(response.data['id'], None)
+        saved_plan = RetirementPlan.objects.get(id=response.data['id'])
+        self.assertEqual(saved_plan.btc, 1000)
+        # make sure name is None
+        self.assertEqual(response.data['name'], None)
+
     def test_cant_change_after_agreed(self):
         '''
         Tests:
@@ -296,3 +326,48 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], advice.id)
         self.assertEqual(response.data['read'][:9], str(read_time)[:9])
+
+    def test_retirement_plan_calculate_income(self):
+        self.content_type = ContentTypeFactory.create()
+        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
+        plan = RetirementPlanFactory.create()
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate-income'.format(plan.client.id, plan.id)
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_add_retirement_plan_same_location_no_postal(self):
+        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        data = {
+            "name": "Personal Plan",
+            "description": "My solo plan",
+            'desired_income': 60000,
+            'income': 80000,
+            'volunteer_days': 1,
+            'paid_days': 2,
+            'same_home': False,
+            'same_location': True,
+            'reverse_mortgage': True,
+            'expected_return_confidence': 0.5,
+            'retirement_age': 65,
+            'btc': 1000,
+            'atc': 300,
+            'desired_risk': 0.6,
+            'recommended_risk': 0.5,
+            'max_risk': 1.0,
+            'calculated_life_expectancy': 73,
+            'selected_life_expectancy': 80,
+        }
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['btc'], 1000)
+        self.assertNotEqual(response.data['id'], None)
+        saved_plan = RetirementPlan.objects.get(id=response.data['id'])
+        self.assertEqual(saved_plan.btc, 1000)
+        # make sure client cannot set calculated_life_expectancy
+        # should only be set from backend, read-only
+        self.assertNotEqual(response.data['calculated_life_expectancy'], data['calculated_life_expectancy'])
