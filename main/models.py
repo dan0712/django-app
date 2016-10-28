@@ -2537,7 +2537,9 @@ class Inflation(models.Model):
         """
         :return: A dictionary from (year, month) => cumulative total inflation (1-based) from beginning of records till that time
         """
-        data = cache.get(redis.Keys.INFLATION)
+        data = getattr(cls, '_cum_data', None)
+        if not data:
+            data = cache.get(redis.Keys.INFLATION)
         if not data:
             data = {}
             vals = list(cls.objects.all().values_list('year', 'month', 'value'))
@@ -2553,6 +2555,7 @@ class Inflation(models.Model):
                     isum *= 1 + val[2]
                     data[(val[0], val[1])] = isum
                 cache.set(redis.Keys.INFLATION, data, timeout=60 * 60 * 24)
+        cls._cum_data = data
         return data
 
     @classmethod
