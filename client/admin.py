@@ -13,7 +13,8 @@ class ClientAccountInline(admin.StackedInline):
 
 
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm',
+                    'geolocation_lock')
     list_filter = ('is_accepted',)
     actions = (approve_application,)
     inlines = (ClientAccountInline,)

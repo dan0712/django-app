@@ -33,6 +33,8 @@ class PersonalData(models.Model):
 
     regional_data = JSONField(default=dict)
 
+    geolocation_lock = models.CharField(max_length=30, blank=True)
+
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
 

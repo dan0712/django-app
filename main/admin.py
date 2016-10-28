@@ -119,7 +119,8 @@ approve_application.short_description = "Approve application(s)"
 
 
 class AdvisorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm',
+                    'geolocation_lock')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
 
@@ -202,7 +203,8 @@ class FirmAdmin(admin.ModelAdmin):
 
 
 class AuthorisedRepresentativeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm',
+                    'geolocation_lock')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
 
