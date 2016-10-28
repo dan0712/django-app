@@ -1,15 +1,15 @@
+import json
 from datetime import date
+
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
-import json
 
 
 def get_default_tx_plan():
@@ -37,15 +37,15 @@ def who_validator(value):
 def make_category_validator(category):
     def category_validator(value):
         if not value in category:
-            raise ValidationError("'cat' for %s must be one of %s"%(category, category.choices()))
+            raise ValidationError("'cat' for %s must be one of %s" % (category, category.choices()))
 
 
 def make_json_list_validator(field, serializer):
     def list_item_validator(value):
         try: value = json.loads(value)
-        except ValueError: raise ValidationError("Invalid json for %s"%field)
+        except ValueError: raise ValidationError("Invalid json for %s" % field)
         if not isinstance(value, list):
-            raise ValidationError("%s must be a JSON list of objects"%(field))
+            raise ValidationError("%s must be a JSON list of objects" % field)
         for item in value:
             if not isinstance(item, dict) or not serializer(data=item).is_valid(raise_exception=True):
                 raise ValidationError("Invalid %s object"%field)

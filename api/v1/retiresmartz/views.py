@@ -1,20 +1,23 @@
+import logging
+
+from dateutil.relativedelta import relativedelta
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
+
 from api.v1.views import ApiViewMixin
 from common.utils import d2ed
 from retiresmartz.models import RetirementPlan, RetirementAdvice
-from main.models import Ticker
 from client.models import Client
+from main.models import Ticker
+
 from support.models import SupportRequest
-from django.db.models import Q
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
 from . import serializers
-import logging
 logger = logging.getLogger('api.v1.retiresmartz.views')
 
 
@@ -65,9 +68,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.agreed_on:
-            return Response(
-            {'error': 'Unable to update a RetirementPlan that has been agreed on'},
-            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Unable to update a RetirementPlan that has been agreed on'},
+                            status=status.HTTP_400_BAD_REQUEST)
         return super(RetiresmartzViewSet, self).update(request, *args, **kwargs)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')

@@ -50,7 +50,8 @@ class Backtester(object):
             settings.cash_balance -= share_value
             #position = PositionMock(ticker=ticker, share=request.volume)
 
-            positionLot = PositionLot(ticker=ticker, price=ticker.daily_prices.last(),
+            positionLot = PositionLot(ticker=ticker,
+                                      price=ticker.daily_prices.last(),
                                       quantity=request.volume,executed=data_provider.get_current_date())
             positionLot.data_provider = data_provider
             settings.position_lots.append(positionLot)

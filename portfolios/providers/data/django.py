@@ -73,12 +73,10 @@ class DataProviderDjango(DataProviderAbstract):
                                       c=c)
 
     def get_instrument_cache(self):
-        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
-        return cache.get(key)
+        return cache.get(redis.Keys.INSTRUMENT_DATA)
 
     def set_instrument_cache(self, data):
-        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
-        cache.set(key, data, timeout=60 * 60 * 24)
+        cache.set(redis.Keys.INSTRUMENT_DATA, data, timeout=60 * 60 * 24)
 
     def get_investment_cycles(self):
         # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population

@@ -8,16 +8,15 @@ from pinax.eventlog.models import Log
 import address.models as ad
 from api.v1.tests.factories import GoalMetricFactory, TransactionFactory, PositionLotFactory, \
     InvestmentCycleObservationFactory
-from client.models import Client, ClientAccount, RiskProfileAnswer,\
-    RiskProfileGroup, RiskProfileQuestion, IBAccount
+from client.models import Client, ClientAccount, IBAccount, RiskProfileAnswer, \
+    RiskProfileGroup, RiskProfileQuestion
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from main.event import Event
 from main.models import Advisor, AssetClass, DailyPrice, Execution, \
-    ExecutionDistribution, ExternalAsset, Firm, Goal, GoalMetricGroup, \
-    GoalSetting, GoalType, HistoricalBalance, MarketIndex, MarketOrderRequest,\
-    PortfolioSet, Region, Ticker, Transaction, User, ExternalInstrument, InvestmentCycleObservation,\
-    Transaction
-from portfolios.prediction.investment_clock import InvestmentClock, CYCLE_LABEL
+    ExecutionDistribution, ExternalAsset, Firm, Goal, \
+    GoalMetricGroup, GoalSetting, GoalType, HistoricalBalance, MarketIndex, \
+    PortfolioSet, Region, Ticker, User, ExternalInstrument, \
+    Transaction, MarketOrderRequest
 from main.risk_profiler import MINIMUM_RISK
 from retiresmartz.models import RetirementPlan
 

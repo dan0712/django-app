@@ -1,5 +1,7 @@
-from django.db.models import QuerySet, Q
+from __future__ import unicode_literals
+
 import logging
+from django.db.models import Q, QuerySet
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,8 @@ class RetirementPlanQuerySet(QuerySet):
 
     def filter_by_advisor(self, advisor):
         """
-        This method filters out any Retirement Plans where the given advisor is not one of the authorised advisors.
+        This method filters out any Retirement Plans where the given advisor
+        is not one of the authorised advisors.
 
         For any RetirementPlan, the list of authorised advisors is as follows:
         - Advisor of the client owning the plan
@@ -38,7 +41,8 @@ class RetirementPlanQuerySet(QuerySet):
 
     def filter_by_client(self, client):
         """
-        A client is allowed to see its own retirement plans, and any linked retirement plans via the partner_plan.
+        A client is allowed to see its own retirement plans, and any linked
+        retirement plans via the partner_plan.
         :param client:
         :return: A modified queryset with access to only the authorised plans.
         """
