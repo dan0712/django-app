@@ -21,6 +21,8 @@ class CashFlowTests(TestCase):
         while dt <= self.death:
             inflations.append(Inflation(year=dt.year, month=dt.month, value=0.001))
             dt += relativedelta(months=1)
+        if hasattr(Inflation, '_cum_data'):
+            del Inflation._cum_data
         Inflation.objects.bulk_create(inflations)
 
     def test_inflated_cash_flow(self):
