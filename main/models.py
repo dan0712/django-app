@@ -2540,7 +2540,7 @@ class Inflation(models.Model):
         data = cache.get(redis.Keys.INFLATION)
         if not data:
             data = {}
-            vals = cls.objects.all().values_list('year', 'month', 'value')
+            vals = list(cls.objects.all().values_list('year', 'month', 'value'))
             if vals:
                 f_d = date(vals[0][0], vals[0][1], 1)
                 l_d = date(vals[-1][0], vals[-1][1], 1)
@@ -2548,9 +2548,9 @@ class Inflation(models.Model):
                     raise Exception("Holes exist in the inflation forecast figures, cannot proceed.")
                 isum = 1
                 # Add the entry for the start of the series.
-                data[(f_d - timedelta(days=1).month, f_d - timedelta(days=1).year)] = isum
+                data[((f_d - timedelta(days=1)).month, (f_d - timedelta(days=1)).year)] = isum
                 for val in vals:
-                    isum *= val[2]
+                    isum *= 1 + val[2]
                     data[(val[0], val[1])] = isum
                 cache.set(redis.Keys.INFLATION, data, timeout=60 * 60 * 24)
         return data
@@ -2558,22 +2558,22 @@ class Inflation(models.Model):
     @classmethod
     def between(cls, begin_date: datetime.date, end_date: datetime.date) -> float:
         """
-        Calculates inflation (predicted if in future, actual for all past dates)
+        Calculates inflation between two dates. (predicted if in future, actual for all past dates)
         :param start: The start date from when to calculate the inflation
         :param start: The date until when to calculate the inflation
         :return: float value for the inflation. 0.05 = 5% inflation
         """
 
-        if begin_date >= end_date:
-            raise ValueError('End date must be after begin date.')
-        if begin_date.month == end_date.month:
+        if begin_date > end_date:
+            raise ValueError('End date must not be before begin date.')
+        if begin_date == end_date:
             return 0
         data = cls.cumulative()
         first = data.get((begin_date.year, begin_date.month), None)
         last = data.get((end_date.year, end_date.month), None)
         if first is None or last is None:
-            raise ValidationError("Inflation figures don't cover entire period requested: {}-{}".format(begin_date,
-                                                                                                        end_date))
+            raise ValidationError("Inflation figures don't cover entire period requested: {} - {}".format(begin_date,
+                                                                                                          end_date))
         return (last / first) - 1
 
     def __str__(self):

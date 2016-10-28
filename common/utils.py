@@ -6,8 +6,12 @@ from common.constants import EPOCH_DT
 
 
 def months_between(date1, date2):
-    if date1 > date2:
-        date1, date2 = date2, date1
+    """
+    Returns the number of full or partial months between the given dates. May be negative.
+    :param date1:
+    :param date2:
+    :return:
+    """
     m1 = date1.year*12 + date1.month
     m2 = date2.year*12 + date2.month
     return m2 - m1

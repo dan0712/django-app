@@ -1,143 +1,128 @@
 from __future__ import unicode_literals
 
 import datetime
+from abc import ABCMeta, abstractmethod
 
-import scipy.stats as st
 from dateutil.relativedelta import relativedelta
-from django.utils.timezone import now
 
+from main.models import Inflation
+from retiresmartz.constants import IRS_LIFE_EXPECTANCY
 from .base import FinancialResource
-from .cashflows import AccountContribution, CashFlow
+from .cashflows import CashFlow
 
 
-# noinspection PyAbstractClass
 class Asset(FinancialResource):
-    # before this date no money can be withdrawn
-    available_after = None
+    __metaclass__ = ABCMeta
 
-    name = None
-
+    @abstractmethod
     def withdraw(self, date: datetime.date, amount: float) -> float:
         """
-        Try to withdraw the given amount
-        on the given year and month. May return less than requested. Must be
-        called with monotonically increasing months between calls to reset()
+        Try to withdraw the given amount from the account on the given date. May return less than requested.
+        This method and balance() must be called with monotonically increasing months between calls to reset()
+        :param date: The date of the withdrawal
+        :param amount: The desired amount of the withdrawal
+        :return Some value <= amount which is the amount that is allowed/available to be withdrawn at this time.
         """
         raise NotImplementedError()
 
+    @abstractmethod
     def balance(self, date: datetime.date) -> float:
         """
-        The balance at that time. Dependent of
-        previous withdrawals made and date called.
+        The balance of the account at the given date. Dependent of previous withdrawals made and date called.
+        This method and withdraw() must be called with monotonically increasing months between calls to reset()
         """
         raise NotImplementedError()
 
 
 class TaxPaidAccount(Asset):
-    def __init__(self, name: str, balance: float,
-                 retirement_date: datetime.date, life_exp: int):
+    def __init__(self,
+                 name: str,
+                 today: datetime.date,
+                 opening_balance: float,
+                 growth: float,
+                 retirement_date: datetime.date,
+                 end_date: datetime.date,
+                 contributions: float):
+        """
+        An account that has no tax applied
+        :param name: Account name
+        :param today: The day the calculations are run.
+        :param opening_balance: The balance of the asset today
+        :param growth: Expected annual growth of the asset over inflation 0.05 = 5%
+        :param retirement_date: Withdrawals are only possible after this date. Contributions stop on this date.
+        :param end_date: Date the account should stop paying money.
+        :param contributions: Monthly contributions into the account at today's dollars
+        """
         self.name = name
-        self.retirement_date = retirement_date
-        self.life_exp = life_exp
-        self.end_date = retirement_date + relativedelta(years=life_exp)
-        self.start_balance = balance
+        self._today = today
+        self._opening_balance = opening_balance
+        self._growth_factor = (1 + growth) ** (1 / 12)
+        self._retirement_date = retirement_date
+        self._end_date = end_date
+        self._contributions = contributions
+        self._current_balance = opening_balance
+        self._current_date = today
 
-        self._contributions = set()
-        self._current_date = None
-        self._current_balance = None
-        self._balances = {}
-
-    def rer_forecast(self, balance: float,
-                     end_date: datetime.date,
-                     begin_date: datetime.date = None,
-                     er=1.0, stdev=0.0, confidence=0.5) -> float:
-        """
-        Real Expected Return forecast for the period from between two dates
-        from Growth Tables
-        """
-        current_time = now()
-        if begin_date is None:
-            begin_date = current_time.date()
-        cf_events = [(begin_date, balance)]
-        cur_date = begin_date + relativedelta(months=1)
-        if self._contributions:
-            while cur_date <= end_date:
-                for c in self._contributions:  # type: AccountContribution
-                    cf_events.append((cur_date, c.on(cur_date)))
-                cur_date += relativedelta(months=1)
-
-        z_mult = -st.norm.ppf(confidence)
-        z_stdev = z_mult * stdev
-        predicted = 0.
-        for dt, val in cf_events:
-            tdelta = dt - begin_date
-            y_delta = (tdelta.days + tdelta.seconds / 86400.0) / 365.2425
-            predicted += val * (er ** y_delta + z_stdev * (y_delta ** 0.5))
-        return predicted
-
-    @property
-    def contributions(self):
-        return self._contributions
-
-    def add_contributions(self, *values: [CashFlow]):
-        self._contributions |= set(values)
-
-    def _check_date(self, date: datetime.date):
-        if not (self.retirement_date <= date <= self.end_date):
-            raise ValueError('Date out of boundaries.')
-
-    def _balance(self, balance: float, date: datetime.date,
-                 begin_date: datetime.date = None) -> float:
-        rer_forecast = self.rer_forecast(balance, date, begin_date)
-        return rer_forecast * (1 + self.inflation_on(date))
+    def _update_balance(self, date: datetime.date):
+        tdt = self._current_date + relativedelta(months=1)
+        while tdt <= date:
+            # Grow the asset for the month
+            self._current_balance *= (self._growth_factor + Inflation.between(self._current_date, tdt))
+            # Add the contributions at the end of the month.
+            if tdt <= self._retirement_date:
+                self._current_balance += self._contributions * (1 + Inflation.between(self._today, tdt))
+            self._current_date = tdt
+            tdt = self._current_date + relativedelta(months=1)
 
     def balance(self, date: datetime.date) -> float:
-        return self._balance(self.start_balance, date)
+        # date must be >= _current_date
+        if date < self._current_date:
+            raise ValueError('Only ascending values allowed.')
+
+        self._update_balance(date)
+        return self._current_balance
 
     def withdraw(self, date: datetime.date, amount: float) -> float:
-        self._check_date(date)
+        # date must be >= _current_date
+        if date < self._current_date:
+            raise ValueError('Only ascending values allowed.')
 
-        try:
-            if date < self.available_after:
-                return 0
-        except TypeError:  # available_after not set
-            pass
-
-        try:
-            # date must be > _current_date
-            if date <= self._current_date:
-                raise ValueError('Only ascending values allowed.')
-        except TypeError:  # first iteration, current date is not yet set
-            pass
-
-        # calculate balance on date
-        if self._current_balance is not None and self._current_balance == 0:
+        if date < self._retirement_date or date > self._end_date:
             return 0
-        balance = self._balance(self._current_balance or self.start_balance,
-                                date, self._current_date)
-        self._current_date = date
 
-        # withdraw as much as amount if possible
+        self._update_balance(date)
+
+        # withdraw as much of amount as possible
+        balance = self._current_balance
         if balance < amount:
             self._current_balance = 0
             return balance
         self._current_balance = balance - amount
         return amount
 
-    def reset(self, date: datetime.date = None):
-        if not date:
-            date = self.retirement_date
-        self._check_date(date)
-        self._current_date = None
-        self._current_balance = None
+    def reset(self):
+        self._current_date = self._today
+        self._current_balance = self._opening_balance
 
 
-class TaxDeferredAccount(TaxPaidAccount):
-    def apply_taxes(self, date: datetime.date, amount: float):
-        if amount > 0:
-            pass  # calculate and subtract taxes
-        return amount
+class TaxDeferredAccount(TaxPaidAccount, CashFlow):
+    """
+    A Tax Deferred Account acts like a CashFlow as it has a required minimum distribution aspect.
+    Withdrawals are taxed.
+    """
+
+    def __init__(self, dob: datetime.date, tax_rate: float, *args, **kwargs):
+        self._dob = dob
+        self._tax_multiplier = 1 - tax_rate
+        super().__init__(*args, **kwargs)
 
     def withdraw(self, date: datetime.date, amount: float) -> float:
-        avail_amount = super(TaxDeferredAccount, self).withdraw(date, amount)
-        return self.apply_taxes(date, avail_amount)
+        avail_amount = super().withdraw(date, amount / self._tax_multiplier)
+        return avail_amount * self._tax_multiplier
+
+    def _for_date(self, dt: datetime.date):
+        age = relativedelta(dt, self._dob).years
+        # We only want to draw the balance down by the required amount, not the required amount plus tax, so we multiply
+        # by the tax multiplier so the actual amount withdrawn before tax is the required proportion.
+        amount = self.balance(dt) / IRS_LIFE_EXPECTANCY[age] * self._tax_multiplier
+        return self.withdraw(dt, amount)
