@@ -234,11 +234,7 @@ class RetirementAdviceWritableSerializer(serializers.ModelSerializer):
     class Meta:
         model = RetirementAdvice
         fields = (
-            'text',
             'read',
-            'action',
-            'action_url',
-            'action_data',
         )
 
     def __init__(self, *args, **kwargs):
