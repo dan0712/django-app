@@ -66,6 +66,7 @@ urlpatterns = patterns(
     url(r'^returns$', analysis_views.ReturnsView.as_view()),
 
     url(r'^benchmarks/', include('api.v1.benchmarks.urls', namespace='benchmarks')),
+    url(r'^validate/phonenumber', user_views.PhoneNumberValidationView.as_view(), name='phonenumber-validation'),
     url(r'^me/password/?$', user_views.ChangePasswordView.as_view(), name='user-change-password'),
 
     url(r'me/security-questions/?$', user_views.SecurityQuestionAnswerView.as_view(), name='user-security-question'),

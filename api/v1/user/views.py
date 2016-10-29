@@ -32,6 +32,16 @@ from ..views import ApiViewMixin, BaseApiView
 logger = logging.getLogger('api.v1.user.views')
 
 
+class PhoneNumberValidationView(BaseApiView):
+    serializer_class = serializers.PhoneNumberValidationSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response('number valid', status=status.HTTP_200_OK)
+
+
 class MeView(BaseApiView):
     serializer_class = serializers.UserSerializer
 

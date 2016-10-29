@@ -102,3 +102,31 @@ class UserTests(APITestCase):
         self.assertEqual(control_response.data, response.data)
         self.assertEqual(response.data['first_name'], new_name)
         self.assertEqual(response.data['id'], self.user.id)
+
+    def test_phone_number_valid(self):
+        url = reverse('api:v1:phonenumber-validation')
+        data = {
+            'number': '15592467777',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN,
+                         msg='Unauthenticated phone number validation fails')
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='Authenticated valid phone number returns 200')
+
+    def test_phone_number_invalid(self):
+        url = reverse('api:v1:phonenumber-validation')
+        data = {
+            'number': '15555555555',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN,
+                         msg='Unauthenticated phone number validation fails')
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='Authenticated invalid phone number validation returns 400')
