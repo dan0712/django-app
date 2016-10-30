@@ -301,6 +301,7 @@ class PhoneNumberValidationSerializer(serializers.Serializer):
     number = serializers.CharField()
 
     def validate_number(self, number):
+        number = number.strip('+-')
         num = PhoneNumber.from_string(number)
         if not num.is_valid():
             raise serializers.ValidationError('PhoneNumber invalid')
