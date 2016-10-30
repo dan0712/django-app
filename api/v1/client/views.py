@@ -10,9 +10,9 @@ from api.v1.client.serializers import EmailNotificationsSerializer, \
     PersonalInfoSerializer
 from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
-from main.models import ExternalAsset, User
+from main.models import ExternalAsset, User, PortfolioSet
 from user.models import SecurityAnswer
-from client.models import Client, EmailInvite
+from client.models import Client, ClientAccount, EmailInvite
 from support.models import SupportRequest
 from api.v1.user.serializers import UserSerializer, AuthSerializer
 from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
@@ -23,6 +23,7 @@ from . import serializers
 from django.core.urlresolvers import reverse
 import logging
 import json
+from main import constants
 
 logger = logging.getLogger('api.v1.client.views')
 
@@ -141,6 +142,28 @@ class ClientViewSet(ApiViewMixin,
         # set client invitation status to complete
         client.user.invitation.status = EmailInvite.STATUS_COMPLETE
         client.user.invitation.save()
+
+        # create client account from invite onboarding_data
+        # TODO: determine default portfolio group based on risk profile?
+        # just using default group for now
+        try:
+            default_portfolio = PortfolioSet.objects.get(name='Default')
+        except:
+            # create default portfolio if it doesn't exist
+            default_portfolio = PortfolioSet.objects.create(name='Default', risk_free_rate=0.025)
+        if client.user.invitation.reason == EmailInvite.REASON_RETIREMENT:
+            # what to use for retirement account type here?
+            account_name = 'Retirement'
+            account_type = constants.ACCOUNT_TYPE_IRA
+        else:
+            account_name = 'Personal'
+            account_type = constants.ACCOUNT_TYPE_PERSONAL
+        # account_type will be either personal or retirement here
+        account = ClientAccount.objects.create(primary_owner=client,
+                                               confirmed=True,
+                                               account_type=account_type,
+                                               account_name=account_name,
+                                               default_portfolio_set=default_portfolio)
 
         # Email the user "Welcome Aboard"
         self.request.user.email_user('Welcome to BetaSmartz!',
