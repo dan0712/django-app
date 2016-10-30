@@ -76,9 +76,9 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
 
     def validate_phone_num(self, phone_num):
         serializer = PhoneNumberValidationSerializer(data={'number': phone_num})
-        if serializer.is_valid():
-            return serializer.validated_data
-        raise serializers.ValidationError('Invalid phone number')
+        if not serializer.is_valid():
+            raise serializers.ValidationError('Invalid phone number')
+        return serializer.validated_data
 
     def create(self, validated_data):
         # Default to Personal account type for risk profile group on a brand
