@@ -39,7 +39,7 @@ class PhoneNumberValidationView(BaseApiView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response('number valid', status=status.HTTP_200_OK)
+        return Response(serializer.validated_data)
 
 
 class MeView(BaseApiView):

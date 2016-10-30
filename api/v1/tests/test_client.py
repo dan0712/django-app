@@ -294,7 +294,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": address,
             "regional_data": json.dumps(regional_data)
         }
@@ -304,7 +304,7 @@ class ClientTests(APITestCase):
         # Ensure it is created approved and accepted.
         self.assertEqual(response.data['is_confirmed'], True)
         self.assertEqual(response.data['is_accepted'], True)
-        self.assertEqual(response.data['phone_num'], "+41524204249")
+        self.assertEqual(response.data['phone_num'], "+12342342342")
         self.assertEqual(response.data['residential_address']['address'], address['address'])
         self.assertEqual(response.data['residential_address']['post_code'], address['post_code'])
         self.assertEqual(response.data['betasmartz_agreement'], True)
@@ -350,7 +350,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             'regional_data': regional_data,
         }
         self.client.force_authenticate(usr)
@@ -381,7 +381,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": address,
         }
         self.client.force_authenticate(usr)
@@ -417,7 +417,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",
@@ -456,7 +456,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",
@@ -494,7 +494,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",
@@ -537,7 +537,7 @@ class ClientTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": {
                 "address": "123 My Street\nSome City",
                 "post_code": "112233",

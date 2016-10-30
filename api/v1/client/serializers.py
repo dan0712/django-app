@@ -12,7 +12,7 @@ from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfi
 from notifications.signals import notify
 from main import constants
 from pdf_parsers.tax_return import parse_pdf
-from ..user.serializers import UserFieldSerializer
+from ..user.serializers import UserFieldSerializer, PhoneNumberValidationSerializer
 import logging
 import tempfile
 import uuid
@@ -73,6 +73,12 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'phone_num',
             'regional_data',
         )
+
+    def validate_phone_num(self, phone_num):
+        serializer = PhoneNumberValidationSerializer(data={'number': phone_num})
+        if serializer.is_valid():
+            return serializer.validated_data
+        raise serializers.ValidationError('Invalid phone number')
 
     def create(self, validated_data):
         # Default to Personal account type for risk profile group on a brand

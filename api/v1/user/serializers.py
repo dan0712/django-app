@@ -300,8 +300,8 @@ class SecurityAnswerCheckSerializer(serializers.Serializer):
 class PhoneNumberValidationSerializer(serializers.Serializer):
     number = serializers.CharField()
 
-    def validate_number(self, number):
-        number = number.strip('+-')
+    def validate(self, data):
+        number = data['number'].strip('+').replace('-', '')
         num = PhoneNumber.from_string(number)
         if not num.is_valid():
             raise serializers.ValidationError('PhoneNumber invalid')
