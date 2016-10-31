@@ -32,7 +32,7 @@ from ..views import ApiViewMixin, BaseApiView
 logger = logging.getLogger('api.v1.user.views')
 
 
-class PhoneNumberValidationView(BaseApiView):
+class PhoneNumberValidationView(ApiViewMixin, views.APIView):
     serializer_class = serializers.PhoneNumberValidationSerializer
     permission_classes = (IsAuthenticated,)
     parser_classes = (

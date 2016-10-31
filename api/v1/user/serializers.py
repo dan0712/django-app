@@ -306,6 +306,7 @@ class PhoneNumberValidationSerializer(serializers.Serializer):
             num = PhoneNumber.from_string(number)
         except Exception as e:
             raise serializers.ValidationError(e)
+
         if not num.is_valid():
             raise serializers.ValidationError('Invalid phone number')
         return number
