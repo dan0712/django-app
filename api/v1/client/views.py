@@ -14,13 +14,12 @@ from main.models import ExternalAsset, User
 from user.models import SecurityAnswer
 from client.models import Client, EmailInvite
 from support.models import SupportRequest
-from api.v1.user.serializers import UserSerializer, AuthSerializer
+from api.v1.user.serializers import UserSerializer
 from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
     RetirementPlanEincWritableSerializer
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
 from django.views.generic.detail import SingleObjectMixin
 from . import serializers
-from django.core.urlresolvers import reverse
 import logging
 import json
 
@@ -189,9 +188,10 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         if invite.status == EmailInvite.STATUS_EXPIRED:
             invite.advisor.user.email_user('A client tried to use an expired invitation'
-                    "Your potential client %s %s (%s) just tried to register using an invite "
-                    "you sent them, but it has expired!"%
-                    (invite.first_name, invite.last_name, invite.email))
+                                           "Your potential client {} {} ({}) just tried to register using an invite "
+                                           "you sent them, but it has expired!".format(invite.first_name,
+                                                                                       invite.last_name,
+                                                                                       invite.email))
 
         if invite.status != EmailInvite.STATUS_ACCEPTED:
             return Response(self.serializer_class(instance=invite).data,

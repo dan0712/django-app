@@ -14,9 +14,7 @@ from main import constants
 from pdf_parsers.tax_return import parse_pdf
 from ..user.serializers import UserFieldSerializer, PhoneNumberValidationSerializer
 import logging
-import tempfile
 import uuid
-import json
 
 logger = logging.getLogger('api.v1.client.serializers')
 RESIDENTIAL_ADDRESS_KEY = 'residential_address'

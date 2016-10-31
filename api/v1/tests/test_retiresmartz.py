@@ -13,6 +13,7 @@ from .factories import AssetClassFactory, ContentTypeFactory, GroupFactory, \
 from django.utils import timezone
 from pinax.eventlog.models import log
 
+
 class RetiresmartzTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
@@ -26,14 +27,6 @@ class RetiresmartzTests(APITestCase):
             'same_home': True,
             'reverse_mortgage': True,
             'expected_return_confidence': 0.5,
-            'retirement_age': 65,
-            'btc': 1000,
-            'atc': 300,
-            'desired_risk': 0.6,
-            'recommended_risk': 0.5,
-            'max_risk': 1.0,
-            'calculated_life_expectancy': 73,
-            'selected_life_expectancy': 80,
         }
 
     def tearDown(self):
@@ -49,7 +42,7 @@ class RetiresmartzTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['client'], plan1.client.id)
-        self.assertEqual(response.data['calculated_life_expectancy'], 73)
+        self.assertEqual(response.data['calculated_life_expectancy'], 85)
 
     def test_add_plan(self):
         '''
@@ -79,14 +72,6 @@ class RetiresmartzTests(APITestCase):
             'same_home': True,
             'reverse_mortgage': True,
             'expected_return_confidence': 0.5,
-            'retirement_age': 65,
-            'btc': 1000,
-            'atc': 300,
-            'desired_risk': 0.6,
-            'recommended_risk': 0.5,
-            'max_risk': 1.0,
-            'calculated_life_expectancy': 73,
-            'selected_life_expectancy': 80,
         }
         url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
         self.client.force_authenticate(user=Fixture1.client1().user)
@@ -106,7 +91,7 @@ class RetiresmartzTests(APITestCase):
         - specifying btc on creation works
         '''
         client = Fixture1.client1()
-        url = '/api/v1/clients/%s/retirement-plans'%client.id
+        url = '/api/v1/clients/%s/retirement-plans' % client.id
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.post(url, self.base_plan_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
