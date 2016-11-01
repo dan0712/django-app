@@ -164,7 +164,6 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
-
     def test_put_partner(self):
         """
         Test update partner_plan after tax contribution

@@ -154,7 +154,8 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
         :param data:
         :return:
         """
-        if not data['same_home'] and data.get('same_location', None) is None:
+        if (self.context.get('request').method == 'POST' and not data.get('same_home', None)
+                and data.get('same_location', None) is None):
             raise ValidationError("same_location must be specified if same_home is not True.")
 
         return data
