@@ -237,8 +237,10 @@ SWAGGER_SETTINGS = {
         'title': 'BetaSmartz API',
     },
     'doc_expansion': 'list',
+    'VALIDATOR_URL': None,  # Swagger online validator does not have access to our private instances
     #'resource_access_handler': 'api.views.resource_access_handler',
 }
+
 
 # The inflation rate
 BETASMARTZ_CPI = 2
