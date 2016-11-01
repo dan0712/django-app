@@ -12,6 +12,7 @@ from pinax.eventlog.models import Log
 
 from common.structures import ChoiceEnum
 from main.models import TransferPlan
+from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.managers import RetirementAdviceQueryset
 from .managers import RetirementPlanQuerySet
 
@@ -142,24 +143,27 @@ class RetirementPlan(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text="The selected risk appetite for this retirement plan")
 
+    # This is a field, not calculated, so we have a historical record of the value.
     recommended_risk = models.FloatField(
+        editable=False, blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text="The calculated recommended risk for this retirement plan")
 
+    # This is a field, not calculated, so we have a historical record of the value.
     max_risk = models.FloatField(
+        editable=False, blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(1)],
         help_text="The maximum allowable risk appetite for this retirement "
                   "plan, based on our risk model")
 
     # calculated_life_expectancy should be calculated,
     # read-only don't let client create/update
-    # TODO: Always Calculate the below value in the save(). Make it editable=False, null=False, blank=True
-    calculated_life_expectancy = models.PositiveIntegerField(blank=True, null=True)
-    # TODO: This field should be blank=True and also calculated if not set on save().
+    calculated_life_expectancy = models.PositiveIntegerField(editable=False, blank=True)
     selected_life_expectancy = models.PositiveIntegerField()
 
     agreed_on = models.DateTimeField(null=True, blank=True)
 
+    # Although calculated, this field needs to be editable, as we want to calculate it before creating the model.
     portfolio = JSONField(null=True, blank=True)
     partner_data = JSONField(null=True, blank=True)
 
@@ -185,9 +189,13 @@ class RetirementPlan(models.Model):
         """
         Override save() so we can do some custom validation of partner plans.
         """
+        self.calculated_life_expectancy = self.client.life_expectancy
+        bas_scores = self.client.get_risk_profile_bas_scores()
+        self.recommended_risk = GoalSettingRiskProfile._recommend_risk(bas_scores)
+        self.max_risk = GoalSettingRiskProfile._max_risk(bas_scores)
+
         if self.was_agreed:
-            raise ValidationError("Cannot save a RetirementPlan that has "
-                                  "been agreed upon")
+            raise ValidationError("Cannot save a RetirementPlan that has been agreed upon")
 
         reverse_plan = getattr(self, 'partner_plan_reverse', None)
         if self.partner_plan is not None and reverse_plan is not None and \

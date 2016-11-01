@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
+from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
 
 
@@ -82,15 +83,22 @@ class RetirementPlanSerializer(ReadOnlyModelSerializer):
 
 class RetirementPlanWritableSerializer(serializers.ModelSerializer):
     expenses = serializers.JSONField(required=False,
-        help_text = RetirementPlan._meta.get_field('expenses').help_text,
-        validators=[make_json_list_validator('expenses', ExpensesSerializer)])
+                                     help_text=RetirementPlan._meta.get_field('expenses').help_text,
+                                     validators=[make_json_list_validator('expenses', ExpensesSerializer)])
     savings = serializers.JSONField(required=False,
-        help_text = RetirementPlan._meta.get_field('savings').help_text,
-        validators=[make_json_list_validator('savings', SavingsSerializer)])
+                                    help_text=RetirementPlan._meta.get_field('savings').help_text,
+                                    validators=[make_json_list_validator('savings', SavingsSerializer)])
     initial_deposits = serializers.JSONField(required=False,
-        help_text = RetirementPlan._meta.get_field('initial_deposits').help_text,
-        validators=[make_json_list_validator('initial_deposits', InitialDepositsSerializer)])
+                                             help_text=RetirementPlan._meta.get_field('initial_deposits').help_text,
+                                             validators=[make_json_list_validator('initial_deposits',
+                                                                                  InitialDepositsSerializer)])
+    selected_life_expectancy = serializers.IntegerField(required=False)
+    retirement_age = serializers.IntegerField(required=False)
+    desired_risk = serializers.FloatField(required=False)
+    btc = serializers.FloatField(required=False)
+    atc = serializers.FloatField(required=False)
     retirement_postal_code = serializers.CharField(max_length=10, required=False)
+    partner_data = serializers.JSONField(required=False)
 
     class Meta:
         model = RetirementPlan
@@ -116,20 +124,19 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'income_growth',
             'expected_return_confidence',
             'retirement_age',
-
             'btc',
             'atc',
-
             'max_employer_match_percent',
             'desired_risk',
             'recommended_risk',
             'max_risk',
             'selected_life_expectancy',
-
             'portfolio',
             'partner_data',
             'agreed_on',
-
+        )
+        read_only_fields = (
+            'portfolio',
         )
 
     def __init__(self, *args, **kwargs):
@@ -150,6 +157,23 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
                 validated_data['retirement_postal_code'] = postal_code
             else:
                 raise ValidationError('retirement_postal_code required if not same_home and not same_location')
+        # Default the selected life expectancy to the calculated one if not specified.
+        if not validated_data.get('selected_life_expectancy', None):
+            validated_data['selected_life_expectancy'] = client.life_expectancy
+
+        if not validated_data.get('retirement_age', None):
+            validated_data['retirement_age'] = 67
+
+        if not validated_data.get('btc', None):
+            validated_data['btc'] = validated_data['income'] * 0.04
+
+        if not validated_data.get('atc', None):
+            validated_data['atc'] = 0
+
+        # Use the recommended risk for the client if no desired risk specified.
+        if not validated_data.get('desired_risk', None):
+            bas_scores = client.get_risk_profile_bas_scores()
+            validated_data['desired_risk'] = GoalSettingRiskProfile._recommend_risk(bas_scores)
 
         plan = RetirementPlan.objects.create(**validated_data)
         if plan.agreed_on: plan.generate_soa()

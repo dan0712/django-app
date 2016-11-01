@@ -3,10 +3,8 @@ import uuid
 from itertools import chain
 from datetime import datetime
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.core.validators import (MaxValueValidator, MinLengthValidator,
-                                    MinValueValidator, MaxLengthValidator, ValidationError)
+from django.core.validators import MaxValueValidator, MinValueValidator, ValidationError
 from django.db import models
 from django.db.models import PROTECT
 from django.db.models.aggregates import Min, Max, Sum
@@ -194,6 +192,11 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
                 return False
         return True
 
+    @property
+    def life_expectancy(self):
+        # TODO: Return a better extimate of life expectancy
+        return 85
+
     def get_risk_profile_bas_scores(self):
         """
         Get the scores for an entity's willingness to take risk, based on a previous elicitation of its preferences.
@@ -296,8 +299,7 @@ class ClientAccount(models.Model):
             self.token = str(uuid.uuid4())
         if self.confirmed != self.__was_confirmed:
             self.on_confirmed_modified()
-        ret_value = super(ClientAccount, self).save(force_insert, force_update,
-                                               using, update_fields)
+        ret_value = super(ClientAccount, self).save(force_insert, force_update, using, update_fields)
         self.__was_confirmed = self.confirmed
         return ret_value
 
