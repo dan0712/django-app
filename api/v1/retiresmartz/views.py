@@ -173,7 +173,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # grab 50 evenly spaced time points between dob and current time
         today = timezone.now().date()
         last_day = retirement_plan.client.date_of_birth + relativedelta(years=retirement_plan.selected_life_expectancy)
-        day_interval = (last_day - today) / 50
+        day_interval = (last_day - today) / 49
         income_start = 20000
         assets_start = 100000
         for i in range(50):

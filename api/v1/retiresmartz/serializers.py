@@ -148,6 +148,17 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             for field in self.fields.values():
                 field.required = False
 
+    def validate(self, data):
+        """
+        Define custom validator so we can confirm if same_home is not true, same_location is specified.
+        :param data:
+        :return:
+        """
+        if not data['same_home'] and data.get('same_location', None) is None:
+            raise ValidationError("same_location must be specified if same_home is not True.")
+
+        return data
+
     @transaction.atomic
     def create(self, validated_data):
         client = validated_data['client']
