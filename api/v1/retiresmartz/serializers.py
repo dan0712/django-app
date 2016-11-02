@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 from django.conf import settings
@@ -37,20 +36,43 @@ def who_validator(value):
 
 def make_category_validator(category):
     def category_validator(value):
-        if not value in category:
+        if category(value) not in category:
             raise ValidationError("'cat' for %s must be one of %s" % (category, category.choices()))
+    return category_validator
 
 
 def make_json_list_validator(field, serializer):
     def list_item_validator(value):
-        try: value = json.loads(value)
-        except ValueError: raise ValidationError("Invalid json for %s" % field)
         if not isinstance(value, list):
             raise ValidationError("%s must be a JSON list of objects" % field)
         for item in value:
             if not isinstance(item, dict) or not serializer(data=item).is_valid(raise_exception=True):
-                raise ValidationError("Invalid %s object"%field)
+                raise ValidationError("Invalid %s object" % field)
     return list_item_validator
+
+
+class PartnerDataSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    dob = serializers.DateField()
+    ssn = serializers.CharField(),
+    retirement_age = serializers.IntegerField(default=67)
+    income = serializers.IntegerField()
+    smoker = serializers.BooleanField(default=False)
+    daily_exercise = serializers.IntegerField(default=0)
+    weight = serializers.IntegerField(default=65)
+    height = serializers.IntegerField(default=160)
+    btc = serializers.IntegerField(required=False)
+    atc = serializers.IntegerField(required=False)
+    max_match = serializers.FloatField(required=False)
+    calculated_life_expectancy = serializers.IntegerField(required=False)
+    selected_life_expectancy = serializers.IntegerField(required=False)
+    social_security_statement = serializers.FileField(required=False),
+    social_security_statement_data = serializers.JSONField(required=False)
+
+
+def partner_data_validator(value):
+    if not isinstance(value, dict) or not PartnerDataSerializer(data=value).is_valid(raise_exception=True):
+        raise ValidationError("Invalid partner_data object")
 
 
 class ExpensesSerializer(serializers.Serializer):
@@ -77,6 +99,12 @@ class InitialDepositsSerializer(serializers.Serializer):
 
 
 class RetirementPlanSerializer(ReadOnlyModelSerializer):
+    # We need to force JSON output for the JSON fields....
+    expenses = serializers.JSONField()
+    savings = serializers.JSONField()
+    initial_deposits = serializers.JSONField()
+    partner_data = serializers.JSONField()
+
     class Meta:
         model = RetirementPlan
 
@@ -98,7 +126,7 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
     btc = serializers.FloatField(required=False)
     atc = serializers.FloatField(required=False)
     retirement_postal_code = serializers.CharField(max_length=10, required=False)
-    partner_data = serializers.JSONField(required=False)
+    partner_data = serializers.JSONField(required=False, validators=[partner_data_validator])
 
     class Meta:
         model = RetirementPlan
