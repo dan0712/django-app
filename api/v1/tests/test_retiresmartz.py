@@ -1,9 +1,11 @@
+from datetime import date
 from ujson import loads
 
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from api.v1.tests.factories import ExternalAssetFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.models import InvestmentType
 from main.tests.fixture import Fixture1
@@ -58,6 +60,50 @@ class RetiresmartzTests(APITestCase):
         self.assertNotEqual(response.data['id'], None)
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
         self.assertEqual(saved_plan.btc, 3200)
+
+    def test_add_plan_with_json_fields(self):
+        '''
+        Tests:
+        - clients can create a retirement plan.
+        - specifying btc on creation works
+        '''
+        external_asset = ExternalAssetFactory.create(owner=Fixture1.client1(), valuation=100000)
+        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        plan_data = self.base_plan_data.copy()
+        plan_data['partner_data'] = {'name': 'Freddy', 'dob': date(2000, 1, 1), 'income': 50000, 'btc': 1000}
+        plan_data['expenses'] = [
+            {
+                "id": 1,
+                "desc": "Car",
+                "cat": RetirementPlan.ExpenseCategory.TRANSPORTATION.value,
+                "who": "self",
+                "amt": 200,
+            },
+        ]
+        plan_data['savings'] = [
+            {
+                "id": 1,
+                "desc": "Health Account",
+                "cat": RetirementPlan.SavingCategory.HEALTH_GAP.value,
+                "who": "self",
+                "amt": 100,
+            },
+        ]
+        plan_data['initial_deposits'] = [
+            {
+                "id": 1,
+                "asset": external_asset.id,
+                "amt": 10000,
+            },
+        ]
+        response = self.client.post(url, plan_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['partner_data']['btc'], 1000)
+        saved_plan = RetirementPlan.objects.get(id=response.data['id'])
+        self.assertEqual(saved_plan.savings[0]['amt'], 100)
+        self.assertEqual(saved_plan.expenses[0]['amt'], 200)
+        self.assertEqual(saved_plan.initial_deposits[0]['amt'], 10000)
 
     def test_add_plan_no_name(self):
         base_plan_data = {
