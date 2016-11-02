@@ -43,7 +43,7 @@ class ExecutionProviderDjango(ExecutionProviderAbstract):
         m1y = today - timedelta(days=366)
         lots = PositionLot.objects.\
             filter(execution_distribution__execution__executed__gt=m1y,
-                   execution_distribution__transaction__from_goal=goal).\
+                   execution_distribution__transaction__from_goal__id=goal.id).\
             annotate(tid=F('execution_distribution__execution__asset__id')).values('tid').\
             annotate(value=Coalesce(Sum(F('quantity') * F('execution_distribution__execution__asset__unit_price')), 0))
 

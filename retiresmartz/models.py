@@ -101,8 +101,7 @@ class RetirementPlan(models.Model):
     retirement_home_price = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text="The price of your future retirement home "
-                  "(in today's dollars)")
+        help_text="The price of your future retirement home (in today's dollars)")
 
     beta_partner = models.BooleanField(
         default=False,
@@ -129,10 +128,8 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Annual personal before-tax "
-                                                "contributions")
-    atc = models.PositiveIntegerField(help_text="Annual personal after-tax "
-                                                "contributions")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
 
     max_employer_match_percent = models.FloatField(
         null=True, blank=True,
@@ -229,6 +226,21 @@ class RetirementPlan(models.Model):
         soa.save()
         return soa
 
+    @property
+    def on_track(self):
+        # TODO: Make this actually work.
+        return True
+
+    @property
+    def opening_tax_deferred_balance(self):
+        # TODO: Sum the complete amount that is expected to be in the retirement plan accounts on account opening.
+        return 0
+
+    @property
+    def opening_tax_paid_balance(self):
+        # TODO: Sum the complete amount that is expected to be in the retirement plan accounts on account opening.
+        return 0
+
 
 @receiver(post_save, sender=RetirementPlan)
 def resolve_retirement_invitations(sender, instance, created, **kwargs):
@@ -258,9 +270,11 @@ class RetirementSpendingGoal(models.Model):
 
 
 class RetirementPlanAccount(models.Model):
+    """
+    TODO: Comment what this is.
+    """
     plan = models.ForeignKey(RetirementPlan, related_name='retiree')
-    account = models.OneToOneField('client.ClientAccount',
-                                   related_name='retirement')
+    account = models.OneToOneField('client.ClientAccount', related_name='retirement')
 
 
 class RetirementLifestyle(models.Model):

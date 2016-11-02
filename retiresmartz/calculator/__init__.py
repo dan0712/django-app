@@ -1,11 +1,80 @@
+import logging
 from itertools import chain
 
 import pandas as pd
+from django.db import transaction
+from django.utils import timezone
 
+from main.models import GoalMetricGroup, GoalSetting, Portfolio, PortfolioItem, Ticker
+from portfolios.calculation import calculate_portfolio, get_instruments, Unsatisfiable
+from portfolios.providers.data.django import DataProviderDjango
+from portfolios.providers.execution.django import ExecutionProviderDjango
 from retiresmartz.calculator.assets import TaxDeferredAccount
 from retiresmartz.calculator.base import DesiredCashFlow
 from .assets import Asset, TaxPaidAccount
 from .cashflows import CashFlow
+
+logger = logging.getLogger('retiresmartz.calculator')
+
+
+@transaction.atomic
+def create_settings(retirement_plan):
+    """
+    Creates some settings that can be used to create a real retirement goal if desired.
+    :param retirement_plan:
+    :return:
+    """
+    metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)
+    settings = GoalSetting.objects.create(
+        target=0,
+        completion=timezone.now().date(),
+        hedge_fx=False,
+        metric_group=metric_group,
+    )
+
+    data_provider = DataProviderDjango()
+    idata = get_instruments(data_provider)
+
+    # Create a mock goal so we can call calculate_portfolio
+    class MockGoal(object):
+        portfolio_set = retirement_plan.client.advisor.default_portfolio_set
+        id = 0
+        current_balance = 100000
+
+        def __str__(self):
+            return "Retiresmartz calculation Goal for plan: {}".format(retirement_plan)
+
+    settings.goal = MockGoal()
+
+    try:
+        weights, er, stdev = calculate_portfolio(
+            settings=settings,
+            idata=idata,
+            data_provider=data_provider,
+            execution_provider=ExecutionProviderDjango()
+        )
+    except Unsatisfiable:
+        # We detect when loading a goal in the allocation screen
+        # if there has been no portfolio created
+        # and return a message to the user. It it perfectly reasonable
+        # for a goal to be created without a portfolio.
+        logger.warning("No suitable portfolio could be found for retirement plan: {}.".format(retirement_plan))
+        transaction.rollback()
+        return None
+
+    portfolio = Portfolio.objects.create(
+        setting=settings,
+        stdev=stdev,
+        er=er,
+    )
+    items = [PortfolioItem(portfolio=portfolio,
+                           asset=Ticker.objects.get(id=tid),
+                           weight=weight,
+                           volatility=idata[0].loc[tid, tid])
+             for tid, weight in weights.items()]
+    PortfolioItem.objects.bulk_create(items)
+
+    return settings
 
 
 class Calculator(object):

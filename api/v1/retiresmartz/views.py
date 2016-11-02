@@ -10,8 +10,13 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
+import scipy.stats as st
+
 from api.v1.views import ApiViewMixin
 from common.utils import d2ed
+from retiresmartz.calculator import create_settings, Calculator
+from retiresmartz.calculator.assets import TaxDeferredAccount
+from retiresmartz.calculator.cashflows import ReverseMortgage
 from retiresmartz.models import RetirementPlan, RetirementAdvice
 from client.models import Client
 from main.models import Ticker
@@ -157,10 +162,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         going up by 1000 every point, income starting
         at 200000, increasing by 50 every point.
         """
-        try:
-            retirement_plan = RetirementPlan.objects.get(pk=pk)
-        except:
-            return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+        retirement_plan = self.get_object()
         tickers = Ticker.objects.filter(~Q(state=Ticker.State.CLOSED.value))
         portfolio = []
         projection = []
@@ -182,6 +184,53 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             dt = today + i * day_interval
             projection.append([d2ed(dt), assets, income])
         return Response({'portfolio': portfolio, 'projection': projection})
+
+    @detail_route(methods=['get'], url_path='calculate-new')
+    def calculate_new(self, request, parent_lookup_client, pk, format=None):
+        """
+        Calculate the single projection values for the current retirement plan.
+        {
+          "portfolio": [
+            # list of [fund id, weight as percent]. There will be max 20 of these. Likely 5-10
+            [1, 5],
+            [53, 12],
+            ...
+          ],
+          "projection": [
+            # this is the asset and cash-flow projection. It is a list of [date, assets, income]. There will be at most 50 of these. (21 bytes each)
+            [43356, 120000, 2000],
+            [43456, 119000, 2004],
+            ...
+          ]
+        }
+        """
+        plan = self.get_object()
+        settings = create_settings(plan)
+        # Get the z-multiplier for the given confidence
+        z_mult = -st.norm.ppf(plan.expected_return_confidence)
+        performance = settings.portfolio.er + z_mult * settings.portfolio.stdev
+
+        # TODO: Call the logic that determines the retirement accounts to figure out what accounts to use.
+        # TODO: Get the tax rate to use when withdrawing from the account at retirement
+        # For now we assume we want a tax deferred 401K
+        acc_401k = TaxDeferredAccount(dob=plan.client.date_of_birth,
+                                      tax_rate=0.0,
+                                      name='401k',
+                                      today=timezone.now().date(),
+                                      opening_balance=plan.opening_tax_deferred_balance,
+                                      growth=performance,
+                                      retirement_date=plan.client.date_of_birth + plan.retirement_age,
+                                      end_date=plan.client.date_of_birth + plan.life_expectency,
+                                      contributions=plan.btc / 12)
+        #
+        if plan.reverse_mortgage and plan.retirement_home_price is not None:
+            house = ReverseMortgage(plan.retirement_home_price, self.today, self.retirement, self.death)
+        else:
+            house = None
+
+        retirement_calculator = Calculator()
+
+
 
 
 class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):

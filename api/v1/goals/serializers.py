@@ -11,9 +11,8 @@ from rest_framework.fields import FloatField, IntegerField
 from api.v1.serializers import EventMemoMixin, NoCreateModelSerializer, \
     NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.event import Event
-from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
-    GoalSetting, GoalType, Portfolio, PortfolioItem, \
-    RecurringTransaction, Ticker, Transaction, PositionLot
+from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, GoalSetting, GoalType, Portfolio, \
+    PortfolioItem, RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk, validate_risk_score
 from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
 from portfolios.providers.data.django import DataProviderDjango
