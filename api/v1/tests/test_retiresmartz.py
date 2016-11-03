@@ -54,6 +54,7 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.data['client'], plan.client.id)
         self.assertEqual(response.data['calculated_life_expectancy'], plan.calculated_life_expectancy)
         self.assertEqual(response.data['statement_of_advice'], soa.id)
+        self.assertEqual(response.data['statement_of_advice_url'], '/statements/retirement/{}.pdf'.format(soa.id))
 
     def test_agreed_on_plan_generates_soa(self):
         """

@@ -110,9 +110,16 @@ class RetirementPlanSerializer(ReadOnlyModelSerializer):
     portfolio = PortfolioSerializer()
     on_track = serializers.BooleanField()
     statement_of_advice = serializers.PrimaryKeyRelatedField(read_only=True)
+    statement_of_advice_url = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = RetirementPlan
+
+    def get_statement_of_advice_url(self, obj):
+        if hasattr(obj, 'statement_of_advice'):
+            return '/statements/retirement/{}.pdf'.format(obj.id)
+        else:
+            return None
 
 
 class RetirementPlanWritableSerializer(serializers.ModelSerializer):
