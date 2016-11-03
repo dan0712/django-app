@@ -177,7 +177,7 @@ class ClientTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['type'], asset.type)
         self.assertEqual(response.data['name'], asset.name)
-        self.assertFalse('owner' in response.data)
+        self.assertEqual(response.data['owner'], self.betasmartz_client.id)
         self.assertEqual(response.data['description'], asset.description)
         self.assertEqual(response.data['valuation'], asset.valuation)
         self.assertEqual(response.data['valuation_date'], str(asset.valuation_date))

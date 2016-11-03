@@ -120,6 +120,13 @@ class PersonalData(models.Model):
         except:
             return None
 
+    @cached_property
+    def tax_filing_status(self):
+        try:
+            return self.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS']
+        except:
+            return None
+
 
 class NeedApprobation(models.Model):
     class Meta:

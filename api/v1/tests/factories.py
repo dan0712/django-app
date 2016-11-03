@@ -15,7 +15,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         InvestmentCycleObservation, InvestmentCyclePrediction, \
                         RecurringTransaction, AccountGroup, Platform
 
-from retiresmartz.models import RetirementPlan, RetirementAdvice
+from retiresmartz.models import RetirementPlan, RetirementAdvice, RetirementPlanAccount
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
@@ -552,6 +552,14 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     desired_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     recommended_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     max_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
+class RetirementPlanAccountFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementPlanAccount
+
+    plan = factory.SubFactory(RetirementPlanFactory)
+    account = factory.SubFactory(ClientAccountFactory)
 
 
 class RecurringTransactionFactory(factory.django.DjangoModelFactory):
