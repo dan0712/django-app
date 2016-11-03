@@ -387,8 +387,12 @@ def determine_accounts(plan):
     else:
         match = False
 
-    if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
-        joint = True
+    transcript_data = plan.client.regional_data.get('tax_transcript_data')
+    if transcript_data:
+        if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
+            joint = True
+        else:
+            joint = False
     else:
         joint = False
 
