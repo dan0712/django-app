@@ -133,8 +133,12 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
-    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax "
+                                                "contributions",
+                                                blank=True)
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax "
+                                                "contributions",
+                                                blank=True)
 
     max_employer_match_percent = models.FloatField(
         null=True, blank=True,
