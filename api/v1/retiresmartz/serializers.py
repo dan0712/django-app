@@ -2,12 +2,15 @@ from datetime import date
 
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 from django.utils.timezone import now
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from api.v1.goals.serializers import PortfolioSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
+from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
 
@@ -104,6 +107,8 @@ class RetirementPlanSerializer(ReadOnlyModelSerializer):
     savings = serializers.JSONField()
     initial_deposits = serializers.JSONField()
     partner_data = serializers.JSONField()
+    portfolio = PortfolioSerializer()
+    on_track = serializers.BooleanField()
 
     class Meta:
         model = RetirementPlan
@@ -156,15 +161,9 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             'atc',
             'max_employer_match_percent',
             'desired_risk',
-            'recommended_risk',
-            'max_risk',
             'selected_life_expectancy',
-            'portfolio',
             'partner_data',
             'agreed_on',
-        )
-        read_only_fields = (
-            'portfolio',
         )
 
     def __init__(self, *args, **kwargs):
@@ -209,6 +208,11 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
 
         if not validated_data.get('atc', None):
             validated_data['atc'] = 0
+
+        if validated_data['reverse_mortgage'] and validated_data.get('retirement_home_price', None) is None:
+            home = client.external_assets.filter(type=ExternalAsset.Type.FAMILY_HOME.value).first()
+            if home:
+                validated_data['retirement_home_price'] = home.get_growth_valuation(timezone.now().date())
 
         # Use the recommended risk for the client if no desired risk specified.
         if not validated_data.get('desired_risk', None):

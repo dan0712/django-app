@@ -1,6 +1,10 @@
 import logging
+from datetime import date
 
+import pandas as pd
+import numpy as np
 from dateutil.relativedelta import relativedelta
+
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
@@ -10,8 +14,17 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
+import scipy.stats as st
+
+from api.v1.goals.serializers import PortfolioSerializer
 from api.v1.views import ApiViewMixin
 from common.utils import d2ed
+from portfolios.calculation import Unsatisfiable
+from retiresmartz.calculator import create_settings, Calculator
+from retiresmartz.calculator.assets import TaxDeferredAccount
+from retiresmartz.calculator.cashflows import ReverseMortgage, InflatedCashFlow, EmploymentIncome
+from retiresmartz.calculator.desired_cashflows import RetiresmartzDesiredCashFlow
+from retiresmartz.calculator.social_security import calculate_payments
 from retiresmartz.models import RetirementPlan, RetirementAdvice
 from client.models import Client
 from main.models import Ticker
@@ -157,10 +170,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         going up by 1000 every point, income starting
         at 200000, increasing by 50 every point.
         """
-        try:
-            retirement_plan = RetirementPlan.objects.get(pk=pk)
-        except:
-            return Response({'error': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+        retirement_plan = self.get_object()
         tickers = Ticker.objects.filter(~Q(state=Ticker.State.CLOSED.value))
         portfolio = []
         projection = []
@@ -182,6 +192,111 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             dt = today + i * day_interval
             projection.append([d2ed(dt), assets, income])
         return Response({'portfolio': portfolio, 'projection': projection})
+
+    @detail_route(methods=['get'], url_path='calculate-new')
+    def calculate_new(self, request, parent_lookup_client, pk, format=None):
+        """
+        Calculate the single projection values for the current retirement plan.
+        {
+          "portfolio": [
+            # list of [fund id, weight as percent]. There will be max 20 of these. Likely 5-10
+            [1, 5],
+            [53, 12],
+            ...
+          ],
+          "projection": [
+            # this is the asset and cash-flow projection. It is a list of [date, assets, income]. There will be at most 50 of these. (21 bytes each)
+            [43356, 120000, 2000],
+            [43456, 119000, 2004],
+            ...
+          ]
+        }
+        """
+        plan = self.get_object()
+
+        # TODO: We can cache the portfolio on the plan and only update it every 24hrs, or if the risk changes.
+        try:
+            settings = create_settings(plan)
+        except Unsatisfiable as e:
+            rdata = {'reason': "No portfolio could be found: {}".format(e)}
+            if e.req_funds is not None:
+                rdata['req_funds'] = e.req_funds
+            return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
+
+        plan.set_settings(settings)
+        plan.save()
+
+        # Get the z-multiplier for the given confidence
+        z_mult = -st.norm.ppf(plan.expected_return_confidence)
+        performance = settings.portfolio.er + z_mult * settings.portfolio.stdev
+
+        today = timezone.now().date()
+        retire_date = max(today, plan.client.date_of_birth + relativedelta(years=plan.retirement_age))
+        death_date = max(retire_date, plan.client.date_of_birth + relativedelta(years=plan.selected_life_expectancy))
+
+        # Pre-retirement income cash flow
+        income_calc = EmploymentIncome(income=plan.income / 12,
+                                       growth=0.01,
+                                       today=today,
+                                       end_date=retire_date)
+
+        ss_all = calculate_payments(plan.client.date_of_birth, plan.income)
+        ss_income = ss_all.get(plan.retirement_age, None)
+        if ss_income is None:
+            ss_income = sorted(ss_all)[0]
+        ss_payments = InflatedCashFlow(ss_income, today, retire_date, death_date)
+
+        cash_flows = [ss_payments]
+
+        # TODO: Call the logic that determines the retirement accounts to figure out what accounts to use.
+        # TODO: Get the tax rate to use when withdrawing from the account at retirement
+        # For now we assume we want a tax deferred 401K
+        acc_401k = TaxDeferredAccount(dob=plan.client.date_of_birth,
+                                      tax_rate=0.0,
+                                      name='401k',
+                                      today=today,
+                                      opening_balance=plan.opening_tax_deferred_balance,
+                                      growth=performance,
+                                      retirement_date=retire_date,
+                                      end_date=death_date,
+                                      contributions=plan.btc / 12)
+
+        assets = [acc_401k]
+
+        if plan.reverse_mortgage and plan.retirement_home_price is not None:
+            cash_flows.append(ReverseMortgage(home_value=plan.retirement_home_price,
+                                              value_date=today,
+                                              start_date=retire_date,
+                                              end_date=death_date))
+
+        if plan.paid_days > 0:
+            # Average retirement income is 116 per day as of September 2016, working until age 80
+            cash_flows.append(InflatedCashFlow(amount=116*plan.paid_days,
+                                               today=date(2016, 9, 1),
+                                               start_date=retire_date,
+                                               end_date=plan.client.date_of_birth + relativedelta(years=80)))
+
+        # The desired cash flow generator.
+        rdcf = RetiresmartzDesiredCashFlow(current_income=income_calc,
+                                           retirement_income=plan.desired_income / 12,
+                                           today=today,
+                                           retirement_date=retire_date,
+                                           end_date=death_date)
+        # Add the income cash flow to the list of cash flows.
+        cash_flows.append(rdcf)
+
+        calculator = Calculator(cash_flows=cash_flows, assets=assets)
+
+        asset_values, income_values = calculator.calculate(rdcf)
+
+        # Convert these returned values to a format for the API
+        catd = pd.concat([asset_values.sum(axis=1), income_values['actual']], axis=1)
+        locs = np.linspace(0, len(catd)-1, num=50, dtype=int)
+        proj_data = [(d2ed(d), a, i) for d, a, i in catd.iloc[locs, :].itertuples()]
+
+        pser = PortfolioSerializer(instance=settings.portfolio)
+
+        return Response({'portfolio': pser.data, 'projection': proj_data})
 
 
 class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):

@@ -1,19 +1,25 @@
-from datetime import date
+from datetime import date, datetime
 from ujson import loads
+from unittest import mock
+from unittest.mock import MagicMock
 
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.v1.tests.factories import ExternalAssetFactory
+from api.v1.tests.factories import ExternalAssetFactory, MarkowitzScaleFactory, MarketIndexFactory, PortfolioSetFactory
 from common.constants import GROUP_SUPPORT_STAFF
-from main.models import InvestmentType
+from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction, \
+    populate_inflation
+from main.models import InvestmentType, GoalSetting, GoalMetricGroup, GoalMetric
 from main.tests.fixture import Fixture1
 from retiresmartz.models import RetirementPlan
 from .factories import AssetClassFactory, ContentTypeFactory, GroupFactory, \
     RetirementPlanFactory, TickerFactory, RetirementAdviceFactory
 from django.utils import timezone
 from pinax.eventlog.models import log
+
+mocked_now = datetime(2016, 1, 1)
 
 
 class RetiresmartzTests(APITestCase):
@@ -286,20 +292,64 @@ class RetiresmartzTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_retirement_plan_calculate(self):
+        plan = RetirementPlanFactory.create(income=100000,
+                                            desired_income=81000,
+                                            btc=4000,
+                                            retirement_home_price=250000,
+                                            paid_days=1,
+                                            retirement_age=67,
+                                            selected_life_expectancy=85)
+
         # some tickers for portfolio
-        self.content_type = ContentTypeFactory.create()
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
-        plan = RetirementPlanFactory.create()
-        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
+        bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
+        stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
+        bonds_index = MarketIndexFactory.create()
+        stocks_index = MarketIndexFactory.create()
+
+        # Add the asset classes to the advisor's default portfolio set
+        plan.client.advisor.default_portfolio_set.asset_classes.add(bonds_asset_class, stocks_asset_class)
+        bonds_ticker = TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index)
+        stocks_ticker = TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index)
+
+        # Set the markowitz bounds for today
+        self.m_scale = MarkowitzScaleFactory.create()
+
+        # populate the data needed for the optimisation
+        # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+        populate_inflation(asof=mocked_now.date())
+
+        self.assertIsNone(plan.goal_setting)
+        old_settings = GoalSetting.objects.all().count()
+        old_mgroups = GoalMetricGroup.objects.all().count()
+        old_metrics = GoalMetric.objects.all().count()
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate-new'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('portfolio' in response.data)
         self.assertTrue('projection' in response.data)
+        self.assertEqual(len(response.data['projection']), 50)
+        # Make sure the goal_setting is now populated.
+        plan.refresh_from_db()
+        self.assertIsNotNone(plan.goal_setting.portfolio)
+        self.assertEqual(old_settings+1, GoalSetting.objects.all().count())
+        self.assertEqual(old_mgroups+1, GoalMetricGroup.objects.all().count())
+        self.assertEqual(old_metrics+1, GoalMetric.objects.all().count())
+        old_id = plan.goal_setting.id
+
+        # Recalculate and make sure the number of settings, metric groups and metrics in the system is the same
+        # Also make sure the setting object is different
+        response = self.client.get(url)
+        plan.refresh_from_db()
+        self.assertEqual(old_settings+1, GoalSetting.objects.all().count())
+        self.assertEqual(old_mgroups+1, GoalMetricGroup.objects.all().count())
+        self.assertEqual(old_metrics+1, GoalMetric.objects.all().count())
+        self.assertNotEqual(old_id, plan.goal_setting.id)
 
     def test_retirement_plan_advice_feed_list_unread(self):
         self.content_type = ContentTypeFactory.create()
@@ -354,18 +404,6 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], advice.id)
         self.assertEqual(response.data['read'][:9], str(read_time)[:9])
-
-    def test_retirement_plan_calculate_income(self):
-        self.content_type = ContentTypeFactory.create()
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark_content_type=self.content_type)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark_content_type=self.content_type)
-        plan = RetirementPlanFactory.create()
-        url = '/api/v1/clients/{}/retirement-plans/{}/calculate-income'.format(plan.client.id, plan.id)
-        self.client.force_authenticate(user=plan.client.user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_add_retirement_plan_same_location_no_postal(self):
         url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)

@@ -22,8 +22,7 @@ from api.v1.views import ReadOnlyApiViewMixin
 from common.constants import EPOCH_DT, EPOCH_TM
 from common.utils import dt2ed
 from main.event import Event
-from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
-    Transaction, PositionLot, GoalSetting
+from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, Transaction, GoalSetting
 from main.risk_profiler import risk_data
 from portfolios.calculation import Unsatisfiable, \
     calculate_portfolio, calculate_portfolios, current_stats_from_weights

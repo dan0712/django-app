@@ -342,7 +342,7 @@ class ExternalAsset(models.Model):
         if to_date is None:
             to_date = datetime.now().date()
         delta = to_date - self.valuation_date
-        accumulated_value = self.valuation
+
         return self.valuation * pow(1 + self.growth, delta.days)
 
     class Meta:
@@ -1272,8 +1272,7 @@ class RecurringTransaction(TransferPlan):
     Note: Only settings that are active will have their recurring
           transactions processed.
     """
-    setting = models.ForeignKey('GoalSetting',
-                                related_name='recurring_transactions')
+    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', on_delete=CASCADE)
     enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -1295,7 +1294,7 @@ class RecurringTransaction(TransferPlan):
 
 
 class Portfolio(models.Model):
-    setting = models.OneToOneField('GoalSetting', related_name='portfolio')
+    setting = models.OneToOneField('GoalSetting', related_name='portfolio', on_delete=CASCADE)
     stdev = models.FloatField()
     er = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
@@ -1310,8 +1309,8 @@ class Portfolio(models.Model):
 
 
 class PortfolioItem(models.Model):
-    portfolio = models.ForeignKey(Portfolio, related_name='items')
-    asset = models.ForeignKey(Ticker)
+    portfolio = models.ForeignKey(Portfolio, related_name='items', on_delete=CASCADE)
+    asset = models.ForeignKey(Ticker, on_delete=PROTECT)
     weight = models.FloatField()
     volatility = models.FloatField(help_text='variance of this asset at the time of creating this portfolio.')
 
@@ -1321,7 +1320,7 @@ class GoalSetting(models.Model):
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
     # metric_group is a foreignkey rather than onetoone since a metric group can be used by more than one setting object
-    metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings')
+    metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings', on_delete=PROTECT)
     rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing?')
     # also may have a 'recurring_transactions' field from RecurringTransaction model.
     # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
@@ -1527,14 +1526,12 @@ class Goal(models.Model):
         validate_risk_score(setting)
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
-            custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
-            last_user = old_setting.metric_group.settings.count() == 1
+            old_group = old_setting.metric_group
+            custom_group = old_group.type == GoalMetricGroup.TYPE_CUSTOM
+            last_user = old_group.settings.count() == 1
+            old_setting.delete()
             if custom_group and last_user:
-                # This will also delete the setting as the metric group is a foreign key.
-                old_setting.metric_group.delete()
-            else:
-                # We are using a shared group, or we're not the last user. Just delete the setting object.
-                old_setting.delete()
+                old_group.delete()
 
     @transaction.atomic
     def approve_selected(self):

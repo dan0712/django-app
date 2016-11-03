@@ -1,11 +1,85 @@
+import logging
 from itertools import chain
 
 import pandas as pd
+from django.db import transaction
+from django.utils import timezone
 
+from api.v1.goals.serializers import GoalSettingStatelessSerializer, GoalSettingSerializer
+from main.models import GoalMetricGroup, GoalSetting, Portfolio, PortfolioItem, Ticker, GoalMetric
+from portfolios.calculation import calculate_portfolio, get_instruments
+from portfolios.providers.data.django import DataProviderDjango
+from portfolios.providers.execution.django import ExecutionProviderDjango
 from retiresmartz.calculator.assets import TaxDeferredAccount
 from retiresmartz.calculator.base import DesiredCashFlow
 from .assets import Asset, TaxPaidAccount
 from .cashflows import CashFlow
+
+logger = logging.getLogger('retiresmartz.calculator')
+
+
+@transaction.atomic
+def create_settings(plan):
+    """
+    Creates some settings that can be used to create a real retirement goal if desired.
+    :param plan: The retirement plan to create settings for.
+    :return: A GoalSetting object that has been saved in the database.
+             The caller needs to destroy it if it is no longer required
+    :raises Unsatisfiable if no suitable portfolio could be found for the plan.
+    """
+    metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)
+    settings = GoalSetting.objects.create(
+        target=0,
+        completion=timezone.now().date(),
+        hedge_fx=False,
+        metric_group=metric_group,
+    )
+
+    risk_metric = GoalMetric.objects.create(group=metric_group,
+                                            type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+                                            comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
+                                            rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
+                                            rebalance_thr=0.05,
+                                            configured_val=plan.desired_risk)
+
+    # Create a mock goal so we can call calculate_portfolio
+    class MockGoal(object):
+        portfolio_set = plan.client.advisor.default_portfolio_set
+        id = 0
+        available_balance = 100000
+        current_balance = 100000
+
+        def __str__(self):
+            return "Retiresmartz calculation Goal for plan: {}".format(plan)
+
+    # Create a dummy settings object for the calculation.
+    # We need to do this because we are using a fake goal, as we don't have a real goal yet.
+    settings_data = GoalSettingSerializer(instance=settings).data
+    calc_settings = GoalSettingStatelessSerializer.create_stateless(settings_data, MockGoal())
+
+    data_provider = DataProviderDjango()
+    idata = get_instruments(data_provider)
+
+    weights, er, stdev = calculate_portfolio(
+        settings=calc_settings,
+        idata=idata,
+        data_provider=data_provider,
+        execution_provider=ExecutionProviderDjango()
+    )
+
+    portfolio = Portfolio.objects.create(
+        setting=settings,
+        stdev=stdev,
+        er=er,
+    )
+    items = [PortfolioItem(portfolio=portfolio,
+                           asset=Ticker.objects.get(id=tid),
+                           weight=weight,
+                           volatility=idata[0].loc[tid, tid])
+             for tid, weight in weights.items()]
+    PortfolioItem.objects.bulk_create(items)
+
+    return settings
 
 
 class Calculator(object):
