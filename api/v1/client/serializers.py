@@ -126,7 +126,6 @@ class ExternalAssetSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = ExternalAsset
-        exclude = ('owner',)
 
 
 class ExternalAssetWritableSerializer(serializers.ModelSerializer):
