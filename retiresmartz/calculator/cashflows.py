@@ -94,6 +94,9 @@ class EmploymentIncome(CashFlow):
     def __init__(self, income: float, growth: float, today: datetime.date, end_date: datetime.date):
         """
         Initialiser
+        :param income: The monthly income as of 'today'
+        :param today: The today date
+        :param end_date: The time the income will stop
         :param growth: Expected annual income growth above CPI. 0.01 = 1%
         """
         self._growth_factor = (1 + growth) ** (1/12)

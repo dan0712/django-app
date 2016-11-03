@@ -5,13 +5,14 @@ import logging
 from django.core.validators import MaxLengthValidator, MaxValueValidator, \
     MinLengthValidator, MinValueValidator, ValidationError
 from django.db import models
+from django.db.models.deletion import PROTECT
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from jsonfield.fields import JSONField
 from pinax.eventlog.models import Log
 
 from common.structures import ChoiceEnum
-from main.models import TransferPlan
+from main.models import TransferPlan, GoalSetting
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.managers import RetirementAdviceQueryset
 from .managers import RetirementPlanQuerySet
@@ -160,8 +161,7 @@ class RetirementPlan(models.Model):
 
     agreed_on = models.DateTimeField(null=True, blank=True)
 
-    # Although calculated, this field needs to be editable, as we want to calculate it before creating the model.
-    portfolio = JSONField(null=True, blank=True)
+    setting = models.OneToOneField(GoalSetting, null=True, related_name='retirement_plan', on_delete=PROTECT)
     partner_data = JSONField(null=True, blank=True)
 
     # Install the custom manager that knows how to filter.
