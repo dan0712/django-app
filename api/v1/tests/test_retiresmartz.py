@@ -7,7 +7,8 @@ from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.v1.tests.factories import ExternalAssetFactory, MarkowitzScaleFactory, MarketIndexFactory, PortfolioSetFactory
+from api.v1.tests.factories import ExternalAssetFactory, MarkowitzScaleFactory, MarketIndexFactory, \
+    PortfolioSetFactory, RetirementStatementOfAdviceFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction, \
     populate_inflation
@@ -44,13 +45,32 @@ class RetiresmartzTests(APITestCase):
         """
         Test clients are able to access their own retirement plan by id.
         """
-        plan1 = Fixture1.client1_retirementplan1()
-        url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client1().id, plan1.id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
+        plan = RetirementPlanFactory.create(calculated_life_expectancy=92)
+        soa = RetirementStatementOfAdviceFactory.create(retirement_plan=plan)
+        url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan.client.id, plan.id)
+        self.client.force_authenticate(user=plan.client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['client'], plan1.client.id)
-        self.assertEqual(response.data['calculated_life_expectancy'], 85)
+        self.assertEqual(response.data['client'], plan.client.id)
+        self.assertEqual(response.data['calculated_life_expectancy'], plan.calculated_life_expectancy)
+        self.assertEqual(response.data['statement_of_advice'], soa.id)
+
+    def test_agreed_on_plan_generates_soa(self):
+        """
+        Test agreed on retirement plan generates a statement of advice
+        on save.
+        """
+        plan = RetirementPlanFactory.create(calculated_life_expectancy=92)
+        plan.agreed_on = timezone.now()
+        plan.save()
+
+        url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan.client.id, plan.id)
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['client'], plan.client.id)
+        self.assertEqual(response.data['calculated_life_expectancy'], plan.calculated_life_expectancy)
+        self.assertNotEqual(response.data['statement_of_advice'], None)
 
     def test_add_plan(self):
         '''

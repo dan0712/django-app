@@ -2,7 +2,8 @@ __author__ = 'leeward'
 from django.views.generic import DetailView
 from django.http import HttpResponse
 from main.views.base import ClientView
-from statements.models import StatementOfAdvice, RecordOfAdvice
+from statements.models import StatementOfAdvice, RecordOfAdvice, \
+    RetirementStatementOfAdvice
 
 __all__ = ["StatementView", "RecordView"]
 
@@ -23,10 +24,16 @@ class PDFView(DetailView, ClientView):
         return response
 
 
-
 class StatementView(PDFView):
     template_name = StatementOfAdvice.default_template
     model = StatementOfAdvice
+
+
 class RecordView(PDFView):
     template_name = RecordOfAdvice.default_template
     model = RecordOfAdvice
+
+
+class RetirementView(PDFView):
+    template_name = RetirementStatementOfAdvice.default_template
+    model = RetirementStatementOfAdvice

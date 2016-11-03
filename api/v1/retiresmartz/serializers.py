@@ -109,6 +109,7 @@ class RetirementPlanSerializer(ReadOnlyModelSerializer):
     partner_data = serializers.JSONField()
     portfolio = PortfolioSerializer()
     on_track = serializers.BooleanField()
+    statement_of_advice = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = RetirementPlan

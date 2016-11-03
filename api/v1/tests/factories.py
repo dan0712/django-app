@@ -20,7 +20,7 @@ from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
     AccountTypeRiskProfileGroup, EmailInvite
-from statements.models import StatementOfAdvice, RecordOfAdvice
+from statements.models import StatementOfAdvice, RecordOfAdvice, RetirementStatementOfAdvice
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
@@ -602,3 +602,10 @@ class PlatformFactory(factory.django.DjangoModelFactory):
         model = Platform
 
     portfolio_set = factory.SubFactory(PortfolioSetFactory)
+
+
+class RetirementStatementOfAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementStatementOfAdvice
+
+    retirement_plan = factory.SubFactory(RetirementPlanFactory)
