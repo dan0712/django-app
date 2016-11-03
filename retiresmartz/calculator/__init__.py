@@ -5,8 +5,9 @@ import pandas as pd
 from django.db import transaction
 from django.utils import timezone
 
-from main.models import GoalMetricGroup, GoalSetting, Portfolio, PortfolioItem, Ticker
-from portfolios.calculation import calculate_portfolio, get_instruments, Unsatisfiable
+from api.v1.goals.serializers import GoalSettingStatelessSerializer, GoalSettingSerializer
+from main.models import GoalMetricGroup, GoalSetting, Portfolio, PortfolioItem, Ticker, GoalMetric
+from portfolios.calculation import calculate_portfolio, get_instruments
 from portfolios.providers.data.django import DataProviderDjango
 from portfolios.providers.execution.django import ExecutionProviderDjango
 from retiresmartz.calculator.assets import TaxDeferredAccount
@@ -18,11 +19,13 @@ logger = logging.getLogger('retiresmartz.calculator')
 
 
 @transaction.atomic
-def create_settings(retirement_plan):
+def create_settings(plan):
     """
     Creates some settings that can be used to create a real retirement goal if desired.
-    :param retirement_plan:
-    :return:
+    :param plan: The retirement plan to create settings for.
+    :return: A GoalSetting object that has been saved in the database.
+             The caller needs to destroy it if it is no longer required
+    :raises Unsatisfiable if no suitable portfolio could be found for the plan.
     """
     metric_group = GoalMetricGroup.objects.create(type=GoalMetricGroup.TYPE_CUSTOM)
     settings = GoalSetting.objects.create(
@@ -32,35 +35,37 @@ def create_settings(retirement_plan):
         metric_group=metric_group,
     )
 
-    data_provider = DataProviderDjango()
-    idata = get_instruments(data_provider)
+    risk_metric = GoalMetric.objects.create(group=metric_group,
+                                            type=GoalMetric.METRIC_TYPE_RISK_SCORE,
+                                            comparison=GoalMetric.METRIC_COMPARISON_EXACTLY,
+                                            rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
+                                            rebalance_thr=0.05,
+                                            configured_val=plan.desired_risk)
 
     # Create a mock goal so we can call calculate_portfolio
     class MockGoal(object):
-        portfolio_set = retirement_plan.client.advisor.default_portfolio_set
+        portfolio_set = plan.client.advisor.default_portfolio_set
         id = 0
+        available_balance = 100000
         current_balance = 100000
 
         def __str__(self):
-            return "Retiresmartz calculation Goal for plan: {}".format(retirement_plan)
+            return "Retiresmartz calculation Goal for plan: {}".format(plan)
 
-    settings.goal = MockGoal()
+    # Create a dummy settings object for the calculation.
+    # We need to do this because we are using a fake goal, as we don't have a real goal yet.
+    settings_data = GoalSettingSerializer(instance=settings).data
+    calc_settings = GoalSettingStatelessSerializer.create_stateless(settings_data, MockGoal())
 
-    try:
-        weights, er, stdev = calculate_portfolio(
-            settings=settings,
-            idata=idata,
-            data_provider=data_provider,
-            execution_provider=ExecutionProviderDjango()
-        )
-    except Unsatisfiable:
-        # We detect when loading a goal in the allocation screen
-        # if there has been no portfolio created
-        # and return a message to the user. It it perfectly reasonable
-        # for a goal to be created without a portfolio.
-        logger.warning("No suitable portfolio could be found for retirement plan: {}.".format(retirement_plan))
-        transaction.rollback()
-        return None
+    data_provider = DataProviderDjango()
+    idata = get_instruments(data_provider)
+
+    weights, er, stdev = calculate_portfolio(
+        settings=calc_settings,
+        idata=idata,
+        data_provider=data_provider,
+        execution_provider=ExecutionProviderDjango()
+    )
 
     portfolio = Portfolio.objects.create(
         setting=settings,

@@ -229,6 +229,10 @@ class RetirementPlan(models.Model):
         return soa
 
     @property
+    def portfolio(self):
+        return self.setting.portfolio if self.setting else None
+
+    @property
     def on_track(self):
         # TODO: Make this actually work.
         return True

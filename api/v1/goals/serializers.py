@@ -444,7 +444,7 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
                 metrics = PseudoMgr
             mtric_group = DummyGroup()
         else:
-            mtric_group = GoalMetricGroup.objects.get(gid)
+            mtric_group = GoalMetricGroup.objects.get(id=gid)
 
         goalt = goal
 

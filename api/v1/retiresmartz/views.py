@@ -18,6 +18,7 @@ import scipy.stats as st
 from api.v1.goals.serializers import PortfolioSerializer
 from api.v1.views import ApiViewMixin
 from common.utils import d2ed
+from portfolios.calculation import Unsatisfiable
 from retiresmartz.calculator import create_settings, Calculator
 from retiresmartz.calculator.assets import TaxDeferredAccount
 from retiresmartz.calculator.cashflows import ReverseMortgage, InflatedCashFlow, EmploymentIncome
@@ -211,7 +212,14 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         }
         """
         plan = self.get_object()
-        settings = create_settings(plan)
+        try:
+            settings = create_settings(plan)
+        except Unsatisfiable as e:
+            rdata = {'reason': "No portfolio could be found: {}".format(e)}
+            if e.req_funds is not None:
+                rdata['req_funds'] = e.req_funds
+            return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
+
         plan.goal_setting = settings
 
         # Get the z-multiplier for the given confidence
@@ -219,8 +227,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         performance = settings.portfolio.er + z_mult * settings.portfolio.stdev
 
         today = timezone.now().date()
-        retire_date = plan.client.date_of_birth + plan.retirement_age
-        death_date = plan.client.date_of_birth + plan.life_expectency
+        retire_date = plan.client.date_of_birth + relativedelta(years=plan.retirement_age)
+        death_date = plan.client.date_of_birth + relativedelta(years=plan.selected_life_expectancy)
 
         # Pre-retirement income cash flow
         income_calc = EmploymentIncome(income=plan.income / 12,
@@ -228,7 +236,10 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                                        today=today,
                                        end_date=retire_date)
 
-        ss_income = calculate_payments(plan.client.date_of_birth, plan.income)[plan.retirement_age]
+        ss_all = calculate_payments(plan.client.date_of_birth, plan.income)
+        ss_income = ss_all.get(plan.retirement_age, None)
+        if ss_income is None:
+            ss_income = sorted(ss_all)[0]
         ss_payments = InflatedCashFlow(ss_income, today, retire_date, death_date)
 
         cash_flows = [ss_payments]
@@ -261,7 +272,12 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                                                start_date=retire_date,
                                                end_date=plan.client.date_of_birth + relativedelta(years=80)))
 
-        rdcf = RetiresmartzDesiredCashFlow(income_calc, 6000, today, retire_date, death_date)
+        # The desired cash flow generator.
+        rdcf = RetiresmartzDesiredCashFlow(current_income=income_calc,
+                                           retirement_income=plan.desired_income / 12,
+                                           today=today,
+                                           retirement_date=retire_date,
+                                           end_date=death_date)
         # Add the income cash flow to the list of cash flows.
         cash_flows.append(rdcf)
 
@@ -271,10 +287,11 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
 
         # Convert these returned values to a format for the API
         catd = pd.concat([asset_values.sum(axis=1), income_values['actual']], axis=1)
+        proj_data = [(d2ed(d), a, i) for d, a, i in catd.itertuples()]
 
         pser = PortfolioSerializer(instance=settings.portfolio)
 
-        return Response({'portfolio': pser.data, 'projection': projection})
+        return Response({'portfolio': pser.data, 'projection': proj_data})
 
 
 class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
