@@ -9,14 +9,16 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from jsonfield.fields import JSONField
 from pinax.eventlog.models import Log
-
 from common.structures import ChoiceEnum
 from main.models import TransferPlan
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.managers import RetirementAdviceQueryset
 from .managers import RetirementPlanQuerySet
+from main import constants
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('retiresmartz.models')
 
 
 class RetirementPlan(models.Model):
@@ -262,6 +264,9 @@ class RetirementPlanAccount(models.Model):
     account = models.OneToOneField('client.ClientAccount',
                                    related_name='retirement')
 
+    def __str__(self):
+        return "%s Plan %s Account %s" % (self.id, self.plan, self.account)
+
 
 class RetirementLifestyle(models.Model):
     cost = models.PositiveIntegerField(
@@ -311,3 +316,108 @@ class RetirementAdvice(models.Model):
 
     def __str__(self):
         return "{} Advice {}".format(self.plan, self.id)
+
+
+def determine_accounts(plan):
+    """
+    Generates a list of (account_type, max_contribution)
+    in order of contribution priority where the account
+    to put max contributions in first is first.
+    """
+    # get max contribution for each account
+    account_type_contributions = {at[0]: 0 for at in constants.ACCOUNT_TYPES}
+    if plan.max_employer_match_percent:
+        if plan.max_employer_match_percent > 0:
+            match = True
+        else:
+            match = False
+    else:
+        match = False
+
+    if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
+        joint = True
+    else:
+        joint = False
+
+    if plan.client.employment_status == constants.EMPLOYMENT_STATUS_FULL_TIME or \
+       plan.client.employment_status == constants.EMPLOYMENT_STATUS_PART_TIME:
+        has_401k = True
+    else:
+        has_401k = False
+
+    if plan.client.date_of_birth < (datetime.now().date() - relativedelta(years=50)):
+        # total including employer is 53k
+        max_pension_pre_tax = 18000
+    else:
+        # total including employer is 56k
+        max_pension_pre_tax = 24000
+
+    roth_first = False
+
+    if plan.client.employment_status == constants.EMPLOYMENT_STATUS_SELF_EMPLOYED:
+        # self employed
+        if plan.income >= 27500:
+            # sep ira pre tax up to 53000
+            account_type_contributions[constants.ACCOUNT_TYPE_IRA] += 53000
+        else:
+            # roth ira post tax up to 5,500/6,600
+            account_type_contributions[constants.ACCOUNT_TYPE_ROTHIRA] += 6600
+
+    elif plan.client.employment_status == constants.EMPLOYMENT_STATUS_UNEMPLOYED:
+        # unemployed
+        # income or dependent on spouse?
+        if plan.income > 0 or plan.income == 0 and joint:
+            #  If over 131k single/193k joint
+            # pre-tax trad IRA up to 5,500/6,600
+            account_type_contributions[constants.ACCOUNT_TYPE_IRA] += 6600
+        else:
+            # Roth IRA up to 5,500/6,600
+            account_type_contributions[constants.ACCOUNT_TYPE_ROTHIRA] += 6600
+
+    else:
+        # employed
+        if has_401k:
+            if match:
+                # contribute to 401k up to 18/24k limit
+                account_type_contributions[constants.ACCOUNT_TYPE_401K] += 24000
+
+                if (plan.income >= 131000 and not joint) or (plan.income >= 193000 and joint):
+                    # over 131k single / 193k joint
+                    # contribute remainder to trad IRA up to 5.5/6.5 limit
+                    account_type_contributions[constants.ACCOUNT_TYPE_IRA] += 24000
+                else:
+                    # under 131k single / 193k joint
+                    # contribute remainder to roth IRA up to 5.5/6.5 limit
+                    account_type_contributions[constants.ACCOUNT_TYPE_ROTHIRA] += 6500
+            else:
+                if (plan.income >= 131000 and not joint) or (plan.income >= 193000 and joint):
+                    # over 131k single / 193k joint
+                    # contribute to 401k up to 18/24k limit
+                    account_type_contributions[constants.ACCOUNT_TYPE_401K] += 24000
+                    # contribute remainder to trad IRA up to 5.5/6.5 limit
+                    account_type_contributions[constants.ACCOUNT_TYPE_IRA] += 6500
+                else:
+                    # under 131k single / 193k joint
+                    # contribute to roth IRA up to 5.5/6.5 limit
+                    roth_first = True
+                    account_type_contributions[constants.ACCOUNT_TYPE_ROTHIRA] += 6500
+                    # contribute remainder to 401k up to 18/24k limit
+                    account_type_contributions[constants.ACCOUNT_TYPE_ROTH401K] += 24000
+        else:
+            if (plan.income >= 131000 and not joint) or (plan.income >= 193000 and joint):
+                # over 131k single / 193k joint
+                # contribute to trad IRA up to 5.5/6.5 limit
+                account_type_contributions[constants.ACCOUNT_TYPE_IRA] += 6500
+            else:
+                # under 131k single / 193k joint
+                # contribute to roth IRA up to 5.5/6.5 limit
+                account_type_contributions[constants.ACCOUNT_TYPE_ROTHIRA] += 6500
+                    
+    sorted_contribs = sorted(account_type_contributions, key=account_type_contributions.get, reverse=True)
+    rv = [(ac, min(account_type_contributions[ac], max_pension_pre_tax)) for ac in sorted_contribs]
+    if roth_first:
+        tmp = rv[1]
+        tmp2 = rv[0]
+        rv[0] = tmp
+        rv[1] = tmp2
+    return rv
