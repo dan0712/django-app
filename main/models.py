@@ -1526,14 +1526,12 @@ class Goal(models.Model):
         validate_risk_score(setting)
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
-            custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
-            last_user = old_setting.metric_group.settings.count() == 1
+            old_group = old_setting.metric_group
+            custom_group = old_group.type == GoalMetricGroup.TYPE_CUSTOM
+            last_user = old_group.settings.count() == 1
+            old_setting.delete()
             if custom_group and last_user:
-                # This will also delete the setting as the metric group is a foreign key.
-                old_setting.metric_group.delete()
-            else:
-                # We are using a shared group, or we're not the last user. Just delete the setting object.
-                old_setting.delete()
+                old_group.delete()
 
     @transaction.atomic
     def approve_selected(self):

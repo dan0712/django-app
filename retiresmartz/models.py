@@ -4,14 +4,14 @@ import logging
 
 from django.core.validators import MaxLengthValidator, MaxValueValidator, \
     MinLengthValidator, MinValueValidator, ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.db.models.deletion import PROTECT
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from jsonfield.fields import JSONField
 from pinax.eventlog.models import Log
 from common.structures import ChoiceEnum
-from main.models import TransferPlan, GoalSetting
+from main.models import TransferPlan, GoalSetting, GoalMetricGroup
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.managers import RetirementAdviceQueryset
 from .managers import RetirementPlanQuerySet
@@ -163,7 +163,7 @@ class RetirementPlan(models.Model):
 
     agreed_on = models.DateTimeField(null=True, blank=True)
 
-    setting = models.OneToOneField(GoalSetting, null=True, related_name='retirement_plan', on_delete=PROTECT)
+    goal_setting = models.OneToOneField(GoalSetting, null=True, related_name='retirement_plan', on_delete=PROTECT)
     partner_data = JSONField(null=True, blank=True)
 
     # Install the custom manager that knows how to filter.
@@ -183,6 +183,24 @@ class RetirementPlan(models.Model):
     @property
     def was_agreed(self):
         return self.__was_agreed
+
+    @transaction.atomic
+    def set_settings(self, new_setting):
+        """
+        Updates the retirement plan with the new settings, and saves the plan
+        :param new_setting: The new setting to set.
+        :return:
+        """
+        old_setting = self.goal_setting
+        self.goal_setting = new_setting
+        self.save()
+        if old_setting is not None:
+            old_group = old_setting.metric_group
+            custom_group = old_group.type == GoalMetricGroup.TYPE_CUSTOM
+            last_user = old_group.settings.count() == 1
+            old_setting.delete()
+            if custom_group and last_user:
+                old_group.delete()
 
     def save(self, *args, **kwargs):
         """
@@ -230,7 +248,7 @@ class RetirementPlan(models.Model):
 
     @property
     def portfolio(self):
-        return self.setting.portfolio if self.setting else None
+        return self.goal_setting.portfolio if self.goal_setting else None
 
     @property
     def on_track(self):
@@ -365,10 +383,10 @@ def determine_accounts(plan):
 
     if plan.client.date_of_birth < (datetime.now().date() - relativedelta(years=50)):
         # total including employer is 53k
-        max_pension_pre_tax = 18000
+        max_contributions_pre_tax = 18000
     else:
         # total including employer is 56k
-        max_pension_pre_tax = 24000
+        max_contributions_pre_tax = 24000
 
     roth_first = False
 
@@ -384,7 +402,7 @@ def determine_accounts(plan):
     elif plan.client.employment_status == constants.EMPLOYMENT_STATUS_UNEMPLOYED:
         # unemployed
         # income or dependent on spouse?
-        if plan.income > 0 or plan.income == 0 and joint:
+        if plan.income > 0 or joint:
             #  If over 131k single/193k joint
             # pre-tax trad IRA up to 5,500/6,600
             account_type_contributions[constants.ACCOUNT_TYPE_IRA] += 6600
@@ -432,7 +450,7 @@ def determine_accounts(plan):
                 account_type_contributions[constants.ACCOUNT_TYPE_ROTHIRA] += 6500
                     
     sorted_contribs = sorted(account_type_contributions, key=account_type_contributions.get, reverse=True)
-    rv = [(ac, min(account_type_contributions[ac], max_pension_pre_tax)) for ac in sorted_contribs]
+    rv = [(ac, min(account_type_contributions[ac], max_contributions_pre_tax)) for ac in sorted_contribs]
     if roth_first:
         tmp = rv[1]
         tmp2 = rv[0]

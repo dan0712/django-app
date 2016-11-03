@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 import pandas as pd
+import numpy as np
 from dateutil.relativedelta import relativedelta
 
 from django.db.models import Q
@@ -212,6 +213,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         }
         """
         plan = self.get_object()
+
+        # TODO: We can cache the portfolio on the plan and only update it every 24hrs, or if the risk changes.
         try:
             settings = create_settings(plan)
         except Unsatisfiable as e:
@@ -220,15 +223,16 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                 rdata['req_funds'] = e.req_funds
             return Response({'error': rdata}, status=status.HTTP_400_BAD_REQUEST)
 
-        plan.goal_setting = settings
+        plan.set_settings(settings)
+        plan.save()
 
         # Get the z-multiplier for the given confidence
         z_mult = -st.norm.ppf(plan.expected_return_confidence)
         performance = settings.portfolio.er + z_mult * settings.portfolio.stdev
 
         today = timezone.now().date()
-        retire_date = plan.client.date_of_birth + relativedelta(years=plan.retirement_age)
-        death_date = plan.client.date_of_birth + relativedelta(years=plan.selected_life_expectancy)
+        retire_date = max(today, plan.client.date_of_birth + relativedelta(years=plan.retirement_age))
+        death_date = max(retire_date, plan.client.date_of_birth + relativedelta(years=plan.selected_life_expectancy))
 
         # Pre-retirement income cash flow
         income_calc = EmploymentIncome(income=plan.income / 12,
@@ -287,7 +291,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
 
         # Convert these returned values to a format for the API
         catd = pd.concat([asset_values.sum(axis=1), income_values['actual']], axis=1)
-        proj_data = [(d2ed(d), a, i) for d, a, i in catd.itertuples()]
+        locs = np.linspace(0, len(catd)-1, num=50, dtype=int)
+        proj_data = [(d2ed(d), a, i) for d, a, i in catd.iloc[locs, :].itertuples()]
 
         pser = PortfolioSerializer(instance=settings.portfolio)
 

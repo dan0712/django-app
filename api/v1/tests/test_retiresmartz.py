@@ -11,7 +11,7 @@ from api.v1.tests.factories import ExternalAssetFactory, MarkowitzScaleFactory, 
 from common.constants import GROUP_SUPPORT_STAFF
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction, \
     populate_inflation
-from main.models import InvestmentType
+from main.models import InvestmentType, GoalSetting, GoalMetricGroup, GoalMetric
 from main.tests.fixture import Fixture1
 from retiresmartz.models import RetirementPlan
 from .factories import AssetClassFactory, ContentTypeFactory, GroupFactory, \
@@ -298,7 +298,9 @@ class RetiresmartzTests(APITestCase):
                                             desired_income=81000,
                                             btc=4000,
                                             retirement_home_price=250000,
-                                            paid_days=1)
+                                            paid_days=1,
+                                            retirement_age=67,
+                                            selected_life_expectancy=85)
 
         # some tickers for portfolio
         bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
@@ -321,12 +323,33 @@ class RetiresmartzTests(APITestCase):
         populate_cycle_prediction(asof=mocked_now.date())
         populate_inflation(asof=mocked_now.date())
 
+        self.assertIsNone(plan.goal_setting)
+        old_settings = GoalSetting.objects.all().count()
+        old_mgroups = GoalMetricGroup.objects.all().count()
+        old_metrics = GoalMetric.objects.all().count()
         url = '/api/v1/clients/{}/retirement-plans/{}/calculate-new'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('portfolio' in response.data)
         self.assertTrue('projection' in response.data)
+        self.assertEqual(len(response.data['projection']), 50)
+        # Make sure the goal_setting is now populated.
+        plan.refresh_from_db()
+        self.assertIsNotNone(plan.goal_setting.portfolio)
+        self.assertEqual(old_settings+1, GoalSetting.objects.all().count())
+        self.assertEqual(old_mgroups+1, GoalMetricGroup.objects.all().count())
+        self.assertEqual(old_metrics+1, GoalMetric.objects.all().count())
+        old_id = plan.goal_setting.id
+
+        # Recalculate and make sure the number of settings, metric groups and metrics in the system is the same
+        # Also make sure the setting object is different
+        response = self.client.get(url)
+        plan.refresh_from_db()
+        self.assertEqual(old_settings+1, GoalSetting.objects.all().count())
+        self.assertEqual(old_mgroups+1, GoalMetricGroup.objects.all().count())
+        self.assertEqual(old_metrics+1, GoalMetric.objects.all().count())
+        self.assertNotEqual(old_id, plan.goal_setting.id)
 
     def test_retirement_plan_advice_feed_list_unread(self):
         self.content_type = ContentTypeFactory.create()
