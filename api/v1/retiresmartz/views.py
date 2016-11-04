@@ -143,8 +143,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # TODO: Make this work
         return Response({'btc_amount': 2222, 'atc_amount': 88})
 
-    @detail_route(methods=['get'], url_path='calculate')
-    def calculate(self, request, parent_lookup_client, pk, format=None):
+    @detail_route(methods=['get'], url_path='calculate-demo')
+    def calculate_demo(self, request, parent_lookup_client, pk, format=None):
         """
         Calculate the single projection values for the
         current retirement plan settings.
@@ -193,8 +193,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             projection.append([d2ed(dt), assets, income])
         return Response({'portfolio': portfolio, 'projection': projection})
 
-    @detail_route(methods=['get'], url_path='calculate-new')
-    def calculate_new(self, request, parent_lookup_client, pk, format=None):
+    @detail_route(methods=['get'], url_path='calculate')
+    def calculate(self, request, parent_lookup_client, pk, format=None):
         """
         Calculate the single projection values for the current retirement plan.
         {

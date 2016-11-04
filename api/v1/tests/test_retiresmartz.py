@@ -349,7 +349,7 @@ class RetiresmartzTests(APITestCase):
         old_settings = GoalSetting.objects.all().count()
         old_mgroups = GoalMetricGroup.objects.all().count()
         old_metrics = GoalMetric.objects.all().count()
-        url = '/api/v1/clients/{}/retirement-plans/{}/calculate-new'.format(plan.client.id, plan.id)
+        url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

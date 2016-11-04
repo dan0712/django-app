@@ -1,6 +1,6 @@
 import logging
 from copy import copy
-from datetime import timedelta
+from datetime import timedelta, date
 
 import numpy as np
 from dateutil.relativedelta import relativedelta
@@ -29,6 +29,7 @@ def delete_data():
     MarketCap.objects.all().delete()
     InvestmentCycleObservation.objects.all().delete()
     InvestmentCyclePrediction.objects.all().delete()
+    Inflation.objects.all().delete()
 
 
 def populate_prices(days, asof=now().date()):
@@ -140,4 +141,5 @@ class Command(BaseCommand):
             populate_prices(400)
             populate_cycle_obs(400)
             populate_cycle_prediction()
+            populate_inflation(asof=date(2016, 1, 1))
         print("Done.")
