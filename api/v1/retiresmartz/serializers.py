@@ -117,7 +117,7 @@ class RetirementPlanSerializer(ReadOnlyModelSerializer):
 
     def get_statement_of_advice_url(self, obj):
         if hasattr(obj, 'statement_of_advice'):
-            return '/statements/retirement/{}.pdf'.format(obj.id)
+            return '/statements/retirement/{}.pdf'.format(obj.statement_of_advice.id)
         else:
             return None
 
