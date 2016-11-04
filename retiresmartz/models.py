@@ -68,11 +68,9 @@ class RetirementPlan(models.Model):
                                             help_text="The desired retirement lifestyle")
 
     desired_income = models.PositiveIntegerField(
-        help_text="The desired annual household pre-tax retirement "
-                  "income in system currency")
+        help_text="The desired annual household pre-tax retirement income in system currency")
     income = models.PositiveIntegerField(
-        help_text="The current annual personal pre-tax income at "
-                  "the start of your plan")
+        help_text="The current annual personal pre-tax income at the start of your plan")
 
     volunteer_days = models.PositiveIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(7)],
@@ -120,11 +118,10 @@ class RetirementPlan(models.Model):
                         help_text="List of savings [{id, desc, cat, who, amt},...]")
     initial_deposits = JSONField(null=True,
                                  blank=True,
-                                 help_text="List of deposits [{id, desc, cat, who, amt},...]")
+                                 help_text="List of deposits [{id, asset, goal, amt},...]")
 
     income_growth = models.FloatField(default=0,
-                                      help_text="Above consumer price index "
-                                                "(inflation)")
+                                      help_text="Above consumer price index (inflation)")
     expected_return_confidence = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)],
                                                    help_text="Planned confidence of the portfolio returns given the "
                                                              "volatility and risk predictions.")
