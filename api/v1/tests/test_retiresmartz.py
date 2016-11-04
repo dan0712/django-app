@@ -46,7 +46,7 @@ class RetiresmartzTests(APITestCase):
         Test clients are able to access their own retirement plan by id.
         """
         plan = RetirementPlanFactory.create(calculated_life_expectancy=92)
-        soa = RetirementStatementOfAdviceFactory.create(retirement_plan=plan)
+        soa = plan.statement_of_advice
         url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
         response = self.client.get(url)

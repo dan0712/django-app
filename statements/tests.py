@@ -3,7 +3,8 @@ from django.test import TestCase
 from api.v1.tests.factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
                                    RegionFactory, AddressFactory, RiskProfileGroupFactory, \
                                    AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory, \
-                                   GoalFactory, StatementOfAdviceFactory, RetirementStatementOfAdviceFactory
+                                   GoalFactory, StatementOfAdviceFactory, RetirementStatementOfAdviceFactory, \
+                                   RetirementPlanFactory
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from common.constants import GROUP_SUPPORT_STAFF
 
@@ -58,7 +59,8 @@ class StatementTest(TestCase):
 
     def test_retirement_statement_pdf(self):
         TEST_TEMPLATE = "statements/_test_soa.html"
-        soa = RetirementStatementOfAdviceFactory.create()
+        plan = RetirementPlanFactory.create()
+        soa = plan.statement_of_advice
 
         html = soa.render_template(TEST_TEMPLATE)
         # Make sure we have the basic stuff

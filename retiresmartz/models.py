@@ -223,7 +223,7 @@ class RetirementPlan(models.Model):
 
         super(RetirementPlan, self).save(*args, **kwargs)
 
-        if self.agreed_on and not self.was_agreed and not self.get_soa():
+        if self.get_soa() is None and self.id is not None:
             self.generate_soa()
 
     def get_soa(self):
@@ -234,14 +234,11 @@ class RetirementPlan(models.Model):
         if qs.count():
             self.statement_of_advice = qs[0]
             return qs[0]
-        elif self.agreed_on:
+        else:
             return self.generate_soa()
-        return None
 
     def generate_soa(self):
         from statements.models import RetirementStatementOfAdvice
-        if not self.agreed_on:
-            raise Exception('Can only generate SOA on an agreed plan')
         soa = RetirementStatementOfAdvice(retirement_plan_id=self.id)
         soa.save()
         return soa
