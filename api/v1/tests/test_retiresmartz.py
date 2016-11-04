@@ -53,6 +53,7 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['client'], plan.client.id)
         self.assertEqual(response.data['calculated_life_expectancy'], plan.calculated_life_expectancy)
+        self.assertNotIn('goal_setting', response.data)
         self.assertEqual(response.data['statement_of_advice'], soa.id)
         self.assertEqual(response.data['statement_of_advice_url'], '/statements/retirement/{}.pdf'.format(soa.id))
 

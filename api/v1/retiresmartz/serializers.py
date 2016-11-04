@@ -114,6 +114,8 @@ class RetirementPlanSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = RetirementPlan
+        # Goal setting is an internal field that doesn't need to be shared externally.
+        exclude = ('goal_setting',)
 
     def get_statement_of_advice_url(self, obj):
         if hasattr(obj, 'statement_of_advice'):
