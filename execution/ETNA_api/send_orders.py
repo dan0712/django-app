@@ -1,6 +1,6 @@
 import requests
-from execution.ETNA_api.serializers import LoginSerializer
-from execution.ETNA_api.models import ETNALogin
+from execution.serializers import LoginSerializer
+from execution.models import ETNALogin
 
 CONTENT_TYPE = 'application/json'
 ENDPOINT_URL = 'https://api.etnatrader.com/v0/demo'
@@ -27,9 +27,6 @@ def login():
     if not serializer.is_valid():
         Exception('error deserializing ETNA login response')
     serializer.save()
-    daco = ETNALogin.objects.all()
-    print('kokot')
-
 
 
 def future_code_elements():

@@ -57,6 +57,7 @@ INSTALLED_APPS = (
     'retiresmartz',
     'swift',
     'anymail',
+    'execution'
 )
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
