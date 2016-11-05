@@ -283,7 +283,7 @@ class RetirementAdviceTests(TestCase):
         plan = RetirementPlanFactory.create(desired_risk=.5,
                                             recommended_risk=.5)
         advice_url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(plan.client.id, plan.id)
-        plan.desired_risk = .3
+        plan.desired_risk = .01
         plan.save()
         login_ok = self.client.login(username=plan.client.user.email, password='test')
         self.assertTrue(login_ok)
