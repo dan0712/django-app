@@ -4,9 +4,8 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
-    login as auth_views_login ,
+    login as auth_views_login,
 )
-from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -17,6 +16,9 @@ from django.shortcuts import redirect
 from geolocation.geolocation import check_ip_city
 import logging
 import os
+from retiresmartz.models import RetirementAdvice, RetirementPlan
+from pinax.eventlog.models import log
+from retiresmartz import advice_responses
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 logger = logging.getLogger('main.views.login')
 
@@ -61,7 +63,6 @@ def login(request, template_name='registration/login.html',
             city_lock = None
             if is_client:
                 if user.client.geolocation_lock:
-                    logger.error(user.client.geolocation_lock)
                     city_lock = user.client.geolocation_lock
             elif is_advisor:
                 if user.advisor.geolocation_lock:
@@ -93,6 +94,17 @@ def login(request, template_name='registration/login.html',
             context = {'form': form}
 
             return TemplateResponse(request, template_name, context)
+
+        # RetirementAdvice Check
+        if is_client:
+            plan = RetirementPlan.objects.filter(client=user.client).first()
+            if plan:
+                elog = log(user=user, action='Returning user')
+                advice = RetirementAdvice(plan=plan,
+                                          trigger=elog)
+                advice.text = advice_responses.get_welcome(advice)
+                advice.save()
+
 
         # custom redirect
         redirect_to = request.GET.get('next',

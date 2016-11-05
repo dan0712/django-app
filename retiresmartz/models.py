@@ -18,7 +18,10 @@ from .managers import RetirementPlanQuerySet
 from main import constants
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
+from pinax.eventlog.models import log
+from retiresmartz import advice_responses
+from django.utils.functional import cached_property
+import json
 logger = logging.getLogger('retiresmartz.models')
 
 
@@ -199,6 +202,18 @@ class RetirementPlan(models.Model):
             if custom_group and last_user:
                 old_group.delete()
 
+    @cached_property
+    def spendable_income(self):
+        if self.savings:
+            savings_cost = sum([s.amount for s in json.loads(self.savings)])
+        else:
+            savings_cost = 0
+        if self.expenses:
+            expenses_cost = sum([e.amount for e in json.loads(self.expenses)])
+        else:
+            expenses_cost = 0
+        return self.income - savings_cost - expenses_cost
+
     def save(self, *args, **kwargs):
         """
         Override save() so we can do some custom validation of partner plans.
@@ -213,11 +228,137 @@ class RetirementPlan(models.Model):
 
         reverse_plan = getattr(self, 'partner_plan_reverse', None)
         if self.partner_plan is not None and reverse_plan is not None and \
-                        self.partner_plan != reverse_plan:
+           self.partner_plan != reverse_plan:
             raise ValidationError(
                 "Partner plan relationship must be symmetric."
             )
 
+        # RetirementAdvice Check
+        if self.pk is not None:
+            # not new
+            orig = RetirementPlan.objects.get(pk=self.pk)
+
+            # Spending and Contributions
+            if orig.spendable_income > self.spendable_income and \
+               orig.btc + orig.atc < self.btc + self.atc:
+                # spending increased, contributions decreased
+                elog = log(user=self.client.user, action='User increased spending, decreased contributions')
+                advice = RetirementAdvice(plan=self,
+                                          trigger=elog)
+                advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
+                advice.save()
+
+            if orig.spendable_income < self.spendable_income and \
+               orig.btc + orig.atc > self.btc + self.atc:
+                # contributions increased, spending decreased
+                elog = log(user=self.client.user, action='User decreased spending, increased contributions')
+                advice = RetirementAdvice(plan=self,
+                                          trigger=elog)
+                advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
+                advice.save()
+
+            # Risk Slider Changed
+            if self.desired_risk < orig.desired_risk and \
+               self.desired_risk < self.recommended_risk:
+                # protective move
+                elog = log(user=self.client.user, action='User made protective risk move')
+                advice = RetirementAdvice(plan=self,
+                                          trigger=elog)
+                advice.text = advice_responses.get_protective_move(advice)
+                advice.save()
+            elif self.desired_risk > orig.desired_risk and self.desired_risk > self.recommended_risk:
+                # dynamic move
+                elog = log(user=self.client.user, action='User made dynamic risk move')
+                advice = RetirementAdvice(plan=self,
+                                          trigger=elog)
+                advice.text = advice_responses.get_dynamic_move(advice)
+                advice.save()
+
+            # age manually adjusted
+            if self.retirement_age != orig.retirement_age:
+                elog = log(user=self.client.user, action='User manually adjusted age')
+                advice = RetirementAdvice(plan=self,
+                                          trigger=elog)
+                advice.text = advice_responses.get_manually_adjusted_age(advice)
+                advice.save()
+
+            # Retirement Age Adjusted
+            if self.retirement_age >= 62 and self.retirement_age <= 70:
+                if orig.retirement_age != self.retirement_age:
+                    # retirement age changed
+                    if orig.retirement_age > 62 and self.retirement_age == 62:
+                        # decreased to age 62
+                        elog = log(user=self.client.user, action='User decreased retirement age to 62')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_decrease_retirement_age_to_62(advice)
+                        advice.save()
+                    elif orig.retirement_age > 63 and self.retirement_age == 63:
+                        # decreased to age 63
+                        elog = log(user=self.client.user, action='User decreased retirement age to 63')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_decrease_retirement_age_to_63(advice)
+                        advice.save()
+                    elif orig.retirement_age > 64 and self.retirement_age == 64:
+                        # decreased to age 64
+                        elog = log(user=self.client.user, action='User decreased retirement age to 64')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_decrease_retirement_age_to_64(advice)
+                        advice.save()
+                    elif orig.retirement_age > 65 and self.retirement_age == 65:
+                        # decreased to age 65
+                        elog = log(user=self.client.user, action='User decreased retirement age to 65')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_decrease_retirement_age_to_65(advice)
+                        advice.save()
+                    elif orig.retirement_age < 67 and self.retirement_age == 67:
+                        # increased to age 67
+                        elog = log(user=self.client.user, action='User increased retirement age to 67')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_increase_retirement_age_to_67(advice)
+                        advice.save()
+                    elif orig.retirement_age < 68 and self.retirement_age == 68:
+                        # increased to age 68
+                        elog = log(user=self.client.user, action='User increased retirement age to 68')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_increase_retirement_age_to_68(advice)
+                        advice.save()
+                    elif orig.retirement_age < 69 and self.retirement_age == 69:
+                        # increased to age 69
+                        elog = log(user=self.client.user, action='User increased retirement age to 69')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_increase_retirement_age_to_69(advice)
+                        advice.save()
+                    elif orig.retirement_age < 70 and self.retirement_age == 70:
+                        # increased to age 70
+                        elog = log(user=self.client.user, action='User increased retirement age to 70')
+                        advice = RetirementAdvice(plan=self,
+                                                  trigger=elog)
+                        advice.text = advice_responses.get_increase_retirement_age_to_70(advice)
+                        advice.save()
+
+            if orig.on_track != self.on_track:
+                # user update to goal caused on_track status changed
+                if self.on_track:
+                    # RetirementPlan now on track
+                    elog = log(user=self.client.user, action='User goal now on track')
+                    advice = RetirementAdvice(plan=self,
+                                              trigger=elog)
+                    advice.text = advice_responses.get_off_track_item_adjusted_to_on_track(advice)
+                    advice.save()
+                else:
+                    # RetirementPlan now off track
+                    elog = log(user=self.client.user, action='User goal is now off track')
+                    advice = RetirementAdvice(plan=self,
+                                              trigger=elog)
+                    advice.text = advice_responses.get_on_track_item_adjusted_to_off_track(advice)
+                    advice.save()
         super(RetirementPlan, self).save(*args, **kwargs)
 
         if self.get_soa() is None and self.id is not None:
@@ -244,10 +385,12 @@ class RetirementPlan(models.Model):
     def portfolio(self):
         return self.goal_setting.portfolio if self.goal_setting else None
 
-    @property
+    @cached_property
     def on_track(self):
-        # TODO: Make this actually work.
-        return True
+        if hasattr(self, '_on_track'):
+            return self._on_track
+        self._on_track = False
+        return self._on_track
 
     @property
     def opening_tax_deferred_balance(self):

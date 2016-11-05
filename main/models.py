@@ -46,9 +46,8 @@ from .abstract import FinancialInstrument, NeedApprobation, \
 from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
-
 import numpy as np
-
+from pinax.eventlog.models import log
 logger = logging.getLogger('main.models')
 
 
@@ -1473,8 +1472,10 @@ class Goal(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+        from retiresmartz.models import RetirementPlan
         if not self.account.confirmed:
             raise ValidationError('Account is not verified.')
+
         return super(Goal, self).save(force_insert, force_update, using,
                                       update_fields)
 
@@ -1784,7 +1785,7 @@ class Goal(models.Model):
 
         return predicted
 
-    @property
+    @cached_property
     def on_track(self):
         if self.selected_settings is None:
             return False

@@ -184,9 +184,10 @@ class RetiresmartzTests(APITestCase):
         """
         Tests clients can get a list of their own plans and the list does not include plans where it is a partner.
         """
-        plan1 = Fixture1.client1_partneredplan()
-        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
+        plan1 = RetirementPlanFactory.create()
+        plan2 = RetirementPlanFactory.create(partner_plan=plan1)
+        url = '/api/v1/clients/{}/retirement-plans'.format(plan1.client.id)
+        self.client.force_authenticate(user=plan1.client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
@@ -196,12 +197,13 @@ class RetiresmartzTests(APITestCase):
         """
         Test listing and creating retirement incomes
         """
-        client = Fixture1.client1()
-        plan = Fixture1.client1_retirementplan1()
+
+        plan = RetirementPlanFactory.create()
+        client = plan.client
 
         # Create an income
-        url = '/api/v1/clients/%s/retirement-incomes'%client.id
-        self.client.force_authenticate(user=Fixture1.client1().user)
+        url = '/api/v1/clients/%s/retirement-incomes' % client.id
+        self.client.force_authenticate(user=client.user)
         income_data = {'name': 'RetirementIncome1',
                        'plan': plan.id,
                        'begin_date': now().date(),
@@ -218,8 +220,8 @@ class RetiresmartzTests(APITestCase):
         self.assertEqual(income['plan'], plan.id)
 
         # Update it
-        url = '/api/v1/clients/%s/retirement-incomes/%s'%(client.id,
-                                                          income['id'])
+        url = '/api/v1/clients/%s/retirement-incomes/%s' % (client.id,
+                                                            income['id'])
         income_data = { 'schedule': 'WEEKLY' }
         response = self.client.put(url, income_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -242,21 +244,24 @@ class RetiresmartzTests(APITestCase):
         """
         Test update partner_plan after tax contribution
         """
-        plan1 = Fixture1.client1_partneredplan()
-        plan2 = plan1.partner_plan
-        url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client2().id, plan2.id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
+        plan1 = RetirementPlanFactory.create()
+        plan2 = RetirementPlanFactory.create(partner_plan=plan1)
+        url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan2.client.id, plan2.id)
+        self.client.force_authenticate(user=plan1.client.user)
         response = self.client.put(url, data={'atc': 45000})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Fixture1.client2_retirementplan1().atc, 45000)
+        check_plan = RetirementPlan.objects.get(id=plan2.id)
+        self.assertEqual(check_plan.atc, 45000)
 
     def test_get_bad_permissions(self):
         """
         Test clients not owning and not on a partner plan cannot access.
         """
-        url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client2().id,
-                                                              Fixture1.client2_retirementplan1().id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
+        plan = RetirementPlanFactory.create()
+        plan2 = RetirementPlanFactory.create()
+        url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan.client.id,
+                                                              plan.id)
+        self.client.force_authenticate(user=plan2.client.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data, {})
@@ -264,34 +269,47 @@ class RetiresmartzTests(APITestCase):
     def test_matching_partnerplans(self):
         """
         Test update plan (link partner plan)
-        Check if partner_plan doesn't equal partner_plan_reverse and they both are set, then we fail.
+        Check if partner_plan doesn't equal
+        partner_plan_reverse and they both are set, then we fail.
         """
-        plan1 = Fixture1.client1_partneredplan()
-        url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client1().id, plan1.id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
-        response = self.client.put(url, data={'partner_plan': Fixture1.client2_retirementplan2().id})
+        plan1 = RetirementPlanFactory.create()
+        plan2 = RetirementPlanFactory.create(partner_plan=plan1)
+        plan4 = RetirementPlanFactory.create()
+        plan2.reverse_partner_plan = plan4
+        plan2.save()
+
+        plan1.reverse_partner_plan = plan2
+        plan1.save()
+
+        plan3 = RetirementPlanFactory.create()
+
+        self.assertEqual(plan1.reverse_partner_plan, plan2)
+        url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan1.client.id, plan1.id)
+        self.client.force_authenticate(user=plan1.client.user)
+        response = self.client.put(url, data={'partner_plan': plan3.id})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(loads(response.content)['error']['reason'], 'ValidationError')
         self.assertEqual(response.data, {})
         # Make sure the db content didn't change
-        self.assertEqual(Fixture1.client1_retirementplan1().partner_plan, Fixture1.client2_retirementplan1())
+        self.assertEqual(plan2.partner_plan, plan1)
 
     def test_partner_delete(self):
         """
         Test on delete sets partner to null
         """
-        plan1 = Fixture1.client1_partneredplan()
-        plan1_id = plan1.id
-        plan2_id = plan1.partner_plan.id
-        url = '/api/v1/clients/{}/retirement-plans/{}'.format(Fixture1.client1().id, plan1_id)
-        self.client.force_authenticate(user=Fixture1.client1().user)
+        plan1 = RetirementPlanFactory.create()
+        plan2 = RetirementPlanFactory.create(partner_plan=plan1)
+        url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan1.client.id, plan1.id)
+        self.client.force_authenticate(user=plan1.client.user)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         # Make sure the db object was removed, and the partner plan set to null.
-        self.assertEqual(RetirementPlan.objects.filter(id=plan1_id).first(), None)
+        self.assertEqual(RetirementPlan.objects.filter(id=plan1.id).first(), None)
         # Make sure cascade not in force, but null.
-        self.assertEqual(RetirementPlan.objects.get(id=plan2_id).id, plan2_id)
-        self.assertEqual(Fixture1.client2_retirementplan1().partner_plan, None)
+        check_plan = RetirementPlan.objects.get(id=plan2.id)
+        self.assertEqual(check_plan.id, plan2.id)
+
+        self.assertEqual(check_plan.partner_plan, None)
 
     def test_todos(self):
         # TODO: Advisor tests.
