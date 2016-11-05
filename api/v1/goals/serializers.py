@@ -11,9 +11,8 @@ from rest_framework.fields import FloatField, IntegerField
 from api.v1.serializers import EventMemoMixin, NoCreateModelSerializer, \
     NoUpdateModelSerializer, ReadOnlyModelSerializer
 from main.event import Event
-from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, \
-    GoalSetting, GoalType, Portfolio, PortfolioItem, \
-    RecurringTransaction, Ticker, Transaction, PositionLot
+from main.models import AssetFeatureValue, Goal, GoalMetric, GoalMetricGroup, GoalSetting, GoalType, Portfolio, \
+    PortfolioItem, RecurringTransaction, Ticker, Transaction
 from main.risk_profiler import recommend_risk, validate_risk_score
 from portfolios.calculation import Unsatisfiable, calculate_portfolio, current_stats_from_weights, get_instruments
 from portfolios.providers.data.django import DataProviderDjango
@@ -288,6 +287,10 @@ class GoalSettingWritableSerializer(EventMemoMixin, serializers.ModelSerializer)
                     new_tx.setting = setting
                     new_tx.save()
             else:
+                # validate i_data fields
+                for i_data in tx_data:
+                    if 'enabled' not in i_data.keys():
+                        raise ValidationError('Recurring transaction is missing enabled field.')
                 RecurringTransaction.objects.bulk_create(
                     [RecurringTransaction(setting=setting,
                                           schedule=i_data['schedule'],
@@ -441,7 +444,7 @@ class GoalSettingStatelessSerializer(NoCreateModelSerializer, NoUpdateModelSeria
                 metrics = PseudoMgr
             mtric_group = DummyGroup()
         else:
-            mtric_group = GoalMetricGroup.objects.get(gid)
+            mtric_group = GoalMetricGroup.objects.get(id=gid)
 
         goalt = goal
 

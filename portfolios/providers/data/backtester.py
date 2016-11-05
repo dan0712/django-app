@@ -1,11 +1,13 @@
 from collections import defaultdict
 from datetime import timedelta
 import pandas as pd
+import numpy as np
 from portfolios.providers.dummy_models import AssetClassMock, \
     AssetFeatureValueMock, InstrumentsFactory, MarkowitzScaleMock, \
     PortfolioSetMock, InvestmentCycleObservationFactory
 from portfolios.returns import get_prices
 from .abstract import DataProviderAbstract
+from portfolios.exceptions import OptimizationException
 
 
 class DataProviderBacktester(DataProviderAbstract):
@@ -31,6 +33,7 @@ class DataProviderBacktester(DataProviderAbstract):
         self.__current_date = self.sliding_window_length
         self.time_constrained_tickers = []
         self.investment_cycles = InvestmentCycleObservationFactory.create_cycles()
+        self.investment_predictions = InvestmentCycleObservationFactory.create_predictions()
 
     def move_date_forward(self):
         # this function is only used in backtesting
@@ -49,14 +52,16 @@ class DataProviderBacktester(DataProviderAbstract):
 
     def get_current_date(self):
         date = self.dates[self.__current_date]
-        return pd.Timestamp(date).to_datetime()
+        return date
 
     def get_start_date(self):
         date = self.dates[self.__current_date - self.sliding_window_length]
-        return pd.Timestamp(date).to_datetime()
+        return date
 
     def get_fund_price_latest(self, ticker):
-        prices = self.get_instrument_daily_prices(ticker)
+        prices = get_prices(ticker, [self.get_current_date()])
+        #prices = self.get_instrument_daily_prices(ticker)
+        # not sure now which will work, as backtester is broken again by django requirements that were added with merge
         prices = prices.irow(-1)
         return prices
 
@@ -113,7 +118,7 @@ class DataProviderBacktester(DataProviderAbstract):
 
     def get_markowitz_scale(self):
         if self.markowitz_scale is None:
-            self.set_markowitz_scale(date=self.get_current_date(), min=-1, max=1, a=1, b=2, c=3)
+            self.set_markowitz_scale(date=self.get_current_date(), mn=-1, mx=1, a=1, b=2, c=3)
         return self.markowitz_scale
 
     def set_markowitz_scale(self, date, mn, mx, a, b, c):
@@ -126,14 +131,58 @@ class DataProviderBacktester(DataProviderAbstract):
         self.cache = data
 
     def get_investment_cycles(self):
+        obs = self.investment_cycles
+        if not obs:
+            raise OptimizationException("There are no historic observations available")
         return self.investment_cycles
 
     def get_last_cycle_start(self):
-        pass
+        obs = self.get_cycle_obs()
+        # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population
 
-    def get_cycle_obs(self, begin_date):
-        pass
+        # Get the investment cycle for the current date
+        current_cycle = obs[-1]
+
+        if len(obs) < 2:
+            raise Exception("There are less than 2 investment cycles")
+        # Get the end date of the last non-current cycle before the current one
+        pre_dt = obs.index[-2]
+
+        # Get the end date of the previous time the current cycle was
+        idx = int(np.where(obs[:pre_dt][:-1] == current_cycle)[-1])
+        pre_on_dt = obs.index[idx]
+
+        # Get the end date of the time before that when we were not in the current cycle
+        observations = obs[:pre_on_dt][:-1]
+        observations = observations[observations != current_cycle]
+        pre_off_dt = observations.index[-1]
+
+        # Not get the first date after this when the current cycle was on and we have the answer
+        return obs[pre_off_dt:].index[0]
+
+    def get_cycle_obs(self, begin_date=None):
+        cycles = self.investment_cycles
+
+        if begin_date is None:
+            begin_date = cycles[0].as_of
+
+        data = pd.Series()
+        for cycle in cycles:
+            if cycle.as_of >= begin_date:
+                observation = pd.Series(cycle.cycle, index=[cycle.as_of])
+                data = data.append(observation)
+        return data
 
     def get_probs_df(self, begin_date):
+        predictions = self.investment_predictions
+        data = pd.DataFrame(columns=['eq', 'eq_pk', 'pk_eq', 'eq_pit', 'pit_eq'])
+        for p in predictions:
+            if p.as_of >= begin_date:
+                row = pd.DataFrame(data=[[p.eq, p.eq_pk, p.pk_eq, p.eq_pit, p.pit_eq]],  index=[p.as_of], columns=['eq', 'eq_pk', 'pk_eq', 'eq_pit', 'pit_eq'])
+                data = data.append(row)
+        return data
+
+
+    def get_investment_cycle_predictions(self):
         pass
 

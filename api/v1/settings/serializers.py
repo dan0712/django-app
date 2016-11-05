@@ -1,9 +1,8 @@
 from rest_framework import serializers
 
 from api.v1.serializers import ReadOnlyModelSerializer
-from main.models import AssetClass, Ticker, GoalType, ActivityLog, GoalSetting
-from client.models import RiskProfileGroup, RiskProfileQuestion, \
-    RiskProfileAnswer, RiskCategory
+from main.models import AssetClass, Ticker, GoalType, ActivityLog
+from client.models import RiskProfileGroup, RiskProfileQuestion, RiskProfileAnswer, RiskCategory
 from retiresmartz.models import RetirementLifestyle
 
 

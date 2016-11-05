@@ -1,16 +1,17 @@
 from __future__ import unicode_literals
 
 import uuid
-
+import types
 import copy
 import functools
 import numpy as np
 import pandas as pd
-from datetime import date
+from datetime import date, timedelta
 
 from .execution.abstract import State
 from portfolios.returns import get_price_returns
 from common.structures import ChoiceEnum
+from collections import defaultdict
 
 
 class AssetClassMock(object):
@@ -50,6 +51,9 @@ class TickerMock(object):
 
     def get_returns(self, start_date, end_date):
         return get_price_returns(self, start_date, end_date)
+
+    def get_returns(self, dates):
+        return get_price_returns(self, dates)
 
     def __str__(self):
         return self.symbol
@@ -105,37 +109,88 @@ class GoalMock(object):
         self.approved_settings = self.active_settings
         self.portfolio_set = portfolio_set
         self.current_balance = self.cash_balance = current_balance
-        self.positions = positions
+        self.position_lots = positions
+        self.sale = list()
         self.data_provider = data_provider
 
     def total_balance(self):
         return self.current_balance
 
     def get_positions_all(self):
-        return self.positions
+        positions = defaultdict(float)
+        prices = defaultdict(float)
+        for p in self.position_lots:
+            positions[p.execution_distribution.execution.ticker.id] += p.quantity
+            prices[p.execution_distribution.execution.ticker.id] = p.price
+
+        pos = list()
+        for id, quantity in positions.items():
+            position = dict()
+            position['ticker_id'] = id
+            position['quantity'] = quantity
+            position['price'] = prices[id]
+            pos.append(position)
+        return pos
+
+    def get_lots_all(self):
+        lots = list()
+        for l in self.position_lots:
+            lot = dict()
+            lot['ticker_id'] = l.execution_distribution.execution.ticker.id
+            lot['quantity'] = l.quantity
+            lot['price'] = l.execution_distribution.execution.price
+            lot['executed'] = l.execution_distribution.execution.executed
+            lots.append(lot)
+        return lots
+
+    def get_lots_symbol(self, symbol):
+        lots = list()
+        all_lots = self.get_lots_all()
+        for l in all_lots:
+            if l['ticker_id'] == symbol:
+                lots.append(l)
+        return lots
 
     @property
     def available_balance(self):
         balance = 0
         for position in self.get_positions_all():
-            balance += position.value
+            balance += position['quantity'] * position['price']
         return balance + self.cash_balance
 
     def __str__(self):
         return '[' + self.name + " : " + self.account.primary_owner
 
 
-class PositionMock(object):
-    def __init__(self, ticker, share=0):
-        self.ticker = ticker
-        self.share = share
+class PositionLot(object):
+    def __init__(self, quantity, price, ticker, executed):
+        self.quantity = quantity
+        self.execution_distribution = types.SimpleNamespace()
+        self.execution_distribution.execution = types.SimpleNamespace()
+        self.execution_distribution.transaction = types.SimpleNamespace()
+        self.execution_distribution.execution.price = price
+        self.execution_distribution.execution.ticker = ticker
+        self.execution_distribution.execution.executed = executed
+        self.execution_distribution.transaction.from_goal = None
         self.data_provider = None
 
     @property
-    def value(self):
+    def price(self):
         if self.data_provider is not None:
-            self.ticker = self.data_provider.get_ticker(self.ticker.symbol)
-        return self.share * self.ticker.daily_prices.last()
+            ticker = self.data_provider.get_ticker(self.execution_distribution.execution.ticker.id)
+        return float(ticker.daily_prices.last())
+
+
+    @property
+    def value(self):
+        return float(self.quantity * self.price)
+
+
+class Sale(object):
+    def __init__(self, ticker, price, quantity):
+        self.ticker = ticker
+        self.price = price
+        self.quantity = quantity
 
 
 class GoalSettingMock(object):
@@ -258,18 +313,16 @@ class InvestmentCycleObservationMock(object):
         EQ_PIT = (3, 'eq_pit')
         PIT_EQ = (4, 'pit_eq')
 
-    def __init(self, as_of, recorded, cycle):
+    def __init__(self, as_of, cycle):
         self.as_of = as_of
-        self.recorded = recorded
         self.cycle = cycle
 
 
 class InvestmentCyclePredictionMock(object):
-    def __init(self, as_of, pred_dt, eq, eq_pk, pk_eq, eq_pit, pit_eq):
+    def __init__(self, as_of, eq, eq_pk, pk_eq, eq_pit, pit_eq):
         _check_numbers(min=0, max=1, numbers=[eq, eq_pk, pk_eq, eq_pit, pit_eq])
 
         self.as_of = as_of
-        self.pred_dt = pred_dt
         self.eq = eq
         self.eq_pk = eq_pk
         self.pk_eq = pk_eq
@@ -288,20 +341,47 @@ class InvestmentCycleObservationFactory(object):
     def create_cycles():
         observations = list()
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 1), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 1), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 7), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 5), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 11), cycle=InvestmentCycleObservationMock.Cycle.EQ_PK.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 7), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 13), cycle=InvestmentCycleObservationMock.Cycle.PK_EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 11), cycle=InvestmentCycleObservationMock.Cycle.EQ_PK.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 15), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 13), cycle=InvestmentCycleObservationMock.Cycle.PK_EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 18), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 15), cycle=InvestmentCycleObservationMock.Cycle.EQ.value))
         observations.append(
-            InvestmentCycleObservationMock(as_of=date(2016, 1, 20), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 18), cycle=InvestmentCycleObservationMock.Cycle.EQ_PIT.value))
+        observations.append(
+            InvestmentCycleObservationMock(as_of=date(2011, 1, 20), cycle=InvestmentCycleObservationMock.Cycle.PIT_EQ.value))
         return observations
+
+    @staticmethod
+    def create_predictions():
+        predictions = list()
+        vals = [
+            [0.08089787, 0.167216193, 0.007325566, 0.143641463, 0.733230633],
+            [0.080636192, 0.151937142, 0.187936638, 0.39640021, 0.420692639],
+            [0.087140048, 0.122145455, 0.043799137, 0.508127278, 0.412764823],
+            [0.086595196, 0.163545905, 0.029313429, 0.329095078, 0.370009886],
+            [0.087243834, 0.19905742, 0.00229681, 0.09144718, 0.390732573],
+            [0.081566295, 0.277402407, 0.080812535, 0.045212519, 0.360884538],
+            [0.07358428, 0.117376517, 0.001417166, 0.143329684, 0.395081559],
+            [0.073802749, 0.133804588, 0.000635776, 0.394104881, 0.39465102],
+            [0.075446787, 0.082311401, 0.000812869, 0.271816537, 0.69018451],
+            [0.078041426, 0.244725389, 0.014591784, 0.049618232, 0.472784413],
+            [0.076303139, 0.115293179, 0.176512979, 0.07634871, 0.375165155],
+            [0.073802749, 0.133804588, 0.000635776, 0.394104881, 0.39465102],
+        ]
+        dt = date(2011, 1, 1)
+        for p in vals:
+            predictions.append(
+                InvestmentCyclePredictionMock(as_of=dt, eq=p[0], eq_pk=p[1], pk_eq=p[2], eq_pit=p[3], pit_eq=p[4])
+            )
+            dt += timedelta(days=31)
+        return predictions
 
 
 class InstrumentsFactory(object):
@@ -392,6 +472,6 @@ class GoalFactory(object):
 
         goal_non_nested = copy.copy(goal)
         goal_non_nested.active_settings = None
-        goal.active_settings.goal = goal_non_nested
+        goal.approved_settings.goal = goal_non_nested
 
         return goal

@@ -3,7 +3,7 @@ from django.test import TestCase
 from api.v1.tests.factories import FirmFactory, FiscalYearFactory, \
     AdvisorFactory, ClientFactory, ClientAccountFactory, TransactionFactory, \
     GoalFactory, AccountTypeRiskProfileGroupFactory
-from datetime import datetime
+from datetime import datetime, date
 from main.models import Transaction
 from main import constants
 from dateutil.relativedelta import relativedelta
@@ -13,7 +13,7 @@ class FirmModelTests(TestCase):
     def setUp(self):
         for atid, _ in constants.ACCOUNT_TYPES:
             AccountTypeRiskProfileGroupFactory.create(account_type=atid)
-        self.today = today = datetime.today()
+        self.today = today = date(2016, 5, 1)
         self.older_fiscal_year = FiscalYearFactory.create()
         self.older_fiscal_year2 = FiscalYearFactory.create()
         self.current_fiscal_year = FiscalYearFactory.create(year=today.year,

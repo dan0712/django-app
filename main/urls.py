@@ -77,8 +77,6 @@ urlpatterns = patterns(
     url(r'^betasmartz_admin/firm/(?P<pk>\d+)/invite_supervisor',
         AdminInviteSupervisorView.as_view(),
         name='betasmartz_admin:invite_supervisor'),
-    url(r'^betasmartz_admin/transaction/(?P<pk>\d+)/execute',
-        AdminExecuteTransaction.as_view()),
 
     url(r'^$', lambda x: HttpResponseRedirect(reverse_lazy('login'))),
 

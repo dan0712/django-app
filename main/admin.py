@@ -15,15 +15,19 @@ from main.models import AccountGroup, ActivityLog, \
     EventMemo, Firm, FirmData, Goal, GoalMetric, GoalMetricGroup, GoalSetting, \
     GoalType, MarketIndex, Performer, Portfolio, PortfolioItem, PortfolioSet, \
     ProxyAssetClass, ProxyTicker, \
-    Transaction, User, View, InvestmentType, FiscalYear, Ticker, PositionLot, AssetFeePlan
-from retiresmartz.models import RetirementLifestyle
-
-admin.site.register(AccountGroup)
+    Transaction, User, View, InvestmentType, FiscalYear, Ticker, PositionLot, AssetFeePlan, Inflation
 
 
 class AssetResource(resources.ModelResource):
     class Meta:
         model = ProxyAssetClass
+
+
+class InflationResource(resources.ModelResource):
+    class Meta:
+        model = Inflation
+        exclude = ('id', 'recorded')
+        import_id_fields = ('year', 'month')
 
 
 class TickerInline(BaseGenericModelAdmin, SortableTabularInline):
@@ -115,7 +119,8 @@ approve_application.short_description = "Approve application(s)"
 
 
 class AdvisorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm',
+                    'geolocation_lock')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
 
@@ -155,17 +160,6 @@ def rebalance(modeladmin, request, queryset):
 
     else:
         return HttpResponseRedirect('/betasmartz_admin/rebalance/{pk}?next=/admin/main/firm/'
-                                    .format(pk=queryset.all()[0].pk))
-
-
-def execute_transaction(modeladmin, request, queryset):
-    context = {'STATIC_URL': settings.STATIC_URL, 'MEDIA_URL': settings.MEDIA_URL, 'item_class': 'transaction'}
-
-    if queryset.count() > 1:
-        return render_to_response('admin/betasmartz/error_only_one_item.html', context)
-
-    else:
-        return HttpResponseRedirect('/betasmartz_admin/transaction/{pk}/execute?next=/admin/main/firm/'
                                     .format(pk=queryset.all()[0].pk))
 
 
@@ -209,7 +203,8 @@ class FirmAdmin(admin.ModelAdmin):
 
 
 class AuthorisedRepresentativeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm')
+    list_display = ('user', 'phone_num', 'is_accepted', 'is_confirmed', 'firm',
+                    'geolocation_lock')
     list_filter = ('is_accepted', FirmFilter)
     actions = (approve_application,)
 
@@ -256,7 +251,6 @@ class PortfolioSetAdmin(admin.ModelAdmin):
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('reason', 'from_goal', 'to_goal', 'status', 'amount', 'created')
-    actions = (execute_transaction,)
     list_filter = ('status',)
 
 
@@ -335,11 +329,12 @@ class AssetFeePlanAdmin(admin.ModelAdmin):
     model = AssetFeePlan
 
 
-class RetirementLifestyleAdmin(admin.ModelAdmin):
-    model = RetirementLifestyle
-    list_display = ('cost',)
+class InflationAdmin(ImportExportModelAdmin):
+    list_display = 'year', 'month', 'value'
+    resource_class = InflationResource
 
-
+admin.site.register(AccountGroup)
+admin.site.register(Inflation, InflationAdmin)
 admin.site.register(advisor_models.ChangeDealerGroup, AdvisorChangeDealerGroupAdmin)
 admin.site.register(advisor_models.SingleInvestorTransfer, AdvisorSingleInvestorTransferAdmin)
 admin.site.register(advisor_models.BulkInvestorTransfer, AdvisorBulkInvestorTransferAdmin)
@@ -362,7 +357,6 @@ admin.site.register(ActivityLog, ActivityLogAdmin)
 admin.site.register(InvestmentType, InvestmentTypeAdmin)
 admin.site.register(FiscalYear, FiscalYearAdmin)
 admin.site.register(Ticker, TickerAdmin)
-admin.site.register(RetirementLifestyle, RetirementLifestyleAdmin)
 admin.site.register(PositionLot, PositionLotAdmin)
 admin.site.register(AssetFeePlan, AssetFeePlanAdmin)
 

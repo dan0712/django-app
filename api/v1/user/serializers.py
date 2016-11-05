@@ -10,6 +10,7 @@ from api.v1.serializers import ReadOnlyModelSerializer
 
 from main.models import User
 from user.models import SecurityAnswer, SecurityQuestion
+from phonenumber_field.phonenumber import PhoneNumber
 
 logger = logging.getLogger('api.v1.user.serializers')
 
@@ -294,3 +295,18 @@ class SecurityAnswerCheckSerializer(serializers.Serializer):
         else:
             raise serializers.ValidationError('No usable answer')
         return data
+
+
+class PhoneNumberValidationSerializer(serializers.Serializer):
+    number = serializers.CharField()
+
+    def validate(self, data):
+        number = data.get('number').strip('+').replace('-', '')
+        try:
+            num = PhoneNumber.from_string(number)
+        except Exception as e:
+            raise serializers.ValidationError(e)
+
+        if not num.is_valid():
+            raise serializers.ValidationError('Invalid phone number')
+        return number

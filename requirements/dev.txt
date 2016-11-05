@@ -4,5 +4,8 @@
 factory-boy==2.7.0
 fake-factory==0.6.0
 
+# For social security calc
+mock==1.0.1
+
 django-jenkins==0.19.0
 coverage==4.2

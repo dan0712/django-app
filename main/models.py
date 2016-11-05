@@ -1,26 +1,31 @@
-from datetime import datetime
 import logging
 import uuid
+from datetime import datetime, date, timedelta
 from enum import Enum, unique
 
 import scipy.stats as st
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, Group, \
     PermissionsMixin, UserManager, send_mail
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import (MaxValueValidator, MinLengthValidator,
                                     MinValueValidator, RegexValidator, ValidationError)
 from django.db import models, transaction
-from django.db.models import Sum, F
-from django.db.models.functions import Coalesce
+from django.db.models import F, Sum
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
+from django.db.models.functions import Coalesce
 from django.db.models.query_utils import Q
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template.loader import render_to_string
+from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
-from django.dispatch import receiver
 from django_pandas.managers import DataFrameManager
 from jsonfield.fields import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -29,6 +34,8 @@ from pinax.eventlog import models as el_models
 from address.models import Address
 from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
+from common.utils import months_between
+from main import redis
 from main.finance import mod_dietz_rate
 from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
@@ -39,10 +46,7 @@ from .abstract import FinancialInstrument, NeedApprobation, \
 from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
-from django.core.exceptions import ObjectDoesNotExist
 
-from django.utils.functional import cached_property
-from django.contrib.staticfiles.templatetags.staticfiles import static
 import numpy as np
 
 logger = logging.getLogger('main.models')
@@ -280,6 +284,8 @@ class AssetClass(models.Model):
                                     db_index=True)
     investment_type = models.ForeignKey(InvestmentType, related_name='asset_classes')
 
+    # Also has reverse field 'portfolio_sets' from the PortfolioSet model.
+
     def save(self,
              force_insert=False,
              force_update=False,
@@ -336,7 +342,7 @@ class ExternalAsset(models.Model):
         if to_date is None:
             to_date = datetime.now().date()
         delta = to_date - self.valuation_date
-        accumulated_value = self.valuation
+
         return self.valuation * pow(1 + self.growth, delta.days)
 
     class Meta:
@@ -661,7 +667,7 @@ class Advisor(NeedApprobation, NeedConfirmation, PersonalData):
         for household in self.households:
             all_accounts = household.accounts.all()
             accounts.extend(all_accounts)
-        return accounts
+        return set(accounts)
 
     @property
     def total_balance(self):
@@ -881,7 +887,6 @@ class AccountGroup(models.Model):
 
     def __str__(self):
         return self.name
-
 
 
 class ExternalAssetTransfer(TransferPlan):
@@ -1267,8 +1272,7 @@ class RecurringTransaction(TransferPlan):
     Note: Only settings that are active will have their recurring
           transactions processed.
     """
-    setting = models.ForeignKey('GoalSetting',
-                                related_name='recurring_transactions')
+    setting = models.ForeignKey('GoalSetting', related_name='recurring_transactions', on_delete=CASCADE)
     enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -1290,7 +1294,7 @@ class RecurringTransaction(TransferPlan):
 
 
 class Portfolio(models.Model):
-    setting = models.OneToOneField('GoalSetting', related_name='portfolio')
+    setting = models.OneToOneField('GoalSetting', related_name='portfolio', on_delete=CASCADE)
     stdev = models.FloatField()
     er = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
@@ -1305,8 +1309,8 @@ class Portfolio(models.Model):
 
 
 class PortfolioItem(models.Model):
-    portfolio = models.ForeignKey(Portfolio, related_name='items')
-    asset = models.ForeignKey(Ticker)
+    portfolio = models.ForeignKey(Portfolio, related_name='items', on_delete=CASCADE)
+    asset = models.ForeignKey(Ticker, on_delete=PROTECT)
     weight = models.FloatField()
     volatility = models.FloatField(help_text='variance of this asset at the time of creating this portfolio.')
 
@@ -1316,7 +1320,7 @@ class GoalSetting(models.Model):
     completion = models.DateField(help_text='The scheduled completion date for the goal.')
     hedge_fx = models.BooleanField(help_text='Do we want to hedge foreign exposure?')
     # metric_group is a foreignkey rather than onetoone since a metric group can be used by more than one setting object
-    metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings')
+    metric_group = models.ForeignKey('GoalMetricGroup', related_name='settings', on_delete=PROTECT)
     rebalance = models.BooleanField(default=True, help_text='Do we want to perform automated rebalancing?')
     # also may have a 'recurring_transactions' field from RecurringTransaction model.
     # also may have a 'portfolio' field from Portfolio model. May be null if no portfolio has been assigned yet.
@@ -1522,14 +1526,12 @@ class Goal(models.Model):
         validate_risk_score(setting)
         self.save()
         if old_setting not in (self.active_settings, self.approved_settings):
-            custom_group = old_setting.metric_group.type == GoalMetricGroup.TYPE_CUSTOM
-            last_user = old_setting.metric_group.settings.count() == 1
+            old_group = old_setting.metric_group
+            custom_group = old_group.type == GoalMetricGroup.TYPE_CUSTOM
+            last_user = old_group.settings.count() == 1
+            old_setting.delete()
             if custom_group and last_user:
-                # This will also delete the setting as the metric group is a foreign key.
-                old_setting.metric_group.delete()
-            else:
-                # We are using a shared group, or we're not the last user. Just delete the setting object.
-                old_setting.delete()
+                old_group.delete()
 
     @transaction.atomic
     def approve_selected(self):
@@ -1777,7 +1779,7 @@ class Goal(models.Model):
         predicted = 0
         for dt, val in cf_events:
             tdelta = dt - current_time
-            y_delta = (tdelta.days + tdelta.seconds/86400.0)/365.2425
+            y_delta = (tdelta.days + tdelta.seconds/86400.0)/365.25
             predicted += val * (er ** y_delta + z_mult * stdev * (y_delta ** 0.5))
 
         return predicted
@@ -2187,7 +2189,7 @@ class MarketOrderRequest(models.Model):
         PENDING = 0  # Raised somehow, but not yet approved to send to market
         APPROVED = 1  # Approved to send to market, but not yet sent.
         SENT = 2  # Sent to the broker (at least partially outstanding).
-        CANCEL_PENDING = 3 # Sent, but have also sent a cancel
+        CANCEL_PENDING = 3  # Sent, but have also sent a cancel
         COMPLETE = 4  # May be fully or partially executed, but there is none left outstanding.
 
     # The list of Order states that are still considered open.
@@ -2587,3 +2589,66 @@ class ActivityLogEvent(models.Model):
             alog = ActivityLog.objects.create(name=event.name, format_str='DEFAULT_TEXT: {}'.format(event.name))
 
         return ActivityLogEvent.objects.create(id=event.value, activity_log=alog)
+
+
+class Inflation(models.Model):
+    year = models.PositiveIntegerField(help_text="The year the inflation value is for. "
+                                                 "If after recorded, it is a forecast, otherwise it's an observation.")
+    month = models.PositiveIntegerField(help_text="The month the inflation value is for. "
+                                                  "If after recorded, it is a forecast, otherwise it's an observation.")
+    value = models.FloatField(help_text="This is the monthly inflation figure as of the given as_of date.")
+    recorded = models.DateField(auto_now=True, help_text="The date this inflation figure was added.")
+
+    class Meta:
+        ordering = ['year', 'month']
+        unique_together = ('year', 'month')
+
+    @classmethod
+    def cumulative(cls):
+        """
+        :return: A dictionary from (year, month) => cumulative total inflation (1-based) from beginning of records till that time
+        """
+        data = getattr(cls, '_cum_data', None)
+        if not data:
+            data = cache.get(redis.Keys.INFLATION)
+        if not data:
+            data = {}
+            vals = list(cls.objects.all().values_list('year', 'month', 'value'))
+            if vals:
+                f_d = date(vals[0][0], vals[0][1], 1)
+                l_d = date(vals[-1][0], vals[-1][1], 1)
+                if (months_between(f_d, l_d) + 1) > len(vals):
+                    raise Exception("Holes exist in the inflation forecast figures, cannot proceed.")
+                isum = 1
+                # Add the entry for the start of the series.
+                data[((f_d - timedelta(days=1)).month, (f_d - timedelta(days=1)).year)] = isum
+                for val in vals:
+                    isum *= 1 + val[2]
+                    data[(val[0], val[1])] = isum
+                cache.set(redis.Keys.INFLATION, data, timeout=60 * 60 * 24)
+        cls._cum_data = data
+        return data
+
+    @classmethod
+    def between(cls, begin_date: datetime.date, end_date: datetime.date) -> float:
+        """
+        Calculates inflation between two dates. (predicted if in future, actual for all past dates)
+        :param start: The start date from when to calculate the inflation
+        :param start: The date until when to calculate the inflation
+        :return: float value for the inflation. 0.05 = 5% inflation
+        """
+
+        if begin_date > end_date:
+            raise ValueError('End date must not be before begin date.')
+        if begin_date == end_date:
+            return 0
+        data = cls.cumulative()
+        first = data.get((begin_date.year, begin_date.month), None)
+        last = data.get((end_date.year, end_date.month), None)
+        if first is None or last is None:
+            raise ValidationError("Inflation figures don't cover entire period requested: {} - {}".format(begin_date,
+                                                                                                          end_date))
+        return (last / first) - 1
+
+    def __str__(self):
+        return '{0.month}/{0.year}: {0.value}'.format(self)

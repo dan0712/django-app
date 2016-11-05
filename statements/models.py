@@ -1,6 +1,5 @@
 import logging
 from django.db import models
-from jsonfield.fields import JSONField
 from weasyprint import HTML
 from django.conf import settings
 from io import BytesIO
@@ -8,9 +7,11 @@ from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
 
+
 class PDFStatement(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     pdf = models.FileField(null=True, blank=True)
+
     @property
     def date(self):
         return self.create_date.strftime('%Y-%m-%d_%H:%I:%S')
@@ -32,7 +33,7 @@ class PDFStatement(models.Model):
         html = self.render_template(template_name)
         # Have to source the images locally for WeasyPrint
         static_path = settings.STATICFILES_DIRS[0]
-        html = html.replace('/static/', 'file://%s/'%static_path)
+        html = html.replace('/static/', 'file://%s/' % static_path)
         pdf_builder = HTML(string=html)
         return pdf_builder.write_pdf()
 
@@ -40,7 +41,7 @@ class PDFStatement(models.Model):
         super(PDFStatement, self).save(*args, **kwargs)
         if not self.pdf:
             bio = BytesIO(self.render_pdf())
-            self.pdf.save('%s.pdf'%self.account,
+            self.pdf.save('%s.pdf' % self.account,
                           ContentFile(bio.getvalue()))
 
     @property
@@ -55,23 +56,23 @@ class PDFStatement(models.Model):
         abstract = True
         ordering = ('-create_date', )
 
+
 class StatementOfAdvice(PDFStatement):
-    account = models.OneToOneField('client.ClientAccount',
-                        related_name='statement_of_advice')
+    account = models.OneToOneField('client.ClientAccount', related_name='statement_of_advice')
 
     def __str__(self):
-        return 'Statement of Advice for %s'%self.account
+        return 'Statement of Advice for %s' % self.account
 
     @property
     def default_template(self):
         return "statements/statement_of_advice.html"
 
+
 class RetirementStatementOfAdvice(PDFStatement):
-    retirement_plan = models.OneToOneField('retiresmartz.RetirementPlan',
-                        related_name='statement_of_advice')
+    retirement_plan = models.OneToOneField('retiresmartz.RetirementPlan', related_name='statement_of_advice')
 
     def __str__(self):
-        return 'Statement of Advice for %s'%self.retirement_plan
+        return 'Statement of Advice for %s' % self.retirement_plan
 
     @property
     def account(self):
@@ -87,11 +88,10 @@ class RetirementStatementOfAdvice(PDFStatement):
 
 
 class RecordOfAdvice(PDFStatement):
-    account = models.ForeignKey('client.ClientAccount',
-                    related_name='records_of_advice')
+    account = models.ForeignKey('client.ClientAccount', related_name='records_of_advice')
 
     def __str__(self):
-        return 'Record of Advice %s %s'%(self.account, self.date)
+        return 'Record of Advice %s %s' % (self.account, self.date)
 
     @property
     def default_template(self):

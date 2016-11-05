@@ -14,13 +14,11 @@ from main.models import ExternalAsset, User
 from user.models import SecurityAnswer
 from client.models import Client, EmailInvite
 from support.models import SupportRequest
-from api.v1.user.serializers import UserSerializer, AuthSerializer
-from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, \
-    RetirementPlanEincWritableSerializer
+from api.v1.user.serializers import UserSerializer
+from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, RetirementPlanEincWritableSerializer
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc
 from django.views.generic.detail import SingleObjectMixin
 from . import serializers
-from django.core.urlresolvers import reverse
 import logging
 import json
 
@@ -189,9 +187,10 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         if invite.status == EmailInvite.STATUS_EXPIRED:
             invite.advisor.user.email_user('A client tried to use an expired invitation'
-                    "Your potential client %s %s (%s) just tried to register using an invite "
-                    "you sent them, but it has expired!"%
-                    (invite.first_name, invite.last_name, invite.email))
+                                           "Your potential client {} {} ({}) just tried to register using an invite "
+                                           "you sent them, but it has expired!".format(invite.first_name,
+                                                                                       invite.last_name,
+                                                                                       invite.email))
 
         if invite.status != EmailInvite.STATUS_ACCEPTED:
             return Response(self.serializer_class(instance=invite).data,
@@ -199,7 +198,7 @@ class InvitesView(ApiViewMixin, views.APIView):
 
         serializer = self.serializer_class(invite, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
-            invitation = serializer.save()
+            serializer.save()
 
         return Response(serializer.data)
 
@@ -214,7 +213,7 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
     def post(self, request):
         serializer = serializers.ClientUserRegistrationSerializer(data=request.data)
         if not serializer.is_valid(raise_exception=True):
-            logger.error('Error accepting invitation: %s'%serializer.errors['non_field_errors'][0])
+            logger.error('Error accepting invitation: %s' % serializer.errors['non_field_errors'][0])
             return Response({'error': 'invitation not found for this email'}, status=status.HTTP_404_NOT_FOUND)
         invite = serializer.invite
 
@@ -255,11 +254,10 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
         auth_login(request, user)
 
         user_serializer = UserSerializer(instance=user)
-
-        invite.advisor.user.email_user('Client has accepted your invitation',
-            "Your client %s %s (%s) has accepted your invitation to BetaSmartz!"
-                                %(user.first_name, user.last_name, user.email))
-
+        msg = "Your client %s %s (%s) has accepted your invitation to Betasmartz!" % (user.first_name,
+                                                                                      user.last_name,
+                                                                                      user.email)
+        invite.advisor.user.email_user('Client has accepted your invitation', msg)
         return Response(user_serializer.data)
 
 

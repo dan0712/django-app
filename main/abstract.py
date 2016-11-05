@@ -33,6 +33,8 @@ class PersonalData(models.Model):
 
     regional_data = JSONField(default=dict)
 
+    geolocation_lock = models.CharField(max_length=30, blank=True)
+
     def __str__(self):
         return self.user.first_name + " - " + self.firm.name
 
@@ -115,6 +117,13 @@ class PersonalData(models.Model):
     def country(self):
         try:
             return self.residential_address.region.country
+        except:
+            return None
+
+    @cached_property
+    def tax_filing_status(self):
+        try:
+            return self.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS']
         except:
             return None
 

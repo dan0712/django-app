@@ -1,7 +1,9 @@
 import logging
-from datetime import timedelta
+from copy import copy
+from datetime import timedelta, date
 
 import numpy as np
+from dateutil.relativedelta import relativedelta
 
 from django.core.management.base import BaseCommand
 from django.db import connection
@@ -9,7 +11,7 @@ from django.utils.timezone import now
 
 from api.v1.tests.factories import InvestmentCycleObservationFactory, InvestmentCyclePredictionFactory
 from main.models import MarketIndex, DailyPrice, MarketCap, Ticker, InvestmentCycleObservation, \
-    InvestmentCyclePrediction
+    InvestmentCyclePrediction, Inflation
 
 logger = logging.getLogger("populate_test_prices")
 
@@ -27,6 +29,7 @@ def delete_data():
     MarketCap.objects.all().delete()
     InvestmentCycleObservation.objects.all().delete()
     InvestmentCyclePrediction.objects.all().delete()
+    Inflation.objects.all().delete()
 
 
 def populate_prices(days, asof=now().date()):
@@ -88,6 +91,24 @@ def populate_cycle_prediction(asof=now().date()):
                                             pit_eq=0.6)
 
 
+def populate_inflation(asof=now().date(), value=0.001):
+    """
+    Populate monthly inflation figures in the DB. Calculates forward 100 years from the asof date
+    :param asof:
+    :param value: The monthly inflation to use.
+    :return:
+    """
+
+    # Populate some inflation figures.
+    inflations = []
+    for i in range(1200):
+        dt = asof + relativedelta(months=i)
+        inflations.append(Inflation(year=dt.year, month=dt.month, value=value))
+    if hasattr(Inflation, '_cum_data'):
+        del Inflation._cum_data
+    Inflation.objects.bulk_create(inflations)
+
+
 class Command(BaseCommand):
     help = ('Populates random walk test instrument price data. '
             'NUKES DailyPrice and MarketCap TABLES AND REPLACES WITH RANDOM, TIMELY DATA')
@@ -120,4 +141,5 @@ class Command(BaseCommand):
             populate_prices(400)
             populate_cycle_obs(400)
             populate_cycle_prediction()
+            populate_inflation(asof=date(2016, 1, 1))
         print("Done.")

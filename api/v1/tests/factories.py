@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import factory
-
 import decimal
 import random
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, date
 from django.contrib.auth.models import Group
-
+from django.utils import timezone
 from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         Goal, GoalType, InvestmentType, AssetClass, Ticker, \
                         Transaction, GoalSetting, GoalMetricGroup, \
@@ -14,13 +13,14 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest, MarketOrderRequest, \
-    ApexFill, ApexOrder, ExecutionApexFill, Execution
-from retiresmartz.models import RetirementPlan
+    ApexFill, ApexOrder, ExecutionApexFill, Execution, RecurringTransaction, AccountGroup, Platform
+
+from retiresmartz.models import RetirementPlan, RetirementAdvice, RetirementPlanAccount
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
     RiskProfileQuestion, RiskProfileAnswer, \
     AccountTypeRiskProfileGroup, EmailInvite
-from statements.models import StatementOfAdvice, RecordOfAdvice
+from statements.models import StatementOfAdvice, RecordOfAdvice, RetirementStatementOfAdvice
 from user.models import SecurityQuestion, SecurityAnswer
 from address.models import Address, Region
 from django.contrib.contenttypes.models import ContentType
@@ -458,17 +458,6 @@ class TickerFactory(factory.django.DjangoModelFactory):
     region = factory.SubFactory(MainRegionFactory)
     data_api_param = factory.Sequence(lambda n: str(n))
 
-    @factory.post_generation
-    def features(self, create, items, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
-
-        if items:
-            # A list of groups were passed in, use them
-            for item in items:
-                self.features.add(item)
-
 
 class TransactionFactory(factory.django.DjangoModelFactory):
     """
@@ -606,9 +595,67 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     volunteer_days = factory.LazyAttribute(lambda n: random.randrange(7))
     paid_days = factory.LazyAttribute(lambda n: random.randrange(7))
     same_home = False
+    same_location = False
     retirement_postal_code = 11901
     reverse_mortgage = True
     expected_return_confidence = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     desired_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     recommended_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
     max_risk = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+
+
+class RetirementPlanAccountFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementPlanAccount
+
+    plan = factory.SubFactory(RetirementPlanFactory)
+    account = factory.SubFactory(ClientAccountFactory)
+
+
+class RecurringTransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RecurringTransaction
+    setting = factory.SubFactory(GoalSettingFactory)
+    begin_date = timezone.now().date()
+    amount = factory.LazyAttribute(lambda n: int(random.randrange(10000)))
+    growth = factory.LazyAttribute(lambda n: float(random.randrange(100) / 100))
+    schedule = factory.Sequence(lambda n: 'RRULE %s' % n)
+
+
+class RetirementAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementAdvice
+
+    plan = factory.SubFactory(RetirementPlanFactory)
+    # trigger = factory.SubFactory(EventLogFactory)
+    text = factory.Sequence(lambda n: 'Retirement Advice %s' % n)
+
+
+class AccountGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AccountGroup
+
+    name = factory.Sequence(lambda n: 'Account Group %s' % n)
+    advisor = factory.SubFactory(AdvisorFactory)
+
+    # @factory.post_generation
+    # def secondary_advisors(self, create, extracted, **kwargs):
+    #     if not create:
+    #         return
+    #     if extracted:
+    #         for advisor in extracted:
+    #             self.secondary_advisors.add(advisor)
+
+
+class PlatformFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Platform
+
+    portfolio_set = factory.SubFactory(PortfolioSetFactory)
+
+
+class RetirementStatementOfAdviceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RetirementStatementOfAdvice
+
+    retirement_plan = factory.SubFactory(RetirementPlanFactory)

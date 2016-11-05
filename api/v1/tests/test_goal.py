@@ -12,28 +12,19 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-from api.v1.tests.factories import MarkowitzScaleFactory, GoalTypeFactory, ExecutionDistributionFactory
+from .factories import MarkowitzScaleFactory, GoalTypeFactory, \
+    ExecutionDistributionFactory, RecurringTransactionFactory, \
+    ContentTypeFactory, TransactionFactory, PositionLotFactory
 from common.constants import GROUP_SUPPORT_STAFF
 from main.event import Event
-
-from main.models import GoalMetric, Execution, Transaction, ExecutionDistribution, Portfolio, Goal
-
+from main.models import GoalMetric, Execution, Transaction, Goal
 from main.risk_profiler import max_risk, MINIMUM_RISK
-from .factories import ContentTypeFactory, TransactionFactory, PositionLotFactory
-
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
 from main.models import ActivityLog, ActivityLogEvent, EventMemo, MarketOrderRequest, InvestmentType
 from main.tests.fixture import Fixture1
 from .factories import GroupFactory, GoalFactory, ClientAccountFactory, GoalSettingFactory, TickerFactory, \
-    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory, ContentTypeFactory, PositionLotFactory, ExecutionDistributionFactory
-
-from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer
-
-from django.contrib.contenttypes.models import ContentType
-
-from api.v1.tests.factories import GoalFactory, TickerFactory, \
-    TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory
-import numpy as np
+    AssetClassFactory, PortfolioSetFactory, MarketIndexFactory, GoalMetricFactory, AssetFeatureValueFactory
+from api.v1.goals.serializers import GoalSettingSerializer, GoalCreateSerializer, RecurringTransactionCreateSerializer
 
 mocked_now = datetime(2016, 1, 1)
 
@@ -236,6 +227,29 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data[4], (16806, Decimal('-0.019802')))
         self.assertEqual(response.data[5], (16807, Decimal('0.060606')))
         self.assertEqual(response.data[6], (16808, 0))
+
+    def test_put_settings_recurring_transactions(self):
+        # Test PUT with good transaction data
+        tx1 = RecurringTransactionFactory.create()
+        tx2 = RecurringTransactionFactory.create()
+        url = '/api/v1/goals/{}/selected-settings'.format(Fixture1.goal1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        serializer = RecurringTransactionCreateSerializer(tx1)
+        serializer2 = RecurringTransactionCreateSerializer(tx2)
+        settings_changes = {
+            'recurring_transactions': [serializer.data, serializer2.data, ],
+        }
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # bad transaction missing enabled field
+        data = serializer.data
+        del data['enabled']
+        settings_changes = {
+            'recurring_transactions': [data, serializer2.data, ],
+        }
+        response = self.client.put(url, settings_changes)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_put_settings_no_memo(self):
         # Test PUT with no memo
@@ -687,9 +701,9 @@ class GoalTests(APITestCase):
 
     def test_get_goal_settings_by_id(self):
         goal = Fixture1.goal1()
-        goal.approve_selected()
-        setting = GoalSettingFactory.create()
+        setting = goal.selected_settings
         url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+
         # unauthenticated
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -706,3 +720,8 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+        # Unauthorized user check
+        self.client.force_authenticate(user=Fixture1.client2().user)
+        url = '/api/v1/goals/{}/settings/{}'.format(goal.id, setting.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

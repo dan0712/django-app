@@ -18,10 +18,11 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from api.v1.exceptions import APIInvalidStateError, SystemConstraintError
 from api.v1.utils import activity
+from api.v1.views import ReadOnlyApiViewMixin
 from common.constants import EPOCH_DT, EPOCH_TM
+from common.utils import dt2ed
 from main.event import Event
-from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, \
-    Transaction, PositionLot, GoalSetting
+from main.models import DailyPrice, Goal, GoalType, HistoricalBalance, Ticker, Transaction, GoalSetting
 from main.risk_profiler import risk_data
 from portfolios.calculation import Unsatisfiable, \
     calculate_portfolio, calculate_portfolios, current_stats_from_weights
@@ -446,7 +447,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
                                          status=Transaction.STATUS_EXECUTED,
                                          reason__in=Transaction.CASH_FLOW_REASONS)
         txs = txs.order_by('executed').values_list('to_goal', 'executed', 'amount')
-        return Response([((tx[1].date() - EPOCH_DT).days, tx[2] if tx[0] else -tx[2]) for tx in txs])
+        return Response([(dt2ed(tx[1]), tx[2] if tx[0] else -tx[2]) for tx in txs])
 
     @detail_route(methods=['get'], url_path='balance-history')
     def balance_history(self, request, pk=None, **kwargs):
@@ -545,7 +546,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         tidlocs = {tid: ix for ix, tid in enumerate(prices.columns)}
         for tid, vd in ts.pop(0)[1].items():
             vols_m1[tidlocs[tid]] += vd
-        res.append(((row[0].date() - EPOCH_DT).days, 0))  # First day has no performance as there wasn't a move
+        res.append((dt2ed(row[0]), 0))  # First day has no performance as there wasn't a move
         # Process the rest
         for row in piter:
             # row[0] (a datetime) is a naive timestamp, so we don't need to convert it
@@ -562,10 +563,9 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             pdelta = list(map(operator.sub, row[1:], p_m1))  # The change in price from yesterday
             impact = sum(map(operator.mul, pvol, pdelta))  # The total portfolio impact due to price moves for exposed assets.
             b_m1 = sum(map(operator.mul, pvol, p_m1))  # The total portfolio value yesterday for the exposed assets.
-            # row[0] (a datetime) is a naive timestamp, so we don't need to convert it
             perf = 0 if b_m1 == 0 else impact / b_m1
-            res.append(((row[0].date() - EPOCH_DT).days,
-                        decimal.Decimal.from_float(perf).quantize(decimal.Decimal('1.000000'))))
+            # row[0] (a datetime) is a naive timestamp, so we don't need to convert it
+            res.append((dt2ed(row[0]), decimal.Decimal.from_float(perf).quantize(decimal.Decimal('1.000000'))))
             p_m1 = row[1:]
             vols_m1 = vols[:]
 
@@ -592,16 +592,22 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
             return {'risk_score': risk_score, 'portfolio': res}
 
 
-class GoalSettingViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+class GoalSettingViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = (
         IsAdvisorOrClient,
     )
 
+    serializer_class = serializers.GoalSettingSerializer
+
     def retrieve(self, request, pk=None, **kwargs):
-        try:
-            settings = GoalSetting.objects.get(pk=pk)
-        except:
+        settings = GoalSetting.objects.filter(pk=pk).first()
+        if not settings or not (request.user.id == settings.goal.account.primary_owner.user.id or
+                request.user.id == settings.goal.account.primary_owner.advisor.user.id or
+                (settings.goal.account.account_group and (
+                    request.user.id == settings.goal.account.account_group.advisor.user.id or
+                    settings.goal.account.account_group.secondary_advisors.filter(user__id=request.user.id).exists()))):
+            # Don't tell unauthorized people it exists, be stealth and just tell them it doesn't exist.
             return Response('Settings not found', status=status.HTTP_404_NOT_FOUND)
 
-        serializer = serializers.GoalSettingSerializer(settings)
+        serializer = self.serializer_class(settings)
         return Response(serializer.data)

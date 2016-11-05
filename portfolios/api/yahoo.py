@@ -259,7 +259,7 @@ class TradingRoomApi:
         min_datetime = datetime.fromtimestamp(min_date)
         next_date = min_datetime
         while True:
-            # get last_date
+            # get current_date
             last_day = calendar.monthrange(next_date.year, next_date.month)[1]
             last_day_date_str = "{year}-{month}-{day}".format(year=next_date.year,
                                                               month=next_date.month,

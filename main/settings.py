@@ -124,6 +124,9 @@ USE_TZ = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_LENGTH = 300
 
+PHONENUMBER_DB_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_REGION = 'US'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
@@ -234,8 +237,10 @@ SWAGGER_SETTINGS = {
         'title': 'BetaSmartz API',
     },
     'doc_expansion': 'list',
+    'VALIDATOR_URL': None,  # Swagger online validator does not have access to our private instances
     #'resource_access_handler': 'api.views.resource_access_handler',
 }
+
 
 # The inflation rate
 BETASMARTZ_CPI = 2

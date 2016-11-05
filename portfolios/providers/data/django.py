@@ -73,39 +73,40 @@ class DataProviderDjango(DataProviderAbstract):
                                       c=c)
 
     def get_instrument_cache(self):
-        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
-        return cache.get(key)
+        return cache.get(redis.Keys.INSTRUMENT_DATA)
 
     def set_instrument_cache(self, data):
-        key = redis.KEY_INSTRUMENTS(timezone.now().date().isoformat())
-        cache.set(key, data, timeout=60 * 60 * 24)
+        cache.set(redis.Keys.INSTRUMENT_DATA, data, timeout=60 * 60 * 24)
 
     def get_investment_cycles(self):
-        return InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
-
-    def get_last_cycle_start(self, investment_cycles):
-        obs = investment_cycles
         # Populate the cache as we'll be hitting it a few times. Boolean evaluation causes full cache population
+        obs = InvestmentCycleObservation.objects.all().filter(as_of__lt=self.get_current_date()).order_by('as_of')
         if not obs:
             raise OptimizationException("There are no historic observations available")
+        return obs
 
-        # Get the investment cycle for the current date
+    def get_last_cycle_start(self):
+        obs = self.get_investment_cycles()
+
         current_cycle = obs.last().cycle
 
-        # Get the end date of the last non-current cycle before the current one
+        # Get the end date and value of the last non-current full cycle before the current one
         pre_dt = obs.exclude(cycle=current_cycle).last().as_of
+        previous_cycle = obs.filter(as_of=pre_dt).last().cycle
 
-        # Get the end date of the previous time the current cycle was
-        pre_on_dt = obs.filter(as_of__lt=pre_dt).filter(cycle=current_cycle).last().as_of
+        # Get the end date of the cycle before the previous full cycle
+        if current_cycle == InvestmentCycleObservation.Cycle.EQ.value:
+            pre_dt_start = obs.filter(as_of__lte=pre_dt).exclude(cycle=previous_cycle).last().as_of
+            pre_on_dt = obs.filter(as_of__lt=pre_dt_start).filter(cycle=previous_cycle).last().as_of
+        else:
+            pre_dt_start = obs.filter(as_of__lt=pre_dt).filter(cycle=current_cycle).last().as_of
+            pre_on_dt = obs.filter(as_of__lt=pre_dt_start).exclude(cycle=current_cycle).last().as_of
 
-        # Get the end date of the time before that when we were not in the current cycle
-        pre_off_dt = obs.filter(as_of__lt=pre_on_dt).exclude(cycle=current_cycle).last().as_of
-
-        # Not get the first date after this when the current cycle was on and we have the answer
-        return obs.filter(as_of__gt=pre_off_dt).first().as_of
+        # Now get the first date after this when the full previous cycle was on
+        return obs.filter(as_of__gt=pre_on_dt).first().as_of
 
     def get_cycle_obs(self, begin_date):
-        qs = self.get_investment_cycles().filter(as_of__gt=begin_date)
+        qs = self.get_investment_cycles().filter(as_of__gte=begin_date)
         return read_frame(qs, fieldnames=['cycle'], index_col='as_of', verbose=False)['cycle']
 
     def get_investment_cycle_predictions(self):

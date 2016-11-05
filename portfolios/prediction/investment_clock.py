@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 
 import numpy as np
+import pandas as pd
 
 from common.constants import WEEKDAYS_PER_YEAR
 from portfolios.exceptions import OptimizationException
@@ -25,7 +26,7 @@ class InvestmentClock(object):
         Get the beginning of the last complete investment cycle in our history.
         :return: The date of the first day of the last complete investment cycle.
         """
-        return self.data_provider.get_last_cycle_start(self.data_provider.get_investment_cycles())
+        return self.data_provider.get_last_cycle_start()
 
     def get_fund_predictions(self):
         """
@@ -55,7 +56,7 @@ class InvestmentClock(object):
         returns = filter_returns(returns, OLDEST_ACCEPTABLE_DATA, latest_start=latest_start)
 
         if returns.empty:
-            raise OptimizationException('Not returns data available')
+            raise OptimizationException('No returns data available')
 
         oldest_dt = today - timedelta(days=OLDEST_ACCEPTABLE_DATA)
         cycles = self.get_cycle_obs(begin_date)

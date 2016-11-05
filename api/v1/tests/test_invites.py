@@ -277,7 +277,7 @@ class InviteTests(APITestCase):
             "employment_status": EMPLOYMENT_STATUS_FULL_TIME,
             "gender": GENDER_MALE,
             "income": 1234,
-            "phone_num": "+41524204249",
+            "phone_num": "+1-234-234-2342",
             "residential_address": address,
             "regional_data": json.dumps(regional_data)
         }

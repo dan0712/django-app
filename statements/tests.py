@@ -3,7 +3,8 @@ from django.test import TestCase
 from api.v1.tests.factories import ClientFactory, ClientAccountFactory, ExternalAssetFactory, \
                                    RegionFactory, AddressFactory, RiskProfileGroupFactory, \
                                    AccountTypeRiskProfileGroupFactory, GroupFactory, UserFactory, \
-                                   GoalFactory, StatementOfAdviceFactory
+                                   GoalFactory, StatementOfAdviceFactory, RetirementStatementOfAdviceFactory, \
+                                   RetirementPlanFactory
 from main.constants import ACCOUNT_TYPE_PERSONAL
 from common.constants import GROUP_SUPPORT_STAFF
 
@@ -45,6 +46,27 @@ class StatementTest(TestCase):
         self.assertIn(self.betasmartz_client.full_name, html)
         self.assertIn(self.betasmartz_client.advisor.name, html)
         self.assertIn(self.betasmartz_client.firm.colored_logo.replace('&', '&amp;'), html)
+
+        test_pdf = soa.render_pdf(TEST_TEMPLATE)
+        real_soa = soa.render_pdf()
+
+        self.assertGreaterEqual(len(test_pdf), 10000)
+        self.assertGreaterEqual(len(real_soa), 25*1024)
+
+        if '-v3' in sys.argv:
+            open('.test.blank-soa.pdf', 'wb+').write(test_pdf)
+            open('.test.real-soa.pdf', 'wb+').write(real_soa)
+
+    def test_retirement_statement_pdf(self):
+        TEST_TEMPLATE = "statements/_test_soa.html"
+        plan = RetirementPlanFactory.create()
+        soa = plan.statement_of_advice
+
+        html = soa.render_template(TEST_TEMPLATE)
+        # Make sure we have the basic stuff
+        self.assertIn(soa.retirement_plan.client.full_name, html)
+        self.assertIn(soa.retirement_plan.client.advisor.name, html)
+        self.assertIn(soa.retirement_plan.client.firm.colored_logo.replace('&', '&amp;'), html)
 
         test_pdf = soa.render_pdf(TEST_TEMPLATE)
         real_soa = soa.render_pdf()

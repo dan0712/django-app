@@ -12,11 +12,9 @@ from client.models import Client, EmailNotificationPrefs, EmailInvite, RiskProfi
 from notifications.signals import notify
 from main import constants
 from pdf_parsers.tax_return import parse_pdf
-from ..user.serializers import UserFieldSerializer
+from ..user.serializers import UserFieldSerializer, PhoneNumberValidationSerializer
 import logging
-import tempfile
 import uuid
-import json
 
 logger = logging.getLogger('api.v1.client.serializers')
 RESIDENTIAL_ADDRESS_KEY = 'residential_address'
@@ -74,6 +72,12 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'regional_data',
         )
 
+    def validate_phone_num(self, phone_num):
+        serializer = PhoneNumberValidationSerializer(data={'number': phone_num})
+        if not serializer.is_valid():
+            raise serializers.ValidationError('Invalid phone number')
+        return serializer.validated_data
+
     def create(self, validated_data):
         # Default to Personal account type for risk profile group on a brand
         # new client (since they have no accounts yet, we have to assume)
@@ -122,7 +126,6 @@ class ExternalAssetSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = ExternalAsset
-        exclude = ('owner',)
 
 
 class ExternalAssetWritableSerializer(serializers.ModelSerializer):

@@ -1,10 +1,11 @@
+import logging
+
 from dateutil.relativedelta import relativedelta
 from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Coalesce
+from django.db.models.loading import get_model
 from django.db.models.query_utils import Q
 from django.utils.timezone import now
-from django.db.models.loading import get_model
-import logging
 
 logger = logging.getLogger('main.managers')
 
