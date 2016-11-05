@@ -546,7 +546,7 @@ class RiskProfileGroup(models.Model):
     A way to group a set of predefined risk profile questions to
     be asked together.
     """
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
 
     # Also has properties:
