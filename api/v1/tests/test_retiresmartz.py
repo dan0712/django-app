@@ -36,6 +36,7 @@ class RetiresmartzTests(APITestCase):
             'same_home': True,
             'reverse_mortgage': True,
             'expected_return_confidence': 0.5,
+            'max_employer_match_percent': 0.04,
         }
 
     def tearDown(self):

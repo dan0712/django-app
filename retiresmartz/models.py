@@ -253,6 +253,7 @@ class RetirementPlan(models.Model):
             # CONTR = # contributions needed to reach their goal - not function for this yet
             # CONTC = validated_data['income'] * validated_data.get('max_employer_match_percent') # current retirement contributions
             if not self.btc:
+                # user did not provide their own btc
                 max_contributions = determine_accounts(self)
                 if self.max_employer_match_percent:
                     income_btc = self.income * self.max_employer_match_percent
