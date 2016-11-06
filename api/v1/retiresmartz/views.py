@@ -26,9 +26,10 @@ from retiresmartz.calculator.cashflows import ReverseMortgage, InflatedCashFlow,
 from retiresmartz.calculator.desired_cashflows import RetiresmartzDesiredCashFlow
 from retiresmartz.calculator.social_security import calculate_payments
 from retiresmartz.models import RetirementPlan, RetirementAdvice
+from retiresmartz import advice_responses
 from client.models import Client
 from main.models import Ticker
-
+from main.event import Event
 from support.models import SupportRequest
 from . import serializers
 logger = logging.getLogger('api.v1.retiresmartz.views')
@@ -83,12 +84,199 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         if instance.agreed_on:
             return Response({'error': 'Unable to update a RetirementPlan that has been agreed on'},
                             status=status.HTTP_400_BAD_REQUEST)
-        return super(RetiresmartzViewSet, self).update(request, *args, **kwargs)
+
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        orig = RetirementPlan.objects.get(pk=instance.pk)
+        updated = serializer.update(instance, serializer.validated_data)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # refresh the instance from the database.
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+
+        # RetirementAdvice Triggers
+
+        # Spending and Contributions
+        if orig.spendable_income > updated.spendable_income and \
+           orig.btc + orig.atc < updated.btc + updated.atc:
+            # spending increased, contributions decreased
+            e = Event.RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN.log(None,
+                                                                        orig.spendable_income,
+                                                                        updated.spendable_income,
+                                                                        orig.btc,
+                                                                        updated.btc,
+                                                                        orig.atc,
+                                                                        updated.atc,
+                                                                        user=updated.client.user,
+                                                                        obj=updated)
+            advice = RetirementAdvice(plan=updated, trigger=e)
+            advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
+            advice.save()
+
+        if orig.spendable_income < updated.spendable_income and \
+           orig.btc + orig.atc > updated.btc + updated.atc:
+            # contributions increased, spending decreased
+            e = Event.RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP.log(None,
+                                                                        orig.spendable_income,
+                                                                        updated.spendable_income,
+                                                                        orig.btc,
+                                                                        updated.btc,
+                                                                        orig.atc,
+                                                                        updated.atc,
+                                                                        user=updated.client.user,
+                                                                        obj=updated)
+            advice = RetirementAdvice(plan=updated, trigger=e)
+            advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
+            advice.save()
+
+        # Risk Slider Changed
+        if updated.desired_risk < orig.desired_risk and \
+           updated.desired_risk < updated.recommended_risk:
+            # protective move
+            e = Event.RETIRESMARTZ_PROTECTIVE_MOVE.log(None,
+                                                       orig.desired_risk,
+                                                       updated.desired_risk,
+                                                       user=updated.client.user,
+                                                       obj=updated)
+            advice = RetirementAdvice(plan=updated, trigger=e)
+            advice.text = advice_responses.get_protective_move(advice)
+            advice.save()
+        elif updated.desired_risk > orig.desired_risk and updated.desired_risk > orig.recommended_risk:
+            # dynamic move
+            e = Event.RETIRESMARTZ_DYNAMIC_MOVE.log(None,
+                                                    orig.desired_risk,
+                                                    updated.desired_risk,
+                                                    user=updated.client.user,
+                                                    obj=updated)
+            advice = RetirementAdvice(plan=updated, trigger=e)
+            advice.text = advice_responses.get_dynamic_move(advice)
+            advice.save()
+
+        # age manually adjusted
+        if updated.retirement_age != orig.retirement_age:
+            e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                               orig.retirement_age,
+                                                               updated.retirement_age,
+                                                               user=updated.client.user,
+                                                               obj=updated)
+            advice = RetirementAdvice(plan=updated, trigger=e)
+            advice.text = advice_responses.get_manually_adjusted_age(advice)
+            advice.save()
+
+        # Retirement Age Adjusted
+        if updated.retirement_age >= 62 and updated.retirement_age <= 70:
+            if orig.retirement_age != updated.retirement_age:
+                # retirement age changed
+                if orig.retirement_age > 62 and updated.retirement_age == 62:
+                    # decreased to age 62
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_decrease_retirement_age_to_62(advice)
+                    advice.save()
+                elif orig.retirement_age > 63 and updated.retirement_age == 63:
+                    # decreased to age 63
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_decrease_retirement_age_to_63(advice)
+                    advice.save()
+                elif orig.retirement_age > 64 and updated.retirement_age == 64:
+                    # decreased to age 64
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_decrease_retirement_age_to_64(advice)
+                    advice.save()
+                elif orig.retirement_age > 65 and updated.retirement_age == 65:
+                    # decreased to age 65
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_decrease_retirement_age_to_65(advice)
+                    advice.save()
+                elif orig.retirement_age < 67 and updated.retirement_age == 67:
+                    # increased to age 67
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_increase_retirement_age_to_67(advice)
+                    advice.save()
+                elif orig.retirement_age < 68 and updated.retirement_age == 68:
+                    # increased to age 68
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_increase_retirement_age_to_68(advice)
+                    advice.save()
+                elif orig.retirement_age < 69 and updated.retirement_age == 69:
+                    # increased to age 69
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_increase_retirement_age_to_69(advice)
+                    advice.save()
+                elif orig.retirement_age < 70 and updated.retirement_age == 70:
+                    # increased to age 70
+                    e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                       orig.retirement_age,
+                                                                       updated.retirement_age,
+                                                                       user=updated.client.user,
+                                                                       obj=updated)
+                    advice = RetirementAdvice(plan=updated, trigger=e)
+                    advice.text = advice_responses.get_increase_retirement_age_to_70(advice)
+                    advice.save()
+
+        if orig.on_track != updated.on_track:
+            # user update to goal caused on_track status changed
+            if updated.on_track:
+                # RetirementPlan now on track
+                e = Event.RETIRESMARTZ_ON_TRACK_NOW.log(None,
+                                                        user=updated.client.user,
+                                                        obj=updated)
+                advice = RetirementAdvice(plan=updated, trigger=e)
+                advice.text = advice_responses.get_off_track_item_adjusted_to_on_track(advice)
+                advice.save()
+            else:
+                # RetirementPlan now off track
+                e = Event.RETIRESMARTZ_OFF_TRACK_NOW.log(None,
+                                                         user=updated.client.user,
+                                                         obj=updated)
+                advice = RetirementAdvice(plan=updated, trigger=e)
+                advice.text = advice_responses.get_on_track_item_adjusted_to_off_track(advice)
+                advice.save()
+
+        return Response(self.serializer_response_class(updated).data)
 
     @detail_route(methods=['get'], url_path='suggested-retirement-income')
     def suggested_retirement_income(self, request, parent_lookup_client, pk, format=None):
         """
-        Calculates a suggested retirement income based on the client's retirement plan and personal profile.
+        Calculates a suggested retirement income based on the client's
+        retirement plan and personal profile.
         """
         # TODO: Make this work
         return Response(1234)
@@ -96,8 +284,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     @detail_route(methods=['get'], url_path='calculate-contributions')
     def calculate_contributions(self, request, parent_lookup_client, pk, format=None):
         """
-        Calculates suggested contributions (value for the amount in the btc and atc) that will generate the desired
-        retirement income.
+        Calculates suggested contributions (value for the amount in the
+        btc and atc) that will generate the desired retirement income.
         """
         # TODO: Make this work
         return Response({'btc_amount': 1111, 'atc_amount': 0})
@@ -105,7 +293,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     @detail_route(methods=['get'], url_path='calculate-income')
     def calculate_income(self, request, parent_lookup_client, pk, format=None):
         """
-        Calculates retirement income possible given the current contributions and other details on the retirement plan.
+        Calculates retirement income possible given the current contributions
+        and other details on the retirement plan.
         """
         # TODO: Make this work
         return Response(2345)
@@ -113,7 +302,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     @detail_route(methods=['get'], url_path='calculate-balance-income')
     def calculate_balance_income(self, request, parent_lookup_client, pk, format=None):
         """
-        Calculates the retirement balance required to provide the desired_income as specified in the plan.
+        Calculates the retirement balance required to provide the
+        desired_income as specified in the plan.
         """
         # TODO: Make this work
         return Response(5555555)
@@ -121,8 +311,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     @detail_route(methods=['get'], url_path='calculate-income-balance')
     def calculate_income_balance(self, request, parent_lookup_client, pk, format=None):
         """
-        Calculates the retirement income possible with a supplied retirement balance and other details on the
-        retirement plan.
+        Calculates the retirement income possible with a supplied
+        retirement balance and other details on the retirement plan.
         """
         # TODO: Make this work
         return Response(1357)
@@ -138,7 +328,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     @detail_route(methods=['get'], url_path='calculate-contributions-balance')
     def calculate_contributions_balance(self, request, parent_lookup_client, pk, format=None):
         """
-        Calculates the contributions required to generate the given retirement balance.
+        Calculates the contributions required to generate the
+        given retirement balance.
         """
         # TODO: Make this work
         return Response({'btc_amount': 2222, 'atc_amount': 88})

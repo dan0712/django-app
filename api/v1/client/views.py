@@ -16,11 +16,13 @@ from client.models import Client, EmailInvite
 from support.models import SupportRequest
 from api.v1.user.serializers import UserSerializer
 from api.v1.retiresmartz.serializers import RetirementPlanEincSerializer, RetirementPlanEincWritableSerializer
-from retiresmartz.models import RetirementPlan, RetirementPlanEinc
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
 from django.views.generic.detail import SingleObjectMixin
 from . import serializers
 import logging
 import json
+from retiresmartz import advice_responses
+from main.event import Event
 
 logger = logging.getLogger('api.v1.client.views')
 
@@ -150,8 +152,81 @@ class ClientViewSet(ApiViewMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
+        instance = self.get_object()
         kwargs['partial'] = True
-        return super(ClientViewSet, self).update(request, *args, **kwargs)
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        orig = Client.objects.get(pk=instance.pk)
+        updated = serializer.update(instance, serializer.validated_data)
+
+        # RetirementAdvice Triggers
+        if updated.smoker != orig.smoker:
+            if updated.smoker:
+                plan = RetirementPlan.objects.filter(client=updated).first()
+                if plan:
+                    e = Event.RETIRESMARTZ_IS_A_SMOKER.log(None,
+                                                           user=updated.user,
+                                                           obj=updated)
+                    advice = RetirementAdvice(plan=plan, trigger=e)
+                    advice.text = advice_responses.get_smoking_yes(advice)
+                    advice.save()
+            elif updated.smoker is False:
+                plan = RetirementPlan.objects.filter(client=updated).first()
+                if plan:
+                    e = Event.RETIRESMARTZ_IS_NOT_A_SMOKER.log(None,
+                                                               user=updated.user,
+                                                               obj=updated)
+                    advice = RetirementAdvice(plan=plan, trigger=e)
+                    advice.text = advice_responses.get_smoking_no(advice)
+                    advice.save()
+
+        if updated.daily_exercise and not updated.weight and not updated.height \
+           and updated.daily_exercise != orig.daily_exercise:
+            # exercise only
+            plan = RetirementPlan.objects.filter(client=updated).first()
+            if plan:
+                e = Event.RETIRESMARTZ_EXERCISE_ONLY.log(None,
+                                                         user=updated.user,
+                                                         obj=updated)
+                advice = RetirementAdvice(plan=plan, trigger=e)
+                advice.text = advice_responses.get_exercise_only(advice)
+                advice.save()
+
+        elif updated.weight and updated.height and not updated.daily_exercise and \
+             (updated.weight != orig.weight or updated.height != orig.height):
+            # weight and height only
+            plan = RetirementPlan.objects.filter(client=updated).first()
+            if plan:
+                e = Event.RETIRESMARTZ_WEIGHT_AND_HEIGHT_ONLY.log(None,
+                                                                  user=updated.user,
+                                                                  obj=updated)
+                advice = RetirementAdvice(plan=plan, trigger=e)
+                advice.text = advice_responses.get_weight_and_height_only(advice)
+                advice.save()
+        elif updated.daily_exercise or (updated.weight and updated.height) or updated.smoker is not None:
+            # one or combination but not all
+            plan = RetirementPlan.objects.filter(client=updated).first()
+            if plan:
+                e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
+                                                                         user=updated.user,
+                                                                         obj=updated)
+                advice = RetirementAdvice(plan=plan, trigger=e)
+                advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
+                advice.save()
+        elif updated.daily_exercise and updated.weight and updated.height and updated.smoker is not None \
+             and (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
+                updated.height != orig.height or updated.smoker != orig.smoker):
+            # every wellbeing field
+            plan = RetirementPlan.objects.filter(client=updated).first()
+            if plan:
+                e = Event.RETIRESMARTZ_ALL_WELLBEING_ENTRIES.log(None,
+                                                                 user=updated.user,
+                                                                 obj=updated)
+                advice = RetirementAdvice(plan=plan, trigger=e)
+                advice.text = advice_responses.get_all_wellbeing_entries(advice)
+                advice.save()
+        return Response(self.serializer_response_class(updated).data)
 
 
 class InvitesView(ApiViewMixin, views.APIView):

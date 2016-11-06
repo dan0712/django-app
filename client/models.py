@@ -21,6 +21,7 @@ from main.finance import mod_dietz_rate
 from retiresmartz.models import RetirementAdvice, RetirementPlan
 from pinax.eventlog.models import log
 from retiresmartz import advice_responses
+from main.event import Event
 logger = logging.getLogger('client.models')
 
 
@@ -79,65 +80,6 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
 
     def __str__(self):
         return self.user.get_full_name()
-
-    def save(self, *args, **kwargs):
-        # RetirementAdvice Triggers
-        if self.smoker:
-            plan = RetirementPlan.objects.filter(client=self).first()
-            if plan:
-                elog = log(user=self.user, action='User is a smoker')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_smoking_yes(advice)
-                advice.save()
-        elif self.smoker is False:
-            plan = RetirementPlan.objects.filter(client=self).first()
-            if plan:
-                elog = log(user=self.user, action='User is not a smoker')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_smoking_no(advice)
-                advice.save()
-
-        if self.daily_exercise and not self.weight and not self.height:
-            # exercise only
-            plan = RetirementPlan.objects.filter(client=self).first()
-            if plan:
-                elog = log(user=self.user, action='User entered exercise wellbeing entry only')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_exercise_only(advice)
-                advice.save()
-
-        elif self.weight and self.height and not self.daily_exercise:
-            # weight and height only
-            plan = RetirementPlan.objects.filter(client=self).first()
-            if plan:
-                elog = log(user=self.user, action='User only provided weight and height for wellbeing entries')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_weight_and_height_only(advice)
-                advice.save()
-        elif self.daily_exercise or (self.weight and self.height) or self.smoker is not None:
-            # one or combination but not all
-            plan = RetirementPlan.objects.filter(client=self).first()
-            if plan:
-                elog = log(user=self.user, action='User one or combination of wellbeing entries, but not all')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
-                advice.save()
-        elif self.daily_exercise and self.weight and self.height and self.smoker is not None:
-            # every wellbeing field
-            plan = RetirementPlan.objects.filter(client=self).first()
-            if plan:
-                elog = log(user=self.user, action='User entered all wellbeing entries')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_all_wellbeing_entries(advice)
-                advice.save()
-
-        super(Client, self).save(*args, **kwargs)
 
     def _net_worth(self):
         # Sum ExternalAssets for the client

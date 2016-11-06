@@ -70,6 +70,10 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'advisor_agreement',
             'phone_num',
             'regional_data',
+            'smoker',
+            'daily_exercise',
+            'weight',
+            'height',
         )
 
     def validate_phone_num(self, phone_num):
