@@ -1,5 +1,6 @@
 from django.utils import six
 from pinax.eventlog.models import log as event_log
+
 from common.structures import ChoiceEnum
 
 # using AppConfig is for Django 1.9+
@@ -58,6 +59,9 @@ class Event(ChoiceEnum):
     GOAL_REBALANCE_EXECUTED = (16, ['txid'], 'main.Goal')
     GOAL_TRANSFER_EXECUTED = (17, ['txid'], 'main.Goal')
     GOAL_ORDER_DISTRIBUTION = (18, ['txid'], 'main.Goal')
+
+    RETIRESMARTZ_PROTECTIVE_MOVE = (19, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
+
 
     def __init__(self, id, log_keys, obj_class: str):
         """

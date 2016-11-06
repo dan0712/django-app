@@ -740,23 +740,6 @@ class EmailInvite(models.Model):
     def can_resend(self):
         return self.status in [self.STATUS_CREATED, self.STATUS_SENT, self.STATUS_ACCEPTED]
 
-    def save(self, *args, **kwargs):
-        # RetirementAdvice Check
-        if self.pk is not None:
-            # not new
-            if self.status == self.STATUS_COMPLETE:
-                orig = EmailInvite.objects.get(pk=self.pk)
-                if orig.status == self.STATUS_ACCEPTED:
-                    # user just completed onboarding
-                    plan = RetirementPlan.objects.filter(client=self.user.client).first()
-                    if plan:
-                        elog = log(user=self.user, action='User completed onboarding')
-                        advice = RetirementAdvice(plan=plan,
-                                                  trigger=elog)
-                        advice.text = advice_responses.get_onboarding_complete(advice)
-                        advice.save()
-        super(EmailInvite, self).save(*args, **kwargs)
-
     def send(self):
         if not self.can_resend:
             raise ValidationError('Can be resend only in status '

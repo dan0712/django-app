@@ -16,9 +16,6 @@ from django.shortcuts import redirect
 from geolocation.geolocation import check_ip_city
 import logging
 import os
-from retiresmartz.models import RetirementAdvice, RetirementPlan
-from pinax.eventlog.models import log
-from retiresmartz import advice_responses
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 logger = logging.getLogger('main.views.login')
 
@@ -94,17 +91,6 @@ def login(request, template_name='registration/login.html',
             context = {'form': form}
 
             return TemplateResponse(request, template_name, context)
-
-        # RetirementAdvice Check
-        if is_client:
-            plan = RetirementPlan.objects.filter(client=user.client).first()
-            if plan:
-                elog = log(user=user, action='Returning user')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
-                advice.text = advice_responses.get_welcome(advice)
-                advice.save()
-
 
         # custom redirect
         redirect_to = request.GET.get('next',

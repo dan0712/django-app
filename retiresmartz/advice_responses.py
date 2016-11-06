@@ -1,23 +1,9 @@
 # -*- coding: utf-8 -*-
 from main import constants
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 
-# Retiresmartz Blotter Logic Calls
-def get_welcome(advice):
-    if advice.plan.client.primary_accounts.filter(account_type=constants.ACCOUNT_TYPE_JOINT).count() > 0:
-        return 'Hello, welcome back {} and {}'.format(advice.plan.client.user.first_name, advice.partner_plan.client.user.first_name)
-    else:
-        return 'Hello, welcome back {}'.format(advice.plan.client.user.first_name)
-
-
-def get_onboarding_complete(advice):
-    return "Thank you for completing your onboarding questions, \
-this helps us to provide you with the best advice to dream, \
-plan and achieve your retirement goals. Your customized solution \
-is moments away, so let's get started {}".format(advice.plan.client.user.first_name)
-
+# Retiresmartz Advice feed Logic Calls
 
 # On Track / Off Track
 def get_on_track(advice):

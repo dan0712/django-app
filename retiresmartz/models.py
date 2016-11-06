@@ -5,12 +5,14 @@ import logging
 from django.core.validators import MaxLengthValidator, MaxValueValidator, \
     MinLengthValidator, MinValueValidator, ValidationError
 from django.db import models, transaction
-from django.db.models.deletion import PROTECT
+from django.db.models.deletion import PROTECT, CASCADE
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from jsonfield.fields import JSONField
 from pinax.eventlog.models import Log
+
 from common.structures import ChoiceEnum
+from main.event import Event
 from main.models import TransferPlan, GoalSetting, GoalMetricGroup
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.managers import RetirementAdviceQueryset
@@ -261,9 +263,12 @@ class RetirementPlan(models.Model):
             if self.desired_risk < orig.desired_risk and \
                self.desired_risk < self.recommended_risk:
                 # protective move
-                elog = log(user=self.client.user, action='User made protective risk move')
-                advice = RetirementAdvice(plan=self,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_PROTECTIVE_MOVE.log(None,
+                                                           orig.desired_risk,
+                                                           self.desired_risk,
+                                                           user=self.client.user,
+                                                           obj=self)
+                advice = RetirementAdvice(plan=self, trigger=e)
                 advice.text = advice_responses.get_protective_move(advice)
                 advice.save()
             elif self.desired_risk > orig.desired_risk and self.desired_risk > self.recommended_risk:
@@ -470,8 +475,8 @@ class RetirementLifestyle(models.Model):
 
 
 class RetirementAdvice(models.Model):
-    plan = models.ForeignKey(RetirementPlan, related_name='advice')
-    trigger = models.ForeignKey(Log, related_name='advice')
+    plan = models.ForeignKey(RetirementPlan, related_name='advice', on_delete=CASCADE)
+    trigger = models.ForeignKey(Log, related_name='advice', on_delete=PROTECT)
     dt = models.DateTimeField(auto_now_add=True)
     read = models.DateTimeField(blank=True, null=True)
     text = models.CharField(max_length=512)
