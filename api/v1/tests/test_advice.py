@@ -1,28 +1,38 @@
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from django.test import TestCase
+from datetime import date, datetime
+from ujson import loads
+from unittest import mock
+from unittest.mock import MagicMock
+
+from django.utils.timezone import now
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+from common.constants import GROUP_SUPPORT_STAFF
+from retiresmartz.models import RetirementPlan
+from .factories import AssetClassFactory, ContentTypeFactory, GroupFactory, \
+    RetirementPlanFactory, TickerFactory, RetirementAdviceFactory
+from django.utils import timezone
 from api.v1.tests.factories import RetirementPlanFactory, RetirementAdviceFactory, \
     GroupFactory, EmailInviteFactory, GoalFactory, GoalSettingFactory, \
     PortfolioSetFactory, AssetClassFactory, GoalMetricFactory, \
     RecurringTransactionFactory
 from rest_framework import status
-from rest_framework.test import APITestCase
 from django.core.urlresolvers import reverse
 from common.constants import GROUP_SUPPORT_STAFF
 from retiresmartz.models import RetirementAdvice
 from client.models import EmailInvite
-from django.utils import timezone
-from main.models import Goal, GoalMetric, InvestmentType
-from main.risk_profiler import max_risk, MINIMUM_RISK
+from main.models import InvestmentType
+mocked_now = datetime(2016, 1, 1)
 
 
-class RetirementAdviceTests(TestCase):
+class RetiresmartzAdviceTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.plan = RetirementPlanFactory.create()
         # self.advice_url = reverse('api:v1:client-retirement-advice', args=[self.plan.client.id, self.plan.id])
+        self.plan_url = '/api/v1/clients/{}/retirement-plans/{}'.format(self.plan.client.id, self.plan.id)
         self.advice_url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(self.plan.client.id, self.plan.id)
-
+        self.client_url = '/api/v1/clients/{}'.format(self.plan.client.id)
         self.invite = EmailInviteFactory.create(user=self.plan.client.user,
                                                 status=EmailInvite.STATUS_ACCEPTED)
 
@@ -41,14 +51,17 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 63
         self.plan.save()
         # decrease to 62
-        self.plan.retirement_age = 62
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 62,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_decrease_retirement_age_to_63(self):
         """
@@ -58,14 +71,17 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 64
         self.plan.save()
         # decrease to 63
-        self.plan.retirement_age = 63
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 63,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_decrease_retirement_age_to_64(self):
         """
@@ -75,14 +91,17 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 65
         self.plan.save()
         # decrease to 64
-        self.plan.retirement_age = 64
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 64,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_decrease_retirement_age_to_65(self):
         """
@@ -91,15 +110,18 @@ class RetirementAdviceTests(TestCase):
         """
         self.plan.retirement_age = 66
         self.plan.save()
-        # decrease to 64
-        self.plan.retirement_age = 65
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        # decrease to 65
+        data = {
+            'retirement_age': 65,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_increase_retirement_age_to_67(self):
         """
@@ -109,14 +131,17 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 66
         self.plan.save()
         # increase to 67
-        self.plan.retirement_age = 67
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 67,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_increase_retirement_age_to_68(self):
         """
@@ -126,14 +151,17 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 66
         self.plan.save()
         # increase to 68
-        self.plan.retirement_age = 68
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 68,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_increase_retirement_age_to_69(self):
         """
@@ -143,14 +171,17 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 66
         self.plan.save()
         # increase to 69
-        self.plan.retirement_age = 69
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 69,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_increase_retirement_age_to_70(self):
         """
@@ -160,30 +191,41 @@ class RetirementAdviceTests(TestCase):
         self.plan.retirement_age = 66
         self.plan.save()
         # increase to 70
-        self.plan.retirement_age = 70
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 70,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 2 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 3)
+        # 1 manual age adjustments trigger too
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_manually_adjusted_age(self):
         self.plan.retirement_age = 70
         self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'retirement_age': 59,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_smoker_yes(self):
         pre_save_count = RetirementAdvice.objects.count()
-        self.plan.client.smoker = True
-        self.plan.client.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'smoker': True,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # combination advice and smoker advice
@@ -192,10 +234,13 @@ class RetirementAdviceTests(TestCase):
 
     def test_smoker_no(self):
         pre_save_count = RetirementAdvice.objects.count()
-        self.plan.client.smoker = False
-        self.plan.client.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'smoker': False,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # combination advice and smoker advice
@@ -203,57 +248,72 @@ class RetirementAdviceTests(TestCase):
         self.assertEqual(RetirementAdvice.objects.count(), pre_save_count + 2)
 
     def test_exercise_only(self):
-        self.plan.client.daily_exercise = 20
-        self.plan.client.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'daily_exercise': 20,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
     def test_weight_and_height_only(self):
-        self.plan.client.weight = 145
-        self.plan.client.height = 2
-        self.plan.client.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'weight': 145,
+            'height': 2,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
     def test_combination_wellbeing_entries(self):
-        self.plan.client.weight = 145
-        self.plan.client.height = 2
-        self.plan.client.daily_exercise = 20
-        self.plan.client.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'weight': 145,
+            'height': 2,
+            'daily_exercise': 20,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
     def test_all_wellbeing_entries(self):
-        self.plan.client.weight = 145
-        self.plan.client.height = 2
-        self.plan.client.daily_exercise = 20
-        self.plan.client.smoker = False
-        self.plan.client.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'weight': 145,
+            'height': 2,
+            'daily_exercise': 20,
+            'smoker': False,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # not smoking advice and all wellbeing entries
         self.assertEqual(len(response.data['results']), 2)
 
     def test_protective_risk_move(self):
-
         plan = RetirementPlanFactory.create(desired_risk=.5,
                                             recommended_risk=.5)
+        plan_url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan.client.id, plan.id)
         advice_url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(plan.client.id, plan.id)
-        plan.desired_risk = .01
-        plan.save()
-        login_ok = self.client.login(username=plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'desired_risk': .01,
+        }
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.put(plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
@@ -261,54 +321,61 @@ class RetirementAdviceTests(TestCase):
     def test_dynamic_risk_move(self):
         plan = RetirementPlanFactory.create(desired_risk=.5,
                                             recommended_risk=.5)
+        plan_url = '/api/v1/clients/{}/retirement-plans/{}'.format(plan.client.id, plan.id)
         advice_url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(plan.client.id, plan.id)
-        plan.desired_risk = .8
-        plan.save()
-        login_ok = self.client.login(username=plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'desired_risk': .8,
+        }
+        self.client.force_authenticate(user=plan.client.user)
+        response = self.client.put(plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
     def test_spending_increased_contributions_decreased(self):
-        self.plan.income += 100000
-        self.plan.btc -= 10000
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'income': self.plan.income + 100000,
+            'btc': -10000,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
     def test_spending_decreased_contributions_increased(self):
-        self.plan.income -= 50000
-        self.plan.btc += 10000
-        self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        data = {
+            'income': self.plan.income - 50000,
+            'btc': 10000,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.plan_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
-    # TODO: Fix Trigger
+    # TODO: Need to trigger track changes with put here
     def test_plan_off_track_now(self):
         self.plan._on_track = True
         self.plan.save()
         self.plan._on_track = False
         self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        self.client.force_authenticate(user=self.plan.client.user)
+
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # two advice, one for for getting on track,
-        # and one for getting off track
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_plan_on_track_now(self):
         self.plan._on_track = True
         self.plan.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
+        self.client.force_authenticate(user=self.plan.client.user)
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
