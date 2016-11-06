@@ -244,18 +244,32 @@ class RetirementPlan(models.Model):
             if orig.spendable_income > self.spendable_income and \
                orig.btc + orig.atc < self.btc + self.atc:
                 # spending increased, contributions decreased
-                elog = log(user=self.client.user, action='User increased spending, decreased contributions')
-                advice = RetirementAdvice(plan=self,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN.log(None,
+                                                                            orig.spendable_income,
+                                                                            self.spendable_income,
+                                                                            orig.btc,
+                                                                            self.btc,
+                                                                            orig.atc,
+                                                                            self.atc,
+                                                                            user=self.client.user,
+                                                                            obj=self)
+                advice = RetirementAdvice(plan=self, trigger=e)
                 advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
                 advice.save()
 
             if orig.spendable_income < self.spendable_income and \
                orig.btc + orig.atc > self.btc + self.atc:
                 # contributions increased, spending decreased
-                elog = log(user=self.client.user, action='User decreased spending, increased contributions')
-                advice = RetirementAdvice(plan=self,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP.log(None,
+                                                                            orig.spendable_income,
+                                                                            self.spendable_income,
+                                                                            orig.btc,
+                                                                            self.btc,
+                                                                            orig.atc,
+                                                                            self.atc,
+                                                                            user=self.client.user,
+                                                                            obj=self)
+                advice = RetirementAdvice(plan=self, trigger=e)
                 advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
                 advice.save()
 
