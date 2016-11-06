@@ -159,8 +159,7 @@ class ClientViewSet(ApiViewMixin,
         serializer.is_valid(raise_exception=True)
         orig = Client.objects.get(pk=instance.pk)
         updated = serializer.update(instance, serializer.validated_data)
-        logger.error(orig.smoker)
-        logger.error(updated.smoker)
+
         # RetirementAdvice Triggers
         if updated.smoker != orig.smoker:
             if updated.smoker:
