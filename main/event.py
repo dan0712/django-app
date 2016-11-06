@@ -79,6 +79,9 @@ class Event(ChoiceEnum):
     RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES = (28, [], 'client.Client')
     RETIRESMARTZ_ALL_WELLBEING_ENTRIES = (29, [], 'client.Client')
 
+    RETIRESMARTZ_ON_TRACK_NOW = (30, [], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_OFF_TRACK_NOW = (31, [], 'retiresmartz.RetirementPlan')
+
     def __init__(self, id, log_keys, obj_class: str):
         """
         Create an Event enumeration.

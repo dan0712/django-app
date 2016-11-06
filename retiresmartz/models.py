@@ -396,16 +396,18 @@ class RetirementPlan(models.Model):
                 # user update to goal caused on_track status changed
                 if self.on_track:
                     # RetirementPlan now on track
-                    elog = log(user=self.client.user, action='User goal now on track')
-                    advice = RetirementAdvice(plan=self,
-                                              trigger=elog)
+                    e = Event.RETIRESMARTZ_ON_TRACK_NOW.log(None,
+                                                            user=self.client.user,
+                                                            obj=self)
+                    advice = RetirementAdvice(plan=self, trigger=e)
                     advice.text = advice_responses.get_off_track_item_adjusted_to_on_track(advice)
                     advice.save()
                 else:
                     # RetirementPlan now off track
-                    elog = log(user=self.client.user, action='User goal is now off track')
-                    advice = RetirementAdvice(plan=self,
-                                              trigger=elog)
+                    e = Event.RETIRESMARTZ_OFF_TRACK_NOW.log(None,
+                                                             user=self.client.user,
+                                                             obj=self)
+                    advice = RetirementAdvice(plan=self, trigger=e)
                     advice.text = advice_responses.get_on_track_item_adjusted_to_off_track(advice)
                     advice.save()
         super(RetirementPlan, self).save(*args, **kwargs)
