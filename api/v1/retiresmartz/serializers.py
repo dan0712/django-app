@@ -14,6 +14,8 @@ from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice, \
     determine_accounts
+import logging
+logger = logging.getLogger('api.v1.retiresmartz.serializers')
 
 
 def get_default_tx_plan():
@@ -233,12 +235,6 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             validated_data['desired_risk'] = GoalSettingRiskProfile._recommend_risk(bas_scores)
 
         plan = RetirementPlan.objects.create(**validated_data)
-        # SPEND = plan.spendable_income # available spending money 
-        # CONTR = # contributions needed to reach their goal - not function for this yet
-        # CONTC = validated_data['income'] * validated_data.get('max_employer_match_percent') # current retirement contributions
-        max_contributions = determine_accounts(plan)
-        plan.btc = min(validated_data['income'] * min(validated_data.get('max_employer_match_percent', 0), 0.04), max_contributions[0])
-        plan.save()
         if plan.agreed_on: plan.generate_soa()
 
         return plan
