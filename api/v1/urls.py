@@ -9,6 +9,7 @@ from .analysis import views as analysis_views
 from .retiresmartz import views as retiresmartz_views
 from .firm import views as firm_views
 from .address import views as address_views
+from .support import views as support_views
 
 router = ExtendedSimpleRouter(trailing_slash=False)
 settings_router = router.register(r'settings',
@@ -79,6 +80,8 @@ urlpatterns = patterns(
     url(r'^keep-alive/?$', user_views.KeepAliveView.as_view(), name='keep-alive'),
 
     url(r'^invites/(?P<pk>\d+)/resend/?$', client_views.ClientResendInviteView.as_view(), name='resend-invite'),
+
+    url(r'^support-requests/?$', support_views.RequestAdvisorSupportView.as_view(), name='support-requests'),
 )
 
 urlpatterns += router.urls
