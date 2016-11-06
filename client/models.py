@@ -21,6 +21,7 @@ from main.finance import mod_dietz_rate
 from retiresmartz.models import RetirementAdvice, RetirementPlan
 from pinax.eventlog.models import log
 from retiresmartz import advice_responses
+from main.event import Event
 logger = logging.getLogger('client.models')
 
 
@@ -85,17 +86,19 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
         if self.smoker:
             plan = RetirementPlan.objects.filter(client=self).first()
             if plan:
-                elog = log(user=self.user, action='User is a smoker')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_IS_A_SMOKER.log(None,
+                                                       user=self.user,
+                                                       obj=self)
+                advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_smoking_yes(advice)
                 advice.save()
         elif self.smoker is False:
             plan = RetirementPlan.objects.filter(client=self).first()
             if plan:
-                elog = log(user=self.user, action='User is not a smoker')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_IS_NOT_A_SMOKER.log(None,
+                                                           user=self.user,
+                                                           obj=self)
+                advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_smoking_no(advice)
                 advice.save()
 
@@ -103,9 +106,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             # exercise only
             plan = RetirementPlan.objects.filter(client=self).first()
             if plan:
-                elog = log(user=self.user, action='User entered exercise wellbeing entry only')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_EXERCISE_ONLY.log(None,
+                                                         user=self.user,
+                                                         obj=self)
+                advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_exercise_only(advice)
                 advice.save()
 
@@ -113,27 +117,30 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
             # weight and height only
             plan = RetirementPlan.objects.filter(client=self).first()
             if plan:
-                elog = log(user=self.user, action='User only provided weight and height for wellbeing entries')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_WEIGHT_AND_HEIGHT_ONLY.log(None,
+                                                                  user=self.user,
+                                                                  obj=self)
+                advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_weight_and_height_only(advice)
                 advice.save()
         elif self.daily_exercise or (self.weight and self.height) or self.smoker is not None:
             # one or combination but not all
             plan = RetirementPlan.objects.filter(client=self).first()
             if plan:
-                elog = log(user=self.user, action='User one or combination of wellbeing entries, but not all')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
+                                                                         user=self.user,
+                                                                         obj=self)
+                advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
                 advice.save()
         elif self.daily_exercise and self.weight and self.height and self.smoker is not None:
             # every wellbeing field
             plan = RetirementPlan.objects.filter(client=self).first()
             if plan:
-                elog = log(user=self.user, action='User entered all wellbeing entries')
-                advice = RetirementAdvice(plan=plan,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_ALL_WELLBEING_ENTRIES.log(None,
+                                                                 user=self.user,
+                                                                 obj=self)
+                advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_all_wellbeing_entries(advice)
                 advice.save()
 

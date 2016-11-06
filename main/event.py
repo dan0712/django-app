@@ -70,6 +70,14 @@ class Event(ChoiceEnum):
                                                           'prev_btc', 'new_btc',
                                                           'prev_atc', 'new_atc'], 'retiresmartz.RetirementPlan')
 
+    RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED = (23, ['prev_age', 'new_age'], 'retiresmartz.RetirementPlan')
+
+    RETIRESMARTZ_IS_A_SMOKER = (24, [], 'client.Client')
+    RETIRESMARTZ_IS_NOT_A_SMOKER = (25, [], 'client.Client')
+    RETIRESMARTZ_EXERCISE_ONLY = (26, [], 'client.Client')
+    RETIRESMARTZ_WEIGHT_AND_HEIGHT_ONLY = (27, [], 'client.Client')
+    RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES = (28, [], 'client.Client')
+    RETIRESMARTZ_ALL_WELLBEING_ENTRIES = (29, [], 'client.Client')
 
     def __init__(self, id, log_keys, obj_class: str):
         """

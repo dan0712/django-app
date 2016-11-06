@@ -298,9 +298,12 @@ class RetirementPlan(models.Model):
 
             # age manually adjusted
             if self.retirement_age != orig.retirement_age:
-                elog = log(user=self.client.user, action='User manually adjusted age')
-                advice = RetirementAdvice(plan=self,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                   orig.retirement_age,
+                                                                   self.retirement_age,
+                                                                   user=self.client.user,
+                                                                   obj=self)
+                advice = RetirementAdvice(plan=self, trigger=e)
                 advice.text = advice_responses.get_manually_adjusted_age(advice)
                 advice.save()
 
@@ -310,58 +313,82 @@ class RetirementPlan(models.Model):
                     # retirement age changed
                     if orig.retirement_age > 62 and self.retirement_age == 62:
                         # decreased to age 62
-                        elog = log(user=self.client.user, action='User decreased retirement age to 62')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_decrease_retirement_age_to_62(advice)
                         advice.save()
                     elif orig.retirement_age > 63 and self.retirement_age == 63:
                         # decreased to age 63
-                        elog = log(user=self.client.user, action='User decreased retirement age to 63')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_decrease_retirement_age_to_63(advice)
                         advice.save()
                     elif orig.retirement_age > 64 and self.retirement_age == 64:
                         # decreased to age 64
-                        elog = log(user=self.client.user, action='User decreased retirement age to 64')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_decrease_retirement_age_to_64(advice)
                         advice.save()
                     elif orig.retirement_age > 65 and self.retirement_age == 65:
                         # decreased to age 65
-                        elog = log(user=self.client.user, action='User decreased retirement age to 65')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_decrease_retirement_age_to_65(advice)
                         advice.save()
                     elif orig.retirement_age < 67 and self.retirement_age == 67:
                         # increased to age 67
-                        elog = log(user=self.client.user, action='User increased retirement age to 67')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_increase_retirement_age_to_67(advice)
                         advice.save()
                     elif orig.retirement_age < 68 and self.retirement_age == 68:
                         # increased to age 68
-                        elog = log(user=self.client.user, action='User increased retirement age to 68')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_increase_retirement_age_to_68(advice)
                         advice.save()
                     elif orig.retirement_age < 69 and self.retirement_age == 69:
                         # increased to age 69
-                        elog = log(user=self.client.user, action='User increased retirement age to 69')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_increase_retirement_age_to_69(advice)
                         advice.save()
                     elif orig.retirement_age < 70 and self.retirement_age == 70:
                         # increased to age 70
-                        elog = log(user=self.client.user, action='User increased retirement age to 70')
-                        advice = RetirementAdvice(plan=self,
-                                                  trigger=elog)
+                        e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
+                                                                           orig.retirement_age,
+                                                                           self.retirement_age,
+                                                                           user=self.client.user,
+                                                                           obj=self)
+                        advice = RetirementAdvice(plan=self, trigger=e)
                         advice.text = advice_responses.get_increase_retirement_age_to_70(advice)
                         advice.save()
 
