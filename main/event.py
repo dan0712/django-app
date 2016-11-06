@@ -60,7 +60,9 @@ class Event(ChoiceEnum):
     GOAL_TRANSFER_EXECUTED = (17, ['txid'], 'main.Goal')
     GOAL_ORDER_DISTRIBUTION = (18, ['txid'], 'main.Goal')
 
+    # RetirementAdvice Events
     RETIRESMARTZ_PROTECTIVE_MOVE = (19, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_DYNAMIC_MOVE = (20, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
 
 
     def __init__(self, id, log_keys, obj_class: str):

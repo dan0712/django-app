@@ -273,9 +273,12 @@ class RetirementPlan(models.Model):
                 advice.save()
             elif self.desired_risk > orig.desired_risk and self.desired_risk > self.recommended_risk:
                 # dynamic move
-                elog = log(user=self.client.user, action='User made dynamic risk move')
-                advice = RetirementAdvice(plan=self,
-                                          trigger=elog)
+                e = Event.RETIRESMARTZ_DYNAMIC_MOVE.log(None,
+                                                        orig.desired_risk,
+                                                        self.desired_risk,
+                                                        user=self.client.user,
+                                                        obj=self)
+                advice = RetirementAdvice(plan=self, trigger=e)
                 advice.text = advice_responses.get_dynamic_move(advice)
                 advice.save()
 
