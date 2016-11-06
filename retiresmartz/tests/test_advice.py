@@ -33,39 +33,6 @@ class RetirementAdviceTests(TestCase):
         self.portfolio_set = PortfolioSetFactory.create()
         self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
 
-    def test_welcome_back(self):
-        """
-            On user login through the backend login view,
-            if user is a client, RetirementAdvice welcome
-            message should be retrievable at the advice endpoint.
-        """
-        login_url = reverse('login')
-        data = {
-            'username': self.plan.client.user.email,
-            'password': 'test',
-        }
-        response = self.client.post(login_url, data)
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
-
-        response = self.client.get(self.advice_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['text'], "Hello, welcome back %s" % self.plan.client.user.first_name)
-
-    def test_onboarding_complete(self):
-        """
-            Onboarding complete advice should pop if
-            EmailInvite status is set to STATUS_COMPLETE
-            and had previous been set to STATUS_ACCEPTED
-        """
-        self.invite.status = EmailInvite.STATUS_COMPLETE
-        self.invite.save()
-        login_ok = self.client.login(username=self.plan.client.user.email, password='test')
-        self.assertTrue(login_ok)
-        response = self.client.get(self.advice_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
-
     def test_decrease_retirement_age_to_62(self):
         """
             Onboarding retirement age advice pops
