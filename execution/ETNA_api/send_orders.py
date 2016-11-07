@@ -197,11 +197,12 @@ def send_order_ETNA(order):
 
     order.Order_Id = response['Result']
 
-    order.Status = OrderETNA.Status.Sent.value
+    #some stupid bug, we cannot access OrderETNA.Status.Sent.value for some reason
+    order.Status = OrderETNA.StatusChoice.Sent.value
     order.save()
 
 
-def get_ETNA_order_status(order_id):
+def update_ETNA_order_status(order_id):
     url = ENDPOINT_URL + '/get-order'
     body = '''{
         "ticket": "%s",
@@ -218,6 +219,7 @@ def get_ETNA_order_status(order_id):
     order.Status = response['ExecutionStatus']
     order.Description = response['Description']
     order.save()
+    return order
 
 
 def logout():

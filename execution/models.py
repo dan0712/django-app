@@ -34,15 +34,15 @@ class SecurityETNA(models.Model):
 
 
 class OrderETNA(models.Model):
-    class OrderType(ChoiceEnum):
+    class OrderTypeChoice(ChoiceEnum):
         Market = 0
         Limit = 1
 
-    class Side(ChoiceEnum):
+    class SideChoice(ChoiceEnum):
         Buy = 0
         Sell = 1
 
-    class TimeInForce(ChoiceEnum):
+    class TimeInForceChoice(ChoiceEnum):
         Day = 0
         GoodTillCancel = 1
         AtTheOpening = 2
@@ -51,7 +51,7 @@ class OrderETNA(models.Model):
         GoodTillCrossing = 5
         GoodTillDate = 6
 
-    class Status(ChoiceEnum):
+    class StatusChoice(ChoiceEnum):
         New = 'New'
         Sent = 'Sent'
         PartiallyFilled = 'PartiallyFilled'
@@ -75,18 +75,18 @@ class OrderETNA(models.Model):
     TrailingLimitAmount = models.FloatField(default=0)
     AllOrNone = models.IntegerField(default=0)
     TrailingStopAmount = models.FloatField(default=0)
-    Type = models.IntegerField(choices=OrderType.choices(),default=OrderType.Limit.value)
+    Type = models.IntegerField(choices=OrderTypeChoice.choices(),default=OrderTypeChoice.Limit.value)
     Quantity = models.IntegerField()
     SecurityId = models.IntegerField()
-    Side = models.IntegerField(choices=Side.choices())
-    TimeInForce = models.IntegerField(choices=TimeInForce.choices(), default=TimeInForce.GoodTillDate.value)
+    Side = models.IntegerField(choices=SideChoice.choices())
+    TimeInForce = models.IntegerField(choices=TimeInForceChoice.choices(), default=TimeInForceChoice.GoodTillDate.value)
     StopPrice = models.FloatField(default=0)
     ExpireDate = models.IntegerField()
 
     # response fields
     # -1 not assigned - we will get order Id as response from REST and update it
     Order_Id = models.IntegerField(default=-1)
-    Status = models.CharField(choices=Status.choices(), default=Status.New.value, max_length=128)
+    Status = models.CharField(choices=StatusChoice.choices(), default=StatusChoice.New.value, max_length=128)
     FillPrice = models.FloatField(default=0)
     FillQuantity = models.IntegerField(default=0)
     Description = models.CharField(max_length=128)
