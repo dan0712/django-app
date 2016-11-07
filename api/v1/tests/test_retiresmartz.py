@@ -492,4 +492,26 @@ class RetiresmartzTests(APITestCase):
         saved_plan = RetirementPlan.objects.get(id=response.data['id'])
         self.assertEqual(saved_plan.btc, 3200)
         self.assertNotEqual(response.data['savings'], None)
+        self.assertEqual(response.data['savings'][0]['id'], 1)
+        self.assertEqual(response.data['savings'][0]['amt'], 10000)
 
+    def test_add_retirement_plan_with_expenses(self):
+        expenses = [{
+            "cat": 3,
+            "amt": 10000,
+            "desc": "123",
+            "who": "self",
+            "id": 1
+        }]
+        self.base_plan_data['expenses'] = expenses
+        url = '/api/v1/clients/{}/retirement-plans'.format(Fixture1.client1().id)
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.post(url, self.base_plan_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['btc'], 3200)  # 80000 * 0.04
+        self.assertNotEqual(response.data['id'], None)
+        saved_plan = RetirementPlan.objects.get(id=response.data['id'])
+        self.assertEqual(saved_plan.btc, 3200)
+        self.assertNotEqual(response.data['expenses'], None)
+        self.assertEqual(response.data['expenses'][0]['id'], 1)
+        self.assertEqual(response.data['expenses'][0]['amt'], 10000)
