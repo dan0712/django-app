@@ -104,13 +104,30 @@ def get_security_by_mask_ETNA(mask):
     response = r.json()
 
 
-def get_security_ETNA(symbol):
+def get_security_ETNA_obsolete(symbol):
     url = ENDPOINT_URL + '/get-security'
     body = '''{
         "ticket": "%s",
         "symbol": "%s"
     }''' % (get_current_login().Ticket, symbol)
     r = requests.post(url=url,data=body, headers=_get_header())
+    response = r.json()['Result']
+    response['symbol_id'] = response['Id'] # ugly hack
+
+    serializer = SecurityETNASerializer(data=response)
+    if not serializer.is_valid():
+        raise Exception('wrong ETNA security returned')
+    serializer.save()
+
+
+def get_security_ETNA(symbol):
+    url = ENDPOINT_URL + '/securities/' + symbol
+
+    header = _get_header()
+    header['ticket'] = get_current_login().Ticket
+    header['Accept'] = '/'
+
+    r = requests.get(url=url, headers=header)
     response = r.json()['Result']
     response['symbol_id'] = response['Id'] # ugly hack
 
@@ -155,7 +172,6 @@ def send_order_ETNA(order):
         "ExpireDate":0
         }
     }''' % (get_current_login().Ticket, get_current_account_id())
-
 
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()

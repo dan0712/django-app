@@ -1,8 +1,9 @@
 from unittest.mock import Mock
 from django.test import TestCase
 from execution.ETNA_api.send_orders import login, get_accounts_ETNA, get_current_account_id, get_current_login, \
-    get_security_ETNA, get_security, send_order_ETNA, logout, set_logged_out
+    get_security_ETNA, get_security, send_order_ETNA, logout
 from execution.models import OrderETNA
+# demo.etnatrader.com les B0ngyDung
 
 
 class BaseTest(TestCase):
@@ -27,11 +28,16 @@ class BaseTest(TestCase):
         self.assertTrue(etna_security.Symbol == 'GOOG')
         self.assertTrue(etna_security.symbol_id == 5)
 
+
     def test_send_trade(self):
+        symbol = 'GOOG'
         get_accounts_ETNA()
-        params = {'Price': 10,
+        get_security_ETNA(symbol)
+        etna_security = get_security(symbol) # not sure if this gets us current price as well
+
+        params = {'Price': etna_security.Price,
                   'Quantity': 1,
-                  'SecurityId': 5,
+                  'SecurityId': etna_security.symbol_id,
                   'Side': 0,
                   'TimeInForce': 0,
                   'ExpireDate': 0}
