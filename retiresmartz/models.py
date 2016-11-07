@@ -249,7 +249,6 @@ class RetirementPlan(models.Model):
                 "Partner plan relationship must be symmetric."
             )
 
-        # RetirementAdvice Check
         if self.pk:
             # RetirementPlan is being created
             # default btc if btc not provided
