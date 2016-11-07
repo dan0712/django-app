@@ -12,7 +12,10 @@ from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
 from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
-from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice, \
+    determine_accounts
+import logging
+logger = logging.getLogger('api.v1.retiresmartz.serializers')
 
 
 def get_default_tx_plan():
@@ -214,9 +217,11 @@ class RetirementPlanWritableSerializer(serializers.ModelSerializer):
             validated_data['retirement_age'] = 67
 
         if not validated_data.get('btc', None):
-            validated_data['btc'] = validated_data['income'] * 0.04
+            # defaults btc
+            validated_data['btc'] = validated_data['income'] * min(validated_data.get('max_employer_match_percent', 0), 0.04)
 
         if not validated_data.get('atc', None):
+            # default atc
             validated_data['atc'] = 0
 
         if validated_data['reverse_mortgage'] and validated_data.get('retirement_home_price', None) is None:

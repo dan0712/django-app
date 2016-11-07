@@ -133,8 +133,12 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
-    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax "
+                                                "contributions",
+                                                blank=True)
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax "
+                                                "contributions",
+                                                blank=True)
 
     max_employer_match_percent = models.FloatField(
         null=True, blank=True,
@@ -244,6 +248,22 @@ class RetirementPlan(models.Model):
             raise ValidationError(
                 "Partner plan relationship must be symmetric."
             )
+
+        # RetirementAdvice Check
+        if self.pk:
+            # RetirementPlan is being created
+            # default btc if btc not provided
+            # SPEND = plan.spendable_income # available spending money 
+            # CONTR = # contributions needed to reach their goal - not function for this yet
+            # CONTC = validated_data['income'] * validated_data.get('max_employer_match_percent') # current retirement contributions
+            if not self.btc:
+                # user did not provide their own btc
+                max_contributions = determine_accounts(self)
+                if self.max_employer_match_percent:
+                    income_btc = self.income * self.max_employer_match_percent
+                else:
+                    income_btc = self.income * 0.04
+                self.btc = min(income_btc, max_contributions[0][1])
 
         super(RetirementPlan, self).save(*args, **kwargs)
 
@@ -393,8 +413,12 @@ def determine_accounts(plan):
     else:
         match = False
 
-    if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
-        joint = True
+    transcript_data = plan.client.regional_data.get('tax_transcript_data')
+    if transcript_data:
+        if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
+            joint = True
+        else:
+            joint = False
     else:
         joint = False
 
