@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import detail_route
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -404,6 +405,10 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         }
         """
         plan = self.get_object()
+
+        # We need a date of birth for the client
+        if not plan.client.date_of_birth:
+            raise ValidationError("Client must have a date of birth entered to calculate retirement plans.")
 
         # TODO: We can cache the portfolio on the plan and only update it every 24hrs, or if the risk changes.
         try:

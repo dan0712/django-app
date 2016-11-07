@@ -370,6 +370,19 @@ class RetiresmartzTests(APITestCase):
         old_metrics = GoalMetric.objects.all().count()
         url = '/api/v1/clients/{}/retirement-plans/{}/calculate'.format(plan.client.id, plan.id)
         self.client.force_authenticate(user=plan.client.user)
+
+        # First try and calculate without a client date of birth. Make sure we get the correct 400
+        old_dob = plan.client.date_of_birth
+        plan.client.date_of_birth = None
+        plan.client.save()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Now set the date of birth
+        plan.client.date_of_birth = old_dob
+        plan.client.save()
+
+        # We should be ready to calculate properly
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('portfolio' in response.data)
