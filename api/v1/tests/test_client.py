@@ -251,11 +251,13 @@ class ClientTests(APITestCase):
         new_occupation = 'Super Hero'
         new_employer = 'League of Extraordinary Gentlemen'
         new_civil_status = 1  # 0 single, 1 married
+        new_date_of_birth = date(1990, 1, 1)
         data = {
             'income': new_income,
             'occupation': new_occupation,
             'employer': new_employer,
-            'civil_status': new_civil_status
+            'civil_status': new_civil_status,
+            'date_of_birth': new_date_of_birth
         }
         self.client.force_authenticate(self.user)
         response = self.client.put(url, data)
@@ -268,6 +270,8 @@ class ClientTests(APITestCase):
         self.assertTrue(self.betasmartz_client.occupation == new_occupation)
         self.assertTrue(response.data['employer'] == new_employer)
         self.assertTrue(response.data['civil_status'] == new_civil_status)
+        self.assertEqual(response.data['date_of_birth'], str(new_date_of_birth))
+        self.assertEqual(self.betasmartz_client.date_of_birth, new_date_of_birth)
 
     def test_create_client(self):
         # We need an accepted invitation to be able to create a client

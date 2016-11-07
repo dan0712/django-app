@@ -74,6 +74,7 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'daily_exercise',
             'weight',
             'height',
+            'date_of_birth',
         )
 
     def validate_phone_num(self, phone_num):
