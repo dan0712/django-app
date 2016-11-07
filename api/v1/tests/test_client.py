@@ -532,7 +532,7 @@ class ClientTests(APITestCase):
             'ssn': '555-55-5555',
             'politically_exposed': True,
             'tax_transcript': 'some.random.url',
-            'tax_transcript_data': {"sections":[{"name":"Introduction","fields":{"FILING STATUS":"test"}}]},
+            'tax_transcript_data': {"FILING STATUS":"test"},
         }
         data = {
             "advisor_agreement": True,
@@ -560,4 +560,4 @@ class ClientTests(APITestCase):
         self.assertNotEqual(usr.id, 44)
         self.assertEqual(response.data['user']['id'], usr.id)
         regional_data_load = response.data.get('regional_data')
-        self.assertEqual(regional_data_load['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'], 'test')
+        self.assertEqual(regional_data_load['tax_transcript_data']['FILING STATUS'], 'test')

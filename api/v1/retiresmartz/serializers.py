@@ -12,8 +12,7 @@ from api.v1.serializers import ReadOnlyModelSerializer
 from main.constants import GENDER_MALE
 from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
-from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice, \
-    determine_accounts
+from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
 import logging
 logger = logging.getLogger('api.v1.retiresmartz.serializers')
 

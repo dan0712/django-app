@@ -123,7 +123,7 @@ class PersonalData(models.Model):
     @cached_property
     def tax_filing_status(self):
         try:
-            return self.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS']
+            return self.regional_data['tax_transcript_data']['FILING STATUS']
         except:
             return None
 

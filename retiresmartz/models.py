@@ -412,9 +412,12 @@ def determine_accounts(plan):
     else:
         match = False
 
-    transcript_data = plan.client.regional_data.get('tax_transcript_data')
-    if transcript_data:
-        if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
+    transcript_data = plan.client.regional_data.get('tax_transcript_data', None)
+    if transcript_data and isinstance(transcript_data, dict):
+        status = transcript_data.get('FILING STATUS', None)
+        if not status:
+            logger.warn("Client for plan: {} has no filing status available. Assuming single".format(plan.id))
+        if status == 'Married Filing Joint':
             joint = True
         else:
             joint = False
