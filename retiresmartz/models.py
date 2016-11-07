@@ -206,12 +206,22 @@ class RetirementPlan(models.Model):
 
     @cached_property
     def spendable_income(self):
+        if isinstance(self.savings, str):
+            savings = json.loads(self.savings)
+        else:
+            savings = self.savings
+
+        if isinstance(self.expenses, str):
+            expenses = json.loads(self.expenses)
+        else:
+            expenses = self.expenses
+
         if self.savings:
-            savings_cost = sum([s.amount for s in json.loads(self.savings)])
+            savings_cost = sum([s.amount for s in savings])
         else:
             savings_cost = 0
         if self.expenses:
-            expenses_cost = sum([e.amount for e in json.loads(self.expenses)])
+            expenses_cost = sum([e.amount for e in expenses])
         else:
             expenses_cost = 0
         return self.income - savings_cost - expenses_cost
