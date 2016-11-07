@@ -221,11 +221,11 @@ class RetirementPlan(models.Model):
             expenses = self.expenses
 
         if self.savings:
-            savings_cost = sum([s.amount for s in savings])
+            savings_cost = sum([s.get('amt', 0) for s in savings])
         else:
             savings_cost = 0
         if self.expenses:
-            expenses_cost = sum([e.amount for e in expenses])
+            expenses_cost = sum([e.get('amt', 0) for e in expenses])
         else:
             expenses_cost = 0
         return self.income - savings_cost - expenses_cost
