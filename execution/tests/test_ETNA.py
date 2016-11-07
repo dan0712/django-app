@@ -1,9 +1,9 @@
 from unittest.mock import Mock
 from django.test import TestCase
 from execution.ETNA_api.send_orders import login, get_accounts_ETNA, get_current_account_id, get_current_login, \
-    get_security_ETNA, get_security, send_order_ETNA, logout
+    get_security_ETNA, get_security, send_order_ETNA, logout, get_ETNA_order_status
 from execution.models import OrderETNA
-# demo.etnatrader.com les B0ngyDung
+# demo.etnatrader.com
 
 
 class BaseTest(TestCase):
@@ -28,10 +28,8 @@ class BaseTest(TestCase):
         self.assertTrue(etna_security.Symbol == 'GOOG')
         self.assertTrue(etna_security.symbol_id == 5)
 
-
     def test_send_trade(self):
         symbol = 'GOOG'
-        get_accounts_ETNA()
         get_security_ETNA(symbol)
         etna_security = get_security(symbol) # not sure if this gets us current price as well
 
@@ -43,8 +41,15 @@ class BaseTest(TestCase):
                   'ExpireDate': 0}
 
         order = OrderETNA.objects.get_or_create(id=1, defaults=params)[0]
+        get_accounts_ETNA()  # we need account for which we send order
         send_order_ETNA(order)
-        self.assertTrue(True)
+        self.assertTrue(order.Order_Id != -1)
+        return order
+
+    def test_get_order_status(self):
+        order = self.test_send_trade()
+        get_ETNA_order_status(order.Order_Id)
+        self.assertTrue(order.Status == OrderETNA.Status.Rejected.value)
 
     def tearDown(self):
         logout()

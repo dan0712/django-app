@@ -35,21 +35,40 @@ class SecurityETNA(models.Model):
 
 class OrderETNA(models.Model):
     class OrderType(ChoiceEnum):
-        Market = 0,
-        Limit = 1,
+        Market = 0
+        Limit = 1
 
     class Side(ChoiceEnum):
-        Buy = 0,
+        Buy = 0
         Sell = 1
 
     class TimeInForce(ChoiceEnum):
-        Day = 0,
+        Day = 0
         GoodTillCancel = 1
         AtTheOpening = 2
         ImmediateOrCancel = 3
         FillOrKill = 4
         GoodTillCrossing = 5
         GoodTillDate = 6
+
+    class Status(ChoiceEnum):
+        New = 'New'
+        Sent = 'Sent'
+        PartiallyFilled = 'PartiallyFilled'
+        Filled = 'Filled'
+        DoneForDay = 'DoneForDay'
+        Canceled = 'Canceled'
+        Replaced = 'Replaced'
+        PendingCancel = 'PendingCancel'
+        Stopped = 'Stopped'
+        Rejected = 'Rejected'
+        Suspended = 'Suspended'
+        PendingNew = 'PendingNew'
+        Calculated = 'Calculated'
+        Expired = 'Expired'
+        AcceptedForBidding = 'AcceptedForBidding'
+        PendingReplace = 'PendingReplace'
+        Error = 'Error'
 
     Price = models.FloatField()
     Exchange = models.CharField(default="Auto", max_length=128)
@@ -63,3 +82,12 @@ class OrderETNA(models.Model):
     TimeInForce = models.IntegerField(choices=TimeInForce.choices(), default=TimeInForce.GoodTillDate.value)
     StopPrice = models.FloatField(default=0)
     ExpireDate = models.IntegerField()
+
+    # response fields
+    # -1 not assigned - we will get order Id as response from REST and update it
+    Order_Id = models.IntegerField(default=-1)
+    Status = models.CharField(choices=Status.choices(), default=Status.New.value, max_length=128)
+    FillPrice = models.FloatField(default=0)
+    FillQuantity = models.IntegerField(default=0)
+    Description = models.CharField(max_length=128)
+

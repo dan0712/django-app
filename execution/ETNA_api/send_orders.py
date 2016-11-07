@@ -10,7 +10,7 @@ http://stackoverflow.com/questions/30259452/proper-way-to-consume-data-from-rest
 
 import requests
 from execution.serializers import LoginSerializer, AccountIdSerializer, SecurityETNASerializer, OrderETNASerializer
-from execution.models import ETNALogin, AccountId, SecurityETNA
+from execution.models import ETNALogin, AccountId, SecurityETNA, OrderETNA
 from django.db import connection
 from datetime import timedelta
 from django.utils import timezone
@@ -111,13 +111,25 @@ def get_security_ETNA_obsolete(symbol):
         "symbol": "%s"
     }''' % (get_current_login().Ticket, symbol)
     r = requests.post(url=url,data=body, headers=_get_header())
-    response = r.json()['Result']
+    response = r.json()
+
+    _validate_json_response(response, Exception('wrong ETNA security returned'))
+
+    response = response['Result']
     response['symbol_id'] = response['Id'] # ugly hack
 
     serializer = SecurityETNASerializer(data=response)
     if not serializer.is_valid():
         raise Exception('wrong ETNA security returned')
     serializer.save()
+
+
+def _validate_json_response(response, exception):
+    if 'Result' not in response.keys():
+        raise exception
+
+    if response['ResponseCode'] != ResponseCode.Valid.value:
+        raise exception
 
 
 def get_security_ETNA(symbol):
@@ -128,7 +140,12 @@ def get_security_ETNA(symbol):
     header['Accept'] = '/'
 
     r = requests.get(url=url, headers=header)
-    response = r.json()['Result']
+
+    response = r.json()
+
+    _validate_json_response(response, Exception('wrong ETNA security returned'))
+
+    response = response['Result']
     response['symbol_id'] = response['Id'] # ugly hack
 
     serializer = SecurityETNASerializer(data=response)
@@ -176,14 +193,31 @@ def send_order_ETNA(order):
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
 
-    '''
-    FIGURE OUT THE RESPONSE HERE
+    _validate_json_response(response, Exception('wrong ETNA trade info received'))
 
-    ResponseCode":"int", 0 - success
-"Ticket":"string",
-"Result":"int"  id of cancelled order'''
+    order.Order_Id = response['Result']
 
-    print('a')
+    order.Status = OrderETNA.Status.Sent.value
+    order.save()
+
+
+def get_ETNA_order_status(order_id):
+    url = ENDPOINT_URL + '/get-order'
+    body = '''{
+        "ticket": "%s",
+        "orderId": "%d"
+        }''' % (get_current_login().Ticket, order_id)
+    r = requests.post(url=url, data=body, headers=_get_header())
+    response = r.json()
+    _validate_json_response(response, Exception('Invalid ETNA order status response'))
+
+    response = response['Result']
+    order = OrderETNA.objects.get(Order_Id=order_id)
+    order.FillPrice = response['AveragePrice']
+    order.FillQuantity = response['ExecutedQuantity']
+    order.Status = response['ExecutionStatus']
+    order.Description = response['Description']
+    order.save()
 
 
 def logout():
@@ -191,7 +225,7 @@ def logout():
     body = '''{
     "ticket": "%s"
     }''' % get_current_login().Ticket
-    r = requests.post(url=url,data=body, headers=_get_header())
+    r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
 
 

@@ -63,6 +63,3 @@ class BaseTest(TestCase):
         apex_orders = ApexOrder.objects.all()
         self.assertTrue(len(apex_orders) == 2)
         self.assertTrue(apex_orders[0].volume == 35)
-
-
-
