@@ -234,7 +234,7 @@ class InviteTests(APITestCase):
 
         # PUT: /api/v1/invites/:key
         # Tax transcript upload and parsing
-        expected_tax_transcript_data = {'sections': [{'name': 'Introduction', 'fields': {'SPOUSE NAME': 'SPOUSE M LAST', 'SPOUSE SSN': '222-22-2222', 'ADDRESS': '999 AVENUE RD  CITY, ST 10.000-90.00-800', 'NAME': 'FIRST M', 'SSN': '111-11-1111', 'FILING STATUS': 'Married Filing Joint'}}, {'name': 'Income', 'fields': {'TOTAL INCOME': '$0.00'}}]}
+        expected_tax_transcript_data = {'SPOUSE NAME': 'SPOUSE M LAST', 'SPOUSE SSN': '222-22-2222', 'ADDRESS': '999 AVENUE RD  CITY, ST 10.000-90.00-800', 'NAME': 'FIRST M', 'SSN': '111-11-1111', 'FILING STATUS': 'Married Filing Joint', 'TOTAL INCOME': '$0.00'}
         with open(os.path.join(settings.BASE_DIR, 'pdf_parsers', 'samples', 'sample.pdf'), mode="rb") as tax_transcript:
             data = {
                 'tax_transcript': tax_transcript
@@ -285,8 +285,8 @@ class InviteTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         regional_data_load = json.loads(response.data['regional_data'])
         self.assertNotEqual(regional_data_load['tax_transcript'], None)
-        self.assertEqual(regional_data_load['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'],
-                         expected_tax_transcript_data['sections'][0]['fields']['FILING STATUS'],
+        self.assertEqual(regional_data_load['tax_transcript_data']['FILING STATUS'],
+                         expected_tax_transcript_data['FILING STATUS'],
                          msg='Parsed tax_transcript_data FILING STATUS parsed successfully')
 
     def test_complete_invitation(self):

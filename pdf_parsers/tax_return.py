@@ -130,6 +130,19 @@ def parse_scanned_pdf(fl):
     return parse_text(txt)
 
 
+def clean_results(results):
+    clean_output = {}
+    clean_output['SSN'] = results['sections'][0]['fields']['SSN']
+    clean_output['SPOUSE SSN'] = results['sections'][0]['fields']['SPOUSE SSN']
+    clean_output['NAME'] = results['sections'][0]['fields']['NAME']
+    clean_output['SPOUSE NAME'] = results['sections'][0]['fields']['SPOUSE NAME']
+    clean_output['ADDRESS'] = results['sections'][0]['fields']['ADDRESS']
+    clean_output['FILING STATUS'] = results['sections'][0]['fields']['FILING STATUS']
+    clean_output['TOTAL INCOME'] = results['sections'][1]['fields']['TOTAL INCOME']
+
+    return clean_output
+
+
 def parse_pdf(filename):
     try:
         # check if pdf is searchable, pdffonts lists fonts used in pdf, if scanned (image), list is empty
@@ -140,7 +153,7 @@ def parse_pdf(filename):
             result = parse_scanned_pdf(filename)
 
         logger.info('Tax Return PDF parsed OK')
-        return result
+        return clean_results(result)
     except Exception as e:
         logger.error(e)
         return
@@ -160,7 +173,7 @@ def main():
         else:
             result = parse_scanned_pdf(args.file)
 
-        print(json.dumps(result, sort_keys=True, indent=4, separators=(',', ': ')))
+        print(json.dumps(clean_results(result), sort_keys=True, indent=4, separators=(',', ': ')))
         return result
     except KeyboardInterrupt:
         print('Keyboard interrupt!')
