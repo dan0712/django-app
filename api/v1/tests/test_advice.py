@@ -336,7 +336,6 @@ class RetiresmartzAdviceTests(APITestCase):
 
     def test_spending_increased_contributions_decreased(self):
         data = {
-            'income': self.plan.income + 100000,
             'btc': -10000,
         }
         self.client.force_authenticate(user=self.plan.client.user)
@@ -349,7 +348,6 @@ class RetiresmartzAdviceTests(APITestCase):
 
     def test_spending_decreased_contributions_increased(self):
         data = {
-            'income': self.plan.income - 50000,
             'btc': 10000,
         }
         self.client.force_authenticate(user=self.plan.client.user)
@@ -358,7 +356,8 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        # two advice event, also triggers get_increase_contribution_decrease_spending
+        self.assertEqual(len(response.data['results']), 2)
 
     # TODO: Need to trigger track changes with put here
     # Once task to make RetirementPlan on_track actually work

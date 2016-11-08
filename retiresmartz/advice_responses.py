@@ -208,6 +208,11 @@ retirement income by ${} a week.".format(200, 600)
     return rv
 
 
+def get_increase_contribution_decrease_spending(advice):
+    return "Well done, by increasing your retirement contributions to ${} \
+a month, you have increased your retirement income by ${} a week.".format(400, 800)
+
+
 def get_decrease_spending_increase_contribution(advice):
     # TODO: Need to add $X and $Y calculations
     return "Are you sure you need to increase your spending again and reduce your \

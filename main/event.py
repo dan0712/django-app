@@ -63,12 +63,8 @@ class Event(ChoiceEnum):
     # RetirementAdvice Events
     RETIRESMARTZ_PROTECTIVE_MOVE = (19, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
     RETIRESMARTZ_DYNAMIC_MOVE = (20, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
-    RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN = (21, ['prev_spendable', 'new_spendable',
-                                                          'prev_btc', 'new_btc',
-                                                          'prev_atc', 'new_atc'], 'retiresmartz.RetirementPlan')
-    RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP = (22, ['prev_spendable', 'new_spendable',
-                                                          'prev_btc', 'new_btc',
-                                                          'prev_atc', 'new_atc'], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN = (21, ['prev_btc', 'new_btc'], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP = (22, ['prev_btc', 'new_btc'], 'retiresmartz.RetirementPlan')
 
     RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED = (23, ['prev_age', 'new_age'], 'retiresmartz.RetirementPlan')
 
@@ -81,6 +77,9 @@ class Event(ChoiceEnum):
 
     RETIRESMARTZ_ON_TRACK_NOW = (30, [], 'retiresmartz.RetirementPlan')
     RETIRESMARTZ_OFF_TRACK_NOW = (31, [], 'retiresmartz.RetirementPlan')
+
+    RETIRESMARTZ_CONTRIB_UP_SPENDING_DOWN = (32, ['prev_btc', 'new_btc'], 'retiresmartz.RetirementPlan')
+
 
     def __init__(self, id, log_keys, obj_class: str):
         """

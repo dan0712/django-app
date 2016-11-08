@@ -101,32 +101,33 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # RetirementAdvice Triggers
 
         # Spending and Contributions
-        if orig.spendable_income > updated.spendable_income and \
-           orig.btc + orig.atc < updated.btc + updated.atc:
+        if orig.btc > updated.btc:
+            logger.error('%s %s' % (orig.btc, updated.btc))
             # spending increased, contributions decreased
             e = Event.RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN.log(None,
-                                                                        orig.spendable_income,
-                                                                        updated.spendable_income,
                                                                         orig.btc,
                                                                         updated.btc,
-                                                                        orig.atc,
-                                                                        updated.atc,
                                                                         user=updated.client.user,
                                                                         obj=updated)
             advice = RetirementAdvice(plan=updated, trigger=e)
             advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
             advice.save()
 
-        if orig.spendable_income < updated.spendable_income and \
-           orig.btc + orig.atc > updated.btc + updated.atc:
+        if orig.btc < updated.btc:
+            logger.error('%s %s' % (orig.btc, updated.btc))
+            e = Event.RETIRESMARTZ_CONTRIB_UP_SPENDING_DOWN.log(None,
+                                                                orig.btc,
+                                                                updated.btc,
+                                                                user=updated.client.user,
+                                                                obj=updated)
+            advice = RetirementAdvice(plan=updated, trigger=e)
+            advice.text = advice_responses.get_increase_contribution_decrease_spending(advice)
+            advice.save()
+
             # contributions increased, spending decreased
             e = Event.RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP.log(None,
-                                                                        orig.spendable_income,
-                                                                        updated.spendable_income,
                                                                         orig.btc,
                                                                         updated.btc,
-                                                                        orig.atc,
-                                                                        updated.atc,
                                                                         user=updated.client.user,
                                                                         obj=updated)
             advice = RetirementAdvice(plan=updated, trigger=e)

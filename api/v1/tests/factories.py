@@ -540,7 +540,7 @@ class RetirementPlanFactory(factory.django.DjangoModelFactory):
     selected_life_expectancy = 80
     desired_income = 250000
     income = 100000
-    btc = 0
+    btc = 4000
     atc = 0
     volunteer_days = factory.LazyAttribute(lambda n: random.randrange(7))
     paid_days = factory.LazyAttribute(lambda n: random.randrange(7))
