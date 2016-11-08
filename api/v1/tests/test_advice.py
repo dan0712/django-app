@@ -60,8 +60,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_decrease_retirement_age_to_63(self):
         """
@@ -80,8 +79,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_decrease_retirement_age_to_64(self):
         """
@@ -100,8 +98,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_decrease_retirement_age_to_65(self):
         """
@@ -120,8 +117,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_increase_retirement_age_to_67(self):
         """
@@ -140,8 +136,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_increase_retirement_age_to_68(self):
         """
@@ -160,8 +155,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_increase_retirement_age_to_69(self):
         """
@@ -180,8 +174,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_increase_retirement_age_to_70(self):
         """
@@ -200,14 +193,13 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # 1 manual age adjustments trigger too
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_manually_adjusted_age(self):
         self.plan.retirement_age = 70
         self.plan.save()
         data = {
-            'retirement_age': 59,
+            'selected_life_expectancy': 59,
         }
         self.client.force_authenticate(user=self.plan.client.user)
         response = self.client.put(self.plan_url, data)
@@ -356,8 +348,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # two advice event, also triggers get_increase_contribution_decrease_spending
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     # TODO: Need to trigger track changes with put here
     # Once task to make RetirementPlan on_track actually work

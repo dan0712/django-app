@@ -125,14 +125,17 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             advice.save()
 
             # contributions increased, spending decreased
-            e = Event.RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP.log(None,
-                                                                        orig.btc,
-                                                                        updated.btc,
-                                                                        user=updated.client.user,
-                                                                        obj=updated)
-            advice = RetirementAdvice(plan=updated, trigger=e)
-            advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
-            advice.save()
+            # this one is suppose to trigger if there is a second
+            # contribution increase - check if previous event is in current
+            # retirementadvice feed
+            # e = Event.RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP.log(None,
+            #                                                             orig.btc,
+            #                                                             updated.btc,
+            #                                                             user=updated.client.user,
+            #                                                             obj=updated)
+            # advice = RetirementAdvice(plan=updated, trigger=e)
+            # advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
+            # advice.save()
 
         # Risk Slider Changed
         if updated.desired_risk < orig.desired_risk:
@@ -156,8 +159,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             advice.text = advice_responses.get_dynamic_move(advice)
             advice.save()
 
-        # age manually adjusted
-        if updated.retirement_age != orig.retirement_age:
+        # age manually adjusted selected_life_expectancy
+        if updated.selected_life_expectancy != orig.selected_life_expectancy:
             e = Event.RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED.log(None,
                                                                orig.retirement_age,
                                                                updated.retirement_age,

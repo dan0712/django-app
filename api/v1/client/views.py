@@ -180,6 +180,8 @@ class ClientViewSet(ApiViewMixin,
                     advice = RetirementAdvice(plan=plan, trigger=e)
                     advice.text = advice_responses.get_smoking_no(advice)
                     advice.save()
+                    plan.selected_life_expectancy += 7
+                    plan.save()
 
         if updated.daily_exercise and not updated.weight and not updated.height \
            and updated.daily_exercise != orig.daily_exercise:

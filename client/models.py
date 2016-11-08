@@ -69,7 +69,7 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     weight = models.PositiveIntegerField(null=True, blank=True, help_text="In kilograms")
     height = models.PositiveIntegerField(null=True, blank=True, help_text="In centimeters")
 
-    drinks = models.PositiveIntegerField(null=True, blank=True, help_text='Number of drinks per week')
+    drinks = models.PositiveIntegerField(null=True, blank=True, help_text='Number of drinks per day')
 
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
