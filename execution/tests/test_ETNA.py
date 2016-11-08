@@ -52,12 +52,17 @@ class BaseTest(TestCase):
     def test_update_order_status(self):
         order = self.test_send_trade()
         nothing = OrderETNA.objects.is_complete()
+        something = OrderETNA.objects.is_not_complete()
+
         self.assertTrue(len(nothing) == 0)
+        self.assertTrue(len(something) == 1)
         self.assertTrue(order.is_complete is False)
 
         order = update_ETNA_order_status(order.Order_Id)
         one_order = OrderETNA.objects.is_complete()
+        nothing = OrderETNA.objects.is_not_complete()
         self.assertTrue(len(one_order) == 1)
+        self.assertTrue(len(nothing) == 0)
         self.assertTrue(order.is_complete is True)
         self.assertTrue(order.Status == OrderETNA.StatusChoice.Rejected.value)
 

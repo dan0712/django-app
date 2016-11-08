@@ -38,6 +38,9 @@ class OrderETNAManager(models.Manager):
     def is_complete(self):
         return self.filter(Status__in=OrderETNA.StatusChoice.complete_statuses())
 
+    def is_not_complete(self):
+        return self.exclude(Status__in=OrderETNA.StatusChoice.complete_statuses())
+
 
 class OrderETNA(models.Model):
     class OrderTypeChoice(ChoiceEnum):
