@@ -2,12 +2,12 @@ from django.db import models
 import logging
 from jsonfield.fields import JSONField
 from common.structures import ChoiceEnum
-from django.db.models import F
 
 logger = logging.getLogger('execution.models')
 
 
 class ETNALogin(models.Model):
+    # big caps due to serializer - response json
     ResponseCode = models.IntegerField()
     Ticket = models.CharField(max_length=521)
     Result = models.OneToOneField('LoginResult', related_name='ETNALogin')
