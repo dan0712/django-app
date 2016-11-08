@@ -74,6 +74,7 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'daily_exercise',
             'weight',
             'height',
+            'drinks',
             'date_of_birth',
         )
 

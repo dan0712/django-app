@@ -561,3 +561,31 @@ class ClientTests(APITestCase):
         self.assertEqual(response.data['user']['id'], usr.id)
         regional_data_load = response.data.get('regional_data')
         self.assertEqual(regional_data_load['tax_transcript_data']['FILING STATUS'], 'test')
+
+    def test_update_client_drinks(self):
+        url = '/api/v1/clients/%s' % self.betasmartz_client.id
+        # lets test income update
+        data = {
+            'drinks': 5,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.put(url, data)
+        self.betasmartz_client.refresh_from_db()  # Refresh after the put.
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for authenticated put request to update client drinks')
+        self.assertEqual(response.data['id'], self.betasmartz_client.id)
+        self.assertEqual(response.data['drinks'], 5)
+
+    def test_update_client_smoker(self):
+        url = '/api/v1/clients/%s' % self.betasmartz_client.id
+        # lets test income update
+        data = {
+            'smoker': True,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.put(url, data)
+        self.betasmartz_client.refresh_from_db()  # Refresh after the put.
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 for authenticated put request to update client smoker field')
+        self.assertEqual(response.data['id'], self.betasmartz_client.id)
+        self.assertEqual(response.data['smoker'], True)
