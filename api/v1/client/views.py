@@ -183,8 +183,7 @@ class ClientViewSet(ApiViewMixin,
                     plan.selected_life_expectancy += 7
                     plan.save()
 
-        if updated.daily_exercise and not updated.weight and not updated.height \
-           and updated.daily_exercise != orig.daily_exercise:
+        if updated.daily_exercise != orig.daily_exercise:
             # exercise only
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
@@ -195,8 +194,7 @@ class ClientViewSet(ApiViewMixin,
                 advice.text = advice_responses.get_exercise_only(advice)
                 advice.save()
 
-        elif updated.weight and updated.height and not updated.daily_exercise and \
-             (updated.weight != orig.weight or updated.height != orig.height):
+        elif (updated.weight != orig.weight or updated.height != orig.height):
             # weight and height only
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
@@ -216,9 +214,7 @@ class ClientViewSet(ApiViewMixin,
                 advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
                 advice.save()
-        elif updated.daily_exercise and updated.weight and updated.height and updated.smoker is not None \
-             and (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
-                updated.height != orig.height or updated.smoker != orig.smoker):
+        elif updated.daily_exercise and updated.weight and updated.height and updated.smoker is not None:
             # every wellbeing field
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
