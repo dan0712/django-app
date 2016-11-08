@@ -102,7 +102,7 @@ class OrderETNA(models.Model):
     FillPrice = models.FloatField(default=0)
     FillQuantity = models.IntegerField(default=0)
     Description = models.CharField(max_length=128)
-    objects = OrderETNAManager() # prefer this than property - ability to filter based on this
+    objects = OrderETNAManager() # ability to filter based on this, property cannot be used to filter
 
     @property
     def is_complete(self):
