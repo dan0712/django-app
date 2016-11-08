@@ -2,6 +2,7 @@ from django.db import models
 import logging
 from jsonfield.fields import JSONField
 from common.structures import ChoiceEnum
+from django.db.models import F
 
 logger = logging.getLogger('execution.models')
 
@@ -31,6 +32,11 @@ class SecurityETNA(models.Model):
     Currency = models.CharField(max_length=20)
     Price = models.FloatField()
     date_created = models.DateTimeField(auto_now_add=True)
+
+
+class OrderETNAManager(models.Manager):
+    def is_complete(self):
+        return self.filter(Status__in=OrderETNA.StatusChoice.complete_statuses())
 
 
 class OrderETNA(models.Model):
@@ -70,6 +76,12 @@ class OrderETNA(models.Model):
         PendingReplace = 'PendingReplace'
         Error = 'Error'
 
+        @classmethod
+        def complete_statuses(cls):
+            accessor = OrderETNA.StatusChoice
+            return (accessor.Filled.value, accessor.DoneForDay.value, accessor.Canceled.value, accessor.Rejected.value,
+                    accessor.Expired.value, accessor.Error.value)
+
     Price = models.FloatField()
     Exchange = models.CharField(default="Auto", max_length=128)
     TrailingLimitAmount = models.FloatField(default=0)
@@ -90,4 +102,8 @@ class OrderETNA(models.Model):
     FillPrice = models.FloatField(default=0)
     FillQuantity = models.IntegerField(default=0)
     Description = models.CharField(max_length=128)
+    objects = OrderETNAManager() # prefer this than property - ability to filter based on this
 
+    @property
+    def is_complete(self):
+        return self.Status in self.StatusChoice.complete_statuses()

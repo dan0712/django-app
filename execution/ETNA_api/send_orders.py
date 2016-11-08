@@ -197,7 +197,6 @@ def send_order_ETNA(order):
 
     order.Order_Id = response['Result']
 
-    #some stupid bug, we cannot access OrderETNA.Status.Sent.value for some reason
     order.Status = OrderETNA.StatusChoice.Sent.value
     order.save()
 
