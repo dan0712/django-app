@@ -336,7 +336,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
     def test_spending_increased_contributions_decreased(self):
         data = {
-            'btc': -10000,
+            'btc': 1,
         }
         self.client.force_authenticate(user=self.plan.client.user)
         response = self.client.put(self.plan_url, data)

@@ -135,8 +135,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             advice.save()
 
         # Risk Slider Changed
-        if updated.desired_risk < orig.desired_risk and \
-           updated.desired_risk < updated.recommended_risk:
+        if updated.desired_risk < orig.desired_risk:
             # protective move
             e = Event.RETIRESMARTZ_PROTECTIVE_MOVE.log(None,
                                                        orig.desired_risk,
@@ -146,7 +145,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             advice = RetirementAdvice(plan=updated, trigger=e)
             advice.text = advice_responses.get_protective_move(advice)
             advice.save()
-        elif updated.desired_risk > orig.desired_risk and updated.desired_risk > orig.recommended_risk:
+        elif updated.desired_risk > orig.desired_risk:
             # dynamic move
             e = Event.RETIRESMARTZ_DYNAMIC_MOVE.log(None,
                                                     orig.desired_risk,
