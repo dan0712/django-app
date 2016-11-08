@@ -5,7 +5,6 @@ from execution.ETNA_api.send_orders import login, get_accounts_ETNA, get_current
 from execution.models import OrderETNA
 # demo.etnatrader.com
 
-# next to do - map final order status to order - to know if COMPLETE or PENDING
 # connect ETNA models to ORDER models
 
 

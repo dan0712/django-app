@@ -97,6 +97,7 @@ class OrderETNA(models.Model):
     TimeInForce = models.IntegerField(choices=TimeInForceChoice.choices(), default=TimeInForceChoice.GoodTillDate.value)
     StopPrice = models.FloatField(default=0)
     ExpireDate = models.IntegerField()
+    date_updated = models.DateTimeField(auto_now=True)
 
     # response fields
     # -1 not assigned - we will get order Id as response from REST and update it
