@@ -7,8 +7,6 @@ https://ultimatedjango.com/blog/how-to-consume-rest-apis-with-django-python-requ
 https://realpython.com/blog/python/asynchronous-tasks-with-django-and-celery/
 http://stackoverflow.com/questions/30259452/proper-way-to-consume-data-from-restful-api-in-django
 '''
-
-
 import requests
 from execution.serializers import LoginSerializer, AccountIdSerializer, SecurityETNASerializer, OrderETNASerializer
 from execution.models import ETNALogin, AccountId, SecurityETNA, OrderETNA
@@ -17,7 +15,11 @@ from datetime import timedelta
 from django.utils import timezone
 from common.structures import ChoiceEnum
 from rest_framework.renderers import JSONRenderer
-from local_settings import ETNA_ENDPOINT_URL, ETNA_LOGIN, ETNA_PASSWORD, ETNA_X_API_KEY, ETNA_X_API_ROUTING, CONTENT_TYPE
+from local_settings import ETNA_ENDPOINT_URL, ETNA_LOGIN, ETNA_PASSWORD, ETNA_X_API_KEY, ETNA_X_API_ROUTING, \
+    CONTENT_TYPE, ETNA_ACCOUNT_ID
+from execution.exceptions import ETNAApiException
+import logging
+logger = logging.getLogger('execution.ETNA_api')
 
 
 LOGIN_TIME = 10  # in minutes - after this we will assume we logged out and need to relog
@@ -39,6 +41,7 @@ def _get_header():
 
 
 def _login():
+    exception_text = 'error deserializing ETNA login response'
     body = '''{
     "device":"%s",
     "version": "%s",
@@ -50,91 +53,129 @@ def _login():
     response = r.json()
     serializer = LoginSerializer(data=response)
     if not serializer.is_valid():
-        raise Exception('error deserializing ETNA login response')
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
     serializer.save()
     return serializer.validated_data['Ticket']
 
 
 def get_current_login():
-    qs = ETNALogin.objects.filter(ResponseCode=ResponseCode.Valid.value)
+    qs = ETNALogin.objects.all()
     logins = qs.count()
 
     if logins == 0:
         _login()
         get_current_login()
 
-    latest_login = qs.latest('date_created')
+    latest_login = qs.latest('created')
 
     # we should test if we are logged in currently - we will use simple check,
     # if we logged in less than 10 minutes ago, we're all good
-    if latest_login.date_created + timedelta(minutes=LOGIN_TIME) < timezone.now():
+    if latest_login.created + timedelta(minutes=LOGIN_TIME) < timezone.now() \
+            or latest_login.ResponseCode == ResponseCode.Invalid.value:
         logout(latest_login.Ticket)
         _login()
         get_current_login()
 
-    #logout any other logins
-    logged_in = qs.exclude(Ticket=latest_login.Ticket)
+    #logout any other valid logins but last
+    logged_in = qs.filter(ResponseCode=ResponseCode.Valid.value).exclude(Ticket=latest_login.Ticket)
     for l in logged_in:
         logout(l.Ticket)
 
     return latest_login
 
 
-def get_current_account_id():
-    account = AccountId.objects.filter(ResponseCode=ResponseCode.Valid.value).latest('date_created')
+def get_accounts_ETNA(ticket):
+    exception_text = 'wrong ETNA account info'
+
+    # we should only even call this model once, to find out ETNA Account ID,
+    # and store it in local_settings as ETNA_ACCOUNT_ID
+    url = ETNA_ENDPOINT_URL + '/get-accounts'
+    body = '''{
+        "ticket": "%s",
+    }''' % ticket
+    r = requests.post(url=url, data=body, headers=_get_header())
+
+    response = r.json()
+    valid = _validate_json_response(response, ETNAApiException(exception_text))
+    if not valid:
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
+
+    serializer = AccountIdSerializer(data=response)
+    if not serializer.is_valid():
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
+    serializer.save()
+    return _get_current_account_id()
+
+
+def _get_current_account_id():
+    account = AccountId.objects.filter(ResponseCode=ResponseCode.Valid.value).latest('created')
 
     # it returns list for a given user, we will only ever have one account with ETNA
     return account.Result[0]
 
 
-def get_accounts_ETNA():
-    url = ETNA_ENDPOINT_URL + '/get-accounts'
-    body = '''{
-        "ticket": "%s",
-    }''' % get_current_login().Ticket
-    r = requests.post(url=url, data=body, headers=_get_header())
-    response = r.json()
-    serializer = AccountIdSerializer(data=response)
-    if not serializer.is_valid():
-        raise Exception('wrong ETNA account info')
-    serializer.save()
-
-
 def _validate_json_response(response, exception):
+    correct = True
+
     if 'Result' not in response.keys():
         raise exception
+        correct = False
 
     if response['ResponseCode'] != ResponseCode.Valid.value:
         raise exception
+        correct = False
+
+    return correct
 
 
-def get_security_ETNA(symbol):
+def _get_security_ETNA(symbol, ticket):
+    exception_text = 'wrong ETNA security returned'
     url = ETNA_ENDPOINT_URL + '/securities/' + symbol
 
     header = _get_header()
-    header['ticket'] = get_current_login().Ticket
+    header['ticket'] = ticket
     header['Accept'] = '/'
 
     r = requests.get(url=url, headers=header)
 
     response = r.json()
 
-    _validate_json_response(response, Exception('wrong ETNA security returned'))
+    valid = _validate_json_response(response, ETNAApiException(exception_text))
+    if not valid:
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
 
     response = response['Result']
     response['symbol_id'] = response['Id'] # ugly hack
 
     serializer = SecurityETNASerializer(data=response)
     if not serializer.is_valid():
-        raise Exception('wrong ETNA security returned')
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
     serializer.save()
 
 
 def get_security(symbol):
-    return SecurityETNA.objects.filter(Symbol=symbol).latest('date_created')
+    qs = SecurityETNA.objects.filter(Symbol=symbol)
+    security = qs
+
+    if security.count() == 0:
+        login = get_current_login()
+        _get_security_ETNA(symbol, login.Ticket)
+
+    return qs.latest('created')
 
 
-def send_order_ETNA(order):
+def send_order_ETNA(order, ticket, account_id):
+    exception_text = 'wrong ETNA trade info received'
     serializer = OrderETNASerializer(order)
     json_order = JSONRenderer().render(serializer.data).decode("utf-8")
 
@@ -144,28 +185,38 @@ def send_order_ETNA(order):
     "accountId": "%d",
     "order":
         %s
-    }''' % (get_current_login().Ticket, get_current_account_id(), json_order)
+    }''' % (ticket, account_id, json_order)
 
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
 
-    _validate_json_response(response, Exception('wrong ETNA trade info received'))
+    valid = _validate_json_response(response, ETNAApiException(exception_text))
+    if not valid:
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
 
     order.Order_Id = response['Result']
 
     order.Status = OrderETNA.StatusChoice.Sent.value
     order.save()
+    return order
 
 
-def update_ETNA_order_status(order_id):
+def update_ETNA_order_status(order_id, ticket):
+    exception_text = 'Invalid ETNA order status response'
     url = ETNA_ENDPOINT_URL + '/get-order'
     body = '''{
         "ticket": "%s",
         "orderId": "%d"
-        }''' % (get_current_login().Ticket, order_id)
+        }''' % (ticket, order_id)
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
-    _validate_json_response(response, Exception('Invalid ETNA order status response'))
+    valid = _validate_json_response(response, ETNAApiException(exception_text))
+    if not valid:
+        raise ETNAApiException(exception_text)
+        logger.log(exception_text)
+        return
 
     response = response['Result']
     order = OrderETNA.objects.get(Order_Id=order_id)

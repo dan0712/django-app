@@ -1,9 +1,10 @@
 from unittest.mock import Mock
 from django.test import TestCase
-from execution.ETNA_api.send_orders import _login, get_accounts_ETNA, get_current_account_id, get_current_login, \
-    get_security_ETNA, get_security, send_order_ETNA, logout, update_ETNA_order_status
+from execution.ETNA_api.send_orders import _login, get_accounts_ETNA, _get_current_account_id, get_current_login, \
+    _get_security_ETNA, get_security, send_order_ETNA, logout, update_ETNA_order_status
 from execution.models import OrderETNA, ETNALogin
 from execution.ETNA_api.send_orders import ResponseCode
+from local_settings import ETNA_ACCOUNT_ID
 # demo.etnatrader.com
 
 # connect ETNA models to ORDER models
@@ -28,31 +29,35 @@ class BaseTest(TestCase):
         self.assertTrue(len(logins) == 1)
 
     def test_get_accounts(self):
-        get_accounts_ETNA()
-        account_number = get_current_account_id()
+        get_accounts_ETNA(self.login.Ticket)
+        account_number = _get_current_account_id()
         self.assertTrue(account_number > 0)
 
-    def test_get_security(self):
-        get_security_ETNA('GOOG')
+    def test_get_security1(self):
+        _get_security_ETNA('GOOG', self.login.Ticket)
+        etna_security = get_security('GOOG')
+        self.assertTrue(etna_security.Symbol == 'GOOG')
+        self.assertTrue(etna_security.symbol_id == 5)
+
+    def test_get_security2(self):
         etna_security = get_security('GOOG')
         self.assertTrue(etna_security.Symbol == 'GOOG')
         self.assertTrue(etna_security.symbol_id == 5)
 
     def test_send_trade(self):
         symbol = 'GOOG'
-        get_security_ETNA(symbol)
+        _get_security_ETNA(symbol, self.login.Ticket)
         etna_security = get_security(symbol) # not sure if this gets us current price as well
 
         params = {'Price': etna_security.Price,
                   'Quantity': 1,
                   'SecurityId': etna_security.symbol_id,
-                  'Side': 0,
+                  'Side': OrderETNA.SideChoice.Buy.value,
                   'TimeInForce': 0,
                   'ExpireDate': 0}
 
         order = OrderETNA.objects.get_or_create(id=1, defaults=params)[0]
-        get_accounts_ETNA()  # we need account for which we send order
-        send_order_ETNA(order)
+        order = send_order_ETNA(order, self.login.Ticket, ETNA_ACCOUNT_ID)
         self.assertTrue(order.Order_Id != -1)
         return order
 
@@ -65,7 +70,7 @@ class BaseTest(TestCase):
         self.assertTrue(len(something) == 1)
         self.assertTrue(order.is_complete is False)
 
-        order = update_ETNA_order_status(order.Order_Id)
+        order = update_ETNA_order_status(order.Order_Id, self.login.Ticket)
         one_order = OrderETNA.objects.is_complete()
         nothing = OrderETNA.objects.is_not_complete()
         self.assertTrue(len(one_order) == 1)

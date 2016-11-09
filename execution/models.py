@@ -11,7 +11,7 @@ class ETNALogin(models.Model):
     ResponseCode = models.IntegerField()
     Ticket = models.CharField(max_length=521)
     Result = models.OneToOneField('LoginResult', related_name='ETNALogin')
-    date_created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
 
 
 class LoginResult(models.Model):
@@ -22,7 +22,7 @@ class LoginResult(models.Model):
 class AccountId(models.Model):
     ResponseCode = models.IntegerField()
     Result = JSONField()
-    date_created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
 
 
 class SecurityETNA(models.Model):
@@ -31,7 +31,7 @@ class SecurityETNA(models.Model):
     Description = models.CharField(max_length=128)
     Currency = models.CharField(max_length=20)
     Price = models.FloatField()
-    date_created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
 
 
 class OrderETNAManager(models.Manager):
@@ -97,12 +97,12 @@ class OrderETNA(models.Model):
     TimeInForce = models.IntegerField(choices=TimeInForceChoice.choices(), default=TimeInForceChoice.GoodTillDate.value)
     StopPrice = models.FloatField(default=0)
     ExpireDate = models.IntegerField()
-    date_updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
 
     # response fields
     # -1 not assigned - we will get order Id as response from REST and update it
     Order_Id = models.IntegerField(default=-1)
-    Status = models.CharField(choices=StatusChoice.choices(), default=StatusChoice.New.value, max_length=128)
+    Status = models.CharField(choices=StatusChoice.choices(), default=StatusChoice.New.value, max_length=128, db_index=True)
     FillPrice = models.FloatField(default=0)
     FillQuantity = models.IntegerField(default=0)
     Description = models.CharField(max_length=128)
