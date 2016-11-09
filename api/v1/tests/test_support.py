@@ -31,3 +31,14 @@ class SupportTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(mail.outbox[0].subject, 'Client Requests Support',
                          msg='Email outbox has email with expected subject')
+
+    def test_request_advisor_support_no_text(self):
+        url = '/api/v1/support-requests'
+        self.client.force_authenticate(self.betasmartz_client.user)
+        data = {
+            'url': 'example.com',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(mail.outbox[0].subject, 'Client Requests Support',
+                         msg='Email outbox has email with expected subject')

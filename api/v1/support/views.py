@@ -26,7 +26,7 @@ class RequestAdvisorSupportView(BaseApiView):
             serializer.is_valid(raise_exception=True)
             request_advisor_support(user,
                                     serializer.validated_data['url'],
-                                    serializer.validated_data['text'])
+                                    serializer.validated_data.get('text', None))
             return Response('ok', status=status.HTTP_200_OK)
         else:
             return Response('User is not a client', status=status.HTTP_401_UNAUTHORIZED)

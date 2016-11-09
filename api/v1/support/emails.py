@@ -7,4 +7,7 @@ def request_advisor_support(user, url, text):
     url they had the problem on and a text message
     from the client.
     """
-    user.client.advisor.user.email_user('Client Requests Support', 'Client %s at %s\n%s' % (user.client, url, text))
+    if text is not None:
+        user.client.advisor.user.email_user('Client Requests Support', 'Client %s at %s\n%s' % (user.client, url, text))
+    else:
+        user.client.advisor.user.email_user('Client Requests Support', 'Client %s at %s' % (user.client, url))

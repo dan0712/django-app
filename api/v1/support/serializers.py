@@ -9,4 +9,4 @@ from rest_framework.exceptions import ValidationError
 
 class RequestAdvisorSupportSerializer(serializers.Serializer):
     url = serializers.CharField()
-    text = serializers.CharField()
+    text = serializers.CharField(required=False)
