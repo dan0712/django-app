@@ -1,8 +1,9 @@
 from unittest.mock import Mock
 from django.test import TestCase
-from execution.ETNA_api.send_orders import login, get_accounts_ETNA, get_current_account_id, get_current_login, \
+from execution.ETNA_api.send_orders import _login, get_accounts_ETNA, get_current_account_id, get_current_login, \
     get_security_ETNA, get_security, send_order_ETNA, logout, update_ETNA_order_status
-from execution.models import OrderETNA
+from execution.models import OrderETNA, ETNALogin
+from execution.ETNA_api.send_orders import ResponseCode
 # demo.etnatrader.com
 
 # connect ETNA models to ORDER models
@@ -10,7 +11,7 @@ from execution.models import OrderETNA
 
 class BaseTest(TestCase):
     def setUp(self):
-        login()
+        self.login = get_current_login()
 
     def test_ETNA_login(self):
         login_response = get_current_login()
@@ -18,6 +19,13 @@ class BaseTest(TestCase):
         self.assertTrue(login_response.ResponseCode == 0)
         self.assertTrue(len(login_response.Result.SessionId) == 36)
         self.assertTrue(login_response.Result.UserId > 0)
+
+    def test_ETNA_multiple_logins(self):
+        _login()
+        _login()
+        get_current_login()
+        logins = ETNALogin.objects.filter(ResponseCode=ResponseCode.Valid.value)
+        self.assertTrue(len(logins) == 1)
 
     def test_get_accounts(self):
         get_accounts_ETNA()
@@ -66,4 +74,4 @@ class BaseTest(TestCase):
         self.assertTrue(order.Status == OrderETNA.StatusChoice.Rejected.value)
 
     def tearDown(self):
-        logout()
+        logout(self.login.Ticket)

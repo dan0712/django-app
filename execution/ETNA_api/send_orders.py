@@ -8,6 +8,7 @@ https://realpython.com/blog/python/asynchronous-tasks-with-django-and-celery/
 http://stackoverflow.com/questions/30259452/proper-way-to-consume-data-from-restful-api-in-django
 '''
 
+
 import requests
 from execution.serializers import LoginSerializer, AccountIdSerializer, SecurityETNASerializer, OrderETNASerializer
 from execution.models import ETNALogin, AccountId, SecurityETNA, OrderETNA
@@ -16,57 +17,65 @@ from datetime import timedelta
 from django.utils import timezone
 from common.structures import ChoiceEnum
 from rest_framework.renderers import JSONRenderer
+from local_settings import ETNA_ENDPOINT_URL, ETNA_LOGIN, ETNA_PASSWORD, ETNA_X_API_KEY, ETNA_X_API_ROUTING, CONTENT_TYPE
 
 
-CONTENT_TYPE = 'application/json'
-X_API_ROUTING = 'demo'
-X_API_KEY = 'lOxygJOL4y8ZvKFmh6zb07tEHuWNbukI3AS4P4Ho'
-ENDPOINT_URL = 'https://api.etnatrader.com/v0/' + X_API_ROUTING
-LOGIN = 'les'
-PASSWORD = 'B0ngyDung'
 LOGIN_TIME = 10  # in minutes - after this we will assume we logged out and need to relog
+DEVICE = 'ios'
+VERSION = '3.00'
 
 
 class ResponseCode(ChoiceEnum):
     Valid = 0,
-    Invalid = -1 #no idea, just guess
+    Invalid = -1  # no idea, just guess
 
 
 def _get_header():
     header = dict()
-    header['x-api-key'] = X_API_KEY
-    header['x-api-routing'] = X_API_ROUTING
+    header['x-api-key'] = ETNA_X_API_KEY
+    header['x-api-routing'] = ETNA_X_API_ROUTING
     header['Content-type'] = CONTENT_TYPE
     return header
 
 
-def login():
+def _login():
     body = '''{
-    "device":"ios",
-    "version": "3.00",
-    "login": "les",
-    "password": "B0ngyDung"
-    }'''
-    url = ENDPOINT_URL + '/login'
+    "device":"%s",
+    "version": "%s",
+    "login": "%s",
+    "password": "%s"
+    }''' % (DEVICE, VERSION, ETNA_LOGIN, ETNA_PASSWORD)
+    url = ETNA_ENDPOINT_URL + '/login'
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
     serializer = LoginSerializer(data=response)
     if not serializer.is_valid():
         raise Exception('error deserializing ETNA login response')
     serializer.save()
+    return serializer.validated_data['Ticket']
 
 
 def get_current_login():
     qs = ETNALogin.objects.filter(ResponseCode=ResponseCode.Valid.value)
-    if len(qs) == 0:
-        raise Exception('we are currently not logged in')
+    logins = qs.count()
+
+    if logins == 0:
+        _login()
+        get_current_login()
 
     latest_login = qs.latest('date_created')
 
     # we should test if we are logged in currently - we will use simple check,
     # if we logged in less than 10 minutes ago, we're all good
     if latest_login.date_created + timedelta(minutes=LOGIN_TIME) < timezone.now():
-        raise Exception('we are currently not logged in')
+        logout(latest_login.Ticket)
+        _login()
+        get_current_login()
+
+    #logout any other logins
+    logged_in = qs.exclude(Ticket=latest_login.Ticket)
+    for l in logged_in:
+        logout(l.Ticket)
 
     return latest_login
 
@@ -79,7 +88,7 @@ def get_current_account_id():
 
 
 def get_accounts_ETNA():
-    url = ENDPOINT_URL + '/get-accounts'
+    url = ETNA_ENDPOINT_URL + '/get-accounts'
     body = '''{
         "ticket": "%s",
     }''' % get_current_login().Ticket
@@ -88,39 +97,6 @@ def get_accounts_ETNA():
     serializer = AccountIdSerializer(data=response)
     if not serializer.is_valid():
         raise Exception('wrong ETNA account info')
-    serializer.save()
-
-
-def get_security_by_mask_ETNA(mask):
-    header = _get_header()
-    header['Accept'] = '*/*'
-    body = '''{
-        "ticket": "%s",
-        "count": 20,
-        "mask":"%s"
-    }''' % (get_current_login().Ticket, mask)
-    url = ENDPOINT_URL + '/get-securities-by-mask'
-    r = requests.post(url=url, data=body, headers=header)
-    response = r.json()
-
-
-def get_security_ETNA_obsolete(symbol):
-    url = ENDPOINT_URL + '/get-security'
-    body = '''{
-        "ticket": "%s",
-        "symbol": "%s"
-    }''' % (get_current_login().Ticket, symbol)
-    r = requests.post(url=url,data=body, headers=_get_header())
-    response = r.json()
-
-    _validate_json_response(response, Exception('wrong ETNA security returned'))
-
-    response = response['Result']
-    response['symbol_id'] = response['Id'] # ugly hack
-
-    serializer = SecurityETNASerializer(data=response)
-    if not serializer.is_valid():
-        raise Exception('wrong ETNA security returned')
     serializer.save()
 
 
@@ -133,7 +109,7 @@ def _validate_json_response(response, exception):
 
 
 def get_security_ETNA(symbol):
-    url = ENDPOINT_URL + '/securities/' + symbol
+    url = ETNA_ENDPOINT_URL + '/securities/' + symbol
 
     header = _get_header()
     header['ticket'] = get_current_login().Ticket
@@ -162,33 +138,13 @@ def send_order_ETNA(order):
     serializer = OrderETNASerializer(order)
     json_order = JSONRenderer().render(serializer.data).decode("utf-8")
 
-    url = ENDPOINT_URL + '/place-trade-order'
+    url = ETNA_ENDPOINT_URL + '/place-trade-order'
     body = '''{
     "ticket": "%s",
     "accountId": "%d",
     "order":
         %s
     }''' % (get_current_login().Ticket, get_current_account_id(), json_order)
-
-    fake_body = '''{
-     "ticket":"%s",
-     "accountId":"%d",
-     "order":
-        {
-        "Price":10.0,
-        "Exchange":"Auto",
-        "TrailingLimitAmount":0.0,
-        "AllOrNone":0,
-        "TrailingStopAmount":0.0,
-        "Type":1,
-        "Quantity":1,
-        "SecurityId":5,
-        "Side":0,
-        "TimeInForce":0,
-        "StopPrice":0.0,
-        "ExpireDate":0
-        }
-    }''' % (get_current_login().Ticket, get_current_account_id())
 
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
@@ -202,7 +158,7 @@ def send_order_ETNA(order):
 
 
 def update_ETNA_order_status(order_id):
-    url = ENDPOINT_URL + '/get-order'
+    url = ETNA_ENDPOINT_URL + '/get-order'
     body = '''{
         "ticket": "%s",
         "orderId": "%d"
@@ -221,20 +177,18 @@ def update_ETNA_order_status(order_id):
     return order
 
 
-def logout():
-    url = ENDPOINT_URL + '/logout'
+def logout(ticket):
+    url = ETNA_ENDPOINT_URL + '/logout'
     body = '''{
     "ticket": "%s"
-    }''' % get_current_login().Ticket
+    }''' % ticket
     r = requests.post(url=url, data=body, headers=_get_header())
     response = r.json()
+    if response['ResponseCode'] == ResponseCode.Valid.value:
+        set_logged_out(ticket)
 
 
-def set_logged_out():
-    valid_logins = ETNALogin.objects\
-        .filter(ResponseCode=ResponseCode.Valid.value)\
-        .filter(date_created__gt=timezone.now() - timedelta(minutes=LOGIN_TIME))
-
-    for l in valid_logins:
-        l.ResponseCode = ResponseCode.Invalid.value
-        l.save()
+def set_logged_out(ticket):
+    login = ETNALogin.objects.get(Ticket=ticket)
+    login.ResponseCode = ResponseCode.Invalid.value
+    login.save()
