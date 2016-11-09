@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 from django.test import TestCase
 from execution.ETNA_api.send_orders import _login, get_accounts_ETNA, _get_current_account_id, get_current_login, \
-    _get_security_ETNA, get_security, send_order_ETNA, logout, update_ETNA_order_status
+    _get_security_ETNA, get_security, send_order_ETNA, logout, update_ETNA_order_status, insert_order_ETNA
 from execution.models import OrderETNA, ETNALogin
 from execution.ETNA_api.send_orders import ResponseCode
 from local_settings import ETNA_ACCOUNT_ID
@@ -33,31 +33,15 @@ class BaseTest(TestCase):
         account_number = _get_current_account_id()
         self.assertTrue(account_number > 0)
 
-    def test_get_security1(self):
-        _get_security_ETNA('GOOG', self.login.Ticket)
-        etna_security = get_security('GOOG')
-        self.assertTrue(etna_security.Symbol == 'GOOG')
-        self.assertTrue(etna_security.symbol_id == 5)
-
-    def test_get_security2(self):
+    def test_get_security(self):
         etna_security = get_security('GOOG')
         self.assertTrue(etna_security.Symbol == 'GOOG')
         self.assertTrue(etna_security.symbol_id == 5)
 
     def test_send_trade(self):
         symbol = 'GOOG'
-        _get_security_ETNA(symbol, self.login.Ticket)
-        etna_security = get_security(symbol) # not sure if this gets us current price as well
-
-        params = {'Price': etna_security.Price,
-                  'Quantity': 1,
-                  'SecurityId': etna_security.symbol_id,
-                  'Side': OrderETNA.SideChoice.Buy.value,
-                  'TimeInForce': 0,
-                  'ExpireDate': 0}
-
-        order = OrderETNA.objects.get_or_create(id=1, defaults=params)[0]
-        order = send_order_ETNA(order, self.login.Ticket, ETNA_ACCOUNT_ID)
+        etna_order = insert_order_ETNA(10, 1, OrderETNA.SideChoice.Buy.value, symbol)
+        order = send_order_ETNA(etna_order, self.login.Ticket, ETNA_ACCOUNT_ID)
         self.assertTrue(order.Order_Id != -1)
         return order
 

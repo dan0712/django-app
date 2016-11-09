@@ -174,6 +174,18 @@ def get_security(symbol):
     return qs.latest('created')
 
 
+def insert_order_ETNA(price, quantity, side, symbol):
+    etna_security = get_security(symbol)
+
+    order = OrderETNA.objects.create(Price=price,
+                                     Quantity=quantity,
+                                     SecurityId=etna_security.symbol_id,
+                                     Side=side,
+                                     TimeInForce=0,
+                                     ExpireDate=0)
+    return order
+
+
 def send_order_ETNA(order, ticket, account_id):
     exception_text = 'wrong ETNA trade info received'
     serializer = OrderETNASerializer(order)

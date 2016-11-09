@@ -8,7 +8,7 @@ logger = logging.getLogger('execution.models')
 
 class ETNALogin(models.Model):
     # big caps due to serializer - response json
-    ResponseCode = models.IntegerField()
+    ResponseCode = models.IntegerField(db_index=True)
     Ticket = models.CharField(max_length=521)
     Result = models.OneToOneField('LoginResult', related_name='ETNALogin')
     created = models.DateTimeField(auto_now_add=True, db_index=True)
