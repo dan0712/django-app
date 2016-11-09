@@ -29,9 +29,10 @@ class BaseTest(TestCase):
         self.assertTrue(len(logins) == 1)
 
     def test_get_accounts(self):
+        #  this will be used only once at the beginning, else we will use ETNA_ACCOUNT_ID from local_settings.py
         get_accounts_ETNA(self.login.Ticket)
-        account_number = _get_current_account_id()
-        self.assertTrue(account_number > 0)
+        account_id = _get_current_account_id()
+        self.assertTrue(account_id > 0)
 
     def test_get_security(self):
         etna_security = get_security('GOOG')
