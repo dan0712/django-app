@@ -10,10 +10,18 @@ from django.template.loader import render_to_string
 from django.utils.functional import cached_property, curry
 from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
-
+from django.utils import timezone
 from common.structures import ChoiceEnum
 from common.utils import d2dt
 from main.constants import GENDER_MALE, GENDERS
+
+
+class TimestampedModelMixin(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
 class PersonalData(models.Model):

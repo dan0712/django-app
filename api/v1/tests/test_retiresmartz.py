@@ -57,6 +57,8 @@ class RetiresmartzTests(APITestCase):
         self.assertNotIn('goal_setting', response.data)
         self.assertEqual(response.data['statement_of_advice'], soa.id)
         self.assertEqual(response.data['statement_of_advice_url'], '/statements/retirement/{}.pdf'.format(soa.id))
+        self.assertNotEqual(response.data['created_at'], None)
+        self.assertNotEqual(response.data['updated_at'], None)
 
     def test_agreed_on_plan_generates_soa(self):
         """
