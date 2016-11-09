@@ -186,7 +186,7 @@ class ClientViewSet(ApiViewMixin,
                     plan.selected_life_expectancy += 7
                     plan.save()
 
-        elif updated.daily_exercise != orig.daily_exercise:
+        if updated.daily_exercise != orig.daily_exercise:
             # exercise only
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
@@ -198,7 +198,7 @@ class ClientViewSet(ApiViewMixin,
                 advice.save()
 
         # frontend posts one at a time, weight then height, not together in one post
-        elif (updated.weight != orig.weight or updated.height != orig.height):
+        if (updated.weight != orig.weight or updated.height != orig.height):
             # weight and/or height updated
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
@@ -209,7 +209,7 @@ class ClientViewSet(ApiViewMixin,
                 advice.text = advice_responses.get_weight_and_height_only(advice)
                 advice.save()
 
-        elif life_expectancy_field_updated and (updated.daily_exercise and
+        if life_expectancy_field_updated and (updated.daily_exercise and
            updated.weight and updated.height and updated.smoker is not None and
            updated.drinks is not None):
             # every wellbeing field
@@ -221,18 +221,18 @@ class ClientViewSet(ApiViewMixin,
                 advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_all_wellbeing_entries(advice)
                 advice.save()
-        elif life_expectancy_field_updated:
-            # life expectancy field updated but not all of them
-            # and not an individual one must be combination of
-            # wellbeing entries updated
-            plan = RetirementPlan.objects.filter(client=updated).first()
-            if plan:
-                e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
-                                                                         user=updated.user,
-                                                                         obj=updated)
-                advice = RetirementAdvice(plan=plan, trigger=e)
-                advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
-                advice.save()
+        # elif life_expectancy_field_updated:
+        #     # life expectancy field updated but not all of them
+        #     # and not an individual one must be combination of
+        #     # wellbeing entries updated
+        #     plan = RetirementPlan.objects.filter(client=updated).first()
+        #     if plan:
+        #         e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
+        #                                                                  user=updated.user,
+        #                                                                  obj=updated)
+        #         advice = RetirementAdvice(plan=plan, trigger=e)
+        #         advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
+        #         advice.save()
         return Response(self.serializer_response_class(updated).data)
 
 
