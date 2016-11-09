@@ -183,7 +183,7 @@ class ClientViewSet(ApiViewMixin,
                     plan.selected_life_expectancy += 7
                     plan.save()
 
-        if updated.daily_exercise != orig.daily_exercise:
+        elif updated.daily_exercise != orig.daily_exercise:
             # exercise only
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
@@ -194,7 +194,8 @@ class ClientViewSet(ApiViewMixin,
                 advice.text = advice_responses.get_exercise_only(advice)
                 advice.save()
 
-        if (updated.weight != orig.weight or updated.height != orig.height):
+        # frontend posts one at a time, weight then height, not together in one post
+        elif (updated.weight != orig.weight or updated.height != orig.height):
             # weight and/or height updated
             plan = RetirementPlan.objects.filter(client=updated).first()
             if plan:
@@ -219,16 +220,19 @@ class ClientViewSet(ApiViewMixin,
         #         advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
         #         advice.save()
 
-        # if updated.daily_exercise and updated.weight and updated.height and updated.smoker is not None:
-        #     # every wellbeing field
-        #     plan = RetirementPlan.objects.filter(client=updated).first()
-        #     if plan:
-        #         e = Event.RETIRESMARTZ_ALL_WELLBEING_ENTRIES.log(None,
-        #                                                          user=updated.user,
-        #                                                          obj=updated)
-        #         advice = RetirementAdvice(plan=plan, trigger=e)
-        #         advice.text = advice_responses.get_all_wellbeing_entries(advice)
-        #         advice.save()
+        elif (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
+           updated.smoker != orig.smoker or updated.drinks != orig.drinks) and (updated.daily_exercise and
+           updated.weight and updated.height and updated.smoker is not None and
+           updated.drinks is not None):
+            # every wellbeing field
+            plan = RetirementPlan.objects.filter(client=updated).first()
+            if plan:
+                e = Event.RETIRESMARTZ_ALL_WELLBEING_ENTRIES.log(None,
+                                                                 user=updated.user,
+                                                                 obj=updated)
+                advice = RetirementAdvice(plan=plan, trigger=e)
+                advice.text = advice_responses.get_all_wellbeing_entries(advice)
+                advice.save()
         return Response(self.serializer_response_class(updated).data)
 
 
