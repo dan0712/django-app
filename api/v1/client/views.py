@@ -161,6 +161,9 @@ class ClientViewSet(ApiViewMixin,
         updated = serializer.update(instance, serializer.validated_data)
 
         # RetirementAdvice Triggers
+        life_expectancy_field_updated = (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
+           updated.smoker != orig.smoker or updated.drinks != orig.drinks)
+
         if updated.smoker != orig.smoker:
             if updated.smoker:
                 plan = RetirementPlan.objects.filter(client=updated).first()
@@ -206,22 +209,7 @@ class ClientViewSet(ApiViewMixin,
                 advice.text = advice_responses.get_weight_and_height_only(advice)
                 advice.save()
 
-        # if (updated.daily_exercise and updated.smoker is not None) \
-        #    or (updated.weight and updated.height and updated.daily_exercise) \
-        #    or (updated.smoker is not None and updated.daily_exercise) \
-        #    or (updated.weight and updated.height and updated.smoker is not None):
-        #     # one or combination but not all
-        #     plan = RetirementPlan.objects.filter(client=updated).first()
-        #     if plan:
-        #         e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
-        #                                                                  user=updated.user,
-        #                                                                  obj=updated)
-        #         advice = RetirementAdvice(plan=plan, trigger=e)
-        #         advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
-        #         advice.save()
-
-        elif (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
-           updated.smoker != orig.smoker or updated.drinks != orig.drinks) and (updated.daily_exercise and
+        elif life_expectancy_field_updated and (updated.daily_exercise and
            updated.weight and updated.height and updated.smoker is not None and
            updated.drinks is not None):
             # every wellbeing field
@@ -232,6 +220,18 @@ class ClientViewSet(ApiViewMixin,
                                                                  obj=updated)
                 advice = RetirementAdvice(plan=plan, trigger=e)
                 advice.text = advice_responses.get_all_wellbeing_entries(advice)
+                advice.save()
+        elif life_expectancy_field_updated:
+            # life expectancy field updated but not all of them
+            # and not an individual one must be combination of
+            # wellbeing entries updated
+            plan = RetirementPlan.objects.filter(client=updated).first()
+            if plan:
+                e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
+                                                                         user=updated.user,
+                                                                         obj=updated)
+                advice = RetirementAdvice(plan=plan, trigger=e)
+                advice.text = advice_responses.get_combination_of_more_than_one_entry_but_not_all(advice)
                 advice.save()
         return Response(self.serializer_response_class(updated).data)
 

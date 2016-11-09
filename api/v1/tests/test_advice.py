@@ -288,19 +288,19 @@ class RetiresmartzAdviceTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
-    # def test_combination_wellbeing_entries(self):
-    #     data = {
-    #         'weight': 145,
-    #         'height': 2,
-    #         'daily_exercise': 20,
-    #     }
-    #     self.client.force_authenticate(user=self.plan.client.user)
-    #     response = self.client.put(self.client_url, data)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_combination_wellbeing_entries(self):
+        data = {
+            'weight': 145,
+            'height': 2,
+            'daily_exercise': 20,
+        }
+        self.client.force_authenticate(user=self.plan.client.user)
+        response = self.client.put(self.client_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    #     response = self.client.get(self.advice_url)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(len(response.data['results']), 3)
+        response = self.client.get(self.advice_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_all_wellbeing_entries(self):
         data = {
