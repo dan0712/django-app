@@ -16,7 +16,7 @@ from common.utils import d2dt
 from main.constants import GENDER_MALE, GENDERS
 
 
-class TimestampedModelMixin(models.Model):
+class TimestampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

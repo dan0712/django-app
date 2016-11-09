@@ -24,11 +24,11 @@ from pinax.eventlog.models import log
 from retiresmartz import advice_responses
 from django.utils.functional import cached_property
 import json
-from main.abstract import TimestampedModelMixin
+from main.abstract import TimestampedModel
 logger = logging.getLogger('retiresmartz.models')
 
 
-class RetirementPlan(TimestampedModelMixin):
+class RetirementPlan(TimestampedModel):
     class LifestyleCategory(ChoiceEnum):
         OK = 1, 'Doing OK'
         COMFORTABLE = 2, 'Comfortable'
