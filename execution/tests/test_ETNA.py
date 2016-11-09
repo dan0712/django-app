@@ -2,17 +2,20 @@ from unittest.mock import Mock
 from django.test import TestCase
 from execution.ETNA_api.send_orders import _login, get_accounts_ETNA, _get_current_account_id, get_current_login, \
     _get_security_ETNA, get_security, send_order_ETNA, logout, update_ETNA_order_status, insert_order_ETNA
-from execution.models import OrderETNA, ETNALogin
+from execution.models import ETNALogin
+from main.models import OrderETNA
 from execution.ETNA_api.send_orders import ResponseCode
 from local_settings import ETNA_ACCOUNT_ID
+from api.v1.tests.factories import TickerFactory
 # demo.etnatrader.com
 
-# connect ETNA models to ORDER models
+# connect ETNA models to ORDER models - maybe get rid of apexORDER and replace with ETNAorder
 
 
 class BaseTest(TestCase):
     def setUp(self):
         self.login = get_current_login()
+        self.ticker = TickerFactory.create(symbol='GOOG')
 
     def test_ETNA_login(self):
         login_response = get_current_login()
@@ -35,13 +38,12 @@ class BaseTest(TestCase):
         self.assertTrue(account_id > 0)
 
     def test_get_security(self):
-        etna_security = get_security('GOOG')
-        self.assertTrue(etna_security.Symbol == 'GOOG')
+        etna_security = get_security(self.ticker.symbol)
+        self.assertTrue(etna_security.Symbol == self.ticker.symbol)
         self.assertTrue(etna_security.symbol_id == 5)
 
     def test_send_trade(self):
-        symbol = 'GOOG'
-        etna_order = insert_order_ETNA(10, 1, OrderETNA.SideChoice.Buy.value, symbol)
+        etna_order = insert_order_ETNA(10, 1, OrderETNA.SideChoice.Buy.value, self.ticker)
         order = send_order_ETNA(etna_order, self.login.Ticket, ETNA_ACCOUNT_ID)
         self.assertTrue(order.Order_Id != -1)
         return order

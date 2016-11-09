@@ -7,8 +7,8 @@ from django.db import transaction
 from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
-from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, ApexOrder, MarketOrderRequestAPEX, \
-    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, MarketOrderRequestAPEX, \
+    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale, ApexOrder
 import types
 from collections import defaultdict
 from django.db.models import Sum, F, Avg,Case, When, Value, FloatField

@@ -13,8 +13,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest, MarketOrderRequest, \
-    ApexFill, ApexOrder, ExecutionApexFill, Execution, RecurringTransaction, AccountGroup, Platform
-
+    ApexFill, ExecutionApexFill, Execution, RecurringTransaction, AccountGroup, Platform, ApexOrder
 from retiresmartz.models import RetirementPlan, RetirementAdvice, RetirementPlanAccount
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \

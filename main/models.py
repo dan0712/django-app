@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime, date, timedelta
 from enum import Enum, unique
 
+import numpy as np
 import scipy.stats as st
-
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, Group, \
     PermissionsMixin, UserManager, send_mail
@@ -47,7 +47,6 @@ from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
 
-import numpy as np
 
 logger = logging.getLogger('main.models')
 
@@ -2117,18 +2116,92 @@ class GoalMetric(models.Model):
                                                                  self.id)
 
 
-class ExecutionApexFill(models.Model):
-    # one apex_fill may contribute to many ExecutionApexFills and many Executions
-    apex_fill = models.ForeignKey('ApexFill', related_name='execution_apex_fill')
-    execution = models.OneToOneField('Execution', related_name='execution_apex_fill')
+class OrderETNAManager(models.Manager):
+    def is_complete(self):
+        return self.filter(Status__in=OrderETNA.StatusChoice.complete_statuses())
+
+    def is_not_complete(self):
+        return self.exclude(Status__in=OrderETNA.StatusChoice.complete_statuses())
 
 
-class ApexFill(models.Model):
-    apex_order = models.ForeignKey('ApexOrder', related_name='apex_fills')
-    volume = models.FloatField(help_text="Will be negative for a sell.")
-    price = models.FloatField(help_text="Price for the fill.")
-    executed = models.DateTimeField(help_text='The time the trade was executed.')
-    # also has field 'execution_apex_fill' from model ExecutionApexFill
+class OrderETNA(models.Model):
+    class OrderTypeChoice(ChoiceEnum):
+        Market = 0
+        Limit = 1
+
+    class SideChoice(ChoiceEnum):
+        Buy = 0
+        Sell = 1
+
+    class TimeInForceChoice(ChoiceEnum):
+        Day = 0
+        GoodTillCancel = 1
+        AtTheOpening = 2
+        ImmediateOrCancel = 3
+        FillOrKill = 4
+        GoodTillCrossing = 5
+        GoodTillDate = 6
+
+    class StatusChoice(ChoiceEnum):
+        New = 'New'
+        Sent = 'Sent'
+        PartiallyFilled = 'PartiallyFilled'
+        Filled = 'Filled'
+        DoneForDay = 'DoneForDay'
+        Canceled = 'Canceled'
+        Replaced = 'Replaced'
+        PendingCancel = 'PendingCancel'
+        Stopped = 'Stopped'
+        Rejected = 'Rejected'
+        Suspended = 'Suspended'
+        PendingNew = 'PendingNew'
+        Calculated = 'Calculated'
+        Expired = 'Expired'
+        AcceptedForBidding = 'AcceptedForBidding'
+        PendingReplace = 'PendingReplace'
+        Error = 'Error'
+
+        @classmethod
+        def complete_statuses(cls):
+            accessor = OrderETNA.StatusChoice
+            return (accessor.Filled.value, accessor.DoneForDay.value, accessor.Canceled.value, accessor.Rejected.value,
+                    accessor.Expired.value, accessor.Error.value)
+
+    class FillInfo(ChoiceEnum):
+        FILLED = 0 # entire quantity of order was filled
+        PARTIALY_FILLED = 1 # less than entire quantity was filled, but > 0
+        UNFILLED = 2 # 0 shares were transacted for this order
+
+    Price = models.FloatField()
+    Exchange = models.CharField(default="Auto", max_length=128)
+    TrailingLimitAmount = models.FloatField(default=0)
+    AllOrNone = models.IntegerField(default=0)
+    TrailingStopAmount = models.FloatField(default=0)
+    Type = models.IntegerField(choices=OrderTypeChoice.choices(),default=OrderTypeChoice.Limit.value)
+    Quantity = models.IntegerField()
+    SecurityId = models.IntegerField()
+    Side = models.IntegerField(choices=SideChoice.choices())
+    TimeInForce = models.IntegerField(choices=TimeInForceChoice.choices(), default=TimeInForceChoice.GoodTillDate.value)
+    StopPrice = models.FloatField(default=0)
+    ExpireDate = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    # response fields
+    # -1 not assigned - we will get order Id as response from REST and update it
+    Order_Id = models.IntegerField(default=-1)
+    Status = models.CharField(choices=StatusChoice.choices(), default=StatusChoice.New.value, max_length=128, db_index=True)
+    FillPrice = models.FloatField(default=0)
+    FillQuantity = models.IntegerField(default=0)
+    Description = models.CharField(max_length=128)
+    objects = OrderETNAManager() # ability to filter based on this, property cannot be used to filter
+
+    ticker = models.ForeignKey('Ticker', related_name='OrderETNA', on_delete=PROTECT)
+    fill_info = models.IntegerField(choices=FillInfo.choices(), default=FillInfo.UNFILLED.value)
+    # also has field order_fills from ApexFill model
+
+    @property
+    def is_complete(self):
+        return self.Status in self.StatusChoice.complete_statuses()
 
 
 class ApexOrder(models.Model):
@@ -2144,9 +2217,6 @@ class ApexOrder(models.Model):
         FILLED = 0 # entire quantity of order was filled
         PARTIALY_FILLED = 1 # less than entire quantity was filled, but > 0
         UNFILLED = 2 # 0 shares were transacted for this order
-
-    # The list of Order states that are still considered open.
-    OPEN_STATES = [State.PENDING.value, State.APPROVED.value, State.SENT.value]
 
     state = models.IntegerField(choices=State.choices(), default=State.PENDING.value)
     fill_info = models.IntegerField(choices=FillInfo.choices(), default=FillInfo.UNFILLED.value)
@@ -2167,6 +2237,20 @@ class ApexOrder(models.Model):
             'morsAPEX': list(self.morsAPEX) if hasattr(self, 'morsAPEX') else [],
             'apex_fills': list(self.apex_fills) if hasattr(self, 'apex_fills') else [],
         }
+
+
+class ExecutionApexFill(models.Model):
+    # one apex_fill may contribute to many ExecutionApexFills and many Executions
+    apex_fill = models.ForeignKey('ApexFill', related_name='execution_apex_fill')
+    execution = models.OneToOneField('Execution', related_name='execution_apex_fill')
+
+
+class ApexFill(models.Model):
+    apex_order = models.ForeignKey('ApexOrder', related_name='apex_fills')
+    volume = models.FloatField(help_text="Will be negative for a sell.")
+    price = models.FloatField(help_text="Price for the fill.")
+    executed = models.DateTimeField(help_text='The time the trade was executed.')
+    # also has field 'execution_apex_fill' from model ExecutionApexFill
 
 
 class MarketOrderRequestAPEX(models.Model):

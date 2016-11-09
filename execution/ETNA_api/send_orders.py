@@ -9,7 +9,8 @@ http://stackoverflow.com/questions/30259452/proper-way-to-consume-data-from-rest
 '''
 import requests
 from execution.serializers import LoginSerializer, AccountIdSerializer, SecurityETNASerializer, OrderETNASerializer
-from execution.models import ETNALogin, AccountId, SecurityETNA, OrderETNA
+from execution.models import ETNALogin, AccountId, SecurityETNA
+from main.models import OrderETNA
 from django.db import connection
 from datetime import timedelta
 from django.utils import timezone
@@ -18,6 +19,7 @@ from rest_framework.renderers import JSONRenderer
 from local_settings import ETNA_ENDPOINT_URL, ETNA_LOGIN, ETNA_PASSWORD, ETNA_X_API_KEY, ETNA_X_API_ROUTING, \
     CONTENT_TYPE, ETNA_ACCOUNT_ID
 from execution.exceptions import ETNAApiException
+from main.models import Ticker
 import logging
 logger = logging.getLogger('execution.ETNA_api')
 
@@ -174,15 +176,15 @@ def get_security(symbol):
     return qs.latest('created')
 
 
-def insert_order_ETNA(price, quantity, side, symbol):
-    etna_security = get_security(symbol)
-
+def insert_order_ETNA(price, quantity, side, ticker):
+    etna_security = get_security(ticker.symbol)
     order = OrderETNA.objects.create(Price=price,
                                      Quantity=quantity,
                                      SecurityId=etna_security.symbol_id,
                                      Side=side,
                                      TimeInForce=0,
-                                     ExpireDate=0)
+                                     ExpireDate=0,
+                                     ticker=ticker)
     return order
 
 

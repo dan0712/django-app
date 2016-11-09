@@ -1,27 +1,12 @@
-from datetime import datetime
-from unittest.mock import Mock
-
+from django.db.models import Sum
 from django.test import TestCase
-import numpy as np
-from django.utils import timezone
 
-from execution.account_groups.account_allocations import AccountAllocations
-from execution.account_groups.account_allocations import Execution as ExecutionClass
-from execution.broker.ibroker import IBroker
-from execution.broker.interactive_brokers.end_of_day.end_of_day import create_django_executions
-from execution.broker.interactive_brokers.order.order import Order, OrderStatus
-from execution.data_structures.market_depth import MarketDepth, SingleLevelMarketDepth
-from execution.end_of_day import *
-from execution.end_of_day import get_execution_requests, transform_execution_requests
-from main.models import ExternalInstrument, InvestmentType, ApexFill, ExecutionApexFill
-from main.tests.fixture import Fixture1
 from api.v1.tests.factories import ExecutionRequestFactory, MarketOrderRequestFactory, \
-    ClientAccountFactory, GoalFactory, TickerFactory, ApexFillFactory, ApexOrderFactory, ExecutionFactory, ExecutionApexFillFactory, ExecutionDistributionFactory, TransactionFactory
-
+    ClientAccountFactory, GoalFactory, TickerFactory, ApexFillFactory, ApexOrderFactory
+from execution.end_of_day import *
 from execution.end_of_day import create_apex_orders, process_apex_fills, send_apex_order
+from main.models import ApexFill, ApexOrder
 
-from django.db.models import Sum, F
-from django.db.models.functions import Coalesce
 
 class BaseTest(TestCase):
     def setUp(self):

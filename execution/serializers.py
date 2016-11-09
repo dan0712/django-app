@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from execution.models import ETNALogin, LoginResult, AccountId, SecurityETNA, OrderETNA
+from execution.models import ETNALogin, LoginResult, AccountId, SecurityETNA
+from main.models import OrderETNA
 
 
 class ResultSerializer(serializers.ModelSerializer):
