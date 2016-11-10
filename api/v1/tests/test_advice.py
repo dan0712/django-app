@@ -217,6 +217,7 @@ class RetiresmartzAdviceTests(APITestCase):
         data = {
             'smoker': True,
         }
+        prev_life_expectancy = self.plan2.selected_life_expectancy
         self.client.force_authenticate(user=self.plan.client.user)
         response = self.client.put(self.client_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -230,6 +231,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
     def test_smoker_no(self):
         pre_save_count = RetirementAdvice.objects.count()
+        self.plan2.selected_life_expectancy = 80
         data = {
             'smoker': False,
         }
@@ -243,6 +245,8 @@ class RetiresmartzAdviceTests(APITestCase):
         lookup_advice = RetirementAdvice.objects.get(plan=self.plan)
         self.assertEqual(response.data['results'][0]['id'], lookup_advice.id)
         self.assertEqual(response.data['results'][0]['plan'], self.plan.id)
+        lookup_plan = RetirementPlan.objects.get(pk=self.plan2.id)
+        self.assertEqual(lookup_plan.selected_life_expectancy, 87)
 
     def test_exercise_only(self):
         data = {
