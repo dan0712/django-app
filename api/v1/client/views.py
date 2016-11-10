@@ -160,11 +160,13 @@ class ClientViewSet(ApiViewMixin,
         orig = Client.objects.get(pk=instance.pk)
         updated = serializer.update(instance, serializer.validated_data)
 
-        life_expectancy_field_updated = (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
-           updated.smoker != orig.smoker or updated.drinks != orig.drinks)
         # RetirementAdvice Triggers
         plan = RetirementPlan.objects.filter(client=updated).first()
         if plan:
+            life_expectancy_field_updated = (updated.daily_exercise != orig.daily_exercise or
+                                             updated.weight != orig.weight or
+                                             updated.smoker != orig.smoker or
+                                             updated.drinks != orig.drinks)
             if updated.smoker != orig.smoker:
                 if updated.smoker:
                     e = Event.RETIRESMARTZ_IS_A_SMOKER.log(None,
