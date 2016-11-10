@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from main import constants
 from datetime import datetime
-
+import logging
+logger = logging.getLogger('api.v1.retiresmartz.advice_responses')
 
 # Retiresmartz Advice feed Logic Calls
 
@@ -166,7 +167,7 @@ def get_protective_move(advice):
     the amount you need to contribute from your paycheck each month \
     from <previous amount> to <new amount>
     """
-    risk = str(round(advice.plan.recommended_risk, 2))
+    risk = round(advice.plan.recommended_risk, 2)
     if risk == 1.0:
         risk = 100
     elif risk == 0.9:
@@ -192,7 +193,7 @@ def get_protective_move(advice):
     return "I can see you have adjusted your risk profile to be more \
 protective. We base your risk profile on the risk questionnaire \
 you completed and recommended {}. By adjusting the slider you \
-change the asset allocation in your retirement goal.".format(risk)
+change the asset allocation in your retirement goal.".format(str(risk))
 
 
 def get_dynamic_move(advice):
@@ -202,7 +203,7 @@ def get_dynamic_move(advice):
     you need to contribute from your paycheck each month from <previous amount> \
     to <new amount>
     """
-    risk = str(round(advice.plan.recommended_risk, 2))
+    risk = round(advice.plan.recommended_risk, 2)
     if risk == 1.0:
         risk = 100
     elif risk == 0.9:
@@ -228,7 +229,7 @@ def get_dynamic_move(advice):
     return "I can see you have adjusted your risk profile to be more dynamic. \
 We base your risk profile on the risk questionnaire you completed and \
 recommended {}. By adjusting the slider you change the asset allocation \
-in your retirement goal.\nYou will be taking more risk.".format(risk)
+in your retirement goal.\nYou will be taking more risk.".format(str(risk))
 
 
 # Contributions / Spending
