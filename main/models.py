@@ -2204,37 +2204,14 @@ class OrderETNA(models.Model):
     def is_complete(self):
         return self.Status in self.StatusChoice.complete_statuses()
 
-
-class ApexOrder(models.Model):
-    class State(ChoiceEnum):
-        PENDING = 0  # Raised somehow, but not yet approved to send to market
-        APPROVED = 1  # Approved to send to market, but not yet sent.
-        SENT = 2  # Sent to the broker (at least partially outstanding).
-        CANCEL_PENDING = 3 # Sent, but have also sent a cancel
-        COMPLETE = 4  # May be fully or partially executed, but there is none left outstanding.
-        ARCHIVED = 5 # fills have been processed and input into the system
-
-    class FillInfo(ChoiceEnum):
-        FILLED = 0 # entire quantity of order was filled
-        PARTIALY_FILLED = 1 # less than entire quantity was filled, but > 0
-        UNFILLED = 2 # 0 shares were transacted for this order
-
-    state = models.IntegerField(choices=State.choices(), default=State.PENDING.value)
-    fill_info = models.IntegerField(choices=FillInfo.choices(), default=FillInfo.UNFILLED.value)
-
-    ticker = models.ForeignKey('Ticker', related_name='apex_orders', on_delete=PROTECT)
-    volume = models.FloatField(help_text="Will be negative for a sell.")
-    # also has morsAPEX field from MarketOrderRequestAPEX
-    # also has apex_fills field from ApexFill
-
     def __str__(self):
-        return "[{}] - {}".format(self.id, self.State(self.state).name)
+        return "[{}] - {}".format(self.id, self.Status)
 
     def __repr__(self):
         return {
-            'state': self.state,
+            'Status': self.Status,
             'ticker': self.ticker,
-            'volume': self.volume,
+            'volume': self.Quantity,
             'morsAPEX': list(self.morsAPEX) if hasattr(self, 'morsAPEX') else [],
             'apex_fills': list(self.apex_fills) if hasattr(self, 'apex_fills') else [],
         }

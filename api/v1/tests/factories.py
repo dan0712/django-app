@@ -13,7 +13,7 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
                         InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest, MarketOrderRequest, \
-    ApexFill, ExecutionApexFill, Execution, RecurringTransaction, AccountGroup, Platform, ApexOrder, OrderETNA
+    ApexFill, ExecutionApexFill, Execution, RecurringTransaction, AccountGroup, Platform, OrderETNA
 from retiresmartz.models import RetirementPlan, RetirementAdvice, RetirementPlanAccount
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -493,14 +493,6 @@ class MarketOrderRequestFactory(factory.django.DjangoModelFactory):
     account = factory.SubFactory(ClientAccountFactory)
 
 
-class ApexOrderFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ApexOrder
-
-    ticker = factory.SubFactory(TickerFactory)
-    volume = factory.LazyAttribute(lambda n: random.randrange(1000))
-
-
 class OrderETNAFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = OrderETNA
@@ -512,7 +504,6 @@ class ApexFillFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ApexFill
 
-    #apex_order = factory.SubFactory(ApexOrderFactory)
     etna_order = factory.SubFactory(OrderETNAFactory)
     volume = factory.SelfAttribute('apex_order.volume')
     price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
