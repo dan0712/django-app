@@ -294,10 +294,12 @@ class RetirementAdviceReadSerializer(ReadOnlyModelSerializer):
         Read-Only RetirementAdvice serializer, used for 
         get request for retirement-plans advice-feed endpoint
     """
+
     class Meta:
         model = RetirementAdvice
         fields = (
             'id',
+            'plan',
             'dt',
             'trigger',
             'text',

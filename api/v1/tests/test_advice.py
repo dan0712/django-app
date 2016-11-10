@@ -29,9 +29,12 @@ class RetiresmartzAdviceTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
         self.plan = RetirementPlanFactory.create()
+        self.plan2 = RetirementPlanFactory.create(client=self.plan.client)
+        self.plan3 = RetirementPlanFactory.create()
         # self.advice_url = reverse('api:v1:client-retirement-advice', args=[self.plan.client.id, self.plan.id])
         self.plan_url = '/api/v1/clients/{}/retirement-plans/{}'.format(self.plan.client.id, self.plan.id)
         self.advice_url = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(self.plan.client.id, self.plan.id)
+        self.advice_url2 = '/api/v1/clients/{}/retirement-plans/{}/advice-feed'.format(self.plan2.client.id, self.plan2.id)
         self.client_url = '/api/v1/clients/{}'.format(self.plan.client.id)
         self.invite = EmailInviteFactory.create(user=self.plan.client.user,
                                                 status=EmailInvite.STATUS_ACCEPTED)
@@ -218,11 +221,12 @@ class RetiresmartzAdviceTests(APITestCase):
         response = self.client.put(self.client_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = self.client.get(self.advice_url)
+        response = self.client.get(self.advice_url2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # combination advice and smoker advice
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(RetirementAdvice.objects.count(), pre_save_count + 1)
+        lookup_advice = RetirementAdvice.objects.get(plan=self.plan2)
+        self.assertEqual(response.data['results'][0]['id'], lookup_advice.id)
+        self.assertEqual(response.data['results'][0]['plan'], self.plan2.id)
 
     def test_smoker_no(self):
         pre_save_count = RetirementAdvice.objects.count()
@@ -236,8 +240,9 @@ class RetiresmartzAdviceTests(APITestCase):
         response = self.client.get(self.advice_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # combination advice and smoker advice
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(RetirementAdvice.objects.count(), pre_save_count + 1)
+        lookup_advice = RetirementAdvice.objects.get(plan=self.plan)
+        self.assertEqual(response.data['results'][0]['id'], lookup_advice.id)
+        self.assertEqual(response.data['results'][0]['plan'], self.plan.id)
 
     def test_exercise_only(self):
         data = {

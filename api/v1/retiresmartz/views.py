@@ -105,7 +105,6 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # increase in these two calls to get_decrease_spending_increase_contribution
         # and get_increase_contribution_decrease_spending
         if orig.btc > updated.btc:
-            logger.error('%s %s' % (orig.btc, updated.btc))
             # spending increased, contributions decreased
             e = Event.RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN.log(None,
                                                                         orig.btc,
@@ -117,7 +116,6 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             advice.save()
 
         if orig.btc < updated.btc:
-            logger.error('%s %s' % (orig.btc, updated.btc))
             e = Event.RETIRESMARTZ_CONTRIB_UP_SPENDING_DOWN.log(None,
                                                                 orig.btc,
                                                                 updated.btc,

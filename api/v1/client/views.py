@@ -161,8 +161,7 @@ class ClientViewSet(ApiViewMixin,
         updated = serializer.update(instance, serializer.validated_data)
 
         # RetirementAdvice Triggers
-        plan = RetirementPlan.objects.filter(client=updated).first()
-        if plan:
+        for plan in RetirementPlan.objects.filter(client=updated, agreed_on=None):
             life_expectancy_field_updated = (updated.daily_exercise != orig.daily_exercise or
                                              updated.weight != orig.weight or
                                              updated.height != orig.height or
@@ -219,8 +218,6 @@ class ClientViewSet(ApiViewMixin,
         #     # life expectancy field updated but not all of them
         #     # and not an individual one must be combination of
         #     # wellbeing entries updated
-        #     plan = RetirementPlan.objects.filter(client=updated).first()
-        #     if plan:
         #         e = Event.RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES.log(None,
         #                                                                  user=updated.user,
         #                                                                  obj=updated)
