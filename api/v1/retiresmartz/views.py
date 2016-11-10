@@ -112,7 +112,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                                                                         user=updated.client.user,
                                                                         obj=updated)
             advice = RetirementAdvice(plan=updated, trigger=e)
-            advice.text = advice_responses.get_increase_spending_decrease_contribution(advice, orig.btc, orig.btc * 2)
+            advice.text = advice_responses.get_increase_spending_decrease_contribution(advice, orig.btc, orig.btc * 1.2)
             advice.save()
 
         if orig.btc < updated.btc:
@@ -122,7 +122,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                                                                 user=updated.client.user,
                                                                 obj=updated)
             advice = RetirementAdvice(plan=updated, trigger=e)
-            advice.text = advice_responses.get_increase_contribution_decrease_spending(advice, updated.btc, updated.btc * 2)
+            advice.text = advice_responses.get_increase_contribution_decrease_spending(advice, updated.btc, updated.btc * 1.2)
             advice.save()
 
             # contributions increased, spending decreased
