@@ -8,7 +8,7 @@ from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
 from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, MarketOrderRequestAPEX, \
-    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale, ApexOrder
+    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale, ApexOrder, OrderETNA
 import types
 from collections import defaultdict
 from django.db.models import Sum, F, Avg,Case, When, Value, FloatField
@@ -18,6 +18,8 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from main.management.commands.rebalance import get_tax_lots
 from main.management.commands.rebalance import TAX_BRACKET_LESS1Y, TAX_BRACKET_MORE1Y
+from execution.ETNA_api.send_orders import insert_order_ETNA
+
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
@@ -114,13 +116,16 @@ def create_apex_orders():
         ticker = Ticker.objects.get(id=grouped_volume_per_share['ticker_id'])
         apex_order = ApexOrder.objects.create(ticker=ticker, volume=grouped_volume_per_share['volume'])
 
+        # TODO get actual price
+        etna_order = insert_order_ETNA(price=0, quantity=grouped_volume_per_share['volume'], ticker=ticker)
+
         mor_ids = MarketOrderRequest.objects.all().filter(state=MarketOrderRequest.State.APPROVED.value,
                                                           execution_requests__asset_id=ticker.id).\
             values_list('id', flat=True).distinct()
 
         for id in mor_ids:
             mor = MarketOrderRequest.objects.get(id=id)
-            MarketOrderRequestAPEX.objects.create(market_order_request=mor, ticker=ticker, apex_order=apex_order)
+            MarketOrderRequestAPEX.objects.create(market_order_request=mor, ticker=ticker, apex_order=apex_order, etna_order=etna_order)
 
 
 def send_apex_order(apex_order):
@@ -131,9 +136,23 @@ def send_apex_order(apex_order):
         m.state = MarketOrderRequest.State.SENT.value
         m.save()
 
+def send_etna_order(etna_order):
+    etna_order.Status = OrderETNA.StatusChoice.Sent.value
+    etna_order.save()
+    mors = MarketOrderRequest.objects.filter(morsAPEX__etna_order=etna_order).distinct()
+    for m in mors:
+        m.state = MarketOrderRequest.State.SENT.value
+        m.save()
+
+
 def mark_as_complete(apex_order):
     apex_order.state = ApexOrder.State.COMPLETE.value
     apex_order.save()
+
+
+def mark_etna_order_as_complete(etna_order):
+    etna_order.Status = OrderETNA.StatusChoice.Filled.value
+    etna_order.save()
 
 
 @transaction.atomic
@@ -149,6 +168,7 @@ def process_apex_fills():
 
     complete_mor_ids = set()
     complete_apex_order_ids = set()
+    complete_etna_order_ids = set()
     for fill in fills:
         ers = ExecutionRequest.objects\
             .filter(asset_id=fill['ticker_id'], order__morsAPEX__apex_order__state=ApexOrder.State.COMPLETE.value)
@@ -165,6 +185,9 @@ def process_apex_fills():
 
             apex_order = ApexOrder.objects.get(morsAPEX__market_order_request__execution_requests__id=er.id)
             complete_apex_order_ids.add(apex_order.id)
+
+            etna_order = OrderETNA.objects.get(morsAPEX__market_order_request__execution_requests__id=er.id)
+            complete_etna_order_ids.add(etna_order.id)
 
             execution = Execution.objects.create(asset=ticker, volume=volume, price=fill['price'],
                                                  amount=volume*fill['price'], order=mor, executed=fill['executed'])
@@ -185,19 +208,26 @@ def process_apex_fills():
         mor.state = MarketOrderRequest.State.COMPLETE.value
         mor.save()
 
-    for apex_order_id in complete_apex_order_ids:
+    for apex_order_id, etna_order_id in zip(complete_apex_order_ids, complete_etna_order_ids):
         apex_order = ApexOrder.objects.get(id=apex_order_id)
         apex_order.state = ApexOrder.State.ARCHIVED.value
+
+        etna_order = OrderETNA.objects.get(id=etna_order_id)
+        etna_order.Status = OrderETNA.StatusChoice.Archived.value
 
         sum_fills = ApexFill.objects.filter(apex_order_id=apex_order_id).aggregate(sum=Sum('volume'))
         if sum_fills['sum'] == apex_order.volume:
             apex_order.fill_info = ApexOrder.FillInfo.FILLED.value
+            etna_order.fill_info = OrderETNA.FillInfo.FILLED.value
         elif sum_fills['sum'] == 0:
             apex_order.fill_info = ApexOrder.FillInfo.UNFILLED.value
+            etna_order.fill_info = OrderETNA.FillInfo.UNFILLED.value
         else:
             apex_order.fill_info = ApexOrder.FillInfo.PARTIALY_FILLED.value
+            etna_order.fill_info = OrderETNA.FillInfo.PARTIALY_FILLED.value
 
         apex_order.save()
+        etna_order.save()
 
 
 def create_sale(ticker_id, volume, current_price, execution_distribution):

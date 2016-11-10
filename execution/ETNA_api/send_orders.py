@@ -176,7 +176,8 @@ def get_security(symbol):
     return qs.latest('created')
 
 
-def insert_order_ETNA(price, quantity, side, ticker):
+def insert_order_ETNA(price, quantity, ticker):
+    side = OrderETNA.SideChoice.Buy.value if quantity>0 else OrderETNA.SideChoice.Sell.value
     etna_security = get_security(ticker.symbol)
     order = OrderETNA.objects.create(Price=price,
                                      Quantity=quantity,

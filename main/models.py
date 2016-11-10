@@ -2160,6 +2160,7 @@ class OrderETNA(models.Model):
         AcceptedForBidding = 'AcceptedForBidding'
         PendingReplace = 'PendingReplace'
         Error = 'Error'
+        Archived = 'Archived'
 
         @classmethod
         def complete_statuses(cls):
@@ -2246,7 +2247,8 @@ class ExecutionApexFill(models.Model):
 
 
 class ApexFill(models.Model):
-    apex_order = models.ForeignKey('ApexOrder', related_name='apex_fills')
+    #apex_order = models.ForeignKey('ApexOrder', related_name='apex_fills')
+    etna_order = models.ForeignKey('OrderETNA', related_name='etna_fills', default=None)
     volume = models.FloatField(help_text="Will be negative for a sell.")
     price = models.FloatField(help_text="Price for the fill.")
     executed = models.DateTimeField(help_text='The time the trade was executed.')
@@ -2255,7 +2257,8 @@ class ApexFill(models.Model):
 
 class MarketOrderRequestAPEX(models.Model):
     ticker = models.ForeignKey('Ticker', related_name='morsAPEX', on_delete=PROTECT)
-    apex_order = models.ForeignKey('ApexOrder', related_name='morsAPEX')
+    #apex_order = models.ForeignKey('ApexOrder', related_name='morsAPEX')
+    etna_order = models.ForeignKey('OrderETNA', related_name='morsAPEX', default=None)
     market_order_request = models.ForeignKey('MarketOrderRequest', related_name='morsAPEX')
 
     class Meta:

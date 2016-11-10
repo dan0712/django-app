@@ -9,7 +9,8 @@ from local_settings import ETNA_ACCOUNT_ID
 from api.v1.tests.factories import TickerFactory
 # demo.etnatrader.com
 
-# connect ETNA models to ORDER models - maybe get rid of apexORDER and replace with ETNAorder
+
+# get rid of apexORDER and replace with ETNAorder - everything prepared
 
 
 class BaseTest(TestCase):
@@ -43,7 +44,7 @@ class BaseTest(TestCase):
         self.assertTrue(etna_security.symbol_id == 5)
 
     def test_send_trade(self):
-        etna_order = insert_order_ETNA(10, 1, OrderETNA.SideChoice.Buy.value, self.ticker)
+        etna_order = insert_order_ETNA(10, 1, self.ticker)
         order = send_order_ETNA(etna_order, self.login.Ticket, ETNA_ACCOUNT_ID)
         self.assertTrue(order.Order_Id != -1)
         return order

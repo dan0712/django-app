@@ -11,15 +11,13 @@ class BaseTest(TestCase):
         self.goal = GoalFactory.create(account=self.account)
         self.mor = MarketOrderRequestFactory.create(account=self.account)
 
-        self.asset = TickerFactory.create()
-        self.asset2 = TickerFactory.create()
+        self.asset = TickerFactory.create(symbol='GOOG')
+        self.asset2 = TickerFactory.create(symbol='AAPL')
         er1 = ExecutionRequestFactory.create(goal=self.goal, asset=self.asset, volume=5, order=self.mor)
         er2 = ExecutionRequestFactory.create(goal=self.goal, asset=self.asset, volume=10, order=self.mor)
         er3 = ExecutionRequestFactory.create(goal=self.goal, asset=self.asset2, volume=10, order=self.mor)
 
-
     def test_execution_requests_with_market_order_request(self):
-
         requests = ExecutionRequest.objects.all().filter(order=self.mor)
         self.assertTrue(requests[0].volume == 5)
         self.assertTrue(requests[1].volume == 10)
@@ -36,7 +34,7 @@ class BaseTest(TestCase):
         self.account2 = ClientAccountFactory.create()
         self.goal2 = GoalFactory.create(account=self.account2)
         self.mor2 = MarketOrderRequestFactory.create(account=self.account2)
-        self.asset3 = TickerFactory.create()
+        self.asset3 = TickerFactory.create(symbol='MSFT')
         er4 = ExecutionRequestFactory.create(goal=self.goal2, asset=self.asset3, volume=20, order=self.mor2)
         create_apex_orders()
         apex_orders = ApexOrder.objects.all()
