@@ -189,7 +189,7 @@ def get_protective_move(advice):
     elif risk == 0.1:
         risk = 10
     else:
-        risk = risk[2:]
+        risk = str(risk)[2:]
     return "I can see you have adjusted your risk profile to be more \
 protective. We base your risk profile on the risk questionnaire \
 you completed and recommended {}. By adjusting the slider you \
@@ -225,7 +225,7 @@ def get_dynamic_move(advice):
     elif risk == 0.1:
         risk = 10
     else:
-        risk = risk[2:]
+        risk = str(risk)[2:]
     return "I can see you have adjusted your risk profile to be more dynamic. \
 We base your risk profile on the risk questionnaire you completed and \
 recommended {}. By adjusting the slider you change the asset allocation \
