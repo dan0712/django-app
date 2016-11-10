@@ -160,23 +160,20 @@ class ClientViewSet(ApiViewMixin,
         orig = Client.objects.get(pk=instance.pk)
         updated = serializer.update(instance, serializer.validated_data)
 
-        # RetirementAdvice Triggers
         life_expectancy_field_updated = (updated.daily_exercise != orig.daily_exercise or updated.weight != orig.weight or
            updated.smoker != orig.smoker or updated.drinks != orig.drinks)
-
-        if updated.smoker != orig.smoker:
-            if updated.smoker:
-                plan = RetirementPlan.objects.filter(client=updated).first()
-                if plan:
+        # RetirementAdvice Triggers
+        plan = RetirementPlan.objects.filter(client=updated).first()
+        if plan:
+            if updated.smoker != orig.smoker:
+                if updated.smoker:
                     e = Event.RETIRESMARTZ_IS_A_SMOKER.log(None,
                                                            user=updated.user,
                                                            obj=updated)
                     advice = RetirementAdvice(plan=plan, trigger=e)
                     advice.text = advice_responses.get_smoking_yes(advice)
                     advice.save()
-            elif updated.smoker is False:
-                plan = RetirementPlan.objects.filter(client=updated).first()
-                if plan:
+                elif updated.smoker is False:
                     e = Event.RETIRESMARTZ_IS_NOT_A_SMOKER.log(None,
                                                                user=updated.user,
                                                                obj=updated)
@@ -186,10 +183,8 @@ class ClientViewSet(ApiViewMixin,
                     plan.selected_life_expectancy += 7
                     plan.save()
 
-        if updated.daily_exercise != orig.daily_exercise:
-            # exercise only
-            plan = RetirementPlan.objects.filter(client=updated).first()
-            if plan:
+            if updated.daily_exercise != orig.daily_exercise:
+                # exercise only
                 e = Event.RETIRESMARTZ_EXERCISE_ONLY.log(None,
                                                          user=updated.user,
                                                          obj=updated)
@@ -197,11 +192,9 @@ class ClientViewSet(ApiViewMixin,
                 advice.text = advice_responses.get_exercise_only(advice)
                 advice.save()
 
-        # frontend posts one at a time, weight then height, not together in one post
-        if (updated.weight != orig.weight or updated.height != orig.height):
-            # weight and/or height updated
-            plan = RetirementPlan.objects.filter(client=updated).first()
-            if plan:
+            # frontend posts one at a time, weight then height, not together in one post
+            if (updated.weight != orig.weight or updated.height != orig.height):
+                # weight and/or height updated
                 e = Event.RETIRESMARTZ_WEIGHT_AND_HEIGHT_ONLY.log(None,
                                                                   user=updated.user,
                                                                   obj=updated)
@@ -209,12 +202,10 @@ class ClientViewSet(ApiViewMixin,
                 advice.text = advice_responses.get_weight_and_height_only(advice)
                 advice.save()
 
-        if life_expectancy_field_updated and (updated.daily_exercise and
-           updated.weight and updated.height and updated.smoker is not None and
-           updated.drinks is not None):
-            # every wellbeing field
-            plan = RetirementPlan.objects.filter(client=updated).first()
-            if plan:
+            if life_expectancy_field_updated and (updated.daily_exercise and
+               updated.weight and updated.height and updated.smoker is not None and
+               updated.drinks is not None):
+                # every wellbeing field
                 e = Event.RETIRESMARTZ_ALL_WELLBEING_ENTRIES.log(None,
                                                                  user=updated.user,
                                                                  obj=updated)
