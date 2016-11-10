@@ -202,7 +202,29 @@ def get_dynamic_move(advice):
     you need to contribute from your paycheck each month from <previous amount> \
     to <new amount>
     """
-    risk = str(round(advice.plan.recommended_risk, 2))[2:]
+    risk = str(round(advice.plan.recommended_risk, 2))
+    if risk == 1.0:
+        risk = 100
+    elif risk == 0.9:
+        risk = 90
+    elif risk == 0.8:
+        risk = 80
+    elif risk == 0.7:
+        risk = 70
+    elif risk == 0.6:
+        risk = 60
+    elif risk == 0.5:
+        risk == 50
+    elif risk == 0.4:
+        risk == 40
+    elif risk == 0.3:
+        risk = 30
+    elif risk == 0.2:
+        risk = 20
+    elif risk == 0.1:
+        risk = 10
+    else:
+        risk = risk[2:]
     return "I can see you have adjusted your risk profile to be more dynamic. \
 We base your risk profile on the risk questionnaire you completed and \
 recommended {}. By adjusting the slider you change the asset allocation \
