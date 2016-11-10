@@ -10,6 +10,7 @@ from .retiresmartz import views as retiresmartz_views
 from .firm import views as firm_views
 from .address import views as address_views
 from .support import views as support_views
+from api.v1.user.views import PasswordResetView
 
 router = ExtendedSimpleRouter(trailing_slash=False)
 settings_router = router.register(r'settings',
@@ -69,6 +70,7 @@ urlpatterns = patterns(
     url(r'^benchmarks/', include('api.v1.benchmarks.urls', namespace='benchmarks')),
     url(r'^validate/phonenumber', user_views.PhoneNumberValidationView.as_view(), name='phonenumber-validation'),
     url(r'^me/password/?$', user_views.ChangePasswordView.as_view(), name='user-change-password'),
+    url(r'^password/reset/?$', PasswordResetView.as_view(), name='password_reset'),
 
     url(r'me/security-questions/?$', user_views.SecurityQuestionAnswerView.as_view(), name='user-security-question'),
     url(r'me/security-questions/(?P<pk>\d+)/?$', user_views.SecurityQuestionAnswerUpdateView.as_view(), name='user-security-question-update'),
