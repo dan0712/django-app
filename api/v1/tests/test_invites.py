@@ -75,6 +75,7 @@ class InviteTests(APITestCase):
                          msg='Register a valid invitation is 200 OK')
         self.assertNotEqual(response.data['id'], None,
                          msg='Registering an invitation should give valid user_id')
+        self.assertEqual(response.data['email'], invite.email)
 
         lookup_invite = EmailInvite.objects.get(pk=invite.pk)
         self.assertEqual(response.data['email'], invite.email,
@@ -118,6 +119,7 @@ class InviteTests(APITestCase):
         self.assertEqual(response.data['firm_logo'], lookup_invite.advisor.firm.logo.url)
         self.assertEqual(response.data['firm_colored_logo'], lookup_invite.advisor.firm.colored_logo)
         self.assertEqual(response.data['firm_name'], lookup_invite.advisor.firm.name)
+        self.assertEqual(response.data['email'], lookup_invite.email)
 
     def test_register_logout_then_login(self):
         # Bring an invite key, get logged in as a new user
