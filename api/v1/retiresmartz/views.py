@@ -101,6 +101,9 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         # RetirementAdvice Triggers
 
         # Spending and Contributions
+        # TODO: Replace income with function to calculate expected income
+        # increase in these two calls to get_decrease_spending_increase_contribution
+        # and get_increase_contribution_decrease_spending
         if orig.btc > updated.btc:
             logger.error('%s %s' % (orig.btc, updated.btc))
             # spending increased, contributions decreased
@@ -110,7 +113,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                                                                         user=updated.client.user,
                                                                         obj=updated)
             advice = RetirementAdvice(plan=updated, trigger=e)
-            advice.text = advice_responses.get_decrease_spending_increase_contribution(advice)
+            advice.text = advice_responses.get_increase_spending_decrease_contribution(advice,orig.btc, orig.btc * 2)
             advice.save()
 
         if orig.btc < updated.btc:
@@ -121,7 +124,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
                                                                 user=updated.client.user,
                                                                 obj=updated)
             advice = RetirementAdvice(plan=updated, trigger=e)
-            advice.text = advice_responses.get_increase_contribution_decrease_spending(advice)
+            advice.text = advice_responses.get_increase_contribution_decrease_spending(advice, updated.btc, updated.btc * 2)
             advice.save()
 
             # contributions increased, spending decreased

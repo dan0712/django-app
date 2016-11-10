@@ -210,16 +210,16 @@ retirement income by ${} a week.".format(200, 600)
     return rv
 
 
-def get_increase_contribution_decrease_spending(advice):
+def get_increase_contribution_decrease_spending(advice, contrib, income):
     return "Well done, by increasing your retirement contributions to ${} \
-a month, you have increased your retirement income by ${} a week.".format(400, 800)
+a month, you have increased your retirement income by ${} a week.".format(contrib, income)
 
 
-def get_decrease_spending_increase_contribution(advice):
+def get_increase_spending_decrease_contribution(advice, contrib, income):
     # TODO: Need to add $X and $Y calculations
     return "Are you sure you need to increase your spending again and reduce your \
 retirement contributions? Just think, if your contributions stayed \
-at ${} a month you would be ${} a week better off in retirement.".format(400, 800)
+at ${} a month you would be ${} a week better off in retirement.".format(contrib, income)
 
 
 def get_off_track_item_adjusted_to_on_track(advice):
