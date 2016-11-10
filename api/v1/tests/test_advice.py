@@ -262,7 +262,7 @@ class RetiresmartzAdviceTests(APITestCase):
 
     def test_weight_and_height_only(self):
         data = {
-            'weight': 145,
+            'weight': 145.02,
             'height': 2,
         }
         self.client.force_authenticate(user=self.plan.client.user)
