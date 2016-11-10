@@ -26,7 +26,7 @@ def get_decrease_retirement_age_to_62(advice):
     return "I see you have decreased your retirement age \
 to 62. This will reduce your monthly benefit by 25% compared \
 to if you retired at 66 giving you an estimated social security \
-benefit of {} per month instead of {} if you chose to retire \
+benefit of ${:,.2f} per month instead of ${:,.2f} if you chose to retire \
 at 66. Social security benefits increase by up to 132% the longer \
 you work.".format(advice.plan.spendable_income - (advice.plan.spendable_income * .25), advice.plan.spendable_income)
 
@@ -39,7 +39,7 @@ def get_decrease_retirement_age_to_63(advice):
     return "I see you have decreased your retirement age to 63. \
 This will reduce your monthly benefit by 20% compared to if \
 you retired at 66 giving you an estimated social security \
-benefit of {} per month instead of {} if you chose to \
+benefit of ${:,.2f} per month instead of ${:,.2f} if you chose to \
 retire at 66. Social security benefits increase by up to 132% \
 the longer you work.".format(advice.plan.spendable_income - (advice.plan.spendable_income * .2), advice.plan.spendable_income)
 
@@ -52,7 +52,7 @@ def get_decrease_retirement_age_to_64(advice):
     return "I see you have decreased your retirement age to 64. \
 This will reduce your monthly benefit by 13% compared to \
 if you retired at 66 giving you an estimated social security \
-benefit of {} per month instead of {} if you chose to \
+benefit of ${:,.2f} per month instead of ${:,.2f} if you chose to \
 retire at 66. Social security benefits increase by up to 132% \
 the longer you work.".format(advice.plan.spendable_income - (advice.plan.spendable_income * .13), advice.plan.spendable_income)
 
@@ -65,7 +65,7 @@ def get_decrease_retirement_age_to_65(advice):
     return "I see you have decreased your retirement age to 65. \
 This will reduce your monthly benefit by 7% compared to if \
 you retired at 66 giving you an estimated social security \
-benefit of <$X> per month instead of <$X> if you chose to \
+benefit of ${:,.2f} per month instead of ${:,.2f} if you chose to \
 retire at 66. Social security benefits increase by up to 132% \
 the longer you work.".format(advice.plan.spendable_income - (advice.plan.spendable_income * .07), advice.plan.spendable_income)
 
@@ -73,8 +73,8 @@ the longer you work.".format(advice.plan.spendable_income - (advice.plan.spendab
 def get_increase_retirement_age_to_67(advice):
     # TODO: Need to insert social security benefit in data
     return "I see you have increased your retirement age to 67. \
-This will increase your monthly benefit by 8% of {} per \
-month instead of {} if you chose to retire at 66. Increasing \
+This will increase your monthly benefit by 8% of ${:,.2f} per \
+month instead of ${:,.2f} if you chose to retire at 66. Increasing \
 your retirement age will adjust the amount of social security \
 benefits that you are able to obtain. Social security benefits \
 increase by up to 132% the longer you work.".format(advice.plan.spendable_income + (advice.plan.spendable_income * .08), advice.plan.spendable_income)
@@ -83,8 +83,8 @@ increase by up to 132% the longer you work.".format(advice.plan.spendable_income
 def get_increase_retirement_age_to_68(advice):
     # TODO: Need to insert social security benefit in data
     return "I see you have increased your retirement age to 68. \
-This will increase your monthly benefit by 16% of {} per \
-month instead of {} if you chose to retire at 66. Increasing \
+This will increase your monthly benefit by 16% of ${:,.2f} per \
+month instead of ${:,.2f} if you chose to retire at 66. Increasing \
 your retirement age will adjust the amount of social security \
 benefits that you are able to obtain. Social security benefits \
 increase by up to 132% the longer you work.".format(advice.plan.spendable_income + (advice.plan.spendable_income * .16), advice.plan.spendable_income)
@@ -93,8 +93,8 @@ increase by up to 132% the longer you work.".format(advice.plan.spendable_income
 def get_increase_retirement_age_to_69(advice):
     # TODO: Need to insert social security benefit in data
     return "I see you have increased your retirement age to 69. \
-This will increase your monthly benefit by 24% of {} per \
-month instead of {} if you chose to retire at 66. Increasing \
+This will increase your monthly benefit by 24% of ${:,.2f} per \
+month instead of ${:,.2f} if you chose to retire at 66. Increasing \
 your retirement age will adjust the amount of social security \
 benefits that you are able to obtain. Social security benefits \
 increase by up to 132% the longer you work.".format(advice.plan.spendable_income + (advice.plan.spendable_income * .24), advice.plan.spendable_income)
@@ -103,8 +103,8 @@ increase by up to 132% the longer you work.".format(advice.plan.spendable_income
 def get_increase_retirement_age_to_70(advice):
     # TODO: Need to insert social security benefit in data
     return "I see you have increased your retirement age to 70. \
-This will increase your monthly benefit by 32% of {} per \
-month instead of {} if you chose to retire at 66. Increasing \
+This will increase your monthly benefit by 32% of ${:,.2f} per \
+month instead of ${:,.2f} if you chose to retire at 66. Increasing \
 your retirement age will adjust the amount of social security \
 benefits that you are able to obtain. Social security benefits \
 increase by up to 132% the longer you work.".format(advice.plan.spendable_income + (advice.plan.spendable_income * .32), advice.plan.spendable_income)
@@ -188,38 +188,38 @@ in your retirement goal.\nYou will be taking more risk.".format(risk)
 
 
 # Contributions / Spending
-def get_increase_spending_decrease_contribution(advice):
+def get_increase_spending_decrease_contribution(advice, contrib, income):
     # TODO: Need to add $X and $Y calculations, max_contributions needs to come in
-    if advice.client.account.account_type == constants.ACCOUNT_TYPE_401K or \
-       advice.client.account.account_type == constants.ACCOUNT_TYPE_ROTH401K:
-        # [If 401K we need to remember here that for a person under 50 the
-        # maximum contribution amount is $18,000 per annum and $24,000
-        # if they are over 50]
-        if advice.plan.client.age < 50:
-            max_contribution = 18000
-        else:
-            max_contribution = 24000
+    # if advice.plan.client.account.account_type == constants.ACCOUNT_TYPE_401K or \
+    #    advice.plan.client.account.account_type == constants.ACCOUNT_TYPE_ROTH401K:
+    #     # [If 401K we need to remember here that for a person under 50 the
+    #     # maximum contribution amount is $18,000 per annum and $24,000
+    #     # if they are over 50]
+    #     if advice.plan.client.age < 50:
+    #         max_contribution = 18000
+    #     else:
+    #         max_contribution = 24000
 
     rv = "Hey big spender! I can see you want to spend a bit more. \
-If you decreased your spending by ${} a week, you could increase your\
-retirement income by ${} a week.".format(200, 600)
-    if advice.client.employment_status == constants.EMPLOYMENT_STATUS_FULL_TIME or \
-       advice.client.employment_status == constants.EMPLOYMENT_STATUS_PART_TIME:
+If you decreased your spending by ${:,.2f} a week, you could increase your\
+retirement income by ${:,.2f} a week.".format(contrib, income)
+    if advice.plan.client.employment_status == constants.EMPLOYMENT_STATUS_FULL_TIME or \
+       advice.plan.client.employment_status == constants.EMPLOYMENT_STATUS_PART_TIME:
         rv += " Your employer will match these contributions making it easier to reach your goal."
 
     return rv
 
 
 def get_increase_contribution_decrease_spending(advice, contrib, income):
-    return "Well done, by increasing your retirement contributions to ${} \
-a month, you have increased your retirement income by ${} a week.".format(contrib, income)
+    return "Well done, by increasing your retirement contributions to ${:,.2f} \
+a month, you have increased your retirement income by ${:,.2f} a week.".format(contrib, income)
 
 
-def get_increase_spending_decrease_contribution(advice, contrib, income):
+def get_increase_spending_decrease_contribution_again(advice, contrib, income):
     # TODO: Need to add $X and $Y calculations
     return "Are you sure you need to increase your spending again and reduce your \
 retirement contributions? Just think, if your contributions stayed \
-at ${} a month you would be ${} a week better off in retirement.".format(contrib, income)
+at ${:,.2f} a month you would be ${:,.2f} a week better off in retirement.".format(contrib, income)
 
 
 def get_off_track_item_adjusted_to_on_track(advice):
