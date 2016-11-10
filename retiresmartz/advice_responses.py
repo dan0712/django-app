@@ -166,7 +166,7 @@ def get_protective_move(advice):
     the amount you need to contribute from your paycheck each month \
     from <previous amount> to <new amount>
     """
-    risk = str(round(advice.plan.recommended_risk, 2))[2:]
+    risk = str(round(advice.plan.recommended_risk, 3))[2:]
     return "I can see you have adjusted your risk profile to be more \
 protective. We base your risk profile on the risk questionnaire \
 you completed and recommended {}. By adjusting the slider you \
