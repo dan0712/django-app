@@ -165,6 +165,7 @@ class ClientViewSet(ApiViewMixin,
         if plan:
             life_expectancy_field_updated = (updated.daily_exercise != orig.daily_exercise or
                                              updated.weight != orig.weight or
+                                             updated.height != orig.height or
                                              updated.smoker != orig.smoker or
                                              updated.drinks != orig.drinks)
             if updated.smoker != orig.smoker:
