@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AccountId',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('ResponseCode', models.IntegerField()),
                 ('Result', jsonfield.fields.JSONField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ETNALogin',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('ResponseCode', models.IntegerField(db_index=True)),
                 ('Ticket', models.CharField(max_length=521)),
                 ('created', models.DateTimeField(db_index=True, auto_now_add=True)),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='LoginResult',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('SessionId', models.CharField(max_length=128)),
                 ('UserId', models.PositiveIntegerField()),
             ],
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SecurityETNA',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('symbol_id', models.IntegerField()),
                 ('Symbol', models.CharField(max_length=128)),
                 ('Description', models.CharField(max_length=128)),
