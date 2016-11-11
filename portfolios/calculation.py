@@ -7,6 +7,7 @@ import pandas as pd
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
 
+from main.models import Ticker
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
 from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
@@ -367,6 +368,16 @@ def extract_risk_setting(settings):
     return risk_profile
 
 
+def get_ticker_ids_for_symbols(symbol_list):
+    id_list = list()
+    for symbol in symbol_list:
+        count = Ticker.objects.filter(symbol=symbol).count()
+        if count == 1:
+            ticker = Ticker.objects.get(symbol=symbol)
+            id_list.append(ticker.id)
+    return id_list
+
+
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None):
     """
     Calculates the instrument weights to use for a given goal settings.
@@ -384,10 +395,15 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
 
     # extract from configured_val from GoalMetric obtained from settings - we get which bucket we are interested in
     # introduce in-memory data structure - [[(Hedge Fund Ticker, 0.1),(Gold Ticker, 0.1),(),()], .100 of them..]
-    # read weights from this, as well settings_instruments and settings_symbol_ixs and lcovars
+
+    # we need to read ids of tickers for symbols passed in, and based on this
+    # read settings_instruments and settings_symbol_ixs and lcovars and weights
+
 
     risk_profile = extract_risk_setting(settings)
     risk_profile_data = pd.read_csv(os.getcwd() + "/data/risk_profiles.csv", index_col=0)
+    ticker_ids = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+
 
     odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
