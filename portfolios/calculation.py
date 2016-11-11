@@ -1,7 +1,7 @@
 import logging
 import math
 import sys
-
+import os
 import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
@@ -356,6 +356,17 @@ def calc_opt_inputs(settings, idata, data_provider, execution_provider, metric_o
     return xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars
 
 
+def extract_risk_setting(settings):
+    metrics = settings.get_metrics_all()
+    risk_score = 0
+    for metric in metrics:
+        if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
+            risk_score = metric.configured_val
+            break
+    risk_profile = round(risk_score * 100)
+    return risk_profile
+
+
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None):
     """
     Calculates the instrument weights to use for a given goal settings.
@@ -374,6 +385,9 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     # extract from configured_val from GoalMetric obtained from settings - we get which bucket we are interested in
     # introduce in-memory data structure - [[(Hedge Fund Ticker, 0.1),(Gold Ticker, 0.1),(),()], .100 of them..]
     # read weights from this, as well settings_instruments and settings_symbol_ixs and lcovars
+
+    risk_profile = extract_risk_setting(settings)
+    risk_profile_data = pd.read_csv(os.getcwd() + "/data/risk_profiles.csv", index_col=0)
 
     odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
