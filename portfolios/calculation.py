@@ -371,6 +371,10 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Calculating portfolio for settings: {}".format(settings))
 
+    # extract from configured_val from GoalMetric obtained from settings - we get which bucket we are interested in
+    # introduce in-memory data structure - [[(Hedge Fund Ticker, 0.1),(Gold Ticker, 0.1),(),()], .100 of them..]
+    # read weights from this, as well settings_instruments and settings_symbol_ixs and lcovars
+
     odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
 
