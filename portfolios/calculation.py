@@ -394,10 +394,11 @@ def build_weights(source_weights, list_ids, id_to_ticker):
 def update_expected_return(data, settings_instruments, id_to_ticker):
     for row_index in settings_instruments.index.tolist():
         current_row = settings_instruments.ix[row_index]
-        symbol = id_to_ticker[current_row['id']]
-        risk_premia = float(data.ix[symbol])
-
-        settings_instruments.ix[row_index,'exp_ret'] = risk_premia
+        id = current_row['id']
+        if id in id_to_ticker:
+            symbol = id_to_ticker[id]
+            risk_premia = float(data.ix[symbol])
+            settings_instruments.ix[row_index,'exp_ret'] = risk_premia
     return settings_instruments
 
 
