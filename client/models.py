@@ -66,8 +66,8 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     smoker = models.NullBooleanField(null=True, blank=True)
     daily_exercise = models.PositiveIntegerField(null=True, blank=True,
                                                  help_text="In Minutes")
-    weight = models.PositiveIntegerField(null=True, blank=True, help_text="In kilograms")
-    height = models.PositiveIntegerField(null=True, blank=True, help_text="In centimeters")
+    weight = models.FloatField(null=True, blank=True, help_text="In kilograms")
+    height = models.FloatField(null=True, blank=True, help_text="In centimeters")
 
     drinks = models.PositiveIntegerField(null=True, blank=True, help_text='Number of drinks per day')
 
