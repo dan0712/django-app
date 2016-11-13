@@ -80,19 +80,15 @@ class CalculationTest(TestCase):
         xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = result
         self.assertEqual(len(constraints), 3)  # All positive, sum to 1, and the max constraint
 
-
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
-    def test_calculate_portfolio_no_tickers_from_xls(self):
-        indx1 = MarketIndexFactory.create(data_api_param='DWCF')
-        fund1 = TickerFactory.create(symbol='aaa', benchmark=indx1)
-        fund2 = TickerFactory.create(symbol='bbb', benchmark=indx1)
-
-        indx2 = MarketIndexFactory.create(data_api_param='AD09X')
-        fund3 = TickerFactory.create(symbol='ccc', benchmark=indx2)
-        fund4 = TickerFactory.create(symbol='ddd', benchmark=indx2)
+    def test_calculate_portfolio(self):
+        fund1 = TickerFactory.create(symbol='ITOT')
+        fund2 = TickerFactory.create(symbol='VEA')
+        fund3 = TickerFactory.create(symbol='EEM')
+        fund4 = TickerFactory.create(symbol='AGG')
 
         AssetFeatureValueFactory.create(assets=[fund1, fund2, fund3, fund4])
-        ps1 = PortfolioSetFactory\
+        ps1 = PortfolioSetFactory \
             .create(asset_classes=[fund1.asset_class, fund2.asset_class, fund3.asset_class, fund4.asset_class])
 
         # Create a settings object with a metric for a feature with no instruments in the current portfolio set.
