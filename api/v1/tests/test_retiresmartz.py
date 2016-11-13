@@ -353,8 +353,8 @@ class RetiresmartzTests(APITestCase):
 
         # Add the asset classes to the advisor's default portfolio set
         plan.client.advisor.default_portfolio_set.asset_classes.add(bonds_asset_class, stocks_asset_class)
-        bonds_ticker = TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index)
-        stocks_ticker = TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index)
+        bonds_ticker = TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index, symbol='ITOT')
+        stocks_ticker = TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index, symbol='VEA')
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
