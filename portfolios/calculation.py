@@ -373,9 +373,9 @@ def get_ticker_ids_for_symbols(symbol_list):
     ticker_to_id = dict()
     id_to_ticker = dict()
     for symbol in symbol_list:
-        count = MarketIndex.objects.filter(data_api_param=symbol).count()
+        count = Ticker.objects.filter(symbol=symbol).count()
         if count == 1:
-            ticker = MarketIndex.objects.get(data_api_param=symbol)
+            ticker = Ticker.objects.get(symbol=symbol)
             id_list.append(ticker.id)
             ticker_to_id[symbol] = ticker.id
             id_to_ticker[ticker.id] = symbol
@@ -417,7 +417,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Calculating portfolio for settings: {}".format(settings))
 
-    '''
+
     risk_profile = extract_risk_setting(settings)
     risk_profile_data = pd.read_csv(os.getcwd() + "/data/risk_profiles.csv", index_col=0)
     ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
@@ -430,9 +430,10 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     settings_instruments = instruments.iloc[settings_symbol_ixs]
 
     risk_premia_data = pd.read_csv(os.getcwd() + "/data/expected_return.csv", index_col=0)
-    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)'''
+    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
 
-    odata = optimize_settings(settings, idata, data_provider, execution_provider)
+
+    '''odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
@@ -447,7 +448,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
                                    # We use the current balance (including pending deposits).
                                    settings.goal.current_balance,
                                    settings_instruments['price'],
-                                   align=False)
+                                   align=False)'''
 
     return get_portfolio_stats(settings_instruments, lcovars, weights)
 
