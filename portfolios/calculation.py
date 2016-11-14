@@ -399,7 +399,7 @@ def update_expected_return(data, settings_instruments, id_to_ticker):
         if id in id_to_ticker:
             symbol = id_to_ticker[id]
             risk_premia = float(data.ix[symbol])
-            settings_instruments.ix[row_index,'exp_ret'] = risk_premia
+            settings_instruments.ix[row_index, INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL] = risk_premia
     return settings_instruments
 
 
