@@ -45,8 +45,6 @@ def populate_prices(days, asof=now().date()):
     for ind in MarketIndex.objects.all():
         delta = np.random.uniform(0, 5)
         ps = random_walk(days, delta)
-
-        # initial has to start at delta * steps, in case we get all steps as -delta, not to finish below zero
         initial = abs(min(ps)) + 1
         ps += initial
         for i, p in enumerate(ps):
