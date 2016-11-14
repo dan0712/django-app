@@ -22,9 +22,9 @@ from datetime import datetime, date
 class RebalanceTest(test.TestCase):
     def setUp(self):
         self.t1 = TickerFactory.create(symbol='SPY', unit_price=5)
-        self.t2 = TickerFactory.create(symbol='QQQ', unit_price=5)
-        self.t3 = TickerFactory.create(symbol='TLT', unit_price=100)
-        self.t4 = TickerFactory.create(symbol='IEF', unit_price=100)
+        self.t2 = TickerFactory.create(symbol='VEA', unit_price=5)
+        self.t3 = TickerFactory.create(symbol='TIP', unit_price=100)
+        self.t4 = TickerFactory.create(symbol='IEV', unit_price=100)
 
         self.equity = AssetFeatureValueFactory.create(name='equity', assets=[self.t1, self.t2])
         self.bond = AssetFeatureValueFactory.create(name='bond', assets=[self.t3, self.t4])

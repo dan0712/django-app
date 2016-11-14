@@ -418,7 +418,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
         logger.debug("Calculating portfolio for settings: {}".format(settings))
 
 
-    risk_profile = extract_risk_setting(settings)
+    '''risk_profile = extract_risk_setting(settings)
     risk_profile_data = pd.read_csv(os.getcwd() + "/data/risk_profiles.csv", index_col=0)
     ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
     weights = build_weights(risk_profile_data.iloc[:, risk_profile], ticker_ids, id_to_ticker)
@@ -430,10 +430,9 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     settings_instruments = instruments.iloc[settings_symbol_ixs]
 
     risk_premia_data = pd.read_csv(os.getcwd() + "/data/expected_return.csv", index_col=0)
-    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
+    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)'''
 
-
-    '''odata = optimize_settings(settings, idata, data_provider, execution_provider)
+    odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
@@ -448,9 +447,10 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
                                    # We use the current balance (including pending deposits).
                                    settings.goal.current_balance,
                                    settings_instruments['price'],
-                                   align=False)'''
+                                   align=False)
 
-    return get_portfolio_stats(settings_instruments, lcovars, weights)
+    stats = get_portfolio_stats(settings_instruments, lcovars, weights)
+    return stats
 
 
 def calculate_portfolios(setting, data_provider, execution_provider):
