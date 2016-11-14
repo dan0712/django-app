@@ -13,6 +13,7 @@ from portfolios.markowitz_scale import risk_score_to_lambda
 from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
 from main.models import AssetFeatureValue, GoalMetric
+from main.settings import BASE_DIR
 
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
@@ -417,11 +418,10 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Calculating portfolio for settings: {}".format(settings))
 
-
-    '''risk_profile = extract_risk_setting(settings)
-    risk_profile_data = pd.read_csv(os.getcwd() + "/data/risk_profiles.csv", index_col=0)
+    risk_profile = extract_risk_setting(settings)
+    risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
     ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-    weights = build_weights(risk_profile_data.iloc[:, risk_profile], ticker_ids, id_to_ticker)
+    weights = build_weights(risk_profile_data.ix[:, risk_profile], ticker_ids, id_to_ticker)
 
     covars, instruments, masks = idata
     settings_symbol_ixs, cvx_masks = get_settings_masks(settings=settings, masks=masks)
@@ -429,10 +429,10 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
     settings_instruments = instruments.iloc[settings_symbol_ixs]
 
-    risk_premia_data = pd.read_csv(os.getcwd() + "/data/expected_return.csv", index_col=0)
-    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)'''
+    risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
+    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
 
-    odata = optimize_settings(settings, idata, data_provider, execution_provider)
+    '''odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
@@ -447,7 +447,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
                                    # We use the current balance (including pending deposits).
                                    settings.goal.current_balance,
                                    settings_instruments['price'],
-                                   align=False)
+                                   align=False)'''
 
     stats = get_portfolio_stats(settings_instruments, lcovars, weights)
     return stats
@@ -470,8 +470,53 @@ def calculate_portfolios(setting, data_provider, execution_provider):
         idata = get_instruments(data_provider)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Got instruments")
+
+        portfolios = []
+        for risk_score in list(np.arange(0, 1.01, 0.01)):
+            risk_profile = extract_risk_setting(setting)
+            risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
+            ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+            weights = build_weights(risk_profile_data.iloc[:, risk_profile], ticker_ids, id_to_ticker)
+
+            covars, instruments, masks = idata
+            settings_symbol_ixs, cvx_masks = get_settings_masks(settings=setting, masks=masks)
+
+            lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
+            settings_instruments = instruments.iloc[settings_symbol_ixs]
+
+            risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
+            settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
+
+            # Convert to our statistics for our portfolio.
+            portfolios.append((risk_score, get_portfolio_stats(settings_instruments, lcovars, weights)))
+    except:
+        logger.exception("Problem calculating portfolio for setting: {}".format(setting))
+        raise
+
+    return portfolios
+
+
+def calculate_portfolios_old(setting, data_provider, execution_provider):
+    """
+    Calculate a list of 101 portfolios ranging over risk score.
+    :param setting: The settig we want to generate portfolios for.
+    :param data_provider: Where to get the data
+    :param execution_provider:
+    :raises Unsatisfiable: If no single satisfiable portfolio could be found.
+    :return: A list of 101 (risk_score, portfolio) tuples
+            - risk_score [0-1] in steps of 0.01
+            - portfolio is the same as the return value of calculate_portfolio.
+                portfolio will be None if no satisfiable portfolio could be found for this risk_score
+    """
+    logger.debug("Calculate Portfolios Requested")
+    try:
+        idata = get_instruments(data_provider)
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Got instruments")
         # We don't need to recalculate the inputs for every risk score, as the risk score is just passed back.
         # We can do that directly
+
+
         opt_inputs = calc_opt_inputs(setting, idata, data_provider, execution_provider)
         xs, lam, constraints, setting_instruments, setting_symbol_ixs, lcovars = opt_inputs
         sigma = lcovars.values
