@@ -1,6 +1,7 @@
 from django import test
 
 from main.tests.fixture import Fixture1
+from django.utils import timezone
 from api.v1.tests.factories import GoalFactory, PositionLotFactory, TickerFactory, \
     TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory, \
     GoalMetricGroupFactory, InvestmentCycleObservationFactory, PortfolioSetFactory, MarkowitzScaleFactory
@@ -12,14 +13,17 @@ from main.management.commands.rebalance import perturbate_mix, process_risk, per
     get_weights, get_tax_lots, calc_opt_inputs
 
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction
-
+from unittest.mock import MagicMock
+from unittest import mock
 
 from main.models import Ticker, GoalMetric, Portfolio, PortfolioSet
 from portfolios.calculation import get_instruments
 from datetime import datetime, date
 
+mocked_now = timezone.now().date()
 
 class RebalanceTest(test.TestCase):
+
     def setUp(self):
         self.t1 = TickerFactory.create(symbol='SPY', unit_price=5)
         self.t2 = TickerFactory.create(symbol='VEA', unit_price=5)
@@ -110,7 +114,8 @@ class RebalanceTest(test.TestCase):
         #weights = perturbate_risk(goal=self.goal)
         self.assertTrue(True)
 
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def setup_performance_history(self):
-        populate_prices(400)
-        populate_cycle_obs(400)
-        populate_cycle_prediction()
+        populate_prices(400, asof=mocked_now)
+        populate_cycle_obs(400, asof=mocked_now)
+        populate_cycle_prediction(asof=mocked_now)
