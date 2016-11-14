@@ -345,7 +345,7 @@ class GoalFactory(factory.django.DjangoModelFactory):
 
     account = factory.SubFactory(ClientAccountFactory)
     name = factory.Sequence(lambda n: "Goal %d" % n)
-    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(1000000)) / 100)
+    cash_balance = factory.LazyAttribute(lambda n: float(random.randrange(500000, 1000000)) / 100)
     type = factory.SubFactory(GoalTypeFactory)
     portfolio_set = factory.SubFactory(PortfolioSetFactory)
 
