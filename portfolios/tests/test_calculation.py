@@ -104,7 +104,7 @@ class CalculationTest(TestCase):
 
         # The below fund has the desired feature, but is not in the goal's portfolio set.
 
-        feature.assets.add(fund2)
+        feature.assets.add(fund1)
 
         # Create some instrument data for the two assets
         self.m_scale = MarkowitzScaleFactory.create()
@@ -114,10 +114,8 @@ class CalculationTest(TestCase):
         populate_cycle_obs(500, asof=mocked_now.date())
         populate_cycle_prediction(asof=mocked_now.date())
         data_provider = DataProviderDjango()
-        idata = build_instruments(data_provider)
-
         execution_provider = ExecutionProviderDjango()
-
+        idata = build_instruments(data_provider)
         result = calculate_portfolio(settings=settings,
                                      data_provider=data_provider,
                                      execution_provider=execution_provider,
