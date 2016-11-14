@@ -348,13 +348,18 @@ class RetiresmartzTests(APITestCase):
         # some tickers for portfolio
         bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
         stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        bonds_index = MarketIndexFactory.create()
-        stocks_index = MarketIndexFactory.create()
+        bonds_index1 = MarketIndexFactory.create()
+        bonds_index2 = MarketIndexFactory.create()
+        stocks_index1 = MarketIndexFactory.create()
+        stocks_index2 = MarketIndexFactory.create()
+
 
         # Add the asset classes to the advisor's default portfolio set
         plan.client.advisor.default_portfolio_set.asset_classes.add(bonds_asset_class, stocks_asset_class)
-        bonds_ticker = TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index, symbol='ITOT')
-        stocks_ticker = TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index, symbol='VEA')
+        TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index1, symbol='ITOT')
+        TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index2, symbol='AGG')
+        TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index1, symbol='EEM')
+        TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index2, symbol='EWU')
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
