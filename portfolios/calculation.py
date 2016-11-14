@@ -389,7 +389,7 @@ def build_weights(source_weights, list_ids, id_to_ticker):
         weight = source_weights.ix[id_to_ticker[id]]
         weight = 0 if pd.isnull(weight) else weight
         weights.append(weight)
-    return np.array(weights)
+    return weights
 
 
 def update_expected_return(data, settings_instruments, id_to_ticker):
@@ -621,6 +621,8 @@ def get_portfolio_stats(instruments, covars, weights):
             - er is the 12 month expected return of the portfolio
             - stdev is the 12 month stdev of the portfolio returns
     """
+    if len(weights) != len(instruments):
+        raise Exception('instruments do not match weights, instruments: {}, weights: {}'.format(instruments.index.tolist(), weights))
 
     ret_weights = pd.Series(weights, index=instruments['id'])
 
