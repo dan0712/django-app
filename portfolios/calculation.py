@@ -4,6 +4,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
 from main.models import Ticker, MarketIndex
@@ -13,7 +14,7 @@ from portfolios.prediction.investment_clock import InvestmentClock as Predictor
 from portfolios.providers.data.django import DataProviderDjango
 from main.models import AssetFeatureValue, GoalMetric
 from main.settings import BASE_DIR
-
+import functools
 INSTRUMENT_TABLE_ID_LABEL = 'id'
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
@@ -406,6 +407,7 @@ def update_expected_return(data, settings_instruments, id_to_ticker):
     return settings_instruments
 
 
+@functools.lru_cache(maxsize=100)
 def read_risk_profile_data(subdir):
     data = pd.read_csv(BASE_DIR + subdir, index_col=0)
     return data
