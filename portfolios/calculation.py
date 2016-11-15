@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
-
+import functools
 from main.models import Ticker, MarketIndex
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
 from portfolios.markowitz_scale import risk_score_to_lambda
@@ -405,6 +405,11 @@ def update_expected_return(data, settings_instruments, id_to_ticker):
     return settings_instruments
 
 
+@functools.lru_cache(maxsize=100)
+def read_risk_profile_data(subdir):
+    return pd.read_csv(BASE_DIR + subdir, index_col=0)
+
+
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None):
     """
     Calculates the instrument weights to use for a given goal settings.
@@ -429,7 +434,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     settings_instruments = instruments.iloc[settings_symbol_ixs]
 
     risk_profile = extract_risk_setting(settings)
-    risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
+    risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
     # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
@@ -486,7 +491,7 @@ def calculate_portfolios(setting, data_provider, execution_provider):
             settings_instruments = instruments.iloc[settings_symbol_ixs]
 
             risk_profile = extract_risk_setting(setting)
-            risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
+            risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
             # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
             weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
