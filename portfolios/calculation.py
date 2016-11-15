@@ -621,6 +621,8 @@ def get_portfolio_stats(instruments, covars, weights):
             - er is the 12 month expected return of the portfolio
             - stdev is the 12 month stdev of the portfolio returns
     """
+    if len(weights) != len(instruments):
+        raise Exception('instruments do not match weights, instruments: {}, weights: {}'.format(instruments.index.tolist(), weights.tolist()))
 
     ret_weights = pd.Series(weights, index=instruments['id'])
 
