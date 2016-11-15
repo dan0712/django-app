@@ -383,11 +383,12 @@ def get_ticker_ids_for_symbols(symbol_list):
             id_to_ticker[ticker.id] = symbol
     return (id_list, ticker_to_id, id_to_ticker)
 
+
 def build_weights(source_weights, settings_instruments):
     weights = list()
     tickers = settings_instruments.index.tolist()
     for ticker in tickers:
-        weight = source_weights.ix[ticker]
+        weight = 0 if ticker not in source_weights.index else source_weights.ix[ticker]
         weight = 0 if pd.isnull(weight) else weight
         weights.append(weight)
     return np.array(weights)
@@ -429,11 +430,11 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
 
     risk_profile = extract_risk_setting(settings)
     risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
-    ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+    # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
     weights = build_weights(risk_profile_data.ix[:, risk_profile], settings_instruments)
 
-    #risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
-    #settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
+    # risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
+    # settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
 
     '''odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
@@ -486,7 +487,7 @@ def calculate_portfolios(setting, data_provider, execution_provider):
 
             risk_profile = extract_risk_setting(setting)
             risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
-            ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+            # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
             weights = build_weights(risk_profile_data.ix[:, risk_profile], settings_instruments)
 
             #risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
