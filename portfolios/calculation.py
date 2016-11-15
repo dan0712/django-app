@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
-import functools
 from main.models import Ticker, MarketIndex
 from portfolios.algorithms.markowitz import markowitz_optimizer_3, markowitz_cost
 from portfolios.markowitz_scale import risk_score_to_lambda
@@ -405,9 +404,9 @@ def update_expected_return(data, settings_instruments, id_to_ticker):
     return settings_instruments
 
 
-@functools.lru_cache(maxsize=100)
 def read_risk_profile_data(subdir):
-    return pd.read_csv(BASE_DIR + subdir, index_col=0)
+    data = pd.read_csv(BASE_DIR + subdir, index_col=0)
+    return data
 
 
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None):
