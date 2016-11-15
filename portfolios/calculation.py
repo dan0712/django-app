@@ -15,6 +15,7 @@ from portfolios.providers.data.django import DataProviderDjango
 from main.models import AssetFeatureValue, GoalMetric
 from main.settings import BASE_DIR
 
+INSTRUMENT_TABLE_ID_LABEL = 'id'
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
 INSTRUMENT_TABLE_PORTFOLIOSETS_LABEL = 'pids'
 INSTRUMENT_TABLE_FEATURES_LABEL = 'features'  # The label in the instruments table for the features column.
@@ -382,11 +383,11 @@ def get_ticker_ids_for_symbols(symbol_list):
             id_to_ticker[ticker.id] = symbol
     return (id_list, ticker_to_id, id_to_ticker)
 
-
-def build_weights(source_weights, list_ids, id_to_ticker):
+def build_weights(source_weights, settings_instruments):
     weights = list()
-    for id in list_ids:
-        weight = source_weights.ix[id_to_ticker[id]]
+    tickers = settings_instruments.index.tolist()
+    for ticker in tickers:
+        weight = source_weights.ix[ticker]
         weight = 0 if pd.isnull(weight) else weight
         weights.append(weight)
     return np.array(weights)
@@ -418,19 +419,21 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Calculating portfolio for settings: {}".format(settings))
 
-    risk_profile = extract_risk_setting(settings)
-    risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
-    ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-    weights = build_weights(risk_profile_data.ix[:, risk_profile], ticker_ids, id_to_ticker)
-
     covars, instruments, masks = idata
     settings_symbol_ixs, cvx_masks = get_settings_masks(settings=settings, masks=masks)
+    if len(settings_symbol_ixs) == 0:
+        raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(settings))
 
     lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
     settings_instruments = instruments.iloc[settings_symbol_ixs]
 
-    risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
-    settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
+    risk_profile = extract_risk_setting(settings)
+    risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
+    ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+    weights = build_weights(risk_profile_data.ix[:, risk_profile], settings_instruments)
+
+    #risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
+    #settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
 
     '''odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
@@ -473,19 +476,21 @@ def calculate_portfolios(setting, data_provider, execution_provider):
 
         portfolios = []
         for risk_score in list(np.arange(0, 1.01, 0.01)):
-            risk_profile = extract_risk_setting(setting)
-            risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
-            ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-            weights = build_weights(risk_profile_data.iloc[:, risk_profile], ticker_ids, id_to_ticker)
-
             covars, instruments, masks = idata
             settings_symbol_ixs, cvx_masks = get_settings_masks(settings=setting, masks=masks)
+            if len(settings_symbol_ixs) == 0:
+                raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(setting))
 
             lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
             settings_instruments = instruments.iloc[settings_symbol_ixs]
 
-            risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
-            settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
+            risk_profile = extract_risk_setting(setting)
+            risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
+            ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+            weights = build_weights(risk_profile_data.ix[:, risk_profile], settings_instruments)
+
+            #risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
+            #settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
 
             # Convert to our statistics for our portfolio.
             portfolios.append((risk_score, get_portfolio_stats(settings_instruments, lcovars, weights)))

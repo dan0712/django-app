@@ -82,8 +82,10 @@ class CalculationTest(TestCase):
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_portfolio(self):
+        fund0 = TickerFactory.create(symbol='IAGG')
         fund1 = TickerFactory.create(symbol='ITOT')
         fund2 = TickerFactory.create(symbol='VEA')
+        fund0 = TickerFactory.create(symbol='IPO')
         fund3 = TickerFactory.create(symbol='EEM')
         fund4 = TickerFactory.create(symbol='AGG')
 
