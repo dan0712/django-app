@@ -431,7 +431,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     risk_profile = extract_risk_setting(settings)
     risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
     # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-    weights = build_weights(risk_profile_data.ix[:, risk_profile], settings_instruments)
+    weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     # risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
     # settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
@@ -488,7 +488,7 @@ def calculate_portfolios(setting, data_provider, execution_provider):
             risk_profile = extract_risk_setting(setting)
             risk_profile_data = pd.read_csv(BASE_DIR + "/data/risk_profiles.csv", index_col=0)
             # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-            weights = build_weights(risk_profile_data.ix[:, risk_profile], settings_instruments)
+            weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
             #risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
             #settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
