@@ -387,7 +387,9 @@ def build_weights(source_weights, settings_instruments):
     weights = list()
     tickers = settings_instruments.index.tolist()
     for ticker in tickers:
-        weight = 0 if ticker not in source_weights.index else source_weights.ix[ticker]
+        weight = 0
+        if ticker in source_weights.index:
+            weight = source_weights.ix[ticker]
         weight = 0 if pd.isnull(weight) else weight
         weights.append(weight)
     return np.array(weights)
