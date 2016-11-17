@@ -99,47 +99,47 @@ class RetiresmartzTestCase(TestCase):
     def test_determine_accounts_100k_income(self):
         # full time employed personal 100k income
         account_contributions = determine_accounts(self.plan)
-        self.assertEqual(len(account_contributions), 9)
-        expected = [(8, 6500), (6, 18000), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (7, 0)]
+        self.assertEqual(len(account_contributions), 22)
+        expected = [(8, 6500), (6, 18000), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (7, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
         self.assertEqual(account_contributions, expected)
 
         # 401 full time employed
         account_contributions = determine_accounts(self.plan2)
-        self.assertEqual(len(account_contributions), 9)
-        expected = [(5, 18000), (8, 6500), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (6, 0), (7, 0)]
+        self.assertEqual(len(account_contributions), 22)
+        expected = [(5, 18000), (8, 6500), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (6, 0), (7, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
         self.assertEqual(account_contributions, expected)
 
         # roth IRA full time employed 100k income
         account_contributions = determine_accounts(self.plan5)
-        self.assertEqual(len(account_contributions), 9)
+        self.assertEqual(len(account_contributions), 22)
 
         # unemployed personal
         account_contributions = determine_accounts(self.plan3)
-        self.assertEqual(len(account_contributions), 9)
-        expected = [(7, 6600), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (8, 0)]
+        self.assertEqual(len(account_contributions), 22)
+        expected = [(7, 6600), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
         self.assertEqual(account_contributions, expected)
 
 
     def test_determine_accounts_150k_income(self):
         # full time employed personal 150k income
         account_contributions = determine_accounts(self.plan6)
-        self.assertEqual(len(account_contributions), 9)
-        expected = [(5, 18000), (7, 6500), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (6, 0), (8, 0)]
+        self.assertEqual(len(account_contributions), 22)
+        expected = [(5, 18000), (7, 6500), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (6, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
         self.assertEqual(account_contributions, expected)
 
         # 401 full time employed
         account_contributions = determine_accounts(self.plan7)
-        self.assertEqual(len(account_contributions), 9)
-        expected =  [(5, 18000), (7, 18000), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (6, 0), (8, 0)]
+        self.assertEqual(len(account_contributions), 22)
+        expected =  [(5, 18000), (7, 18000), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (6, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
         self.assertEqual(account_contributions, expected)
 
         # roth IRA full time employed 150k income
         account_contributions = determine_accounts(self.plan8)
-        self.assertEqual(len(account_contributions), 9)
+        self.assertEqual(len(account_contributions), 22)
 
         # unemployed personal
         account_contributions = determine_accounts(self.plan9)
-        self.assertEqual(len(account_contributions), 9)
-        expected = [(7, 6600), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (8, 0)]
+        self.assertEqual(len(account_contributions), 22)
+        expected = [(7, 6600), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
         self.assertEqual(account_contributions, expected)
 
