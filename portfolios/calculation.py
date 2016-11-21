@@ -440,6 +440,10 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     risk_profile = extract_risk_setting(settings)
     risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
     # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+
+    if risk_profile == 0:
+        risk_profile = 1
+
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     # risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
@@ -483,6 +487,78 @@ def calculate_portfolio_old(settings, data_provider, execution_provider, idata=N
 
     odata = optimize_settings(settings, idata, data_provider, execution_provider)
     weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
+    # Find the orderable weights. We don't align as it's too cpu intensive ATM.
+    # We do however need to do the 3% cutoff so we don't end up with tiny weights.
+    weights, cost = make_orderable(weights,
+                                   cost,
+                                   xs,
+                                   lcovars.values,
+                                   settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values,
+                                   lam,
+                                   constraints,
+                                   settings,
+                                   # We use the current balance (including pending deposits).
+                                   settings.goal.current_balance,
+                                   settings_instruments['price'],
+                                   align=False)
+
+    stats = get_portfolio_stats(settings_instruments, lcovars, weights)
+    return stats
+
+
+def calculate_portfolio_mix(settings, data_provider, execution_provider, idata=None):
+    """
+    Calculates the instrument weights to use for a given goal settings.
+    :param settings: goal.active_settings to calculate the portfolio for.
+    :return: (weights, er, variance) All values will be None if no suitable allocation can be found.
+             - weights: A Pandas series of weights for each instrument.
+             - er: Expected return of portfolio
+             - stdev: stdev of portfolio
+    """
+    if idata is None:
+        idata = get_instruments(data_provider)
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Calculating portfolio for settings: {}".format(settings))
+
+    covars, instruments, masks = idata
+
+    # Convert the settings into a constraint based on a mask for the instruments appropriate for the settings given
+    settings_symbol_ixs, cvx_masks = get_settings_masks(settings=settings, masks=masks)
+    if len(settings_symbol_ixs) == 0:
+        raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(settings))
+    xs, constraints = get_core_constraints(len(settings_symbol_ixs))
+    lam, mconstraints = get_metric_constraints(settings=settings,
+                                               cvx_masks=cvx_masks,
+                                               xs=xs,
+                                               overrides=None,
+                                               data_provider=data_provider)
+    constraints += mconstraints
+
+    settings_instruments = instruments.iloc[settings_symbol_ixs]
+
+    # Add the constraint that they must be over the current lots held less than 1 year.
+    tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(settings.goal,
+                                                                            data_provider.get_current_date())
+    pweights = create_portfolio_weights(settings_instruments['id'].values,
+                                        min_weights=tax_min_weights,
+                                        abs_min=0)
+    constraints += [xs >= pweights]
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
+
+    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
+
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]
+    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu.values, constraints)
+
+    if not weights.any():
+        raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(settings))
+
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
     weights, cost = make_orderable(weights,
