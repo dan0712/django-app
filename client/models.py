@@ -245,6 +245,10 @@ class IBAccount(models.Model):
     ib_account = models.CharField(max_length=32)
     bs_account = models.OneToOneField('ClientAccount', related_name='ib_account')
 
+class APEXAccount(models.Model):
+    apex_account = models.CharField(max_length=32)
+    bs_account = models.OneToOneField('ClientAccount', related_name='apex_account')
+
 
 class ClientAccount(models.Model):
     """
@@ -284,6 +288,7 @@ class ClientAccount(models.Model):
                                                    'to operate the account.',
                                          blank=True)
     # also has ib_account foreign key to IBAccount
+    # also has apex_account foreign key to APEXAccount
 
     objects = ClientAccountQuerySet.as_manager()
 

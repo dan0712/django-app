@@ -21,7 +21,7 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from rest_framework import status
 from common.constants import GROUP_SUPPORT_STAFF
-
+from main.tests.fixture import Fixture1
 
 class FirmAnalyticsMixinTests(TestCase):
     class DummyView(FirmAnalyticsMixin, TemplateView):
@@ -174,51 +174,9 @@ class FirmAnalyticsMixinTests(TestCase):
         goal = GoalFactory.create()
         today = date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
-        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec1 = Execution.objects.create(asset=ticker1,
-                                         volume=10,
-                                         order=order,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist1 = ExecutionDistribution.objects.create(execution=exec1, transaction=t1, volume=10)
-        position1 = PositionLotFactory(quantity=10, execution_distribution=dist1)
-
-        exec2 = Execution.objects.create(asset=ticker2,
-                                         volume=10,
-                                         order=order,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist2 = ExecutionDistribution.objects.create(execution=exec2, transaction=t2, volume=10)
-        position2 = PositionLotFactory(quantity=10, execution_distribution=dist2)
-
-        exec3 = Execution.objects.create(asset=ticker3,
-                                         volume=10,
-                                         order=order,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist3 = ExecutionDistribution.objects.create(execution=exec3, transaction=t3, volume=10)
-        position3 = PositionLotFactory(quantity=10, execution_distribution=dist3)
+        data1 = Fixture1.create_execution_details(goal, ticker1, 10, 2, date(2014, 6, 1))
+        data2 = Fixture1.create_execution_details(goal, ticker2, 10, 2, date(2014, 6, 1))
+        data3 = Fixture1.create_execution_details(goal, ticker3, 10, 2, date(2014, 6, 1))
 
         positions = self.view.get_context_positions(**kwargs)
 
@@ -228,9 +186,9 @@ class FirmAnalyticsMixinTests(TestCase):
         self.assertEqual(len(positions.get('investment_type')), 3)
 
         # compare sum of values to double check values being passed
-        expected_sum = position1.quantity * ticker1.unit_price + \
-                       position2.quantity * ticker2.unit_price + \
-                       position3.quantity * ticker3.unit_price
+        expected_sum = data1[-1].quantity * ticker1.unit_price + \
+                       data2[-1].quantity * ticker2.unit_price + \
+                       data3[-1].quantity * ticker3.unit_price
 
         asset_actual_sum = sum([x.get('value') for x in positions.get('asset_class')])
         region_actual_sum = sum([x.get('value') for x in positions.get('region')])

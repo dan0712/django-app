@@ -7,12 +7,25 @@ from django.db import transaction
 from client.models import ClientAccount, IBAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
-from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker
+from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, MarketOrderRequestAPEX, \
+    ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale, OrderETNA
 import types
 from collections import defaultdict
+from django.db.models import Sum, F, Avg,Case, When, Value, FloatField
+from django.db.models.functions import Coalesce
+import numpy as np
+from datetime import datetime, timedelta
+from django.utils import timezone
+from main.management.commands.rebalance import get_tax_lots
+from main.management.commands.rebalance import TAX_BRACKET_LESS1Y, TAX_BRACKET_MORE1Y
+from execution.ETNA_api.send_orders import insert_order_ETNA
+
 
 short_sleep = partial(sleep, 1)
 long_sleep = partial(sleep, 10)
+
+tax_bracket_egt1Y = 0.2
+tax_bracket_lt1Y = 0.3
 
 verbose_levels = {
     3 : DEBUG,
@@ -34,33 +47,33 @@ def get_options():
     return opts
 
 
+@transaction.atomic()
 def reconcile_cash_client_account(account):
-    with transaction.atomic():
-        account_cash = account.cash_balance
-        goals = account.goals.all()
+    account_cash = account.cash_balance
+    goals = account.goals.all()
 
-        goals_cash = 0
-        for goal in goals:
-            goals_cash += goal.cash_balance
+    goals_cash = 0
+    for goal in goals:
+        goals_cash += goal.cash_balance
 
-        ib_account = account.ib_account
-        ib_cash = ib_account_cash[ib_account.ib_account]
+    ib_account = account.ib_account
+    ib_cash = ib_account_cash[ib_account.ib_account]
 
-        difference = ib_cash - (account_cash + goals_cash)
-        if difference > 0:
-            #there was deposit
-            account_cash += difference
-        elif difference < 0:
-            #withdrawals
-            if abs(difference) < account_cash:
-                account_cash -= abs(difference)
-            else:
-                logger.exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
-                raise Exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
-                # we have a problem - we should not be able to withdraw more than account_cash
-        account.cash_balance = account_cash
-        account.save()
-        return difference
+    difference = ib_cash - (account_cash + goals_cash)
+    if difference > 0:
+        #there was deposit
+        account_cash += difference
+    elif difference < 0:
+        #withdrawals
+        if abs(difference) < account_cash:
+            account_cash -= abs(difference)
+        else:
+            logger.exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
+            raise Exception("interactive brokers cash < sum of goals cashes for " + ib_account.ib_account)
+            # we have a problem - we should not be able to withdraw more than account_cash
+    account.cash_balance = account_cash
+    account.save()
+    return difference
 
 
 def reconcile_cash_client_accounts():
@@ -88,6 +101,140 @@ def transform_execution_requests(execution_requests):
     for e in execution_requests.select_related('order__account__ib_account__ib_account', 'asset__symbol'):
         allocations[e.asset.symbol][e.order.account.ib_account.ib_account] += e.volume
     return allocations
+
+
+def create_apex_orders():
+    '''
+    from outstanding MOR and ER create MorApex and ApexOrder
+    '''
+    ers = ExecutionRequest.objects.all().filter(order__state=MarketOrderRequest.State.APPROVED.value)\
+        .annotate(ticker_id=F('asset__id'))\
+        .values('ticker_id')\
+        .annotate(volume=Sum('volume'))
+
+    for grouped_volume_per_share in ers:
+        ticker = Ticker.objects.get(id=grouped_volume_per_share['ticker_id'])
+
+        # TODO get actual price
+        etna_order = insert_order_ETNA(price=0, quantity=grouped_volume_per_share['volume'], ticker=ticker)
+
+        mor_ids = MarketOrderRequest.objects.all().filter(state=MarketOrderRequest.State.APPROVED.value,
+                                                          execution_requests__asset_id=ticker.id).\
+            values_list('id', flat=True).distinct()
+
+        for id in mor_ids:
+            mor = MarketOrderRequest.objects.get(id=id)
+            MarketOrderRequestAPEX.objects.create(market_order_request=mor, ticker=ticker, etna_order=etna_order)
+
+
+def send_etna_order(etna_order):
+    etna_order.Status = OrderETNA.StatusChoice.Sent.value
+    etna_order.save()
+    mors = MarketOrderRequest.objects.filter(morsAPEX__etna_order=etna_order).distinct()
+    for m in mors:
+        m.state = MarketOrderRequest.State.SENT.value
+        m.save()
+
+
+def mark_etna_order_as_complete(etna_order):
+    etna_order.Status = OrderETNA.StatusChoice.Filled.value
+    etna_order.save()
+
+
+@transaction.atomic
+def process_apex_fills():
+    '''
+    from existing apex fills create executions, execution distributions, transactions and positionLots - pro rata all fills
+    :return:
+    '''
+    fills = ApexFill.objects\
+        .filter(etna_order__Status__in=OrderETNA.StatusChoice.complete_statuses())\
+        .annotate(ticker_id=F('etna_order__ticker__id'))\
+        .values('id', 'ticker_id', 'price', 'volume','executed')
+
+    complete_mor_ids = set()
+    complete_etna_order_ids = set()
+    for fill in fills:
+        ers = ExecutionRequest.objects\
+            .filter(asset_id=fill['ticker_id'], order__morsAPEX__etna_order__Status__in=OrderETNA.StatusChoice.complete_statuses())
+        sum_ers = np.sum([er.volume for er in ers])
+
+        for er in ers:
+            pro_rata = er.volume/float(sum_ers)
+            volume = fill['volume'] * pro_rata
+
+            apex_fill = ApexFill.objects.get(id=fill['id'])
+            ticker = Ticker.objects.get(id=fill['ticker_id'])
+            mor = MarketOrderRequest.objects.get(execution_requests__id=er.id)
+            complete_mor_ids.add(mor.id)
+
+            etna_order = OrderETNA.objects.get(morsAPEX__market_order_request__execution_requests__id=er.id)
+            complete_etna_order_ids.add(etna_order.id)
+
+            execution = Execution.objects.create(asset=ticker, volume=volume, price=fill['price'],
+                                                 amount=volume*fill['price'], order=mor, executed=fill['executed'])
+            ExecutionApexFill.objects.create(apex_fill=apex_fill, execution=execution)
+            trans = Transaction.objects.create(reason=Transaction.REASON_ORDER,
+                                               amount=volume*fill['price'],
+                                               to_goal=er.goal, executed=fill['executed'])
+            ed = ExecutionDistribution.objects.create(execution=execution, transaction=trans, volume=volume,
+                                                      execution_request=er)
+
+            if volume > 0:
+                PositionLot.objects.create(quantity=volume, execution_distribution=ed)
+            else:
+                create_sale(ticker.id, volume, fill['price'], ed)
+
+    for mor_id in complete_mor_ids:
+        mor = MarketOrderRequest.objects.get(id=mor_id)
+        mor.state = MarketOrderRequest.State.COMPLETE.value
+        mor.save()
+
+    for etna_order_id in complete_etna_order_ids:
+        etna_order = OrderETNA.objects.get(id=etna_order_id)
+        etna_order.Status = OrderETNA.StatusChoice.Archived.value
+
+        sum_fills = ApexFill.objects.filter(etna_order_id=etna_order_id).aggregate(sum=Sum('volume'))
+        if sum_fills['sum'] == etna_order.Quantity:
+            etna_order.fill_info = OrderETNA.FillInfo.FILLED.value
+        elif sum_fills['sum'] == 0:
+            etna_order.fill_info = OrderETNA.FillInfo.UNFILLED.value
+        else:
+            etna_order.fill_info = OrderETNA.FillInfo.PARTIALY_FILLED.value
+        etna_order.save()
+
+
+def create_sale(ticker_id, volume, current_price, execution_distribution):
+    # start selling PositionLots from 1st until quantity sold == volume
+    year_ago = timezone.now() - timedelta(days=366)
+    position_lots = PositionLot.objects \
+                    .filter(execution_distribution__execution__asset_id=ticker_id)\
+                    .filter(quantity__gt=0)\
+                    .annotate(price_entry=F('execution_distribution__execution__price'),
+                              executed=F('execution_distribution__execution__executed'),
+                              ticker_id=F('execution_distribution__execution__asset_id'))\
+                    .annotate(tax_bracket=Case(
+                      When(executed__gt=year_ago, then=Value(TAX_BRACKET_LESS1Y)),
+                      When(executed__lte=year_ago, then=Value(TAX_BRACKET_MORE1Y)),
+                      output_field=FloatField())) \
+                    .annotate(unit_tax_cost=(current_price - F('price_entry')) * F('tax_bracket')) \
+                    .order_by('unit_tax_cost')
+
+    left_to_sell = abs(volume)
+    for lot in position_lots:
+        if left_to_sell == 0:
+            break
+
+        new_quantity = max(lot.quantity - left_to_sell, 0)
+        left_to_sell -= lot.quantity - new_quantity
+        lot.quantity = new_quantity
+        lot.save()
+        if new_quantity == 0:
+            lot.delete()
+
+        Sale.objects.create(quantity=- (lot.quantity - new_quantity),
+                            sell_execution_distribution=execution_distribution,
+                            buy_execution_distribution=lot.execution_distribution)
 
 
 def example_usage_with_IB():
