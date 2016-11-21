@@ -36,6 +36,7 @@ from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from common.utils import months_between
 from main import redis
+from main.constants import ACCOUNT_TYPES_COUNTRY
 from main.finance import mod_dietz_rate
 from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
@@ -46,8 +47,8 @@ from .abstract import FinancialInstrument, NeedApprobation, \
 from .fields import ColorField
 from .managers import ExternalAssetQuerySet, GoalQuerySet, PositionLotQuerySet
 from .slug import unique_slugify
-
-
+import numpy as np
+from pinax.eventlog.models import log
 logger = logging.getLogger('main.models')
 
 
@@ -373,7 +374,10 @@ class AccountType(models.Model):
     objects = AccountTypeQuerySet.as_manager()
 
     def __str__(self):
-        return "[{}] {}".format(self.id, dict(constants.ACCOUNT_TYPES)[self.id])
+        countries = [c for c, tl in ACCOUNT_TYPES_COUNTRY.items()
+                     if self.id in tl]
+        return "[{}] ({}) {}".format(self.id, '/'.join(countries),
+                                     dict(constants.ACCOUNT_TYPES)[self.id])
 
 
 class Firm(models.Model):
@@ -1472,8 +1476,10 @@ class Goal(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+        from retiresmartz.models import RetirementPlan
         if not self.account.confirmed:
             raise ValidationError('Account is not verified.')
+
         return super(Goal, self).save(force_insert, force_update, using,
                                       update_fields)
 
@@ -1783,7 +1789,7 @@ class Goal(models.Model):
 
         return predicted
 
-    @property
+    @cached_property
     def on_track(self):
         if self.selected_settings is None:
             return False

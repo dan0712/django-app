@@ -10,10 +10,18 @@ from django.template.loader import render_to_string
 from django.utils.functional import cached_property, curry
 from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
-
+from django.utils import timezone
 from common.structures import ChoiceEnum
 from common.utils import d2dt
 from main.constants import GENDER_MALE, GENDERS
+
+
+class TimestampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
 class PersonalData(models.Model):
@@ -123,7 +131,7 @@ class PersonalData(models.Model):
     @cached_property
     def tax_filing_status(self):
         try:
-            return self.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS']
+            return self.regional_data['tax_transcript_data']['FILING STATUS']
         except:
             return None
 

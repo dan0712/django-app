@@ -70,6 +70,12 @@ class ClientUpdateSerializer(serializers.ModelSerializer):
             'advisor_agreement',
             'phone_num',
             'regional_data',
+            'smoker',
+            'daily_exercise',
+            'weight',
+            'height',
+            'drinks',
+            'date_of_birth',
         )
 
     def validate_phone_num(self, phone_num):
@@ -190,6 +196,7 @@ class InvitationSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = EmailInvite
+        read_only_fields = ('email', )
         fields = (
             'invite_key',
             'status',
@@ -201,6 +208,7 @@ class InvitationSerializer(ReadOnlyModelSerializer):
             'firm_name',
             'firm_logo',
             'firm_colored_logo',
+            'email',
         )
 
     def get_firm_name(self, obj):
@@ -229,8 +237,9 @@ class PrivateInvitationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmailInvite
-        read_only_fields = ('invite_key', 'status')
+        read_only_fields = ('invite_key', 'email', 'status')
         fields = (
+            'email',
             'invite_key',
             'status',
             'onboarding_data',
@@ -299,6 +308,8 @@ class ClientUserRegistrationSerializer(serializers.Serializer):
         if User.objects.filter(email=self.invite.email).exists():
             msg = _('Email is already in use')
             raise exceptions.ValidationError(msg)
+
+        attrs['email'] = self.invite.email
 
         if self.invite.status == EmailInvite.STATUS_CREATED:
             msg = _('Unable to accept this invitation, it hasnt been sent yet')

@@ -140,3 +140,4 @@ local_settings.py
 .DS_Store
 reports/
 dev_database.sqlite3
+media/

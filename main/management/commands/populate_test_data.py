@@ -45,9 +45,7 @@ def populate_prices(days, asof=now().date()):
     for ind in MarketIndex.objects.all():
         delta = np.random.uniform(0, 5)
         ps = random_walk(days, delta)
-        initial = np.random.uniform(0, 200)
-        if ps[-1] < 0:
-            initial += -ps[-1]
+        initial = abs(min(ps)) + 1
         ps += initial
         for i, p in enumerate(ps):
             prices.append(DailyPrice(instrument=ind, date=asof - timedelta(days=i), price=p))
@@ -57,22 +55,20 @@ def populate_prices(days, asof=now().date()):
     for fund in Ticker.objects.all():
         delta = np.random.uniform(0, 5)
         ps = random_walk(days, delta)
-        initial = np.random.uniform(0, 200)
-        if ps[-1] < 0:
-            initial += -ps[-1]
+        initial = abs(min(ps)) + 1
         ps += initial
         for i, p in enumerate(ps):
             prices.append(DailyPrice(instrument=fund, date=asof - timedelta(days=i), price=p))
-
     DailyPrice.objects.bulk_create(prices)
 
 
 def populate_cycle_obs(days, asof=now().date()):
+    # do not input less than 400 days, method might fail
     cycle = int(np.random.uniform(0, 6))
     prog = [0, 1, 2, 0, 3, 4]
     dt = asof - timedelta(days=days)
     while days:
-        run = min(int(np.random.uniform(20, 70)), days)
+        run = min(int(np.random.uniform(20, 50)), days)
         while run:
             InvestmentCycleObservationFactory.create(as_of=dt, cycle=prog[cycle])
             dt += timedelta(days=1)

@@ -397,8 +397,8 @@ class GoalTests(APITestCase):
         # otherwise, No valid instruments found
         self.bonds_index = MarketIndexFactory.create()
         self.stocks_index = MarketIndexFactory.create()
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index, symbol='ITOT')
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index, symbol='VEA')
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
@@ -435,8 +435,8 @@ class GoalTests(APITestCase):
         # otherwise, No valid instruments found
         self.bonds_index = MarketIndexFactory.create()
         self.stocks_index = MarketIndexFactory.create()
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index, symbol='ITOT')
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index, symbol='VEA')
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
@@ -468,8 +468,8 @@ class GoalTests(APITestCase):
         # otherwise, No valid instruments found
         self.bonds_index = MarketIndexFactory.create()
         self.stocks_index = MarketIndexFactory.create()
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index)
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index)
+        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index, symbol='ITOT')
+        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index, symbol='VEA')
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()

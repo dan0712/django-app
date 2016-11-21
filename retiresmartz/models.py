@@ -5,12 +5,14 @@ import logging
 from django.core.validators import MaxLengthValidator, MaxValueValidator, \
     MinLengthValidator, MinValueValidator, ValidationError
 from django.db import models, transaction
-from django.db.models.deletion import PROTECT
+from django.db.models.deletion import PROTECT, CASCADE
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from jsonfield.fields import JSONField
 from pinax.eventlog.models import Log
+
 from common.structures import ChoiceEnum
+from main.event import Event
 from main.models import TransferPlan, GoalSetting, GoalMetricGroup
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.managers import RetirementAdviceQueryset
@@ -18,11 +20,15 @@ from .managers import RetirementPlanQuerySet
 from main import constants
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
+from pinax.eventlog.models import log
+from retiresmartz import advice_responses
+from django.utils.functional import cached_property
+import json
+from main.abstract import TimestampedModel
 logger = logging.getLogger('retiresmartz.models')
 
 
-class RetirementPlan(models.Model):
+class RetirementPlan(TimestampedModel):
     class LifestyleCategory(ChoiceEnum):
         OK = 1, 'Doing OK'
         COMFORTABLE = 2, 'Comfortable'
@@ -128,8 +134,12 @@ class RetirementPlan(models.Model):
 
     retirement_age = models.PositiveIntegerField()
 
-    btc = models.PositiveIntegerField(help_text="Annual personal before-tax contributions")
-    atc = models.PositiveIntegerField(help_text="Annual personal after-tax contributions")
+    btc = models.PositiveIntegerField(help_text="Annual personal before-tax "
+                                                "contributions",
+                                                blank=True)
+    atc = models.PositiveIntegerField(help_text="Annual personal after-tax "
+                                                "contributions",
+                                                blank=True)
 
     max_employer_match_percent = models.FloatField(
         null=True, blank=True,
@@ -199,6 +209,28 @@ class RetirementPlan(models.Model):
             if custom_group and last_user:
                 old_group.delete()
 
+    @cached_property
+    def spendable_income(self):
+        if isinstance(self.savings, str):
+            savings = json.loads(self.savings)
+        else:
+            savings = self.savings
+
+        if isinstance(self.expenses, str):
+            expenses = json.loads(self.expenses)
+        else:
+            expenses = self.expenses
+
+        if self.savings:
+            savings_cost = sum([s.get('amt', 0) for s in savings])
+        else:
+            savings_cost = 0
+        if self.expenses:
+            expenses_cost = sum([e.get('amt', 0) for e in expenses])
+        else:
+            expenses_cost = 0
+        return self.income - savings_cost - expenses_cost
+
     def save(self, *args, **kwargs):
         """
         Override save() so we can do some custom validation of partner plans.
@@ -213,10 +245,25 @@ class RetirementPlan(models.Model):
 
         reverse_plan = getattr(self, 'partner_plan_reverse', None)
         if self.partner_plan is not None and reverse_plan is not None and \
-                        self.partner_plan != reverse_plan:
+           self.partner_plan != reverse_plan:
             raise ValidationError(
                 "Partner plan relationship must be symmetric."
             )
+
+        if self.pk:
+            # RetirementPlan is being created
+            # default btc if btc not provided
+            # SPEND = plan.spendable_income # available spending money 
+            # CONTR = # contributions needed to reach their goal - not function for this yet
+            # CONTC = validated_data['income'] * validated_data.get('max_employer_match_percent') # current retirement contributions
+            if not self.btc:
+                # user did not provide their own btc
+                max_contributions = determine_accounts(self)
+                if self.max_employer_match_percent:
+                    income_btc = self.income * self.max_employer_match_percent
+                else:
+                    income_btc = self.income * 0.04
+                self.btc = min(income_btc, max_contributions[0][1])
 
         super(RetirementPlan, self).save(*args, **kwargs)
 
@@ -244,10 +291,12 @@ class RetirementPlan(models.Model):
     def portfolio(self):
         return self.goal_setting.portfolio if self.goal_setting else None
 
-    @property
+    @cached_property
     def on_track(self):
-        # TODO: Make this actually work.
-        return True
+        if hasattr(self, '_on_track'):
+            return self._on_track
+        self._on_track = False
+        return self._on_track
 
     @property
     def opening_tax_deferred_balance(self):
@@ -327,8 +376,8 @@ class RetirementLifestyle(models.Model):
 
 
 class RetirementAdvice(models.Model):
-    plan = models.ForeignKey(RetirementPlan, related_name='advice')
-    trigger = models.ForeignKey(Log, related_name='advice')
+    plan = models.ForeignKey(RetirementPlan, related_name='advice', on_delete=CASCADE)
+    trigger = models.ForeignKey(Log, related_name='advice', on_delete=PROTECT)
     dt = models.DateTimeField(auto_now_add=True)
     read = models.DateTimeField(blank=True, null=True)
     text = models.CharField(max_length=512)
@@ -364,8 +413,15 @@ def determine_accounts(plan):
     else:
         match = False
 
-    if plan.client.regional_data['tax_transcript_data']['sections'][0]['fields']['FILING STATUS'] == 'Married Filing Joint':
-        joint = True
+    transcript_data = plan.client.regional_data.get('tax_transcript_data', None)
+    if transcript_data and isinstance(transcript_data, dict):
+        status = transcript_data.get('FILING STATUS', None)
+        if not status:
+            logger.warn("Client for plan: {} has no filing status available. Assuming single".format(plan.id))
+        if status == 'Married Filing Joint':
+            joint = True
+        else:
+            joint = False
     else:
         joint = False
 

@@ -1,5 +1,6 @@
 from django.utils import six
 from pinax.eventlog.models import log as event_log
+
 from common.structures import ChoiceEnum
 
 # using AppConfig is for Django 1.9+
@@ -58,6 +59,27 @@ class Event(ChoiceEnum):
     GOAL_REBALANCE_EXECUTED = (16, ['txid'], 'main.Goal')
     GOAL_TRANSFER_EXECUTED = (17, ['txid'], 'main.Goal')
     GOAL_ORDER_DISTRIBUTION = (18, ['txid'], 'main.Goal')
+
+    # RetirementAdvice Events
+    RETIRESMARTZ_PROTECTIVE_MOVE = (19, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_DYNAMIC_MOVE = (20, ['prev_risk', 'new_risk'], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_SPENDABLE_INCOME_UP_CONTRIB_DOWN = (21, ['prev_btc', 'new_btc'], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_SPENDABLE_INCOME_DOWN_CONTRIB_UP = (22, ['prev_btc', 'new_btc'], 'retiresmartz.RetirementPlan')
+
+    RETIRESMARTZ_RETIREMENT_AGE_ADJUSTED = (23, ['prev_age', 'new_age'], 'retiresmartz.RetirementPlan')
+
+    RETIRESMARTZ_IS_A_SMOKER = (24, [], 'client.Client')
+    RETIRESMARTZ_IS_NOT_A_SMOKER = (25, [], 'client.Client')
+    RETIRESMARTZ_EXERCISE_ONLY = (26, [], 'client.Client')
+    RETIRESMARTZ_WEIGHT_AND_HEIGHT_ONLY = (27, [], 'client.Client')
+    RETIRESMARTZ_COMBINATION_WELLBEING_ENTRIES = (28, [], 'client.Client')
+    RETIRESMARTZ_ALL_WELLBEING_ENTRIES = (29, [], 'client.Client')
+
+    RETIRESMARTZ_ON_TRACK_NOW = (30, [], 'retiresmartz.RetirementPlan')
+    RETIRESMARTZ_OFF_TRACK_NOW = (31, [], 'retiresmartz.RetirementPlan')
+
+    RETIRESMARTZ_CONTRIB_UP_SPENDING_DOWN = (32, ['prev_btc', 'new_btc'], 'retiresmartz.RetirementPlan')
+
 
     def __init__(self, id, log_keys, obj_class: str):
         """

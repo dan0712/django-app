@@ -4,9 +4,8 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import (
-    login as auth_views_login ,
+    login as auth_views_login,
 )
-from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -61,7 +60,6 @@ def login(request, template_name='registration/login.html',
             city_lock = None
             if is_client:
                 if user.client.geolocation_lock:
-                    logger.error(user.client.geolocation_lock)
                     city_lock = user.client.geolocation_lock
             elif is_advisor:
                 if user.advisor.geolocation_lock:

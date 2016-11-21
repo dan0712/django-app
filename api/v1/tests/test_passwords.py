@@ -60,6 +60,46 @@ class PasswordsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED,
                          msg='401 for empty email addresses')
 
+    def test_api_reset_password(self):
+        """
+        Test that unauthenticated requests for current user accounts
+        can reset their password.  Does not test email backend.
+        """
+        # test good request
+        url = reverse('api:v1:password_reset')
+        data = {
+            'email': self.user.email,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='200 returned by reset password request')
+        self.assertEqual(mail.outbox[0].subject, 'Password reset on testserver',
+                         msg='Email outbox has email with expected subject')
+
+        # ok lets test a bad request and make sure we get a 401
+        data = {
+            'email': 'boatymcboatface@ukboats.com',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED,
+                         msg='401 for valid emails not associated with any users')
+
+        # test non-email returns 401
+        data = {
+            'email': 'boatymcboatface',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED,
+                         msg='401 for invalid emails addresses')
+
+        # test empty email returns 401
+        data = {
+            'email': '',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED,
+                         msg='401 for empty email addresses')
+
     # tests against api.v1.user.views.ChangePasswordView
     def test_change_password(self):
         """

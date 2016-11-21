@@ -18,7 +18,10 @@ from main.abstract import NeedApprobation, NeedConfirmation, PersonalData
 from main.models import AccountGroup, Goal, Platform
 from .managers import ClientAccountQuerySet, ClientQuerySet
 from main.finance import mod_dietz_rate
-
+from retiresmartz.models import RetirementAdvice, RetirementPlan
+from pinax.eventlog.models import log
+from retiresmartz import advice_responses
+from main.event import Event
 logger = logging.getLogger('client.models')
 
 
@@ -63,8 +66,10 @@ class Client(NeedApprobation, NeedConfirmation, PersonalData):
     smoker = models.NullBooleanField(null=True, blank=True)
     daily_exercise = models.PositiveIntegerField(null=True, blank=True,
                                                  help_text="In Minutes")
-    weight = models.PositiveIntegerField(null=True, blank=True, help_text="In kilograms")
-    height = models.PositiveIntegerField(null=True, blank=True, help_text="In centimeters")
+    weight = models.FloatField(null=True, blank=True, help_text="In kilograms")
+    height = models.FloatField(null=True, blank=True, help_text="In centimeters")
+
+    drinks = models.PositiveIntegerField(null=True, blank=True, help_text='Number of drinks per day')
 
     betasmartz_agreement = models.BooleanField(default=False)
     advisor_agreement = models.BooleanField(default=False)
