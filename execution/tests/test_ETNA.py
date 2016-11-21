@@ -5,7 +5,7 @@ from execution.ETNA_api.send_orders import _login, get_accounts_ETNA, _get_curre
 from execution.models import ETNALogin
 from main.models import OrderETNA
 from execution.ETNA_api.send_orders import ResponseCode
-from local_settings import ETNA_ACCOUNT_ID
+from main.settings import ETNA_ACCOUNT_ID
 from api.v1.tests.factories import TickerFactory
 # demo.etnatrader.com
 

@@ -16,7 +16,7 @@ from datetime import timedelta
 from django.utils import timezone
 from common.structures import ChoiceEnum
 from rest_framework.renderers import JSONRenderer
-from local_settings import ETNA_ENDPOINT_URL, ETNA_LOGIN, ETNA_PASSWORD, ETNA_X_API_KEY, ETNA_X_API_ROUTING, \
+from main.settings import ETNA_ENDPOINT_URL, ETNA_LOGIN, ETNA_PASSWORD, ETNA_X_API_KEY, ETNA_X_API_ROUTING, \
     CONTENT_TYPE, ETNA_ACCOUNT_ID
 from execution.exceptions import ETNAApiException
 from main.models import Ticker
