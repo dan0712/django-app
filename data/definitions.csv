@@ -1,0 +1,28 @@
+Andrew,Asset Class
+US Equities,US_TOTAL_STOCK_MARKET
+Developed Market Equities,DEVELOPED_MARKETS_STOCKS
+Emerging Market Equities,EMERGING_MARKETS_STOCKS
+US Bonds,US_TOTAL_BOND_MARKET
+Developed Market Bonds,DEVELOPED_MARKETS_BONDS
+US Real Estate,US_REAL_ESTATE
+Global Real Estate,GLOBAL_REAL_ESTATE
+Infrastructure,INFRASTRUCTURE
+Commodities,COMMODITIES
+Hedge Funds,HEDGE_FUNDS
+Private Equity,PRIVATE_EQUITY
+Venture Capital,VENTURE_CAPITAL
+Gold,GOLD
+Volatility,VOLATILITY
+US Large-Cap Blend,US_LARGE_CAPS
+US Mid-Cap Blend,US_MID_CAPS
+US Small-Cap Blend,US_SMALL_CAPS
+UK Equities,UK_TOTAL_STOCK_MARKET
+Europe Stocks,EUR_TOTAL_STOCK_MARKETS
+Japan Stocks,JAP_TOTAL_STOCK_MARKET
+Asia ex Japan Stocks,ASIA_EXJAP_TOTAL_STOCK_MARKETS
+China Stocks,CHINA_TOTAL_STOCK_MARKET
+US Government Bonds,US_GOVERNMENT_BONDS
+US Corporate Bonds,US_CORPORATE_BONDS
+US High Yield Bonds (IRA accounts),US_HIGH_YIELD_BONDS
+US Municipal Bonds (Taxable accounts),US_MUNICIPAL_BONDS
+Treasury Inflations-Protected Securities (TIPS),US_TIPS
