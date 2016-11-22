@@ -2353,7 +2353,7 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
-    execution_request = models.ForeignKey('ExecutionRequest', related_name='execution_distributions')
+    execution_request = models.ForeignKey('ExecutionRequest', related_name='execution_distributions',blank=True,null=True)
     # also has field 'position_lot' from PositionLot model
     # also has field 'sold_lot' from Sale model
     # also has field 'bought_lot' from Sale model
