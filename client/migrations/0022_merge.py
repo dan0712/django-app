@@ -8,7 +8,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('client', '0021_auto_20161019_0226'),
-        ('client', '0015_apexaccount'),
     ]
 
     operations = [
