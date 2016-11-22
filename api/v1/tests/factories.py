@@ -12,9 +12,8 @@ from main.models import User, ExternalAsset, PortfolioSet, Firm, Advisor, \
                         FiscalYear, DailyPrice, MarketCap, MarketIndex, \
                         GoalMetric, AssetFeatureValue, AssetFeature, \
                         MarkowitzScale, Supervisor, AuthorisedRepresentative, PositionLot, ExecutionDistribution,\
-                        InvestmentCycleObservation, InvestmentCyclePrediction, \
-                        RecurringTransaction, AccountGroup, Platform
-
+                        InvestmentCycleObservation, InvestmentCyclePrediction, ExecutionRequest, MarketOrderRequest, \
+    ApexFill, ExecutionApexFill, Execution, RecurringTransaction, AccountGroup, Platform, OrderETNA
 from retiresmartz.models import RetirementPlan, RetirementAdvice, RetirementPlanAccount
 from main.models import Region as MainRegion
 from client.models import Client, ClientAccount, RiskProfileGroup, \
@@ -479,6 +478,55 @@ class PositionLotFactory(factory.django.DjangoModelFactory):
 class ExecutionDistributionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExecutionDistribution
+
+
+class ExecutionRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExecutionRequest
+    reason = ExecutionRequest.Reason.DRIFT.value
+
+
+class MarketOrderRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MarketOrderRequest
+    state = MarketOrderRequest.State.APPROVED.value
+    account = factory.SubFactory(ClientAccountFactory)
+
+
+class OrderETNAFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderETNA
+
+    ticker = factory.SubFactory(TickerFactory)
+
+
+class ApexFillFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ApexFill
+
+    etna_order = factory.SubFactory(OrderETNAFactory)
+    volume = factory.SelfAttribute('apex_order.volume')
+    price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
+    executed = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
+
+
+class ExecutionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Execution
+    asset = factory.SubFactory(TickerFactory)
+    volume = factory.LazyAttribute(lambda n: random.randrange(1000))
+    order = factory.SubFactory(MarketOrderRequestFactory)
+    price = factory.LazyAttribute(lambda n: float(random.randrange(100) / 10))
+    executed = factory.Sequence(lambda n: (datetime.today() - relativedelta(days=n + 5)).date())
+    amount = factory.LazyAttribute(lambda n: random.randrange(1000))
+
+
+class ExecutionApexFillFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExecutionApexFill
+
+    apex_fill = factory.SubFactory(ApexFillFactory)
+    execution = factory.SubFactory(ExecutionFactory)
 
 
 class DailyPriceFactory(factory.django.DjangoModelFactory):

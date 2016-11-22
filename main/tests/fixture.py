@@ -7,7 +7,8 @@ from pinax.eventlog.models import Log
 
 import address.models as ad
 from api.v1.tests.factories import GoalMetricFactory, TransactionFactory, PositionLotFactory, \
-    InvestmentCycleObservationFactory
+    ExecutionDistributionFactory, ExecutionFactory, InvestmentCycleObservationFactory
+from main.models import ExecutionRequest
 from client.models import Client, ClientAccount, IBAccount, RiskProfileAnswer, \
     RiskProfileGroup, RiskProfileQuestion
 from main.constants import ACCOUNT_TYPE_PERSONAL
@@ -708,6 +709,18 @@ class Fixture1:
         return res
 
     @classmethod
+    def add_execution_requests(cls, goal, execution_details, executions):
+        execution_requests = []
+        for detail, ed in zip(execution_details, executions):
+            mor = detail[1]
+            execution_requests.append(ExecutionRequest.objects.create(reason=ExecutionRequest.Reason.DRIFT.value,
+                                                                      goal=goal,
+                                                                      asset=ed.asset,
+                                                                      volume=ed.volume,
+                                                                      order=mor))
+        return execution_requests
+
+    @classmethod
     def add_executions(cls, execution_details):
         """
         Adds a bunch of order executions to the system
@@ -725,14 +738,15 @@ class Fixture1:
         return res
 
     @classmethod
-    def add_execution_distributions(cls, distribution_details):
+    def add_execution_distributions(cls, distribution_details, execution_requests):
         """
         Adds a bunch of order execution distributions to the system
         :param distribution_details: Iterable of (execution, volume, goal) tuples.
         :return: the newly created distributions as a list.
         """
         res = []
-        for execution, volume, goal in distribution_details:
+        for dd, er in zip(distribution_details, execution_requests):
+            execution, volume, goal = dd
             amount = abs(execution.amount * volume / execution.volume)
             if volume > 0:
                 tx = Transaction.objects.create(reason=Transaction.REASON_EXECUTION,
@@ -751,7 +765,8 @@ class Fixture1:
 
             res.append(ExecutionDistribution.objects.create(execution=execution,
                                                             transaction=tx,
-                                                            volume=volume))
+                                                            volume=volume,
+                                                            execution_request=er))
         return res
 
     @classmethod
@@ -768,19 +783,29 @@ class Fixture1:
     @classmethod
     def create_execution_details(cls, goal, ticker, quantity, price, executed):
         mor = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        execution = Execution.objects.create(asset=ticker,
+        er = ExecutionRequest.objects.create(reason=ExecutionRequest.Reason.DRIFT.value,
+                                             goal=goal,
+                                             asset=ticker,
                                              volume=quantity,
-                                             order=mor,
-                                             price=price,
-                                             executed=executed,
-                                             amount=quantity*price)
+                                             order=mor)
+        execution = ExecutionFactory.create(asset=ticker,
+                                            volume=quantity,
+                                            order=mor,
+                                            price=price,
+                                            executed=executed,
+                                            amount=quantity*price)
         transaction = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
                                                 to_goal=None,
                                                 from_goal=goal,
                                                 status=Transaction.STATUS_EXECUTED,
                                                 executed=executed,
                                                 amount=quantity*price)
-        distribution = ExecutionDistribution.objects.create(execution=execution,
-                                                            transaction=transaction,
-                                                            volume=quantity)
-        PositionLotFactory.create(quantity=quantity, execution_distribution=distribution)
+        distribution = ExecutionDistributionFactory.create(execution=execution,
+                                                           transaction=transaction,
+                                                           volume=quantity,
+                                                           execution_request=er)
+        position_lot = PositionLotFactory.create(quantity=quantity, execution_distribution=distribution)
+
+        return_values = list()
+        return_values.extend((mor, execution, transaction, distribution, position_lot))
+        return return_values

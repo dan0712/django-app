@@ -4,9 +4,8 @@ from main.tests.fixture import Fixture1
 from django.utils import timezone
 from api.v1.tests.factories import GoalFactory, PositionLotFactory, TickerFactory, \
     TransactionFactory, GoalSettingFactory, GoalMetricFactory, AssetFeatureValueFactory, \
-    GoalMetricGroupFactory, InvestmentCycleObservationFactory, PortfolioSetFactory, MarkowitzScaleFactory
-from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
-    Transaction
+    PortfolioSetFactory, MarkowitzScaleFactory
+from main.models import Transaction, GoalMetric
 from portfolios.providers.execution.django import ExecutionProviderDjango
 from portfolios.providers.data.django import DataProviderDjango
 from main.management.commands.rebalance import perturbate_mix, process_risk, perturbate_withdrawal, perturbate_risk, \
@@ -106,8 +105,6 @@ class RebalanceTest(test.TestCase):
                                  type=GoalMetric.METRIC_TYPE_RISK_SCORE,
                                  rebalance_type=GoalMetric.REBALANCE_TYPE_ABSOLUTE,
                                  rebalance_thr=0.5, configured_val=0.5)
-
-
         lots = get_tax_lots(self.goal)
         weights = get_weights(lots, self.goal.available_balance)
         #risk = process_risk(weights=weights, goal=self.goal, idata=idata, data_provider=data_provider, execution_provider=execution_provider)

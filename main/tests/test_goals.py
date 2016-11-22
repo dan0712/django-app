@@ -34,53 +34,10 @@ class GoalTests(TestCase):
         goal = GoalFactory.create()
         today = date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
-        order1 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec1 = Execution.objects.create(asset=fund,
-                                         volume=10,
-                                         order=order1,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist1 = ExecutionDistributionFactory.create(execution=exec1, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist1)
 
-        order2 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec2 = Execution.objects.create(asset=fund,
-                                         volume=5,
-                                         order=order2,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=10)
-        t2 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=10)
-        dist2 = ExecutionDistributionFactory.create(execution=exec2, transaction=t2, volume=5)
-        PositionLotFactory(quantity=5, execution_distribution=dist2)
-
-        order3 = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec3 = Execution.objects.create(asset=fund2,
-                                         volume=1,
-                                         order=order3,
-                                         price=2,
-                                         executed=date(2014, 6, 1),
-                                         amount=4)
-        t3 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=4)
-        dist3 = ExecutionDistributionFactory.create(execution=exec3, transaction=t3, volume=1)
-        PositionLotFactory(quantity=1, execution_distribution=dist3)
+        Fixture1.create_execution_details(goal, fund, 10, 2, date(2014, 6, 1))
+        Fixture1.create_execution_details(goal, fund, 5, 2, date(2014, 6, 1))
+        Fixture1.create_execution_details(goal, fund2, 1, 2, date(2014, 6, 1))
 
         positions = goal.get_positions_all()
 
@@ -96,21 +53,8 @@ class GoalTests(TestCase):
                                      etf=True)
         goal = GoalFactory.create()
 
-        order = MarketOrderRequest.objects.create(state=MarketOrderRequest.State.COMPLETE.value, account=goal.account)
-        exec = Execution.objects.create(asset=fund1,
-                                        volume=10,
-                                        order=order,
-                                        price=2,
-                                        executed=date(2014, 6, 1),
-                                        amount=20)
-        t1 = TransactionFactory.create(reason=Transaction.REASON_EXECUTION,
-                                       to_goal=None,
-                                       from_goal=goal,
-                                       status=Transaction.STATUS_EXECUTED,
-                                       executed=date(2014, 6, 1),
-                                       amount=20)
-        dist = ExecutionDistributionFactory.create(execution=exec, transaction=t1, volume=10)
-        PositionLotFactory(quantity=10, execution_distribution=dist)
+        Fixture1.create_execution_details(goal, fund1, 10, 2, date(2014, 6, 1))
+
         weight_stocks = goal.stock_balance
         weight_bonds = goal.bond_balance
         weight_core = goal.core_balance

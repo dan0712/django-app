@@ -442,10 +442,11 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
     risk_profile = extract_risk_setting(settings)
     risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
     # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+    # it's the lowest valid value for risk allocation
 
     if risk_profile == 0:
-        risk_profile = 1
-
+        risk_profile = 1  # this's the lowest we have in the table
+        
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     # risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)

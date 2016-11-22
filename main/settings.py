@@ -9,7 +9,15 @@ from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS as TCP
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '&nus@l_#u6@6+ezkldb)xwiiha++9z1omzhamfbd%89@+esi!l'
-
+DEVICE = 'ios'
+VERSION = '3.00'
+CONTENT_TYPE = 'application/json'
+ETNA_X_API_ROUTING = 'demo'
+ETNA_X_API_KEY = 'lOxygJOL4y8ZvKFmh6zb07tEHuWNbukI3AS4P4Ho'
+ETNA_ENDPOINT_URL = 'https://api.etnatrader.com/v0/' + ETNA_X_API_ROUTING
+ETNA_LOGIN = 'les'
+ETNA_PASSWORD = 'B0ngyDung'
+ETNA_ACCOUNT_ID = 2337
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
@@ -57,6 +65,7 @@ INSTALLED_APPS = (
     'retiresmartz',
     'swift',
     'anymail',
+    'execution'
 )
 
 TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'

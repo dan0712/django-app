@@ -3,7 +3,8 @@ import datetime
 from django import test
 
 from api.v1.tests.factories import GoalFactory, TickerFactory, \
-    TransactionFactory, PositionLotFactory
+    TransactionFactory, ExecutionRequestFactory, PositionLotFactory
+
 from main.models import Execution, ExecutionDistribution, MarketOrderRequest, \
     Transaction, InvestmentType
 from portfolios.providers.execution.django import ExecutionProviderDjango
@@ -21,8 +22,6 @@ class DjangoExecutionProviderTest(test.TestCase):
         today = datetime.date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
         Fixture1.create_execution_details(goal, fund, 10, 2, datetime.date(2015, 6, 1))
-
-
         ep = ExecutionProviderDjango()
         vals = ep.get_asset_weights_held_less_than1y(goal, today)
         self.assertAlmostEqual(vals[fund.id], 21/goal.available_balance)
@@ -33,7 +32,6 @@ class DjangoExecutionProviderTest(test.TestCase):
         today = datetime.date(2016, 1, 1)
         # Create a 6 month old execution, transaction and a distribution that caused the transaction
         Fixture1.create_execution_details(goal, fund, 10, 2, datetime.date(2014, 6, 1))
-
         ep = ExecutionProviderDjango()
         vals = ep.get_asset_weights_held_less_than1y(goal, today)
         self.assertEqual(len(vals), 0)
