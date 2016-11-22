@@ -30,7 +30,7 @@ ORDERING_ALIGNMENT_TOLERANCE = 0.01
 
 # Minimum percentage of a portfolio that an individual fund can make up. (0.01 = 1%)
 # We round to 2 decimal places in the portfolio, so that's why 0.01 is used ATM.
-MIN_PORTFOLIO_PCT = 0.03
+MIN_PORTFOLIO_PCT = 0.01
 
 # Amount we suggest we boost a budget by to make all funds with an original allocation over this amount orderable.
 LMT_PORTFOLIO_PCT = 0.05
@@ -235,12 +235,13 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
 
     metrics = settings.get_metrics_all()
     for metric in metrics:
-        if metric.type == 1:
+        if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
             if overrides:
                 risk_score = overrides.get("risk_score", metric.configured_val)
             else:
                 risk_score = metric.configured_val
-        elif metric.type == 0:  # Portfolio Mix
+
+        elif metric.type == GoalMetric.METRIC_TYPE_PORTFOLIO_MIX:
             if overrides:
                 val = overrides.get(metric.feature.id, metric.configured_val)
             else:
@@ -261,15 +262,15 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
                 # If we don't have assets for the feature, don't worry about inserting maximum constraints,
                 # as the allocation will always be zero for that feature.
                 continue
-            if metric.comparison == 0:
+            if metric.comparison == GoalMetric.METRIC_COMPARISON_MINIMUM:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) >= val)
-            elif metric.comparison == 1:
+            elif metric.comparison == GoalMetric.METRIC_COMPARISON_EXACTLY:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Adding constraint that symbols: {} must be exactly {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) == val)
-            elif metric.comparison == 2:
+            elif metric.comparison == GoalMetric.METRIC_COMPARISON_MAXIMUM:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Adding constraint that symbols: {} must be maximum {}".format(feature_assets, val))
                 constraints.append(sum_entries(xs[feature_assets]) <= val)
@@ -369,8 +370,7 @@ def extract_risk_setting(settings):
         if metric.type == GoalMetric.METRIC_TYPE_RISK_SCORE:
             risk_score = metric.configured_val
             break
-    risk_profile = round(risk_score * 100)
-    return risk_profile
+    return risk_score
 
 
 def get_ticker_ids_for_symbols(symbol_list):
@@ -394,8 +394,8 @@ def build_weights(source_weights, settings_instruments):
         weight = 0
         if ac in source_weights.index:
             weight = source_weights.ix[ac]
-        weight = 0 if pd.isnull(weight) else weight
-        weights[ac] = weight
+        if not pd.isnull(weight) and not weight == 0:
+            weights[ac] = weight
     return weights
 
 
@@ -410,13 +410,13 @@ def update_expected_return(data, settings_instruments, id_to_ticker):
     return settings_instruments
 
 
-def read_risk_profile_data(subdir):
+def read_risk_profile_data():
     #data = pd.read_csv(BASE_DIR + subdir, index_col=0)
     data = pd.read_json(RISK_ALLOCATIONS_ASSET_CLASSES, convert_axes=False)
     return data
 
 
-def calculate_portfolio(settings, data_provider, execution_provider, idata=None):
+def calculate_portfolio_etfs(settings, data_provider, execution_provider, idata=None):
     """
     Calculates the instrument weights to use for a given goal settings.
     :param settings: goal.active_settings to calculate the portfolio for.
@@ -446,7 +446,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None)
 
     if risk_profile == 0:
         risk_profile = 1  # this's the lowest we have in the table
-        
+
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     # risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
@@ -509,10 +509,8 @@ def calculate_portfolio_old(settings, data_provider, execution_provider, idata=N
     return stats
 
 
-def get_model_constraints(settings, settings_instruments, xs):
-    risk_profile = extract_risk_setting(settings)
-    risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
-    # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
+def get_model_constraints(settings_instruments, xs, risk_profile):
+    risk_profile_data = read_risk_profile_data()
 
     if risk_profile == 0:
         risk_profile = 1
@@ -529,7 +527,7 @@ def get_model_constraints(settings, settings_instruments, xs):
     return constraints
 
 
-def calculate_portfolio_mix(settings, data_provider, execution_provider, idata=None):
+def calculate_portfolio(settings, data_provider, execution_provider, idata=None, risk_setting=None):
     """
     Calculates the instrument weights to use for a given goal settings.
     :param settings: goal.active_settings to calculate the portfolio for.
@@ -558,7 +556,16 @@ def calculate_portfolio_mix(settings, data_provider, execution_provider, idata=N
                                                data_provider=data_provider)
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
-    modelportfolio_constraints = get_model_constraints(settings=settings, settings_instruments=settings_instruments, xs=xs)
+
+    if risk_setting is None:
+        risk_profile = extract_risk_setting(settings)
+    else:
+        risk_profile = risk_setting
+    risk_profile = int(risk_profile * 100)
+
+    modelportfolio_constraints = get_model_constraints(settings_instruments=settings_instruments,
+                                                       xs=xs,
+                                                       risk_profile=risk_profile)
 
     constraints += mconstraints
     constraints += modelportfolio_constraints
@@ -584,7 +591,7 @@ def calculate_portfolio_mix(settings, data_provider, execution_provider, idata=N
     weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu.values, constraints)
 
     if not weights.any():
-        raise Unsatisfiable("Could not find an appropriate allocation for Settings: {}".format(settings))
+        raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
@@ -625,24 +632,14 @@ def calculate_portfolios(setting, data_provider, execution_provider):
 
         portfolios = []
         for risk_score in list(np.arange(0, 1.01, 0.01)):
-            covars, instruments, masks = idata
-            settings_symbol_ixs, cvx_masks = get_settings_masks(settings=setting, masks=masks)
-            if len(settings_symbol_ixs) == 0:
-                raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(setting))
-
-            lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
-            settings_instruments = instruments.iloc[settings_symbol_ixs]
-
-            risk_profile = extract_risk_setting(setting)
-            risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
-            # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-            weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
-
-            #risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
-            #settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
+            stats = calculate_portfolio(settings=setting,
+                                        data_provider=data_provider,
+                                        execution_provider=execution_provider,
+                                        idata=idata,
+                                        risk_setting=risk_score)
 
             # Convert to our statistics for our portfolio.
-            portfolios.append((risk_score, get_portfolio_stats(settings_instruments, lcovars, weights)))
+            portfolios.append((risk_score, stats))
     except:
         logger.exception("Problem calculating portfolio for setting: {}".format(setting))
         raise
