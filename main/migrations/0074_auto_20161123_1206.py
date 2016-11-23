@@ -16,7 +16,7 @@ def create_new_account_types(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('main', '0070_auto_20161118_0648'),
+        ('main', '0073_auto_20161122_1819'),
     ]
 
     operations = [
