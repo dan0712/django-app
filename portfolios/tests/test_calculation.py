@@ -6,11 +6,11 @@ from django.utils import timezone
 from django.test import TestCase
 
 from api.v1.tests.factories import GoalSettingFactory, GoalMetricFactory, GoalFactory, TickerFactory, \
-    AssetFeatureValueFactory, PortfolioSetFactory, MarkowitzScaleFactory, MarketIndexFactory
+    AssetFeatureValueFactory, PortfolioSetFactory, MarkowitzScaleFactory, MarketIndexFactory, AssetClassFactory, AssetFeatureFactory
 from main.management.commands.populate_test_data import populate_prices, populate_cycle_obs, populate_cycle_prediction, \
     delete_data
 from main.models import GoalMetric
-from portfolios.calculation import calc_opt_inputs, build_instruments, calculate_portfolio
+from portfolios.calculation import calc_opt_inputs, build_instruments, calculate_portfolio, calculate_portfolio_old
 from portfolios.providers.data.django import DataProviderDjango
 from portfolios.providers.execution.django import ExecutionProviderDjango
 
@@ -81,7 +81,7 @@ class CalculationTest(TestCase):
         self.assertEqual(len(constraints), 3)  # All positive, sum to 1, and the max constraint
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
-    def test_calculate_portfolio(self):
+    def test_calculate_portfolio_old(self):
         fund0 = TickerFactory.create(symbol='IAGG')
         fund1 = TickerFactory.create(symbol='ITOT')
         fund2 = TickerFactory.create(symbol='VEA')
@@ -112,6 +112,49 @@ class CalculationTest(TestCase):
         self.m_scale = MarkowitzScaleFactory.create()
         # populate the data needed for the prediction
         # We need at least 500 days as the cycles go up to 70 days and we need at least 7 cycles.
+        populate_prices(500, asof=mocked_now.date())
+        populate_cycle_obs(500, asof=mocked_now.date())
+        populate_cycle_prediction(asof=mocked_now.date())
+        data_provider = DataProviderDjango()
+        execution_provider = ExecutionProviderDjango()
+        idata = build_instruments(data_provider)
+        result = calculate_portfolio_old(settings=settings,
+                                         data_provider=data_provider,
+                                         execution_provider=execution_provider,
+                                         idata=idata)
+        self.assertTrue(True)
+
+    @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
+    def test_calculate_portfolio(self):
+        # TODO
+        # constraints -> limit them -> maximum minimum value of 5%, maximum max value of 95%
+
+        asset_class1 = AssetClassFactory.create(name='US_TOTAL_BOND_MARKET')
+        asset_class2 = AssetClassFactory.create(name='HEDGE_FUNDS')
+
+        fund0 = TickerFactory.create(symbol='IAGG', asset_class=asset_class1)
+        fund1 = TickerFactory.create(symbol='ITOT', asset_class=asset_class2)
+        fund0 = TickerFactory.create(symbol='IPO')
+        fund6 = TickerFactory.create(symbol='rest')
+
+        ps1 = PortfolioSetFactory \
+            .create(asset_classes=[asset_class1, asset_class2, fund6.asset_class])
+
+        #feature = AssetFeatureValueFactory.create()
+        settings = GoalSettingFactory.create()
+        risk_metric = GoalMetricFactory.create(group=settings.metric_group, type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+        # mix_metric = GoalMetricFactory.create(group=settings.metric_group,
+        #                                      type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
+        #                                      feature=feature,
+        #                                      comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM,
+        #                                      )
+        goal = GoalFactory.create(selected_settings=settings, portfolio_set=ps1)
+
+        #feature.assets.add(fund0)
+
+        # Create some instrument data for the two assets
+        self.m_scale = MarkowitzScaleFactory.create()
+
         populate_prices(500, asof=mocked_now.date())
         populate_cycle_obs(500, asof=mocked_now.date())
         populate_cycle_prediction(asof=mocked_now.date())

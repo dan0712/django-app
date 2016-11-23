@@ -346,15 +346,17 @@ class RetiresmartzTests(APITestCase):
                                             selected_life_expectancy=85)
 
         # some tickers for portfolio
-        bonds_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.BONDS.get())
-        stocks_asset_class = AssetClassFactory.create(investment_type=InvestmentType.Standard.STOCKS.get())
-        bonds_index = MarketIndexFactory.create()
-        stocks_index = MarketIndexFactory.create()
+        bonds_asset_class = AssetClassFactory.create(name='US_TOTAL_BOND_MARKET')
+        stocks_asset_class = AssetClassFactory.create(name='HEDGE_FUNDS')
+
+        TickerFactory.create(symbol='IAGG', asset_class=bonds_asset_class)
+        TickerFactory.create(symbol='ITOT', asset_class=stocks_asset_class)
+        TickerFactory.create(symbol='IPO')
+        fund = TickerFactory.create(symbol='rest')
 
         # Add the asset classes to the advisor's default portfolio set
-        plan.client.advisor.default_portfolio_set.asset_classes.add(bonds_asset_class, stocks_asset_class)
-        TickerFactory.create(asset_class=bonds_asset_class, benchmark=bonds_index, symbol='ITOT')
-        TickerFactory.create(asset_class=stocks_asset_class, benchmark=stocks_index, symbol='VEA')
+        plan.client.advisor.default_portfolio_set.asset_classes.add(bonds_asset_class, stocks_asset_class, fund.asset_class)
+
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()

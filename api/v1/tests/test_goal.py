@@ -32,10 +32,8 @@ mocked_now = datetime(2016, 1, 1)
 class GoalTests(APITestCase):
     def setUp(self):
         self.support_group = GroupFactory(name=GROUP_SUPPORT_STAFF)
-        self.bonds_type = InvestmentType.Standard.BONDS.get()
-        self.stocks_type = InvestmentType.Standard.STOCKS.get()
-        self.bonds_asset_class = AssetClassFactory.create(investment_type=self.bonds_type)
-        self.stocks_asset_class = AssetClassFactory.create(investment_type=self.stocks_type)
+        self.bonds_asset_class = AssetClassFactory.create(name='US_TOTAL_BOND_MARKET')
+        self.stocks_asset_class = AssetClassFactory.create(name='HEDGE_FUNDS')
         self.portfolio_set = PortfolioSetFactory.create()
         self.portfolio_set.asset_classes.add(self.bonds_asset_class, self.stocks_asset_class)
 
@@ -395,10 +393,12 @@ class GoalTests(APITestCase):
         """
         # tickers for testing portfolio calculations in goals endpoint
         # otherwise, No valid instruments found
-        self.bonds_index = MarketIndexFactory.create()
-        self.stocks_index = MarketIndexFactory.create()
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index, symbol='ITOT')
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index, symbol='VEA')
+
+        TickerFactory.create(symbol='IAGG', asset_class=self.bonds_asset_class)
+        TickerFactory.create(symbol='ITOT', asset_class=self.stocks_asset_class)
+        TickerFactory.create(symbol='IPO')
+        fund = TickerFactory.create(symbol='rest')
+        self.portfolio_set.asset_classes.add(fund.asset_class)
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
@@ -413,8 +413,8 @@ class GoalTests(APITestCase):
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
         # Create a risk score metric for the settings
-        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
-        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        GoalMetricFactory.create(group=goal_settings.metric_group, type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+        goal = GoalFactory.create(account=account, selected_settings=goal_settings, portfolio_set=self.portfolio_set)
         goal_settings.completion_date = timezone.now().date() - timedelta(days=365)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
@@ -433,12 +433,15 @@ class GoalTests(APITestCase):
         """
         # tickers for testing portfolio calculations in goals endpoint
         # otherwise, No valid instruments found
-        self.bonds_index = MarketIndexFactory.create()
-        self.stocks_index = MarketIndexFactory.create()
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index, symbol='ITOT')
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index, symbol='VEA')
 
-        # Set the markowitz bounds for today
+        TickerFactory.create(symbol='IAGG', asset_class=self.bonds_asset_class)
+        TickerFactory.create(symbol='ITOT', asset_class=self.stocks_asset_class)
+        TickerFactory.create(symbol='IPO')
+        fund = TickerFactory.create(symbol='rest')
+
+        self.portfolio_set.asset_classes.add(fund.asset_class)
+
+         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
 
         # populate the data needed for the optimisation
@@ -451,8 +454,9 @@ class GoalTests(APITestCase):
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
         # Create a risk score metric for the settings
-        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
-        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        GoalMetricFactory.create(group=goal_settings.metric_group, type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+
+        goal = GoalFactory.create(account=account, selected_settings=goal_settings, portfolio_set=self.portfolio_set)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-portfolio?setting={}'.format(goal.id, json.dumps(serializer.data))
         response = self.client.get(url)
@@ -466,10 +470,12 @@ class GoalTests(APITestCase):
     def test_calculate_portfolio_complete(self):
         # tickers for testing portfolio calculations in goals endpoint
         # otherwise, No valid instruments found
-        self.bonds_index = MarketIndexFactory.create()
-        self.stocks_index = MarketIndexFactory.create()
-        self.bonds_ticker = TickerFactory.create(asset_class=self.bonds_asset_class, benchmark=self.bonds_index, symbol='ITOT')
-        self.stocks_ticker = TickerFactory.create(asset_class=self.stocks_asset_class, benchmark=self.stocks_index, symbol='VEA')
+        TickerFactory.create(symbol='IAGG', asset_class=self.bonds_asset_class)
+        TickerFactory.create(symbol='ITOT', asset_class=self.stocks_asset_class)
+        TickerFactory.create(symbol='IPO')
+        fund = TickerFactory.create(symbol='rest')
+
+        self.portfolio_set.asset_classes.add(fund.asset_class)
 
         # Set the markowitz bounds for today
         self.m_scale = MarkowitzScaleFactory.create()
@@ -484,8 +490,9 @@ class GoalTests(APITestCase):
         # setup some inclusive goal settings
         goal_settings = GoalSettingFactory.create()
         # Create a risk score metric for the settings
-        goal_metric = GoalMetricFactory.create(group=goal_settings.metric_group)
-        goal = GoalFactory.create(account=account, active_settings=goal_settings, portfolio_set=self.portfolio_set)
+        GoalMetricFactory.create(group=goal_settings.metric_group, type=GoalMetric.METRIC_TYPE_RISK_SCORE)
+        goal = GoalFactory.create(account=account, selected_settings=goal_settings, portfolio_set=self.portfolio_set,
+                                  active_settings=goal_settings)
         goal_settings.completion_date = timezone.now().date() - timedelta(days=365)
         serializer = GoalSettingSerializer(goal_settings)
         url = '/api/v1/goals/{}/calculate-all-portfolios?setting={}'.format(goal.id, json.dumps(serializer.data))
