@@ -36,7 +36,7 @@ from common.constants import GROUP_SUPPORT_STAFF
 from common.structures import ChoiceEnum
 from common.utils import months_between
 from main import redis
-from main.constants import ACCOUNT_TYPES_COUNTRY
+from main.constants import ACCOUNT_TYPES_COUNTRY, ACCOUNT_UNKNOWN
 from main.finance import mod_dietz_rate
 from main.managers import AccountTypeQuerySet
 from main.risk_profiler import validate_risk_score
@@ -376,8 +376,8 @@ class AccountType(models.Model):
     def __str__(self):
         countries = [c for c, tl in ACCOUNT_TYPES_COUNTRY.items()
                      if self.id in tl]
-        return "[{}] ({}) {}".format(self.id, '/'.join(countries),
-                                     dict(constants.ACCOUNT_TYPES)[self.id])
+        title = dict(constants.ACCOUNT_TYPES).get(self.id, ACCOUNT_UNKNOWN)
+        return "[{}] ({}) {}".format(self.id, '/'.join(countries), title)
 
 
 class Firm(models.Model):
@@ -2353,7 +2353,7 @@ class ExecutionDistribution(models.Model):
     execution = models.ForeignKey('Execution', related_name='distributions', on_delete=PROTECT)
     transaction = models.OneToOneField('Transaction', related_name='execution_distribution', on_delete=PROTECT)
     volume = models.FloatField(help_text="The number of units from the execution that were applied to the transaction.")
-    execution_request = models.ForeignKey('ExecutionRequest', related_name='execution_distributions')
+    execution_request = models.ForeignKey('ExecutionRequest', related_name='execution_distributions',blank=True,null=True)
     # also has field 'position_lot' from PositionLot model
     # also has field 'sold_lot' from Sale model
     # also has field 'bought_lot' from Sale model
