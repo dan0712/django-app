@@ -474,7 +474,8 @@ class ClientAccount(models.Model):
 
     @property
     def account_type_name(self):
-        return constants.ACCOUNT_TYPES[self.account_type][1]
+        return dict(constants.ACCOUNT_TYPES).get(self.account_type,
+                                                 constants.ACCOUNT_UNKNOWN)
 
     @cached_property
     def on_track(self):
