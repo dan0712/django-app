@@ -125,7 +125,7 @@ class CalculationTest(TestCase):
         self.assertTrue(True)
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
-    def test_calculate_portfolio_mix(self):
+    def test_calculate_portfolio(self):
         # TODO
         # constraints -> limit them -> maximum minimum value of 5%, maximum max value of 95%
 
