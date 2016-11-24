@@ -65,7 +65,7 @@ class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
         for a_t in AccountType.objects.filter_by_user(request.user):
             res.append({
                 "id": a_t.id,
-                "name": act[a_t.id],
+                "name": act.get(a_t.id, constants.ACCOUNT_UNKNOWN),
                 "creatable": a_t.id not in US_RETIREMENT_ACCOUNT_TYPES
             })
 
