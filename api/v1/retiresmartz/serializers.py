@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from api.v1.goals.serializers import PortfolioSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
+from client.models import Client
 from main.constants import GENDER_MALE
 from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
@@ -327,3 +328,19 @@ class RetirementAdviceWritableSerializer(serializers.ModelSerializer):
         if request.method == 'PUT':
             for field in self.fields.values():
                 field.required = False
+
+
+class JointAccountConfirmation(serializers.Serializer):
+    email = serializers.EmailField()
+    ssn = serializers.CharField()
+
+    client = None
+
+    def validate(self, attrs):
+        try:
+            self.client = Client.objects.get(user__email=attrs['email'])
+            if self.client.regional_data['ssn'] != attrs['ssn']:
+                raise ValueError
+        except (Client.DoesNotExist, TypeError, KeyError, ValueError):
+            raise ValidationError('User cannot be found.')
+        return attrs
