@@ -342,5 +342,5 @@ class JointAccountConfirmation(serializers.Serializer):
             if self.client.regional_data['ssn'] != attrs['ssn']:
                 raise ValueError
         except (Client.DoesNotExist, TypeError, KeyError, ValueError):
-            raise ValidationError('User cannot be found.')
+            raise ValidationError({'email': 'User cannot be found.'})
         return attrs
