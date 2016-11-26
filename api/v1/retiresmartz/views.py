@@ -544,7 +544,8 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             #     html_message=render('email/client/joint-confirm/message.html'),
             # )
             return Response(ClientAccountSerializer(instance=account).data)
-        return Response({'error': serializer.errors})
+        return Response({'error': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     # TODO clarify the confirmation process before proceeding
     # @list_route(methods=['get'], permission_classes=[])
