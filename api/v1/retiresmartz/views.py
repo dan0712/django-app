@@ -523,7 +523,7 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
             cosignee = serializer.client
             account = ClientAccount.objects.create(
                 account_type=constants.ACCOUNT_TYPE_JOINT,
-                account_name='JOINT',
+                account_name='JOINT {:%Y-%m-%d %H:%M:%S}'.format(now()),
                 primary_owner=client,
                 default_portfolio_set=client.advisor.default_portfolio_set,
             )
