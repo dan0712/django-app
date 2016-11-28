@@ -686,6 +686,29 @@ class EmailInvite(models.Model):
         return '{} {} {} ({})'.format(self.first_name, self.middle_name[:1],
                                       self.last_name, self.email)
 
+    def save(self, *args, **kwargs):
+        if self.status == EmailInvite.STATUS_ACCEPTED:
+            # clear sensitive information from onboarding_data,
+            # that information has been used by ClientUserRegistration
+            # if EmailInvite.STATUS_ACCEPTED
+            if self.onboarding_data:
+                if 'login' in self.onboarding_data:
+                    if 'steps' in self.onboarding_data['login']:
+                        info = self.onboarding_data['login']['steps'][0]
+                        if 'password' in info:
+                            self.onboarding_data['login']['steps'][0]['password'] = ''
+                        if 'passwordConfirmation' in info:
+                            self.onboarding_data['login']['steps'][0]['passwordConfirmation'] = ''
+                        if 'primarySecurityQuestion' in info:
+                            self.onboarding_data['login']['steps'][0]['primarySecurityQuestion'] = ''
+                        if 'primarySecurityAnswer' in info:
+                            self.onboarding_data['login']['steps'][0]['primarySecurityAnswer'] = ''
+                        if 'secondarySecurityQuestion' in info:
+                            self.onboarding_data['login']['steps'][0]['secondarySecurityQuestion'] = ''
+                        if 'secondarySecurityAnswer' in info:
+                            self.onboarding_data['login']['steps'][0]['secondarySecurityAnswer'] = ''
+        super(EmailInvite, self).save(*args, **kwargs)
+
     @property
     def can_resend(self):
         return self.status in [self.STATUS_CREATED, self.STATUS_SENT, self.STATUS_ACCEPTED]
