@@ -7,12 +7,14 @@ import scipy.stats as st
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Q
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.functional import curry
+from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import ValidationError
@@ -591,6 +593,30 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     #
     #     return Response(status=status.HTTP_403_FORBIDDEN)
 
+    @list_route(methods=['post'], url_path='add-rollover-account',
+                permission_classes=[IsClient])
+    @transaction.atomic
+    def add_rollover(self, request, *args, **kwargs):
+        serializer = serializers.AddRolloverAccount(data=request.data)
+        if serializer.is_valid():
+            client = request.user.client
+            try:
+                if str(client.id) != kwargs['parent_lookup_client']:
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+            except KeyError:
+                pass
+            data = serializer.validated_data
+            account_type = data['account_type']
+            account = ClientAccount.objects.create(
+                account_type=account_type,
+                account_name=dict(constants.ACCOUNT_TYPES)[account_type],
+                primary_owner=client,
+                default_portfolio_set=client.advisor.default_portfolio_set,
+            )
+            # TODO save source account rollover data
+            return Response(ClientAccountSerializer(instance=account).data)
+        return Response({'error': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):

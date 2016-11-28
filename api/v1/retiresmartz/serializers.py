@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 from api.v1.goals.serializers import PortfolioSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
 from client.models import Client
-from main.constants import GENDER_MALE
+from main.constants import GENDER_MALE, ACCOUNT_TYPES
 from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
 from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
@@ -344,3 +344,10 @@ class JointAccountConfirmation(serializers.Serializer):
         except (Client.DoesNotExist, TypeError, KeyError, ValueError):
             raise ValidationError({'email': 'User cannot be found.'})
         return attrs
+
+
+class AddRolloverAccount(serializers.Serializer):
+    provider = serializers.CharField()
+    account_type = serializers.ChoiceField(choices=ACCOUNT_TYPES)
+    account_number = serializers.CharField()
+    amount = serializers.FloatField()
