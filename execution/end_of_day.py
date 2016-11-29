@@ -4,19 +4,17 @@ from logging import DEBUG, INFO, WARN, ERROR
 from time import sleep
 
 from django.db import transaction
-from client.models import ClientAccount, IBAccount
+from client.models import ClientAccount
 from execution.broker.interactive_brokers.interactive_brokers import InteractiveBrokers
 from execution.broker.interactive_brokers.account_groups.create_account_groups import FAAccountProfile
 from main.models import MarketOrderRequest, ExecutionRequest, Execution, Ticker, MarketOrderRequestAPEX, \
     ApexFill, ExecutionApexFill, ExecutionDistribution, Transaction, PositionLot, Sale, OrderETNA
 import types
 from collections import defaultdict
-from django.db.models import Sum, F, Avg,Case, When, Value, FloatField
-from django.db.models.functions import Coalesce
+from django.db.models import Sum, F, Case, When, Value, FloatField
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from main.management.commands.rebalance import get_tax_lots
 from main.management.commands.rebalance import TAX_BRACKET_LESS1Y, TAX_BRACKET_MORE1Y
 from execution.ETNA_api.send_orders import insert_order_ETNA
 

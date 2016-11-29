@@ -1,14 +1,11 @@
 import logging
-from collections import defaultdict
 from datetime import timedelta
 
-import pandas as pd
 from django.db.models import Sum, F
 from django.db.models.functions import Coalesce
-from django.db.models.query_utils import Q
 from main.management.commands.rebalance import get_weights
 
-from main.models import MarketOrderRequest, Transaction, Ticker, PositionLot
+from main.models import MarketOrderRequest, Ticker, PositionLot
 from .abstract import ExecutionProviderAbstract
 
 logger = logging.getLogger('betasmartz.execution_provider_django')
