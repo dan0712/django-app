@@ -141,7 +141,6 @@ class SettingsTests(APITestCase):
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # print(response.data['tickers'])
         ticker_ids = [int(t['id']) for t in response.data['tickers']]
         self.assertTrue(self.bonds_ticker.id not in ticker_ids)
 
