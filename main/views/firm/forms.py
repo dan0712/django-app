@@ -8,12 +8,12 @@ from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
-from django.shortcuts import HttpResponseRedirect, get_object_or_404, HttpResponse
+from django.shortcuts import HttpResponseRedirect, get_object_or_404
 from django.views.generic import CreateView, View, TemplateView
 from django.views.generic.edit import ProcessFormView
 from main.models import Firm, User, AuthorisedRepresentative, \
-    FirmData, Transaction, Ticker, Platform, Goal, PositionLot
-from main.optimal_goal_portfolio import solve_shares_wdw, solve_shares_deposit, solve_shares_re_balance
+    FirmData, Transaction, Ticker, Platform, Goal
+from main.optimal_goal_portfolio import solve_shares_re_balance
 from ..base import AdminView
 from ..base import LegalView
 from ...forms import EmailInvitationForm

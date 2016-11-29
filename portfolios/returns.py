@@ -3,7 +3,6 @@ from datetime import timedelta, date
 import logging
 from collections import defaultdict
 import pandas as pd
-import numpy as np
 
 from django.db.models.query import QuerySet
 
