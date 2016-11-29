@@ -9,7 +9,9 @@ from portfolios.exceptions import OptimizationException
 from portfolios.returns import get_return_history, get_benchmark_returns, filter_returns
 
 # TODO: Once we have automated predictions, reduce this value.
-OLDEST_ACCEPTABLE_DATA = 180  # The number of days back we will look data before we consider it too old.
+# The number of days back we will look data before we consider it too old.
+OLDEST_ACCEPTABLE_DATA = 400  # 180 - until we update data, we will use longer treshold
+
 
 MAX_HISTORY = 20  # The maximum years of history we want to use
 CYCLE_LABEL = 'CYCLE'
