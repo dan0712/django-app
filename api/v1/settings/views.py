@@ -12,7 +12,7 @@ from client.models import RiskProfileGroup
 from main import constants, models
 from main.abstract import PersonalData
 from main.constants import US_RETIREMENT_ACCOUNT_TYPES
-from main.models import AccountType
+from main.models import AccountType, Ticker
 from . import serializers
 from ..permissions import IsAdvisorOrClient
 from client import models as client_models
@@ -88,7 +88,7 @@ class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'])
     def tickers(self, request):
-        tickers = models.Ticker.objects.order_by('ordering', 'display_name')
+        tickers = Ticker.objects.filter(state=Ticker.State.ACTIVE.value).order_by('ordering', 'display_name')
         serializer = serializers.TickerListSerializer(tickers, many=True)
         return Response(serializer.data)
 

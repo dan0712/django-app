@@ -1468,7 +1468,8 @@ class Goal(models.Model):
         return '[' + str(self.id) + '] ' + self.name + " : " + self.account.primary_owner.full_name
 
     def get_positions_all(self):
-        lots = PositionLot.objects.filter(quantity__gt=0, execution_distribution__transaction__from_goal=self).\
+        lots = PositionLot.objects.filter(quantity__gt=0, execution_distribution__transaction__from_goal=self,
+                                          execution_distribution__execution__asset__state=Ticker.State.ACTIVE.value).\
             annotate(ticker_id=F('execution_distribution__execution__asset__id'),
                      price=F('execution_distribution__execution__asset__unit_price'))\
             .values('ticker_id', 'price').annotate(quantity=Sum('quantity'))
@@ -1812,7 +1813,7 @@ class Goal(models.Model):
     @property
     def total_balance(self):
         b = self.cash_balance
-        b += self._sum_holdings(PositionLot.objects.all())
+        b += self._sum_holdings(PositionLot.objects.filter(execution_distribution__execution__asset__state=Ticker.State.ACTIVE.value))
         return b
 
     @property
@@ -1826,26 +1827,30 @@ class Goal(models.Model):
     def stock_balance(self):
         stocks = InvestmentType.Standard.STOCKS.get()
         return self._sum_holdings(
-            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=stocks)
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=stocks,
+                                       execution_distribution__execution__asset__state=Ticker.State.ACTIVE.value)
         )
 
     @property
     def bond_balance(self):
         bonds = InvestmentType.Standard.BONDS.get()
         return self._sum_holdings(
-            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=bonds)
+            PositionLot.objects.filter(execution_distribution__execution__asset__asset_class__investment_type=bonds,
+                                       execution_distribution__execution__asset__state=Ticker.State.ACTIVE.value)
         )
 
     @property
     def core_balance(self):
         return self._sum_holdings(
-            PositionLot.objects.filter(execution_distribution__execution__asset__etf=True)
+            PositionLot.objects.filter(execution_distribution__execution__asset__etf=True,
+                                       execution_distribution__execution__asset__state=Ticker.State.ACTIVE.value)
         )
 
     @property
     def satellite_balance(self):
         return self._sum_holdings(
-            PositionLot.objects.filter(execution_distribution__execution__asset_etf=False)
+            PositionLot.objects.filter(execution_distribution__execution__asset_etf=False,
+                                       execution_distribution__execution__asset__state=Ticker.State.ACTIVE.value)
         )
 
     @property
