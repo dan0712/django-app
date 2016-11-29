@@ -40,7 +40,7 @@ class DataProviderDjango(DataProviderAbstract):
         Returns a list of all the funds in the system.
         :return:
         """
-        return Ticker.objects.all()
+        return Ticker.objects.filter(state=Ticker.State.ACTIVE.value)
 
     def get_ticker(self, tid):
         return Ticker.objects.get(id=tid)
