@@ -12,3 +12,5 @@
 ./manage.py loaddata main/fixtures/activitylogevent.json
 
 ./manage.py loaddata retiresmartz/fixtures/retirementlifestyles.json
+
+./manage.py loaddata user/fixtures/securityquestion.json
