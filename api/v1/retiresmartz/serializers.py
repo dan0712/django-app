@@ -351,3 +351,4 @@ class AddRolloverAccount(serializers.Serializer):
     account_type = serializers.ChoiceField(choices=ACCOUNT_TYPES)
     account_number = serializers.CharField()
     amount = serializers.FloatField()
+    signature = serializers.CharField()
