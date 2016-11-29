@@ -14,3 +14,5 @@
 ./manage.py loaddata retiresmartz/fixtures/retirementlifestyles.json
 
 ./manage.py loaddata user/fixtures/securityquestion.json
+
+./manage.py loaddata client/fixtures/accounttyperiskprofilegroup.json
