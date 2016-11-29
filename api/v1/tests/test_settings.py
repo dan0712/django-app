@@ -131,12 +131,25 @@ class SettingsTests(APITestCase):
         self.assertTrue('external_asset_types' in response.data)
         self.assertEqual(set(('id', 'name')), set(response.data['external_asset_types'][0].keys()))
 
+    def test_closed_tickers_not_in_settings(self):
+        """
+        Make sure closed tickers are not returned by the /api/v1/settings endpoint
+        """
+        url = '/api/v1/settings'
+        self.bonds_ticker.state = Ticker.State.CLOSED.value
+        self.bonds_ticker.save()
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ticker_ids = [int(t['id']) for t in response.data['tickers']]
+        self.assertTrue(self.bonds_ticker.id not in ticker_ids)
+
     def test_inactive_tickers_not_in_settings(self):
         """
         Make sure inactive tickers are not returned by the /api/v1/settings endpoint
         """
         url = '/api/v1/settings'
-        self.bonds_ticker.state = Ticker.State.CLOSED.value
+        self.bonds_ticker.state = Ticker.State.INACTIVE.value
         self.bonds_ticker.save()
         self.client.force_authenticate(user=Fixture1.client1().user)
         response = self.client.get(url)

@@ -17,7 +17,6 @@ from . import serializers
 from ..permissions import IsAdvisorOrClient
 from client import models as client_models
 from retiresmartz import models as retirement_models
-from django.db.models import Q
 
 
 class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
@@ -89,7 +88,7 @@ class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'])
     def tickers(self, request):
-        tickers = Ticker.objects.filter(~Q(state=Ticker.State.CLOSED.value)).order_by('ordering', 'display_name')
+        tickers = Ticker.objects.filter(state=Ticker.State.ACTIVE.value).order_by('ordering', 'display_name')
         serializer = serializers.TickerListSerializer(tickers, many=True)
         return Response(serializer.data)
 
