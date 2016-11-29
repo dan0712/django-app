@@ -1,0 +1,7 @@
+Dear {{ recipient_client.user.first_name }},
+
+    Click this link {{ link }} to confirm that you and {{ sender_user.full_name }}
+    have a joint account and you are agree with adding it to our system.
+
+Regards,
+ Betasmartz team.

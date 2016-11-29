@@ -1,7 +1,7 @@
 # All methods relating to getting returns for instruments.
 from datetime import timedelta, date
 import logging
-
+from collections import defaultdict
 import pandas as pd
 import numpy as np
 
@@ -172,7 +172,7 @@ def get_fund_returns__OLD(funds, start_date, end_date, end_tol=0, min_days=None)
             logger.warn(emsg.format(fund))
             continue
         last_dt = last_dt.date()  # convert to datetime
-        last_dt = datetime(last_dt.year, last_dt.month, last_dt.day)
+        last_dt = date.datetime(last_dt.year, last_dt.month, last_dt.day)
         if fund.benchmark is None:
             emsg = "Excluding fund: {} as it has no benchmark defined."
             logger.warn(emsg.format(fund))
@@ -190,7 +190,7 @@ def get_fund_returns__OLD(funds, start_date, end_date, end_tol=0, min_days=None)
                 logger.warn(emsg.format(fund, fund.benchmark))
                 continue
             blast_dt = blast_dt.date()  # convert to datetime
-            blast_dt = datetime(blast_dt.year, blast_dt.month, blast_dt.day)
+            blast_dt = date.datetime(blast_dt.year, blast_dt.month, blast_dt.day)
             last_dt = min(blast_dt, last_dt)
             if blast_dt < min_end:
                 emsg = "Excluding fund: {} as the last day of data for its benchmark is before {} (the minimum acceptable)."

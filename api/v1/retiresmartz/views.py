@@ -1,38 +1,50 @@
 import logging
 from datetime import date
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+import scipy.stats as st
 from dateutil.relativedelta import relativedelta
-
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.db import transaction
 from django.db.models import Q
+from django.template import RequestContext
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.functional import curry
+from django.utils.timezone import now
 from rest_framework import status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-import scipy.stats as st
-
+from api.v1.account.serializers import ClientAccountSerializer
 from api.v1.goals.serializers import PortfolioSerializer
+from api.v1.permissions import IsClient
 from api.v1.views import ApiViewMixin
+from client.models import Client, ClientAccount
 from common.utils import d2ed
+from main import constants
+from main.event import Event
+from main.models import Ticker
 from portfolios.calculation import Unsatisfiable
-from retiresmartz.calculator import create_settings, Calculator
+from retiresmartz import advice_responses
+from retiresmartz.calculator import Calculator, create_settings
 from retiresmartz.calculator.assets import TaxDeferredAccount
-from retiresmartz.calculator.cashflows import ReverseMortgage, InflatedCashFlow, EmploymentIncome
+from retiresmartz.calculator.cashflows import EmploymentIncome, \
+    InflatedCashFlow, ReverseMortgage
 from retiresmartz.calculator.desired_cashflows import RetiresmartzDesiredCashFlow
 from retiresmartz.calculator.social_security import calculate_payments
-from retiresmartz.models import RetirementPlan, RetirementAdvice
-from retiresmartz import advice_responses
-from client.models import Client
-from main.models import Ticker
-from main.event import Event
+from retiresmartz.models import RetirementAdvice, RetirementPlan
 from support.models import SupportRequest
 from . import serializers
+
 logger = logging.getLogger('api.v1.retiresmartz.views')
 
 
@@ -497,6 +509,114 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
         pser = PortfolioSerializer(instance=settings.portfolio)
 
         return Response({'portfolio': pser.data, 'projection': proj_data})
+
+    @list_route(methods=['post'], url_path='add-joint-account',
+                permission_classes=[IsClient])
+    @transaction.atomic
+    def joint(self, request, *args, **kwargs):
+        serializer = serializers.JointAccountConfirmation(data=request.data)
+        if serializer.is_valid():
+            client = request.user.client
+            try:
+                if str(client.id) != kwargs['parent_lookup_client']:
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+            except KeyError:
+                pass
+            cosignee = serializer.client
+            account = ClientAccount.objects.create(
+                account_type=constants.ACCOUNT_TYPE_JOINT,
+                account_name='JOINT {:%Y-%m-%d %H:%M:%S}'.format(now()),
+                primary_owner=client,
+                default_portfolio_set=client.advisor.default_portfolio_set,
+            )
+            account.signatories=[cosignee]
+            account.save()
+            context = RequestContext(request, {
+                'sender': client,
+                'cosignee': cosignee,
+                'account': account,
+                'link': '',
+                # 'link': reverse('api:v1:client-retirement-plans-joint-confirm',
+                #                 kwargs={'parent_lookup_client': client.id, }),
+            })
+            render = curry(render_to_string, context=context)
+            # cosignee.user.email_user(
+            #     render('email/client/joint-confirm/subject.txt').strip(),
+            #     message=render('email/client/joint-confirm/message.txt'),
+            #     html_message=render('email/client/joint-confirm/message.html'),
+            # )
+            return Response(ClientAccountSerializer(instance=account).data)
+        return Response({'error': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # TODO clarify the confirmation process before proceeding
+    # @list_route(methods=['get'], permission_classes=[])
+    # @transaction.atomic
+    # def joint_confirm(self, request, token):
+    #     try:
+    #         account = ClientAccount.objects.get(token=token)
+    #         account.confirmed = True
+    #         account.save(update_fields=['confirmed'])
+    #     except ClientAccount.DoesNotExist:
+    #         return Response(status=status.HTTP_403_FORBIDDEN)
+    #
+    #     sender = account.primary_owner
+    #     cosignee = account.signatories.first()
+    #     advisors = {sender.advisor, cosignee.advisor}
+    #
+    #     context = RequestContext(request, {
+    #         'sender': sender,
+    #         'cosignee': cosignee,
+    #         'account': account,
+    #     })
+    #     render = curry(render_to_string, context=context)
+    #     base_path = 'email/client/joint-confirmed'
+    #
+    #     # notify primary owner account confirmed
+    #     client_path = '%s/%s' % (base_path, 'client')
+    #     sender.user.email_user(
+    #         subject=render('%s/subject.txt' % client_path).strip(),
+    #         message=render('%s/message.txt' % client_path),
+    #         html_message=render('%s/message.html' % client_path),
+    #         from_email=settings.DEFAULT_FROM_EMAIL,
+    #     )
+    #
+    #     # notify advisor(s) account confirmed
+    #     advisor_path = '%s/%s' % (base_path, 'advisor')
+    #     send_mail(
+    #         subject=render('%s/subject.txt' % advisor_path).strip(),
+    #         message=render('%s/message.txt' % advisor_path),
+    #         html_message=render('%s/message.html' % advisor_path),
+    #         from_email=settings.DEFAULT_FROM_EMAIL,
+    #         recipient_list=list(a.user.email for a in advisors)
+    #     )
+    #
+    #     return Response(status=status.HTTP_403_FORBIDDEN)
+
+    @list_route(methods=['post'], url_path='add-rollover-account',
+                permission_classes=[IsClient])
+    @transaction.atomic
+    def add_rollover(self, request, *args, **kwargs):
+        serializer = serializers.AddRolloverAccount(data=request.data)
+        if serializer.is_valid():
+            client = request.user.client
+            try:
+                if str(client.id) != kwargs['parent_lookup_client']:
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+            except KeyError:
+                pass
+            data = serializer.validated_data
+            account_type = data['account_type']
+            account = ClientAccount.objects.create(
+                account_type=account_type,
+                account_name=dict(constants.ACCOUNT_TYPES)[account_type],
+                primary_owner=client,
+                default_portfolio_set=client.advisor.default_portfolio_set,
+            )
+            # TODO save source account rollover data
+            return Response(ClientAccountSerializer(instance=account).data)
+        return Response({'error': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):

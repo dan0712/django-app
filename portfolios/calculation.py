@@ -31,7 +31,7 @@ ORDERING_ALIGNMENT_TOLERANCE = 0.01
 
 # Minimum percentage of a portfolio that an individual fund can make up. (0.01 = 1%)
 # We round to 2 decimal places in the portfolio, so that's why 0.01 is used ATM.
-MIN_PORTFOLIO_PCT = 0.01
+MIN_PORTFOLIO_PCT = 0.03
 
 # Amount we suggest we boost a budget by to make all funds with an original allocation over this amount orderable.
 LMT_PORTFOLIO_PCT = 0.05
@@ -425,63 +425,6 @@ def read_risk_profile_data():
     return data
 
 
-def calculate_portfolio_etfs(settings, data_provider, execution_provider, idata=None):
-    """
-    Calculates the instrument weights to use for a given goal settings.
-    :param settings: goal.active_settings to calculate the portfolio for.
-    :return: (weights, er, variance) All values will be None if no suitable allocation can be found.
-             - weights: A Pandas series of weights for each instrument.
-             - er: Expected return of portfolio
-             - stdev: stdev of portfolio
-    """
-    if idata is None:
-        idata = get_instruments(data_provider)
-
-    if logger.isEnabledFor(logging.DEBUG):
-        logger.debug("Calculating portfolio for settings: {}".format(settings))
-
-    covars, instruments, masks = idata
-    settings_symbol_ixs, cvx_masks = get_settings_masks(settings=settings, masks=masks)
-    if len(settings_symbol_ixs) == 0:
-        raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(settings))
-
-    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
-    settings_instruments = instruments.iloc[settings_symbol_ixs]
-
-    risk_profile = extract_risk_setting(settings)
-    risk_profile_data = read_risk_profile_data("/data/risk_profiles.csv")
-    # ticker_ids, ticker_to_id, id_to_ticker = get_ticker_ids_for_symbols(risk_profile_data.index.tolist())
-    # it's the lowest valid value for risk allocation
-
-    if risk_profile == 0:
-        risk_profile = 1  # this's the lowest we have in the table
-
-    weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
-
-    # risk_premia_data = pd.read_csv(BASE_DIR + "/data/expected_return.csv", index_col=0)
-    # settings_instruments = update_expected_return(risk_premia_data, settings_instruments, id_to_ticker)
-
-    '''odata = optimize_settings(settings, idata, data_provider, execution_provider)
-    weights, cost, xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = odata
-    # Find the orderable weights. We don't align as it's too cpu intensive ATM.
-    # We do however need to do the 3% cutoff so we don't end up with tiny weights.
-    weights, cost = make_orderable(weights,
-                                   cost,
-                                   xs,
-                                   lcovars.values,
-                                   settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values,
-                                   lam,
-                                   constraints,
-                                   settings,
-                                   # We use the current balance (including pending deposits).
-                                   settings.goal.current_balance,
-                                   settings_instruments['price'],
-                                   align=False)'''
-
-    stats = get_portfolio_stats(settings_instruments, lcovars, weights)
-    return stats
-
-
 def calculate_portfolio_old(settings, data_provider, execution_provider, idata=None):
     """
     Calculates the instrument weights to use for a given goal settings.
@@ -521,9 +464,6 @@ def calculate_portfolio_old(settings, data_provider, execution_provider, idata=N
 def get_model_constraints(settings_instruments, xs, risk_profile):
     risk_profile_data = read_risk_profile_data()
 
-    if risk_profile == 0:
-        risk_profile = 1
-
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     constraints = []
@@ -532,7 +472,6 @@ def get_model_constraints(settings_instruments, xs, risk_profile):
         tickers = settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] == w
         tickers = tickers.nonzero()[0].tolist()
         constraints.append(sum_entries(xs[tickers]) == constraint)
-
     return constraints
 
 
@@ -571,6 +510,8 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     else:
         risk_profile = risk_setting
     risk_profile = int(risk_profile * 100)
+    if risk_profile == 0:
+        risk_profile = 1
 
     modelportfolio_constraints = get_model_constraints(settings_instruments=settings_instruments,
                                                        xs=xs,
@@ -579,14 +520,17 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     constraints += mconstraints
     constraints += modelportfolio_constraints
 
+    # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
+    # when we radically change goal? probably not
 
+    '''
     # Add the constraint that they must be over the current lots held less than 1 year.
     tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(settings.goal,
                                                                             data_provider.get_current_date())
     pweights = create_portfolio_weights(settings_instruments['id'].values,
                                         min_weights=tax_min_weights,
                                         abs_min=0)
-    constraints += [xs >= pweights]
+    constraints += [xs >= pweights]'''
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
@@ -604,18 +548,25 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
-    weights, cost = make_orderable(weights,
-                                   cost,
-                                   xs,
-                                   lcovars.values,
-                                   settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values,
-                                   lam,
-                                   constraints,
-                                   settings,
-                                   # We use the current balance (including pending deposits).
-                                   settings.goal.current_balance,
-                                   settings_instruments['price'],
-                                   align=False)
+
+    try:
+        weights_orderable, cost_orderable = make_orderable(weights,
+                                            cost,
+                                            xs,
+                                            lcovars.values,
+                                            settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values,
+                                            lam,
+                                            constraints,
+                                            settings,
+                                            # We use the current balance (including pending deposits).
+                                            settings.goal.current_balance,
+                                            settings_instruments['price'],
+                                            align=False)
+        if weights_orderable.any():
+            weights = weights_orderable
+            cost = cost_orderable
+    except:
+        pass
 
     stats = get_portfolio_stats(settings_instruments, lcovars, weights)
     return stats

@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "target": "es6",
-    "module": "system",
-    "outFile": "application.js",
-    "sourceMap": true
-  },
-  "exclude": ["node_modules"]
-}
