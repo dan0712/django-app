@@ -1,7 +1,16 @@
 {% extends "layouts_new/base.html" %}
-{% load i18n %}
-{% load bootstrap3 %}
-{% load filters %}
+{% load i18n bootstrap3 filters %}
+{% load static from staticfiles %}
+
+
+{% block foot_js %}
+<script type="application/javascript" src="{% static "js/widgets.js" %}"></script>
+<script type="application/javascript">
+  $(function () {
+    betasmartz.widgets.searchTable("#activity");
+  });
+</script>
+{% endblock %}
 
 
 {% block main_content %}
@@ -26,14 +35,16 @@
 
     <div class="panel panel-default">
       <div class="table-responsive">
-        <table class="table">
+        <table class="table" id="activity">
           <thead>
-            <th>#</th>
-            <th>User name</th>
-            <th>Email</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Description</th>
+            <tr>
+              <th>#</th>
+              <th>User name</th>
+              <th>Email</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Description</th>
+            </tr>
           </thead>
           <tbody>
             {% for item in filter %}
