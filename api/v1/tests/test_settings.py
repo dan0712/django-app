@@ -11,7 +11,7 @@ from common.constants import GROUP_SUPPORT_STAFF
 from api.v1.tests.factories import MarketIndexFactory, TickerFactory, AssetFeatureFactory, GroupFactory, \
     InvestmentType, PortfolioSetFactory, AssetClassFactory, AssetFeatureValueFactory, \
     EmailInviteFactory, RiskProfileGroupFactory, GoalSettingFactory
-from main.models import GoalMetric, AssetFeature
+from main.models import GoalMetric, AssetFeature, Ticker
 from unittest import mock
 from unittest.mock import MagicMock
 from django.utils import timezone
@@ -130,6 +130,20 @@ class SettingsTests(APITestCase):
         # Make sure the external_asset_types are there
         self.assertTrue('external_asset_types' in response.data)
         self.assertEqual(set(('id', 'name')), set(response.data['external_asset_types'][0].keys()))
+
+    def test_inactive_tickers_not_in_settings(self):
+        """
+        Make sure inactive tickers are not returned by the /api/v1/settings endpoint
+        """
+        url = '/api/v1/settings'
+        self.bonds_ticker.state = Ticker.State.CLOSED.value
+        self.bonds_ticker.save()
+        self.client.force_authenticate(user=Fixture1.client1().user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # print(response.data['tickers'])
+        ticker_ids = [int(t['id']) for t in response.data['tickers']]
+        self.assertTrue(self.bonds_ticker.id not in ticker_ids)
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_only_active_asset_features_in_settings(self):
