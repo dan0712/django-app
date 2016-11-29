@@ -520,14 +520,17 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     constraints += mconstraints
     constraints += modelportfolio_constraints
 
+    # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
+    # when we radically change goal? probably not
 
+    '''
     # Add the constraint that they must be over the current lots held less than 1 year.
     tax_min_weights = execution_provider.get_asset_weights_held_less_than1y(settings.goal,
                                                                             data_provider.get_current_date())
     pweights = create_portfolio_weights(settings_instruments['id'].values,
                                         min_weights=tax_min_weights,
                                         abs_min=0)
-    constraints += [xs >= pweights]
+    constraints += [xs >= pweights]'''
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
