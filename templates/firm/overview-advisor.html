@@ -1,11 +1,23 @@
 {% extends "layouts_new/base.html" %}
-{% load i18n %}
-{% load bootstrap3 %}
-{% load filters %}
+{% load i18n bootstrap3 filters %}
+{% load static from staticfiles %}
 
+
+{% block foot_js %}
+<script type="application/javascript" src="{% static "js/widgets.js" %}"></script>
+<script type="application/javascript">
+  $(function () {
+    betasmartz.widgets.searchTable("#clientList", "#search");
+  });
+</script>
+{% endblock %}
 
 {% block main_content %}
   <div class="container">
+    <div>
+      <h3>Client accounts</h3>
+    </div>
+
     <div class="row">
       <div class="col-sm-4 m-b">
         <div class="statcard statcard-success">
@@ -43,32 +55,62 @@
       </div>
     </div>
 
-    <h3>Client accounts</h3>
+    <div class="row">
+      <form>
+        <div class="col-sm-4 col-sm-offset-8">
+          <div class="form-group">
+            <div class="input-group">
+              <span class="input-group-addon"><span class="icon icon-magnifying-glass"></span></span>
+              <input type="search" placeholder="Search clients" id="search"
+                     class="form-control" aria-describedby="search">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
 
     <div class="panel panel-default">
       <div class="table-responsive">
-        <table class="table">
+        <table class="table" id="clientList">
           <thead>
-            <th>#</th>
-            <th>Client name</th>
-            <th>Goals</th>
-            <th>Balance</th>
-            <th>Return</th>
-            <th>Fee plan(bps)</th>
-            <th>Average term</th>
-            <th>Average target</th>
+            <tr>
+              <th>#</th>
+              <th>Client name</th>
+              <th>Goals</th>
+              <th>Balance</th>
+              <th>Return</th>
+              <th>Fee plan(bps)</th>
+              <th>Average Term (Yrs)</th>
+              <th>Average Target</th>
+            </tr>
           </thead>
           <tbody>
             {% for item in object.client_accounts %}
               <tr>
                 <td>{{ item.pk }}</td>
-                <td>{{ item.primary_owner.user.get_full_name }}</td>
+                <td>
+                  <a href="{% url "advisor:clients:detail" item.primary_owner.id%}">
+                    {{ item.primary_owner.user.get_full_name }}
+                  </a>
+                </td>
                 <td>{{ item.goals_length }}</td>
                 <td>{{ item.total_balance|currency }}</td>
                 <td>{{ item.average_return|floatformat:2 }}%</td>
                 <td>{{ item.fee }}</td>
-                <td>{{ item.get_term|default:'-' }}</td>
-                <td>{{ item.selected_settings.target|currency|default:'-' }}</td>
+                <td>
+                  {% if item.get_term %}
+                    {{ item.get_term|floatformat:2}}
+                  {% else %}
+                    &ndash;
+                  {% endif %}
+                </td>
+                <td>
+                  {% if item.selected_settings.target %}
+                    {{ item.selected_settings.target|currency }}
+                  {% else %}
+                  &ndash;
+                  {% endif %}
+                </td>
              </tr>
             {% empty %}
               <tr class="text-center">

@@ -126,7 +126,7 @@ class GoalViewSet(ApiViewMixin, NestedViewSetMixin, viewsets.ModelViewSet):
         :return: None
         """
         goal = self.get_object()
-        # If I'm an adviser or the goal is unsupervised,
+        # If I'm an advisor or the goal is unsupervised,
         # archive the goal immediately.
         sr = SupportRequest.get_current(request, as_obj=True)
         # check helped user instead if support request is active

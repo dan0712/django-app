@@ -29,7 +29,7 @@
 
     <div class="row">
       <div class="col-sm-9">
-        <h4>Advisers</h4>
+        <h4>Advisors</h4>
       </div>
       {% if object.advisor == profile %}
       <div class="col-sm-3 text-sm-right">
@@ -44,14 +44,14 @@
 
     {% if new %}
       <div class="panel panel-default">
-        <div class="panel-heading">Add secondary adviser</div>
+        <div class="panel-heading">Add secondary advisor</div>
         <div class="panel-body">
           <form class="form-inline" method="post">
             {% csrf_token %}
             <div class="form-group">
               <!-- TODO: make it auto-complete select, as it was before -->
               <select class="form-control" id="composite_secondary_advisor_advisor_id" name="secondary_advisors">
-                <option value="">- Select adviser -</option>
+                <option value="">- Select advisor -</option>
                 {% for s_advisor in s_advisors %}
                   <option value="{{ s_advisor.pk }}">{{ s_advisor.user.get_full_name }}</option>
                 {% endfor %}

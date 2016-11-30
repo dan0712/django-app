@@ -10,9 +10,9 @@
       <div class="col-sm-12">
         <p>
           Below is a list of clients that have electronically executed your advisory agreement.
-          If you would like to add or update your agreement, please email a PDF of your advisory agreement to 
+          If you would like to add or update your agreement, please email a PDF of your advisory
+          agreement, Form ADV Part 2, and initial privacy disclosure to
           <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.
-          To learn more about this feature please visit our <a href="#">Client Agreement</a> page.
         </p>
       </div>
     </div>
@@ -48,7 +48,7 @@
             <tr>
               <td>{{ client.full_name }}</td>
               <td>{{ client.email }}</td>
-              <td>{{ client.create_date|date:'d/m/y H:i' }}</td>
+              <td>{{ client.create_date|date:'d-M-y H:i' }}</td>
               <td><a href="{{ MEDIA_URL }}{{ client.client_agreement }}" target="_blank">View</a></td>
             </tr>
            {% empty %}
@@ -63,26 +63,24 @@
     </div>
 
     <div class="text-muted m-t">
-      <div>Notes:</div>
-      <ul>
-        <li>This list does not include your clients who signed up while your company or dealer group had no
-          active agreement.
-        </li>
-        <li>'Date executed' means the date on which the client electronically signed your advisory agreement.
-        </li>
-        <li>The agreements made available on this page are the agreements between you and your client
-          that your client executed electronically through BetaSmartz's technology on the date provided.
-          If you and your client have updated and/or amended your agreement, the version provided on this page
-          will no longer be accurate. BetaSmartz has no responsibility for storing and/or making available any
-          subsequently updated and/or amended agreements that you may have entered into with your clients
-          outside
-          of BetaSmartz's technology. BetaSmartz has not reviewed your agreements with your clients and takes
-          no
-          responsibility for the contents of those agreements. This file also contains the Know Your Client
-          information gathered for your client. Should you wish to include an Agreement that has been executed
-          or amended outside of BetaSmartz's technology than please email a copy to support@betasmartz.com.
-        </li>
-      </ul>
+      <p>This list does not include your clients who signed up while your firm
+        had no active agreement.</p>
+      <p>'Date executed' means the date on which the client electronically
+        signed your advisory agreement.</p>
+      <p>The agreements made available on this page are the agreements between
+        you and your client that your client executed electronically through
+        BetaSmartz's technology on the date provided. If you and your client
+        have updated and/or amended your agreement, the version provided on
+        this page will no longer be accurate. BetaSmartz has no responsibility
+        for storing and/or making available any subsequently updated and/or
+        amended agreements that you may have entered into with your clients
+        outside of BetaSmartz's technology. BetaSmartz has not reviewed your
+        agreements with your clients and takes no responsibility for the
+        contents of those agreements. This file also contains the Form ADV Part
+        2 and initial privacy disclosure, should you have provided these
+        documents to BetaSmartz to distribute to your clients along with your
+        advisory agreement.</p>
+
     </div>
   </div>
 {% endblock %}

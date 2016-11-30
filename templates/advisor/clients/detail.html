@@ -30,7 +30,7 @@
       <div class="col-sm-6 m-b">
         <div class="statcard statcard-success">
           <div class="p-a">
-            <span class="statcard-desc">Total earnings</span>
+            <span class="statcard-desc">Total returns</span>
             <h2>
               {{ client.total_earnings|currency }}
             </h2>
@@ -49,8 +49,8 @@
               <th>Account Name</th>
               <th>Status</th>
               <th>Balance</th>
-              <th>Earnings</th>
-              <th>Fee</th>
+              <th>Returns</th>
+              <th>Fees</th>
               <th>Group</th>
             </tr>
           </thead>
@@ -93,15 +93,19 @@
             <tbody>
               <tr>
                 <td>Member since</td>
-                <td>{{ client.user.date_joined|date:'d/m/y' }}</td>
+                <td>{{ client.user.date_joined|date:'d-M-y' }}</td>
               </tr>
               <tr>
                 <td>Date of birth</td>
-                <td>{{ client.date_of_birth|date:'d/m/Y' }}</td>
+                <td>{{ client.date_of_birth|date:'d-M-Y' }}</td>
               </tr>
               <tr>
                 <td>Age</td>
                 <td>{{ client.age }}</td>
+              </tr>
+              <tr>
+                <td>Address</td>
+                <td>{{ client.residential_address }}</td>
               </tr>
               <tr>
                 <td>Phone</td>
