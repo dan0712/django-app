@@ -5,6 +5,7 @@ import os
 from collections import defaultdict
 import numpy as np
 import pandas as pd
+import pprint
 
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
@@ -544,7 +545,8 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu.values, constraints)
 
     if not weights.any():
-        raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
+        raise Unsatisfiable(pprint.pformat(idata[1],indent=4))
+        #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
