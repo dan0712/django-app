@@ -468,12 +468,14 @@ def get_model_constraints(settings_instruments, xs, risk_profile):
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     constraints = []
+    tickers_per_ac = defaultdict(list)
     for w in weights:
         constraint = weights[w]
         tickers = settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] == w
         tickers = tickers.nonzero()[0].tolist()
+        tickers_per_ac[w] = tickers
         constraints.append(sum_entries(xs[tickers]) == constraint)
-    return constraints, weights
+    return constraints, weights, tickers_per_ac
 
 
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None, risk_setting=None):
@@ -514,7 +516,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if risk_profile == 0:
         risk_profile = 1
 
-    modelportfolio_constraints, ac_weights = get_model_constraints(settings_instruments=settings_instruments,
+    modelportfolio_constraints, ac_weights, ticker_per_ac = get_model_constraints(settings_instruments=settings_instruments,
                                                        xs=xs,
                                                        risk_profile=risk_profile)
 
@@ -545,7 +547,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
     if not weights.any():
-        raise Unsatisfiable('len(settings):' + str(len(settings_symbol_ixs)) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments) + '\nconstraints:' + str(constraints) + '\nac_weights' + str(ac_weights))
+        raise Unsatisfiable('len(settings):' + str(len(settings_symbol_ixs)) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments) + '\nconstraints:' + str(constraints) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
         #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
