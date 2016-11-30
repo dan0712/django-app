@@ -9,6 +9,9 @@ PAGE_DEFAULT_TEMPLATE = "support/base.html"
 PAGE_LANGUAGES = (('en-us', 'US English'),)
 STATIC_URL = '/static/'
 
+REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = (
+    'rest_framework.authentication.SessionAuthentication',
+)
 
 # Need to skip migrations for now as migrations created with python2 break with python3
 # See https://code.djangoproject.com/ticket/23455
