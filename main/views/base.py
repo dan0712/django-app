@@ -47,7 +47,7 @@ class LegalView(View):
         try:
             self.firm = user.authorised_representative.firm
         except AttributeError:
-            PermissionDenied()
+            raise PermissionDenied()
 
         if request.method == "POST":
             if not user.authorised_representative.is_accepted:

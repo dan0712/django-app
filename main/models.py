@@ -2456,9 +2456,11 @@ class Supervisor(models.Model):
     user = models.OneToOneField(User, related_name="supervisor")
     firm = models.ForeignKey(Firm, related_name="supervisors")
     # has full authorization to make action in name of advisor and clients
-    can_write = models.BooleanField(default=False,
-                                    verbose_name="Has Full Access?",
-                                    help_text="A supervisor with 'full access' can perform actions for their advisers and clients.")
+    can_write = models.BooleanField(
+        default=False,
+        verbose_name="Has Full Access?",
+        help_text="A supervisor with 'full access' can perform actions for "
+                  "their advisors and clients.")
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

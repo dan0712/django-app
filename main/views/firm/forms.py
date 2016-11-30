@@ -196,7 +196,7 @@ class FirmDataForm(forms.ModelForm):
 
         self.field_sections = [{"fields": ('afsl_asic', 'afsl_asic_document'),
                                 "header": "Dealer Group Details",
-                                "detail": "Please provide the adviser’s AFSL Number/ASIC Authorised "
+                                "detail": "Please provide the advisor’s AFSL Number/ASIC Authorised "
                                           "Representative Number and attach a copy of AFSL."},
                                {"fields": ('daytime_phone_num',
                                            'mobile_phone_num', 'fax_num', 'alternate_email_address'),
