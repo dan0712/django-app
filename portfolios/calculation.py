@@ -2,6 +2,7 @@ import logging
 import math
 import sys
 import os
+import decimal
 from collections import defaultdict
 import numpy as np
 import pandas as pd
@@ -405,6 +406,7 @@ def build_weights(source_weights, settings_instruments):
         if ac in source_weights.index:
             weight = source_weights.ix[ac]
         if not pd.isnull(weight) and not weight == 0:
+            weight = (int(100 * weight)) / 100
             weights[ac] = weight
     return weights
 
@@ -464,7 +466,6 @@ def calculate_portfolio_old(settings, data_provider, execution_provider, idata=N
 
 def get_model_constraints(settings_instruments, xs, risk_profile):
     risk_profile_data = read_risk_profile_data()
-
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     constraints = []
