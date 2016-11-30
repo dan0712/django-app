@@ -13,7 +13,7 @@ from django.views.generic import TemplateView
 from client.models import ClientAccount
 from main.constants import PERFORMER_GROUP_STRATEGY
 from main.models import AssetClass, AssetFeature, Goal, Performer, \
-    PortfolioSet, PositionLot, RecurringTransaction, SymbolReturnHistory, \
+    PortfolioSet, RecurringTransaction, SymbolReturnHistory, \
     Transaction
 from main.views.base import ClientView
 from portfolios.calculation import calculate_portfolios
