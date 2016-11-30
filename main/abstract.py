@@ -30,7 +30,12 @@ class PersonalData(models.Model):
 
     class CivilStatus(ChoiceEnum):
         SINGLE = 0
-        MARRIED = 1  # May be married, or any other financially recognised relationship.
+        MARRIED = 1
+        HEAD_OF_HOUSEHOLD = 2
+        QUALIFYING_WIDOWER = 3
+        MARRIED_FILING_JOINTLY = 4
+        MARRIED_FILING_SEPARATELY_LIVED_TOGETHER = 5
+        MARRIED_FILING_SEPARATELY_NOT_LIVED_TOGETHER = 6
 
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
     gender = models.CharField(max_length=20, default=GENDER_MALE, choices=GENDERS)
