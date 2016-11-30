@@ -473,7 +473,7 @@ def get_model_constraints(settings_instruments, xs, risk_profile):
         tickers = settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] == w
         tickers = tickers.nonzero()[0].tolist()
         constraints.append(sum_entries(xs[tickers]) == constraint)
-    return constraints
+    return constraints, weights
 
 
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None, risk_setting=None):
@@ -514,12 +514,12 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if risk_profile == 0:
         risk_profile = 1
 
-    modelportfolio_constraints = get_model_constraints(settings_instruments=settings_instruments,
+    modelportfolio_constraints, ac_weights = get_model_constraints(settings_instruments=settings_instruments,
                                                        xs=xs,
                                                        risk_profile=risk_profile)
 
-    constraints += mconstraints
     constraints += modelportfolio_constraints
+    #constraints += mconstraints
 
     # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
     # when we radically change goal? probably not
@@ -545,7 +545,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
     if not weights.any():
-        raise Unsatisfiable('len(settings):' + str(len(settings_symbol_ixs)) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments))
+        raise Unsatisfiable('len(settings):' + str(len(settings_symbol_ixs)) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments) + '\nconstraints:' + str(constraints) + '\nac_weights' + str(ac_weights))
         #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
