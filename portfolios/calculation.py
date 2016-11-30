@@ -536,16 +536,16 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
-    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
+    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs].values
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
 
-    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]
-    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu.values, constraints)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+    weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
     if not weights.any():
-        raise Unsatisfiable('settings:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments))
+        raise Unsatisfiable('len(settings):' + len(settings_symbol_ixs) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments))
         #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
