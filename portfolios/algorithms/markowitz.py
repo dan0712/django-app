@@ -1,5 +1,6 @@
 import numpy as np
 from cvxpy import Variable, Minimize, quad_form, sum_entries, Problem
+import cvxpy
 
 from portfolios.exceptions import OptimizationFailed
 
@@ -89,10 +90,11 @@ def markowitz_optimizer_3(xs, sigma, lam, mu, constraints):
     # define Markowitz mean/variance objective function
     objective = Minimize(quad_form(xs, sigma) - lam * mu * xs)
     p = Problem(objective, constraints)  # create optimization problem
-    res = p.solve()  # solve problem
+    data = p.get_problem_data(cvxpy.ECOS)
+    res = p.solve(verbose=True)  # solve problem
     # If it was not solvable, fail
     if type(res) == str:
-        raise OptimizationFailed(res)
+        raise OptimizationFailed(res + 'get_problem_data:' + str(data))
 
     if xs.get_data()[0] == 1:
         weights = np.array([[xs.value]])
