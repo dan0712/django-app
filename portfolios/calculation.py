@@ -267,16 +267,10 @@ def get_metric_constraints(settings, cvx_masks, xs, overrides=None, data_provide
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Adding constraint that symbols: {} must be minimum {}".format(feature_assets, val))
 
-                if val > MAX_ALLOWED:
-                    val = MAX_ALLOWED
-
                 constraints.append(sum_entries(xs[feature_assets]) >= val)
             elif metric.comparison == GoalMetric.METRIC_COMPARISON_EXACTLY:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Adding constraint that symbols: {} must be exactly {}".format(feature_assets, val))
-
-                if val > MAX_ALLOWED:
-                    val = MAX_ALLOWED
 
                 constraints.append(sum_entries(xs[feature_assets]) == val)
             elif metric.comparison == GoalMetric.METRIC_COMPARISON_MAXIMUM:
