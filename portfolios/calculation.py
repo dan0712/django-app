@@ -1,12 +1,9 @@
 import logging
 import math
 import sys
-import os
-import decimal
 from collections import defaultdict
 import numpy as np
 import pandas as pd
-import pprint
 
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
@@ -218,7 +215,7 @@ def get_core_constraints(nvars):
     xs = Variable(nvars)
 
     # Start with the constraint that all must add to 1
-    constraints = [sum_entries(xs) == 1]
+    constraints = [sum_entries(xs) == int(1)]
 
     return xs, constraints
 
@@ -475,7 +472,10 @@ def get_model_constraints(settings_instruments, xs, risk_profile):
         tickers = settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] == w
         tickers = tickers.nonzero()[0].tolist()
         tickers_per_ac[w] = tickers
-        constraints.append(sum_entries(xs[tickers]) == constraint)
+
+        if len(tickers) > 0:
+            constraints.append(sum_entries(xs[tickers]) == constraint)
+
     return constraints, weights, tickers_per_ac
 
 
@@ -508,6 +508,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                data_provider=data_provider)
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
+    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs].values
 
     if risk_setting is None:
         risk_profile = extract_risk_setting(settings)
@@ -522,7 +523,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                        risk_profile=risk_profile)
 
     constraints += modelportfolio_constraints
-    #constraints += mconstraints
+    constraints += mconstraints
 
     # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
     # when we radically change goal? probably not
@@ -539,7 +540,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
-    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs].values
+
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
