@@ -385,7 +385,6 @@ class GoalTests(APITestCase):
         self.assertEqual(response.data['max'], MINIMUM_RISK)
         self.assertEqual(response.data['recommended'], MINIMUM_RISK)
 
-    @skip("temporary fail")
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_all_portfolios(self):
         """
@@ -426,7 +425,6 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @skip("temporary fail")
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_portfolio(self):
         """
@@ -468,7 +466,6 @@ class GoalTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @skip("temporary fail")
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_portfolio_complete(self):
         # tickers for testing portfolio calculations in goals endpoint

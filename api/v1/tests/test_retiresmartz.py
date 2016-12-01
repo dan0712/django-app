@@ -335,7 +335,6 @@ class RetiresmartzTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @skip("temporary fail")
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_retirement_plan_calculate(self):
         plan = RetirementPlanFactory.create(income=100000,

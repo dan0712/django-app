@@ -549,9 +549,9 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
-    #if not weights.any():
-    raise Unsatisfiable('instruments:'+ str(settings_instruments.index.tolist()) +'\nasset_classes:'+ str(settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL]) +'\nlen(settings):' + str(len(settings_symbol_ixs)) + '\nrisk_profile:' + str(risk_profile) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
-        #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
+    if not weights.any():
+        raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
+        #raise Unsatisfiable('instruments:'+ str(settings_instruments.index.tolist()) +'\nasset_classes:'+ str(settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL]) +'\nlen(settings):' + str(len(settings_symbol_ixs)) + '\nrisk_profile:' + str(risk_profile) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.

@@ -124,7 +124,6 @@ class CalculationTest(TestCase):
                                          idata=idata)
         self.assertTrue(True)
 
-    @skip("temporary fail")
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_portfolio(self):
         # TODO
