@@ -16,6 +16,7 @@ from main.models import AssetFeatureValue, GoalMetric
 from main.settings import BASE_DIR
 
 MAX_ALLOWED = 0.2
+INSTRUMENT_TABLE_SYMBOL_LABEL = 'symbol'
 INSTRUMENT_TABLE_ASSET_CLASS_LABEL = 'ac'
 INSTRUMENT_TABLE_ID_LABEL = 'id'
 INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL = 'exp_ret'
@@ -549,7 +550,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
     #if not weights.any():
-    raise Unsatisfiable('len(settings):' + str(len(settings_symbol_ixs)) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments) + '\nconstraints:' + str(constraints) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
+    raise Unsatisfiable('instruments:'+ settings_instruments[INSTRUMENT_TABLE_SYMBOL_LABEL] +'\nasset_classes:'+ settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] +'\nlen(settings):' + str(len(settings_symbol_ixs)) + '\nrisk_profile:' + str(risk_profile) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
         #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
