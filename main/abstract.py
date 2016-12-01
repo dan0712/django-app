@@ -29,12 +29,12 @@ class PersonalData(models.Model):
         abstract = True
 
     class CivilStatus(ChoiceEnum):
-        SINGLE = 0
-        MARRIED_FILING_JOINTLY = 1
-        MARRIED_FILING_SEPARATELY_LIVED_TOGETHER = 2
-        MARRIED_FILING_SEPARATELY_NOT_LIVED_TOGETHER = 3
-        HEAD_OF_HOUSEHOLD = 4
-        QUALIFYING_WIDOWER = 5
+        SINGLE = 0, "Single"
+        MARRIED_FILING_JOINTLY = 1, "Married Filing Jointly"
+        MARRIED_FILING_SEPARATELY_LIVED_TOGETHER = 2, "Married Filing Separately (lived with spouse)"
+        MARRIED_FILING_SEPARATELY_NOT_LIVED_TOGETHER = 3, "Married Filing Separately (didn't live with spouse)"
+        HEAD_OF_HOUSEHOLD = 4, "Head of Household"
+        QUALIFYING_WIDOWER = 5, "Qualifying Widow(er)"
 
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
     gender = models.CharField(max_length=20, default=GENDER_MALE, choices=GENDERS)
