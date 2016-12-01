@@ -542,7 +542,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
 
     mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
 
-    constraints_without_model = constraints
+    constraints_without_model = list(constraints)
     constraints += modelportfolio_constraints
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
@@ -553,7 +553,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
             xs=xs,
             risk_profile=risk_profile,
             decrease=decrease)
-        constraints = constraints_without_model
+        constraints = list(constraints_without_model)
         constraints += modelportfolio_constraints
         weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
         decrease += 1
