@@ -47,7 +47,7 @@ class ReturnsView(ApiViewMixin, generics.ListAPIView):
             self.lookup_field: self.kwargs[self.lookup_field]
         }).daily_prices.all().order_by('date')
 
-    def get_data(self, daily_prices: list):
+    def get_data(self, daily_prices=list):
         prices = []
         last_price = None
         last_date = None

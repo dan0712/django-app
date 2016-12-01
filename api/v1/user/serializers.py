@@ -301,7 +301,7 @@ class PhoneNumberValidationSerializer(serializers.Serializer):
     number = serializers.CharField()
 
     def validate(self, data):
-        number = data.get('number').strip('+').replace('-', '')
+        number = data.get('number').strip('+\/[]*&^%$#@').replace('-', '').replace(' ', '').replace('(', '').replace(')', '')
         try:
             num = PhoneNumber.from_string(number)
         except Exception as e:
