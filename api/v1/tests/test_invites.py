@@ -91,6 +91,77 @@ class InviteTests(APITestCase):
         self.assertEqual(lookup_invite.onboarding_data['login']['steps'][0]['secondarySecurityQuestion'], '')
         self.assertEqual(lookup_invite.onboarding_data['login']['steps'][0]['secondarySecurityAnswer'], '')
 
+    def test_register_answers_validate(self):
+        invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT)
+
+        url = reverse('api:v1:client-user-register')
+        data = {
+            'first_name': invite.first_name,
+            'last_name': invite.last_name,
+            'invite_key': invite.invite_key,
+            'password': 'test',
+            'question_one': 'what is the first answer?',
+            'question_one_answer': 'answer one',
+            'question_two': 'what is the second answer?',
+            'question_two_answer': 'answer two',
+        }
+
+        # 400 no such token=123
+        response = self.client.post(url, dict(data, invite_key='123'))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 for registrations from nonexistant email invite')
+
+        # 400 on bad securityquestions
+        response = self.client.post(url, dict(data, question_one=''))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question')
+        response = self.client.post(url, dict(data, question_two=''))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question')
+        response = self.client.post(url, dict(data, question_one_answer=''))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question answer')
+        response = self.client.post(url, dict(data, question_two_answer=''))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg='400 on bad question answer')
+
+        # With a valid token, get a valid user
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg='Register a valid invitation is 200 OK')
+        self.assertNotEqual(response.data['id'], None,
+                            msg='Registering an invitation should give valid user_id')
+        self.assertEqual(response.data['email'], invite.email)
+
+        lookup_invite = EmailInvite.objects.get(pk=invite.pk)
+        self.assertEqual(response.data['email'], invite.email,
+                         msg='New users email should match invitation')
+        self.assertEqual(response.data['id'], lookup_invite.user.id,
+                         msg='New users id should match invitation')
+        self.assertEqual(EmailInvite.STATUS_ACCEPTED, lookup_invite.status)
+
+        questions_url = reverse('api:v1:user-security-question')
+        response = self.client.get(questions_url)
+        test_question_id1 = response.data[0]['id']
+        test_question_id2 = response.data[1]['id']
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        check_answer_url = reverse('api:v1:user-check-answer', args=[test_question_id1])
+        # question/answer combo 1
+        data = {
+            'answer': 'answer one',
+        }
+        response = self.client.post(check_answer_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # question/answer combo 2
+        check_answer_url = reverse('api:v1:user-check-answer', args=[test_question_id2])
+        data = {
+            'answer': 'answer two',
+        }
+        response = self.client.post(check_answer_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_register_with_invite_key(self):
         # Bring an invite key, get logged in as a new user
         invite = EmailInviteFactory.create(status=EmailInvite.STATUS_SENT)

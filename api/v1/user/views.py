@@ -381,9 +381,8 @@ class SecurityAnswerCheckView(ApiViewMixin, views.APIView):
 
         serializer = serializers.SecurityAnswerCheckSerializer(data=request.data, context={'user': request.user, 'pk': pk})
         if serializer.is_valid():
-            logger.info('Valid request to set check security answer for user %s and question %s' % (request.user.email, request.data.get('question')))
+            logger.info('Valid request to set check security answer for user %s and question %s' % (request.user.email, pk))
             return Response('ok', status=status.HTTP_200_OK)
-        logger.error('Unauthorized attempt to check answer for user %s and question %s' % (request.user.email, request.data.get('question')))
+        logger.error('Unauthorized attempt to check answer for user %s and question %s' % (request.user.email, pk))
         return Response({'error': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-
 
