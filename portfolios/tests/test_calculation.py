@@ -140,15 +140,15 @@ class CalculationTest(TestCase):
         ps1 = PortfolioSetFactory \
             .create(asset_classes=[asset_class1, asset_class2, fund6.asset_class])
 
-        feature = AssetFeatureValueFactory.create()
-        feature.assets.add(fund6)
+        #feature = AssetFeatureValueFactory.create()
+        #feature.assets.add(fund6)
         settings = GoalSettingFactory.create()
         risk_metric = GoalMetricFactory.create(group=settings.metric_group, type=GoalMetric.METRIC_TYPE_RISK_SCORE)
-        mix_metric = GoalMetricFactory.create(group=settings.metric_group,
-                                              type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
-                                              feature=feature,
-                                              comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM,
-                                              )
+        #mix_metric = GoalMetricFactory.create(group=settings.metric_group,
+        #                                      type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
+        #                                      feature=feature,
+        #                                      comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM,
+        #                                      )
         goal = GoalFactory.create(selected_settings=settings, portfolio_set=ps1)
 
 
