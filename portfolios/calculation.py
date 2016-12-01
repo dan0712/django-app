@@ -523,7 +523,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                        risk_profile=risk_profile)
 
     constraints += modelportfolio_constraints
-    #constraints += mconstraints
+    constraints += mconstraints
 
     # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
     # when we radically change goal? probably not
