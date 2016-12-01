@@ -10,10 +10,10 @@ from django.template.loader import render_to_string
 from django.utils.functional import cached_property, curry
 from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
-from django.utils import timezone
+
 from common.structures import ChoiceEnum
 from common.utils import d2dt
-from main.constants import GENDER_MALE, GENDERS
+from main.constants import GENDERS, GENDER_MALE
 
 
 class TimestampedModel(models.Model):
@@ -29,12 +29,9 @@ class PersonalData(models.Model):
         abstract = True
 
     class CivilStatus(ChoiceEnum):
-        SINGLE = 0, "Single"
-        MARRIED_FILING_JOINTLY = 1, "Married Filing Jointly"
-        MARRIED_FILING_SEPARATELY_LIVED_TOGETHER = 2, "Married Filing Separately (lived with spouse)"
-        MARRIED_FILING_SEPARATELY_NOT_LIVED_TOGETHER = 3, "Married Filing Separately (didn't live with spouse)"
-        HEAD_OF_HOUSEHOLD = 4, "Head of Household"
-        QUALIFYING_WIDOWER = 5, "Qualifying Widow(er)"
+        NOT_MARRIED = 0, "Not Married"
+        # May be married, or any other financially recognised relationship.
+        MARRIED = 1, "Married"
 
     date_of_birth = models.DateField(verbose_name="Date of birth", null=True)
     gender = models.CharField(max_length=20, default=GENDER_MALE, choices=GENDERS)
