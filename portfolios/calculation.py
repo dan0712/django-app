@@ -456,7 +456,7 @@ def calculate_portfolio_old(settings, data_provider, execution_provider, idata=N
     return stats
 
 
-def get_model_constraints(settings_instruments, xs, risk_profile):
+def get_model_constraints(settings_instruments, xs, risk_profile, decrease=0):
     risk_profile_data = read_risk_profile_data()
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
@@ -468,8 +468,9 @@ def get_model_constraints(settings_instruments, xs, risk_profile):
         tickers = tickers.nonzero()[0].tolist()
         tickers_per_ac[w] = tickers
 
-        if len(tickers) > 0:
-            constraints.append(sum_entries(xs[tickers]) == constraint)
+        val = constraint - decrease/100.0
+        if len(tickers) > 0 and val > 0:
+            constraints.append(sum_entries(xs[tickers]) >= val)
 
     return constraints, weights, tickers_per_ac
 
@@ -501,6 +502,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                xs=xs,
                                                overrides=None,
                                                data_provider=data_provider)
+    constraints += mconstraints
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
     lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs].values
@@ -517,8 +519,8 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                        xs=xs,
                                                        risk_profile=risk_profile)
 
-    constraints += modelportfolio_constraints
-    constraints += mconstraints
+
+
 
     # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
     # when we radically change goal? probably not
@@ -535,13 +537,26 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
-
-
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
 
     mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+
+    constraints_without_model = constraints
+    constraints += modelportfolio_constraints
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
+
+    decrease = 1
+    while not weights.any() and decrease < 100 and len(modelportfolio_constraints) > 0:
+        modelportfolio_constraints, ac_weights, ticker_per_ac = get_model_constraints(
+            settings_instruments=settings_instruments,
+            xs=xs,
+            risk_profile=risk_profile,
+            decrease=decrease)
+        constraints = constraints_without_model
+        constraints += modelportfolio_constraints
+        weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
+        decrease += 1
 
     if not weights.any():
         raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
