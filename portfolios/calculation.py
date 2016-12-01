@@ -215,7 +215,7 @@ def get_core_constraints(nvars):
     xs = Variable(nvars)
 
     # Start with the constraint that all must add to 1
-    constraints = [sum_entries(xs) == int(1)]
+    constraints = [sum_entries(xs) == 1.0, xs >= 0]
 
     return xs, constraints
 
@@ -403,7 +403,7 @@ def build_weights(source_weights, settings_instruments):
         if ac in source_weights.index:
             weight = source_weights.ix[ac]
         if not pd.isnull(weight) and not weight == 0:
-            weight = (int(100 * weight)) / 100
+            weight = (int(100 * weight)) / 100.0
             weights[ac] = weight
     return weights
 
@@ -523,7 +523,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                        risk_profile=risk_profile)
 
     constraints += modelportfolio_constraints
-    constraints += mconstraints
+    #constraints += mconstraints
 
     # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
     # when we radically change goal? probably not
