@@ -1,7 +1,7 @@
 import json
 from decimal import Decimal
 from datetime import date, timedelta, datetime
-from unittest import mock
+from unittest import mock, skip
 from unittest.mock import MagicMock
 
 from django.utils import timezone

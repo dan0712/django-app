@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from ujson import loads
-from unittest import mock
+from unittest import mock, skip
 from unittest.mock import MagicMock
 
 from django.utils.timezone import now

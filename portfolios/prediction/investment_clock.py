@@ -55,7 +55,10 @@ class InvestmentClock(object):
         # Filter any funds that don't have enough data.
         # Our latest start date is the first day of the last complete investment cycle from the current date.
         latest_start = self.get_last_cycle_start()
+
+        # try to be more tolerant - although not sure what this will do
         returns = filter_returns(returns, OLDEST_ACCEPTABLE_DATA, latest_start=latest_start)
+        #returns = filter_returns(returns, OLDEST_ACCEPTABLE_DATA) this gives weird symmetric error in portfolio optim
 
         if returns.empty:
             raise OptimizationException('No returns data available')
