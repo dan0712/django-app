@@ -299,13 +299,13 @@ class ClientUserRegisterView(ApiViewMixin, views.APIView):
         }
         user = User.objects.create_user(**user_params)
 
-        SecurityAnswer.objects.create(user=user,
-                                      question=serializer.validated_data['question_one'],
-                                      answer=serializer.validated_data['question_one_answer'])
+        sa1 = SecurityAnswer(user=user, question=serializer.validated_data['question_one'])
+        sa1.set_answer(serializer.validated_data['question_one_answer'])
+        sa1.save()
 
-        SecurityAnswer.objects.create(user=user,
-                                      question=serializer.validated_data['question_two'],
-                                      answer=serializer.validated_data['question_two_answer'])
+        sa2 = SecurityAnswer(user=user, question=serializer.validated_data['question_two'])
+        sa2.set_answer(serializer.validated_data['question_two_answer'])
+        sa2.save()
 
         invite.status = EmailInvite.STATUS_ACCEPTED
         invite.user = user

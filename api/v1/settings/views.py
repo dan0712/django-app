@@ -122,7 +122,7 @@ class SettingsViewSet(ReadOnlyApiViewMixin, NestedViewSetMixin, GenericViewSet):
 
     @list_route(methods=['get'])
     def civil_statuses(self, request):
-        return Response([{"id": status.value, "name": status.name}
+        return Response([{"id": status.value, "name": status.human_name}
                          for status in PersonalData.CivilStatus])
 
     @list_route(methods=['get'])
