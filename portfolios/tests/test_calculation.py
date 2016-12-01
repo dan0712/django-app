@@ -63,7 +63,7 @@ class CalculationTest(TestCase):
                                  data_provider=data_provider,
                                  execution_provider=execution_provider)
         xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = result
-        self.assertEqual(len(constraints), 2)  # All positive, and sum to 1
+        self.assertEqual(len(constraints), 3)  # All positive, and sum to 1
 
         # Then create a fund in the portfolio I want. We should get a constraint for the maximum for the feature.
         fund3 = TickerFactory.create(asset_class=fund1.asset_class)
@@ -78,7 +78,7 @@ class CalculationTest(TestCase):
                                  data_provider=data_provider,
                                  execution_provider=execution_provider)
         xs, lam, constraints, settings_instruments, settings_symbol_ixs, lcovars = result
-        self.assertEqual(len(constraints), 3)  # All positive, sum to 1, and the max constraint
+        self.assertEqual(len(constraints), 4)  # All positive, sum to 1, and the max constraint
 
     @mock.patch.object(timezone, 'now', MagicMock(return_value=mocked_now))
     def test_calculate_portfolio_old(self):
@@ -141,16 +141,17 @@ class CalculationTest(TestCase):
             .create(asset_classes=[asset_class1, asset_class2, fund6.asset_class])
 
         #feature = AssetFeatureValueFactory.create()
+        #feature.assets.add(fund6)
         settings = GoalSettingFactory.create()
         risk_metric = GoalMetricFactory.create(group=settings.metric_group, type=GoalMetric.METRIC_TYPE_RISK_SCORE)
-        # mix_metric = GoalMetricFactory.create(group=settings.metric_group,
+        #mix_metric = GoalMetricFactory.create(group=settings.metric_group,
         #                                      type=GoalMetric.METRIC_TYPE_PORTFOLIO_MIX,
         #                                      feature=feature,
         #                                      comparison=GoalMetric.METRIC_COMPARISON_MAXIMUM,
         #                                      )
         goal = GoalFactory.create(selected_settings=settings, portfolio_set=ps1)
 
-        #feature.assets.add(fund0)
+
 
         # Create some instrument data for the two assets
         self.m_scale = MarkowitzScaleFactory.create()

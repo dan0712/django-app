@@ -1,11 +1,9 @@
 import logging
 import math
 import sys
-import os
 from collections import defaultdict
 import numpy as np
 import pandas as pd
-import pprint
 
 from cvxpy import Variable, sum_entries
 from django.conf import settings as sys_settings
@@ -217,7 +215,7 @@ def get_core_constraints(nvars):
     xs = Variable(nvars)
 
     # Start with the constraint that all must add to 1
-    constraints = [sum_entries(xs) == 1]
+    constraints = [sum_entries(xs) == 1.0, xs >= 0]
 
     return xs, constraints
 
@@ -405,6 +403,7 @@ def build_weights(source_weights, settings_instruments):
         if ac in source_weights.index:
             weight = source_weights.ix[ac]
         if not pd.isnull(weight) and not weight == 0:
+            weight = (int(100 * weight)) / 100.0
             weights[ac] = weight
     return weights
 
@@ -464,16 +463,20 @@ def calculate_portfolio_old(settings, data_provider, execution_provider, idata=N
 
 def get_model_constraints(settings_instruments, xs, risk_profile):
     risk_profile_data = read_risk_profile_data()
-
     weights = build_weights(risk_profile_data.ix[:, str(risk_profile)], settings_instruments)
 
     constraints = []
+    tickers_per_ac = defaultdict(list)
     for w in weights:
         constraint = weights[w]
         tickers = settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] == w
         tickers = tickers.nonzero()[0].tolist()
-        constraints.append(sum_entries(xs[tickers]) == constraint)
-    return constraints
+        tickers_per_ac[w] = tickers
+
+        if len(tickers) > 0:
+            constraints.append(sum_entries(xs[tickers]) == constraint)
+
+    return constraints, weights, tickers_per_ac
 
 
 def calculate_portfolio(settings, data_provider, execution_provider, idata=None, risk_setting=None):
@@ -505,6 +508,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
                                                data_provider=data_provider)
 
     settings_instruments = instruments.iloc[settings_symbol_ixs]
+    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs].values
 
     if risk_setting is None:
         risk_profile = extract_risk_setting(settings)
@@ -514,12 +518,12 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if risk_profile == 0:
         risk_profile = 1
 
-    modelportfolio_constraints = get_model_constraints(settings_instruments=settings_instruments,
+    modelportfolio_constraints, ac_weights, ticker_per_ac = get_model_constraints(settings_instruments=settings_instruments,
                                                        xs=xs,
                                                        risk_profile=risk_profile)
 
-    constraints += mconstraints
     constraints += modelportfolio_constraints
+    constraints += mconstraints
 
     # this is old - because we use tax lots - do we really need condition not to sell something held less than 1 year,
     # when we radically change goal? probably not
@@ -536,19 +540,16 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Got constraints for settings: {}. Active symbols:{}".format(settings, settings_symbol_ixs))
 
-    lcovars = covars.iloc[settings_symbol_ixs, settings_symbol_ixs]
+
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Optimising settings using lambda: {}, \ncovars: {}".format(lam, lcovars))
 
-    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL]
-    weights, cost = markowitz_optimizer_3(xs, lcovars.values, lam, mu.values, constraints)
+    mu = settings_instruments[INSTRUMENT_TABLE_EXPECTED_RETURN_LABEL].values
+    weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
     if not weights.any():
-        raise Unsatisfiable('settings ' + settings_symbol_ixs)
-        raise Unsatisfiable('mconstraints ' + mconstraints)
-        raise Unsatisfiable('risk_profile ' + risk_profile)
-        raise Unsatisfiable('xs ' + len(xs))
+        raise Unsatisfiable('len(settings):' + str(len(settings_symbol_ixs)) + '\nsettings_symbol_ixs:' + str(settings_symbol_ixs)+'\nmconstraints:' + str(mconstraints) + '\nrisk_profile:' + str(risk_profile) + '\nxs:' + str(xs.value) + '\nsettings_instruments:' + str(settings_instruments) + '\nconstraints:' + str(constraints) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
         #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
