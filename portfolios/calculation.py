@@ -550,7 +550,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     weights, cost = markowitz_optimizer_3(xs, lcovars, lam, mu, constraints)
 
     #if not weights.any():
-    raise Unsatisfiable('instruments:'+ settings_instruments[INSTRUMENT_TABLE_SYMBOL_LABEL] +'\nasset_classes:'+ settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL] +'\nlen(settings):' + str(len(settings_symbol_ixs)) + '\nrisk_profile:' + str(risk_profile) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
+    raise Unsatisfiable('instruments:'+ str(settings_instruments[INSTRUMENT_TABLE_SYMBOL_LABEL]) +'\nasset_classes:'+ str(settings_instruments[INSTRUMENT_TABLE_ASSET_CLASS_LABEL]) +'\nlen(settings):' + str(len(settings_symbol_ixs)) + '\nrisk_profile:' + str(risk_profile) + '\nac_weights' + str(ac_weights) + '\nticker_per_ac:'+str(ticker_per_ac))
         #raise Unsatisfiable("Could not find an appropriate allocation for Risk Profile: {}".format(risk_profile))
 
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
