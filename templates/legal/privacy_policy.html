@@ -1,7 +1,8 @@
 {% extends 'layouts_new/base.html' %}
 
 {% block main_content %}
-<button onclick="goBack()" class='btn btn-primary'>Back</button>
+<div class="container">
+<button onclick="goBack()" class='btn btn-primary pull-right'>Back</button>
 <h1>Privacy Policy</h1>
 Effective September 2016
 
@@ -110,15 +111,20 @@ To protect your personal information from unauthorized access and use, we use se
 <p><b>Affiliates</b>. Companies related by common ownership or control. They can be financial and nonfinancial companies. 
 Our affiliates include companies with a BetaSmartz name; financial companies such as BetaSmartz Global Pte. Ltd., and BetaSmartz Pty Ltd.</p>
 
-<p><b>Nonaffiliates</b>. Companies not related by common ownership or control. They can be financial and nonfinancial companies.
-<li>BetaSmartz does not share with nonaffiliates so they can market to you.</li></p>
+<p>
+<b>Nonaffiliates</b>. Companies not related by common ownership or control. They can be financial and nonfinancial companies.
+	<ul><li>BetaSmartz does not share with nonaffiliates so they can market to you.</li></ul>
+</p>
 
-<p><b>Joint marketing</b>. A formal agreement between nonaffiliated financial companies that together market financial products or services to you.
-<li>BetaSmartz doesn't jointly market.</li></p>
+<p>
+<b>Joint marketing</b>. A formal agreement between nonaffiliated financial companies that together market financial products or services to you.
+	<ul><li>BetaSmartz doesn't jointly market.</li></ul>
+</p>
 
 <h2>Other important information</h2>
 <h2>State and International Laws</h2>
 <p>If you are a Vermont resident, we will automatically limit sharing of your information. Nevada law requires us to disclose that you may request to be placed on BetaSmartz’s internal "do not call" list at any time by emailing <a href="mailto:support@betasmartz.com">support@betasmartz.com</a>, and that we are providing this notice to you pursuant to state law, and that you may obtain further information by contacting the Nevada Attorney General, 555 E. Washington Ave., Suite 3900, Las Vegas, NV 89101; phone 702-486-3132; email <a href="mailto:BCPINFO@ag.state.nv.us">BCPINFO@ag.state.nv.us</a>.</p>
+</div>
 {% endblock %}
 
 
