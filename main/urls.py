@@ -2,7 +2,7 @@ from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.views.decorators.csrf import csrf_exempt
 from filebrowser.sites import site
-
+from django.views.generic import TemplateView
 from api.v1.user.views import PasswordResetView
 from main import settings
 from main.views import *
@@ -104,6 +104,9 @@ urlpatterns = patterns(
     url(r'^anymail/', include('anymail.urls')),
 
     #url(r'^client/2.0/api/',  include(router.urls)),
+
+    # Legal Related
+    url('^privacy-policy/$', TemplateView.as_view(template_name="legal/privacy_policy.html"), name='privacy_policy'),
 )
 
 if settings.DEBUG:

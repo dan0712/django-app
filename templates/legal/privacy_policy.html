@@ -1,0 +1,15 @@
+{% extends 'layouts_new/base.html' %}
+
+{% block main_content %}
+<h1>Betasmartz Privacy Policy</h1>
+<button onclick="goBack()" class='pull right'>Back</button>
+
+{% endblock %}
+
+{% block foot_js %}
+<script type='text/javascript'>
+	function goBack() {
+		window.history.back();
+	}
+</script>
+{% endblock %}
