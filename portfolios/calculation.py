@@ -496,6 +496,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     settings_symbol_ixs, cvx_masks = get_settings_masks(settings=settings, masks=masks)
     if len(settings_symbol_ixs) == 0:
         raise Unsatisfiable("No assets available for settings: {} given it's constraints.".format(settings))
+
     xs, constraints = get_core_constraints(len(settings_symbol_ixs))
     lam, mconstraints = get_metric_constraints(settings=settings,
                                                cvx_masks=cvx_masks,
@@ -565,7 +566,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
     # Find the orderable weights. We don't align as it's too cpu intensive ATM.
     # We do however need to do the 3% cutoff so we don't end up with tiny weights.
 
-    try:
+    '''try: sometimes it gives weird recommendations, so prefer to go without this
         weights_orderable, cost_orderable = make_orderable(weights,
                                             cost,
                                             xs,
@@ -582,7 +583,7 @@ def calculate_portfolio(settings, data_provider, execution_provider, idata=None,
             weights = weights_orderable
             cost = cost_orderable
     except:
-        pass
+        pass'''
 
     stats = get_portfolio_stats(settings_instruments, lcovars, weights)
     return stats
