@@ -25,15 +25,22 @@ class ClientSerializer(ReadOnlyModelSerializer):
     advisor = AdvisorFieldSerializer()
     residential_address = AddressSerializer()
     regional_data = serializers.JSONField()
+    reason = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
+
+    def get_reason(self, obj):
+        if hasattr(obj.user, 'invitation'):
+            return obj.user.invitation.reason
+        return None
 
 
 class ClientFieldSerializer(ReadOnlyModelSerializer):
     residential_address = AddressSerializer()
     advisor = AdvisorFieldSerializer()
     regional_data = serializers.JSONField()
+    reason = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
@@ -43,6 +50,11 @@ class ClientFieldSerializer(ReadOnlyModelSerializer):
             'confirmation_key',
             'create_date',
         )
+
+    def get_reason(self, obj):
+        if hasattr(obj.user, 'invitation'):
+            return obj.user.invitation.reason
+        return None
 
 
 class ClientUpdateSerializer(serializers.ModelSerializer):
