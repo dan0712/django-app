@@ -1,0 +1,32 @@
+{% extends 'layouts_new/base.html' %}
+
+{% block main_content %}
+<div class="container">
+<button onclick="goBack()" class='btn btn-primary pull-right'>Back</button>
+<h1>Online Privacy & Tracking</h1>
+
+<h2>Privacy Online</h2>
+<p>When you interact with BetaSmartz through websites and mobile applications) owned and controlled by BetaSmartz (the "BetaSmartz Websites"), BetaSmartz handles personal information in accordance with the practices and safeguards described in our <a href="/privacy-policy">Privacy Policy</a></p>
+
+<p>We use cookies and similar technologies on BetaSmartz Websites. Cookies are bits of data that a website sends to a web browser on a visitor's computer. Cookies help us to collect information about you and other visitors to BetaSmartz Websites, including date and time of visit, pages viewed, amount of time spent on our sites, or general information about the device used to access the site. Cookies are also used for security purposes and to personalize your experience, such as customizing your screen layout.</p>
+
+<p>You can refuse or delete cookies. Most browsers and mobile devices offer their own settings to manage cookies. If you refuse a cookie when on a BetaSmartz Website, or if you delete cookies, you may lose functionality. For example, you may not be able to sign in and access your account, or we may not be able to recognize you, your device, or your online preferences.</p>
+
+<h2>How We Respond to Do Not Track Signals</h2>
+<p>Some internet browsers have incorporated "Do Not Track" features. Most of these features, when turned on, send a signal or preference (the "DNT Signal") to the web sites you visit indicating that you do not wish to be tracked. Because there is not yet a common understanding of how to interpret DNT Signals, nor a common definition of "tracking", we do not currently respond to DNT Signals on the BetaSmartz Websites. BetaSmartz engages in so-called online behavioral advertising on third-party sites (also sometimes called "retargeting" or “tracking”), through which information collected about the pages you visit on BetaSmartz is used to display ads for BetaSmartz products or services on third-party websites. This information may uniquely identify a browser but is not personally identifiable.</p>
+
+<h2>Online Behavioral Advertising</h2>
+<p>BetaSmartz may use third-party online advertising companies to provide you with BetaSmartz advertisements that may be relevant to your interests, as determined by your activity on BetaSmartz and non-BetaSmartz websites. This type of ad customization is known as "online behavioral” or “interest-based” advertising. These advertising companies may use cookies to understand your interests based on, for example, pages visited and browsing patterns on BetaSmartz and non-BetaSmartz websites.</p>
+
+<h2>Data Security Online</h2>
+<p>To protect your personal information from unauthorized access and use, we use security measures that comply with federal law. These measures include computer safeguards and secured files and buildings.</p>
+{% endblock %}
+
+
+{% block foot_js %}
+<script type='text/javascript'>
+	function goBack() {
+		window.history.back();
+	}
+</script>
+{% endblock %}
