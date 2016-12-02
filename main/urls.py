@@ -108,6 +108,7 @@ urlpatterns = patterns(
     # Legal Related
     url('^privacy-policy/$', TemplateView.as_view(template_name="legal/privacy_policy.html"), name='privacy_policy'),
     url('^online-privacy/$', TemplateView.as_view(template_name="legal/online_privacy.html"), name='online_privacy'),
+    url('^legal/$', TemplateView.as_view(template_name="legal/legal.html"), name='legal'),
 )
 
 if settings.DEBUG:
