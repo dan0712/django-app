@@ -40,7 +40,7 @@ class PersonalData(models.Model):
     gender = models.CharField(max_length=20, default=GENDER_MALE, choices=GENDERS)
     residential_address = models.ForeignKey('address.Address', related_name='+')
     # A person may not have a phone.
-    phone_num = PhoneNumberField(null=True, max_length=16)
+    phone_num = PhoneNumberField(null=True, max_length=30)
     civil_status = models.IntegerField(null=True, choices=CivilStatus.choices())
 
     regional_data = JSONField(default=dict)
