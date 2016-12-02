@@ -10,10 +10,10 @@ from django.template.loader import render_to_string
 from django.utils.functional import cached_property, curry
 from jsonfield import JSONField
 from phonenumber_field.modelfields import PhoneNumberField
-from django.utils import timezone
+
 from common.structures import ChoiceEnum
 from common.utils import d2dt
-from main.constants import GENDER_MALE, GENDERS
+from main.constants import GENDERS, GENDER_MALE
 
 
 class TimestampedModel(models.Model):

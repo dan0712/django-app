@@ -1,20 +1,26 @@
+import logging
 from datetime import date
 
 from django.conf import settings
 from django.db import transaction
+from django.template import RequestContext
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.functional import curry
 from django.utils.timezone import now
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from api.v1.goals.serializers import PortfolioSerializer
 from api.v1.serializers import ReadOnlyModelSerializer
-from client.models import Client
-from main.constants import GENDER_MALE, ACCOUNT_TYPES
+from client.models import Client, ClientAccount
+from main import constants
 from main.models import ExternalAsset
 from main.risk_profiler import GoalSettingRiskProfile
-from retiresmartz.models import RetirementPlan, RetirementPlanEinc, RetirementAdvice
-import logging
+from retiresmartz.models import RetirementAdvice, RetirementPlan, \
+    RetirementPlanEinc
+
+
 logger = logging.getLogger('api.v1.retiresmartz.serializers')
 
 
@@ -28,7 +34,7 @@ def get_default_tx_plan():
 
 
 def get_default_life_expectancy(client):
-    return settings.MALE_LIFE_EXPECTANCY if client.gender == GENDER_MALE else settings.FEMALE_LIFE_EXPECTANCY
+    return settings.MALE_LIFE_EXPECTANCY if client.gender == constants.GENDER_MALE else settings.FEMALE_LIFE_EXPECTANCY
 
 
 def get_default_retirement_date(client):
@@ -330,7 +336,27 @@ class RetirementAdviceWritableSerializer(serializers.ModelSerializer):
                 field.required = False
 
 
-class JointAccountConfirmation(serializers.Serializer):
+class NewAccountFabricBase(serializers.Serializer):
+    def save(self, request, client) -> ClientAccount:
+        raise NotImplementedError()
+
+
+def new_account_fabric(data: dict) -> NewAccountFabricBase:
+    try:
+        account_type = data['account_type']
+    except KeyError:
+        raise ValidationError({'account_type': 'Field not found.'})
+
+    if account_type == constants.ACCOUNT_TYPE_JOINT:
+        serializer_class = JointAccountConfirmation
+    elif account_type == constants.ACCOUNT_TYPE_TRUST:
+        serializer_class = AddTrustAccount
+    else:
+        serializer_class = AddRolloverAccount
+    return serializer_class(data=data)
+
+
+class JointAccountConfirmation(NewAccountFabricBase):
     email = serializers.EmailField()
     ssn = serializers.CharField()
 
@@ -345,10 +371,82 @@ class JointAccountConfirmation(serializers.Serializer):
             raise ValidationError({'email': 'User cannot be found.'})
         return attrs
 
+    def save(self, request, client):
+        cosignee = self.client
+        account = ClientAccount.objects.create(
+            account_type=constants.ACCOUNT_TYPE_JOINT,
+            account_name='JOINT {:%Y-%m-%d %H:%M:%S}'.format(now()),
+            primary_owner=client,
+            default_portfolio_set=client.advisor.default_portfolio_set,
+        )
+        account.signatories = [cosignee]
+        account.save()
+        context = RequestContext(request, {
+            'sender': client,
+            'cosignee': cosignee,
+            'account': account,
+            'link': '',
+            # 'link': reverse('api:v1:client-retirement-plans-joint-confirm',
+            #                 kwargs={'parent_lookup_client': client.id, }),
+        })
+        render = curry(render_to_string, context=context)
+        # cosignee.user.email_user(
+        #     render('email/client/joint-confirm/subject.txt').strip(),
+        #     message=render('email/client/joint-confirm/message.txt'),
+        #     html_message=render('email/client/joint-confirm/message.html'),
+        # )
+        return account
 
-class AddRolloverAccount(serializers.Serializer):
+
+class AddTrustAccount(NewAccountFabricBase):
+    trust_legal_name = serializers.CharField()
+    trust_nickname = serializers.CharField()
+    trust_state = serializers.CharField()
+    establish_date = serializers.DateField()
+    ein = serializers.CharField(required=False)
+    ssn = serializers.CharField(required=False)
+    address = serializers.CharField()
+    city = serializers.CharField()
+    state = serializers.CharField()
+    zip = serializers.CharField()
+
+    def validate(self, attrs):
+        if not (attrs['ein'] or attrs['ssn']):
+            raise ValidationError({
+                'ein': 'Either EIN or SSN must present.',
+                'ssn': 'Either EIN or SSN must present.',
+            })
+        return attrs
+
+    def save(self, request, client):
+        data = self.validated_data
+        account = ClientAccount.objects.create(
+            account_type=constants.ACCOUNT_TYPE_TRUST,
+            account_name=data['trust_nickname'],
+            primary_owner=client,
+            default_portfolio_set=client.advisor.default_portfolio_set,
+            confirmed=True,
+        )
+        # todo save trust info
+        return account
+
+
+class AddRolloverAccount(NewAccountFabricBase):
     provider = serializers.CharField()
-    account_type = serializers.ChoiceField(choices=ACCOUNT_TYPES)
+    account_type = serializers.ChoiceField(choices=constants.ACCOUNT_TYPES)
     account_number = serializers.CharField()
     amount = serializers.FloatField()
     signature = serializers.CharField()
+
+    def save(self, request, client):
+        data = self.validated_data
+        account_type = data['account_type']
+        account = ClientAccount.objects.create(
+            account_type=account_type,
+            account_name=dict(constants.ACCOUNT_TYPES)[account_type],
+            primary_owner=client,
+            default_portfolio_set=client.advisor.default_portfolio_set,
+            confirmed=True,
+        )
+        # TODO save source account rollover data
+        return account

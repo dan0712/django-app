@@ -510,41 +510,18 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
 
         return Response({'portfolio': pser.data, 'projection': proj_data})
 
-    @list_route(methods=['post'], url_path='add-joint-account',
+    @list_route(methods=['post'], url_path='add-account',
                 permission_classes=[IsClient])
     @transaction.atomic
-    def joint(self, request, *args, **kwargs):
-        serializer = serializers.JointAccountConfirmation(data=request.data)
+    def add_account(self, request, *args, **kwargs):
+        client = request.user.client
+
+        if str(client.id) != kwargs['parent_lookup_client']:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = serializers.new_account_fabric(request.data)
         if serializer.is_valid():
-            client = request.user.client
-            try:
-                if str(client.id) != kwargs['parent_lookup_client']:
-                    return Response(status=status.HTTP_403_FORBIDDEN)
-            except KeyError:
-                pass
-            cosignee = serializer.client
-            account = ClientAccount.objects.create(
-                account_type=constants.ACCOUNT_TYPE_JOINT,
-                account_name='JOINT {:%Y-%m-%d %H:%M:%S}'.format(now()),
-                primary_owner=client,
-                default_portfolio_set=client.advisor.default_portfolio_set,
-            )
-            account.signatories=[cosignee]
-            account.save()
-            context = RequestContext(request, {
-                'sender': client,
-                'cosignee': cosignee,
-                'account': account,
-                'link': '',
-                # 'link': reverse('api:v1:client-retirement-plans-joint-confirm',
-                #                 kwargs={'parent_lookup_client': client.id, }),
-            })
-            render = curry(render_to_string, context=context)
-            # cosignee.user.email_user(
-            #     render('email/client/joint-confirm/subject.txt').strip(),
-            #     message=render('email/client/joint-confirm/message.txt'),
-            #     html_message=render('email/client/joint-confirm/message.html'),
-            # )
+            account = serializer.save(request, client)
             return Response(ClientAccountSerializer(instance=account).data)
         return Response({'error': serializer.errors},
                         status=status.HTTP_400_BAD_REQUEST)
@@ -592,31 +569,6 @@ class RetiresmartzViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
     #     )
     #
     #     return Response(status=status.HTTP_403_FORBIDDEN)
-
-    @list_route(methods=['post'], url_path='add-rollover-account',
-                permission_classes=[IsClient])
-    @transaction.atomic
-    def add_rollover(self, request, *args, **kwargs):
-        serializer = serializers.AddRolloverAccount(data=request.data)
-        if serializer.is_valid():
-            client = request.user.client
-            try:
-                if str(client.id) != kwargs['parent_lookup_client']:
-                    return Response(status=status.HTTP_403_FORBIDDEN)
-            except KeyError:
-                pass
-            data = serializer.validated_data
-            account_type = data['account_type']
-            account = ClientAccount.objects.create(
-                account_type=account_type,
-                account_name=dict(constants.ACCOUNT_TYPES)[account_type],
-                primary_owner=client,
-                default_portfolio_set=client.advisor.default_portfolio_set,
-            )
-            # TODO save source account rollover data
-            return Response(ClientAccountSerializer(instance=account).data)
-        return Response({'error': serializer.errors},
-                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class RetiresmartzAdviceViewSet(ApiViewMixin, NestedViewSetMixin, ModelViewSet):
