@@ -1,6 +1,3 @@
-[Betasmartz](http://betasmartz.com)
-
-
 ## Docker Development Environment Setup
 Please follow the quick readme instructions for https://bitbucket.org/betasmartz/betasmartz_dev_setup
 
@@ -65,16 +62,6 @@ python manage.py migrate main
 ...possible other apps
 python manage.py migrate
 ```
-
-
-## Dev Site
-https://dev.betasmartz.com/
-https://dev.betasmartz.com/docs
-
-**credentials (username/pass):**
-firm: legal@example.org/123
-advisor: advisor@example.org/123  
-client: obama@demo.org/123
 
 ## Unit tests
 ```
