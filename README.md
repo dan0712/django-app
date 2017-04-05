@@ -69,8 +69,6 @@ python3.5 manage.py test -v3 --settings=tests.test_settings
 ```
 
 ## Models
-![models](devop/models.png)
-
 To update the models view:  
 `./manage.py graph_models -o devop/models.png main advisors portfolios`
 
